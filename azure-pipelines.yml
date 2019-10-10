@@ -9,6 +9,7 @@ trigger:
 pool:
   name: 'Default'
 
+
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
@@ -21,14 +22,10 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- task: VSBuild@1
+- task: Npm@1
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'install'
+    workingDir: 'Enterprise/Subsystem/ProductLauncher/Web/identity-ui-src'
+    verbose: true
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+
