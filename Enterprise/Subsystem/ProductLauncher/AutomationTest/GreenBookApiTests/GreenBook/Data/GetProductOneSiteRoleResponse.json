@@ -1,0 +1,859 @@
+﻿{
+  "records": [
+    {
+      "id": "5490154",
+      "name": "AA New Role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "10"
+    },
+    {
+      "id": "5491160",
+      "name": "AA New Role (Copy)",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "10"
+    },
+    {
+      "id": "2609768",
+      "name": "ABtest",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1025"
+    },
+    {
+      "id": "26",
+      "name": "Accountant",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "87"
+    },
+    {
+      "id": "5490092",
+      "name": "Accountant (Copy)",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "89"
+    },
+    {
+      "id": "5491161",
+      "name": "Accountant (Copy) (Copy)",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "89"
+    },
+    {
+      "id": "5493431",
+      "name": "Accounting Role -Add vendor",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "5493432",
+      "name": "Accounting Role -Add vendor (Copy)",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "2"
+    },
+    {
+      "id": "1456796",
+      "name": "Activity Director",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "17"
+    },
+    {
+      "id": "100",
+      "name": "AME Date Advance",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "3",
+      "name": "Assistant Property Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "371"
+    },
+    {
+      "id": "3281797",
+      "name": "Auditor",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "8"
+    },
+    {
+      "id": "2320070",
+      "name": "BA Allocations & Worksheets",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "2320071",
+      "name": "BA Capital",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "2611006",
+      "name": "BA Corporate",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "26"
+    },
+    {
+      "id": "2320073",
+      "name": "BA Debt Service",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "2320072",
+      "name": "BA Payroll",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1270942",
+      "name": "Basic PM",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "15"
+    },
+    {
+      "id": "50",
+      "name": "Bookkeeper",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "156"
+    },
+    {
+      "id": "986540",
+      "name": "Budget Administrator",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "25"
+    },
+    {
+      "id": "986542",
+      "name": "Budget Approver",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "5"
+    },
+    {
+      "id": "1030513",
+      "name": "Budget Approver Read-only",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "4"
+    },
+    {
+      "id": "2562508",
+      "name": "Budget External User",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "986541",
+      "name": "Budget Preparer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "5"
+    },
+    {
+      "id": "1291241",
+      "name": "Budget Report Designer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "18",
+      "name": "Call Center",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "2"
+    },
+    {
+      "id": "1412531",
+      "name": "Call Center OnDemand administrator",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "0"
+    },
+    {
+      "id": "1271317",
+      "name": "Call Center OnDemand agent",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "0"
+    },
+    {
+      "id": "56",
+      "name": "Call Genie Setup",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1338594",
+      "name": "Central Reporting Trainee",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "18"
+    },
+    {
+      "id": "131",
+      "name": "Central Screening",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "302"
+    },
+    {
+      "id": "1529846",
+      "name": "Commercial Property Manager",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "473"
+    },
+    {
+      "id": "105",
+      "name": "Compliance Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "310"
+    },
+    {
+      "id": "1612780",
+      "name": "Compliance Manager - Combo",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "786"
+    },
+    {
+      "id": "1612781",
+      "name": "Compliance Manager - HUD",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "786"
+    },
+    {
+      "id": "1612779",
+      "name": "Compliance Manager - Tax Credi",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "786"
+    },
+    {
+      "id": "208",
+      "name": "Concierge Access",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "0"
+    },
+    {
+      "id": "209",
+      "name": "Concierge Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "0"
+    },
+    {
+      "id": "39",
+      "name": "Content Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "5"
+    },
+    {
+      "id": "986543",
+      "name": "Content Viewer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "5161765",
+      "name": "Corp Budget",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "3123354",
+      "name": "CR Test",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "5"
+    },
+    {
+      "id": "104",
+      "name": "CrossFire Read Only",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "800556",
+      "name": "Custom",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "3"
+    },
+    {
+      "id": "1744122",
+      "name": "Custom Property  Manager",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "585"
+    },
+    {
+      "id": "5409783",
+      "name": "Custom Property Manager",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "629"
+    },
+    {
+      "id": "5490093",
+      "name": "Custom Role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1775",
+      "name": "Doc Mgmt",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "40"
+    },
+    {
+      "id": "43",
+      "name": "Document approver",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "9"
+    },
+    {
+      "id": "45",
+      "name": "Document reviewer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "15"
+    },
+    {
+      "id": "257",
+      "name": "Document reviewer-summary",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "11"
+    },
+    {
+      "id": "2622510",
+      "name": "e-Doc Signer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "28"
+    },
+    {
+      "id": "2684596",
+      "name": "Edit Rent Stabilization Historical Rents",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1827452",
+      "name": "ePHI Right_CM",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1827453",
+      "name": "ePHI Right_SRL",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1705803",
+      "name": "Executive Director",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "97"
+    },
+    {
+      "id": "5490949",
+      "name": "GB Custom Role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "40",
+      "name": "Implementation",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "96"
+    },
+    {
+      "id": "3393578",
+      "name": "Incident Report Reviewer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "3"
+    },
+    {
+      "id": "1017",
+      "name": "Leads Client Operator",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "25",
+      "name": "Learner",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "2",
+      "name": "Leasing Consultant",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "144"
+    },
+    {
+      "id": "52",
+      "name": "Leasing consultant - Entry level",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "37"
+    },
+    {
+      "id": "51",
+      "name": "Leasing Consultant - professional",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "92"
+    },
+    {
+      "id": "53",
+      "name": "Leasing Director",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "25"
+    },
+    {
+      "id": "5491086",
+      "name": "local role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "10"
+    },
+    {
+      "id": "2129975",
+      "name": "Maintenance",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "37"
+    },
+    {
+      "id": "5045774",
+      "name": "Manage AppPartner Subscription",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1137118",
+      "name": "Manage Forecasts",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "6"
+    },
+    {
+      "id": "42",
+      "name": "Manage Users",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "12"
+    },
+    {
+      "id": "10",
+      "name": "Marketing Director",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "59"
+    },
+    {
+      "id": "3426533",
+      "name": "MH MAC Processor",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "6"
+    },
+    {
+      "id": "62",
+      "name": "Migrate OneSite from 2.3 to 3.0",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "0"
+    },
+    {
+      "id": "5045863",
+      "name": "MKF Property Manager",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "629"
+    },
+    {
+      "id": "5492512",
+      "name": "Mon Custom Role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "9"
+    },
+    {
+      "id": "5492514",
+      "name": "Mon Custom Role (Copy)",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "9"
+    },
+    {
+      "id": "5490153",
+      "name": "Onesite custom Role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1349",
+      "name": "Online Payment Administrator",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "1208078",
+      "name": "Online Renewals",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "3"
+    },
+    {
+      "id": "1103650",
+      "name": "OpsBuyer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "44",
+      "name": "Override",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "4"
+    },
+    {
+      "id": "1348",
+      "name": "Packet Approver",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "18"
+    },
+    {
+      "id": "1229782",
+      "name": "Payments Internal Administrator",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "9"
+    },
+    {
+      "id": "1455",
+      "name": "Pinnacle Administrator",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "0"
+    },
+    {
+      "id": "5491090",
+      "name": "PR Role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "10"
+    },
+    {
+      "id": "20",
+      "name": "Property Inspector",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "13"
+    },
+    {
+      "id": "22",
+      "name": "Property Maintenance Lead",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "50"
+    },
+    {
+      "id": "11",
+      "name": "Property Maintenance Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "57"
+    },
+    {
+      "id": "2389221",
+      "name": "Property Maintenance Purchasing",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "21",
+      "name": "Property Maintenance Worker",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "21"
+    },
+    {
+      "id": "4",
+      "name": "Property Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "639"
+    },
+    {
+      "id": "2708456",
+      "name": "Property Manager - Rent Stabilization",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "614"
+    },
+    {
+      "id": "24",
+      "name": "Purchasing",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "32"
+    },
+    {
+      "id": "36",
+      "name": "Purchasing Approver",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "28"
+    },
+    {
+      "id": "31",
+      "name": "RealPage Central",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "20"
+    },
+    {
+      "id": "5",
+      "name": "Regional Property Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "767"
+    },
+			{
+				"id": "1175",
+				"name": "Report Tab Only",
+				"isAssigned": false,
+				"roletype": "Default",
+				"rightsAssigned": "1"
+			},
+    {
+      "id": "47",
+      "name": "Report Viewer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "5"
+    },
+    {
+      "id": "156",
+      "name": "Reporting Administrator",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "11"
+    },
+    {
+      "id": "157",
+      "name": "Reporting Subscriber",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "5"
+    },
+    {
+      "id": "1456795",
+      "name": "Resident Care Director",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "86"
+    },
+    {
+      "id": "1456797",
+      "name": "Reviewer",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "29"
+    },
+    {
+      "id": "2917932",
+      "name": "Right to Bill Resident",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "4230299",
+      "name": "RP Property Manager",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "632"
+    },
+    {
+      "id": "49",
+      "name": "RUBS Interface Access",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "0"
+    },
+    {
+      "id": "16",
+      "name": "Sales",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "35"
+    },
+    {
+      "id": "5121559",
+      "name": "Screening",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "123"
+    },
+    {
+      "id": "2147056",
+      "name": "SDE",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "15"
+    },
+    {
+      "id": "54",
+      "name": "SDE Manager",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "18"
+    },
+    {
+      "id": "9",
+      "name": "Set Up Team Leader",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "186"
+    },
+    {
+      "id": "1157328",
+      "name": "Setup Role",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "2181973",
+      "name": "SRC Administrator",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "698"
+    },
+    {
+      "id": "2918096",
+      "name": "Task Admin",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "2"
+    },
+    {
+      "id": "2023318",
+      "name": "Temp Leasing Agent",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "153"
+    },
+    {
+      "id": "1235801",
+      "name": "Test Prop Mgr",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "464"
+    },
+    {
+      "id": "2583611",
+      "name": "Test_Custom1",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "4"
+    },
+    {
+      "id": "98",
+      "name": "Unit Setup",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "2"
+    },
+    {
+      "id": "2701780",
+      "name": "Velocity- Prebill upload",
+      "isAssigned": false,
+      "roletype": "Custom",
+      "rightsAssigned": "11"
+    },
+    {
+      "id": "119",
+      "name": "Vendor Management",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "8"
+    },
+    {
+      "id": "1137117",
+      "name": "View Forecasts",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "1"
+    },
+    {
+      "id": "3564799",
+      "name": "View Only Document Management",
+      "isAssigned": false,
+      "roletype": "Default",
+      "rightsAssigned": "8"
+    }
+  ],
+  "rowsPerPage": 9999,
+  "skipRows": 0,
+  "currentPage": 0,
+  "totalPages": 1,
+  "totalRows": 121,
+  "additional": null,
+  "isError": false,
+  "errorReason": ""
+}

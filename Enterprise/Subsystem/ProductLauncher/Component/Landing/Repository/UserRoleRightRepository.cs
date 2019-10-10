@@ -1,0 +1,175 @@
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Foundation.DataAccess.Component.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
+{
+    /// <summary>
+    /// Used to get product role/right information for the given user, product, role
+    /// </summary>
+    public class UserRoleRightRepository : BaseRepository, IUserRoleRightRepository
+    {
+        #region Private variables
+        IRepository _repository;
+        #endregion
+
+        #region Constructor
+        /// <summary>
+        /// UserRoleRight base Constructor
+        /// </summary>
+        public UserRoleRightRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+        }
+
+        /// <summary>
+        /// Used when called with existing repository with transaction
+        /// </summary>
+        /// <param name="repository"></param>
+        public UserRoleRightRepository(IRepository repository) : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+            _repository = repository;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// List of Roles by User Persona ID
+        /// </summary>
+        /// <param name="productId">Product ID</param>  
+        /// <param name="userPersonaId">Optional Persona ID</param>   
+        /// <param name="organizationPartyId">Optional Organization PartyId</param>
+        /// <returns>List of roles assigned to Persona</returns>
+        public List<SharedObjects.Product.UserManagement.Role> ListRoleByPersona(int productId, long? userPersonaId = null, long? organizationPartyId = null)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"sp_ListRolesForProductsByPersonaId_{productId}_{userPersonaId}_{organizationPartyId}";
+
+            List<SharedObjects.Product.UserManagement.Role> getRolesForProductByPersona = rpCache.GetFromCache<List<SharedObjects.Product.UserManagement.Role>>(cacheKey, 120, () =>
+            {
+                using (var repository = GetRepository())
+                {
+                    dynamic param = new
+                    {
+                        ProductID = productId,
+                        PersonaID = userPersonaId,
+                        PartyId = organizationPartyId
+                    };
+
+                    List<SharedObjects.Product.UserManagement.Role> roleList = new List<SharedObjects.Product.UserManagement.Role>();
+                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, param);
+                    if (result != null)
+                    {
+                        foreach (var item in result)
+                        {
+                            roleList.Add(new Component.SharedObjects.Product.UserManagement.Role { RoleID = item.RoleId, Name = item.Role, PersonaId = item.PersonaId.ToString(), RoleNickName = item.RoleNickName });
+                        }
+                    }
+
+                    return roleList;
+                }
+            });
+
+            return getRolesForProductByPersona;
+        }
+
+        /// <summary>
+        /// Get a single role id for a given persona and product id
+        /// </summary>
+        /// <param name="userPersonaId">Persona ID</param>   
+        /// <param name="productId">Product ID</param>   
+        /// <returns>Role assigned to Persona</returns>
+        public long GetRoleIdByPersona(long userPersonaId, int productId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = productId
+                };
+                var userRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, param);
+                return (userRole != null ? userRole.RoleId : 0);
+            }
+        }
+
+        /// <summary>
+        /// Insert Role to User
+        /// </summary>
+        /// <param name="userPersonaId">User Persona ID</param>             
+        /// <param name="roleId">User Role</param>   
+        /// <param name="deleteRole">isDeleted</param>   
+        /// <returns>List of Roles assigned to Persona</returns>
+        public RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, long roleId, bool deleteRole = false)
+        {
+            RepositoryResponse rr = new RepositoryResponse();
+
+            dynamic param = new
+            {
+                PersonaID = userPersonaId,
+                RoleID = roleId,
+                IsDeleted = deleteRole,
+                PersonaPrivilgeID = 0
+            };
+
+            if (_repository == null)
+            {
+                _repository = GetRepository();
+                rr = _repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+            }
+            else
+            {
+                rr = _repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+            }
+
+            return rr;
+        }
+
+        /// <summary>
+        /// Get all roles and associated rights in master-detail hierarchy
+        /// </summary>
+        /// <param name="partyId"></param>
+        /// <param name="productIdList"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        public IList<UserRoleRights> GetAllRoleRights(long partyId, IList<int> productIdList, int productId)
+        {
+            Dictionary<int, UserRoleRights> userRoles = new Dictionary<int, UserRoleRights>();
+
+            if (productIdList.Count == 0)
+            {
+                throw new Exception("Missing company product id list");
+            }
+
+            using (var repository = GetRepository())
+            {
+                repository.GetManyWithSpliOn<UserRoleRights, Right, UserRoleRights>(
+                    sql: StoredProcNameConstants.SP_ListRightsAssociatedWithRoles,
+                    map: (roles, rights) =>
+                    {
+                        if (!userRoles.ContainsKey(roles.RoleId))
+                        {
+                            userRoles.Add(roles.RoleId, roles);
+                        }
+                        UserRoleRights userRole = userRoles[roles.RoleId];
+                        userRole.UserRights.Add(rights);
+                        return userRole;
+                    },
+                    param: new
+                    {
+                        PartyId = partyId,
+                        ProductId = productId,
+                        TargetProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
+                    },
+                      splitOn: "RoleId,RightId");
+                return userRoles.Values.ToList<UserRoleRights>();
+            }
+        }
+    }
+}

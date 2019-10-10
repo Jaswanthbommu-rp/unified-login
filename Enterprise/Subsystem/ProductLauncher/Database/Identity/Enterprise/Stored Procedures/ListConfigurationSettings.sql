@@ -1,0 +1,20 @@
+﻿CREATE PROCEDURE [Enterprise].[ListConfigurationSettings]
+(@ConfigurationType NVARCHAR(100),
+ @PartyId           BIGINT,
+ @SettingName       NVARCHAR(100) = NULL
+)
+AS
+         BEGIN
+             SELECT MST.Name AS 'SettingName',
+                    MS.Value AS 'Value',
+                    MCS.MasterConfigurationSettingId AS 'MasterConfigurationSettingId'
+             FROM Enterprise.MasterConfigurationSetting MCS
+                  INNER JOIN Enterprise.MasterConfiguration MC ON MC.MasterConfigurationId = MCS.MasterConfigurationId
+                  INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId
+                  INNER JOIN Enterprise.MasterSettingType MST ON MST.MasterSettingTypeId = MS.MasterSettingTypeId
+                  INNER JOIN Enterprise.MasterConfigurationType MCT ON MCT.MasterConfigurationTypeId = MST.MasterConfigurationTypeId
+             WHERE MCT.Name = @ConfigurationType
+                   AND AttributeId = @PartyId
+                   AND (MST.Name = @SettingName
+                        OR @SettingName IS NULL);
+         END;

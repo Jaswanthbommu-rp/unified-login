@@ -1,0 +1,7964 @@
+﻿{
+	"records": [
+		{
+			"id": 337,
+			"description": "Access annual recertification notices setup",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 168,
+			"description": "Access verification letters",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 159,
+			"description": "Add/edit income, asset, expense, permissible deduction information for applicants and residents (including history/future)",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1579,
+			"description": "Add/edit letter recipient",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 161,
+			"description": "Add/Edit PIC files",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 169,
+			"description": "Adjust completed certifications",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 365,
+			"description": "Approve certification",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 366,
+			"description": "Approve certification without all verifications received",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 344,
+			"description": "Audit household certifications",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 497,
+			"description": "Change reported dates",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 340,
+			"description": "Correct Completed Certifications",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 368,
+			"description": "Create certification",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 341,
+			"description": "Delete a non-finalized certification",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 342,
+			"description": "Delete finalized certifications",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 160,
+			"description": "Delete income, asset, expense, permissible deduction information for applicants and residents (including history/future)",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 162,
+			"description": "Delete PIC files",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 343,
+			"description": "Delete reported 50058",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 166,
+			"description": "Download PIC files",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 363,
+			"description": "Edit next annual certification date",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 163,
+			"description": "Edit PIC file tool",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 367,
+			"description": "Enter certification signature date",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 338,
+			"description": "Generate annual recertification notices",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 392,
+			"description": "Manage income limits",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 393,
+			"description": "Verify income/asset/expense/member information",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 364,
+			"description": "View certifications",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 394,
+			"description": "View eligibility summary",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 164,
+			"description": "View PIC files",
+			"centerName": "50058",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 499,
+			"description": "Add Client Master G/L Accounts",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 500,
+			"description": "Add RealPage COA",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 501,
+			"description": "Add Vendor",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 502,
+			"description": "Apply A/P Fiscal Period to Property",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 503,
+			"description": "Apply A/P Fiscal Year to Property",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 504,
+			"description": "Apply G/L Fiscal Period to Property",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 505,
+			"description": "Apply G/L Fiscal Year to Property",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 506,
+			"description": "Approve Purchase Order",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 509,
+			"description": "Assign Chart of Accounts to Budget",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 507,
+			"description": "Assign Client Alternate G/L Accounts to Client Master",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 508,
+			"description": "Assign Client Master G/L Accounts to OneSite",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 511,
+			"description": "Close Bank Account",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 512,
+			"description": "Delete RealPage COA",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 513,
+			"description": "Delete Vendor",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 516,
+			"description": "Edit Client Alternate Mapped G/L Accounts",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 517,
+			"description": "Edit Client Master G/L Accounts",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 518,
+			"description": "Edit Client Summary",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 519,
+			"description": "Edit RealPage COA",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 520,
+			"description": "Edit Vendor",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 521,
+			"description": "Import Client Master G/L Accounts",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 510,
+			"description": "Inactivate Bank",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 522,
+			"description": "Inactivate Vendor",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 523,
+			"description": "Setup A/P Fiscal Period",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 524,
+			"description": "Setup A/P Fiscal Year",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 525,
+			"description": "Setup Business Organization",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 526,
+			"description": "Setup G/L Fiscal Period",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 527,
+			"description": "Setup G/L Fiscal Year",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 529,
+			"description": "Setup Spending Limit/Ceiling",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 528,
+			"description": "Setup Vendor information",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 530,
+			"description": "View Client Alternate Mapped COA",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 531,
+			"description": "View Client Mapped COA",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 532,
+			"description": "View RealPage COA",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 533,
+			"description": "View Vendor",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 534,
+			"description": "View Vendor Setup Information",
+			"centerName": "Accounting",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 351,
+			"description": "Allow access to Budget Report",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 299,
+			"description": "Allow access to Payroll",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 445,
+			"description": "Allow access to the budgeting data through web services",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 154,
+			"description": "Allow to pin a comment to start page comments section",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 264,
+			"description": "Approve or reject a budget outside of the normal workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 257,
+			"description": "Approve or reject budget as part of a workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 262,
+			"description": "Check-in a budget outside of the normal workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 271,
+			"description": "Check-in/out a budget as part of the normal workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 261,
+			"description": "Check-out a budget outside of the normal workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 265,
+			"description": "Delete a budget model",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 258,
+			"description": "Distribute a budget model to properties",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 272,
+			"description": "Export budgets to Excel",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 347,
+			"description": "Gives access and ability to add/edit or delete Assumptions, Custom Worksheets, Allocations and Distributions and Senior Living services",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 47,
+			"description": "Gives access to Debt service and ability to add/edit or delete data or set up in this module",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 348,
+			"description": "Gives access to manage capital expenses and ability to add/edit or delete Packages, Items, and projects",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 447,
+			"description": "Gives access to manage corporate models and ability to create/edit or delete the models",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 415,
+			"description": "Gives access to Manage payroll functions and ability to  add/edit or delete data or set up in these modules",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 268,
+			"description": "Import actual and historical account balance staging data",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 267,
+			"description": "Import unit detail staging data",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 266,
+			"description": "Import unit type staging data",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 259,
+			"description": "Manage budget models",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 269,
+			"description": "Manage master charts for budgeting",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 273,
+			"description": "Protect budgeting tab ",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 263,
+			"description": "Submit a budget outside of the normal workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 256,
+			"description": "Submit budget for approval as part of a workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 260,
+			"description": "Undo a checked-out budget outside of the normal workflow",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 270,
+			"description": "View budget spreadsheet",
+			"centerName": "Budgeting",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1281,
+			"description": "Dual occupancy tests",
+			"centerName": "CA Net",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 725,
+			"description": "ADMINISTRATION-Access the manage contact screen from Administration.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 700,
+			"description": "ADMINISTRATION-Access the Manage Staff link from Administration.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 702,
+			"description": "ADMINISTRATION-Access the Manage Staff Tasks modal from Administration.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 703,
+			"description": "ADMINISTRATION-Access to Manage Unit Assignments.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 438,
+			"description": "ADMINISTRATION-Allow user to access care fee schemes.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 448,
+			"description": "ADMINISTRATION-Allow user to access Resident Activities.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 435,
+			"description": "ADMINISTRATION-Allow user to access Templates.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 443,
+			"description": "ADMINISTRATION-Allow user to access Units Residential.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 681,
+			"description": "Allow the user to add a new applicant.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 697,
+			"description": "Allow the user to Give notice, Change notice, or Cancel notice.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 713,
+			"description": "Allow the user to select or change unit.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 104,
+			"description": "ASSESSMENT-Ability to edit a Resident's Need and Expected Result during an assessment",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 680,
+			"description": "ASSESSMENT-Add a new need to resident assessment",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 709,
+			"description": "ASSESSMENT-Add a new task or edit a task for the selected need.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 60,
+			"description": "ASSESSMENT-Add/Edit Instructions and Notes for default tasks.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 704,
+			"description": "ASSESSMENT-Allow the user to modify a resident assessment based on review.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 720,
+			"description": "ASSESSMENT-Allow the user to view or print the resident assessment.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 708,
+			"description": "ASSESSMENT-Allow user to add a new assessment or edit an existing assessment.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 686,
+			"description": "ASSESSMENT-Allow user to change the effective assessment date.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 696,
+			"description": "ASSESSMENT-Allow user to finalize a resident's assessment.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 684,
+			"description": "ASSESSMENT-Change a resident assessment status to Approved.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 694,
+			"description": "ASSESSMENT-Delete the resident assessment",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 689,
+			"description": "ASSESSMENT-Delete the selected need in a resident assessment.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 690,
+			"description": "ASSESSMENT-Delete the selected task in a resident assessment.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 710,
+			"description": "ASSESSMENT-Personalize a task for a resident assessment.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 712,
+			"description": "ASSESSMENT-Restores the tasks for a need from the template.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 719,
+			"description": "ASSESSMENT-Update care fee inclusion for resident assessment.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 685,
+			"description": "Cancels or denies a current applicant.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 1593,
+			"description": "CARE FEE-ability to change the care fee scheme",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1587,
+			"description": "CARE FEE-Ability to modify care fees",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1588,
+			"description": "CARE FEE-Ability to reject care fees",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 718,
+			"description": "CARE FEE-Ability to view the Update Status link to accept care fees.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 683,
+			"description": "CONTACTS-Add or Edit the contact information for a resident.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 677,
+			"description": "CONTACTS-Allow the user to activate or inactivate the contact status.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 678,
+			"description": "CONTACTS-Allow the user to activate or inactivate the group membership  status.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 679,
+			"description": "CONTACTS-Allow the user to add new contact groups.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 693,
+			"description": "CONTACTS-Allow the user to delete selected contact from the Manage Contact screen.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 711,
+			"description": "CONTACTS-Allow user to remove a group membership from a contact.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 705,
+			"description": "Move in a resident.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 706,
+			"description": "Move out a resident from a unit.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 674,
+			"description": "Privacy: View ePHI data that is encrypted in the database",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 672,
+			"description": "Privacy: View the checkbox controlling options to display SSN, DOB and other ePHI in some reports",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 453,
+			"description": "SAAG-Ability to edit and delete resident narrative",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1591,
+			"description": "SAAG-Ability to edit and delete vital signs",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 682,
+			"description": "SAAG-Add a new activity or Edit an existing activity.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 721,
+			"description": "SAAG-Allow the user to view the Senior at a Glance modal from the Senior Living tab.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 707,
+			"description": "SAAG-Allow user to add a new change presence or edit an existing record for a resident.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 692,
+			"description": "SAAG-Delete the change presence record.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 724,
+			"description": "SAAG-Display the service group dropdown under the general information tab.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 723,
+			"description": "SAAG-Edit a resident's general, personal health, and demographic information.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1585,
+			"description": "SPECIALIZED ASSESSMENT-Ability to add a new intervention  during a resident assesssment",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 667,
+			"description": "TCD-Basic right to task completion documentation.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 669,
+			"description": "TCD-Task administration rights include viewing the administrator modal on the Today page and reassigning resident tasks.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 714,
+			"description": "Transfer a resident to another unit.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 715,
+			"description": "Undo a cancelled or denied application.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 716,
+			"description": "Undo a current move in.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 717,
+			"description": "Undo a former move out.",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 722,
+			"description": "View the Care Management resident listing",
+			"centerName": "Care Management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1221,
+			"description": "Access \"Central Reporting\" area within the Setup tab",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1217,
+			"description": "Access to PMC summary-level reports and views in the Reporting tab",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 420,
+			"description": "Access UDS using ODBC connection",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1218,
+			"description": "Create and edit PMC summary-level reports/views using the \"Central Reporting Wizard\"",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1219,
+			"description": "Delete PMC summary-level reports/views they created and/or published",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1220,
+			"description": "Publish PMC summary-level reports/views to Company Standard",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1223,
+			"description": "Publish, Schedule, or delete PMC summary-level reports/views in Company Standard regardless of who created them",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1222,
+			"description": "Refresh data available to report on (future functionality)",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1360,
+			"description": "User can Schedule reports regardless of who created them but only view scheduled reports created by user",
+			"centerName": "Central Reporting - Basic",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1302,
+			"description": "Add a new tenant",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 178,
+			"description": "Add tenant CPI record",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 171,
+			"description": "Add/edit CPI codes in Setup and CPI values in Administration used in CPI rent increases",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1306,
+			"description": "Add/Edit lease CAMs",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1555,
+			"description": "Adding this right will give access to Commercial prospects",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 157,
+			"description": "Allow the user to add or edit the tasks",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1568,
+			"description": "Allows the user to add straight-line rent records",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 1569,
+			"description": "Allows the user to edit straight-line rent records",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 1307,
+			"description": "CAM Reconciliation page",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1305,
+			"description": "Cancel/Deny/Reject a tenant",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1575,
+			"description": "Commercial Edit Scheduled Billing ",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1310,
+			"description": "Edit actual CAM expenses",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1313,
+			"description": "Give notice, Cancel notice for tenant",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1309,
+			"description": "Import CAM Expenses",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1311,
+			"description": "Move in, change MI date and change unit for tenant",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1312,
+			"description": "Move out tenant",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1308,
+			"description": "Override calculated expense basis and escrow amount in CAM reconcilation",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1085,
+			"description": "Process Percent Rents",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1284,
+			"description": "Setup Commercial Expense Recovery Items",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1304,
+			"description": "Tenant List and Tenants at a glance",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1554,
+			"description": "This option will give the user the ability to add or edit suite size changes when the suite is occupied",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 177,
+			"description": "This right will allow the user to process CPI",
+			"centerName": "Commercial",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 49,
+			"description": "ADMINISTRATION-Access the Apartment Unit Association modal",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1553,
+			"description": "ADMINISTRATION-Access the manage contact screen from Administration.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1528,
+			"description": "ADMINISTRATION-Access the Manage Staff link from Administration.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1530,
+			"description": "ADMINISTRATION-Access the Manage Staff Tasks modal from Administration.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1531,
+			"description": "ADMINISTRATION-Access to Manage Unit Assignments.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1584,
+			"description": "ADMINISTRATION-Access to view Floor Plans",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 439,
+			"description": "ADMINISTRATION-Allow user to access care fee schemes.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 446,
+			"description": "ADMINISTRATION-Allow user to access Resident Activities.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 436,
+			"description": "ADMINISTRATION-Allow user to access Templates.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 461,
+			"description": "ADMINISTRATION-Allow user to access Units Residential.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 105,
+			"description": "ASSESSMENT-Ability to edit a Resident's Need and Expected Result during an assessment",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1511,
+			"description": "ASSESSMENT-Add a new need to resident assessment",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1537,
+			"description": "ASSESSMENT-Add a new task or edit a task for the selected need.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 61,
+			"description": "ASSESSMENT-Add/Edit Instructions and Notes for default tasks.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1532,
+			"description": "ASSESSMENT-Allow the user to modify a resident assessment based on review.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 1548,
+			"description": "ASSESSMENT-Allow the user to view or print the resident assessment.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1536,
+			"description": "ASSESSMENT-Allow user to add a new assessment or edit an existing assessment.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 726,
+			"description": "ASSESSMENT-Allow user to change the effective assessment date.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1524,
+			"description": "ASSESSMENT-Allow user to finalize a resident's assessment.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 671,
+			"description": "ASSESSMENT-Change a resident assessment status to Approved.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1521,
+			"description": "ASSESSMENT-Delete the resident assessment",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1517,
+			"description": "ASSESSMENT-Delete the selected need in a resident assessment.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1518,
+			"description": "ASSESSMENT-Delete the selected task in a resident assessment.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1538,
+			"description": "ASSESSMENT-Personalize a task for a resident assessment.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1540,
+			"description": "ASSESSMENT-Restores the tasks for a need from the template.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1547,
+			"description": "ASSESSMENT-Update care fee inclusion for resident assessment.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 1594,
+			"description": "CARE FEE-ability to change the care fee scheme",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1589,
+			"description": "CARE FEE-Ability to modify care fees",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1590,
+			"description": "CARE FEE-Ability to reject care fees",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1546,
+			"description": "CARE FEE-Ability to view the Update Status link to accept care fees.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1514,
+			"description": "CONTACTS-Add or Edit the contact information for a resident.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1508,
+			"description": "CONTACTS-Allow the user to activate or inactivate the contact status.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1509,
+			"description": "CONTACTS-Allow the user to activate or inactivate the group membership  status.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1510,
+			"description": "CONTACTS-Allow the user to add new contact groups.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 1520,
+			"description": "CONTACTS-Allow the user to delete selected contact from the Manage Contact screen.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1539,
+			"description": "CONTACTS-Allow user to remove a group membership from a contact.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 675,
+			"description": "Privacy: View ePHI data that is encrypted in the database",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 673,
+			"description": "Privacy: View the checkbox controlling options to display SSN, DOB and other ePHI in some reports",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 452,
+			"description": "SAAG-Ability to edit and delete resident narrative",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1592,
+			"description": "SAAG-Ability to edit and delete vital signs",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1513,
+			"description": "SAAG-Add a new activity or Edit an existing activity.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1549,
+			"description": "SAAG-Allow the user to view the Senior at a Glance modal from the Senior Living tab.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1535,
+			"description": "SAAG-Allow user to add a new change presence or edit an existing record for a resident.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1519,
+			"description": "SAAG-Delete the change presence record.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1552,
+			"description": "SAAG-Display the service group dropdown under the general information tab.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1523,
+			"description": "SAAG-Edit a resident's general, personal health, and demographic information.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 1551,
+			"description": "SAAG-View the Senior at a Glance page from hyperlink.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1586,
+			"description": "SPECIALIZED ASSESSMENT-Ability to add a new intervention  during a resident assesssment",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 668,
+			"description": "TCD-Basic right to task completion documentation.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 670,
+			"description": "TCD-Task administration rights include viewing the administrator modal on the Today page and reassigning resident tasks.",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1550,
+			"description": "View the Care Management resident listing",
+			"centerName": "Community Management",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1274,
+			"description": "Access annual recertification notices setup",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1196,
+			"description": "Access Qualify wizard and complete a trial qualification",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 296,
+			"description": "Access verification letter setup from administration",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1288,
+			"description": "Access verification letters",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 182,
+			"description": "Activate Contracts",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1443,
+			"description": "Add move out TRACS record for terminations.",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 197,
+			"description": "Add Special Claims",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 196,
+			"description": "Add/Edit a note",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 202,
+			"description": "Add/Edit an Existing Household",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 184,
+			"description": "Add/Edit Buildings",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 185,
+			"description": "Add/Edit Contracts",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 186,
+			"description": "Add/Edit Excess Income Report",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 203,
+			"description": "Add/Edit Exterior Amenities",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1427,
+			"description": "Add/Edit Floor Plan Rent History",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 187,
+			"description": "Add/Edit Floorplans",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 188,
+			"description": "Add/Edit General Information",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 190,
+			"description": "Add/Edit Gross Rent Changes",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 189,
+			"description": "Add/Edit Groups and Owners",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 191,
+			"description": "Add/Edit HAP Request",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 192,
+			"description": "Add/Edit History of  HUD Income Limit Table",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 193,
+			"description": "Add/Edit History of  HUD Welfare Rent Type",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 194,
+			"description": "Add/Edit Household",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 172,
+			"description": "Add/edit HUD repayment schedule",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1198,
+			"description": "Add/edit income,asset,expense information for applicants and residents (including History/",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1267,
+			"description": "Add/edit letter recipient",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 195,
+			"description": "Add/Edit Member History",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 198,
+			"description": "Add/Edit System Settings",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 199,
+			"description": "Add/Edit Template",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 200,
+			"description": "Add/Edit TRACS Files",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 201,
+			"description": "Add/Edit Units",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1276,
+			"description": "Adjust completed certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1197,
+			"description": "Annual and interim certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 254,
+			"description": "Approve certfication without all screenings completed",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1243,
+			"description": "Approve certification",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1245,
+			"description": "Approve certification without all verifications received",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1259,
+			"description": "Approve/Deny Special Claims",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1423,
+			"description": "Audit household certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 204,
+			"description": "Cancel/Reject",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 494,
+			"description": "Change reported dates",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 1255,
+			"description": "Change signer on Excess Income Report",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1258,
+			"description": "Change Signer on HAP request",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 205,
+			"description": "Change Subsidy",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 206,
+			"description": "Correct Completed Certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1257,
+			"description": "Correct HAP",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1261,
+			"description": "Create and Submit Special Claims Summary",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 212,
+			"description": "Delete a note",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 207,
+			"description": "Delete Buildings",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 208,
+			"description": "Delete Contracts",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1247,
+			"description": "Delete finalized certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 211,
+			"description": "Delete History of Member",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 210,
+			"description": "Delete Household",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 174,
+			"description": "Delete HUD repayment schedule",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1199,
+			"description": "Delete income,asset,expense information for applicants and residents (including History/Fu",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 213,
+			"description": "Delete Pending Certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 274,
+			"description": "Delete reported 50059",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 214,
+			"description": "Delete Special Claims",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 215,
+			"description": "Delete System Suggested Certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 216,
+			"description": "Delete TRACS Files",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 217,
+			"description": "Delete Units",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 408,
+			"description": "Edit details of repayment plan tenant payments.",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1244,
+			"description": "Edit next annual certification date",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 651,
+			"description": "Edit RAD conversion setup details",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 650,
+			"description": "Edit RAD phase-in TTP override details",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1263,
+			"description": "Edit TRACS file tool",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 218,
+			"description": "Edit User Defined Notes",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1299,
+			"description": "Enter certification signature date",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 219,
+			"description": "Finalize Excess Income Report",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 220,
+			"description": "Finalize HAP request",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 225,
+			"description": "Generate annual recertification notices",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 221,
+			"description": "Give Notice",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 1291,
+			"description": "Manage affordable rent schedule",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1319,
+			"description": "Manage income limits",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 293,
+			"description": "Manage verification letter recipient contact information",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 223,
+			"description": "Move In",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 224,
+			"description": "Move Out",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1256,
+			"description": "Override Excess Income Report",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 183,
+			"description": "Override scheduled billing entries created by certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1260,
+			"description": "Override special claims",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 226,
+			"description": "Renew Lease",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 1368,
+			"description": "Revise final 50059",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1262,
+			"description": "Send TRACS",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 227,
+			"description": "Terminate Subsidy",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 228,
+			"description": "Transfer",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1358,
+			"description": "Undo a finalized and transmitted HAP",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1580,
+			"description": "Undo Cancel/Undo Complete a cancelled/completed repayment agreement",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 253,
+			"description": "Undo denied special claims",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1356,
+			"description": "Undo posted hap payments",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1357,
+			"description": "Undo the mark as paid option",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 339,
+			"description": "Users will receive the EIV alerts",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1201,
+			"description": "Verification letter management",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1200,
+			"description": "Verify income/asset/expense/member information",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 247,
+			"description": "View a note",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 229,
+			"description": "View Billing Information",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 230,
+			"description": "View Buildings",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 1246,
+			"description": "View certifications",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 231,
+			"description": "View Contracts",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 1286,
+			"description": "View eligibility summary",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 232,
+			"description": "View Excess Income Report",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 233,
+			"description": "View Floorplans",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 234,
+			"description": "View General Information",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 236,
+			"description": "View Gross Rent Changes",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 235,
+			"description": "View Groups and Owners",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 237,
+			"description": "View HAP Request",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 238,
+			"description": "View History of Excess Income Report",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 239,
+			"description": "View History of Gross Rent Changes",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 243,
+			"description": "View History of HAP Request",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 240,
+			"description": "View History of HUD Contract Rent and Utility Allowance",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 241,
+			"description": "View History of HUD Income Limit Table",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 242,
+			"description": "View History of HUD Welfare Rent Type",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 244,
+			"description": "View History of Income Asset and Expense",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 246,
+			"description": "View History of Member",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 245,
+			"description": "View Household",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 248,
+			"description": "View Site Exterior Amenities",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 222,
+			"description": "View Special Claims",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 249,
+			"description": "View System Settings",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 250,
+			"description": "View Template",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 251,
+			"description": "View TRACS Files",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 1194,
+			"description": "View unit program assignment",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 252,
+			"description": "View Units",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 175,
+			"description": "Violate HUD repayment collection fee retained",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1195,
+			"description": "Violate rent restrictions",
+			"centerName": "Compliance",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 609,
+			"description": "A developer right to edit application source code",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 535,
+			"description": "Accept, approve, decline agreements",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 3,
+			"description": "Access company setup in main menu",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 8,
+			"description": "Access property setup in main menu",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 425,
+			"description": "Access RealPage Central",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 611,
+			"description": "Access settings subtabs in other main tabs",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 615,
+			"description": "Access templates subtabs in other main tabs",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 14,
+			"description": "Access to the billing information page for a property",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1279,
+			"description": "Access to the Roles Link under Roles in Setup (via Central).",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1278,
+			"description": "Access to the Users Link under Users in Setup",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1280,
+			"description": "Access to the Users Security Policy Link under Users in Setup",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 545,
+			"description": "Add a property",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 537,
+			"description": "Add amenities information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1170,
+			"description": "Add and edit custom fields ",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 538,
+			"description": "Add buildings information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 541,
+			"description": "Add center/functions, options",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 542,
+			"description": "Add floor plans",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 539,
+			"description": "Add internal company information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 548,
+			"description": "Add new onesite user",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 543,
+			"description": "Add property groups",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 547,
+			"description": "Add units to a property",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 536,
+			"description": "Add, apply, delete agreements",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 109,
+			"description": "Add/Edit PMC encryption key",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1345,
+			"description": "Allow signature for Finalize TIC",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1248,
+			"description": "Allow user access to maintain site amenities outside of setup",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1215,
+			"description": "Allows users to change their password if an Alt URL is set",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1119,
+			"description": "Approve New Reports/Extracts",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 552,
+			"description": "Assign properties to user",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 553,
+			"description": "Assign roles to users",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1146,
+			"description": "Can view update settings link at home office",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 554,
+			"description": "Change a users password",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1099,
+			"description": "Create and View Reports",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 24,
+			"description": "Create Report Groups - Central",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 25,
+			"description": "Create Report Groups - Site",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 1016,
+			"description": "Customize Today Page",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 555,
+			"description": "Decline or delete agreements",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 562,
+			"description": "Delete a onesite user",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 556,
+			"description": "Delete amenity",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 557,
+			"description": "Delete building",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 558,
+			"description": "Delete floor plans",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 560,
+			"description": "Delete property groups",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 561,
+			"description": "Delete units from a property",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 564,
+			"description": "Edit agreements",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 565,
+			"description": "Edit any amenities",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 566,
+			"description": "Edit buildings information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 563,
+			"description": "Edit center/function/option activate date",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 568,
+			"description": "Edit external company information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 571,
+			"description": "Edit external property group information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 575,
+			"description": "Edit external property information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 577,
+			"description": "Edit external superuser information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 569,
+			"description": "Edit floor plans",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 567,
+			"description": "Edit internal company information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 574,
+			"description": "Edit internal property information-contracts",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 576,
+			"description": "Edit internal property information-implementation",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 578,
+			"description": "Edit unit information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 581,
+			"description": "Inactive company center/function/options",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1346,
+			"description": "Limit access to only the \"Report\" tab in OneSite",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 13,
+			"description": "Main menu access to add new users",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 59,
+			"description": "Manage AppPartner subscriptions",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 26,
+			"description": "Modify Report Groups - Central",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 27,
+			"description": "Modify Report Groups - Site",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1101,
+			"description": "Modify Scheduled Reports",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 580,
+			"description": "Print external agreement",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 579,
+			"description": "Print internal agreement",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1264,
+			"description": "Protected document level - High",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1266,
+			"description": "Protected document level - Low",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1265,
+			"description": "Protected document level - Medium",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 585,
+			"description": "Remove external assigned properties to user",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 584,
+			"description": "Remove internal assigned properties to user",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 620,
+			"description": "Select existing application using summary list or find tab",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 19,
+			"description": "Select existing application using summary list or find tab",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 586,
+			"description": "Send change request to realpage",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1076,
+			"description": "setup",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1344,
+			"description": "Signature Override.",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1008,
+			"description": "Trainer - Training room",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 587,
+			"description": "View agreement",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 588,
+			"description": "View amenities",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 589,
+			"description": "View centers/functions, options",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1171,
+			"description": "View encrypted information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 608,
+			"description": "View external accepted agreements",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 591,
+			"description": "View external company information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 597,
+			"description": "View external list of owners",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 595,
+			"description": "View external owner detail",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 601,
+			"description": "View external permissions",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 599,
+			"description": "View external property information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 603,
+			"description": "View external superuser information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 613,
+			"description": "View external testdrive tab on workpad",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 606,
+			"description": "View external user information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 676,
+			"description": "View Install History",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 607,
+			"description": "View internal accepted agreements",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 590,
+			"description": "View internal company information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 596,
+			"description": "View internal list of owners",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 594,
+			"description": "View internal owner detail",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 600,
+			"description": "View internal permissions",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 598,
+			"description": "View internal property information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 602,
+			"description": "View internal superuser information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 612,
+			"description": "View internal testdrive tab on workpad",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 605,
+			"description": "View internal user information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 28,
+			"description": "View Report Groups - Central",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 29,
+			"description": "View Report Groups - Site",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 1100,
+			"description": "View Report History",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 28
+		},
+		{
+			"id": 1342,
+			"description": "View Signature.",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 619,
+			"description": "View summary, details for today and alerts for a subset of users at on",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 618,
+			"description": "View summary, details for today and alerts for all users at a subset o",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 616,
+			"description": "View summary, details for today and alerts for all users at all sites",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 617,
+			"description": "View summary, details for today and alerts for the user logged on",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 10,
+			"description": "View testdrive tab on workpad",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1371,
+			"description": "View the log messages from Forms Library migration",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 604,
+			"description": "View unit information",
+			"centerName": "Core",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 429,
+			"description": "Edit Featured Apartments from the Administration page",
+			"centerName": "CrossFire Availability",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1373,
+			"description": "OLRP Administrator",
+			"centerName": "CrossFire Availability",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1421,
+			"description": "Allows user to view all call recordings",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1405,
+			"description": "Allows user to view deleted voice messages",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1095,
+			"description": "Call Genie phone number",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1094,
+			"description": "Call Genie Reports",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1093,
+			"description": "Call Genie Settings",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1471,
+			"description": "Crossfire call center answers to common questions",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1470,
+			"description": "Crossfire call center emergency information",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1469,
+			"description": "Crossfire call center site settings",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1488,
+			"description": "Modify Contact Center call allowances",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1485,
+			"description": "Modify number of seconds to ring at property (0 or more seconds)",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1486,
+			"description": "Modify number of seconds to ring at property (15 or more seconds)",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1447,
+			"description": "To be able to delete call recordings.",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1449,
+			"description": "To be able to delete Service request calls.",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1448,
+			"description": "To be able to delete voice messages.",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1490,
+			"description": "To be able to exclude units for CallCenter",
+			"centerName": "CrossFire Call Center",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1351,
+			"description": "Modify the CrossFire Leads outbound call tracking settings",
+			"centerName": "CrossFire Leads Follow-Up",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1298,
+			"description": "Access the CrossFire Leads service with the Leads desktop application",
+			"centerName": "CrossFire Leads Virtual Agent",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1317,
+			"description": "Modify the CrossFire Leads Virtual Agent settings",
+			"centerName": "CrossFire Leads Virtual Agent",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1296,
+			"description": "Allow editing of New Leads snapshot settings on Today page",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1132,
+			"description": "Allows user to create aliases for Crossfire MailCapture",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1140,
+			"description": "Day to day access for the crossfire center",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1192,
+			"description": "Has ability to view deleted call recordings, and mail capture emails",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1139,
+			"description": "Set up crossfire center components",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1404,
+			"description": "This right should be assigned to Pinnacle admin for CrossFire",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1446,
+			"description": "To be able to lock down the Exceptions tab .",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1445,
+			"description": "To be able to lock down the Hours tab.",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1444,
+			"description": "To be able to lock down the Settings tab.",
+			"centerName": "CrossFire Prospects",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 307,
+			"description": "Add and Edit Reservable Features in Setup",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 334,
+			"description": "Add and Edit Resident Portal Users",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 309,
+			"description": "Add or Edit Reservable Feature Submitted Online by Resident or Created for Resident in OneSite",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 315,
+			"description": "Add, Edit and Delete Documents on \"Upload documents\" page",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 335,
+			"description": "Add, Edit and View Old and Current Events for Calendar of Events",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 311,
+			"description": "Approve Reservable Feature Submitted Online by Resident or Created for Resident in OneSite",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 308,
+			"description": "Delete a Reservable Feature in Setup",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 336,
+			"description": "Delete Events for Calendar of Events",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 310,
+			"description": "Delete Reservable Feature Submitted Online by Resident or Created for Resident in OneSite",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 312,
+			"description": "Deny Reservable Feature Submitted Online by Resident or Created for Resident in OneSite",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 317,
+			"description": "Update \"Online Service request Settings\" page.",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 313,
+			"description": "Update \"Portal content\" page",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 314,
+			"description": "Update \"Portal e-mail setup\" page",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 316,
+			"description": "Update \"Portal sign-on requirements\" page",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 333,
+			"description": "View portal users and reset password for portal users",
+			"centerName": "CrossFire Residents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1359,
+			"description": "Allow access to Document Management tabs",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 320,
+			"description": "Allow access to Document Management tabs at central",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1467,
+			"description": "Allow packet notes to edit or delete",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 33
+		},
+		{
+			"id": 322,
+			"description": "Allow the user access to the Document center cabinet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1489,
+			"description": "Allow the user access to the Facilities cabinet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 33
+		},
+		{
+			"id": 1406,
+			"description": "Allow the user access to the Leasing cabinet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 1408,
+			"description": "Allow the user access to the Property cabinet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1407,
+			"description": "Allow the user access to the Vendor cabinet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 117,
+			"description": "Allow the user to attach High restricted document types",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1412,
+			"description": "Allow the user to attach restricted document types",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1429,
+			"description": "Allow the user to close packets",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 324,
+			"description": "Allow the user to delete document at central",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 118,
+			"description": "Allow the user to delete High restricted document types",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1413,
+			"description": "Allow the user to delete restricted document types",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 323,
+			"description": "Allow the user to push the document from Document central cabinet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 110,
+			"description": "Allow the user to view High restricted document types",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1411,
+			"description": "Allow the user to view restricted document types",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 360,
+			"description": "Allow user to delete Forms if Restrict Document Deletion for Current Residents is enabled.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 374,
+			"description": "Allow user to override User Defined Merge Field Value.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 402,
+			"description": "Allow user to Print all documents.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 401,
+			"description": "Allow user to Print all packets available at once.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1409,
+			"description": "Allows the user access to Forms Library",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1573,
+			"description": "Allows the user access to Forms Library in View Only Mode.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1347,
+			"description": "Allows the user to attach documents",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 321,
+			"description": "Allows the user to attach documents at central",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1426,
+			"description": "Allows the user to generate Blue Moon forms",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1348,
+			"description": "Allows the user to manage documents",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1433,
+			"description": "Allows the user to manually create new packets",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1350,
+			"description": "Allows the user to modify/manage the contents of a packet instance.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1582,
+			"description": "Allows the user to View Only Document Management",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1363,
+			"description": "Approve lease renewal packet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1364,
+			"description": "Approve move-in packet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1365,
+			"description": "Approve move-out packet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1366,
+			"description": "Approve recertification packet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1572,
+			"description": "Audit Packet document management.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 629,
+			"description": "Enabled or disabled Blue Moon feature bit for multiple properties",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1114,
+			"description": "Enabled or disabled DocuSign feature bit for multiple properties",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1362,
+			"description": "Packet approval  Approve generic packet",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1378,
+			"description": "Packet Delete- Allows users to delete and undelete packets within document management",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1367,
+			"description": "Submit Packets - Generic",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1500,
+			"description": "view document management setup.",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 373,
+			"description": "View Documents Set to Controlled Access",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 359,
+			"description": "View Online Leasing Application",
+			"centerName": "Document management",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 103,
+			"description": "Ability to complete Inspection checklists",
+			"centerName": "FAC Inspections",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 50,
+			"description": "Ability to create and edit an Inspection template",
+			"centerName": "FAC Inspections",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 52,
+			"description": "Ability to create Inspection events",
+			"centerName": "FAC Inspections",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 45,
+			"description": "Ability to edit technicians timesheet entries created by the mobile app",
+			"centerName": "FAC Workforce",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 413,
+			"description": "Ability to view historical geo-location for all maintenance techs",
+			"centerName": "FAC Workforce",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 433,
+			"description": "Ability to clear resident`s ledger balances",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1122,
+			"description": "Ability to create make ready items for renovations",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 645,
+			"description": "Ability to manage company/site logo for service requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 450,
+			"description": "Ability to manage Ops users",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1121,
+			"description": "Ability to set on hold SR dates to a previous date",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1271,
+			"description": "Add and view asset records",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 428,
+			"description": "Add and view make ready requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 727,
+			"description": "Add and view service requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 434,
+			"description": "Add new work orders **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 1369,
+			"description": "Administer service request details settings",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1202,
+			"description": "Allow editing of emergency contact information on callcenter setup",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 640,
+			"description": "Allow technicians to bill charges to residents",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 354,
+			"description": "Allow user to close service requests in bulk",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 412,
+			"description": "Assign or reassign SR to a maintenance tech",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 39
+		},
+		{
+			"id": 1242,
+			"description": "Can edit service request location",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1225,
+			"description": "Can enter service request complete date",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 119,
+			"description": "Can enter service requests with future dates",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1131,
+			"description": "Can manage assets **DO NOT USE",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1301,
+			"description": "Can re-open service request",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1134,
+			"description": "Can view all service requests **ONLY USED IN ONESITE MOBILE SERVICE REQUESTS",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 437,
+			"description": "Cancel service requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 440,
+			"description": "Close make ready",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 441,
+			"description": "Close service requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 28
+		},
+		{
+			"id": 442,
+			"description": "Complete work orders **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 28
+		},
+		{
+			"id": 449,
+			"description": "Delete work orders **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 1272,
+			"description": "Edit and view asset records",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 455,
+			"description": "Edit and view make ready requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 27
+		},
+		{
+			"id": 460,
+			"description": "Edit and view service requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 28
+		},
+		{
+			"id": 1087,
+			"description": "Edit closed work order",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 466,
+			"description": "Edit manage work groups",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 427,
+			"description": "Edit on hold dates of service requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1084,
+			"description": "Edit time sheets for all technicians",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 464,
+			"description": "Edit work orders **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 28
+		},
+		{
+			"id": 729,
+			"description": "Facilities reports",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 37
+		},
+		{
+			"id": 728,
+			"description": "Find facilities records **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 37
+		},
+		{
+			"id": 1227,
+			"description": "Undo Make Ready",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1270,
+			"description": "View asset records",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 39
+		},
+		{
+			"id": 1185,
+			"description": "View facilities tab **DO NOT USE",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 39
+		},
+		{
+			"id": 730,
+			"description": "View facilities workpad **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 37
+		},
+		{
+			"id": 482,
+			"description": "View make ready",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 39
+		},
+		{
+			"id": 491,
+			"description": "View service request history **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 37
+		},
+		{
+			"id": 490,
+			"description": "View service requests",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 39
+		},
+		{
+			"id": 492,
+			"description": "View work orders **NOT USED IN 3.0",
+			"centerName": "Facilities",
+			"assigned": false,
+			"rolesAssigned": 37
+		},
+		{
+			"id": 57,
+			"description": "Ability to edit turn board checklist",
+			"centerName": "Facilities Turn Caddy",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 108,
+			"description": "Ability to manage move out inspection and turn task in bulk",
+			"centerName": "Facilities Turn Caddy",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 39,
+			"description": "Add a semester turn and view turn board",
+			"centerName": "Facilities Turn Caddy",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 44,
+			"description": "Edit turn board",
+			"centerName": "Facilities Turn Caddy",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 43,
+			"description": "View turn board",
+			"centerName": "Facilities Turn Caddy",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 122,
+			"description": "Allow the user to import and manage archive data",
+			"centerName": "History Storage and Access",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1556,
+			"description": "Access incident management setup",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1581,
+			"description": "Allow user to edit and approve incident report in pending review status.",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1559,
+			"description": "Can add and view incident reports",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1563,
+			"description": "Can cancel any incident report",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1562,
+			"description": "Can cancel incident report by this user",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1566,
+			"description": "Can re-open incident report in complete status",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1565,
+			"description": "Complete incident report created by any user",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1564,
+			"description": "Complete incident report created by this user",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1561,
+			"description": "Edit any incident report",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1560,
+			"description": "Edit incident report created by this user",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1558,
+			"description": "View incident history tab",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 1557,
+			"description": "View incident management tab",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1567,
+			"description": "View incident report in Investigation status",
+			"centerName": "Incident Management",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 414,
+			"description": "Manage inventory locations",
+			"centerName": "Inventory",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 456,
+			"description": "Permission to modify Marketing Amenity Content",
+			"centerName": "LeaseStar",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1570,
+			"description": "Ability to cancel screen from Lease Details tab",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1571,
+			"description": "Ability to process/waive Renter Protection Charges for Residents",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 459,
+			"description": "Ability to send text messages and view text messaging history",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 458,
+			"description": "Ability to view text messaging history and Text Message snapshot.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1402,
+			"description": "Accept an online application.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 818,
+			"description": "Add a Late Method",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 830,
+			"description": "Add a transaction",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 20,
+			"description": "Add charge transactions to a closed Final Account Statement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 21,
+			"description": "Add credit transactions to a closed Final Account Statement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 22,
+			"description": "Add interest transactions to a closed Final Account Statement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 768,
+			"description": "Add New Guest Card",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 23,
+			"description": "Add payment transactions to a closed Final Account Statement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1107,
+			"description": "Add rentable items",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1046,
+			"description": "Add scheduled billing",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 65,
+			"description": "Add/Edit Legal Case",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 1062,
+			"description": "Add/edit/delete file structure (import from file)",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1012,
+			"description": "Advance property date",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1303,
+			"description": "Advance property date past system date",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1137,
+			"description": "Advance the date at Month End",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1010,
+			"description": "All prospect system except editing prospect information or changing leasing consultant",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 25
+		},
+		{
+			"id": 1487,
+			"description": "Allow access to A/R date control setup link from the Administration page.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1403,
+			"description": "Allow access to general ledger research",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1374,
+			"description": "Allow access to the Manually Apply Open Items page in Administration",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 141,
+			"description": "Allow action to perform the Final Collect Payment option and Undo the Payment.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1024,
+			"description": "Allow Apply now, Waitlist, or Move-in without screening",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1438,
+			"description": "Allow property manager to enable/disable to utilize checking or credit cards for Online Leasing Fees",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 641,
+			"description": "Allow the user to access and execute bulk reversals by transaction code",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 148,
+			"description": "Allow the user to extend the renewal offer end date past the lease end date when the Expire renewal offer at lease end date setting is enabled.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1481,
+			"description": "Allow user access to waive late fee functionality.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 417,
+			"description": "Allow user to apply deposits",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 419,
+			"description": "Allow user to credit back deposits",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 38,
+			"description": "Allow user to customize bulk emails from letters and notices",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 106,
+			"description": "Allow user to edit closed FAS with refund in Onesite Accounting",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1472,
+			"description": "Allow user to edit Do Not Prorate flag at scheduled billing.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 121,
+			"description": "Allow user to edit lease end date for future renewal",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 732,
+			"description": "Allow user to enter negative amount in amenity setup",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 30,
+			"description": "Allow user to enter negative transactions",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 418,
+			"description": "Allow user to forfeit deposits",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 416,
+			"description": "Allow user to refund deposits",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1013,
+			"description": "Allow user to reopen a closed fiscal period",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 37,
+			"description": "Allow user to send email via Bulk functions",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 153,
+			"description": "Allows override of forced concession charge-backs.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1019,
+			"description": "Applicant/Resident access",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 1018,
+			"description": "Apply now or Waitlist",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 838,
+			"description": "Approve a lease",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1382,
+			"description": "Approve final account statements at the property prior to their being approved at the Home office.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1285,
+			"description": "Approve final account statements prior to SDE extraction",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1027,
+			"description": "Backdate MI within grace period",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1038,
+			"description": "Backdate move out",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1065,
+			"description": "Backdate Payment Transactions in Ledger and Miscellaneous Account Payments",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1060,
+			"description": "Bulk distribution",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1059,
+			"description": "Bulk transactions by code",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1075,
+			"description": "cancel renewal",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1021,
+			"description": "Cancel/Deny/Reject",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1083,
+			"description": "Change concession amounts",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 179,
+			"description": "Change consultant name on rentable item modal.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1066,
+			"description": "Change floor plan rent amounts.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1138,
+			"description": "Change move-in date or unit",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1086,
+			"description": "change move-in date outside of grace period",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1133,
+			"description": "Change quote amount",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1135,
+			"description": "Change quote price with Price Optimizer",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1136,
+			"description": "Change renewal price with Price Optimizer",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1053,
+			"description": "Change required deposit",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1381,
+			"description": "Change the leasing consultant on a leased record",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1372,
+			"description": "Change unit rent amounts.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 36,
+			"description": "Clear all renewal offers",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 1007,
+			"description": "Close a fiscal period",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 1078,
+			"description": "close bank adjustment",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1056,
+			"description": "Close bank deposit",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1314,
+			"description": "Complete application of open balances",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 58,
+			"description": "Create a renewal offer for all available renewal lease terms",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1080,
+			"description": "customize letters and notices",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1020,
+			"description": "Delete a contact (person)",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 860,
+			"description": "Delete a Late Method",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1142,
+			"description": "Delete scheduled billing",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1077,
+			"description": "delete unposted qpp",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1054,
+			"description": "Delete unprinted letters & notices",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 893,
+			"description": "Edit a Late Method",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 421,
+			"description": "Edit CA charge transactions and change account",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 410,
+			"description": "Edit credit transactions and change account",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 731,
+			"description": "Edit document number when moving a payment to the deposit ledger",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 155,
+			"description": "Edit household member address, email address and phone information from the View address/phone page.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1173,
+			"description": "Edit late and nsf counts",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1169,
+			"description": "Edit lease dates",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1051,
+			"description": "Edit lease fees",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 142,
+			"description": "Edit Move out reason when populated",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 405,
+			"description": "Edit non-CA charge transactions and change account",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 407,
+			"description": "Edit payment transactions and change account",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1297,
+			"description": "Edit resident (and applicant) notes",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 25
+		},
+		{
+			"id": 1141,
+			"description": "Edit scheduled billing",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1120,
+			"description": "Edit the initial contact activity record",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1037,
+			"description": "Edit/delete MO prorations",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 152,
+			"description": "Enable the Allow rent discount concessions settings on sites that use Price Optimizer and create rent discount type concessions when the setting is enabled.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1029,
+			"description": "Enter charge, enter negative charge",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1031,
+			"description": "Enter credit, enter negative credit",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1030,
+			"description": "Enter payment, enter negative payment",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1074,
+			"description": "final account statement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1079,
+			"description": "generate letters and notices in bulk",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1032,
+			"description": "Generate renewal offers",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1035,
+			"description": "Give notice, Cancel notice",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1061,
+			"description": "Import a file",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1316,
+			"description": "Manage rentable and assignable items (from the Administration page)",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 181,
+			"description": "Manual Write Off After FAS Close",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1126,
+			"description": "Manually apply cash and credits",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1282,
+			"description": "May edit a closed Final account statement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1028,
+			"description": "MI outside of grace period",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1063,
+			"description": "Miscellaneous income - add account",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1064,
+			"description": "Miscellaneous income - transactions",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1050,
+			"description": "Modify (edit) resident/contact",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1047,
+			"description": "Modify (edit/delete) scheduled billing",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1129,
+			"description": "Modify Company level letters and notices",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1048,
+			"description": "Modify lease details all but dates",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1049,
+			"description": "Modify lease details dates",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1241,
+			"description": "Modify unit designations",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1026,
+			"description": "Move in applicant",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 35,
+			"description": "Move open balance between subproperties",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 1036,
+			"description": "Move out",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1045,
+			"description": "NSF functionality",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1067,
+			"description": "Override available lease terms (using lease expiration controls)",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1108,
+			"description": "Override blackout dates",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1425,
+			"description": "Override Date-editing Restrictions",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1361,
+			"description": "Override priority posting and allow one-time manual distribution on payments",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1434,
+			"description": "Override the renters insurance requirement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 150,
+			"description": "Override the required visit activity in Apply Now, Show Unit and Waitlist.",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1023,
+			"description": "Override the screening decision during the Apply now, Waitlist or Move-in process",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 998,
+			"description": "Populate the Leasing Consultant Field picklist",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1058,
+			"description": "Post late charges",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1057,
+			"description": "Post scheduled billing",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 941,
+			"description": "Print a form letter to a resident",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1025,
+			"description": "Print lease",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1017,
+			"description": "Prospect information - edit - change leasing consultant",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1055,
+			"description": "Quick payment posting",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1033,
+			"description": "Renew now",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1389,
+			"description": "Rescreen final decision applicants",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1315,
+			"description": "Reset all applicant and resident balances",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 422,
+			"description": "Reverse CA charge transactions only",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 423,
+			"description": "Reverse credit transactions only",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 406,
+			"description": "Reverse non-CA charge transactions only",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 409,
+			"description": "Reverse payment transactions only",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 999,
+			"description": "Right to backdate transactions",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1022,
+			"description": "Screen (or re-screen)",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1014,
+			"description": "See all tasks, appointments",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1214,
+			"description": "Set property unit designation default",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1128,
+			"description": "Setup employers",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1069,
+			"description": "Transaction right 1",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1070,
+			"description": "Transaction right 2",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1071,
+			"description": "Transaction right 3",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1072,
+			"description": "Transaction right 4",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1073,
+			"description": "Transaction right 5",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1068,
+			"description": "Transaction rights 1 through 5",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1041,
+			"description": "Transfer now",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 24
+		},
+		{
+			"id": 1034,
+			"description": "Transfer request, Cancel transfer",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 25
+		},
+		{
+			"id": 1177,
+			"description": "Transfer/Cancel transfer to sister site",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1042,
+			"description": "Undo cancel/reject/deny applicant",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1174,
+			"description": "Undo final account statement",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1039,
+			"description": "Undo move in",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1040,
+			"description": "Undo move out",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 54,
+			"description": "Update Bulk Scheduled Billing",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1015,
+			"description": "Update default today page",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 42,
+			"description": "Update the unit occupancy count from administration",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1294,
+			"description": "Use non-resident accounts",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1293,
+			"description": "User will receive an alert when a final account statement is rejected (not approved)",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1043,
+			"description": "View Leasing and Rents Setup -  Transaction codes bulk entry",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 1011,
+			"description": "View ledger",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 64,
+			"description": "View Legal Case",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 963,
+			"description": "View Resident Management Lease Expiration Control Settings",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 800,
+			"description": "View Screening report(s)",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 28
+		},
+		{
+			"id": 1147,
+			"description": "View transaction import reports",
+			"centerName": "Leasing and Rents",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1480,
+			"description": "Allow packet notes to edit or delete",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1478,
+			"description": "Allow the user to close packets",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1479,
+			"description": "Allow the user to close packets",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1477,
+			"description": "Allows the user access to Forms Library",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 23
+		},
+		{
+			"id": 1473,
+			"description": "Allows the user to manage documents",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 22
+		},
+		{
+			"id": 1474,
+			"description": "Allows the user to modify/manage the contents of a packet instance.",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 630,
+			"description": "Enabled or disabled Blue Moon feature bit for multiple properties",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1115,
+			"description": "Enabled or disabled DocuSign feature bit for multiple properties",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1476,
+			"description": "Packet Delete- Allows users to delete and undelete packets within document management",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1502,
+			"description": "view leasing desk eform setup.",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1475,
+			"description": "View the log messages from Forms Library migration",
+			"centerName": "LeasingDesk eForms",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 156,
+			"description": "Allow user to approve Certificate of Non-Availability (CNA)",
+			"centerName": "Military Managed",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 120,
+			"description": "Allow user to issue Certificate of Non-Availability (CNA)",
+			"centerName": "Military Managed",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 140,
+			"description": "Allow users to swap units for residents and applicants.",
+			"centerName": "Military Managed",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 136,
+			"description": "Assign units for waitlisted applicants in bulk.",
+			"centerName": "Military Managed",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 137,
+			"description": "Change the move-in date in bulk.",
+			"centerName": "Military Managed",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 139,
+			"description": "Move out scheduled residents in bulk.",
+			"centerName": "Military Managed",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 138,
+			"description": "Move-in scheduled applicants in bulk.",
+			"centerName": "Military Managed",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 430,
+			"description": "Edit Featured Apartments from the Administration page",
+			"centerName": "OnlineLeasing Basic",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 431,
+			"description": "Edit Featured Apartments from the Administration page",
+			"centerName": "OnlineLeasing Basic Plus",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 432,
+			"description": "Edit Featured Apartments from the Administration page",
+			"centerName": "OnlineLeasing E-signature",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 165,
+			"description": "Ability to manage Ops settings",
+			"centerName": "OpsBuyer",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 639,
+			"description": "Allow Internal Admin view payments setup link",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 626,
+			"description": "Create Preauthorized Payments",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 627,
+			"description": "Disable Preauthorized Payments",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1437,
+			"description": "Edit, View Check21, Chargebacks and Reversal Adjustment",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 624,
+			"description": "Issue Credit",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 112,
+			"description": "Perform scan check transactions",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 113,
+			"description": "Perform swipe card transactions",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 636,
+			"description": "Refund Transactions",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 621,
+			"description": "Split Payment",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 114,
+			"description": "Unlink Account",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 115,
+			"description": "View Check Images",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 622,
+			"description": "View SubJournal",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 635,
+			"description": "View Transactions",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 116,
+			"description": "Void Transactions",
+			"centerName": "Payments",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 131,
+			"description": "Change the move-in date in bulk.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 132,
+			"description": "Close resident accounts in bulk.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 652,
+			"description": "MAC Integration scan MAC site on demand.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 143,
+			"description": "Manage Basic Allowance for Housing (BAH) updates and Verify eMH Batch or MAC Promotion/Demotion Pay grades.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 134,
+			"description": "Move out scheduled residents in bulk.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 133,
+			"description": "Move-in scheduled applicants in bulk.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 135,
+			"description": "Print resident Final account statements in bulk.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 642,
+			"description": "Restrict the update of unit details.",
+			"centerName": "Privatized Military",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 1110,
+			"description": "Add, Edit, Delete ALL property information except portal setup",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1109,
+			"description": "Add, Edit, Delete ILS information",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1112,
+			"description": "Add, Edit, Delete Portal Content, Portal Setup management, Document Upload, Reservable Features and Mobile Resident Portal setup",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1111,
+			"description": "Add, Edit, Delete Resident Messages & Notices, Reservation Features, Portal Users and Calendar of Events",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 404,
+			"description": "Add/Edit the upgrade packages and bonus offers offered to prospects",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 400,
+			"description": "Add/Edit units added to Online Leasing Upgrade amenities",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 403,
+			"description": "Add/Edit units added to Online Renewal upgrade amenities",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1440,
+			"description": "Allow access to manage resident portal accounts.",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 146,
+			"description": "Allow access to manage the incentives in Online Renewals setup.",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 144,
+			"description": "Allow access to manage the setup information on the General, Email invitation, Portal notice,Contact office, Lease offer introduction, Review lease, Sign lease, Renewal receipt and Sign additional forms email tabs in Online Renewals setup.",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 145,
+			"description": "Allow access to manage the upgrades in Online Renewals setup.",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1442,
+			"description": "Allow the user to edit the floorplan rents in property web site setup",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1113,
+			"description": "Leasing Genie Upload Settings",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1117,
+			"description": "Service Genie Settings",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1277,
+			"description": "Upload and Delete Property Web Site Images",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1118,
+			"description": "View property web site data",
+			"centerName": "Property",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1044,
+			"description": "Can add and edit purchase orders",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1103,
+			"description": "Can add and remove vendor catalogs",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1124,
+			"description": "Can add and update vendor insurance",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1125,
+			"description": "Can add and update vendor payment",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1168,
+			"description": "Can add or edit active vendors",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1167,
+			"description": "Can add or edit pending vendors",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 350,
+			"description": "Can add or edit recurring invoices",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1226,
+			"description": "Can add or edit recurring purchase orders",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1283,
+			"description": "Can add preferred items",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 1081,
+			"description": "Can advance the AP date",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 736,
+			"description": "Can approve invoices and purchase orders",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1130,
+			"description": "Can change sde status of invoice",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1231,
+			"description": "Can close open-partial purchase orders",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1186,
+			"description": "Can close purchasing period",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 628,
+			"description": "Can delete unused vendors",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 451,
+			"description": "Can dispute online invoices and credit memos",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 353,
+			"description": "Can edit GL account",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 733,
+			"description": "Can enter invoices and purchase orders",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1216,
+			"description": "Can import vendor part",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 737,
+			"description": "Can make adjusting entries",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1340,
+			"description": "Can manage shopping lists",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 346,
+			"description": "Can override PO Ordering Status",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 1144,
+			"description": "Can post Invoices into future",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1143,
+			"description": "Can post PO into future",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 111,
+			"description": "Can reject POs and Invoices",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 1102,
+			"description": "Can request new vendors",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1127,
+			"description": "Can select period for adjusting entries",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 352,
+			"description": "Can update vendor for submitted invoices and purchase orders",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1123,
+			"description": "Can update vendor status",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1052,
+			"description": "Can view vendor catalogs",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1269,
+			"description": "Can view vendor payments",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 734,
+			"description": "Edit gl account mappings for a part",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 735,
+			"description": "Edit the property budget",
+			"centerName": "Purchasing",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 55,
+			"description": "Add IAI and MCI in Scheduled Billing and Renewal",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 107,
+			"description": "Allow user to edit all fields on add/edit legal rent page",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 102,
+			"description": "Allow user to edit in generate renewal offer page after bulk lease renewal process",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 56,
+			"description": "Allow user to edit in preferential rent amount in legal rents history table",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 637,
+			"description": "Allow user to setup or bypass the incomplete 2.2 charges in bulk lease renewal page",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 176,
+			"description": "Edit historical legal rent",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 1145,
+			"description": "Edit legal rent",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1230,
+			"description": "Override the 2.2 amount at the unit level",
+			"centerName": "Rent Stabilization",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1336,
+			"description": "Access annual recertification notices setup",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1435,
+			"description": "Access budget and balance sheet data refresh and imports",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1325,
+			"description": "Access Qualify wizard and complete a trial qualification",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1436,
+			"description": "Access the budget processing modal to process the 3560-7 budget and 3560-10 balance sheet",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 297,
+			"description": "Access verification letter setup from administration",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1334,
+			"description": "Access verification letters",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1326,
+			"description": "Add/edit income,asset,expense information for applicants and residents (including History/Future)",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1338,
+			"description": "Add/edit letter recipient",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 170,
+			"description": "Adjust completed certifications",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 255,
+			"description": "Admit ineligible tenant",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 369,
+			"description": "Approve certfication without all screenings completed",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1329,
+			"description": "Approve certification",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1324,
+			"description": "Approve certification without all verifications received",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1465,
+			"description": "Archive MINC files",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 291,
+			"description": "Assign Rural Housing units",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1424,
+			"description": "Audit household certifications",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 286,
+			"description": "Change Periodic assessment letter response",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1453,
+			"description": "Change project worksheet settings",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 496,
+			"description": "Change reported dates",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 289,
+			"description": "Close Periodic assessment batch",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1330,
+			"description": "Correct an existing certification",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1450,
+			"description": "Correct project worksheet",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1460,
+			"description": "Create MINC files",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 283,
+			"description": "Create Periodic assessment batch",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1322,
+			"description": "Delete a non-finalized certification",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1327,
+			"description": "Delete income,asset,expense information for applicants and residents (including History/Future)",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1461,
+			"description": "Delete MINC files",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 280,
+			"description": "Delete Periodic assessment batch",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 275,
+			"description": "Delete reported 3560-8",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1331,
+			"description": "Edit next annual date",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1323,
+			"description": "Enter certification signature date",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1451,
+			"description": "Finalize project worksheet",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1337,
+			"description": "Generate annual recertification notices",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1320,
+			"description": "Manage income limits",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1452,
+			"description": "Manage project worksheet manual adjustments",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1459,
+			"description": "Manage project worksheet reserve account payments",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 294,
+			"description": "Manage verification letter recipient contact information",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1321,
+			"description": "Override scheduled billing entries created by certifications",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1457,
+			"description": "Post project worksheet rental assistance/Mark as paid",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1466,
+			"description": "Reset MINC file to current",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1399,
+			"description": "Revise finalized 3560-8 certification",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1463,
+			"description": "Send/Save MINC files",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1454,
+			"description": "Undo finalized project worksheet",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1458,
+			"description": "Undo posted project worksheet rental assistance/mark as paid",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1335,
+			"description": "Verification letter management",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1328,
+			"description": "Verify income/asset/expense/member information",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1380,
+			"description": "View & manage gross rent changes",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1332,
+			"description": "View certifications",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1455,
+			"description": "View current project worksheet",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1333,
+			"description": "View eligibility summary",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1456,
+			"description": "View historical project worksheet",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1462,
+			"description": "View MINC file details",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1464,
+			"description": "View MINC files",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 277,
+			"description": "View Periodic assessment batch",
+			"centerName": "Rural Housing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 391,
+			"description": "Ability to Add and View Criminal Dispute applicant data.",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 381,
+			"description": "Ability to add applicant/resident to the Rental History Exclusion List.",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 62,
+			"description": "Ability to approve employee housing applicants",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 40,
+			"description": "Ability to cancel Out of Network Criminal Searches",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 632,
+			"description": "Ability to change AAL factors during the decision process",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 457,
+			"description": "Ability to continue processing criminal on a failed credit result when using multi-step screening",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 34,
+			"description": "Ability to resubmit Active LeasingDesk Credit Reports",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 53,
+			"description": "Ability to Reverse a Final Decision",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 625,
+			"description": "Ability to view Rental History Exclusion List information on Detailed and Summary report.",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 383,
+			"description": "Ability to View sensitive applicant data.",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1004,
+			"description": "Access detail information returned on applicant.",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1005,
+			"description": "Access Screening homepage",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 43
+		},
+		{
+			"id": 1191,
+			"description": "Access summary information returned on applicant.",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1172,
+			"description": "Access to Central Screening settings",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 31,
+			"description": "Allow user to submit Client Dispute Form",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 384,
+			"description": "Can modify custom conditions during the final decision process",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 13
+		},
+		{
+			"id": 638,
+			"description": "Create and edit general screening settings",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1002,
+			"description": "Create, edit, and submit applications on potential residents",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1001,
+			"description": "Make final disposition and generate applicable letters",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 1003,
+			"description": "Make final disposition that corresponds with score received and send applicable letters",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1430,
+			"description": "Make final disposition that is equal to or less than Result and generate applicable letters",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1441,
+			"description": "Modify existing screening thresholds only",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 379,
+			"description": "Override credit factors only",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 462,
+			"description": "Override failed Identity Verification authentication",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 41,
+			"description": "Override final disposition and select override reasons",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 380,
+			"description": "Override non-credit factors only",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 424,
+			"description": "Perform bureau swap for frozen and/or blocked files",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 1
+		},
+		{
+			"id": 382,
+			"description": "Print detail information returned on applicant",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 63,
+			"description": "View and print Screening productivity report",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 33,
+			"description": "View autoscore details on the summary report",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 376,
+			"description": "View credit section of the applicant detail report",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 377,
+			"description": "View criminal section of the applicant detail report",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 623,
+			"description": "View details section of scorecard",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 32,
+			"description": "View only access to the scorecard",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 378,
+			"description": "View other non-credit factors of the applicant detail report (Check Writing History, Evictions, Rental History)",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1006,
+			"description": "View Screening settings",
+			"centerName": "Screening",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1104,
+			"description": "Create and View SDE",
+			"centerName": "Site Data Exchange",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1082,
+			"description": "Manage SDE schedule",
+			"centerName": "Site Data Exchange",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 1106,
+			"description": "Modify Scheduled SDE",
+			"centerName": "Site Data Exchange",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1290,
+			"description": "View NSF alerts",
+			"centerName": "Site Data Exchange",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1105,
+			"description": "View SDE History",
+			"centerName": "Site Data Exchange",
+			"assigned": false,
+			"rolesAssigned": 10
+		},
+		{
+			"id": 444,
+			"description": "Ability to delete a CPP transaction from scheduled billing.",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1341,
+			"description": "Add or edit semester dates for the school year",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1383,
+			"description": "Add or remove apartments for blocking",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 304,
+			"description": "Allow setup of leasing groups on the administration",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 301,
+			"description": "Allow the user to view and change a student profile",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 300,
+			"description": "Allow the user to view the photos attached to a student profile",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 20
+		},
+		{
+			"id": 1295,
+			"description": "Allow users to swap units for residents",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 180,
+			"description": "Allows a user to access and reverse transactions via bulk concession reversal.",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 305,
+			"description": "Allows the user to quote a price for a unit",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 11
+		},
+		{
+			"id": 51,
+			"description": "Allows user to edit Pre-lease goals",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 1384,
+			"description": "Assign units for waitlisted applicants in bulk",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1400,
+			"description": "Change the move-in date in bulk.",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1387,
+			"description": "Close resident accounts in bulk",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1386,
+			"description": "Move out scheduled residents in bulk",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1385,
+			"description": "Move-in scheduled applicants in bulk",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1388,
+			"description": "Print resident Final account statements in bulk",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 1339,
+			"description": "Set dates for Bulk Renewals.",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 14
+		},
+		{
+			"id": 303,
+			"description": "View student`s photo to enable or disable photo",
+			"centerName": "Student living",
+			"assigned": false,
+			"rolesAssigned": 4
+		},
+		{
+			"id": 1275,
+			"description": "Access annual recertification notices setup",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1159,
+			"description": "Access Qualify wizard and complete a trial qualification",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 298,
+			"description": "Access verification letter setup from administration",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1289,
+			"description": "Access verification letters",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1163,
+			"description": "Add/edit income and asset information for applicants and residents (including History/futu",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1268,
+			"description": "Add/edit letter recipient",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 173,
+			"description": "Adjust completed certifications",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1161,
+			"description": "Annual and interim certifications",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 370,
+			"description": "Approve certfication without all screenings completed",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1253,
+			"description": "Approve electronic reports.",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1155,
+			"description": "Approve tenant income certification",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1157,
+			"description": "Approve TIC without all verifications received",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1422,
+			"description": "Audit household certifications",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1343,
+			"description": "Capture Signature for TIC.",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 287,
+			"description": "Change Periodic assessment letter response",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1162,
+			"description": "Change programs and set-asides on annual and interim certifications",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 495,
+			"description": "Change reported dates",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 3
+		},
+		{
+			"id": 290,
+			"description": "Close Periodic assessment batch",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1251,
+			"description": "Complete electronic reports.",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 147,
+			"description": "Correct Completed Certifications",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 284,
+			"description": "Create Periodic assessment batch",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1154,
+			"description": "Custom utility allowance per unit",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1212,
+			"description": "Delete a non-finalized certification",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1249,
+			"description": "Delete a non-finalized electronic report.",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1398,
+			"description": "Delete certifications in Final Status",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1164,
+			"description": "Delete income and asset information for applicants and residents (including History/Future",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 281,
+			"description": "Delete Periodic assessment batch",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1250,
+			"description": "Edit electronic reports.",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1203,
+			"description": "Edit next annual date",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1428,
+			"description": "Edit original/income qualified member",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 167,
+			"description": "Edit the tenant rent when pulled from YieldStar",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1156,
+			"description": "Enter tenant income certification signature date",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1273,
+			"description": "Generate annual recertification notices",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1292,
+			"description": "Manage affordable rent schedule",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1318,
+			"description": "Manage income limits",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 292,
+			"description": "Manage minimum and maximum set-aside rents",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1148,
+			"description": "Manage unit defaults",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1375,
+			"description": "Manage utility allowance tables from administration",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 295,
+			"description": "Manage verification letter recipient contact information",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1370,
+			"description": "Override HOME unit default violation",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 371,
+			"description": "Override Non-optional fees",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1240,
+			"description": "Override scheduled billing entries created by certifications",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1158,
+			"description": "Refresh an approved qualification (TIC) with new information",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1213,
+			"description": "Revise a finalized certification",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1252,
+			"description": "Send electronic reports.",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 6
+		},
+		{
+			"id": 1377,
+			"description": "Undo gross rent changes",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1300,
+			"description": "Update or edit maximum and minimum rents",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1166,
+			"description": "Verification letter management",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1165,
+			"description": "Verify income/asset/member information",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 1376,
+			"description": "View & manage gross rent changes",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1160,
+			"description": "View certifications",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1254,
+			"description": "View electronic reports in OneSite and in Excel",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1287,
+			"description": "View eligibility summary",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 278,
+			"description": "View Periodic assessment batch",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 151,
+			"description": "View rent schedule",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1149,
+			"description": "Violate applicable fraction",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1187,
+			"description": "Violate applicable fraction (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1395,
+			"description": "Violate calculating tenant rent using expenses",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1397,
+			"description": "Violate full time student exception",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1396,
+			"description": "Violate household type",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1392,
+			"description": "Violate low HOME unit count",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1205,
+			"description": "Violate max age",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1209,
+			"description": "Violate max age (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1207,
+			"description": "Violate max household size",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1211,
+			"description": "Violate max household size (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1394,
+			"description": "Violate maximum income requirement",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1204,
+			"description": "Violate min age",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1208,
+			"description": "Violate min age (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1206,
+			"description": "Violate min household size",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1210,
+			"description": "Violate min household size (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1393,
+			"description": "Violate minimum income requirement",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1152,
+			"description": "Violate next available unit rule",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1190,
+			"description": "Violate next available unit rule (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1391,
+			"description": "Violate next available unit rule - income",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1153,
+			"description": "Violate rent restrictions",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1390,
+			"description": "Violate required units not setup for floor plan",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1150,
+			"description": "Violate set-aside goals",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1188,
+			"description": "Violate set-aside goals (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 1151,
+			"description": "Violate unit vacancy rule",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1189,
+			"description": "Violate unit vacancy rule (except at move-in)",
+			"centerName": "TaxCredit",
+			"assigned": false,
+			"rolesAssigned": 12
+		},
+		{
+			"id": 387,
+			"description": "Access annual recertification notices setup",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 355,
+			"description": "Access verification letter setup from administration",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1576,
+			"description": "Access verification letters",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 331,
+			"description": "Add/edit income, asset and expense information for applicants and residents",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1577,
+			"description": "Add/edit letter recipient",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 318,
+			"description": "Approve electronic reports",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 398,
+			"description": "Approve electronic reports.",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 319,
+			"description": "Complete electronic reports",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 399,
+			"description": "Complete electronic reports.",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 330,
+			"description": "Create certifications",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 396,
+			"description": "Delete a non-finalized electronic report.",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 329,
+			"description": "Delete certifications",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 332,
+			"description": "Delete income, asset and expense information for applicants and residents",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 328,
+			"description": "Edit certifications",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 395,
+			"description": "Edit electronic reports.",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 390,
+			"description": "Generate annual recertification notices",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 386,
+			"description": "Generate annual recertification notices",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 388,
+			"description": "Manage income limits",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 345,
+			"description": "Manage income limits",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 149,
+			"description": "Manage minimum and maximum set-aside rents",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 356,
+			"description": "Manage unit defaults",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 389,
+			"description": "Manage utility allowance tables from administration",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 349,
+			"description": "Manage verification letter recipient contact information",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 325,
+			"description": "Send electronic reports",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 397,
+			"description": "Send electronic reports.",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 358,
+			"description": "Verification letter management",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1578,
+			"description": "Verify income/asset/member information",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 357,
+			"description": "View certifications",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 326,
+			"description": "View certifications",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 327,
+			"description": "View electronic reports in OneSite and in Excel",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 385,
+			"description": "View electronic reports in OneSite and in Excel",
+			"centerName": "TaxCredit Basic",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1431,
+			"description": "Edit the Velocity AP Extract Settings",
+			"centerName": "Velocity Invoice Processing",
+			"assigned": false,
+			"rolesAssigned": 9
+		},
+		{
+			"id": 1432,
+			"description": "View the Velocity AP Extract Settings",
+			"centerName": "Velocity Invoice Processing",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1583,
+			"description": "View the Velocity Bill Pay Invoices",
+			"centerName": "Velocity Invoice Processing",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1379,
+			"description": "View the Velocity Utility Invoice Images",
+			"centerName": "Velocity Invoice Processing",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 657,
+			"description": "Allow Utility Start Date",
+			"centerName": "Velocity Resident Billing",
+			"assigned": false,
+			"rolesAssigned": 2
+		},
+		{
+			"id": 1353,
+			"description": "Approve the Velocity Pre-Bill Report",
+			"centerName": "Velocity Resident Billing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1401,
+			"description": "Create Velocity Final Bills",
+			"centerName": "Velocity Resident Billing",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1355,
+			"description": "Edit the Velocity Pre-Bill Settings",
+			"centerName": "Velocity Resident Billing",
+			"assigned": false,
+			"rolesAssigned": 7
+		},
+		{
+			"id": 411,
+			"description": "Use to determine if specialized branding for Rockcreek should be used.",
+			"centerName": "Velocity Resident Billing",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1352,
+			"description": "View the Velocity Pre-Bill Report",
+			"centerName": "Velocity Resident Billing",
+			"assigned": false,
+			"rolesAssigned": 21
+		},
+		{
+			"id": 1354,
+			"description": "View the Velocity Pre-Bill Settings",
+			"centerName": "Velocity Resident Billing",
+			"assigned": false,
+			"rolesAssigned": 17
+		},
+		{
+			"id": 1483,
+			"description": "View Velocity Invoice Processing Enterprise Reports",
+			"centerName": "VES",
+			"assigned": false,
+			"rolesAssigned": 8
+		},
+		{
+			"id": 1482,
+			"description": "View Velocity Resident Billing Enterprise Reports",
+			"centerName": "VES",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1484,
+			"description": "View Velocity Submetering Enterprise Reports",
+			"centerName": "VES",
+			"assigned": false,
+			"rolesAssigned": 0
+		},
+		{
+			"id": 1232,
+			"description": "Add/edit applicant",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 19
+		},
+		{
+			"id": 1238,
+			"description": "Bulk update applicant status",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1237,
+			"description": "Cancel/deny/reject",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 285,
+			"description": "Change Periodic assessment letter response",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 288,
+			"description": "Close Periodic assessment batch",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 282,
+			"description": "Create Periodic assessment batch",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 279,
+			"description": "Delete Periodic assessment batch",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1235,
+			"description": "Edit applicant waitlist status",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		},
+		{
+			"id": 1233,
+			"description": "Edit application date/time",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1410,
+			"description": "Edit application number.",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 5
+		},
+		{
+			"id": 1236,
+			"description": "Pass over or skip households",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1239,
+			"description": "Purge applicants",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 15
+		},
+		{
+			"id": 1234,
+			"description": "Skip quick qualify",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 18
+		},
+		{
+			"id": 276,
+			"description": "View Periodic assessment batch",
+			"centerName": "Waitlist",
+			"assigned": false,
+			"rolesAssigned": 16
+		}
+	],
+	"rowsPerPage": 9999,
+	"skipRows": 0,
+	"currentPage": 0,
+	"totalPages": 1,
+	"totalRows": 1136,
+	"additional": null,
+	"isError": false,
+	"errorReason": ""
+}

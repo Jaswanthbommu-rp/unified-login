@@ -1,0 +1,121 @@
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Collections.Generic;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
+{
+	/// <summary>
+	/// Interface for Profile object (Composite object of Person, UserLogin, Contact)
+	/// </summary>
+	public interface IProfileDetail : IPerson
+	{
+		/// <summary>
+		/// Products assigned to user
+		/// </summary>
+		IList<PersonaProductUserDetails> AssignedProducts { get; set; }
+
+		/// <summary>
+		/// Identity Provider
+		/// </summary>
+		string AuthenticationType { get; set; }
+
+		/// <summary>
+		/// Avatar
+		/// </summary>
+		string Avatar { get; set; }
+
+		/// <summary>
+		/// Contact Mechanism for a person attributes
+		/// </summary>
+		IList<CommonAddress> contactMechanism { get; set; }
+
+		/// <summary>
+		/// Persona disassociated with the Profile
+		/// </summary>
+		IList<Persona> InactivePersona { get; set; }
+
+		/// <summary>
+		/// Password Expiration Detail  
+		/// </summary>
+		CheckPasswordExpirationResponse PasswordExpirationDetail { get; set; }
+
+		/// <summary>
+		/// Notification Email
+		/// </summary>
+		string NotificationEmail { get; set; }
+
+		/// <summary>
+		/// List of organization for a user
+		/// </summary>
+		IList<Organization> organization { get; set; }
+
+		/// <summary>
+		/// PartyRole (e.g. User Job Title) attributes
+		/// </summary>
+		PartyRole PartyRole { get; set; }
+
+		/// <summary>
+		/// Initial password of the user
+		/// </summary>
+		string Password { get; set; }
+
+		/// <summary>
+		/// Persona associated with the Profile
+		/// </summary>
+		IList<Persona> Persona { get; set; }
+
+		/// <summary>
+		/// ProductBatch attributes
+		/// </summary>
+		IList<ProductBatch> productBatch { get; set; }
+
+		/// <summary>
+		/// Summary count of properties, products and roles associated to user
+		/// </summary>
+		SummaryCounts SummaryCount { get; set; }
+
+		/// <summary>
+		/// Contact mechanisim telecommunication number attributes
+		/// </summary>
+		IList<TelecommunicationNumber> TelecommunicationNumber { get; set; }
+
+        /// <summary>
+        /// UserLogin attributes
+        /// </summary>
+        IUserLogin userLogin { get; set; }
+
+		/// <summary>
+		/// User Type (Regular User, SuperUser, Regular User with no email)
+		/// </summary>
+		int UserTypeId { get; set; }
+
+		/// <summary>
+		/// Get or set verification activity token
+		/// </summary>
+		string VerificationActivityToken { get; set; }
+        /// <summary>
+        /// Used to get  organization level settings
+        /// </summary>
+        List<OrganizationSetting> OrganizationSettings { get; set; }
+
+		/// <summary>
+		/// User Custom fields attributes
+		/// </summary>
+		IList<CustomFieldValue> CustomFields { get; set; }
+
+		/// <summary>
+		/// Custom Field string
+		/// </summary>
+		string CustomField { get; set; }
+
+		/// <summary>
+		/// CreateUserSourceType
+		/// </summary>
+		CreateUserSourceType? CreateUserSourceType { get; set; }
+
+		/// <summary>
+		/// Total number of records count (without any paging if the response is limited by paging)
+		/// </summary>
+		int TotalRecords { get; set; }
+	}
+}

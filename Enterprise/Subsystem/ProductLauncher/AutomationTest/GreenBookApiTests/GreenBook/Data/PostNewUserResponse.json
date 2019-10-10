@@ -1,0 +1,9 @@
+﻿{
+	"emailTemplate": null,
+	"emailStatus": null,
+	"userStatus": "User created successfully.",
+	"userToken": "9AEF9578-3888-4BAB-BF15-BEF626FE5496",
+	"personaId": 8018,
+	"errorReason": "Send Email Error: Null Email Template.\r\nParameter name: emailTemplate",
+	"isError": false
+}

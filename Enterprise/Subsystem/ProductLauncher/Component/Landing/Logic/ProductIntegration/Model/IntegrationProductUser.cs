@@ -1,0 +1,68 @@
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
+{
+	/// <summary>
+	/// Product User 
+	/// </summary>
+	public class IntegrationProductUser : BaseIntegrationProductUser// ProductUser creates ambiguity as it defined somewhere
+	{
+		[JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> Properties { get; set; }
+		[JsonProperty(PropertyName = "propertyGroups", NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> PropertyGroups { get; set; }
+		[JsonProperty(PropertyName = "roles", NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> Roles { get; set; }
+		[JsonProperty(PropertyName = "propertyRoles", NullValueHandling = NullValueHandling.Ignore)]
+		public List<PropertyRoleList> PropertyRoles { get; set; }
+		[JsonProperty(PropertyName = "organizationRoles", NullValueHandling = NullValueHandling.Ignore)]
+		public List<OrganizationRole> OrganizationRoles { get; set; }
+		[JsonProperty(PropertyName = "receiveMonthlyUsageReport", NullValueHandling = NullValueHandling.Ignore)]
+		public bool CanReceiveMonthlyReport { get; set; } // used in DIQ
+	}
+
+	public class BaseIntegrationProductUser
+	{
+		[JsonProperty(PropertyName = "userId")]
+		public string UserId { get; set; }
+		[JsonProperty(PropertyName = "loginName")]
+		public string LoginName { get; set; }
+
+		[JsonProperty(PropertyName = "title", NullValueHandling = NullValueHandling.Ignore)]
+		public string Title { get; set; }
+
+		[JsonProperty(PropertyName = "firstName")]
+		public string FirstName { get; set; }
+
+		[JsonProperty(PropertyName = "middleName", NullValueHandling = NullValueHandling.Ignore)]
+		public string MiddleName { get; set; }
+
+		[JsonProperty(PropertyName = "lastName")]
+		public string LastName { get; set; }
+		[JsonProperty(PropertyName = "email")]
+		public string Email { get; set; }
+		[JsonProperty(PropertyName = "isActive", NullValueHandling = NullValueHandling.Ignore)]
+		public bool IsActive { get; set; }
+
+		[JsonProperty(PropertyName = "phone", NullValueHandling = NullValueHandling.Ignore)]
+		public string Phone { get; set; }
+
+		[JsonProperty(PropertyName = "companyId", NullValueHandling = NullValueHandling.Ignore)]
+		public string CompanyId { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this instance is migrated user.
+		/// </summary>
+		[JsonProperty(PropertyName = "isMigratedUser", NullValueHandling = NullValueHandling.Ignore)]
+		public bool IsMigratedUser { get; set; }
+
+		[JsonProperty(PropertyName = "lastActivity", NullValueHandling = NullValueHandling.Ignore)]
+		public DateTime? LastActivity { get; set; }
+
+		[JsonProperty(PropertyName = "isAdminUser", NullValueHandling = NullValueHandling.Ignore)]
+		public bool IsAdminUser { get; set; }
+	}
+}

@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="en" ng-strict-di>
+
+<head>
+    <title>My RealPage</title>
+    <meta charset="utf-8" />
+    <meta name="description" content="Settings App" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Settings App">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" />
+
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+
+    <link rel="stylesheet" href="../assets/omnibar/raul.css" />
+
+    <script src="../assets/omnibar/raul.js"></script>
+</head>
+
+<body class="rp-app-wrap" ng-controller="AppCtrl as app" ng-show="app.ready" ng-class="app.getState()">
+
+    <raul-shell product-code="UL">
+
+        <raul-scope
+              slot="scope"
+              product="RealPage Unified Platform"
+        ></raul-scope>
+
+        <raul-navigation slot="navigation">
+        </raul-navigation>
+
+        <raul-unified-menu slot="unified-menu">
+
+            <raul-unified-switcher authenticated="true" slot="switcher">
+            </raul-unified-switcher>
+
+            <raul-unified-help
+                slot="help"
+            ></raul-unified-help>
+
+            <div slot="user">
+                <raul-user-menu-item
+                    class="ng-hide"
+                    menu-name="Manage Profile">
+                    <a href="/manage-profile"
+                        class="raul-manage-profile">
+                        Manage Profile
+                    </a>
+                </raul-user-menu-item>
+
+                 <raul-user-menu-item
+                    class="ng-hide"
+                    menu-name="Client Portal">
+                    <a href="/client-portal"
+                        class="raul-client-portal">
+                        Client Portal
+                    </a>
+                </raul-user-menu-item>
+
+                <raul-user-menu-item
+                    class="ng-hide"
+                    menu-name="Switch Company">
+                    <span class="raul-switch-company">
+                        Switch Company
+                    </span>
+                </raul-user-menu-item>
+            </div>
+           
+
+            <raul-user-menu-item slot="user-logout"
+                                 menu-name="Log Out">
+                <a href="/home/signout">Log Out</a>
+            </raul-user-menu-item>
+
+        </raul-unified-menu>
+
+        <header slot="header">
+            <div class="ul-app-header">
+                <rp-breadcrumbs></rp-breadcrumbs>
+            </div>
+        </header>
+
+        <main slot="page">
+            <div ui-view class="rp-app-content">
+            </div>
+        </main>
+    </raul-shell>
+
+    <div class="rp-app-footer" ng-if="appLayout.appFooter">
+    </div>
+
+    <script type="text/javascript" src="startup/js/scripts.min.js?_={{appVer}}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+﻿
+@{
+	ViewBag.Title = "System Error";
+}
+<h2>System Error</h2>
+
+	@if (ViewBag.ReadOnly == true)
+	{
+		<div>
+			Your employee access does not include access to this product.
+		</div>
+	}
+	else
+	{
+		<div>
+			Something bad happened and we have error monitors in place that will let us know that we have something to fix.
+			If you want to contact us, refer to the following error id: <strong>@ViewBag.sessionID</strong>
+		</div>		
+	}
+	
+

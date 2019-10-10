@@ -1,0 +1,379 @@
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using RP.Enterprise.Foundation.DataAccess.Component;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
+{
+    /// <summary>
+    /// Class for Persona Repository
+    /// </summary>
+    public class PersonaRepository : BaseRepository, IPersonaRepository
+    {
+        #region Private Variables
+        readonly IOrganizationRepository _organizationRepository;
+        readonly IUserLoginRepository _userLoginRepository;
+        #endregion
+
+        #region Ctor
+        /// <summary>
+        /// Persona base Constructor
+        /// </summary>
+        public PersonaRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+            _organizationRepository = new OrganizationRepository();
+            _userLoginRepository = new UserLoginRepository();
+        }
+
+        /// <summary>
+        /// Shared repository constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        public PersonaRepository(IRepository repository) : base(repository)
+        {
+            _organizationRepository = new OrganizationRepository(repository);
+            _userLoginRepository = new UserLoginRepository(repository);
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="organizationRepository"></param>
+        public PersonaRepository(IOrganizationRepository organizationRepository) : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+            _organizationRepository = organizationRepository;
+        }
+
+        public PersonaRepository(IOrganizationRepository organizationRepository, IUserLoginRepository userLoginRepository) : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+            _organizationRepository = organizationRepository;
+            _userLoginRepository = userLoginRepository;
+        }
+
+        #endregion
+
+        #region public Persona methods
+
+        /// <summary>
+        /// Get Persona Environment Object
+        /// </summary>
+        /// <returns>Persona Environment Type Object</returns>
+        public IList<PersonaEnvironment> GetPersonaEnvironmentType()
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                };
+                IList<PersonaEnvironment> personaEnvironmentType = repository.GetMany<PersonaEnvironment>(StoredProcNameConstants.SP_GetPersonaEnvironment, param);
+
+                return personaEnvironmentType;
+            }
+        }
+
+        /// <summary>
+        /// Create a new Persona
+        /// </summary>
+        /// <param name="personRealPageId">User unique identifier</param>
+        /// <param name="organizationRealPageId">Organization unique identifier</param>
+        /// <param name="persona">Persona object of the parameter values</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreatePersona(Guid personRealPageId, Guid organizationRealPageId, IPersona persona)
+        {
+            long PersonaId = 0;
+            dynamic param = new
+            {
+                PersonRealPageId = personRealPageId,
+                OrganizationRealPageId = organizationRealPageId,
+                persona.PersonaTypeId,
+                persona.FromDate,
+                persona.ThruDate,
+                PersonaId = PersonaId
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, param);
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Get Default Persona by Persona Id
+        /// </summary>
+        /// <param name="personaId">Persona Id</param>
+        /// <param name="withRights">Also merge persona with current user rights</param>
+        /// <returns>Persona Object</returns>
+        public Persona GetPersona(long personaId, bool withRights = true)
+        {
+            //var claimDetails = GetClaims();
+            Persona persona = null;
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    personaId
+                };
+                persona = repository.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, param);
+            }
+
+            if (withRights)
+            {
+                persona = AddRightsToPersona(persona);
+            }
+
+            return persona;
+        }
+
+        private Persona AddRightsToPersona(Persona persona)
+        {
+            if (persona == null) return null;
+
+            persona.hasViewOnlySupportToolAccess = false;
+            //IList<Organization> organizationList = _organizationRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
+            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
+            Organization organization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
+            if (organization != null)
+            {
+                persona.Organization = organization;
+            }
+
+            System.Security.Claims.ClaimsPrincipal currentClaimPrincipal = System.Security.Claims.ClaimsPrincipal.Current;
+            DefaultUserClaim userClaim = new DefaultUserClaim(currentClaimPrincipal);
+
+            //NOT Super user then check for Right
+            if (persona.UserTypeId != UserTypeConstants.SuperUser)
+            {
+                persona.hasResidentPortalUserAccess = CheckUserRight.CheckUserHasAccess(userClaim.Rights, "AddEditResidentPortalUser");
+
+                List<string> editorRights = userClaim.Rights;
+                persona.hasManageAccountingProductAccess = editorRights.Contains(ProductRightEnum.ManageAccountingProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageAssetOptimizationProductAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageClientPortalProductAccess = editorRights.Contains(ProductRightEnum.ManageClientPortalProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageDocumentManagementProductAccess = editorRights.Contains(ProductRightEnum.ManageDocumentManagementProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageILMLeadManagemementProductAccess = editorRights.Contains(ProductRightEnum.ManageILMLeadManagemementProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageILMLeasingAnalyticsProductAccess = editorRights.Contains(ProductRightEnum.ManageILMLeasingAnalyticsProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageLead2LeaseProductAccess = editorRights.Contains(ProductRightEnum.ManageLead2LeaseProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageMarketingCenterProductAccess = editorRights.Contains(ProductRightEnum.ManageMarketingCenterProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageOneSiteProductAccess = editorRights.Contains(ProductRightEnum.ManageOneSiteProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageOnSiteProductAccess = editorRights.Contains(ProductRightEnum.ManageOnSiteProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasProspectContactCenterProductAccess = editorRights.Contains(ProductRightEnum.ProspectContactCenterProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageRentersInsuranceProductAccess = editorRights.Contains(ProductRightEnum.ManageRentersInsuranceProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageSpendManagementProductAccess = editorRights.Contains(ProductRightEnum.ManageSpendManagementProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageUnifiedAmenitiesProductAccess = editorRights.Contains(ProductRightEnum.ManageUnifiedAmenitiesProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageUtilityManagementProductAccess = editorRights.Contains(ProductRightEnum.ManageUtilityManagementProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageVendorComplianceProductAccess = editorRights.Contains(ProductRightEnum.ManageVendorComplianceProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageAssetOptimizationProductAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManagePortfolioManagementProductAccess = editorRights.Contains(ProductRightEnum.ManagePortfolioManagementProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageIntegrationMarketplaceProductAccess = editorRights.Contains(ProductRightEnum.AccessIntegrationMarketplace.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManagePlatFormSecurity = editorRights.Contains(ProductRightEnum.ManagePlatFormSecurity.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageCustomFields = editorRights.Contains(ProductRightEnum.ManageCustomFields.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageUnifiedSettings = editorRights.Contains(ProductRightEnum.ManageUnifiedSettings.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageClickPayProductAccess = editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageDepositAlternativeProductAccess = editorRights.Contains(ProductRightEnum.ManageDepositAlternativeProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasManageSettingsTemplates = editorRights.Contains(ProductRightEnum.ManageSettingsTemplates.ToString(), StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (currentClaimPrincipal.Identity.IsAuthenticated)
+            {
+                persona.hasViewOnlySupportToolAccess = userClaim.Rights.Contains("ViewOnlySupportToolAccess", StringComparer.OrdinalIgnoreCase);
+                persona.hasViewOnlySettingsAccess = userClaim.Rights.Contains("ViewUnifiedSettings", StringComparer.OrdinalIgnoreCase);
+                persona.hasManageUnifiedSettings = userClaim.Rights.Contains("ManageUnifiedSetting", StringComparer.OrdinalIgnoreCase);
+                persona.hasManageCustomFields = userClaim.Rights.Contains("ManageCustomFields", StringComparer.OrdinalIgnoreCase);
+                persona.hasManagePlatFormSecurity = userClaim.Rights.Contains("ManagePlatFormSecurity", StringComparer.OrdinalIgnoreCase);
+                persona.hasAccessSettingsAdmin = userClaim.Rights.Contains("AccessSettingsAdmin", StringComparer.OrdinalIgnoreCase);
+                // For Import User Access - Support tool Employee
+                persona.hasImportUsersAccess = persona.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId && userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
+
+                if (!persona.hasViewOnlySettingsAccess || !persona.hasManageUnifiedSettings || !persona.hasManageCustomFields || !persona.hasManagePlatFormSecurity)
+                {
+                    // check to see impersonating, if they are then check that users rights
+                    if (userClaim.ImpersonatedBy != Guid.Empty)
+                    {
+                        long activePersonaId = GetActivePersonaId(userClaim.ImpersonatedBy);
+                        Persona impersonatorPersona = GetPersona(activePersonaId, false);
+                        UserRoleRightRepository urr = new UserRoleRightRepository();
+                        List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int) ProductEnum.UnifiedLogin, impersonatorPersona.PersonaId, impersonatorPersona.OrganizationPartyId);
+
+                        RPObjectCache rpCache = new RPObjectCache();
+                        var cacheKey = $"getRolesByParty_{impersonatorPersona.OrganizationPartyId}_{(int) ProductEnum.UnifiedLogin}";
+                        IList<UserRoleRights> roleList = rpCache.GetFromCache<IList<UserRoleRights>>(cacheKey, 180, () =>
+                        {
+                            SharedDataRepository sdr = new SharedDataRepository();
+                            IList<int> productList = sdr.GetProductIdsByCompany(impersonatorPersona.OrganizationPartyId);
+                            UserRoleRightRepository urrCache = new UserRoleRightRepository();
+                            return urrCache.GetAllRoleRights(impersonatorPersona.OrganizationPartyId, productList, (int) ProductEnum.UnifiedLogin);
+                        });
+
+                        foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
+                        {
+                            if (!persona.hasViewOnlySettingsAccess && roleList.Any(r => r.RoleId == userRole.RoleID))
+                            {
+                                foreach (Right right in roleList.FirstOrDefault(r => r.RoleId == userRole.RoleID).UserRights)
+                                {
+                                    if (!string.IsNullOrEmpty(right.RightNickName))
+                                    {
+                                        if (right.RightNickName.Equals("ViewUnifiedSettings", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            persona.hasViewOnlySettingsAccess = true;
+                                        }
+
+                                        if (right.RightNickName.Equals("ManageUnifiedSetting", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            persona.hasManageUnifiedSettings = true;
+                                        }
+
+                                        if (right.RightNickName.Equals("ManageCustomFields", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            persona.hasManageCustomFields = true;
+                                        }
+
+                                        if (right.RightNickName.Equals("ManagePlatFormSecurity", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            persona.hasManagePlatFormSecurity = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return persona;
+        }
+
+        /// <summary>
+		/// Lists Personas by Enterprise UserId, does NOT include rights correctly!
+		/// </summary>
+		/// <param name="realPageId">Person Enterprise Id</param>
+		/// <returns>A List of Persona Object(s)</returns>
+		public IList<Persona> ListPersona(Guid realPageId)
+        {
+            dynamic param = new
+            {
+                RealPageId = realPageId
+            };
+
+            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
+            
+            using (var repository = GetRepository())
+            {
+                IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, param);
+                personaList?.ToList().ForEach(p => p.Organization = organizationList.ToList().FirstOrDefault(o => o.PartyId == p.OrganizationPartyId));
+
+                return personaList;
+            }
+        }
+
+        /// <summary>
+        /// Lists only active personas by Enterprise UserId, does NOT include rights correctly!
+        /// </summary>
+        /// <param name="realPageId">Person Enterprise Id</param>
+        /// <param name="includeOrganization">Include organization details</param>
+        /// <returns>A List of Persona Object(s)</returns>
+        public IList<Persona> ListActivePersona(Guid realPageId, bool includeOrganization)
+        {
+            dynamic param = new
+            {
+                RealPageId = realPageId
+            };
+
+            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
+
+            using (var repository = GetRepository())
+            {
+                IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListActivePersona, param);
+                personaList?.ToList().ForEach(p => p.Organization = organizationList.ToList().FirstOrDefault(o => o.PartyId == p.OrganizationPartyId));
+
+                return personaList;
+            }
+        }
+
+        /// <summary>
+        /// List Persona by Enterprise Organization PartyId
+        /// </summary>
+        /// <param name="organizationPartyId">Organization Party Id</param>
+        /// <param name="isDefault">Optional Default persona only</param>
+        /// <param name="userRoleType">User Role type (e.g. refer to UserRoleType Enum)</param>
+        /// <returns>A List of Persona Object(s)</returns>
+        public IList<Persona> ListPersonaByOrganizationPartyId(long organizationPartyId, bool? isDefault = null, int? userRoleType = null)
+        {
+            dynamic param = new
+            {
+                OrganizationPartyId = organizationPartyId,
+                IsDefault = isDefault,
+                UserRoleType = userRoleType
+            };
+
+            Organization organization = _organizationRepository.GetOrganization(null, organizationPartyId, null, null);
+
+            using (var repository = GetRepository())
+            {
+                IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListPersonaByOrganizationPartyId, param);
+                personaList?.ToList().ForEach(p => p.Organization = organization);
+                return personaList;
+            }
+        }
+
+        /// <summary>
+        /// Get Active PersonaId
+        /// </summary>
+        /// <param name="realPageId">Enterprise UserId</param>
+        /// <returns>Active PersonaId</returns>
+        public long GetActivePersonaId(Guid realPageId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new { RealPageId = realPageId });
+            }
+        }
+
+        /// <summary>
+        /// Used to update the active persona for a user
+        /// </summary>
+        /// <param name="personRealPageId"></param>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        public RepositoryResponse UpdateActivePersona(Guid personRealPageId, long personaId)
+        {
+            
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateActivePersona, new { RealPageId = personRealPageId, PersonaId = personaId });
+            }
+        }
+        #endregion
+    }
+}

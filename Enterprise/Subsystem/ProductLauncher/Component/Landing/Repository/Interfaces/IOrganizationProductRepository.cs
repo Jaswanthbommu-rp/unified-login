@@ -1,0 +1,30 @@
+﻿using System;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
+{
+	/// <summary>
+	/// Used to add/update/delete a product from an organization
+	/// </summary>
+	public interface IOrganizationProductRepository
+	{
+		/// <summary>
+		/// Used to delete a product from an organization
+		/// </summary>
+		/// <param name="partyId">Company party id</param>
+		/// <param name="product">The product enum</param>
+		/// <returns></returns>
+		RepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product);
+
+		/// <summary>
+		/// Used to add/update a product to an organization
+		/// </summary>
+		/// <param name="partyId">Company party id</param>
+		/// <param name="product">The product enum</param>
+		/// <param name="configurationId">The configuration id for the product being assigned. NULL will assign global product configuration</param>
+		/// <param name="fromDate">When the product will be available from for the Organization</param>
+		/// <param name="thruDate">How long the product is available for the Organization</param>
+		RepositoryResponse InsertUpdateOrganizationProduct(long partyId, ProductEnum product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
+	}
+}

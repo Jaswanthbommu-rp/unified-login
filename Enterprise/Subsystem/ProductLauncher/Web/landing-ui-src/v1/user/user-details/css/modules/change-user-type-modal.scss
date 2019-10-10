@@ -1,0 +1,12 @@
+.change-user-type-modal {
+    max-width: 500px;
+}
+
+.existing-user-modal {
+    max-width: 300px;
+}
+
+.user-modal-link{
+	@include link;	
+	text-align: center;
+}

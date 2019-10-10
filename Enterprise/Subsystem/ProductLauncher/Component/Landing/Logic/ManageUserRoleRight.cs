@@ -1,0 +1,49 @@
+﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
+{
+	/// <summary>
+	/// Used to get role/right information for the given persona, product id
+	/// </summary>
+	public class ManageUserRoleRight : IManageUserRoleRight
+	{
+		#region Private Variables
+		private IUserRoleRightRepository _userRoleRightRepository;
+		#endregion
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public ManageUserRoleRight()
+		{
+			_userRoleRightRepository = new UserRoleRightRepository();
+		}
+
+		/// <summary>
+		/// DI constructor
+		/// </summary>
+		/// <param name="userRoleRightRepository"></param>
+		public ManageUserRoleRight(IUserRoleRightRepository userRoleRightRepository)
+		{
+			_userRoleRightRepository = userRoleRightRepository;
+		}
+
+		/// <summary>
+		/// Used to get a list of roles assigned to the given persona for the given product id
+		/// </summary>
+		/// <param name="productId">The product id</param>
+		/// <param name="userPersonaId">The persona id</param>
+		/// <param name="organizationPartyId">Optional Organization PartyId</param>
+		/// <returns>A list of roles</returns>
+		public IList<UL.Role> GetAssignedRoleForPersona(ProductEnum productId, long? userPersonaId = null, long? organizationPartyId = null)
+		{
+			List<UL.Role> propRole = _userRoleRightRepository.ListRoleByPersona((int)productId, userPersonaId, organizationPartyId);
+			return propRole;
+		}
+	}
+}

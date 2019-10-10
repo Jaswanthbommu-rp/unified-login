@@ -1,0 +1,889 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>Identity</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{4a6bb2c4-5b62-4500-bdd0-e7c79d18abf0}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>Identity</RootNamespace>
+    <AssemblyName>Identity</AssemblyName>
+    <ModelCollation>1033,CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <DacVersion>2.0.0.0</DacVersion>
+    <Recovery>FULL</Recovery>
+    <PageVerify>CHECKSUM</PageVerify>
+    <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
+    <DelayedDurability>ALLOWED</DelayedDurability>
+    <QueryStoreDesiredState>ReadWrite</QueryStoreDesiredState>
+    <QueryStoreCaptureMode>All</QueryStoreCaptureMode>
+    <QueryStoreMaxStorageSize>250</QueryStoreMaxStorageSize>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dev|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="Auth\" />
+    <Folder Include="Auth\Tables\" />
+    <Folder Include="Auth\Stored Procedures\" />
+    <Folder Include="Security\" />
+    <Folder Include="Ident" />
+    <Folder Include="Ident\Stored Procedures" />
+    <Folder Include="Ident\Tables" />
+    <Folder Include="Scripts" />
+    <Folder Include="Scripts\PostDeployment" />
+    <Folder Include="Scripts\PreDeployment" />
+    <Folder Include="dbo" />
+    <Folder Include="Database Triggers" />
+    <Folder Include="dbo\Functions" />
+    <Folder Include="dbo\Stored Procedures" />
+    <Folder Include="dbo\Tables" />
+    <Folder Include="dbo\User Defined Types" />
+    <Folder Include="Person" />
+    <Folder Include="Person\Tables" />
+    <Folder Include="Enterprise" />
+    <Folder Include="Enterprise\Tables" />
+    <Folder Include="Person\Stored Procedures" />
+    <Folder Include="Enterprise\Stored Procedures" />
+    <Folder Include="Snapshots" />
+    <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
+    <Folder Include="Scripts\PreDeployment\PreDeploymentScripts" />
+    <Folder Include="Features" />
+    <Folder Include="Features\ProductConfiguration" />
+    <Folder Include="Enterprise\Views\" />
+    <Folder Include="Batch" />
+    <Folder Include="Batch\Table" />
+    <Folder Include="Batch\Procedure" />
+    <Folder Include="CustomField" />
+    <Folder Include="CustomField\Stored Procedures" />
+    <Folder Include="CustomField\Tables" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Auth\Tables\ClientClaims.sql" />
+    <Build Include="Auth\Tables\ClientCorsOrigins.sql" />
+    <Build Include="Auth\Tables\ClientCustomGrantTypes.sql" />
+    <Build Include="Auth\Tables\ClientIdentityProviderRestrictions.sql" />
+    <Build Include="Auth\Tables\ClientPostLogoutRedirectUris.sql" />
+    <Build Include="Auth\Tables\ClientRedirectUris.sql" />
+    <Build Include="Auth\Tables\Clients.sql" />
+    <Build Include="Auth\Tables\ClientScopes.sql" />
+    <Build Include="Auth\Tables\ClientSecrets.sql" />
+    <Build Include="Auth\Tables\ScopeClaims.sql" />
+    <Build Include="Auth\Tables\Scopes.sql" />
+    <Build Include="Auth\Tables\ScopeSecrets.sql" />
+    <Build Include="Auth\Tables\Tokens.sql" />
+    <Build Include="Auth\Tables\Consents.sql" />
+    <Build Include="Security\Auth.sql" />
+    <Build Include="Auth\Stored Procedures\GetClientByClientCode.sql" />
+    <Build Include="Auth\Stored Procedures\GetToken.sql" />
+    <Build Include="Auth\Stored Procedures\DeleteTokenByKey.sql" />
+    <Build Include="Auth\Stored Procedures\DeleteTokenBySubjectAndClient.sql" />
+    <Build Include="Auth\Stored Procedures\GetTokensBySubject.sql" />
+    <Build Include="Auth\Stored Procedures\GetConsentBySubjectAndClient.sql" />
+    <Build Include="Auth\Stored Procedures\GetConsentsBySubject.sql" />
+    <Build Include="Auth\Stored Procedures\DeleteConsentBySubjectAndClient.sql" />
+    <Build Include="Auth\Stored Procedures\InsertConsent.sql" />
+    <Build Include="Auth\Stored Procedures\UpdateConsent.sql" />
+    <Build Include="Auth\Stored Procedures\GetAllScopes.sql" />
+    <Build Include="Auth\Stored Procedures\GetAllScopeClaims.sql" />
+    <Build Include="Auth\Stored Procedures\GetAllScopeSecrets.sql" />
+    <Build Include="Auth\Stored Procedures\GetAllPortfolioProductUserClaims.sql" />
+    <Build Include="Auth\Stored Procedures\InsertToken.sql" />
+    <Build Include="Auth\Stored Procedures\UpdateTokenExpiry.sql" />
+    <Build Include="Auth\Stored Procedures\GetClientDetails.sql" />
+    <Build Include="Auth\Stored Procedures\GetClientSecretsByClientId.sql" />
+    <Build Include="Auth\Stored Procedures\GetClientScopesByClientId.sql" />
+    <Build Include="Auth\Stored Procedures\GetClientRedirectUrisByClientId.sql" />
+    <Build Include="Auth\Stored Procedures\GetAllPortfolioProductUser.sql" />
+    <Build Include="Auth\Tables\CertificatesType.sql" />
+    <Build Include="Auth\Tables\CertificatesLocationType.sql" />
+    <Build Include="Auth\Tables\Certificates.sql" />
+    <Build Include="Security\RoleMemberships.sql" />
+    <Build Include="Auth\Stored Procedures\GetAllSecurityQuestions.sql" />
+    <Build Include="Auth\Stored Procedures\GetAllOrganizationClientUserClaims_1.sql" />
+    <None Include="Auth\Stored Procedures\AddClientIDToOpenIDConnectProvider.sql" />
+    <None Include="Auth\Stored Procedures\AddRoleToInstanceProfile.sql" />
+    <None Include="Auth\Stored Procedures\AddUserToGroup.sql" />
+    <None Include="Auth\Stored Procedures\AttachGroupPolicy.sql" />
+    <None Include="Auth\Stored Procedures\AttachRolePolicy.sql" />
+    <None Include="Auth\Stored Procedures\AttachUserPolicy.sql" />
+    <None Include="Auth\Stored Procedures\ChangePassword.sql" />
+    <None Include="Auth\Stored Procedures\CreateAccessKey.sql" />
+    <None Include="Auth\Stored Procedures\CreateAccountAlias.sql" />
+    <None Include="Auth\Stored Procedures\CreateGroup.sql" />
+    <None Include="Auth\Stored Procedures\CreateInstanceProfile.sql" />
+    <None Include="Auth\Stored Procedures\CreateLoginProfile.sql" />
+    <None Include="Auth\Stored Procedures\CreateOpenIDConnectProvider.sql" />
+    <None Include="Auth\Stored Procedures\CreatePolicy.sql" />
+    <None Include="Auth\Stored Procedures\CreatePolicyVersion.sql" />
+    <None Include="Auth\Stored Procedures\CreateRole.sql" />
+    <None Include="Auth\Stored Procedures\CreateSAMLProvider.sql" />
+    <None Include="Auth\Stored Procedures\CreateServiceSpecificCredential.sql" />
+    <None Include="Auth\Stored Procedures\CreateUser.sql" />
+    <None Include="Auth\Stored Procedures\CreateVirtualMFADevice.sql" />
+    <None Include="Auth\Stored Procedures\DeactivateMFADevice.sql" />
+    <None Include="Auth\Stored Procedures\DeleteAccessKey.sql" />
+    <None Include="Auth\Stored Procedures\DeleteAccountAlias.sql" />
+    <None Include="Auth\Stored Procedures\DeleteAccountPasswordPolicy.sql" />
+    <None Include="Auth\Stored Procedures\DeleteGroup.sql" />
+    <None Include="Auth\Stored Procedures\DeleteGroupPolicy.sql" />
+    <None Include="Auth\Stored Procedures\DeleteInstanceProfile.sql" />
+    <None Include="Auth\Stored Procedures\DeleteLoginProfile.sql" />
+    <None Include="Auth\Stored Procedures\DeleteOpenIDConnectProvider.sql" />
+    <None Include="Auth\Stored Procedures\DeletePolicy.sql" />
+    <None Include="Auth\Stored Procedures\DeletePolicyVersion.sql" />
+    <None Include="Auth\Stored Procedures\DeleteRole.sql" />
+    <None Include="Auth\Stored Procedures\DeleteRolePolicy.sql" />
+    <None Include="Auth\Stored Procedures\DeleteSAMLProvider.sql" />
+    <None Include="Auth\Stored Procedures\DeleteServerCertificate.sql" />
+    <None Include="Auth\Stored Procedures\DeleteServiceSpecificCredential.sql" />
+    <None Include="Auth\Stored Procedures\DeleteSigningCertificate.sql" />
+    <None Include="Auth\Stored Procedures\DeleteSSHPublicKey.sql" />
+    <None Include="Auth\Stored Procedures\DeleteUser.sql" />
+    <None Include="Auth\Stored Procedures\DeleteUserPolicy.sql" />
+    <None Include="Auth\Stored Procedures\DeleteVirtualMFADevice.sql" />
+    <None Include="Auth\Stored Procedures\DetachGroupPolicy.sql" />
+    <None Include="Auth\Stored Procedures\DetachRolePolicy.sql" />
+    <None Include="Auth\Stored Procedures\DetachUserPolicy.sql" />
+    <None Include="Auth\Stored Procedures\EnableMFADevice.sql" />
+    <None Include="Auth\Stored Procedures\GenerateCredentialReport.sql" />
+    <None Include="Auth\Stored Procedures\GetAccessKeyLastUsed.sql" />
+    <None Include="Auth\Stored Procedures\GetAccountAuthorizationDetails.sql" />
+    <None Include="Auth\Stored Procedures\GetAccountPasswordPolicy.sql" />
+    <None Include="Auth\Stored Procedures\GetAccountSummary.sql" />
+    <None Include="Auth\Stored Procedures\GetContextKeysForCustomPolicy.sql" />
+    <None Include="Auth\Stored Procedures\GetContextKeysForPrincipalPolicy.sql" />
+    <None Include="Auth\Stored Procedures\GetCredentialReport.sql" />
+    <None Include="Auth\Stored Procedures\GetGroup.sql" />
+    <None Include="Auth\Stored Procedures\GetGroupPolicy.sql" />
+    <None Include="Auth\Stored Procedures\GetInstanceProfile.sql" />
+    <None Include="Auth\Stored Procedures\GetLoginProfile.sql" />
+    <None Include="Auth\Stored Procedures\GetOpenIDConnectProvider.sql" />
+    <None Include="Auth\Stored Procedures\GetPolicy.sql" />
+    <None Include="Auth\Stored Procedures\GetPolicyVersion.sql" />
+    <None Include="Auth\Stored Procedures\GetRole.sql" />
+    <None Include="Auth\Stored Procedures\GetRolePolicy.sql" />
+    <None Include="Auth\Stored Procedures\GetSAMLProvider.sql" />
+    <None Include="Auth\Stored Procedures\GetServerCertificate.sql" />
+    <None Include="Auth\Stored Procedures\GetSSHPublicKey.sql" />
+    <None Include="Auth\Stored Procedures\ListAccessKeys.sql" />
+    <None Include="Auth\Stored Procedures\ListAccountAliases.sql" />
+    <None Include="Auth\Stored Procedures\ListAttachedGroupPolicies.sql" />
+    <None Include="Auth\Stored Procedures\ListAttachedRolePolicies.sql" />
+    <None Include="Auth\Stored Procedures\ListAttachedUserPolicies.sql" />
+    <None Include="Auth\Stored Procedures\ListEntitiesForPolicy.sql" />
+    <None Include="Auth\Stored Procedures\ListGroupPolicies.sql" />
+    <None Include="Auth\Stored Procedures\ListGroups.sql" />
+    <None Include="Auth\Stored Procedures\ListGroupsForUser.sql" />
+    <None Include="Auth\Stored Procedures\ListInstanceProfiles.sql" />
+    <None Include="Auth\Stored Procedures\ListInstanceProfilesForRole.sql" />
+    <None Include="Auth\Stored Procedures\ListMFADevices.sql" />
+    <None Include="Auth\Stored Procedures\ListOpenIDConnectProviders.sql" />
+    <None Include="Auth\Stored Procedures\ListPolicies.sql" />
+    <None Include="Auth\Stored Procedures\ListPolicyVersions.sql" />
+    <None Include="Auth\Stored Procedures\ListRolePolicies.sql" />
+    <None Include="Auth\Stored Procedures\ListRoles.sql" />
+    <None Include="Auth\Stored Procedures\ListSAMLProviders.sql" />
+    <None Include="Auth\Stored Procedures\ListServerCertificates.sql" />
+    <None Include="Auth\Stored Procedures\ListServiceSpecificCredentials.sql" />
+    <None Include="Auth\Stored Procedures\ListSigningCertificates.sql" />
+    <None Include="Auth\Stored Procedures\ListSSHPublicKeys.sql" />
+    <None Include="Auth\Stored Procedures\ListUserPolicies.sql" />
+    <None Include="Auth\Stored Procedures\ListUsers.sql" />
+    <None Include="Auth\Stored Procedures\ListVirtualMFADevices.sql" />
+    <None Include="Auth\Stored Procedures\PutGroupPolicy.sql" />
+    <None Include="Auth\Stored Procedures\PutRolePolicy.sql" />
+    <None Include="Auth\Stored Procedures\PutUserPolicy.sql" />
+    <None Include="Auth\Stored Procedures\RemoveClientIDFromOpenIDConnectProvider.sql" />
+    <None Include="Auth\Stored Procedures\RemoveRoleFromInstanceProfile.sql" />
+    <None Include="Auth\Stored Procedures\RemoveUserFromGroup.sql" />
+    <None Include="Auth\Stored Procedures\ResetServiceSpecificCredential.sql" />
+    <None Include="Auth\Stored Procedures\ResyncMFADevice.sql" />
+    <None Include="Auth\Stored Procedures\SetDefaultPolicyVersion.sql" />
+    <None Include="Auth\Stored Procedures\SimulateCustomPolicy.sql" />
+    <None Include="Auth\Stored Procedures\SimulatePrincipalPolicy.sql" />
+    <None Include="Auth\Stored Procedures\UpdateAccessKey.sql" />
+    <None Include="Auth\Stored Procedures\UpdateAccountPasswordPolicy.sql" />
+    <None Include="Auth\Stored Procedures\UpdateAssumeRolePolicy.sql" />
+    <None Include="Auth\Stored Procedures\UpdateGroup.sql" />
+    <None Include="Auth\Stored Procedures\UpdateLoginProfile.sql" />
+    <None Include="Auth\Stored Procedures\UpdateOpenIDConnectProviderThumbprint.sql" />
+    <None Include="Auth\Stored Procedures\UpdateSAMLProvider.sql" />
+    <None Include="Auth\Stored Procedures\UpdateServerCertificate.sql" />
+    <None Include="Auth\Stored Procedures\UpdateServiceSpecificCredential.sql" />
+    <None Include="Auth\Stored Procedures\UpdateSigningCertificate.sql" />
+    <None Include="Auth\Stored Procedures\UpdateSSHPublicKey.sql" />
+    <None Include="Auth\Stored Procedures\UpdateUser.sql" />
+    <None Include="Auth\Stored Procedures\UploadServerCertificate.sql" />
+    <None Include="Auth\Stored Procedures\UploadSigningCertificate.sql" />
+    <None Include="Auth\Stored Procedures\UploadSSHPublicKey.sql" />
+    <Build Include="Security\IdentityServer_Login.sql" />
+    <Build Include="Security\IdentityServer_User.sql" />
+    <Build Include="Auth\Stored Procedures\GetEnterpriseUserStatus.sql" />
+    <Build Include="Auth\Stored Procedures\GetEnterpriseUserLockActivities.sql" />
+    <Build Include="Auth\Stored Procedures\UpdateActivityTokenFlag.sql" />
+    <Build Include="Security\Ident.sql" />
+    <Build Include="Security\Config.sql" />
+    <Build Include="Auth\Stored Procedures\CreatePasswordPolicy.sql" />
+    <Build Include="Auth\Stored Procedures\UpdatePasswordPolicy.sql" />
+    <Build Include="Database Triggers\ddlDatabaseTriggerLog.sql" />
+    <Build Include="dbo\Stored Procedures\LogError.sql" />
+    <Build Include="dbo\Stored Procedures\PrintError.sql" />
+    <Build Include="dbo\Tables\BuildVersion.sql" />
+    <Build Include="dbo\Tables\DatabaseLog.sql" />
+    <Build Include="dbo\Tables\ErrorLog.sql" />
+    <Build Include="dbo\User Defined Types\Name.sql" />
+    <Build Include="dbo\User Defined Types\Phone.sql" />
+    <Build Include="Security\Person.sql" />
+    <Build Include="Person\Tables\Person.sql" />
+    <Build Include="Enterprise\Tables\Party.sql" />
+    <Build Include="Security\Enterprise.sql" />
+    <Build Include="Person\Stored Procedures\CreatePerson.sql" />
+    <Build Include="Auth\Stored Procedures\GetAuthenticateUser.sql" />
+    <Build Include="Enterprise\Tables\ContactMechanism.sql" />
+    <Build Include="Enterprise\Tables\PartyContactMechanism.sql" />
+    <Build Include="Enterprise\Tables\ContactMechanismUsageType.sql" />
+    <Build Include="Enterprise\Tables\ContactMechanismUsage.sql" />
+    <Build Include="Enterprise\Tables\TelecommunicationsNumber.sql" />
+    <Build Include="Enterprise\Tables\ElectronicAddress.sql" />
+    <Build Include="Enterprise\Tables\ContactMechanismBoundary.sql" />
+    <Build Include="Enterprise\Tables\GeographicBoundary.sql" />
+    <Build Include="Enterprise\Tables\GeographicBoundaryType.sql" />
+    <Build Include="Enterprise\Tables\StreetAddress.sql" />
+    <Build Include="dbo\Stored Procedures\ListPersonContactMethods.sql" />
+    <Build Include="Ident\Tables\UserLogin.sql" />
+    <Build Include="Person\Stored Procedures\ListContactMechanismsForPerson.sql" />
+    <Build Include="Ident\Tables\IdentityProviderType.sql" />
+    <Build Include="Enterprise\Tables\Organization.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserLogin.sql" />
+    <Build Include="Person\Stored Procedures\GetPerson.sql" />
+    <Build Include="Ident\Stored Procedures\CreateUserLogin.sql" />
+    <Build Include="Person\Stored Procedures\UpdatePerson.sql" />
+    <Build Include="Person\Stored Procedures\ListEmailsForPerson.sql" />
+    <Build Include="Person\Stored Procedures\ListTelecommunicationNumbersForPerson.sql" />
+    <Build Include="Person\Stored Procedures\ListPostalAddressesForPerson.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateUserLogin.sql" />
+    <Build Include="Enterprise\Tables\StatusType.sql" />
+    <Build Include="Enterprise\Tables\StatusTypeCategoryClassification.sql" />
+    <Build Include="Enterprise\Tables\StatusTypeCategory.sql" />
+    <Build Include="Enterprise\Tables\StatusTypeCategoryType.sql" />
+    <Build Include="Ident\Tables\UserCurrentStatus.sql" />
+    <Build Include="Enterprise\Tables\RelationshipType.sql" />
+    <Build Include="Enterprise\Tables\PartyRole.sql" />
+    <Build Include="Enterprise\Tables\RoleType.sql" />
+    <Build Include="Enterprise\Tables\PartyRelationship.sql" />
+    <Build Include="Auth\Stored Procedures\GetUsers.sql" />
+    <Build Include="Person\Stored Procedures\CreateContactMechanism.sql" />
+    <Build Include="Person\Stored Procedures\LinkContactMechanismToParty.sql" />
+    <Build Include="Person\Stored Procedures\LinkUsageTypeToPartyContactMechanism.sql" />
+    <Build Include="Person\Stored Procedures\CreateStreetAddress.sql" />
+    <Build Include="Person\Stored Procedures\CreateGeographicBoundary.sql" />
+    <Build Include="Person\Stored Procedures\LinkGeographicBoundaryToContactMechanism.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListContactMechanismUsageType.sql" />
+    <Build Include="Person\Stored Procedures\CreateElectronicAddress.sql" />
+    <Build Include="Person\Stored Procedures\CreateTelecommunicationsNumber.sql" />
+    <Build Include="Person\Stored Procedures\LinkPersonToOrganization.sql" />
+    <Build Include="Auth\Stored Procedures\GetProducts.sql" />
+    <Build Include="Auth\Stored Procedures\UnlockUsers.sql" />
+    <Build Include="Ident\Tables\IdentityProviderSettingType.sql" />
+    <Build Include="Ident\Tables\IdentityProviderSetting.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkOrganizationToOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganization.sql" />
+    <Build Include="Ident\Stored Procedures\CreateIdentityProviderType.sql" />
+    <Build Include="Ident\Stored Procedures\CreateIdentityProviderSettingType.sql" />
+    <Build Include="Ident\Stored Procedures\CreateIdentityProviderSetting.sql" />
+    <Build Include="Ident\Tables\ContactMechanismIdentity.sql" />
+    <Build Include="Ident\Tables\SamlAttributeType.sql" />
+    <Build Include="Ident\Tables\SamlAttribute.sql" />
+    <Build Include="Enterprise\Tables\Product.sql" />
+    <Build Include="Enterprise\Tables\ProductSettingType.sql" />
+    <Build Include="Enterprise\Tables\ProductSetting.sql" />
+    <Build Include="Enterprise\Tables\ProductRelationship.sql" />
+    <Build Include="Ident\Tables\SamlProductSettings.sql" />
+    <Build Include="Ident\Tables\SamlAttributeStatement.sql" />
+    <Build Include="Ident\Tables\SamlUserAttribute.sql" />
+    <Build Include="Ident\Stored Procedures\LinkIdentityProviderSettingToContactMechanism.sql" />
+    <Build Include="Ident\Stored Procedures\GetIdentityProviderTypeByLoginName.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizationByRealPageId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPartyRelationshipByRealPageId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRelationshipType.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRoleType.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserLoginByName.sql" />
+    <Build Include="Ident\Tables\UserSecurityAnswer.sql" />
+    <Build Include="Ident\Tables\SecurityQuestion.sql" />
+    <Build Include="Ident\Tables\PasswordPolicyHistory.sql" />
+    <Build Include="Ident\Tables\PasswordPolicy.sql" />
+    <Build Include="Ident\Tables\PasswordHistory.sql" />
+    <Build Include="Ident\Tables\ActivityToken.sql" />
+    <Build Include="Ident\Tables\ActivityAttempts.sql" />
+    <Build Include="Ident\Tables\ActivityType.sql" />
+    <Build Include="Ident\Stored Procedures\ListIdentityProviderByIdentityProviderTypeName.sql" />
+    <Build Include="Ident\Stored Procedures\ListIdentityProviderByIdentityProviderTypeId.sql" />
+    <Build Include="Ident\Stored Procedures\UpdatePasswordPolicy.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateEnterpriseUserCredential.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateActivityAttempt.sql" />
+    <Build Include="Ident\Stored Procedures\ResetEnterpriseUserCredential.sql" />
+    <Build Include="Ident\Stored Procedures\ProviderConfigurationByName.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserSecurityQuestionAnswer.sql" />
+    <Build Include="Ident\Stored Procedures\GetPasswordPolicy.sql" />
+    <Build Include="Ident\Stored Procedures\GetPasswordHistory.sql" />
+    <Build Include="Ident\Stored Procedures\GetAllSecurityQuestions.sql" />
+    <Build Include="Ident\Stored Procedures\GetActivityToken.sql" />
+    <Build Include="Ident\Stored Procedures\GetActivityAttemptExceeds.sql" />
+    <Build Include="Ident\Stored Procedures\CreateSecurityQuestionAnswers.sql" />
+    <Build Include="Ident\Stored Procedures\CreatePasswordPolicy.sql" />
+    <Build Include="Person\Stored Procedures\GetPartyRole.sql" />
+    <Build Include="Person\Stored Procedures\SetPartyRole.sql" />
+    <Build Include="Person\Stored Procedures\ListPreferredContactMethods.sql" />
+    <Build Include="Enterprise\Tables\ProductType.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPartyRoleByRealPageId.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdatePartyRoleByRealPageId.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreatePartyRoleByRealPageId.sql" />
+    <Build Include="Person\Stored Procedures\UpdateContactMechanismUsageForParty.sql" />
+    <Build Include="Enterprise\Tables\Configuration.sql" />
+    <Build Include="Enterprise\Tables\ProductConfiguration.sql" />
+    <Build Include="Enterprise\Tables\PersonaConfiguration.sql" />
+    <Build Include="Person\Tables\Persona.sql" />
+    <Build Include="Person\Tables\PersonaType.sql" />
+    <Build Include="Enterprise\Tables\OrganizationProduct.sql" />
+    <Build Include="Enterprise\Tables\PersonaOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductsByRealPageId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductFamilies.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductSolutions.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListResourcesByRealPageId.sql" />
+    <Build Include="Ident\Stored Procedures\GetProductSamlDetails.sql" />
+    <Build Include="Ident\Stored Procedures\GetProductsByPersonaId.sql" />
+    <Build Include="Ident\Stored Procedures\GetProductSamlSettings.sql" />
+    <Build Include="Person\Stored Procedures\GetDefaultPersona.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserSelectedSecurityQuestions.sql" />
+    <Build Include="Ident\Stored Procedures\CreateUserSelectedSecurityQuestions.sql" />
+    <Build Include="Person\Stored Procedures\GetPersona.sql" />
+    <Build Include="Ident\Stored Procedures\GetProductsByPersonaId.sql" />
+    <Build Include="Ident\Stored Procedures\GetProductSamlSettings.sql" />
+    <Build Include="Ident\Stored Procedures\GetProductSamlDetails.sql" />
+    <Build Include="Person\Stored Procedures\CreatePersona.sql" />
+    <Build Include="Person\Tables\ActivePersona.sql" />
+    <Build Include="Person\Stored Procedures\GetActivePersona.sql" />
+    <Build Include="Person\Stored Procedures\UpdateActivePersona.sql" />
+    <Build Include="Person\Stored Procedures\GetPersona.sql" />
+    <Build Include="Person\Stored Procedures\ListPersona.sql" />
+    <Build Include="Ident\Stored Procedures\CreateUserSelectedSecurityQuestions.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateProductSettingByPersona.sql" />
+    <Build Include="Ident\Stored Procedures\CreateSamlAttributeType.sql" />
+    <Build Include="Ident\Stored Procedures\CreateSamlAttribute.sql" />
+    <Build Include="Ident\Stored Procedures\CreateSamlUserAttribute.sql" />
+    <Build Include="Enterprise\Tables\GlobalProductConfiguration.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkGlobalConfigurationToProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkProductSettingToConfiguration.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductSettingsByPersona.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductsByOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductSettingsByOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetProductSettingType.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateProductConfiguration.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListGlobalSettingsForProduct.sql" />
+    <Build Include="Person\Stored Procedures\UnlinkPersonToOrganization.sql" />
+    <Build Include="Person\Stored Procedures\UpdatePersonToOrganization.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateSamlUserAttribute.sql" />
+    <Build Include="Person\Stored Procedures\CreatePersonaType.sql" />
+    <Build Include="Person\Stored Procedures\UpdatePersona.sql" />
+    <Build Include="Person\Stored Procedures\RemovePersona.sql" />
+    <Build Include="Ident\Stored Procedures\ListUserSecurityQuestionAnswerByRealPageId.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserStatuses.sql" />
+    <Build Include="Person\Tables\PersonaEnvironmentType.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductSettingsByPersonaId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductTypes.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductsByPersonaId.sql" />
+    <Build Include="Enterprise\Tables\DataImportApplication.sql" />
+    <Build Include="Enterprise\Tables\DataImportMapping.sql" />
+    <Build Include="Enterprise\Stored Procedures\MapBlueBookIdtoPartyId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganizationByBlueBookId.sql" />
+    <Build Include="Ident\Stored Procedures\RemoveSamlUserAttributeByProductId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetBlueBookIdByOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkProductConfigurationToPersona.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreatePersonaConfiguration.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateProductConfigurationbyPersonaId.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateParty.sql" />
+    <Build Include="Ident\Stored Procedures\ListActivity.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserCurrentStatuses.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductSettingType.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateProductBatch.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductBatch.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateProductBatch.sql" />
+    <Build Include="Person\Stored Procedures\ListPersonaEnvironmentType.sql" />
+    <Build Include="Enterprise\Tables\ProductBatch.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductBatchByRealPageId.sql" />
+    <Build Include="Enterprise\Tables\ContactMechanismType.sql" />
+    <Build Include="Enterprise\Tables\CommunicationEventPurposeUsage.sql" />
+    <Build Include="Enterprise\Tables\CommunicationEventPurposeType.sql" />
+    <Build Include="Enterprise\Tables\CommunicationEventEmail.sql" />
+    <Build Include="Enterprise\Tables\CommunicationEvent.sql" />
+    <Build Include="Enterprise\Tables\CommunicationEmailTemplate.sql" />
+    <Build Include="Enterprise\Tables\CESCommunicationEvent.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListCommunicationEventPurposeTypes.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListContactMechanismTypes.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListCommunicationEmailTemplates.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListCommunicationEventPurposeUsages.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateCESCommunicationEvent.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateCommunicationEmailTemplate.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateCommunicationEvent.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateCommunicationEventEmail.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateCommunicationEventPurposeType.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListCommunicationEvents.sql" />
+    <Build Include="Enterprise\Tables\Action.sql" />
+    <Build Include="Enterprise\Tables\ActionvalueType.sql" />
+    <Build Include="Enterprise\Tables\Group.sql" />
+    <Build Include="Enterprise\Tables\GroupMember.sql" />
+    <Build Include="Enterprise\Tables\PersonaPrivilege.sql" />
+    <Build Include="Enterprise\Tables\Right.sql" />
+    <Build Include="Enterprise\Tables\Role.sql" />
+    <Build Include="Enterprise\Tables\UserAction.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCommunicationEvent.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateCommunicationEventPurposeUsage.sql" />
+    <Build Include="dbo\Major Version.sql" />
+    <Build Include="dbo\Minor Version.sql" />
+    <Build Include="dbo\Revision.sql" />
+    <Build Include="dbo\Build.sql" />
+    <Build Include="Enterprise\Tables\CommunicationEventAudienceType.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateCommunicationEventAudienceType.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetIdentityProviderTypeByRealPageId.sql" />
+    <Build Include="Ident\Stored Procedures\LinkIdentityProviderToUserLogin.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateRole.sql" />
+    <Build Include="Enterprise\Tables\SourceSystem.sql" />
+    <Build Include="Enterprise\Tables\PersonaIdentityUserLogin.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.1.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.2.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.3.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.4.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateAction.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateActionValueType.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreatePartyRoleType.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateRight.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateRole.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCESCommunicationEvent.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCESCommunicationEventByEventId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCommunicationEmailTemplate.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCommunicationEventEmailByEventId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCommunicationEventPurposeType.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCommunicationEventPurposeUsage.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCommunicationEventPurposeUsageByEventId.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkActionToRights.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkPartyRoleToParty.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkPersonaToRole.sql" />
+    <Build Include="Enterprise\Stored Procedures\LinkRightsToRoles.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListActionValueType.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListAllActions.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListAllRights.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListCommunicationEventAudienceTypes.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListPartyRoleTypes.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRightsByPersonaID.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRightsHierarchyByPersonaID.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesByParty.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesByRealPageID.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesHierarchy.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRootActions.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListSecurityStatus.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateActionValueType.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateRight.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListPersonaRightsAndActionsByRoute.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateProductSetting.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateProductSettingType.sql" />
+    <Build Include="Ident\Stored Procedures\CreateSamlProductSetting.sql" />
+    <Build Include="Person\AfterInsertPersona_PersonaIdentityUserLogin.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateProductType.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateProduct.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.7.sql" />
+    <Build Include="Person\Stored Procedures\ExpirePartyContactMechanism.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.10.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.12.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.13.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.14.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.16.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganizationIdentityProviderType_1.sql" />
+    <Build Include="dbo\PartyGUID.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreatePropertyMapping.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListPropertyMapping.sql" />
+    <Build Include="Enterprise\Tables\PropertyMapping.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateBulkUserStatus.sql" />
+    <Build Include="dbo\TypRole.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeleteRole.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRightForProductsByPartyId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRightsAssociatedWithRoles.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRoleCategory.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesAssociatedWithRights.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesForProductsByOranizationId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesForProductsByPartyId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesForProductsByPersonaId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRoleUsersByOrganizationID.sql" />
+    <Build Include="Enterprise\Tables\RoleValueType.sql" />
+    <Build Include="Enterprise\Tables\RightValueType.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.20.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.21.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.22.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRightCategory.sql" />
+    <None Include="Scripts\PreDeployment\PreDeploymentScripts\DeclarationBlock.sql" />
+    <None Include="Scripts\PreDeployment\PreDeploymentScripts\Security-RolesSchemaEnhancements.sql" />
+    <None Include="Scripts\PreDeployment\PreDeploymentScripts\PersonaUserChanges.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.24.sql" />
+    <Build Include="Ident\Stored Procedures\ListFutureLogins.sql" />
+    <Build Include="Enterprise\Tables\MasterConfiguration.sql" />
+    <Build Include="Enterprise\Tables\MasterConfigurationSetting.sql" />
+    <Build Include="Enterprise\Tables\MasterConfigurationType.sql" />
+    <Build Include="Enterprise\Tables\MasterSetting.sql" />
+    <Build Include="Enterprise\Tables\MasterSettingType.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateMasterConfigurationSetting.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListConfigurationSettings.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListPersonaSettings.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListUserLoginSettings.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizationSettings.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListGlobalSettings.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.32.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.33.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.34.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetupOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateOrganizationProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeleteOrganizationProduct.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListTimeZone.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListIdentityProviderType.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.47.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.48.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.49.sql" />
+    <Build Include="Enterprise\Tables\RightDependency.sql" />
+    <Build Include="Person\Stored Procedures\ListPersonaByOrganizationPartyId.sql" />
+    <Build Include="Person\Stored Procedures\ListPersonsByProductId.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProduct.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.62.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.62.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizations.sql" />
+    <Build Include="Enterprise\Stored Procedures\ManageRight.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizations.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\August2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\July2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\June2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\May2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\November2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\September2018Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.63.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.64.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateMasterConfigurationSetting.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListMasterConfigurationType.sql" />
+    <Build Include="Enterprise\Views\RoleRightStatus.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetDefaultRole.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRoleTypeDependency.sql" />
+    <Build Include="Enterprise\Tables\RoleTypeDependency.sql" />
+    <Build Include="Enterprise\Views\CreateUserSourceType.sql" />
+    <Build Include="dbo\ProductConfigurationType.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductSettings.sql" />
+    <Build Include="Enterprise\Stored Procedures\ProductConfigurationSetup.sql" />
+    <Build Include="Ident\Stored Procedures\ListExpiringUsers.sql" />
+    <Build Include="Enterprise\Stored Procedures\UnLinkProductFromPersona.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUnifiedLoginDefaultRole.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizationByLoginName.sql" />
+    <Build Include="Enterprise\Stored Procedures\AssignRightToRole.sql" />
+    <Build Include="Enterprise\ProductIdType.sql" />
+    <Build Include="Enterprise\Stored Procedures\BulkImporttUsers.sql" />
+    <Build Include="Enterprise\UserDetails.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserProductBatchJsonData.sql" />
+    <Build Include="Batch\Table\BatchProcessor.sql" />
+    <Build Include="Batch\Table\BatchProcessorError.sql" />
+    <Build Include="Batch\Table\BatchProcessType.sql" />
+    <Build Include="Batch\Table\BatchProcessConfiguration.sql" />
+    <Build Include="Batch\Table\BatchProcessConfigurationType.sql" />
+    <Build Include="Batch\Procedure\ListBatchProcessConfiguration.sql" />
+    <Build Include="Batch\Procedure\CreateProductBatch.sql" />
+    <Build Include="Batch\Procedure\UpdateProductBatch.sql" />
+    <Build Include="Batch\Procedure\ListBatchProcessor.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListBatchProcessor.sql" />
+    <Build Include="Security\Batch.sql" />
+    <Build Include="Person\Stored Procedures\ListPersonsForSupportTool.sql" />
+    <Build Include="Enterprise\Stored Procedures\OverrideOneSitePMCIDByPartyId.sql" />
+    <Build Include="Person\Stored Procedures\GetUserCountForOrganization_Ver01.sql" />
+    <Build Include="Ident\Tables\ActivityConfiguration.sql" />
+    <Build Include="Ident\Stored Procedures\CreateUser_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganizationByBlueBookId_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganizationByBlackBookId_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetBookIdByOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\MapBlueBookIdtoPartyId_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\MapBooksIdtoPartyId_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetupOrganization_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizations_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListUserDetails_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganization_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserDetails_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizationByRealPageId_Ver01.sql" />
+    <Build Include="Enterprise\Views\VW_DataImportMapping.sql" />
+    <Build Include="Auth\Stored Procedures\ClientsSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClientsInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientsUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClientRedirectUrisInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientRedirectUrisUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClientRedirectUrisDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ClientClaimsSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClientClaimsInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientClaimsUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClientClaimsDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ClientPostLogoutRedirectUrisSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClientPostLogoutRedirectUrisInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientPostLogoutRedirectUrisUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClientPostLogoutRedirectUrisDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ClientScopesSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClientScopesInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientScopesUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClientScopesDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ClientSecretsSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClientSecretsInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientSecretsUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClientSecretsDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ScopesSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ScopesInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ScopesUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ScopesDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeSecretsSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeSecretsInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeSecretsUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeSecretsDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ClientRedirectUrisSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeClaimsInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeClaimsSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeClaimsUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ScopeClaimsDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ClientsDelete.sql" />
+    <Build Include="Ident\Stored Procedures\CreateUser_Ver01.sql" />
+    <Build Include="Enterprise\Tables\RoleAttribute.sql" />
+    <Build Include="Enterprise\Tables\RoleAttributeType.sql" />
+    <Build Include="Enterprise\Tables\RoleAttribute.sql" />
+    <Build Include="Enterprise\Tables\RoleAttributeType.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetupSuperUser.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetupSuperUser.sql" />
+    <Build Include="Enterprise\Tables\OrganizationType.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizationType.sql" />
+    <Build Include="Enterprise\CustomFieldIdType.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganization_Ver02.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizationByRealPageId_Ver02.sql" />
+    <Build Include="Person\Stored Procedures\ListPersonaByOrganizationPartyId_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganization_Ver03.sql" />
+    <Build Include="Enterprise\FilterTableType.sql" />
+    <Build Include="Enterprise\SortTableType.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateActivityConfiguration.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2019Release.sql" />
+    <Build Include="Enterprise\Views\VW_UserStatus.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetStatusTypes.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateSecuritySetting.sql" />
+    <Build Include="Ident\Stored Procedures\GetSecuritySetting.sql" />
+    <Build Include="Ident\Stored Procedures\ListPendingUsers.sql" />
+    <Build Include="Enterprise\Tables\GlobalControl.sql" />
+    <Build Include="Ident\Stored Procedures\CreateActivityToken.sql" />
+    <Build Include="Enterprise\Stored Procedures\SetupUnifiedAmenities.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\August2019Release.sql" />
+    <Build Include="Person\Stored Procedures\GetUserInformation_Ver02.sql" />
+    <Build Include="Security\CustomField.sql" />
+    <Build Include="CustomField\Tables\Field.sql" />
+    <Build Include="CustomField\Tables\FieldType.sql" />
+    <Build Include="CustomField\Tables\FieldValue.sql" />
+    <Build Include="CustomField\Stored Procedures\AddUpdateField.sql" />
+    <Build Include="CustomField\Stored Procedures\AddUpdateFieldFromJSON.sql" />
+    <Build Include="CustomField\Stored Procedures\AddUpdateFieldType.sql" />
+    <Build Include="CustomField\Stored Procedures\AddUpdateFieldValue.sql" />
+    <Build Include="CustomField\Stored Procedures\DeleteField.sql" />
+    <Build Include="CustomField\Stored Procedures\DeleteFieldType.sql" />
+    <Build Include="CustomField\Stored Procedures\DeleteFieldValue.sql" />
+    <Build Include="CustomField\Stored Procedures\GetField.sql" />
+    <Build Include="CustomField\Stored Procedures\GetFieldByFieldValueOnFieldID.sql" />
+    <Build Include="CustomField\Stored Procedures\GetFieldsByMasterId.sql" />
+    <Build Include="CustomField\Stored Procedures\GetFieldType.sql" />
+    <Build Include="CustomField\Stored Procedures\GetFieldTypeByFieldOnFieldTypeId.sql" />
+    <Build Include="CustomField\Stored Procedures\GetFieldValue.sql" />
+    <Build Include="CustomField\Stored Procedures\SearchExactField.sql" />
+    <Build Include="CustomField\Stored Procedures\SearchExactFieldType.sql" />
+    <Build Include="CustomField\Stored Procedures\SearchExactFieldValue.sql" />
+    <Build Include="CustomField\Stored Procedures\SearchField.sql" />
+    <Build Include="CustomField\Stored Procedures\SearchFieldType.sql" />
+    <Build Include="CustomField\Stored Procedures\SearchFieldValue.sql" />
+    <Build Include="Ident\Tables\UserLoginPersona.sql" />
+    <Build Include="Person\Stored Procedures\ListActivePersona.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateUserStatusByCompany.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserLoginOnly.sql" />
+    <Build Include="Ident\Stored Procedures\CreateUserLoginPersona.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRoleType_Ver01.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListOrganizationStatusByUserId.sql" />
+    <Build Include="dbo\Stored Procedures\ListOrganizations.sql" />
+    <Build Include="Person\Stored Procedures\ListPersons_Ver04.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserLoginPersona.sql" />
+    <Build Include="CustomField\Stored Procedures\GetFieldsValuesByUserLoginPersonaId.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateUserLoginPersona.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2019Release.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <RefactorLog Include="Identity.refactorlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Identity.local.publish.xml" />
+    <None Include="Snapshots\Identity_20170419_09-40-51.dacpac" />
+    <None Include="Snapshots\Identity_20170620_22-14-09.dacpac" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.0.sql" />
+    <None Include="Scripts\PreDeployment\PreDeploymentScripts\CreateExtendedProperties.sql" />
+    <None Include="Identity.SAT.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.3.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.1.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.2.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.5.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.4.sql" />
+    <None Include="Identity.SAT.publish.xml" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.5.sql" />
+    <None Include="Identity.prod.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.6.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\UpdateStatistics.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.9.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.8.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.10.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.11.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.15.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.17.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.18.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.26.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.19.sql" />
+    <None Include="Identity.qa.publish.old.xml" />
+    <None Include="identity.qa.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.27.sql">
+      <CopyToOutputDirectory>DoNotCopy</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.28.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.29.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.30.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.31.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.35.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.36.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.37.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.38.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.39.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.40.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\PostDeclarationBlock.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.41.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.33.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.34.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.43.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.44.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.46.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.50.sql" />
+    <None Include="Identity.iddev.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.51.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.52.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.53.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.54.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.55.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.56.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.57.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.58.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.59.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.60.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.61.sql" />
+    <None Include="Identity.DEMO.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Identity.PREPROD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\February2019Release.sql" />
+    <None Include="Identity.dev.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2019Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\May2019Release.sql" />
+    <None Include="identity.load.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PreDeployment\PreDeploymentScripts\PopulateMultiCompanySchema.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\PopulateMultiCompanySchema.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\September2019Release.sql" />
+    <None Include="UPMCTesting.publish.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
+    <None Include="Scripts\PreDeployment\PreDeploymentScripts\Activity-PreDeployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Scripts\PostDeployment\Script.PostDeployment.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\version0.0.0.23.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.25.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.42.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.45.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\January2019Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\June2019Release.sql" />
+  </ItemGroup>
+</Project>

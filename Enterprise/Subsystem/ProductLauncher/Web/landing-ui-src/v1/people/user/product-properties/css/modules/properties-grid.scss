@@ -1,0 +1,24 @@
+.product-properties-wrapper {
+	.rp-grid {
+
+		&-cell {
+			&.is-selected {
+				width: 40px;
+			}
+
+			&.property-name {
+				width: 40%
+			}
+
+			&.city {
+				width: 20%;
+			}
+
+			&.state {
+				width: 20%;
+			}
+		}
+	}
+
+
+}

@@ -1,0 +1,118 @@
+﻿using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
+{
+    /// <summary>
+    /// Configuration Setting Repository
+    /// </summary>
+    public class ConfigurationSettingRepository : BaseRepository, IConfigurationSettingRepository
+    {
+        #region Constructor
+        /// <summary>
+        /// Contact Mechanism UsageType base Constructor
+        /// </summary>
+        public ConfigurationSettingRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        public ConfigurationSettingRepository(IRepository repository) : base(repository)
+        {
+        }
+        #endregion
+
+        #region public Configuration Setting Repository methods
+        /// <summary>
+        /// Get a list of User Configuration Setting
+        /// </summary>
+        /// <param name="PartyId">Unique partyID (Person, Organization,...)</param>
+        /// <param name="SettingName">Setting Name (DarkNavigation)</param>
+        /// <returns>List of User Configuration Settings</returns>
+        public IList<ConfigurationSetting> ListUserLoginConfigurationSetting(long PartyId, string SettingName)
+        {
+            dynamic param = new
+            {
+                @PartyId = PartyId,
+                @SettingName = SettingName
+            };
+
+            try
+            {
+                using (var repository = GetRepository())
+                {
+                    IList<ConfigurationSetting> result = repository.GetMany<ConfigurationSetting>(StoredProcNameConstants.SP_ListUserLoginSettings, param);
+                    return result;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+		/// Get a list of Organization Configuration Setting
+		/// </summary>
+		/// <param name="PartyId">Unique partyID (Person, Organization,...)</param>
+		/// <param name="SettingName">Setting Name (DarkNavigation)</param>
+		/// <returns>List of User Configuration Settings</returns>
+		public IList<ConfigurationSetting> ListOrganizationConfigurationSetting(long PartyId, string SettingName)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"sp_ListOrganizationSettings_{PartyId}_{SettingName}";
+
+            IList<ConfigurationSetting> getSettings = rpCache.GetFromCache<List<ConfigurationSetting>>(cacheKey, 360, () =>
+            {
+                dynamic param = new
+                {
+                    @PartyId = PartyId,
+                    @SettingName = SettingName
+                };
+
+                try
+                {
+                    using (var repository = GetRepository())
+                    {
+                        return repository.GetMany<ConfigurationSetting>(StoredProcNameConstants.SP_ListOrganizationSettings, param);
+                    }
+                }
+                catch
+                {
+                    return null;
+                }
+            });
+
+            return getSettings;
+        }
+
+        /// <summary>
+        /// Update Configuration setting value
+        /// </summary>
+        /// <param name="configurationSetting">Master Configuration setting object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse UpdateConfigurationSetting(ConfigurationSetting configurationSetting)
+        {
+            dynamic param = new
+            {
+                @MasterConfigurationSettingId = configurationSetting.MasterConfigurationSettingId,
+                @Value = configurationSetting.Value
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateMasterConfigurationSetting, param);
+                return result;
+            }
+        }
+        #endregion
+    }
+}

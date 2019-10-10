@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>RP.Enterprise.Foundation.DataAccess</id>
+        <version>1.0.0</version>
+        <authors>AMungale</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Data Access Component using Dapper</description>
+        <copyright>RealPage Inc</copyright>
+    </metadata>
+    <files>
+        <file src="..\Foundation\DataAccess\bin\Release\Dapper.xml" target="lib\net452\Dapper.xml" />
+        <file src="..\Foundation\DataAccess\bin\Release\Dapper.dll" target="lib\net452\Dapper.dll" />
+        <file src="..\Foundation\DataAccess\bin\Release\RP.Enterprise.Foundation.DataAccess.Component.dll" target="lib\net452\RP.Enterprise.Foundation.DataAccess.Component.dll" />
+        <file src="..\Foundation\DataAccess\bin\Release\RP.Enterprise.Foundation.DataAccess.Component.pdb" target="lib\net452\RP.Enterprise.Foundation.DataAccess.Component.pdb" />
+    </files>
+</package>

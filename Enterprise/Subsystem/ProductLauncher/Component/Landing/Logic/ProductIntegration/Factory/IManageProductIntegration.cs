@@ -1,0 +1,93 @@
+﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory
+{
+	/// <summary>
+	/// Product Integration Interface  should be implemented on product specific class
+	/// Used in Factory
+	/// </summary>
+	public interface IManageProductIntegration
+	{
+		/// <summary>
+		/// Get Product Roles
+		/// </summary>
+		ListResponse GetProductRoles(RequestParameter datafilter, string baseUrlAndQuery = null);
+
+		/// <summary>
+		/// Get Product Properties
+		/// </summary>
+		ListResponse GetProductProperties(RequestParameter datafilter, string baseUrlAndQuery = null);
+
+		/// <summary>
+		/// Get Product Regions
+		/// </summary>
+		ListResponse GetProductPropertyGroups(RequestParameter datafilter, string baseUrlAndQuery = null);
+
+		/// <summary>
+		/// UnassignUser
+		/// </summary>
+		/// <returns>Empty string if success</returns>
+		string UnassignUser();
+
+		/// <summary>
+		/// Change User type - reg to admin and vice versa
+		/// </summary>
+		/// <returns>Empty string if success</returns>
+		string ChangeProductUserType(ProductUserRolePropertiesGroups rolePropertiesGroups, BatchProcessType batchProcessType);
+
+		/// <summary>
+		/// Create or Update ProductUser based on IsAssigned flag in productUserRolePropertiesGroups
+		/// </summary>
+		/// <returns>Empty string if success</returns>
+		string CreateUpdateProductUser(ProductUserRolePropertiesGroups productUserRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+
+		/// <summary>
+		/// Get Product Properties
+		/// </summary>
+		ListResponse GetProductPropertiesByGroup(string groupId, RequestParameter datafilter, string baseUrlAndQuery = null);
+
+		/// <summary>
+		/// Update Product User Profile information (called from green-book)
+		/// </summary>
+		/// <returns>Empty string if success</returns>
+		string UpdateProductUserProfile();
+
+		/// <summary>
+		/// Get product user
+		/// </summary>
+		/// <param name="baseUrlAndQuery"></param>
+		IntegrationProductUser GetProductUser(string baseUrlAndQuery = null, bool isThrowOnError = true);
+
+		/// <summary>
+		/// For a product, returns all organizations or by given organizationId -used in ClickPay
+		/// </summary>
+		ListResponse GetProductOrganizations(string organizationRoleId, string organizationType, 
+			RequestParameter dataFilter, string baseUrlAndQuery = null);
+
+		/// <summary>
+		/// Gets the migration users.
+		/// </summary>
+		/// <param name="datafilter">The datafilter.</param>
+		/// <returns></returns>
+		ListResponse GetMigrationUsers(RequestParameter dataFilter);
+
+		/// <summary>
+		/// Updates the users migration status.
+		/// </summary>
+		/// <param name="migrateUsers">The migrate users.</param>
+		/// <returns></returns>
+		MigrateResponse UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers);
+
+		/// <summary>
+		/// Direct call to product to change profile including isActive (mainly used to activate-deactivate from Migration tool)
+		/// </summary>
+		/// <param name="productUserProfile">Product user information</param>
+		/// <returns>string.Empty if success else response contents.</returns>
+		bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile);
+	}
+}

@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<parameters>
+  <parameter name="IssuerUri"
+             description="Used to identity the identity server used"
+             defaultValue="#{IssuerUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='IssuerUri']/@value" />
+  </parameter>
+  <parameter name="ApiUri"
+             description="Used to identify the Unity web api"
+             defaultValue="#{ApiUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='ApiUri']/@value" />
+  </parameter>
+<parameter name="UnifiedSettingsApiUri"
+        description="Used to identify the uri for the Unified Setting API"
+        defaultValue="#{UnifiedSettingsApiUri}#">
+	<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='UnifiedSettingsApiUri']/@value" />
+</parameter>
+  <parameter name="RedirectUri"
+             description="Used to redirect the user to the Unity web site"
+             defaultValue="#{RedirectUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='RedirectUri']/@value" />
+  </parameter>
+  <parameter name="LandingClientId"
+             description="The client name for the Landing web"
+             defaultValue="#{LandingClientId}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='LandingClientId']/@value" />
+  </parameter>
+  <parameter name="LandingScopes"
+             description="Used to identity the scopes needed to use the APIs"
+             defaultValue="#{LandingScopes}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='LandingScopes']/@value" />
+  </parameter>
+  <parameter name="LandingUri"
+             description="Common email service to use for Unified UI email generation"
+             defaultValue="#{LandingUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='LandingUri']/@value" />
+  </parameter>
+  <!-- appSettings -->  
+  <parameter name="Environment"
+             description="Unity environment"
+             defaultValue="#{Environment}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Environment']/@value" />
+  </parameter>
+  <parameter name="ElasticSearchUri"
+             description="URL for Elastic Search"
+             defaultValue="#{ElasticSearchUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchUri']/@value" />
+  </parameter>
+  <parameter name="LogPath"
+             description="Path to use for file logging"
+             defaultValue="#{LogPath}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='LogPath']/@value" />
+  </parameter>
+  <parameter name="LogProductName"
+             description="Product name to use for logging"
+             defaultValue="#{LogProductName_Landing}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='LogProductName']/@value" />
+  </parameter>
+  <parameter name="ElasticSearchIndexTypeName"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ElasticSearchIndexTypeName_Landing}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchIndexTypeName']/@value" />
+  </parameter>
+  <parameter name="ShouldWriteInFile"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldWriteInFile}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldWriteInFile']/@value" />
+  </parameter>
+  <parameter name="ShouldLogPerformance"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldLogPerformance}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldLogPerformance']/@value" />
+  </parameter>
+  <parameter name="ShouldLogDiagnostic"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldLogDiagnostic}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldLogDiagnostic']/@value" />
+  </parameter>
+  <parameter name="ActivityMQName"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ActivityMQName}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ActivityMQName']/@value" />
+  </parameter>
+  <parameter name="ShouldLogOpenIdMessages"
+             description="Should OpenId messages be logged"
+             defaultValue="#{ShouldLogOpenIdMessages}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldLogOpenIdMessages']/@value" />
+  </parameter>
+  <parameter name="StatusCheck"
+             description="Used to check if servers are running correctly"
+             defaultValue="#{StatusCheck}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='StatusCheck']/@value" />
+  </parameter>
+</parameters>

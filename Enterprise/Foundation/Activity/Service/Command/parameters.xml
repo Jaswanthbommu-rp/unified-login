@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"?>
+<parameters>
+  <!-- appSettings -->
+  <parameter name="Environment"
+             description="Activity Command environment"
+             defaultValue="#{Environment}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Environment']/@value" />
+  </parameter>
+  <parameter name="ElasticSearchUri"
+             description="URL for Elastic Search"
+             defaultValue="#{ElasticSearchUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchUri']/@value" />
+  </parameter>
+  <parameter name="ShouldWriteInFile"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldWriteInFile}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldWriteInFile']/@value" />
+  </parameter>
+</parameters>

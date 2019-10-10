@@ -1,0 +1,1108 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Mail;
+using Newtonsoft.Json;
+using RP.Enterprise.Foundation.Audit.Core.Component;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
+{
+	/// <summary>
+	/// Base for Products
+	/// </summary>
+	public class ManageProductBase : IDisposable
+    {
+        const int MAXRETRYCOUNT = 5;
+
+        /// <summary>
+        /// Used to store the product id
+        /// </summary>
+        protected int _productId;
+
+        /// <summary>
+        /// product Url
+        /// </summary>
+        protected string _productUrl;
+
+        /// <summary>
+        /// Logged in enterprise User Guid
+        /// </summary>
+        protected Guid _editorRealPageId;
+
+        /// <summary>
+        /// Logged in enterprise User Persona
+        /// </summary>
+        protected Persona _editorPersona;
+
+        /// <summary>
+        ///  Logged in enterprise User product username
+        /// </summary>
+        protected string _editorProductUsername = "";
+
+        /// <summary>
+        /// Logged in enterprise User product userId
+        /// </summary>
+        protected string _editorProductUserId = "";
+
+        /// <summary>
+        /// The Persona of the user being requested
+        /// </summary>
+        protected Persona _userPersona;
+
+        /// <summary>
+        /// Product username
+        /// </summary>
+        protected string _productUsername = "";
+
+        /// <summary>
+        /// Product user Id
+        /// </summary>
+        protected string _productUserId = "";
+
+        // Managers
+        /// <summary>
+        /// Manage Persoan Business logic
+        /// </summary>
+        protected IManagePersona _managePersona = new ManagePersona();
+
+        /// <summary>
+        /// Manage BlueBook Business logic
+        /// </summary>
+        protected IManageBlueBook _blueBook;
+
+        /// <summary>
+        /// Manage Person Business logic
+        /// </summary>
+        protected IManagePerson _managePerson = new ManagePerson();
+
+        /// <summary>
+        /// Manage UserLogin Business logic
+        /// </summary>
+        protected IManageUserLogin _manageUserLogin = new ManageUserLogin();
+
+        /// <summary>
+        /// Manage Organization Business logic
+        /// </summary>
+        protected IManageOrganization _manageOrganization = new ManageOrganization();
+
+        /// <summary>
+        /// Manage Electronic Address Business logic
+        /// </summary>
+        protected IManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
+
+        /// <summary>
+        /// Manage Party Relationship Business logic
+        /// </summary>
+        protected IManagePartyRelationship _managePartyRelationship = new ManagePartyRelationship();
+
+        // Repositories
+        /// <summary>
+        /// Product InternalSetting Repository
+        /// </summary>
+        protected IProductInternalSettingRepository _productInternalSettingRepository = new ProductInternalSettingRepository();
+
+        /// <summary>
+        /// Saml Repository
+        /// </summary>
+        protected ISamlRepository _samlRepository = new SamlRepository();
+
+        /// <summary>
+        /// Product Repository
+        /// </summary>
+        protected IProductRepository _productRepository = new ProductRepository();
+
+        /// <summary>
+        /// Persona Repository
+        /// </summary>
+        protected IPersonaRepository _personaRepository = new PersonaRepository();
+
+	    /// <summary>
+	    /// Product Repository
+	    /// </summary>
+	    protected IPropertyRepository _propertyRepository = new PropertyRepository();
+
+        /// <summary>
+        /// User login repository
+        /// </summary>
+        protected IUserLoginRepository _userLoginRepository = new UserLoginRepository();
+
+        /// <summary>
+        /// List of Product InternalSetting
+        /// </summary>
+        protected IList<IC.ProductInternalSetting> _productInternalSettingList = new List<IC.ProductInternalSetting>();
+
+        /// <summary>
+        /// UserRole Repository
+        /// </summary>
+        protected IUserRoleRightRepository _userRoleRightRepository = new UserRoleRightRepository();
+
+		// Services
+		/// <summary>
+		/// HttpClient
+		/// </summary>
+		protected HttpClient _client = new HttpClient();
+
+        /// <summary>
+        /// Http Message Handler
+        /// </summary>
+        protected HttpMessageHandler _messageHandler = new HttpClientHandler();
+
+        // Constants
+        /// <summary>
+        /// Product Status Constant
+        /// </summary>
+        public const string _productSettingType_ProductStatus = "ProductStatus";
+
+        /// <summary>
+        /// All Properties Constant
+        /// </summary>
+        protected const string _productSettingType_AllProperties = "AllProperties";
+
+        /// <summary>
+        /// Used for activity logging
+        /// </summary>
+        private string _correlationId;
+
+		/// <summary>
+		/// User claim
+		/// </summary>
+        private DefaultUserClaim _userClaim;
+
+		/// <summary>
+		/// Unified Login Repository
+		/// </summary>
+	    protected IUnifiedLoginRepository _unifiedLoginRepository = new UnifiedLoginRepository();
+
+		/// <summary>
+		/// Contact Mechanism Manager
+		/// </summary>
+		protected IManageContactMechanism _manageContactMechanism = new ManageContactMechanism();
+
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		/// <param name="productId"></param>
+		/// <param name="productInternalSettingRepository"></param>
+		public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository)
+        {
+            _productId = productId;
+            _correlationId = Guid.NewGuid().ToString(); // used for logging
+            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
+			_productInternalSettingList = GetProductSetting(_productId);
+		}
+
+		/// <summary>
+		/// Default constructor with correlationId
+		/// </summary>
+		/// <param name="productId"></param>
+		/// <param name="userClaim">The information about the user calling the service</param>
+		/// <param name="productInternalSettingRepository"></param>
+		public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository)
+        {
+            _productId = productId;
+            _userClaim = userClaim;
+            _correlationId = _userClaim.CorrelationId.ToString();
+            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
+			_productInternalSettingList = GetProductSetting(_productId);
+		}
+
+		/// <summary>
+		/// Get Product Setting
+		/// </summary>
+		/// <param name="productId">Product Id</param>
+		/// <returns>List of Product Internal Settings</returns>
+		public IList<IC.ProductInternalSetting> GetProductSetting(int productId)
+		{
+			IList<IC.ProductInternalSetting> listProductInternalSettings = new List<IC.ProductInternalSetting>();
+
+			RPObjectCache rpcache = new RPObjectCache();
+			var cacheKey = "productInternalSetting_" + productId.ToString();
+			listProductInternalSettings = rpcache.GetFromCache<IList<IC.ProductInternalSetting>>(cacheKey, 600, () =>
+			{
+				// load from database
+				return _productInternalSettingRepository.GetProductInternalSettings(productId);
+			});
+
+			return listProductInternalSettings;
+		}
+
+		/// <summary>
+		/// Get User deactivated Product batch data
+		/// </summary>
+		/// <param name="userPersonaId">User PersonaId</param>
+		/// <returns> User deactivated Product batch data</returns>
+		public RolePropertyList GetDeactivatedProductBatchData(long userPersonaId)
+		{
+			IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
+			RPObjectCache rpcache = new RPObjectCache();
+			var cacheKey = "deactivatedproductsettingsdata_" + userPersonaId.ToString();
+
+			RolePropertyList roleproperty = new RolePropertyList();
+
+			_userProductSettings = rpcache.GetFromCache<IList<ProductSettingList>>(cacheKey, 600, () =>
+			{
+				// get the current user product settings from GreenBook
+				return _productRepository.GetProductSettingsByPersona(userPersonaId);
+
+			});
+
+			bool isDeactivated = _userProductSettings.Any(s => s.ProductId == _productId && s.Value == Convert.ToString((int)UserUiStatusType.Deactivated));
+			if (isDeactivated)
+			{
+				roleproperty = _productRepository.GetUserProductDataFromProductBatch(userPersonaId, _productId);
+			}
+
+			return roleproperty;
+		}
+		/// <summary>
+		/// Used to get information about the calling user and user being modified
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		protected ListResponse GetCompanyEditorAndUserDetails(long editorPersonaId, long userPersonaId)
+        {
+            ListResponse response = new ListResponse();
+            response = verifyPersona(editorPersonaId);
+            if (response.IsError)
+            {
+                return response;
+            }
+            else
+            {
+                // get the editors persona from the result
+                _editorPersona = response.Records[0] as Persona;
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(editorPersonaId, _productId);
+                // the  user making the change, get the Company from the user
+                if (productAttributes.Any(a => a.Name.ToUpper() == "PRODUCTUSERNAME"))
+                {
+                    _editorProductUsername = (from a in productAttributes where a.Name.ToUpper() == "PRODUCTUSERNAME" select a.Value).FirstOrDefault();
+                }
+                if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
+                {
+                    _editorProductUserId = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
+                }
+                //_editorPersona.Organization.BooksMasterId = _manageOrganization.GetBooksMasterId(_editorPersona.Organization.RealPageId);
+            }
+
+            if (userPersonaId != 0)
+            {
+                // verify the persona being changed belongs to the same company as the user making the changes
+                Persona user = _managePersona.GetPersona(userPersonaId);
+                if (user == null || user.Organization.PartyId != _editorPersona.Organization.PartyId)
+                {
+                    response.IsError = true;
+                    response.ErrorReason = "Invalid user persona";
+                    return response;
+                }
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
+                // the Accounting user making the change to the role, get the Company from the user
+                if (productAttributes.Any(a => a.Name.ToUpper() == "PRODUCTUSERNAME"))
+                {
+                    _productUsername = (from a in productAttributes where a.Name.ToUpper() == "PRODUCTUSERNAME" select a.Value).FirstOrDefault();
+                }
+                if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
+                {
+                    _productUserId = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
+                }
+            }
+            response = DoAdditional(response);
+            return response;
+        }
+
+		/// <summary>
+		/// Used to delete all SAML product information and status for a user
+		/// </summary>
+		/// <param name="personaId">The persona of the person to delete all of the product SAML information and status for</param>
+		/// <param name="productId">The product id to delete</param>
+		public void DeleteSamlUserProductInfoAndStatus(long personaId, int productId)
+	    {
+		    _samlRepository.DeleteSamlUserProductInfoAndStatus(personaId, productId);
+	    }
+
+		/// <summary>
+		/// Used to create a new saml user attribute
+		/// </summary>
+		/// <param name="personaId"></param>
+		/// <param name="attributeType"></param>
+		/// <param name="newValue"></param>
+		private void CreateSamlUserAttribute(long personaId, SamlAttributeEnum attributeType, string newValue)
+        {
+            CreateSamlUserAttribute(personaId, attributeType, newValue, _productId);
+        }
+
+        /// <summary>
+        /// Used to create a new saml user attribute (Used for AO)
+        /// </summary>
+        private void CreateSamlUserAttribute(long personaId, SamlAttributeEnum attributeType, string newValue, int productId)
+        {
+            _samlRepository.CreateSamlUserAttribute(personaId, productId, attributeType, newValue);
+        }
+
+        /// <summary>
+        /// Used to update an existing saml user attribute or add one if it does not exist
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="attributeType"></param>
+        /// <param name="newValue"></param>
+        public void UpdateSamlUserAttribute(long personaId, int productId, SamlAttributeEnum attributeType, string newValue)
+        {
+            Dictionary<SamlAttributeEnum, string> settingList = new Dictionary<SamlAttributeEnum, string>();
+            settingList.Add(attributeType, newValue);
+
+            UpdateSamlUserAttributes(personaId, settingList);
+        }
+
+        /// <summary>
+        /// Used to add/update a list of product settings for the given product and persona
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="settingList"></param>
+        public void UpdateSamlUserAttributes(long personaId, Dictionary<SamlAttributeEnum, string> settingList)
+        {
+            UpdateSamlUserAttributes(personaId, settingList, _productId);
+        }
+
+        /// <summary>
+        /// Used to add/update a list of product settings for the given product and persona
+        /// </summary> 
+        internal void UpdateSamlUserAttributes(long personaId, Dictionary<SamlAttributeEnum, string> settingList, int productId)
+        {
+            IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(personaId, productId);
+            if (settingList.Count > 0)
+            {
+                foreach (KeyValuePair<SamlAttributeEnum, string> setting in settingList)
+                {
+                    if (productAttributes.Any(a => a.SamlAttributeId == (int)setting.Key))
+                    {
+                        SamlAttributes attributeToReplace = (from a in productAttributes where a.SamlAttributeId == (int)setting.Key select a).FirstOrDefault();
+                        if (attributeToReplace != null)
+                        {
+                            attributeToReplace.Value = setting.Value;
+                            _samlRepository.UpdateSamlUserAttribute(attributeToReplace);
+                        }
+                    }
+                    else
+                    {
+                        CreateSamlUserAttribute(personaId, setting.Key, setting.Value, productId);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Used to get the list of product roles assigned to the user
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="organizationPartyId">Optional Organization PartyId</param>  
+        /// <returns>List of Roles</returns>
+        public List<UL.Role> GetAssignedRoleForPersona(long userPersonaId, long? organizationPartyId = null)
+        {
+            List<UL.Role> propRole = _userRoleRightRepository.ListRoleByPersona(_productId, userPersonaId, organizationPartyId);
+            return propRole;
+        }
+
+        /// <summary>
+        /// Used to determine if a user is a GB SuperUser
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
+        protected bool IsSuperUser(long userPersonaId)
+        {
+            Persona userPersona = _managePersona.GetPersona(userPersonaId);
+
+            WriteToDiagnosticLog($"IsSuperUser - Getting superuser status, userPersonaId={userPersonaId}");
+            IC.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId, roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
+            if (partyRelationship != null && partyRelationship.RoleTypeFrom.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase))
+            {
+                WriteToDiagnosticLog($"IsSuperUser - userPersonaId={userPersonaId} : true");
+                return true;
+            }
+            WriteToDiagnosticLog($"IsSuperUser - userPersonaId={userPersonaId} : false");
+            return false;
+        }
+
+        /// <summary>
+        /// Used to determine if a user is a GB Regular User (No Email)
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
+        protected bool IsRegularUserNoEmail(long userPersonaId)
+        {
+            Persona userPersona = _managePersona.GetPersona(userPersonaId);
+            WriteToDiagnosticLog($"IsSuperUser - Getting superuser status, userPersonaId={userPersonaId}");
+            IC.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId, roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
+            if (partyRelationship?.RoleTypeFrom.Name.ToUpper() == "USER (NO EMAIL)")
+            {
+                WriteToDiagnosticLog($"IsRegularUserNoEmail - userPersonaId={userPersonaId} : true");
+                return true;
+            }
+            WriteToDiagnosticLog($"IsRegularUserNoEmail - userPersonaId={userPersonaId} : false");
+            return false;
+        }
+
+        /// <summary>
+        /// Get GB User Login by Persona Id
+        /// </summary>
+        protected Tuple<UserLoginOnly, Persona> GetUserLoginByPersonaId(long personaId)
+        {
+            var persona = _managePersona.GetPersona(personaId);
+            return new Tuple<UserLoginOnly, Persona>(_manageUserLogin.GetUserLoginOnly(persona.RealPageId), persona);
+        }
+
+		/// <summary>
+		/// Used to get the list of properties for the given user
+		/// </summary>
+		/// <param name="userPersonaId">The persona id of the user to get the list of properties for</param>
+		/// <param name="productEnum">The product id</param>
+		/// <returns></returns>
+		protected List<ProductProperty> GetAssignedPropertyForPersona(long userPersonaId, ProductEnum productEnum)
+		{
+			List<ProductProperty> propertyList = _propertyRepository.ListPropertiesByPersona(userPersonaId, productEnum);
+		    return propertyList;
+	    }
+
+		/// <summary>
+		/// Used to add the given property id to the given user
+		/// </summary>
+		/// <param name="userPersonaId">The persona id of the user where the property will be added</param>
+		/// <param name="productId">The product enum</param>
+		/// <param name="propertyId">The property id to add</param>
+		/// <returns></returns>
+		protected RepositoryResponse InsertAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
+		{
+			RepositoryResponse result = new RepositoryResponse();
+			WriteToDiagnosticLog($"InsertAssignedUserPropertyData START - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+			result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId: userPersonaId, productId: productId, propertyId: propertyId, remove: 0);
+			if (result.Id < 0)
+			{
+				WriteToErrorLog($"InsertAssignedUserPropertyData - Unable to Insert record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
+				return result;
+			}
+
+			WriteToDiagnosticLog($"InsertAssignedUserPropertyData END - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}, result - {result.Id}.");
+			return result;
+		}
+
+	    /// <summary>
+	    /// Used to remove the given property id from the given user
+	    /// </summary>
+	    /// <param name="userPersonaId">The persona id of the user where the property will be removed</param>
+	    /// <param name="productId">The product enum</param>
+	    /// <param name="propertyId">The property id to remove</param>
+		/// <returns></returns>
+		protected RepositoryResponse DeleteAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
+		{
+			RepositoryResponse result = new RepositoryResponse();
+			WriteToDiagnosticLog($"DeleteAssignedUserData START - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+
+			result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId:userPersonaId, productId:productId, propertyId:propertyId, remove: 1);
+			if (result.Id < 0)
+			{
+				WriteToErrorLog($"DeleteAssignedUserData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
+				return result;
+			}
+			WriteToDiagnosticLog($"DeleteAssignedUserData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+			return result;
+		}
+
+        /// <summary>
+		/// Check User product right
+		/// </summary>		
+		/// <param name="productRightEnum">The product right id</param>
+		/// <returns></returns>
+		protected bool CheckUserProductRight( ProductRightEnum productRightEnum)
+        {
+            return _userClaim.Rights.Contains(productRightEnum.ToString());            
+        }
+
+		/// <summary>
+		/// Used to write to the log
+		/// </summary>
+		/// <param name="logType"></param>
+		/// <param name="message"></param>
+		/// <param name="logData"></param>
+		/// <param name="exception"></param>
+		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            Log.Write(logType, new LogDetails
+            {
+                Message = message,
+                AdditionalInfo = logData,
+                ProductModule = this.GetType().ToString(),
+                UserId = _editorRealPageId.ToString(),
+                PmcId = _editorPersona?.OrganizationPartyId.ToString(),
+                Exception = exception,
+                CorrelationId = _correlationId,
+            });
+        }
+
+        /// <summary>
+        /// Used to write data to the information log for diagnostic
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
+        {
+            WriteToLog(LogType.Information, message, logData);
+        }
+
+        /// <summary>
+        /// Used to write data to the error log
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        /// <param name="exception"></param>
+        protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            WriteToLog(LogType.Error, message, logData, exception);
+        }
+
+        /// <summary>
+        /// Used to write data to the diagnostic log
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
+        {
+            WriteToLog(LogType.Diagnostic, message, logData);
+        }
+
+        /// <summary>
+        /// Do more stuff in the product manager if needed to set up the product
+        /// </summary>
+        public virtual ListResponse DoAdditional(ListResponse response)
+        {
+            return response;
+        }
+
+        /// <summary>
+        /// Verify if the persona passed matches the current user context
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        protected ListResponse verifyPersona(long personaId)
+        {
+            ListResponse response = new ListResponse() { IsError = false };
+            Persona editor = new Persona();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+
+            if (personaId == 0)
+            {
+                response = new ListResponse()
+                {
+                    TotalRows = 0,
+                    RowsPerPage = 0,
+                    TotalPages = 1,
+                    ErrorReason = "Invalid persona",
+                    IsError = true
+                };
+            }
+            else
+            {
+                // verify the persona belongs to the current user
+                editor = _managePersona.GetPersona(personaId);
+                if (editor == null || editor.RealPageId != _editorRealPageId)
+                {
+                    WriteToDiagnosticLog($"verifyPersona - Error getting persona. personaId={personaId}");
+                    // the passed persona doesn't belong to the caller, so fail
+                    response = new ListResponse()
+                    {
+                        TotalRows = 0,
+                        RowsPerPage = 0,
+                        TotalPages = 1,
+                        ErrorReason = "Invalid persona",
+                        IsError = true
+                    };
+                }
+                else
+                {
+                    IList<Persona> personaList = new List<Persona>() { editor };
+                    logData = new Dictionary<string, object>();
+                    logData.Add("personaList", personaList);
+                    WriteToDiagnosticLog($"verifyPersona - Found persona. personaId={personaId}", logData);
+                    response = new ListResponse()
+                    {
+                        Records = personaList.Cast<object>().ToList(),
+                        TotalRows = 0,
+                        RowsPerPage = 0,
+                        TotalPages = 1,
+                        ErrorReason = "",
+                        IsError = false
+                    };
+                }
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Used to update the persona product setting type for the given user and setting
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="userPersonaId"></param>
+        /// <param name="settingType"></param>
+        /// <param name="value"></param>
+        public void UpdateProductSettingProductStatus<T>(long userPersonaId, string settingType, T value)
+        {
+            // add the new status flag to the product before we start
+            IList<ProductSettingType> productSettingTypes = _productRepository.ListProductSettingType();
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+
+			string statusValue = value.ToString();
+			logData.Add("Status Value", statusValue);
+			if (Int32.Parse(statusValue) == (int)ProductBatchStatusType.Deleted || Int32.Parse(statusValue) == (int)ProductBatchStatusType.Inactive)
+			{
+				var persona = _managePersona.GetPersona(userPersonaId);
+				var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+                OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
+                
+                int deactivatedStatus = (int)UserUiStatusType.Deactivated;
+				logData.Add("User Current login", userLogin);
+                logData.Add("orgStatus", orgStatus);
+				WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
+
+				if (string.Equals(orgStatus.Status.ToString(), UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
+				{
+					statusValue = deactivatedStatus.ToString();
+				}
+			}
+
+			// get the id for ProductStatus type
+			if (productSettingTypes.Any(a => a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase)))
+            {
+                int productStatusTypeId = (from a in productSettingTypes where a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase) select a.ProductSettingTypeId).FirstOrDefault();
+                repositoryResponse = _productRepository.CreateProductSetting(userPersonaId, _productId, productStatusTypeId, statusValue.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Used to update the persona product setting type for the given user, product and setting (Used in AO)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="userPersonaId"></param>
+        /// <param name="settingType"></param>
+        /// <param name="productId"></param>
+        /// <param name="value"></param>
+        public void UpdateProductSettingProductStatus<T>(long userPersonaId, string settingType, int productId, T value)
+        {
+            // add the new status flag to the product before we start
+            IList<ProductSettingType> productSettingTypes = _productRepository.ListProductSettingType();
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+
+			string statusValue = value.ToString();
+			logData.Add("Status Value", statusValue);
+			if (Int32.Parse(statusValue) == (int)ProductBatchStatusType.Deleted || Int32.Parse(statusValue) == (int)ProductBatchStatusType.Inactive)
+			{
+				var persona = _managePersona.GetPersona(userPersonaId);
+				var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+                OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
+
+                int deactivatedStatus = (int)UserUiStatusType.Deactivated;
+				logData.Add("User Current login", userLogin);
+				WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
+				if (orgStatus.Status.ToString().ToUpper() == UserUiStatusType.Disabled.ToString().ToUpper())
+				{
+					statusValue = deactivatedStatus.ToString();
+				}
+			}
+
+			// get the id for ProductStatus type
+			if (productSettingTypes.Any(a => a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase)))
+            {
+                int productStatusTypeId = (from a in productSettingTypes where a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase) select a.ProductSettingTypeId).FirstOrDefault();
+                repositoryResponse = _productRepository.CreateProductSetting(userPersonaId, productId, productStatusTypeId, statusValue.ToString());
+            }
+        }
+        /// <summary>
+        /// Used to get product company information from BlueBook for the given product
+        /// </summary>
+        /// <param name="blueBookProductName">The BlueBook product name to request the company information for</param>
+        /// <param name="includeExtra">Additional information to filter bluebook data returned</param>
+        /// <returns>The blue book company instance information</returns>
+        protected CustomerCompanyMap GetProductCompanyInstanceId(string blueBookProductName, string includeExtra = "")
+        {
+            //IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, blueBookProductName.ToUpper(), includeExtra);
+            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, blueBookProductName.ToUpper(), includeExtra);
+            if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
+            CustomerCompanyMap company = new CustomerCompanyMap();
+            if (companyProductList.Any(a => a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase)))
+            {
+                company = (from a in companyProductList where a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase) select a).FirstOrDefault();
+            }
+            return company;
+        }
+
+		/// <summary>
+		/// Used to validate or construct what looks like a valid email address to be used by products
+		/// </summary>
+		/// <param name="emailAddress"></param>
+		/// <returns></returns>
+		protected string ValidateAndReturnEmailAddress(string emailAddress)
+        {
+            if (!new EmailAddressAttribute().IsValid(emailAddress))
+            {
+                try
+                {
+                    MailAddress ma = new MailAddress(emailAddress);
+                    if (!ma.Host.Contains("."))
+                    {
+                        emailAddress = ValidateAndReturnEmailAddress(emailAddress + ".com");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (!emailAddress.Contains("@"))
+                    {
+                        // add @test.com to the passed email so it looks legit
+                        emailAddress = ValidateAndReturnEmailAddress(emailAddress + "@bogusemail.com");
+                    }
+                }
+            }
+            else
+            {
+                return emailAddress;
+            }
+
+            return emailAddress;
+        }
+
+	    /// <summary>
+	    /// Dumps API base URL and body
+	    /// </summary>
+	    protected void DumpApiCallInfoToDiagnosticLog(string baseUrlAndQuery, object apiPayLoad = null)
+	    {
+		    Dictionary<string, object> logData = new Dictionary<string, object>();
+		    logData.Add("baseUrlAndQuery", baseUrlAndQuery);
+
+		    if (apiPayLoad != null)
+			    logData.Add("apiPayLoad", JsonConvert.SerializeObject(apiPayLoad));
+
+		    WriteToDiagnosticLog($"API Call for product {_productId} is getting called.", logData);
+	    }
+
+		#region Activity Logging
+
+		/// <summary>
+		/// Write unassign activity log for user
+		/// </summary> 
+		protected void WriteUnassignActivityLog(long fromPersonaId, long toPersonaId)
+        {
+            // log product user updated activity
+            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+
+            WriteActivityLog(fromUserLogDetail, toUserLogDetails,
+               booksProductDetail.BooksProductCode,
+				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+		}
+
+		/// <summary>
+		/// Write deactivated activity log for user
+		/// </summary> 
+		protected void WriteDeActivatedActivityLog(long fromPersonaId, long toPersonaId)
+		{
+			// log product user updated activity
+			var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+			var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
+			var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+
+			WriteActivityLog(fromUserLogDetail, toUserLogDetails,
+			   booksProductDetail.BooksProductCode,
+				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is de activated in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+		}
+
+		/// <summary>
+		/// Write Reactivated activity log for user
+		/// </summary> 
+		protected void WriteReActivatedActivityLog(long fromPersonaId, long toPersonaId)
+		{
+			// log product user updated activity
+			var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+			var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
+			var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+
+			WriteActivityLog(fromUserLogDetail, toUserLogDetails,
+			   booksProductDetail.BooksProductCode,
+				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is re-activated in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+		}
+
+		/// <summary>
+		/// Write Create User activity log
+		/// </summary> 
+		protected void WriteCreateUserActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
+        {
+            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
+				"{0} {1} created in product {2} by user {3} {4}.");
+		}
+
+		/// <summary>
+		/// Write Update User activity log
+		/// </summary> 
+		protected void WriteUpdateUserActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
+        {
+            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
+				 "{0} {1} updated in product {2} by user {3} {4}.");
+		}
+
+	    /// <summary>
+	    /// Write Update User-Type Activity Log
+	    /// </summary>
+	    protected void WriteUpdateUserTypeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, BatchProcessType batchProcessType)
+	    {
+		    string message = string.Empty;
+		    if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin)
+		    {
+			    message = "{0} {1} user type changed from regular user to admin in product {2} by user {3} {4}.";
+		    }
+		    else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
+		    {
+			    message = "{0} {1} user type changed from admin to regular user in product {2} by user {3} {4}.";
+		    }
+            else if (batchProcessType == BatchProcessType.UserTypeAdminToExternal)
+            {
+                message = "{0} {1} user type changed from admin to external user in product {2} by user {3} {4}.";
+            }
+            else if (batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+            {
+                message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
+            }
+            else if (batchProcessType == BatchProcessType.ProfileUpdate)
+			{
+				message = "{0} {1} user profile updated in product {2} by user {3} {4}.";
+			}
+
+			WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
+	    }
+
+		protected void WriteUserActivityLogWithMessage(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
+        {
+            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
+        }
+
+        protected void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message)
+        {
+            // log product user updated activity
+            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogDetail = GetUserActivityLogInfo(toPersonaId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+
+            var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
+                booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+
+            WriteActivityLog(fromUserLogDetail, toUserLogDetail,
+               booksProductDetail.BooksProductCode, logMessage);
+        }
+
+        protected void WriteActivityLogWithMessageByProduct(long fromPersonaId, long toPersonaId, int productId, string message)
+        {
+            // log product user updated activity
+            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogDetail = GetUserActivityLogInfo(toPersonaId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
+
+            var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
+                booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+
+            WriteActivityLog(fromUserLogDetail, toUserLogDetail,
+               booksProductDetail.BooksProductCode, logMessage);
+        }
+
+        private void WriteActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
+        {
+            // log product user created activity
+            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+
+		    var messageToLog = string.Format(message, toPerson.FirstName, toPerson.LastName,
+			    booksProductDetail.Name,
+			    fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+
+            WriteActivityLog(fromUserLogDetail,
+                 new UserActivityLogInfo
+                 {
+                     FirstName = toPerson.FirstName,
+                     LastName = toPerson.LastName,
+                     BooksOrganizationMasterId = fromUserLogDetail.BooksOrganizationMasterId,
+                     LoginName = toUserGbLogin.LoginName,
+                     UserId = toUserGbLogin.UserId,
+                     RealPageId = toUserGbLogin.RealPageId
+                 },
+            booksProductDetail.BooksProductCode, messageToLog);
+        }
+       
+        /// <summary>
+        /// Get User info for activity logging
+        /// </summary>
+        private UserActivityLogInfo GetUserActivityLogInfo(long personaId)
+        {
+            var persona = _managePersona.GetPersona(personaId);
+            var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+            var person = _managePerson.GetPerson(persona.RealPageId);
+
+            return new UserActivityLogInfo
+            {
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                RealPageId = userLogin.RealPageId,
+                LoginName = userLogin.LoginName,
+                BooksOrganizationMasterId = persona.Organization.BooksMasterId,
+                UserId = userLogin.UserId
+            };
+        }
+
+	    private void WriteActivityLog(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, string booksProductCode, string message)
+	    {
+		    // log product user updated activity
+		    try
+		    {
+			    LogActivity.WriteActivity(new ActivityDetails
+			    {
+				    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
+				    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+				    CorrelationId = _correlationId,
+				    BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
+				    Message = message,
+
+				    FromUserLoginName = fromUserLogInfo.LoginName,
+				    FromUserLoginId = fromUserLogInfo.UserId,
+				    FromUserFirstName = fromUserLogInfo.FirstName,
+				    FromUserLastName = fromUserLogInfo.LastName,
+				    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
+
+				    ToUserLoginId = toUserLogInfo.UserId,
+				    ToUserLoginName = toUserLogInfo.LoginName,
+				    ToUserFirstName = toUserLogInfo.FirstName,
+				    ToUserLastName = toUserLogInfo.LastName,
+				    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+
+				    BooksProductCode = booksProductCode
+			    });
+		    }
+		    catch (Exception ex)
+		    {
+		    }
+	    }
+
+	    #endregion
+
+        public void Dispose()
+        {
+            _client.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Used internally for activity logging
+    /// </summary>
+    public class UserActivityLogInfo
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public Guid RealPageId { get; set; }
+        public string LoginName { get; set; }
+        public long BooksOrganizationMasterId { get; set; }
+        public long UserId { get; set; }
+    }
+
+    /// <summary>
+    /// Used to help convert product classes to GreenBook classes
+    /// </summary>
+    public static class BlueBookHelpers
+    {
+        /// <summary>
+        /// Used to convert a BlueBook property into a GreenBook property
+        /// </summary>
+        /// <param name="properties">The list of roles to convert</param>
+        /// <returns></returns>
+        public static IList<ProductProperty> FromBlueBookToGBProperties(this IList<PropertyInstance> properties)
+        {
+            if (properties == null) return null;
+            IList<ProductProperty> results = new List<ProductProperty>();
+            foreach (PropertyInstance property in properties)
+            {
+                if (property.IsActive)
+                {
+                    results.Add(new ProductProperty
+                    {
+                        ID = property.PropertyInstanceSourceId,
+                        Name = property.PropertyName,
+                        State = property.Address.State
+                    });
+                }
+            }
+            return results;
+        }
+
+		/// <summary>
+		/// Used to convert a BlueBook property into a GreenBook property
+		/// </summary>
+		/// <param name="properties">The list of roles to convert</param>
+		/// <returns></returns>
+		public static IList<ProductProperty> MapBlueBookToGBProperties(this CompanyPropertyRootObject companyProperties)
+		{
+			if (companyProperties == null ) return null;
+			IList<ProductProperty> results = new List<ProductProperty>();
+			foreach (var property in companyProperties.data.attributes.getCompanyPropertyInstances)
+			{
+				if (property.isActive)
+				{
+					results.Add(new ProductProperty
+					{
+						ID = property.propertyInstanceSourceId,
+						Name = property.propertyName,
+						State = property.state
+					});
+				}
+			}
+			return results;
+		}
+
+		/// <summary>
+		/// Used to convert a BlueBook master property into a GreenBook property
+		/// </summary>
+		/// <param name="properties"></param>
+		/// <returns></returns>
+		public static IList<ProductProperty> FromBlueBookMasterPropertyToGBProperties(this IList<CustomerCompanyPropertyMap> properties)
+	    {
+		    if (properties == null) return null;
+		    IList<ProductProperty> results = new List<ProductProperty>();
+		    foreach (CustomerCompanyPropertyMap property in properties)
+		    {
+			    if (property.IsActive)
+			    {
+				    results.Add(new ProductProperty
+				    {
+					    ID = property.CustomerPropertyId.ToString(),
+					    Name = property.PropertyName,
+						Street1 = property.PropertyAddress,
+					    State = property.PropertyState
+				    });
+			    }
+		    }
+		    return results;
+	    }
+	}
+}

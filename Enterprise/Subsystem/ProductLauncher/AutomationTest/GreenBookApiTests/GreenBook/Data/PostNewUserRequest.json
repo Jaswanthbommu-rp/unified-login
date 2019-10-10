@@ -1,0 +1,41 @@
+﻿{  
+   "firstName":"<firstName>",
+   "lastName":"<lastName>",
+   "middleName":"",
+   "notificationEmail":"Kiran@Test.com",
+   "password":"<password>",
+   "persona":[  
+
+   ],
+   "telecommunicationNumber":[  
+      {  
+         "countryCode":"01",
+         "areaCode":"",
+         "phoneNumber":"",
+         "contactMechanismUsageType":{  
+            "contactMechanismUsageTypeId":201
+         }
+      }
+   ],
+   "partyRole":{  
+      "roleTypeId":304
+   },
+   "realPageId":"",
+   "userTypeId":<userTypeId>,
+   "PreferredContactMethodId":1,
+   "industryjobTitle":304,
+   "title":"QA",
+   "phoneNumber":"",
+   "phoneType":201,
+   "userLogin":{  
+      "thruDate":"",
+      "loginName":"<loginName>",
+      "isActive":true,
+      "fromDate":"2018-03-27T18:00:00.903Z",
+      "is3rdPartyIDP":false,
+      "timeZoneOffset":"Central Standard Time"
+   },
+   "productBatch":[  
+
+   ]
+}

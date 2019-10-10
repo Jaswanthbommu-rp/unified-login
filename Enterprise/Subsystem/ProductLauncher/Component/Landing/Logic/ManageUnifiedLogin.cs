@@ -1,0 +1,1513 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
+{
+	public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
+    {
+        private DefaultUserClaim _userClaims;
+
+        #region Ctor
+
+
+        /// <summary>
+		/// Default constructor
+		/// </summary>
+		/// <param name="userClaims"></param>
+        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedLogin, null)
+        {
+            WriteToDiagnosticLog("UnifiedLogin - ManageUnifiedLogin.Ctor - Getting Product settings.");
+            _productId = (int)ProductEnum.UnifiedLogin;
+            _editorRealPageId = userClaims.UserRealPageGuid;
+            _blueBook = new ManageBlueBook(userClaims);
+	        _userClaims = userClaims;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        #region Properties and Roles
+
+        /// <summary>
+        /// Used to add/update a role in Greenbook
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
+        /// <param name="partyId"></param>
+        /// <param name="roleId"></param>
+        /// <param name="roleName"></param>
+        /// <param name="inheritRoleId"></param>
+        /// <returns></returns>
+        public ListResponse AddUpdateRole(long editorPersonaId, long partyId, long roleId, string roleName, string inheritRoleId)
+        {            
+            ListResponse response = new ListResponse();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }                        
+            
+            try
+            {
+                roleName = roleName.Trim();
+                UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+                if (roleId == 0) // New Role
+                {
+                  
+                    int roleTypeId = (int)UserRoleType.SuperUser;                    
+                    List<CategoryType> catList = GetCategoryType();
+                    int roleCategoryId = catList.FirstOrDefault(c => c.CategoryName.ToUpper() == "ROLE TYPE" && c.Status.ToUpper() == "CUSTOM").StatusTypeid;
+
+
+                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId);
+                    if(resp.ErrorMessage.Trim() != string.Empty )
+                    {
+                        response.IsError = true;
+                        response.ErrorReason = resp.ErrorMessage;
+                    }
+                    List<object> role = new List<object>();
+                    role.Add(resp.Id);
+                    response.Records = role;
+
+                }
+                else // Existing role to Edit/Update
+                {
+                   
+                    var resp = ocr.UpdateCustomRole(roleId,roleName, "");
+                    if (resp.ErrorMessage.Trim() != string.Empty)
+                    {
+                        response.IsError = true;
+                        response.ErrorReason = resp.ErrorMessage;
+                    }
+                    List<object> role = new List<object>();
+                    role.Add(resp.Id);
+                    response.Records = role;
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+            }  
+
+            return response;
+        }
+        
+        /// <summary>
+        /// Used to Delete a role in Greenbook
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="roleId"></param>
+       
+        /// <returns></returns>
+        public ListResponse DeleteRole(long editorPersonaId, long roleId)
+        {
+            ListResponse response = new ListResponse();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+
+            try
+            {
+                UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+
+                // check with logged in editors rights
+                List<string> editorRights = _userClaims.Rights;
+                List<string> rolesToDel = new List<string>();
+                rolesToDel.Add(roleId.ToString());
+
+                var partyId = _userClaims.OrganizationPartyId;
+
+                // Get all rights to check with roles
+                ProductRepository pr = new ProductRepository();
+                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                //var gbAllRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedLogin, productIdList);
+                                
+                //bool editorHasRight = checkEditorCanDeleteRoles(editorRights, rolesToDel, gbAllRights);
+                //if (!editorHasRight)
+                //{
+                //    response.IsError = true;
+                //    response.ErrorReason = "User has no right to remove rights";
+                //}
+                //else               
+                //{
+                    var resp = ocr.DeleteRole(roleId);
+                    if (resp.ErrorMessage.Trim() != string.Empty)
+                    {
+                        response.IsError = true;
+                        response.ErrorReason = resp.ErrorMessage;
+                    }
+                    List<object> role = new List<object>();
+                    role.Add(resp.Id);
+                    response.Records = role;
+                //}
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Used to Delete a role in Greenbook
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>       
+        /// <param name="roleId"></param>
+
+        /// <returns></returns>
+        public ListResponse SetDefaultRole(long editorPersonaId, long roleId)
+        {
+            ListResponse response = new ListResponse();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+
+            try
+            {
+                UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+
+                var resp = ocr.SetDefaultRole(roleId);
+                if (resp.ErrorMessage.Trim() != string.Empty)
+                {
+                    response.IsError = true;
+                    response.ErrorReason = resp.ErrorMessage;
+                }
+                List<object> role = new List<object>();
+                role.Add(resp.Id);
+                response.Records = role;
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+            }
+
+            return response;
+        }
+
+
+
+        /// <summary>
+        /// Used to assign or unassign a right to a list of roles
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
+        /// <param name="roleId">The role being assigned</param>
+        /// <param name="rightsToAdd">A list of right ids to add to the role</param>
+        /// <param name="rightsToRemove">A list of right ids to remove from the role</param>
+        public ListResponse UpdateRightsToRole(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+        {
+            ListResponse response = new ListResponse();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+            
+            try
+            {
+                if (rightsToAdd != null && rightsToRemove != null)
+                {
+                    if (rightsToAdd.Count > 0 || rightsToRemove.Count > 0)
+                    {
+                        //// check with logged in editors rights
+                        //List<string> editorRights = _claimDetails.Rights;
+                        //if (rightsToAdd.Count > 0)
+                        //{
+                        //    bool editorHasRight = checkEditorCanUpdateRights(editorRights, rightsToAdd);
+                        //    if (!editorHasRight)
+                        //    {
+                        //        response.IsError = true;
+                        //        response.ErrorReason = "User has no right to add/remove rights";
+                        //    }                        
+                        //};
+                        //if (rightsToRemove.Count > 0 && response.IsError == false)
+                        //{
+                        //    bool editorHasRight = checkEditorCanUpdateRights(editorRights, rightsToRemove);
+                        //    if (!editorHasRight)
+                        //    {
+                        //        response.IsError = true;
+                        //        response.ErrorReason = "User has no right to add/remove rights";
+                        //    }
+                        //};
+
+                        //if (response.IsError == false)
+                        //{
+                            LinkRightsToRole(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                        //}
+                    }
+                    else
+                    {
+                        //response.IsError = false;
+                        //response.ErrorReason = "No rights added or removed";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Used to assign or unassign a right to a list of roles
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
+        /// <param name="roleId">The role being assigned</param>
+        /// <param name="rightsToAdd">A list of right ids to add to the role</param>
+        /// <param name="rightsToRemove">A list of right ids to remove from the role</param>
+        public ListResponse CloneRightsToRole(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+        {
+            ListResponse response = new ListResponse();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+
+            try
+            {
+                if (rightsToAdd != null && rightsToRemove != null)
+                {
+                    if (rightsToAdd.Count > 0 || rightsToRemove.Count > 0)
+                    {
+                        //    // check with logged in editors rights
+                        //    List<string> editorRights = _claimDetails.Rights;
+                        //    if (rightsToAdd.Count > 0)
+                        //    {
+                        //        bool editorHasRight = checkEditorCanUpdateRights(editorRights, rightsToAdd);
+                        //        if (!editorHasRight)
+                        //        {
+                        //            response.IsError = true;
+                        //            response.ErrorReason = "User has no right to clone role";
+                        //        }
+                        //    };
+                        //    if (rightsToRemove.Count > 0 && response.IsError == false)
+                        //    {
+                        //        bool editorHasRight = checkEditorCanUpdateRights(editorRights, rightsToRemove);
+                        //        if (!editorHasRight)
+                        //        {
+                        //            response.IsError = true;
+                        //            response.ErrorReason = "User has no right to clone role";
+                        //        }
+                        //    };
+
+                        //    if (response.IsError == false)
+                        //    {
+                        LinkRightsToRole(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                        //    }
+                        //    else
+                        //    {
+                        //        try
+                        //        {
+                        //            UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+                        //            ocr.DeleteRole(roleId);
+                        //        }catch{ }
+                        //    }
+                    }
+                    else
+                    {
+                        //response.IsError = false;
+                        //response.ErrorReason = "No rights added or removed";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = ex.Message;
+            }
+
+            return response;
+
+        }
+
+
+        /// <summary>
+        /// Returns all Roles For Party(Org) with associated rights (User Access Groups in UnifiedLogin)
+        /// </summary>
+        public ListResponse GetRoles(long editorPersonaId,  long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId); 
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UnifiedLogin - ManageUnifiedLogin.GetRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UnifiedLogin product
+                WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+                
+                var productIds = GetProductIdsByOrg();
+
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                var gbAllRoles = umr.ListRolesForProductsByPartyId(partyId, productId, productIds);
+	            gbAllRoles = gbAllRoles.OrderBy(r => r.Name).ToList();
+
+				WriteToDiagnosticLog(
+                    $"UnifiedLogin - ManageUnifiedLogin.GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                                    
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRoles.Cast<object>().ToList(),
+                        TotalRows = gbAllRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+               
+                
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
+                WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Returns all Roles With Count For Party(Org) with associated rights (User Access Groups in UnifiedLogin)
+        /// </summary>
+        public ListResponse GetRolesWithCount(long editorPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetRolesWithCount at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UnifiedLogin - ManageUnifiedLogin.GetRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UnifiedLogin product
+                WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRoleWithRights with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+
+                //Get Product Id's by org
+                               
+                var productIds = GetProductIdsByOrg();
+
+                var gbAllRoles = umr.ListRoleWithRights(partyId, productId, productIds);
+                var gbRolesWithCount = GetRolesWithRightsCount(gbAllRoles, partyId, productId, productIds);
+
+	            gbRolesWithCount = gbRolesWithCount.OrderBy(r => r.Name).ToList();
+
+				WriteToDiagnosticLog(
+                    $"UnifiedLogin - ManageUnifiedLogin.GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                
+                    response = new ListResponse()
+                    {
+                        Records = gbRolesWithCount.Cast<object>().ToList(),
+                        TotalRows = gbRolesWithCount.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };                
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
+                WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Returns all Rights For Party(Org)  with associated  roles  (User Access Groups in UnifiedLogin)
+        /// </summary>
+        public ListResponse GetRights(long editorPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetRights at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UnifiedLogin - ManageUnifiedLogin.GetRights.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UnifiedLogin product
+                WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting all GB rights from GB DB - pr.ListRightForProductsByPartyId with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+                var productIds = GetProductIdsByOrg();
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
+
+                gbAllRights = GetRightsWithoutDefault(gbAllRights);
+
+	            gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
+
+                //// check with logged in editors rights
+                //List<string> editorRights = _claimDetails.Rights;
+                //setEnableDisableByEditorRights(editorRights, ref gbAllRights);
+
+                WriteToDiagnosticLog(
+                    $"UnifiedLogin - ManageUnifiedLogin.GetRights.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRights.Cast<object>().ToList(),
+                        TotalRows = gbAllRights.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                
+                
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
+                WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRights Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Returns all Rights With Count For Party(Org)  with associated  roles  (User Access Groups in UnifiedLogin)
+        /// </summary>
+        public ListResponse GetRightsWithCount(long editorPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetRights at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UnifiedLogin - ManageUnifiedLogin.GetRights.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UnifiedLogin product
+                WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRoleWithRights with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+                //Get Product Id's by org
+
+                var productIds = GetProductIdsByOrg();
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+
+                var gbAllRights = umr.ListRightWithRoles(partyId, productId, productIds);
+                var gbRightsWithCount = GetRightsWithRolesCount(gbAllRights);
+	            gbRightsWithCount = gbRightsWithCount.OrderBy(r => r.Description).ToList();
+
+				WriteToDiagnosticLog(
+                    $"UnifiedLogin - ManageUnifiedLogin.GetRights.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+                response = new ListResponse()
+                {
+                    Records = gbRightsWithCount.Cast<object>().ToList(),
+                    TotalRows = gbRightsWithCount.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
+                WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRights Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Returns Rights with selected rights for a roleId(User Access Groups in UnifiedLogin)
+        /// </summary>
+        public ListResponse GetRightsByRole(long editorPersonaId, long partyId , long roleId )
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId); 
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get rights from DB for UnifiedLogin product
+                WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+
+                var productIds = GetProductIdsByOrg();
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+	            ProductRepository pr = new ProductRepository();
+	            IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+				var gbAllRights = umr.ListRightsByRole(partyId, productIdList, productId, roleId);
+
+                gbAllRights = GetRightsWithoutDefault(gbAllRights);
+	            gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
+
+				WriteToDiagnosticLog(
+                    $"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                
+                    
+                response = new ListResponse()
+                {
+                    Records = gbAllRights.Cast<object>().ToList(),
+                    TotalRows = gbAllRights.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+               
+                
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
+                WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Returns All Rights with selected rights for a roleId(User Access Groups in UnifiedLogin)
+        /// </summary>
+        public ListResponse GetAllRightsByRole(long editorPersonaId, long partyId, long roleId)
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UserManagement - ManageUnifiedLogin.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get rights from DB for UserManagement product
+                WriteToDiagnosticLog(
+                   $"UserManagement - Getting all GB roles from GB DB - pr.ListAllRightsForProductsByPartyId with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+
+                var productIds = GetProductIdsByOrg();
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
+
+	            gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
+                
+				WriteToDiagnosticLog(
+                    $"UserManagement - ManageUnifiedLogin.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+                //// check with logged in editors rights
+                //List<string> editorRights = _claimDetails.Rights;
+                //setEnableDisableByEditorRights(editorRights, ref gbAllRights);
+
+                if (roleId != 0) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog(
+                         $"UserManagement - ManageUnifiedLogin.GetRightsByRole-MergeRightsWithAllRights calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    response = MergeRightsWithAllRights(gbAllRights, roleId, partyId);
+                    WriteToDiagnosticLog(
+                           $"UserManagement - ManageUnifiedLogin.GetRightsByRole-MergeRightsWithAllRights completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRights.Cast<object>().ToList(),
+                        TotalRows = gbAllRights.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Returns All Roles with selected roles for a rightId(User Access Groups in UserManagement)
+        /// </summary>
+        public ListResponse GetRolesByRight(long editorPersonaId, long partyId, long rightId)
+        {
+            WriteToDiagnosticLog(
+                $"UserManagement - ManageUnifiedLogin.GetRolesByRight at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UserManagement - ManageUnifiedLogin.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get rights from DB for UserManagement product
+                WriteToDiagnosticLog(
+                   $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+
+                var productIds = GetProductIdsByOrg();
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                var gbAllRoles = umr.ListRolesForProductsByPartyId(partyId, productId, productIds);
+
+	            gbAllRoles = gbAllRoles.OrderBy(r => r.Name).ToList();
+
+                // Get all rights to check with roles
+                var gbAllRights = umr.ListRightWithRoles(partyId, productId, productIds);
+
+
+                //// check with logged in editors rights
+                //List<string> editorRights = _claimDetails.Rights;
+                //setEnableDisableByEditorRoles(editorRights, ref gbAllRoles, gbAllRights);
+
+                WriteToDiagnosticLog(
+                    $"UserManagement - ManageUnifiedLogin.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+                if (rightId != 0) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog(
+                         $"UserManagement - ManageUnifiedLogin.GetRightsByRole-MergeRightsWithAllRights calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    response = MergeRolesWithAllRoles(gbAllRoles, rightId, partyId, productId);
+                    WriteToDiagnosticLog(
+                           $"UserManagement - ManageUnifiedLogin.GetRightsByRole-MergeRightsWithAllRights completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+                    
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRoles.Cast<object>().ToList(),
+                        TotalRows = gbAllRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Used to assign or unassign a right to a list of roles
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
+        /// <param name="rightId">The right being assigned</param>
+        /// <param name="rolesToAdd">A list of roles ids to add to the role</param>
+        /// <param name="rolesToRemove">A list of roles ids to remove from the role</param>
+        public ListResponse UpdateRolesByRight(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
+        {
+            ListResponse response = new ListResponse();
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            if (response.IsError) { return response; }
+
+            try
+            {
+                if (rolesToAdd != null && rolesToRemove != null)
+                {
+                    //var partyId = _claimDetails.OrganizationPartyId;
+                    //// Get all rights to check with roles
+                    //ProductRepository pr = new ProductRepository();
+                    //IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                    //UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                    //var gbAllRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedLogin, productIdList);
+
+                    //// check with logged in editors rights
+                    //List<string> editorRights = _claimDetails.Rights;
+                    //if (rolesToAdd.Count > 0)
+                    //{
+                    //    bool editorHasRight = checkEditorCanUpdateRoles(editorRights, rolesToAdd, gbAllRights);
+                    //    if (!editorHasRight)
+                    //    {
+                    //        response.IsError = true;
+                    //        response.ErrorReason = "User has no right to add/remove roles";
+                    //    }
+                    //};
+                    //if (rolesToRemove.Count > 0 && response.IsError == false)
+                    //{
+                    //    bool editorHasRight = checkEditorCanUpdateRoles(editorRights, rolesToRemove, gbAllRights);
+                    //    if (!editorHasRight)
+                    //    {
+                    //        response.IsError = true;
+                    //        response.ErrorReason = "User has no right to add/remove roles";
+                    //    }
+                    //};
+
+                    //if (response.IsError == false)
+                    //{
+                        LinkRolesToRight(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+                response.ErrorReason = ex.Message;
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Returns Roles for User (User Access Groups in UserManagement)
+        /// </summary>
+        public ListResponse GetUserRoles(long editorPersonaId, long userPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UserManagement - ManageUnifiedLogin.GetUserRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UserManagement - ManageUnifiedLogin.GetUserRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UserManagement product
+                WriteToDiagnosticLog(
+                   $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+
+                var productIds = GetProductIdsByOrg();
+
+                ProductRepository pr = new ProductRepository();
+	            IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+				var gbAllRoles = pr.ListRolesForProductByParty(partyId, productIdList, productId);
+
+	            gbAllRoles = gbAllRoles.OrderBy(r => r.Name).ToList();
+
+                //// Get all rights to check with roles
+                //UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                //var gbAllRights = umr.ListRightWithRoles(partyId, productId, productIds);
+
+                //// check with logged in editors rights
+                //List<string> editorRights = _claimDetails.Rights;
+                //setEnableDisableByEditorRoles(editorRights, ref gbAllRoles, gbAllRights);
+
+                WriteToDiagnosticLog(
+                    $"UserManagement - ManageUnifiedLogin.GetUserRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+                
+                if (userPersonaId != 0) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog(
+                         $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
+                    WriteToDiagnosticLog(
+                           $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+                    // For new user, set a default role - User Role (Name = BASIC END USER)
+                    if (gbAllRoles != null)
+                    {                        
+                        gbAllRoles.FirstOrDefault(s => s.DefaultRole == "True").IsAssigned = true;
+                    }
+                    response = new ListResponse()
+                    {                        
+                        Records = gbAllRoles.Cast<object>().ToList(),
+                        TotalRows = gbAllRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetUserRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Returns all Companies in Green Book
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
+        /// <param name="partyId">Party Id</param>
+        public ListResponse GetGBCompanies(long editorPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UnifiedLogin - ManageUnifiedLogin.GetGBCompanies at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UnifiedLogin - ManageUnifiedLogin.GetGBCompanies.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get companies from DB for UnifiedLogin product
+                WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting all GB companies from GB DB - pr.ListCompanies with party id - {partyId}");
+                
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+
+                var gbAllComp = umr.ListCompanies();                
+
+                WriteToDiagnosticLog(
+                    $"UnifiedLogin - ManageUnifiedLogin.GetGBCompanies.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+                response = new ListResponse()
+                {
+                    Records = gbAllComp.Cast<object>().ToList(),
+                    TotalRows = gbAllComp.Count(),
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UnifiedLogin - There was a problem getting the companies.";
+                WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetGBCompanies Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+
+
+        #endregion
+
+        #region Private Methods  
+
+        /// <summary>
+        /// Check if editor has right to update rights
+        /// </summary>
+        /// <param name="editorRights"> editors rights</param>
+        /// <param name="rightToUpdated"></param>
+                       
+        private bool checkEditorCanUpdateRights(List<string> editorRights, List<string> rightToUpdated)
+        {
+            if (editorRights.Count == 0) { return false; }
+
+            var partyId = _userClaims.OrganizationPartyId;
+            // Get all rights to check with roles
+            ProductRepository pr = new ProductRepository();
+            IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+
+            UnifiedLoginRepository umr = new UnifiedLoginRepository();
+            var allRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedLogin, productIdList);
+
+            bool isEditorHasRight = true;
+            foreach (var rt in rightToUpdated)
+            {
+                RightRoleDetail right = allRights.Find(x => x.RightValueTypeId == int.Parse(rt));
+                if (!editorRights.Contains(right.RightNickName))
+                {
+                    return isEditorHasRight = false;
+                }
+            }
+            return isEditorHasRight;
+        }
+
+        /// <summary>
+        /// Set if editor has the right 
+        /// </summary>
+        /// <param name="editorRights"> editors rights</param>
+        /// <param name="allRights"> all rights for the org</param>                     
+        private void setEnableDisableByEditorRights(List<string> editorRights, ref List<ProductRight> allRights)
+        {
+            foreach (var rt in allRights)
+            {
+                if(editorRights.Contains(rt.Alias))
+                {
+                    rt.isEditorHasRight = true;
+                }
+            }            
+        }
+
+        /// <summary>
+        ///Check if editor has right to update roles
+        /// </summary>
+        /// <param name="editorRights">editors roles</param>
+        /// <param name="allRoles"> all roles for the org</param>
+        /// <param name="allRights"></param>        
+        public void setEnableDisableByEditorRoles(List<string> editorRights, ref List<ProductRole> allRoles, List<RightRoleDetail> allRights)
+        {
+            foreach (var role in allRoles)            {
+                List<RightRoleDetail> rightsForRole = allRights.FindAll(x => x.RoleId ==  int.Parse(role.ID)  );
+
+                foreach (var rt in rightsForRole)
+                {
+                    if (!editorRights.Contains(rt.RightNickName)) 
+                    {
+                        role.isEditorHasRight = false; // Even if one right dosent match with Editors then set the flag to false
+                        break;
+                    }
+                    role.isEditorHasRight = true;
+                }
+            }
+        }
+
+
+		/// <summary>
+        /// Used to assign or unassign a right to a list of roles
+        /// </summary>
+        /// <param name="editorRights">editors roles</param>
+        /// <param name="allRoles"> all roles for the org</param>
+        /// <param name="allRights"></param>        
+        public bool checkEditorCanUpdateRoles(List<string> editorRights, List<string> allRoles, List<RightRoleDetail> allRights)
+        {
+            if (editorRights.Count == 0) { return false; }
+
+            bool isEditorHasRight = true;
+            foreach (var role in allRoles)
+            {
+                List<RightRoleDetail> rightsForRole = allRights.FindAll(x => x.RoleId == int.Parse(role));
+
+                foreach (var rt in rightsForRole)
+                {
+                    if (!editorRights.Contains(rt.RightNickName))
+                    {
+                        return isEditorHasRight = false; // Even if one right dosent match with Editors then set the flag to false                       
+                    }                    
+                }
+            }
+            return isEditorHasRight;
+        }
+
+        /// <summary>
+        /// Check if editor has right  Delete Role
+        /// </summary>
+        /// <param name="editorRights">editors roles</param>
+        /// <param name="allRoles"> all roles for the org</param>
+        /// <param name="allRights"></param>        
+        public bool checkEditorCanDeleteRoles(List<string> editorRights, List<string> allRoles, List<RightRoleDetail> allRights)
+        {
+            if (editorRights.Count == 0) { return false; }
+
+            bool isEditorHasRight = true;
+            foreach (var role in allRoles)
+            {
+                List<RightRoleDetail> rightsForRole = allRights.FindAll(x => x.RoleId == int.Parse(role));
+
+                foreach (var rt in rightsForRole)
+                {
+                    if (!editorRights.Contains(rt.RightNickName))
+                    {
+                        return isEditorHasRight = false; // Even if one right dosent match with Editors then set the flag to false                       
+                    }
+                }
+            }
+            return isEditorHasRight;
+        }
+
+
+        /// <summary>
+        /// Used to assign or unassign a right to a list of roles
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
+        /// <param name="roleId">The right being assigned</param>
+        /// <param name="addRights">A list of right ids to add</param>
+        /// <param name="delRights">A list of right ids to delete</param>        
+        private void LinkRightsToRole(long editorPersonaId, long roleId, List<string> addRights, List<string> delRights)
+        {
+            UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+            List<RightRoleAddRem> rightsAddRem = new List<RightRoleAddRem>();
+            foreach (var item in addRights)
+            {
+                RightRoleAddRem rightAdd = new RightRoleAddRem();
+                rightAdd.RoleId = roleId;                
+                rightAdd.RightValueTypeID = long.Parse(item);
+                rightAdd.IsDeleted = 0;
+                rightsAddRem.Add(rightAdd);
+            }
+                      
+            foreach (var item in delRights)
+            {
+                RightRoleAddRem rightDel = new RightRoleAddRem();
+                rightDel.RoleId = roleId;
+                rightDel.RightValueTypeID = long.Parse(item);                
+                rightDel.IsDeleted = 1;
+                rightsAddRem.Add(rightDel);
+            }
+
+            var result = ocr.LinkRightsToRole(rightsAddRem);
+        }
+
+
+        /// <summary>
+        /// Used to assign or unassign a right to a list of roles
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
+        /// <param name="rightId">The right being assigned</param>
+        /// <param name="addRoles">A list of role ids to add</param>
+        /// <param name="delRoles">A list of role ids to delete</param>        
+        private void LinkRolesToRight(long editorPersonaId, long rightId, List<string> addRoles, List<string> delRoles)
+        {
+            UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+            List<RightRoleAddRem> rightsAddRem = new List<RightRoleAddRem>();
+            foreach (var item in addRoles)
+            {
+                RightRoleAddRem roleAdd = new RightRoleAddRem();
+                roleAdd.RoleId = long.Parse(item); 
+                roleAdd.RightValueTypeID = rightId;
+                roleAdd.IsDeleted = 0;
+                rightsAddRem.Add(roleAdd);
+            }
+
+            foreach (var item in delRoles)
+            {
+                RightRoleAddRem roleDel = new RightRoleAddRem();
+                roleDel.RoleId = long.Parse(item); 
+                roleDel.RightValueTypeID = rightId;
+                roleDel.IsDeleted = 1;
+                rightsAddRem.Add(roleDel);
+            }
+
+            var result = ocr.LinkRightsToRole(rightsAddRem);
+        }
+
+
+        private List<ProductRight> GetRightsWithoutDefault(List<ProductRight> allRights)
+        {
+            
+            if (allRights != null &&
+                allRights.Count > 0)
+            {
+                allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
+                allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
+                allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
+                allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");                
+            }
+
+            return allRights;
+        }
+
+        private List<ProductRole> GetRolesWithRightsCount(List<RightRoleDetail> allRolesandRights, long partyId, long ulProductId, List<int> productIdList)
+        {
+            var result = new List<ProductRole>();
+
+
+            if (allRolesandRights != null &&
+                allRolesandRights.Count > 0)
+            {
+                ////allRoles.RemoveAll(p => p.RoleName.ToUpper().Trim() == "BASIC END USER"); // Should not show up in the list as per DBA
+                ////allRoles.RemoveAll(p => p.RoleName.ToUpper().Trim() == "USER ADMINISTRATOR"); // Should not show up in the list as per DBA                
+
+                //IEnumerable<int> roleIds = allRolesandRights.Select(x => x.RoleId).Distinct();
+
+                UnifiedLoginRepository umr = new UnifiedLoginRepository();
+                var roles = umr.ListRolesForProductsByPartyId(partyId, ulProductId, productIdList);
+
+                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
+                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
+                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
+                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
+
+                foreach (var role in roles)
+                {
+                    List<RightRoleDetail> list = new List<RightRoleDetail>();
+
+                    bool roleexists = false;
+                    
+                    foreach (var item in allRolesandRights)
+                    {
+                        if (item.RoleId ==  int.Parse(role.ID))
+                        {
+                            roleexists = true;
+                            if (list.Count == 0)
+                            {
+                                list.Add(item);
+                            }
+                            else 
+                            {
+                                if (list.Exists(e => e.RightName == item.RightName) == false)
+                                {
+                                    list.Add(item);
+                                }
+                            }
+                        }
+                    }
+
+                                       
+                    
+                    if (list != null && list.Count > 0)
+                    {
+                        int rights = list.Count;
+                        list[0].RightsAssigned = rights.ToString();
+                        ProductRole pr = new ProductRole {ID = list[0].RoleId.ToString(),IsAssigned = list[0].IsAssigned, Roletype = list[0].RoleType,Name = list[0].RoleName,RightsAssigned = list[0].RightsAssigned,DefaultRole = list[0].IsDefaultRole == true ? "User Default" : "" };
+                        result.Add(pr);
+                    }
+                    else
+                    {
+                        if (roleexists == false)
+                        {
+                            roleexists = true;
+                            //RightRoleDetail roleWithNoRights = new RightRoleDetail();
+                            //roleWithNoRights.RoleId = int.Parse(role.ID);
+                            //roleWithNoRights.RoleName = role.Name;
+                            //roleWithNoRights.RightsAssigned = "0";
+                            //roleWithNoRights.RoleType = role.Roletype;
+                            //roleWithNoRights.IsAssigned = false;
+                            //list.Add(roleWithNoRights);
+                            ProductRole pr = new ProductRole { ID = role.ID, IsAssigned = false, Roletype = role.Roletype, Name = role.Name, RightsAssigned = "0", DefaultRole = bool.Parse(role.DefaultRole) == true ? "User Default" : "" };
+                            result.Add(pr);
+                        }
+
+                    }
+                }
+            }
+
+
+            return result;
+        }
+
+        
+
+        private List<ProductRight> GetRightsWithRolesCount(List<RightRoleDetail> allRights)
+        {
+            var result = new List<ProductRight>();
+
+
+            if (allRights != null &&
+                allRights.Count > 0)
+            {
+               
+                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
+                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
+                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
+                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
+
+                IEnumerable<int> rightValueTypeIds = allRights.Select(x => x.RightValueTypeId).Distinct();
+                foreach (var rightId in rightValueTypeIds)
+                {
+                    List<RightRoleDetail> list = new List<RightRoleDetail>();
+
+                    //list = allRights.FindAll(a => a.ID == int.Parse(rightId));
+
+                    foreach (var item in allRights)
+                    {
+                        if (item.RightValueTypeId == rightId)
+                        {
+                            if (list.Count == 0)
+                            {
+                                list.Add(item);
+                            }
+                            else
+                            {
+                                if (list.Exists(e => e.RoleName == item.RoleName) == false)
+                                {
+                                    list.Add(item);
+                                }
+                            }
+                        }
+                    }
+
+
+                    if (list != null && list.Count > 0)
+                    {
+                        int roles = list.Count;
+                        list[0].RolesAssigned = roles.ToString();
+                        ProductRight pr = new ProductRight { ID = list[0].RightValueTypeId, Assigned = list[0].IsAssigned,  Description = list[0].RightName, RolesAssigned = int.Parse(list[0].RolesAssigned)};
+                        result.Add(pr);
+                    }
+                }
+            }
+
+
+            return result;
+        }
+
+        private List<Role> GetAssignedRoleForPersona(long userPersonaId)
+        {
+            int productId = (int)ProductEnum.UnifiedLogin;
+			//UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+			UserRoleRightRepository urr = new UserRoleRightRepository();
+            List<UL.Role> propRole = urr.ListRoleByPersona(productId, userPersonaId, null);
+            return propRole;
+        }
+
+        private List<CategoryType> GetCategoryType()
+        {            
+            UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+            List<CategoryType> categoryList = ocr.GetCategoryType();
+            return categoryList;
+        }
+
+        private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
+        {
+
+            // get roles from DB for UnifiedLogin product
+            WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+
+            // if a user record exists
+
+            foreach (var role in roleList)
+            {
+                if (allRoles.Any(a => a.ID == role.RoleID.ToString()))
+                {
+                    ProductRole selrole = (from a in allRoles
+                                           where a.ID == role.RoleID.ToString()
+                                           select a).FirstOrDefault();
+                    if (selrole != null)
+                    {
+                        selrole.IsAssigned = true;
+                    }
+                }
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        private ListResponse GetResidentPortalUserRoles(IList<ProductRole> allRoles, long userPersonaId,long editorPersonaId)
+        {
+            var personaId = userPersonaId == 0 ? editorPersonaId : userPersonaId;
+            // get roles from DB for UnifiedLogin product
+            WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {personaId}");
+            List<Role> roleList = GetAssignedRoleForPersona(personaId);
+            // if a user record exists
+
+            foreach (var role in roleList)
+            {
+                if (allRoles.Any(a => a.ID == role.RoleID.ToString()))
+                {
+                    ProductRole selrole = (from a in allRoles
+                                           where a.ID == role.RoleID.ToString()
+                                           select a).FirstOrDefault();
+                    if (selrole != null)
+                    {
+                        selrole.IsAssigned = true;
+                    }
+                }
+            }
+
+            var itemsToRemove = allRoles.Where(r => (r.Name != "Basic End User" && r.Roletype == "Default") || (!r.IsAssigned && r.Roletype == "Custom")).ToList();
+           
+            foreach (var item in itemsToRemove)
+            {
+                allRoles.Remove(item);
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        private ListResponse MergeRightsWithAllRights(List<ProductRight> allRights, long roleId, long partyId)
+        {
+
+            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
+            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
+            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
+            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
+
+            // get assigned rights to role from DB for UnifiedLogin product
+            WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRightsForRole with role id - {roleId}");
+            List<ProductRight> rightList = GetAssignedRightsForRole(partyId, roleId);
+
+            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
+            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
+            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
+            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
+
+            // if a user record exists
+
+            foreach (var right in rightList)
+            {
+                if (allRights.Any(a => a.ID == right.ID))
+                {
+                    ProductRight selright = (from a in allRights
+                                           where a.ID == right.ID
+                                           select a).FirstOrDefault();
+                    if (selright != null)
+                    {
+                        selright.Assigned = true;
+                    }
+                }
+            }
+
+            return new ListResponse()
+            {
+                Records = allRights.Cast<object>().ToList(),
+                TotalRows = allRights.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        //private ListResponse MergeRolesWithAllRoles(IList<ProductRole> allRoles, long rightId, long partyId)
+        private ListResponse MergeRolesWithAllRoles(IList<ProductRole> allRoles, long rightValId, long partyId, int productId)
+        {
+           
+            // get assigned rights to role from DB for UnifiedLogin product
+            WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRightsForRole with right id - {rightValId}");
+            
+            var productIds = GetProductIdsByOrg();
+            UnifiedLoginRepository umr = new UnifiedLoginRepository();
+            var RoleRightDet = umr.ListRoleRightDetForProductsByPartyId(partyId, productId, productIds);
+
+            var roleList = RoleRightDet.FindAll(r => r.RightValueTypeId == rightValId);
+            // if a user record exists
+           
+            foreach (var role in roleList)
+            {
+                if (allRoles.Any(a => int.Parse(a.ID) == role.RoleId))
+                {
+                    ProductRole selrole = (from a in allRoles
+                                           where int.Parse(a.ID) == role.RoleId
+                                           select a).FirstOrDefault();
+                    if (selrole != null)
+                    {
+                        selrole.IsAssigned = true;
+                    }
+                }
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        private List<int> GetProductIdsByOrg()
+        {
+            ProductRepository pr = new ProductRepository();
+            return (List<int>)pr.GetProductIdsByCompany(_userClaims.OrganizationRealPageGuid);
+        }
+
+        private List<ProductRole> GetAssignedRolesForRight(long partyId, long rightId)
+        {
+            int productId = (int)ProductEnum.UnifiedLogin;
+            UnifiedLoginRepository umr = new UnifiedLoginRepository();
+            List<ProductRole> roles = umr.ListRolesByRight(partyId, productId, rightId);
+            return roles;
+        }
+
+        private List<ProductRight> GetAssignedRightsForRole(long partyId, long roleId)
+        {
+            int productId = (int)ProductEnum.UnifiedLogin;
+            var productIds = GetProductIdsByOrg();
+            UnifiedLoginRepository umr = new UnifiedLoginRepository();
+	        ProductRepository pr = new ProductRepository();
+	        IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+			List<ProductRight> rights = umr.ListRightsByRole(partyId, productIdList,  productId, roleId);
+            return rights;
+        }
+
+        private List<Property> GetAssignedPropertyForPersona(long userPersonaId)
+        {
+            int productId = (int)ProductEnum.UnifiedLogin;
+            UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+            List<Property> prop = ocr.ListPropByPersona(userPersonaId, productId);
+            return prop;
+        }
+		
+        #endregion
+    }
+	
+    #endregion
+}

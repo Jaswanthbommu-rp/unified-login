@@ -1,0 +1,284 @@
+﻿{
+	"data": [
+		{
+			"partyRoleTypeId": 0,
+			"parentPartyRoleTypeId": 0,
+			"name": "System User"
+		},
+		{
+			"partyRoleTypeId": 100,
+			"parentPartyRoleTypeId": 0,
+			"name": "Party Role"
+		},
+		{
+			"partyRoleTypeId": 200,
+			"parentPartyRoleTypeId": 100,
+			"name": "Organization Role"
+		},
+		{
+			"partyRoleTypeId": 201,
+			"parentPartyRoleTypeId": 200,
+			"name": "Parent Corporation"
+		},
+		{
+			"partyRoleTypeId": 202,
+			"parentPartyRoleTypeId": 200,
+			"name": "Property Management Company"
+		},
+		{
+			"partyRoleTypeId": 203,
+			"parentPartyRoleTypeId": 200,
+			"name": "Employer"
+		},
+		{
+			"partyRoleTypeId": 204,
+			"parentPartyRoleTypeId": 200,
+			"name": "Site"
+		},
+		{
+			"partyRoleTypeId": 205,
+			"parentPartyRoleTypeId": 200,
+			"name": "User Type"
+		},
+		{
+			"partyRoleTypeId": 300,
+			"parentPartyRoleTypeId": 100,
+			"name": "Person Role"
+		},
+		{
+			"partyRoleTypeId": 301,
+			"parentPartyRoleTypeId": 300,
+			"name": "Accounts Payable"
+		},
+		{
+			"partyRoleTypeId": 302,
+			"parentPartyRoleTypeId": 300,
+			"name": "Accounts Receivable"
+		},
+		{
+			"partyRoleTypeId": 303,
+			"parentPartyRoleTypeId": 300,
+			"name": "Administrative Assistant"
+		},
+		{
+			"partyRoleTypeId": 304,
+			"parentPartyRoleTypeId": 300,
+			"name": "Analyst"
+		},
+		{
+			"partyRoleTypeId": 305,
+			"parentPartyRoleTypeId": 300,
+			"name": "Asset Manager"
+		},
+		{
+			"partyRoleTypeId": 306,
+			"parentPartyRoleTypeId": 300,
+			"name": "Assistant Property Manager"
+		},
+		{
+			"partyRoleTypeId": 307,
+			"parentPartyRoleTypeId": 300,
+			"name": "Bookkeeper"
+		},
+		{
+			"partyRoleTypeId": 308,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chairman"
+		},
+		{
+			"partyRoleTypeId": 309,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Accounting Officer"
+		},
+		{
+			"partyRoleTypeId": 310,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Administrative Officer"
+		},
+		{
+			"partyRoleTypeId": 311,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Compliance Officer"
+		},
+		{
+			"partyRoleTypeId": 312,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Executive Officer"
+		},
+		{
+			"partyRoleTypeId": 313,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Financial Officer"
+		},
+		{
+			"partyRoleTypeId": 314,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Information Officer"
+		},
+		{
+			"partyRoleTypeId": 315,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Investment Officer"
+		},
+		{
+			"partyRoleTypeId": 316,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Marketing Officer"
+		},
+		{
+			"partyRoleTypeId": 317,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Operating Officer"
+		},
+		{
+			"partyRoleTypeId": 318,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Procurement Officer"
+		},
+		{
+			"partyRoleTypeId": 319,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Sales Officer"
+		},
+		{
+			"partyRoleTypeId": 320,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Security Officer"
+		},
+		{
+			"partyRoleTypeId": 321,
+			"parentPartyRoleTypeId": 300,
+			"name": "Chief Technology Officer"
+		},
+		{
+			"partyRoleTypeId": 322,
+			"parentPartyRoleTypeId": 300,
+			"name": "Consultant"
+		},
+		{
+			"partyRoleTypeId": 323,
+			"parentPartyRoleTypeId": 300,
+			"name": "Controller"
+		},
+		{
+			"partyRoleTypeId": 324,
+			"parentPartyRoleTypeId": 300,
+			"name": "Coordinator"
+		},
+		{
+			"partyRoleTypeId": 325,
+			"parentPartyRoleTypeId": 300,
+			"name": "Director"
+		},
+		{
+			"partyRoleTypeId": 326,
+			"parentPartyRoleTypeId": 300,
+			"name": "Executive Assistant"
+		},
+		{
+			"partyRoleTypeId": 327,
+			"parentPartyRoleTypeId": 300,
+			"name": "Housing/HUD Compliance"
+		},
+		{
+			"partyRoleTypeId": 328,
+			"parentPartyRoleTypeId": 300,
+			"name": "Leasing Agent"
+		},
+		{
+			"partyRoleTypeId": 329,
+			"parentPartyRoleTypeId": 300,
+			"name": "Legal Counsel"
+		},
+		{
+			"partyRoleTypeId": 330,
+			"parentPartyRoleTypeId": 300,
+			"name": "Manager - Corporate"
+		},
+		{
+			"partyRoleTypeId": 331,
+			"parentPartyRoleTypeId": 300,
+			"name": "Manager - Property"
+		},
+		{
+			"partyRoleTypeId": 332,
+			"parentPartyRoleTypeId": 300,
+			"name": "Nurse"
+		},
+		{
+			"partyRoleTypeId": 333,
+			"parentPartyRoleTypeId": 300,
+			"name": "Office Manager"
+		},
+		{
+			"partyRoleTypeId": 334,
+			"parentPartyRoleTypeId": 300,
+			"name": "Owner"
+		},
+		{
+			"partyRoleTypeId": 335,
+			"parentPartyRoleTypeId": 300,
+			"name": "President"
+		},
+		{
+			"partyRoleTypeId": 336,
+			"parentPartyRoleTypeId": 300,
+			"name": "Property Accountant"
+		},
+		{
+			"partyRoleTypeId": 337,
+			"parentPartyRoleTypeId": 300,
+			"name": "Property Administrator"
+		},
+		{
+			"partyRoleTypeId": 338,
+			"parentPartyRoleTypeId": 300,
+			"name": "Property Clinical Staff"
+		},
+		{
+			"partyRoleTypeId": 339,
+			"parentPartyRoleTypeId": 300,
+			"name": "Property Maintenance"
+		},
+		{
+			"partyRoleTypeId": 340,
+			"parentPartyRoleTypeId": 300,
+			"name": "Treasurer"
+		},
+		{
+			"partyRoleTypeId": 341,
+			"parentPartyRoleTypeId": 300,
+			"name": "Vice President"
+		},
+		{
+			"partyRoleTypeId": 400,
+			"parentPartyRoleTypeId": 100,
+			"name": "User Role"
+		},
+		{
+			"partyRoleTypeId": 401,
+			"parentPartyRoleTypeId": 400,
+			"name": "User"
+		},
+		{
+			"partyRoleTypeId": 402,
+			"parentPartyRoleTypeId": 400,
+			"name": "SuperUser"
+		},
+		{
+			"partyRoleTypeId": 404,
+			"parentPartyRoleTypeId": 400,
+			"name": "User (No Email)"
+		},
+		{
+			"partyRoleTypeId": 500,
+			"parentPartyRoleTypeId": 0,
+			"name": "Product Role"
+		},
+		{
+			"partyRoleTypeId": 501,
+			"parentPartyRoleTypeId": 500,
+			"name": "Licensed"
+		}
+	]
+}

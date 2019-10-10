@@ -1,0 +1,19 @@
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
+{
+    public enum ProductEntityEndpointKeyEnum
+    {
+        GetRoleEndpoint,
+        GetPropertyGroupsEndpoint,
+        GetUserEndpoint,
+        PostUserEndpoint,
+        PutUserEndpoint,
+        PatchProfileEndpoint,
+        GetPropertyEndpoint,
+        GetPropertyByGroupEndpoint,
+        GetListUsersEndpoint,
+        PatchMigrateUsersEndpoint,
+        GetAllUsers,
+	    GetCompanyEndpoint,
+	    GetParentCompanyEndpoint
+	}
+}

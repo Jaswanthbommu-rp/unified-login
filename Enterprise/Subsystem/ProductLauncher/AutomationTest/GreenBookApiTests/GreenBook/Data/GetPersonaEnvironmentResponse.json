@@ -1,0 +1,12 @@
+﻿{
+	"data": [
+		{
+			"personaEnvironmentTypeId": 1,
+			"name": "Production"
+		},
+		{
+			"personaEnvironmentTypeId": 2,
+			"name": "UAT"
+		}
+	]
+}

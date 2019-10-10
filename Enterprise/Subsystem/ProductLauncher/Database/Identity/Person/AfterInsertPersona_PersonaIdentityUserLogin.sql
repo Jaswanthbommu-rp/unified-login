@@ -1,0 +1,17 @@
+﻿--CREATE TRIGGER Person.AfterInsertPersona_PersonaIdentityUserLogin
+--ON Person.Persona
+--AFTER INSERT
+--AS
+--BEGIN 
+--	INSERT INTO Enterprise.PersonaIdentityUserLogin (UserID, PersonaID)
+--	SELECT UL.UserId, i.PersonaID
+--		FROM 
+--			ident.UserLogin UL
+--				INNER JOIN person.Person P
+--					on P.PartyId = UL.PartyId
+--				INNER JOIN person.Persona PA 
+--					ON PA.PersonPartyId = P.PartyId 
+--				INNER JOIN inserted I
+--					ON I.PersonaId = PA.PersonaId
+--END
+--GO

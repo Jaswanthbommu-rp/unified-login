@@ -1,0 +1,109 @@
+﻿PRINT 'PersonaUserChanges Script is diffused'
+--SET @SchemaName = 'Enterprise';
+
+----Organization
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Organization_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Dropping existing backup table -> Enterprise.Organization_Backup.';
+--        DROP TABLE Enterprise.Organization_Backup;
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Organization_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Backup current table: Enterprise.Organization -> Enterprise.Organization_Backup';
+--        SELECT *
+--        INTO Enterprise.Organization_Backup
+--        FROM Enterprise.Organization;
+--END;
+
+
+----IdentityProviderType
+--SET @SchemaName = 'Ident';
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'IdentityProviderType_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Dropping existing backup table -> Enterprise.IdentityProviderType_Backup.';
+--        DROP TABLE Enterprise.IdentityProviderType_Backup;
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'IdentityProviderType_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Backup current table: Enterprise.IdentityProviderType -> Enterprise.IdentityProviderType_Backup';
+--        SELECT *
+--        INTO Enterprise.Organization_Backup
+--        FROM Enterprise.Organization;
+--END;
+
+----UserLogin
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'UserLogin_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Dropping existing backup table -> Enterprise.UserLogin_Backup.';
+--        DROP TABLE Enterprise.UserLogin_Backup;
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'UserLogin_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Backup current table: Enterprise.UserLogin -> Enterprise.UserLogin_Backup';
+--        SELECT *
+--        INTO Enterprise.Organization_Backup
+--        FROM Enterprise.Organization;
+--END;
+
+----Persona
+--SET @SchemaName = 'Person';
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Persona_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Dropping existing backup table -> Enterprise.Persona_Backup.';
+--        DROP TABLE Enterprise.Persona_Backup;
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Persona_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Backup current table: Enterprise.Persona -> Enterprise.Persona_Backup';
+--        SELECT *
+--        INTO Enterprise.Organization_Backup
+--        FROM Enterprise.Organization;
+--END;

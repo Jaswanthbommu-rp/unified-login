@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>RP.Enterprise.Foundation.Audit</id>
+        <version>1.0.0</version>
+        <title>RP.Enterprise.Foundation.Audit</title>
+        <authors>AMungale</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Audit logging for exception &amp; performance</description>
+        <copyright>RealPage Inc</copyright>
+    </metadata>
+    <files>
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\Elasticsearch.Net.dll" target="lib\net452\Elasticsearch.Net.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\Newtonsoft.Json.dll" target="lib\net452\Newtonsoft.Json.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\RP.Enterprise.Foundation.Audit.Core.Component.dll" target="lib\net452\RP.Enterprise.Foundation.Audit.Core.Component.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\RP.Enterprise.Foundation.Audit.WebApi.Component.dll" target="lib\net452\RP.Enterprise.Foundation.Audit.WebApi.Component.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\Serilog.dll" target="lib\net452\Serilog.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\Serilog.Sinks.Elasticsearch.dll" target="lib\net452\Serilog.Sinks.Elasticsearch.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\Serilog.Sinks.File.dll" target="lib\net452\Serilog.Sinks.File.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\Serilog.Sinks.PeriodicBatching.dll" target="lib\net452\Serilog.Sinks.PeriodicBatching.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\Serilog.Sinks.RollingFile.dll" target="lib\net452\Serilog.Sinks.RollingFile.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\System.Net.Http.Formatting.dll" target="lib\net452\System.Net.Http.Formatting.dll" />
+        <file src="..\Foundation\Audit\Audit.WebApi\bin\Release\System.Web.Http.dll" target="lib\net452\System.Web.Http.dll" />
+    </files>
+</package>

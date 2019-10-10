@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
+{
+    public class AuthenticateUserResponse : ResponseBase
+    {
+        /// <summary>
+		/// Enterprise User Id
+		/// </summary>
+        public UserLoginOnly UserLogin { get; set; }
+    }
+}

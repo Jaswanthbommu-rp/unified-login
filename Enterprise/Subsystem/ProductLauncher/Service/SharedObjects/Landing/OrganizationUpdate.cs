@@ -1,0 +1,63 @@
+﻿using System;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
+{
+	/// <summary>
+	/// Used when updating organization information
+	/// </summary>
+	public class OrganizationUpdate
+	{
+		/*
+		/// <summary>
+		/// Used to store the books id for the company
+		/// </summary>
+		[Required(ErrorMessage = "The books company id is required.", AllowEmptyStrings = false)]
+		public long BooksCompanyId { get; set; }
+		*/
+
+		/// <summary>
+		/// The name of the Organization
+		/// </summary>
+		[Required(ErrorMessage = "The company name is required.", AllowEmptyStrings = false)]
+		[JsonProperty(PropertyName = "name")]
+		[StringLength(150)]
+		public string Name { get; set; }
+
+		/// <summary>
+		/// Organization Type Id
+		/// </summary>
+		[Range(1, int.MaxValue, ErrorMessage = "Please enter a Organization Type Id greater than {0}")]
+		[JsonProperty(PropertyName = "organizationTypeId")]
+		public int OrganizationTypeId { get; set; }
+
+		/// <summary>
+		/// Organization Type Name
+		/// </summary>
+		[StringLength(25)]
+		[JsonProperty(PropertyName = "organizationTypeName")]
+		public string OrganizationTypeName { get; set; }
+
+		/// <summary>
+		/// The UL guid for the company
+		/// </summary>
+		[JsonProperty(PropertyName = "realPageId")]
+		public Guid RealPageId { get; set; }
+
+        /// <summary>
+        /// The books Master Data Management (black book) master id
+        /// </summary>
+        [JsonProperty(PropertyName = "booksMasterId")]
+		
+		public long BooksMasterId { get; set; }
+
+		/// <summary>
+		/// The customer master id for the company
+		/// </summary>
+		[JsonProperty(PropertyName = "booksCustomerMasterId")]
+
+		public long BooksCustomerMasterId { get; set; }
+
+	}
+}

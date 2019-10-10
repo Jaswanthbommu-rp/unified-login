@@ -1,0 +1,41 @@
+﻿using System;
+using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
+{
+	/// <summary>
+	/// Interface for Profile Repository
+	/// </summary>	
+	public interface IProfileRepository
+    {
+		/// <summary>
+		/// Update Profile
+		/// </summary>
+		/// <param name="realPageId">User unique identifier</param>
+		/// <param name="profile">profile object of the parameter values</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse UpdateProfile(Guid realPageId, IProfile profile);
+
+		/// <summary>
+		/// Returns a list of persons 
+		/// </summary>
+		/// <param name="organizationActiveProductIdList">List of product ids</param>
+		/// <param name="realPageId">Organization realpage uniqueidentifier</param>
+		/// <param name="parentPartyRoleTypeId">PartyRole parentId</param>
+		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
+		/// <returns>List of Person</returns>
+		IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null);
+
+		/// <summary>
+		/// Returns a list of persons by ProductId
+		/// </summary>
+		/// <param name="productId">Single product to search by product id</param>
+		/// <param name="realPageId">Optional Organization realpage uniqueidentifier</param>
+		/// <param name="personaId">Optional personaId</param>
+		/// <returns>List of Person</returns>
+		IList<ProductUsers> ListPersonsByProductId(int productId, Guid? realPageId = null, long? personaId = null);
+	}
+}

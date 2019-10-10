@@ -1,0 +1,43 @@
+﻿using System.Collections.Generic;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
+{
+	/// <summary>
+	/// User Role Rights
+	/// </summary>
+    public class UserRoleRights
+    {
+		/// <summary>
+		/// User Role Rights list
+		/// </summary>
+        public UserRoleRights()
+        {
+            UserRights = new List<Right>();
+        }
+
+		/// <summary>
+		/// Unique RoleId
+		/// </summary>
+        public int RoleId { get; set; }
+
+		/// <summary>
+		/// RoleName
+		/// </summary>
+        public string Role { get; set; }
+
+		/// <summary>
+		/// Role ShortName (NickName)
+		/// </summary>
+        public string RoleNickName { get; set; }
+
+		/// <summary>
+		/// Role Type
+		/// </summary>
+        public string RoleType { get; set; }
+
+		/// <summary>
+		/// Role's Rights list
+		/// </summary>
+        public IList<Right> UserRights { get; set; }
+    }
+}

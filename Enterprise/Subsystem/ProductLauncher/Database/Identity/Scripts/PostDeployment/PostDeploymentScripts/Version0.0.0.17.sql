@@ -1,0 +1,1025 @@
+﻿    DECLARE @Name VARCHAR(50);
+    DECLARE @OrgID INT;
+    DECLARE @ParentPartyRoleTypeId INT;
+    DECLARE @PartyRoleTypeId INT;
+    DECLARE @RoleTypeId INT; 
+
+
+
+
+
+
+
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.RoleType
+--    WHERE name = 'OmniChannel Super User'
+--)
+--    BEGIN
+--        SELECT @RoleTypeId = MAX(PartyRoleTypeId) + 1
+--        FROM Enterprise.RoleType
+--        WHERE ParentPartyRoleTypeId =
+--        (
+--            SELECT PartyRoleTypeID
+--            FROM Enterprise.RoleType
+--            WHERE [Name] = 'Person Role'
+--        );
+--        EXECUTE [Enterprise].[CreatePartyRoleType]
+--                @PartyRoleTypeId = @RoleTypeId,
+--                @ParentPartyRoleTypeId = 300,
+--                @Name = 'OmniChannel Super User';
+--END;
+
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.RoleType
+--    WHERE name = 'Property Manager'
+--)
+--    BEGIN
+--        SELECT @RoleTypeId = MAX(PartyRoleTypeId) + 1
+--        FROM Enterprise.RoleType
+--        WHERE ParentPartyRoleTypeId =
+--        (
+--            SELECT PartyRoleTypeID
+--            FROM Enterprise.RoleType
+--            WHERE [Name] = 'Person Role'
+--        );
+--        EXECUTE [Enterprise].[CreatePartyRoleType]
+--                @PartyRoleTypeId = @RoleTypeId,
+--                @ParentPartyRoleTypeId = 300,
+--                @Name = 'Property manager';
+--END;
+
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.RoleType
+--    WHERE name = 'Regional Manager'
+--)
+--    BEGIN
+--        SELECT @RoleTypeId = MAX(PartyRoleTypeId) + 1
+--        FROM Enterprise.RoleType
+--        WHERE ParentPartyRoleTypeId =
+--        (
+--            SELECT PartyRoleTypeID
+--            FROM Enterprise.RoleType
+--            WHERE [Name] = 'Person Role'
+--        );
+--        EXECUTE [Enterprise].[CreatePartyRoleType]
+--                @PartyRoleTypeId = @RoleTypeId,
+--                @ParentPartyRoleTypeId = 300,
+--                @Name = 'Regional Manager';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.RoleType
+--    WHERE name = 'Marketing Manager'
+--)
+--    BEGIN
+--        SELECT @RoleTypeId = MAX(PartyRoleTypeId) + 1
+--        FROM Enterprise.RoleType
+--        WHERE ParentPartyRoleTypeId =
+--        (
+--            SELECT PartyRoleTypeID
+--            FROM Enterprise.RoleType
+--            WHERE [Name] = 'Person Role'
+--        );
+--        EXECUTE [Enterprise].[CreatePartyRoleType]
+--                @PartyRoleTypeId = @RoleTypeId,
+--                @ParentPartyRoleTypeId = 300,
+--                @Name = 'Marketing Manager';
+--END;
+
+
+----Populate OmniChannel Related Actions
+
+--SELECT @ActionValueID = [ActionValueTypeID]
+--FROM Enterprise.ActionValueType
+--WHERE Value = 'ROUTE';
+--SELECT @ProductID = ProductId
+--FROM Enterprise.Product
+--WHERE Name = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'SetupChat'
+--          AND Description = 'OmniChannel'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'SetupChat',
+--             @ActionTarget = N'Route',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = 'OmniChannel',
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'EditWidget'
+--          AND Description = 'OmniChannel'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'EditWidget',
+--             @ActionTarget = N'Route',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = 'OmniChannel',
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'EditPositionAndMenu'
+--          AND Description = 'OmniChannel'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'EditPositionAndMenu',
+--             @ActionTarget = N'Route',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = 'OmniChannel',
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'FormatChatContent'
+--          AND Description = 'OmniChannel'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'FormatChatContent',
+--             @ActionTarget = N'Route',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = 'OmniChannel',
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'ChatSubjects'
+--          AND Description = 'OmniChannel'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'ChatSubjects',
+--             @ActionTarget = N'Route',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = 'OmniChannel',
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'SetupLegalRequirements'
+--          AND Description = 'OmniChannel'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'SetupLegalRequirements',
+--             @ActionTarget = N'Route',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = 'OmniChannel',
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+
+----Setup Child Actions
+
+--SELECT @ParentActionId = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupChat'
+--      AND ParentActionID IS NULL
+--      AND Description = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Chat Setup'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Chat Setup',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--SELECT @ParentActionId = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditWidget'
+--      AND ParentActionID IS NULL
+--      AND Description = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Edit Widget Name'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Edit Widget Name',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--SELECT @ParentActionId = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditPositionAndMenu'
+--      AND ParentActionID IS NULL
+--      AND Description = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Edit Position'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Edit Position',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Edit Menu'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Edit Menu',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--SELECT @ParentActionId = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'FormatChatContent'
+--      AND ParentActionID IS NULL
+--      AND Description = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Edit Format'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Edit Format',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Edit Content'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Edit Content',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Edit Text Color'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Edit Text Color',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Edit Images'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Edit Images',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--SELECT @ParentActionId = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'ChatSubjects'
+--      AND ParentActionID IS NULL
+--      AND Description = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Proactive Chat Subject'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Proactive Chat Subject',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--SELECT @ParentActionId = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupLegalRequirements'
+--      AND ParentActionID IS NULL
+--      AND Description = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Setup Privacy'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Setup Privacy',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+--SELECT @ParentActionId = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupLegalRequirements'
+--      AND ParentActionID IS NULL
+--      AND Description = 'OmniChannel';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.ACTION
+--    WHERE ObjectValue = 'Setup Legal Notice'
+--          AND ParentActionID = @ParentActionId
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateAction]
+--             @ProductID = @ProductId,
+--             @Action = N'Setup Legal Notice',
+--             @ActionTarget = N'Right',
+--             @ActionbValueTypeId = @ActionValueID,
+--             @Description = '',
+--             @ParentActionID = @ParentActionId,
+--             @ActionID = @ActionID OUTPUT;
+--        SELECT @ActionID AS N'@ActionID';
+--END;
+
+----Setup roles for default organization (3)
+
+--SELECT @orgId = organizationpartyid
+--FROM Ident.UserLogin ul
+--     INNER JOIN Person.Persona p2 ON p2.personpartyid = ul.PartyId
+--WHERE loginname = 'james@test.com';
+
+
+
+--SELECT @RoletypeId = RoleType.PartyRoleTypeId
+--FROM Enterprise.RoleType
+--WHERE Name = 'OmniChannel Super User';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.Role
+--    WHERE value = 'OmniChannel Super User'
+--          AND PartyID = @Orgid
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateRole]
+--             @RoleName = N'OmniChannel Super User',
+--             @Description = N'',
+--             @RoleTypeID = @RoleTypeId,
+--             @PartyID = @OrgId,
+--             @RoleID = @RoleID OUTPUT;
+--END;
+
+--SELECT @RoletypeId = RoleType.PartyRoleTypeId
+--FROM Enterprise.RoleType
+--WHERE Name = 'Property Manager';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.Role
+--    WHERE value = 'Property Manager'
+--          AND PartyID = @Orgid
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateRole]
+--             @RoleName = N'Property Manager',
+--             @Description = N'',
+--             @RoleTypeID = @RoleTypeId,
+--             @PartyID = @OrgId,
+--             @RoleID = @RoleID OUTPUT;
+--END;
+--SELECT @RoletypeId = RoleType.PartyRoleTypeId
+--FROM Enterprise.RoleType
+--WHERE Name = 'Regional Manager';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.Role
+--    WHERE value = 'Regional Manager'
+--          AND PartyID = @Orgid
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateRole]
+--             @RoleName = N'Regional Manager',
+--             @Description = N'',
+--             @RoleTypeID = @RoleTypeId,
+--             @PartyID = @OrgId,
+--             @RoleID = @RoleID OUTPUT;
+--END;
+--SELECT @RoletypeId = RoleType.PartyRoleTypeId
+--FROM Enterprise.RoleType
+--WHERE Name = 'Marketing Manager';
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.Role
+--    WHERE value = 'Marketing Manager'
+--          AND PartyID = @Orgid
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateRole]
+--             @RoleName = N'Marketing Manager',
+--             @Description = N'',
+--             @RoleTypeID = @RoleTypeId,
+--             @PartyID = @OrgId,
+--             @RoleID = @RoleID OUTPUT;
+--END;
+
+----Create Rights for Super user
+
+--SELECT @RoleID = RoleID FROM Enterprise.Role r
+--    WHERE r.value = 'OmniChannel Super User'
+
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Setup Chat',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'User will be able to setup chat for OmniChannel.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Widget',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'User will be able to edit the widget for Omnichannel.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Position and Menu',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat enabling edit position and menu.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Format',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat enabling edit format, content, text colors and images.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Chat Subjects',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat subjects.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Setup Legal Notice and Privacy',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Enable and Setup Privacy and legal notice.';
+--SELECT @RightId;
+
+
+----Create Rights for Property Manager
+--SET @RightID = NULL
+--SET @RoleID = NULL
+--SELECT @RoleID = RoleID FROM Enterprise.Role r
+--    WHERE r.value = 'Property Manager'
+
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Setup Chat',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'User will be able to setup chat for OmniChannel.';
+--SELECT @RightId;
+--SET @RightID = NULL
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Position and Menu',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat enabling edit position and menu.';
+--SELECT @RightId;
+
+----Create Rights for Regional Manager
+--SET @RightID = NULL
+--SET @RoleID = NULL
+--SELECT @RoleID = RoleID FROM Enterprise.Role r
+--    WHERE r.value = 'Regional Manager'
+
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Setup Chat',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'User will be able to setup chat for OmniChannel.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Widget',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'User will be able to edit the widget for Omnichannel.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Position and Menu',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat enabling edit position and menu.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Format',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat enabling edit format, content, text colors and images.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Chat Subjects',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat subjects.';
+--SELECT @RightId;
+
+
+----Create Rights for Marketing Manager
+--SET @RightID = NULL
+--SET @RoleID = NULL
+--SELECT @RoleID = RoleID FROM Enterprise.Role r
+--    WHERE r.value = 'Marketing Manager'
+
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Widget',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'User will be able to edit the widget for Omnichannel.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Position and Menu',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat enabling edit position and menu.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Edit Format',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat enabling edit format, content, text colors and images.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Chat Subjects',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Proactive chat subjects.';
+--SELECT @RightId;
+--EXECUTE Enterprise.CreateRight
+--        @RoleId = @RoleId,
+--        @RightName = 'Setup Legal Notice and Privacy',
+--        @RightID = @RightID OUTPUT,
+--        @Description = 'Enable and Setup Privacy and legal notice.';
+--SELECT @RightId;
+
+---- Link rights to actions
+
+
+--SELECT @Status = StatusType.StatusTypeID
+--FROM Enterprise.StatusTypeCategoryType
+--     JOIN Enterprise.StatusTypeCategory ON StatusTypeCategory.StatusTypeCategoryTypeId = StatusTypeCategoryType.StatusTypeCategoryTypeId
+--     JOIN Enterprise.StatusTypeCategoryClassification ON StatusTypeCategoryClassification.StatusTypeCategoryId = StatusTypeCategory.StatusTypeCategoryId
+--     JOIN Enterprise.StatusType ON StatusType.StatusTypeId = StatusTypeCategoryClassification.StatusTypeId
+--WHERE StatusType.name = 'ALL'
+--      AND StatusTypeCategoryType.Name = 'Security';
+
+----Setup Super User
+
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupChat'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'OmniChannel Super User'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Setup Chat'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditWidget'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'OmniChannel Super User'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Widget'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditPositionAndMenu'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'OmniChannel Super User'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Position and Menu'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'FormatChatContent'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'OmniChannel Super User'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Format'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'ChatSubjects'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'OmniChannel Super User'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Chat Subjects'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupLegalRequirements'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'OmniChannel Super User'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Setup Legal Notice and Privacy'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+----Setup Property Manager 
+--SET @ActionID = NULL
+--SET @RoleID = NULL
+--SET @RightID = NULL
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupChat'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Property Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Setup Chat'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditPositionAndMenu'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Property Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Position and Menu'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+----Setup Regional Manager 
+--SET @ActionID = NULL
+--SET @RoleID = NULL
+--SET @RightID = NULL
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupChat'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Regional Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Setup Chat'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditWidget'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Regional Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Widget'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditPositionAndMenu'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Regional Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Position and Menu'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'FormatChatContent'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Regional Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Format'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'ChatSubjects'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Regional Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Chat Subjects'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+----Setup Marketing Manager 
+--SET @ActionID = NULL
+--SET @RoleID = NULL
+--SET @RightID = NULL
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditWidget'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Marketing Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Widget'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'EditPositionAndMenu'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Marketing Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Position and Menu'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'FormatChatContent'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Marketing Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Edit Format'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'ChatSubjects'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Marketing Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Chat Subjects'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+--SELECT @ActionID = ActionID
+--FROM Enterprise.ACTION
+--WHERE ObjectValue = 'SetupLegalRequirements'
+--      AND ObjectType = 'ROUTE'
+--      AND Description = 'OmniChannel';
+--SELECT @RoleID = RoleID
+--FROM Enterprise.Role
+--WHERE value = 'Regional Manager'
+--      AND Enterprise.Role.PartyID = @OrgId;
+--SELECT @RightID = RightId
+--FROM Enterprise.[Right]
+--WHERE Value = 'Setup Legal Notice and Privacy'
+--      AND RoleId = @RoleID;
+--EXEC [Enterprise].[LinkActionToRights]
+--     @ActionID = @ActionID,
+--     @RightId = @RightId,
+--     @StatusId = @Status,
+--     @UserActionId = @UserActionId OUTPUT;
+
+
+EXEC sys.sp_updateextendedproperty @name=N'Build', @value='18'

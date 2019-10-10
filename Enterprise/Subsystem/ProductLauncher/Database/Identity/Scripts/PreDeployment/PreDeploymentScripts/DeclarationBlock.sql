@@ -1,0 +1,11 @@
+﻿DECLARE @SchemaName VARCHAR(100);
+DECLARE @StatusType INT;
+
+
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Auth' AND TABLE_NAME = 'PasswordPolicy')
+BEGIN
+	IF (SELECT temporal_type FROM sys.tables WHERE SCHEMA_NAME(Schema_id) = 'Auth' AND name = 'PasswordPolicy') = 2
+	BEGIN
+		ALTER TABLE [Auth].[PasswordPolicy] SET ( SYSTEM_VERSIONING = OFF)
+	END
+END

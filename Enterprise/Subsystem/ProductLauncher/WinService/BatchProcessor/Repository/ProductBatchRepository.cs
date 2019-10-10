@@ -1,0 +1,88 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
+using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Model;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Repository
+{
+	public class BatchRepository : BaseRepository, IBatchRepository
+	{
+		#region Constructor
+
+		/// <summary>
+		/// base Constructor
+		/// </summary>
+		public BatchRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+		{
+		}
+
+		#endregion
+
+		#region Public Methods
+
+		public IList<Batch> GetBatchToProcess(int batchSize, bool shouldIncludeErrorRecords, int retrycount = 3)
+		{
+			using (var repository = GetRepository())
+			{
+				var result = repository.GetMany<Batch>(StoredProcNameConstants.SP_ListBatch,
+					new { IncludeErrorRecord = shouldIncludeErrorRecords, batchSize = batchSize, retrycount = retrycount }).ToList();
+
+				return result;
+			}
+		}
+
+		public int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null)
+		{
+			using (var repository = GetRepository())
+			{
+				int statusTypeId = (int)batchStatusType;
+				var result = repository.Execute<int>(StoredProcNameConstants.SP_UpdateBatch,
+					new { productBatchId, statusTypeId, inputJson, errorDetails });
+
+				return result;
+			}
+		}
+
+		public void UpdateBatch(IList<Batch> batch, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null)
+		{
+			foreach (var record in batch)
+			{
+				UpdateBatchRecord(record.BatchProcessorId, batchStatusType, inputJson, errorDetails);
+			}
+		}
+
+		public IList<BatchConfiguration> GetBatchConfigurations()
+		{
+			// cache the configurations
+			ObjectCache tokenCache = MemoryCache.Default;
+
+			// Get   values from cache 
+			var batchConfigs = tokenCache["batch_configs"] as List<BatchConfiguration>;
+
+			if (batchConfigs == null)
+			{
+				using (var repository = GetRepository())
+				{
+					batchConfigs = repository
+						.GetMany<BatchConfiguration>(StoredProcNameConstants.SP_ListBatchConfiguration, null)
+						.ToList();
+				}
+
+				var cachePolicy = new CacheItemPolicy
+				{
+					// Expire cache every after 60 minutes  
+					AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60)
+				};
+
+				tokenCache.Set("batch_configs", batchConfigs, cachePolicy);
+			}
+
+			return batchConfigs;
+		}
+
+		#endregion
+	}
+}
+

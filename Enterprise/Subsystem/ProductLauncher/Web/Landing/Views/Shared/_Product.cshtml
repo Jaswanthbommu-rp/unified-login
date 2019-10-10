@@ -1,0 +1,24 @@
+﻿@model RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ProductViewModel
+@using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
+@using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <title></title>
+</head>
+<body>
+    @RenderBody()
+    @{
+        if (ViewBag.RelayState == null) {
+            ViewBag.RelayState = "";
+        }
+        <form action="@ViewBag.Action" enctype="application/x-www-form-urlencoded" method="POST">
+			<input name="SAMLResponse" type="hidden" value="@ViewBag.SAMLResponse" />
+	        <input name="RelayState" type="hidden" value="@ViewBag.RelayState"/>
+        </form>
+        <script type="text/javascript">setTimeout('document.forms[0].submit()',0);</script>
+    }
+</body>
+</html>

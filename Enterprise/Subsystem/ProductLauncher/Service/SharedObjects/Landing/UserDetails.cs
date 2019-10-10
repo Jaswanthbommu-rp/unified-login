@@ -1,0 +1,27 @@
+﻿using System;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
+{
+	public class UserDetails
+	{
+		public int PersonaId { get; set; }
+		public long PersonPartyId { get; set; }
+		public string LoginName { get; set; }
+		public int UserId { get; set; }
+		public Guid UserRealPageId { get; set; }
+		public string FirstName { get; set; }
+		public string MiddleName { get; set; }
+		public string LastName { get; set; }
+		public int BooksMasterId { get; set; }
+        public int BooksCustomerMasterId { get; set; }
+        public string ProductUserName { get; set; } // Saml
+		public string ProductUserId { get; set; } // Saml
+		public string UserRoleType { get; set; }
+		public int UserRoleTypeId { get; set; }
+		public string Email { get; set; }
+		public string PhoneNumber { get; set; }
+		public int OrganizationPartyId { get; set; }
+		public DateTime? FromDate { get; set; }
+		public DateTime? ThruDate { get; set; }
+	}
+}

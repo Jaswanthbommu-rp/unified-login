@@ -1,0 +1,12 @@
+﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Model;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Repository
+{
+    public interface IBatchRepository
+    {
+        IList<Batch> GetBatchToProcess(int batchSize, bool shouldIncludeErrorRecords, int retrycount = 3);
+        void UpdateBatch(IList<Batch> batch, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null);
+        int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null);
+    }
+}

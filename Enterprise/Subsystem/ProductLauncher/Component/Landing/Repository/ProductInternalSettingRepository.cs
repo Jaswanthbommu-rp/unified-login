@@ -1,0 +1,38 @@
+﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
+{
+	/// <summary>
+	/// Used to get the internal settings for a product
+	/// </summary>
+	public class ProductInternalSettingRepository : BaseRepository, IProductInternalSettingRepository
+    {
+        #region Ctor
+        /// <summary>
+        /// SAML base Constructor
+        /// </summary>
+        public ProductInternalSettingRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        {
+        }
+        #endregion
+
+        /// <summary>
+        /// Get the product settings by product id
+        /// </summary>
+        /// <param name="ProductId">ProductId</param>
+        /// <returns>list product settings</returns>
+        public IList<ProductInternalSetting> GetProductInternalSettings(int ProductId)
+        {
+            using (var repo = GetRepository())
+            {
+                dynamic param = new
+                { ProductId = ProductId };
+                return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+            }
+        }
+    }
+}

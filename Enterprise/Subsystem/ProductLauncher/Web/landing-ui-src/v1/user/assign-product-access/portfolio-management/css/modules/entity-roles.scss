@@ -1,0 +1,37 @@
+.entity-roles-body {
+    padding-left: 0px;
+    padding-right: 0px;
+
+    &-error {
+        margin-top: 20px;
+    }
+}
+
+.entity-roles {
+    width: 100%;
+
+    &-wrapper {
+        margin-top: 10px;
+    }
+
+    &-grid {
+        .rp-grid-headers-1,
+        .rp-grid-filters-1,
+        .rp-grid-body-1 {
+            table-layout: auto;
+        }
+
+        .name {
+            width: 50%;
+        }
+
+        .property-type {
+            width: 20%;
+        }
+
+        .role {
+            min-width: 30%;
+            max-width: 30%;
+        }
+    }
+}

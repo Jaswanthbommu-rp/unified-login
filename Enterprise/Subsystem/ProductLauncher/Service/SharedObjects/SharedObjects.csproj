@@ -1,0 +1,581 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{941E5338-B2C7-41FD-BAD5-A34A8E732E19}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects</RootNamespace>
+    <AssemblyName>RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Fortify|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Fortify\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.XML</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dapper, Version=1.60.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dapper.1.60.1\lib\net451\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Cors, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.Cors.5.2.7\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Cors, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Cors.5.2.7\lib\net45\System.Web.Http.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attribute\SwaggerResponseExamplesAttribute.cs" />
+    <Compile Include="Attribute\VersionedRouteAttribute.cs" />
+    <Compile Include="Base\BaseType.cs" />
+    <Compile Include="Base\IRequestParameter.cs" />
+    <Compile Include="Base\RPObjectCache.cs" />
+    <Compile Include="Base\RequestParameter.cs" />
+    <Compile Include="Base\RequestParameterModelBinder.cs" />
+    <Compile Include="BlackBook\Company.cs" />
+    <Compile Include="BlackBook\CompanyInstance.cs" />
+    <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
+    <Compile Include="BlackBook\CompanyLocation.cs" />
+    <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
+    <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
+    <Compile Include="BlackBook\CustomerCompany.cs" />
+    <Compile Include="BlackBook\InstanceAddress.cs" />
+    <Compile Include="BlackBook\InstanceAttribute.cs" />
+    <Compile Include="BlackBook\InstancePhone.cs" />
+    <Compile Include="BlackBook\PropertyInstance.cs" />
+    <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
+    <Compile Include="Constants\BlueBookProductConstants.cs" />
+    <Compile Include="Constants\StoredProcNameConstants.cs" />
+    <Compile Include="Constants\UserTypeConstants.cs" />
+    <Compile Include="DapperMappingGuides\IProductSettingList.cs" />
+    <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
+    <Compile Include="Enterprise\ProductDetail.cs" />
+    <Compile Include="Enterprise\UserData.cs" />
+    <Compile Include="Enterprise\UserDataCommon.cs" />
+    <Compile Include="Enterprise\UserProductDetails.cs" />
+    <Compile Include="Enterprise\UserProductSAMLDetail.cs" />
+    <Compile Include="Enterprise\UsersData.cs" />
+    <Compile Include="Enum\AccessType.cs" />
+    <Compile Include="Enum\BatchProcessType.cs" />
+    <Compile Include="Enum\BookMasterType.cs" />
+    <Compile Include="Enum\CommunicationEventAudienceType.cs" />
+    <Compile Include="Enum\CommunicationEventPurposeType.cs" />
+    <Compile Include="Enum\CreateUserSourceType.cs" />
+    <Compile Include="Enum\EmailStatusType.cs" />
+    <Compile Include="Enum\LogActivityCategoryType.cs" />
+    <Compile Include="Enum\ParentUserRoleType.cs" />
+    <Compile Include="Enum\PersonaType.cs" />
+    <Compile Include="Enum\ProductBatchStatusType.cs" />
+    <Compile Include="Enum\RoleCategoryType.cs" />
+    <Compile Include="Enum\UserStatusType.cs" />
+    <Compile Include="Enum\ProductSelectType.cs" />
+    <Compile Include="Enum\ActivityType.cs" />
+    <Compile Include="Enum\DeviceType.cs" />
+    <Compile Include="Enum\JobTitleType.cs" />
+    <Compile Include="Enum\PhoneType.cs" />
+    <Compile Include="Enum\ProductEnum.cs" />
+    <Compile Include="Enum\ProviderEnum.cs" />
+    <Compile Include="Enum\SamlAttributeEnum.cs" />
+    <Compile Include="Enum\SearchUserSortOrderType.cs" />
+    <Compile Include="Enum\SeverityLevelType.cs" />
+    <Compile Include="Enum\UserLoginUpdateType.cs" />
+    <Compile Include="Enum\UserLoginStatusType.cs" />
+    <Compile Include="Enum\UserRoleType.cs" />
+    <Compile Include="Exceptions\BlueBookException.cs" />
+    <Compile Include="Extensions\ExtensionMethods.cs" />
+    <Compile Include="Extensions\HashingExtensions.cs" />
+    <Compile Include="Extensions\MultiQueryMapperExtension.cs" />
+    <Compile Include="Extensions\ProfileExtensions.cs" />
+    <Compile Include="Handlers\NoCacheHandler.cs" />
+    <Compile Include="Helper\CheckUserRight.cs" />
+    <Compile Include="Helper\ClientTimezone.cs" />
+    <Compile Include="Helper\ConfigReader.cs" />
+    <Compile Include="Helper\DateConverter.cs" />
+    <Compile Include="Helper\EmailFormatValidation.cs" />
+    <Compile Include="Helper\EnumParser.cs" />
+    <Compile Include="Helper\ObjectToDictionaryHelper.cs" />
+    <Compile Include="Helper\RegexUtilities.cs" />
+    <Compile Include="Helper\UserLoginStatus.cs" />
+    <Compile Include="Helper\ValidateJson.cs" />
+    <Compile Include="IdentityConfig\Client.cs" />
+    <Compile Include="IdentityConfig\ClientClaim.cs" />
+    <Compile Include="IdentityConfig\ClientPostLogoutRedirectUri.cs" />
+    <Compile Include="IdentityConfig\ClientRedirectUri.cs" />
+    <Compile Include="IdentityConfig\ClientScope.cs" />
+    <Compile Include="IdentityConfig\ClientSecret.cs" />
+    <Compile Include="IdentityConfig\Consent.cs" />
+    <Compile Include="IdentityConfig\CommonAddress.cs" />
+    <Compile Include="IdentityConfig\ContactMechanismBoundary.cs" />
+    <Compile Include="IdentityConfig\ContactMechanismUsageType.cs" />
+    <Compile Include="IdentityConfig\ProcessUserLogin.cs" />
+    <Compile Include="IdentityConfig\ElectronicAddress.cs" />
+    <Compile Include="IdentityConfig\GeographicBoundary.cs" />
+    <Compile Include="IdentityConfig\GeographicBoundaryType.cs" />
+    <Compile Include="IdentityConfig\GlobalSetting.cs" />
+    <Compile Include="IdentityConfig\ICommonAddress.cs" />
+    <Compile Include="IdentityConfig\IContactMechanismBoundary.cs" />
+    <Compile Include="IdentityConfig\IContactMechanismUsageType.cs" />
+    <Compile Include="IdentityConfig\IdentityProviderConfigurationListOutput.cs" />
+    <Compile Include="IdentityConfig\IdentityProviderSetting.cs" />
+    <Compile Include="IdentityConfig\IdentityProviderSettingType.cs" />
+    <Compile Include="IdentityConfig\IdentityProviderType.cs" />
+    <Compile Include="IdentityConfig\IdentityProviderTypeOutput.cs" />
+    <Compile Include="IdentityConfig\IElectronicAddress.cs" />
+    <Compile Include="IdentityConfig\IGeographicBoundary.cs" />
+    <Compile Include="IdentityConfig\IGeographicBoundaryType.cs" />
+    <Compile Include="IdentityConfig\IGlobalSetting.cs" />
+    <Compile Include="IdentityConfig\IIdentityProviderSetting.cs" />
+    <Compile Include="IdentityConfig\IIdentityProviderSettingType.cs" />
+    <Compile Include="IdentityConfig\IIdentityProviderType.cs" />
+    <Compile Include="IdentityConfig\ILinkElectronicAddress.cs" />
+    <Compile Include="IdentityConfig\ILinkPostalAddress.cs" />
+    <Compile Include="IdentityConfig\ILinkTelecommunicationNumber.cs" />
+    <Compile Include="IdentityConfig\IPartyContactMechanism.cs" />
+    <Compile Include="IdentityConfig\IPartyRelationship.cs" />
+    <Compile Include="IdentityConfig\IPartyRole.cs" />
+    <Compile Include="IdentityConfig\IPostalAddress.cs" />
+    <Compile Include="IdentityConfig\IPreferredContactMethod.cs" />
+    <Compile Include="IdentityConfig\IProductUsers.cs" />
+    <Compile Include="IdentityConfig\IProfile.cs" />
+    <Compile Include="IdentityConfig\IProfileDetail.cs" />
+    <Compile Include="IdentityConfig\IProviderConfiguration.cs" />
+    <Compile Include="IdentityConfig\IRelationshipType.cs" />
+    <Compile Include="IdentityConfig\IRoleType.cs" />
+    <Compile Include="IdentityConfig\IStreetAddress.cs" />
+    <Compile Include="IdentityConfig\ITelecommunicationNumber.cs" />
+    <Compile Include="IdentityConfig\IUserLogin.cs" />
+    <Compile Include="IdentityConfig\IPerson.cs" />
+    <Compile Include="IdentityConfig\IUserLoginCommon.cs" />
+    <Compile Include="IdentityConfig\IUserLoginOnly.cs" />
+    <Compile Include="IdentityConfig\IUserLoginPersona.cs" />
+    <Compile Include="IdentityConfig\UserLoginOnly.cs" />
+    <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
+    <Compile Include="IdentityConfig\UserLoginPersona.cs" />
+    <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\CustomFieldType.cs" />
+    <Compile Include="Landing\FilterTableType.cs" />
+    <Compile Include="Landing\IApiError.cs" />
+    <Compile Include="Landing\ICustomField.cs" />
+    <Compile Include="Landing\ICustomFieldType.cs" />
+    <Compile Include="Landing\ICustomFieldValue.cs" />
+    <Compile Include="Landing\IFilterTableType.cs" />
+    <Compile Include="Landing\IOrganizationType.cs" />
+    <Compile Include="Landing\IPagingSummary.cs" />
+    <Compile Include="Landing\IPasswordPolicyCommon.cs" />
+    <Compile Include="Landing\ISetting.cs" />
+    <Compile Include="Landing\ISecuritySettings.cs" />
+    <Compile Include="Landing\ISortTableType.cs" />
+    <Compile Include="Landing\IStatusType.cs" />
+    <Compile Include="Landing\OrganizationRole.cs" />
+    <Compile Include="Landing\OrganizationStatus.cs" />
+    <Compile Include="Landing\OrganizationType.cs" />
+    <Compile Include="Landing\PagingSummary.cs" />
+    <Compile Include="Landing\PasswordPolicyCommon.cs" />
+    <Compile Include="Landing\PropertyRoleList.cs" />
+    <Compile Include="Landing\IUserOrganizationExists.cs" />
+    <Compile Include="Landing\IUserOrganization.cs" />
+    <Compile Include="IdentityConfig\LinkElectronicAddress.cs" />
+    <Compile Include="IdentityConfig\LinkPostalAddress.cs" />
+    <Compile Include="IdentityConfig\LinkTelecommunicationNumber.cs" />
+    <Compile Include="IdentityConfig\PartyContactMechanism.cs" />
+    <Compile Include="IdentityConfig\PartyRelationship.cs" />
+    <Compile Include="IdentityConfig\PartyRole.cs" />
+    <Compile Include="IdentityConfig\PostalAddress.cs" />
+    <Compile Include="IdentityConfig\PreferredContactMethod.cs" />
+    <Compile Include="IdentityConfig\ProductSetting.cs" />
+    <Compile Include="IdentityConfig\ProductUsers.cs" />
+    <Compile Include="IdentityConfig\Profile.cs" />
+    <Compile Include="IdentityConfig\RelationshipType.cs" />
+    <Compile Include="IdentityConfig\RoleType.cs" />
+    <Compile Include="IdentityConfig\StreetAddress.cs" />
+    <Compile Include="IdentityConfig\ProfileDetail.cs" />
+    <Compile Include="IdentityConfig\TelecommunicationNumber.cs" />
+    <Compile Include="BlackBook\CompanyMap.cs" />
+    <Compile Include="Landing\Setting.cs" />
+    <Compile Include="Landing\SecuritySettings.cs" />
+    <Compile Include="Landing\SortTableType.cs" />
+    <Compile Include="Landing\StatusType.cs" />
+    <Compile Include="Landing\UserOrganizationExists.cs" />
+    <Compile Include="IdentityConfig\UserLoginCommon.cs" />
+    <Compile Include="Landing\UserOrganization.cs" />
+    <Compile Include="Landing\Activity.cs" />
+    <Compile Include="Landing\CommunicationEmail.cs" />
+    <Compile Include="Landing\ConfigurationSetting.cs" />
+    <Compile Include="Landing\DashboardElementResponse.cs" />
+    <Compile Include="Landing\DashboardElements.cs" />
+    <Compile Include="Landing\DefaultUserClaim.cs" />
+    <Compile Include="Landing\Email.cs" />
+    <Compile Include="Landing\EnterpriseRole.cs" />
+    <Compile Include="Landing\ErrorData.cs" />
+    <Compile Include="Landing\ErrorStatus.cs" />
+    <Compile Include="Landing\Export\IUser.cs" />
+    <Compile Include="Landing\Export\User.cs" />
+    <Compile Include="Landing\GbProductMap.cs" />
+    <Compile Include="Landing\ICheckPasswordExpirationResponse.cs" />
+    <Compile Include="Landing\ICommunicationEmail.cs" />
+    <Compile Include="Landing\IConfigurationSetting.cs" />
+    <Compile Include="Landing\ICreateUserResponse.cs" />
+    <Compile Include="Landing\IEmail.cs" />
+    <Compile Include="Landing\IErrorData.cs" />
+    <Compile Include="Landing\IErrorStatus.cs" />
+    <Compile Include="Landing\IObjectListOutput.cs" />
+    <Compile Include="Landing\IObjectOutput.cs" />
+    <Compile Include="Landing\IPersona.cs" />
+    <Compile Include="Landing\IPersonaCommon.cs" />
+    <Compile Include="Landing\IPersonaConfiguration.cs" />
+    <Compile Include="Landing\IPersonaEnvironment.cs" />
+    <Compile Include="Landing\IProductBatch.cs" />
+    <Compile Include="Landing\IProductConfiguration.cs" />
+    <Compile Include="Landing\IProductFamily.cs" />
+    <Compile Include="Landing\IProductSettingType.cs" />
+    <Compile Include="Landing\IProductType.cs" />
+    <Compile Include="Landing\ActivityAttemptDetails.cs" />
+    <Compile Include="Landing\CreateUserResponse.cs" />
+    <Compile Include="Landing\EmailProcessResponse.cs" />
+    <Compile Include="Landing\IRight.cs" />
+    <Compile Include="Landing\ISolution.cs" />
+    <Compile Include="Landing\LogOutIntervalResponse.cs" />
+    <Compile Include="Landing\EmailNotification.cs" />
+    <Compile Include="Landing\MasterConfigurationSetting.cs" />
+    <Compile Include="Landing\ObjectListOutput.cs" />
+    <Compile Include="Landing\ObjectOutput.cs" />
+    <Compile Include="Landing\IProductSetting.cs" />
+    <Compile Include="Landing\OrganizationCreate.cs" />
+    <Compile Include="Landing\OrganizationUpdate.cs" />
+    <Compile Include="Landing\OrganizationSetting.cs" />
+    <Compile Include="Landing\Persona.cs" />
+    <Compile Include="Landing\PersonaCommon.cs" />
+    <Compile Include="Landing\PersonaConfiguration.cs" />
+    <Compile Include="Landing\ProductBatch.cs" />
+    <Compile Include="Landing\ProductBatchStatus.cs" />
+    <Compile Include="Landing\ProductConfiguration.cs" />
+    <Compile Include="Landing\ProductFamily.cs" />
+    <Compile Include="Landing\ProductSettingType.cs" />
+    <Compile Include="Landing\ProductType.cs" />
+    <Compile Include="Landing\PersonaEnvironment.cs" />
+    <Compile Include="Landing\ProductSetting.cs" />
+    <Compile Include="Landing\ProductUserAccountDetails.cs" />
+    <Compile Include="Landing\ProductUserProperitiesRoles.cs" />
+    <Compile Include="Landing\Product\Base\IProductRequestModel.cs" />
+    <Compile Include="Landing\Product\Base\ProductRequestModel.cs" />
+    <Compile Include="Landing\Product\Ops\Extensions\PropertyExtensions.cs" />
+    <Compile Include="Landing\Product\Ops\Extensions\RightExtensions.cs" />
+    <Compile Include="Landing\Product\Ops\Extensions\RoleExtensions.cs" />
+    <Compile Include="Landing\SerializerContractResolver.cs" />
+    <Compile Include="Landing\UserDetails.cs" />
+    <Compile Include="Product\Accounting\AccountingRoleAndPropertyList.cs" />
+    <Compile Include="Product\Accounting\Company.cs" />
+    <Compile Include="Product\Accounting\AccountingUser.cs" />
+    <Compile Include="Product\Accounting\Property.cs" />
+    <Compile Include="Product\Accounting\RightsAddRemove.cs" />
+    <Compile Include="Product\Accounting\RightsAddRemoveList.cs" />
+    <Compile Include="Product\Accounting\RolesAddRemove.cs" />
+    <Compile Include="Product\EmployeeAccess\CompanyDetails.cs" />
+    <Compile Include="Product\EmployeeAccess\UserDetail.cs" />
+    <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplacePropertyRole.cs" />
+    <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplaceUser.cs" />
+    <Compile Include="Product\MarketingCenter\MarketingCenterRoleAndPropertyList.cs" />
+    <Compile Include="Product\MarketingCenter\MarketingCenterUserStatus.cs" />
+    <Compile Include="Product\Migration\AOMigrateResponse.cs" />
+    <Compile Include="Product\Migration\AssetOptimizationMigrationUser.cs" />
+    <Compile Include="Product\Migration\ClientPortalMigrationResponse.cs" />
+    <Compile Include="Product\Migration\ClientPortalMigrationUser.cs" />
+    <Compile Include="Product\Migration\MigrateResponse.cs" />
+    <Compile Include="Product\Migration\MigrateUser.cs" />
+    <Compile Include="Product\Migration\MigrationProperty.cs" />
+    <Compile Include="Product\Migration\MigrationResponse.cs" />
+    <Compile Include="Product\Migration\OnSiteMigrateUser.cs" />
+    <Compile Include="Product\Migration\OpsMigrateUser.cs" />
+    <Compile Include="Product\Migration\ResidentPortalMigrationUser.cs" />
+    <Compile Include="Product\Migration\MigrationUser.cs" />
+    <Compile Include="Product\Migration\VendorServiceMigrateUser.cs" />
+    <Compile Include="Product\Ops\AssetGroupCommon.cs" />
+    <Compile Include="Product\Ops\AssetGroupCreate.cs" />
+    <Compile Include="Product\Ops\AssetGroupProperty.cs" />
+    <Compile Include="Product\Ops\OpsInput.cs" />
+    <Compile Include="Product\Ops\OpsPagination.cs" />
+    <Compile Include="Product\Ops\OpsRoleAndPropertyList.cs" />
+    <Compile Include="Product\Ops\OpsUsers.cs" />
+    <Compile Include="Landing\SaveUserSelectedSecurityQuestion.cs" />
+    <Compile Include="Landing\Security\PersonaRight.cs" />
+    <Compile Include="Landing\Security\RouteSecurity.cs" />
+    <Compile Include="Landing\Solution.cs" />
+    <Compile Include="Landing\TrainingAchievement.cs" />
+    <Compile Include="Landing\UserRight.cs" />
+    <Compile Include="Landing\UserRoleRights.cs" />
+    <Compile Include="Landing\UsersAllSecurityQuestionResponse.cs" />
+    <Compile Include="IdentityConfig\UserLogin.cs" />
+    <Compile Include="IdentityConfig\OrganizationClientUserClaim.cs" />
+    <Compile Include="IdentityConfig\Person.cs" />
+    <Compile Include="IdentityConfig\PortfolioProductUserClaims.cs" />
+    <Compile Include="IdentityConfig\ProviderConfiguration.cs" />
+    <Compile Include="IdentityConfig\Scope.cs" />
+    <Compile Include="IdentityConfig\ScopeClaim.cs" />
+    <Compile Include="IdentityConfig\ScopeSecret.cs" />
+    <Compile Include="IdentityConfig\Token.cs" />
+    <Compile Include="Landing\AccountExpirationResponse.cs" />
+    <Compile Include="Landing\IOrganization.cs" />
+    <Compile Include="Landing\JobTitle.cs" />
+    <Compile Include="Landing\Organization.cs" />
+    <Compile Include="Landing\Phone.cs" />
+    <Compile Include="Landing\ProductUserDetails.cs" />
+    <Compile Include="Landing\SetPassword.cs" />
+    <Compile Include="Landing\SetStarterProfile.cs" />
+    <Compile Include="Landing\SetUserSecurityQuestionsResponse.cs" />
+    <Compile Include="Landing\StarterProfile.cs" />
+    <Compile Include="Landing\StarterProfileOptionsResponse.cs" />
+    <Compile Include="Landing\TokenDetails.cs" />
+    <Compile Include="Landing\User.cs" />
+    <Compile Include="Landing\Activities.cs" />
+    <Compile Include="Landing\ActivityAttempt.cs" />
+    <Compile Include="Landing\UserDetailsResponse.cs" />
+    <Compile Include="Landing\AuthenticateUserResponse.cs" />
+    <Compile Include="Landing\ChangePassword.cs" />
+    <Compile Include="Landing\CheckPasswordExpirationResponse.cs" />
+    <Compile Include="Landing\LoginSuccessResponse.cs" />
+    <Compile Include="Landing\ChangePasswordResponse.cs" />
+    <Compile Include="Landing\Enum\DbConnectionEnum.cs" />
+    <Compile Include="Landing\ForgotPasswordResponse.cs" />
+    <Compile Include="Landing\IActivities.cs" />
+    <Compile Include="Landing\IPasswordPolicy.cs" />
+    <Compile Include="Landing\IProductUI.cs" />
+    <Compile Include="Landing\IRepositoryResponse.cs" />
+    <Compile Include="Landing\IUserProduct.cs" />
+    <Compile Include="Landing\PasswordDetail.cs" />
+    <Compile Include="Landing\PasswordPolicy.cs" />
+    <Compile Include="Landing\PortfolioProductUserDetails.cs" />
+    <Compile Include="Landing\ProductUI.cs" />
+    <Compile Include="Landing\ProductListModels.cs" />
+    <Compile Include="Landing\ProductSamlSettings.cs" />
+    <Compile Include="Landing\QuestionAnswer.cs" />
+    <Compile Include="Landing\RepositoryResponse.cs" />
+    <Compile Include="Landing\ResetPasswordResponse.cs" />
+    <Compile Include="Landing\ResponseBase.cs" />
+    <Compile Include="Landing\SearchUserCriteria.cs" />
+    <Compile Include="Landing\SearchUserResponse.cs" />
+    <Compile Include="Landing\SecurityAnswerResponse.cs" />
+    <Compile Include="Landing\SecurityQuestion.cs" />
+    <Compile Include="Landing\SecurityQuestionAnswer.cs" />
+    <Compile Include="Landing\SecurityQuestionResponse.cs" />
+    <Compile Include="Landing\SummaryCounts.cs" />
+    <Compile Include="Landing\UserDeviceDetails.cs" />
+    <Compile Include="Landing\ListResponse.cs" />
+    <Compile Include="Landing\UserLockActivity.cs" />
+    <Compile Include="Landing\UserPasswordDetail.cs" />
+    <Compile Include="Landing\UserProduct.cs" />
+    <Compile Include="Landing\UserResetPassword.cs" />
+    <Compile Include="Landing\UserSecurityAnswer.cs" />
+    <Compile Include="Landing\UserSecurityQuestionAnswer.cs" />
+    <Compile Include="Landing\UserAllSecurityQuestionResponse.cs" />
+    <Compile Include="Landing\UserStatus.cs" />
+    <Compile Include="Landing\UserTimeZone.cs" />
+    <Compile Include="Landing\ValidatePassword.cs" />
+    <Compile Include="Landing\ValidatePasswordResponse.cs" />
+    <Compile Include="Landing\ValidateUserResponse.cs" />
+    <Compile Include="Constants\LogActivityTypeConstants.cs" />
+    <Compile Include="Product\Accounting\IOneSiteAccountingProductService.cs" />
+    <Compile Include="Product\Accounting\OneSiteAccountingProductService.cs" />
+    <Compile Include="Product\Ops\Group.cs" />
+    <Compile Include="Product\Ops\OpsUserType.cs" />
+    <Compile Include="Product\Ops\Right.cs" />
+    <Compile Include="Product\Ops\RightGroup.cs" />
+    <Compile Include="Product\Ops\RightGroupRole.cs" />
+    <Compile Include="Product\Ops\Rights.cs" />
+    <Compile Include="Product\IProductEasyLMS.cs" />
+    <Compile Include="Product\ProductEasyLMS.cs" />
+    <Compile Include="Product\Ops\SessionRequest.cs" />
+    <Compile Include="Product\ProductPropertyMap.cs" />
+    <Compile Include="Product\ProductRoleAttribute.cs" />
+    <Compile Include="Product\RentersInsurance\IInsuranceService.cs" />
+    <Compile Include="Product\RentersInsurance\InsuranceService.cs" />
+    <Compile Include="Product\RentersInsurance\IRentersInsuranceRoleAndPropertyList.cs" />
+    <Compile Include="Product\RentersInsurance\RentersInsuranceRoleAndPropertyList.cs" />
+    <Compile Include="Product\ResearchApplication\ResearchAppPropertyRole.cs" />
+    <Compile Include="Product\ResearchApplication\ResearchAppUser.cs" />
+    <Compile Include="Product\ResidentPortal\Community.cs" />
+    <Compile Include="Product\ResidentPortal\DataList.cs" />
+    <Compile Include="Product\ResidentPortal\DataObject.cs" />
+    <Compile Include="Product\ResidentPortal\ICommunity.cs" />
+    <Compile Include="Product\ResidentPortal\IDataList.cs" />
+    <Compile Include="Product\ResidentPortal\IDataObject.cs" />
+    <Compile Include="Product\ResidentPortal\ILevel.cs" />
+    <Compile Include="Product\ResidentPortal\IMessagingGroups.cs" />
+    <Compile Include="Product\ResidentPortal\INotifications.cs" />
+    <Compile Include="Product\ResidentPortal\IResidentPortal.cs" />
+    <Compile Include="Product\ResidentPortal\IResidentPortalUser.cs" />
+    <Compile Include="Product\ResidentPortal\ITitle.cs" />
+    <Compile Include="Product\ResidentPortal\Level.cs" />
+    <Compile Include="Product\ResidentPortal\MessagingGroups.cs" />
+    <Compile Include="Product\ResidentPortal\Notifications.cs" />
+    <Compile Include="Product\ResidentPortal\ResidentPortal.cs" />
+    <Compile Include="Product\AssetOptimization\UserProfile.cs" />
+    <Compile Include="Product\ClientPortal\ClientPortalPropertyRole.cs" />
+    <Compile Include="Product\IProductInterface.cs" />
+    <Compile Include="Product\IProductProperty.cs" />
+    <Compile Include="Product\IProductLearningPortal.cs" />
+    <Compile Include="Product\IProductRight.cs" />
+    <Compile Include="Product\IProductRole.cs" />
+    <Compile Include="Product\IProductUser.cs" />
+    <Compile Include="Product\Lead2Lease\Lead2LeaseOneSiteProduct.cs" />
+    <Compile Include="Product\Lead2Lease\Lead2LeaseRoleAndPropertyList.cs" />
+    <Compile Include="Product\Lead2Lease\Lead2LeaseUser.cs" />
+    <Compile Include="Product\Lead2Lease\Permission.cs" />
+    <Compile Include="Product\Lead2Lease\Preset.cs" />
+    <Compile Include="Product\Lead2Lease\Property.cs" />
+    <Compile Include="Product\Lead2Lease\Role.cs" />
+    <Compile Include="Product\MarketingCenter\MarketingCenterUserDetails.cs" />
+    <Compile Include="Product\MarketingCenter\Role.cs" />
+    <Compile Include="Product\MarketingCenter\MarketingCenterUser.cs" />
+    <Compile Include="Product\OmniChannel\OmniChannelUser.cs" />
+    <Compile Include="Product\OmniChannel\OmniChannelProperty.cs" />
+    <Compile Include="Product\OmniChannel\OmniChannelPropertyRole.cs" />
+    <Compile Include="Product\OmniChannel\OmniChannelRight.cs" />
+    <Compile Include="Product\OmniChannel\OmniChannelRole.cs" />
+    <Compile Include="Product\OmniChannel\OmniChannelUserType.cs" />
+    <Compile Include="Product\OneSite\IOneSiteProductService.cs" />
+    <Compile Include="Product\OneSite\OneSiteProductService.cs" />
+    <Compile Include="Product\OneSite\OneSiteRoleAndPropertyList.cs" />
+    <Compile Include="Product\OneSite\OneSiteUser.cs" />
+    <Compile Include="Product\Ops\AssetGroup.cs" />
+    <Compile Include="Product\Ops\OpsUser.cs" />
+    <Compile Include="Product\Ops\Portfolio.cs" />
+    <Compile Include="Product\Ops\Role.cs" />
+    <Compile Include="Product\ProductProperty.cs" />
+    <Compile Include="Product\ProductLearningPortal.cs" />
+    <Compile Include="Product\ProductRight.cs" />
+    <Compile Include="Product\ProductRole.cs" />
+    <Compile Include="Product\ProductUser.cs" />
+    <Compile Include="Product\ProspectContactCenter\ProspectContactCenterUserDetails.cs" />
+    <Compile Include="Product\ResidentPortal\ResidentPortalUser.cs" />
+    <Compile Include="Product\ResidentPortal\Title.cs" />
+    <Compile Include="Product\ProspectContactCenter\ProspectContactPropertyRole.cs" />
+    <Compile Include="Product\RPDocumentManagement\RPDMClassifier.cs" />
+    <Compile Include="Product\RPDocumentManagement\RPDMDataset.cs" />
+    <Compile Include="Product\RPDocumentManagement\RPDMRole.cs" />
+    <Compile Include="Product\RPDocumentManagement\RPDMRoleDetail.cs" />
+    <Compile Include="Product\RPDocumentManagement\RPDMUser.cs" />
+    <Compile Include="Product\Rum\Role.cs" />
+    <Compile Include="Product\Rum\RumPropertyGroup.cs" />
+    <Compile Include="Product\Rum\RumUser.cs" />
+    <Compile Include="Product\Rum\RumUserClaims.cs" />
+    <Compile Include="Product\Rum\RumUserPropertyRegionRole.cs" />
+    <Compile Include="Product\SelfProvisioningPortal\ISelfProvisioningPortal.cs" />
+    <Compile Include="Product\SelfProvisioningPortal\SelfProvisioningPortal.cs" />
+    <Compile Include="Product\UnifiedAmenities\UnifiedAmenitiesPropertyRole.cs" />
+    <Compile Include="Product\UnifiedAmenities\UnifiedAmenitiesUser.cs" />
+    <Compile Include="Product\UnifiedLogin\UnifiedLoginCompany.cs" />
+    <Compile Include="Product\UnifiedLogin\RightAddRem.cs" />
+    <Compile Include="Product\UnifiedLogin\UnifiedLoginRole.cs" />
+    <Compile Include="Product\UnifiedLogin\UnifiedLoginService.cs" />
+    <Compile Include="Product\VendorServices\Notification.cs" />
+    <Compile Include="Product\VendorServices\ProductPropertyNotification.cs" />
+    <Compile Include="Product\VendorServices\PropertyGroup.cs" />
+    <Compile Include="Product\VendorServices\VendorServicesUser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Landing\CustomField.cs" />
+    <Compile Include="ResponseObject\Error.cs" />
+    <Compile Include="ResponseObject\ErrorResponse.cs" />
+    <Compile Include="ResponseObject\ObjectResponse.cs" />
+    <Compile Include="ResponseObject\PagedResponse.cs" />
+    <Compile Include="Saml\ISamlAttributes.cs" />
+    <Compile Include="Saml\SamlAttributes.cs" />
+    <Compile Include="Swagger\IProvideExamples.cs" />
+    <Compile Include="Swagger\SwaggerUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="All\" />
+    <Folder Include="Product\ActiveBuilding\" />
+    <Folder Include="Product\LeaseStar\" />
+    <Folder Include="Product\LevelOne\" />
+    <Folder Include="RedBook\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".nuget\NuGet.Config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Foundation\Audit\Audit.Core\Audit.Core.csproj">
+      <Project>{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}</Project>
+      <Name>Audit.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

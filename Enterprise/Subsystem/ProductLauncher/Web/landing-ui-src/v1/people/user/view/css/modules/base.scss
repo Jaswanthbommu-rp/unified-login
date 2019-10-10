@@ -1,0 +1,19 @@
+.view-user {
+
+	.user-profile {
+		width: 100%;
+		
+		&-wrapper {
+			min-height: 165px;
+		}
+		
+	    &-main {
+	        &-link {
+	        	color: $rp-primary;
+	        }
+	    }
+
+	}
+
+}
+

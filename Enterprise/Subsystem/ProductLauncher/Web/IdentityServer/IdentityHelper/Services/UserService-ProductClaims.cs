@@ -1,0 +1,213 @@
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Web.Script.Serialization;
+using RPModel = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
+{
+    public partial class UserService
+    {
+        private IEnumerable<Claim> GetClaimsFromUtilityManagement(long personaId)
+        {
+            var claimsToReturn = new List<Claim>();
+            IList<SamlAttributes> samlAttributes;
+
+            var userClaim = GetSamlUserClaimAndAttributesForProduct("productuserid", "UserId", personaId, ProductEnum.UtilityManagement, out samlAttributes);
+            if (samlAttributes != null)
+            {
+                claimsToReturn.Add(userClaim);
+
+                var productInternalSettingList = GetProductInternalSettings(ProductEnum.UtilityManagement);
+                var apiEndPoint = productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
+                var apiSecret = productInternalSettingList.First(a => a.Name.Equals("APISECRET", StringComparison.OrdinalIgnoreCase)).Value;
+                var nwpclientId = productInternalSettingList.First(a => a.Name.Equals("CLIENTID", StringComparison.OrdinalIgnoreCase)).Value;
+                var nwpIssueUri = productInternalSettingList.First(a => a.Name.Equals("TOKENURL", StringComparison.OrdinalIgnoreCase)).Value;
+
+                var accessToken = GetToken(nwpIssueUri, nwpclientId, apiSecret);
+
+                var apiPathAndQuery = "/user/getuser?userId=" + userClaim.Value;
+                claimsToReturn.AddRange(GetClaimsFromProductApiEndpoint(apiEndPoint + apiPathAndQuery, accessToken, userClaim.Value));
+
+            }
+
+            return claimsToReturn;
+        }
+
+        private IEnumerable<Claim> GetClaimsFromUnifiedAmenities(Persona persona)
+        {
+            var claims = new List<Claim>();
+            IList<SamlAttributes> _;
+            var userClaim = GetSamlUserClaimAndAttributesForProduct("os-userinfo", "UserId", persona.PersonaId,
+                ProductEnum.OneSite, out _); // the _ on out just means unused out variable
+            if (userClaim != null)
+                claims.Add(userClaim);
+
+            var roles = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.UnifiedAmenities);
+            if (roles != null)
+            {
+                claims.AddRange(roles.Select(a => new Claim("role", a.Name)).ToList());
+                claims.AddRange(roles.Select(a => new Claim("roleId", a.ID)).ToList());
+                claims.AddRange(roles.Select(a => new Claim("rolealias", a.Alias)).ToList());
+            }
+
+            foreach (var productRole in roles)
+            {
+                var roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, ProductEnum.UnifiedAmenities, Convert.ToInt32(productRole.ID));
+                claims.AddRange(roleRights.Select(a => new Claim("right", a.Alias)).ToList());
+            }
+
+            return claims;
+        }
+
+        private IEnumerable<Claim> GetClaimsFromOnsite(Persona persona)
+        {
+            var claimsToReturn = new List<Claim>();
+            IList<SamlAttributes> samlAttributes;
+            var userClaim = GetSamlUserClaimAndAttributesForProduct("user_id", "UserId", persona.PersonaId, ProductEnum.OnSite, out samlAttributes);
+
+            if (userClaim != null)
+            {
+                claimsToReturn.Add(userClaim);
+
+                var companyId = (from saml in samlAttributes where saml.Name == "PMCID" select saml.Value).FirstOrDefault();
+                claimsToReturn.Add(new Claim("company_id", companyId));
+            }
+
+            return claimsToReturn;
+        }
+
+        private Claim GetSamlUserClaimAndAttributesForProduct(string claimType, string samlAttrName, long personaId, ProductEnum product, out IList<SamlAttributes> samlAttributes)
+        {
+            var samlProductSettings = GetSamlSettingsForProduct(product);
+            if (!string.IsNullOrEmpty(samlProductSettings.LoginUri))
+            {
+                samlAttributes = GetSamlProductAttributesForPersona(personaId, product);
+                if (samlAttributes.Any())
+                {
+                    var userId = (from saml in samlAttributes where saml.Name == samlAttrName select saml.Value).FirstOrDefault();
+                    return new Claim(claimType, userId);
+                }
+            }
+
+            samlAttributes = null;
+            return null;
+        }
+
+        /// <summary>
+        /// Not currently used
+        /// </summary>
+        /// <param name="primaryOrgPartyId"></param>
+        /// <param name="clientId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        private IEnumerable<Claim> GetPortfolioProductUserClaims(long primaryOrgPartyId, string clientId, long userId)
+        {
+            var claims = new List<Claim>();
+            var orgClientClaims = new List<RPModel.PortfolioProductUserClaims>();
+
+            if (orgClientClaims == null) return claims;
+
+            foreach (var orgCliClaim in orgClientClaims)
+            {
+                var value = orgCliClaim.Value;
+                if (value.Contains("{") && value.Contains("}"))
+                {
+                    var serializer = new JavaScriptSerializer();
+                    var tokenObj = serializer.Deserialize<Dictionary<string, object>>(orgCliClaim.Value);
+                    foreach (var entry in tokenObj)
+                    {
+                        claims.Add(new Claim(entry.Key, entry.Value.ToString()));
+                    }
+                }
+                else
+                {
+                    claims.Add(new Claim(orgCliClaim.Type, orgCliClaim.Value));
+                }
+            }
+
+            return claims;
+        }
+
+        private IEnumerable<Claim> GetOrganizationClaims(RPModel.Organization organization)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim("orgPartyId", organization.PartyId.ToString()),
+                new Claim("orgId", organization.RealPageId.ToString()),
+                new Claim("orgName", organization.Name),
+                new Claim("orgMasterId", organization.BooksMasterId.ToString()),
+                new Claim("orgCompanyMasterId", organization.BooksCustomerMasterId.ToString()),
+                new Claim("orgType", organization.organizationType.Name)
+            };
+            return claims;
+        }
+
+        private static IEnumerable<Claim> GetClaimsFromProductApiEndpoint(string apiUrl, string accessToken, string nwpUserId)
+        {
+            var claims = new List<Claim>();
+            ClaimResponse nwpClaims = new ClaimResponse() { Claims = new List<Services.RPClaim>() };
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Clear();
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                    var response = client.GetAsync(apiUrl).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+
+                        // try to reuse this once we can support newer c# versions
+                        //if (JsonConvert.DeserializeObject(jsonContent, typeof(ClaimResponse)) is ClaimResponse claimResponse)
+                        //    claims.AddRange(claimResponse.Claims.Select(a => new Claim(a.Type, a.Value)).ToList());
+                        nwpClaims = JsonConvert.DeserializeObject(jsonContent, typeof(ClaimResponse)) as ClaimResponse;
+                    }
+                    nwpClaims.Claims.Add(new RPClaim() { Type = "productuserid", Value = nwpUserId });
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            if (nwpClaims.Claims.Count > 0)
+            {
+                claims.AddRange(nwpClaims.Claims.Select(a => new Claim(a.Type, a.Value)).ToList());
+            }
+            return claims;
+        }
+
+        private IList<SamlAttributes> GetSamlProductAttributesForPersona(long personaId, ProductEnum product)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"samlAttributesCache_{personaId}_{(int)product}";
+            IList<SamlAttributes> samlAttributes = rpCache.GetFromCache<IList<SamlAttributes>>(cacheKey, 600, () =>
+            {
+                return _samlRepository.GetProductSamlDetails(personaId, (int)product);
+            });
+
+            return samlAttributes;
+        }
+
+        private RPModel.ProductSamlSettings GetSamlSettingsForProduct(ProductEnum product)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"samlProductSetting_{(int)product}";
+
+            RPModel.ProductSamlSettings samlProductSettings = rpCache.GetFromCache<RPModel.ProductSamlSettings>(cacheKey, 600, () =>
+            {
+                return _samlRepository.GetProductSamlSettingsByProductId((int)product);
+            });
+
+            return samlProductSettings;
+        }
+    }
+}

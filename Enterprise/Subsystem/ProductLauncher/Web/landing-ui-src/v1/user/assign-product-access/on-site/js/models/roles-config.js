@@ -1,0 +1,67 @@
+//  OnSite Roles Grid Config Model
+
+(function(angular, undefined) {
+    "use strict";
+
+    function factory(gridConfig) {
+        var model = gridConfig();
+
+        model.get = function() {
+            return [{
+                key: "isAssigned",
+                type: "custom",
+                idKey: "level",
+                templateUrl: "user/assign-product-access/on-site/templates/role-radio.html"
+            }, {
+                key: "title",
+                type: "text",
+            }];
+        };
+
+        model.getHeaders = function() {
+            return [
+                [{ }, {
+                    key: "title",
+                    text: "Role",
+                }]
+            ];
+        };
+
+        model.getFilters = function () {
+            return [
+                {
+                    key: "isAssigned",
+                    type: "menu",
+                    value: "",
+                    options: [
+                        {
+                            value: "",
+                            name: "All"
+                        },
+                        {
+                            value: true,
+                            name: "Selected"
+                        },
+                        {
+                            value: false,
+                            name: "Not Selected"
+                        }
+                    ]
+                },
+                {
+                    key: "title",
+                    type: "text",
+                    placeholder: "Filter by Role Name"
+                }
+            ];
+        };
+
+        return model;
+    }
+    angular
+        .module("settings")
+        .factory("onSiteRolesGridConfig", [
+            "rpGridConfig",
+            factory
+        ]);
+})(angular);

@@ -1,0 +1,13 @@
+﻿CREATE TABLE [Enterprise].[Organization]
+(
+	[PartyId] BIGINT NOT NULL, 
+    [Name] NVARCHAR(150) NULL, 
+    [IdentityProviderTypeId] INT NOT NULL DEFAULT -1, 
+	[OrganizationTypeId] [int] NOT NULL DEFAULT -1,
+	[CreateDate] [datetime] NULL,
+    CONSTRAINT [PK_Organization] PRIMARY KEY (PartyId), 
+    CONSTRAINT [FK_Organization_Party] FOREIGN KEY (PartyId) REFERENCES Enterprise.Party(PartyId) ON DELETE CASCADE ON UPDATE CASCADE
+)
+GO
+ALTER TABLE [Enterprise].[Organization]  WITH CHECK ADD  CONSTRAINT [FK_Organization_OrganizationType] FOREIGN KEY([OrganizationTypeId])
+REFERENCES [Enterprise].[OrganizationType] ([OrganizationTypeId])

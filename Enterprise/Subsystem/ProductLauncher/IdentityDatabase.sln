@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2008
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Identity", "Database\Identity\Identity.sqlproj", "{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Dev|Any CPU = Dev|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Dev|Any CPU.ActiveCfg = Dev|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Dev|Any CPU.Build.0 = Dev|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Dev|Any CPU.Deploy.0 = Dev|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {049F66EF-CA34-437D-B50E-460BA79C7ADC}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Database\\Identity\\Identity.sqlproj
+		SccProjectName1 = Database/Identity
+		SccLocalPath1 = Database\\Identity
+	EndGlobalSection
+EndGlobal

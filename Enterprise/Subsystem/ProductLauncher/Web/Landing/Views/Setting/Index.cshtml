@@ -1,0 +1,327 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutJquery.cshtml";
+}
+
+@*@Html.Partial("~/Views/Shared/_BreadCrumbs.cshtml")*@
+
+
+
+<!--  temparory static breadcrumbs -->
+
+<header id="raul-page-header" class="raul-page-header">
+    <h2 id="raul-page-header-page" class="raul-page-header-page">Settings</h2>
+    <div id="raul-page-header-breadcrumbs" class="raul-page-header-breadcrumbs">
+
+        <!-- MOBILE SOLUTION -->
+        <div id="raul-page-header-breadcrumbs-dropdown" class="raul-page-header-breadcrumbs-dropdown d-md-none">
+            <a class="raul-page-header-breadcrumbs-dropdown-breadcrumb rp-breadcrumbs-template hidden" href="/">RealPage</a>
+        </div>
+
+        <i id="raul-page-header-breadcrumbs-back" class="fa fa-angle-left d-md-none"></i>
+
+        <!-- DESKTOP SOLUTION -->
+        <!--  <div class="rp-breadcrumbs-wrapper rp-breadcrumbs-template hidden">
+            <a class="raul-page-header-breadcrumb hidden-sm-down" href="/">RealPage</a>
+            <span class="hidden-sm-down">/</span>
+        </div>
+          -->
+        <!-- DESKTOP SOLUTION -->
+        <div class="rp-breadcrumbs-wrapper rp-breadcrumbs-template">
+            <a class="raul-page-header-breadcrumb hidden-sm-down _600" href="javascript:void(0);">Settings</a>
+        </div>
+
+    </div>
+</header>
+
+
+
+
+
+
+<main id="raul-page-container" class="raul-page-container">
+    <section>
+        <div class="">
+            <div>
+                <!-- commented this code as per new design USA-647
+    <div class="background-charcoal-05 pt-5 pb-5">
+         <div class="row mx-0 ">
+             <div class="col-3 text-left"><h2 class="py-4 pl-3">Company Settings</h2></div>
+             <div class="col-5 form-group px-1 py-3">
+                 <form id="settings-search-bar" class="settings-search-bar" ui-jp="parsley" ui-options="{}" data-parsley-focus="none">
+                     <input type="search" id="setting-search" name="example-input-11" class="form-control" placeholder="Search all Realpage Settings" autocomplete="off" minlength="3" required>
+                     <button type="submit" class="form-icon-box search-settings-icon">
+                         <i class="fa fa-search form-icon form-icon-search form-icon-black" aria-hidden="true"></i>
+                     </button>
+                 </form>
+
+                 @*<div class="search-results-dropdown p-0">
+
+             <ul id="searchlist">
+                 <li>
+                     <div class="content-loader-wrapper">
+                         <div class="content-loader"></div>
+                     </div>
+                 </li>
+             </ul>
+
+
+             <div class="readmore p-2 primary-text pl-3">
+                 <a href="#"> View all search results  </a>
+             </div>
+
+         </div>*@
+
+
+             </div><div class="col-3 py-3 text-right"><a href="#" class="line-height-38 text-primary">Manage Property Settings</a></div>
+         </div>
+
+     </div>
+
+     -->
+
+                <div class="manage-settings-wrap text-center">
+                    Manage settings for
+                    <div class="raul-dropdown-select dropdown-no-border ml-3">
+                        <div class="dropdown-toggle">
+                            <div class="dropdown-toggle-content">
+                                <span class="dropdown-title text-right">My Company</span>
+
+                                <i class="fa fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-menu">
+                                <div class="dropdown-body">
+                                    <div class="dropdown-group">
+                                        <div class="dropdown-row">
+                                            <div class="dropdown-item">
+                                                <label class="raul-radio-wrapper">
+                                                    <span class="raul-form-input-text">My Company</span>
+
+                                                    <input type="radio"
+                                                           name="form-style-second-section"
+                                                           value="My Company"
+                                                           data-text="My Company">
+
+                                                    <i class="fa fa-check dropdown-checked-icon"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                </div>
+
+
+                <div class="settings-tabpanel ">
+                    <ul id="landing-tabs-panel" class="raul-nav nav nav-tabs raul-nav-underline background-charcoal-05 px-5 pt-3" role="tablist">
+                        <li class="nav-item hidden">
+                            <a class="nav-link nav-dark background-charcoal-05" href="" aria-controls="home" role="tab" data-toggle="tab" aria-expanded="false" data-target=""></a>
+                        </li>
+                    </ul>
+                    <div id="landing-tabs-content" class="tab-content col-md-12">
+                        <div class="tab-pane animated fadeIn hidden row clearfix pb-5" id="">
+
+                            <div class="col-md-2 raul-tab-content tab-content general-settings-tile-wrapper">
+
+
+                                <a href="" data-id="">
+                                    <div class="text-center">
+                                        <img src="" alt="">
+                                        <p class="ft-s-16 _500"></p>
+                                    </div>
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+</main>
+
+
+<script src="@Url.Content("~/Assets/build/js/settings/load-scripts.js")"></script>
+<script>
+    loadFiles([
+        '@Url.Content("~/Assets/build/js/settings/common-functions.js")',
+		'@Url.Content("~/Assets/build/js/settings/ui-company-settings.js")'
+    ]);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@*@{
+        Layout = "~/Views/Shared/_LayoutJquery.cshtml";
+    }
+
+    @Html.Partial("~/Views/Shared/_BreadCrumbs.cshtml")
+
+
+
+
+    <main id="raul-page-container" class="raul-page-container">
+
+        <section>
+            <div class="background-charcoal-05 overflow-hidden">
+                <div class="text-center py-5">
+                    <div class="search-settings-container">
+                        <h1>Find the settings you're looking for, all in one place</h1>
+                        <p class="pb-2">Browse or search for settings based on function, product or keyword.</p>
+                        <div class="row">
+                            <div class="col-3"></div><div class="col-6 form-group px-0">
+                                <input type="search" name="example-input-11" class="form-control" placeholder="Search all Realpage Settings">
+                                <div class="form-icon-box">
+                                    <i class="fa fa-search form-icon form-icon-search form-icon-black" aria-hidden="true"></i>
+                                </div>
+                            </div><div class="col-3"></div>
+
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="background-white">
+
+                    <div class="container setting-container text-center row py-5 my-0 mx-auto">
+                        <div class="col-md-4">
+                            <div class="setting-block">
+                                <div class="setting-icon">
+
+                                    <img src="~/Assets/build/images/settings-icons/bank-icon.svg" alt="" class="landing-page-icon">
+
+                                </div>
+                                <h3> Company Settings</h3>
+                                <p> Description of area, settings, etc</p>
+                             <a id="companysetting" class="btn btn-primary rounded-btn manage-company-setting">Manage Company Settings</a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 bor-lr-1">
+                            <div class="setting-block">
+                                <div class="setting-icon">
+                                    <img src="~/Assets/build/images/settings-icons/building-icon.svg" alt="" class="landing-page-icon" >
+                                </div>
+                                <h3> Property Settings</h3>
+                                <p> Description of area, settings, etc</p>
+                                <button type="submit" class="btn btn-primary rounded-btn">Manage Property Settings</button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="setting-block">
+                                <div class="setting-icon">
+                                    <i class="fa fa-newspaper-o" aria-hidden="true"></i>
+                                </div>
+                                <h3> Template Settings</h3>
+                                <p> Description of area, settings, etc</p>
+                                <button type="submit" class="btn btn-primary rounded-btn">Manage Template Settings</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Tab panes -->
+                    <!--
+                <div id="landing-tabs-content" class="tab-content">
+                    <div class="tab-pane animated fadeIn hidden row" id="">
+
+                        <div class="col-md-3 general-settings-tile-wrapper hidden">
+
+                            <a class="general-settings-tile" href="" data-id="">
+                                <div class="text-center">
+                                    <img src="" alt="">
+                                    <p class="ft-s-16 _500"></p>
+                                </div>
+                            </a>
+
+                        </div>
+                    </div>
+
+
+                </div>
+                -->
+
+                </div>
+
+                <div class="recent-used-settings container">
+
+                    <div class="mb-4">
+                        <div class="row">
+                            <div class="col-11 mx-auto">
+                                <h3>Recently Used Settings</h3>
+                                <ul class="recent-search-items">
+                                    <!--    <li><a href="#">Third Party Provider</a></li>
+                                <li><a href="#">Custom Fields</a></li>
+                                <li><a href="#">Okta</a></li>
+                                <li><a href="#">Document Management</a></li>
+                                <li><a href="#">Unified Login</a></li>
+                                <li><a href="#">Budgeting</a></li>
+                                <li><a href="#">Unified Login</a></li>
+                                <li><a href="#">Document Management</a></li>
+                                <li><a href="#">Third Party Provider</a></li>-->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="@Url.Content("~/Assets/build/js/settings/load-scripts.js")"></script>
+    <script>
+        loadFiles([
+            '/Assets/build/js/settings/common-functions.js',
+            '/Assets/build/js/settings/ui-settings.js'
+
+        ]);
+    </script>*@
+

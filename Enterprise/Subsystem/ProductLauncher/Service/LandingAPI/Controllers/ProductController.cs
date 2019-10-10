@@ -1,0 +1,806 @@
+﻿using RP.Enterprise.Foundation.Audit.Core.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Web.Http;
+using Thinktecture.IdentityModel.Client;
+using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
+{
+    /// <summary>
+    /// Controller for product related APIs
+    /// </summary>
+    public class ProductController : BaseApiController
+    {
+        #region Private variables
+
+        private readonly IProductRepository _productRepository;
+        private Guid emptyGuid = Guid.Empty;
+        private string _key = "4AD12A31-680A-476F-863E-26749D2E7DD4";
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ProductController() : base()
+        {
+        }
+
+        /// <summary>
+        /// Testing Constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productRepository">Product Repository</param>
+        public ProductController(DefaultUserClaim userClaim, IProductRepository productRepository)
+        {
+            _userClaims = userClaim;
+            _productRepository = productRepository;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// List product user(s) for an organization
+        /// </summary>
+        /// <param name="productId">Unique ProductId</param>
+        /// <param name="companyInstanceId">Unique blueBook CompanyInstanceId</param>
+        /// <param name="personaId">Optional Unique PersonaId</param>
+        /// <returns>Response with Success Message</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List product users", Type = typeof(ProductUsers))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("products/{productId}/organization/{companyInstanceId}")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage ListProductUsers(int productId, long companyInstanceId, long personaId = 0)
+        {
+            ObjectListOutput<ProductUsers, IErrorData> output = new ObjectListOutput<ProductUsers, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            output.Status = errorStatus;
+
+            if (((string.IsNullOrWhiteSpace(_clientCode)) || (_clientCode.ToUpper() != "BBA")) && ((_realpageUserId == Guid.Empty) || (_realpageUserId == null)))
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Product.ListProductUsers.1";
+                errorStatus.ErrorMsg = "Product - Invalid ClientCode and Enterprise User Id";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            if (!Enum.IsDefined(typeof(ProductEnum), productId))
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Product.ListProductUsers.2";
+                errorStatus.ErrorMsg = "Product - Invalid parameter Product Id";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            if ((companyInstanceId < -1) || (companyInstanceId == 0))
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Product.ListProductUsers.3";
+                errorStatus.ErrorMsg = "Product - Invalid parameter company Instance Id";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            if (personaId < 0)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Product.ListProductUsers.4";
+                errorStatus.ErrorMsg = "Product - Invalid parameter Persona Id";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            ListResponse listResponse = new ListResponse();
+            ManageProduct manageProduct = new ManageProduct(_userClaims);
+            IList<ProductUsers> listProductUsers = manageProduct.GetProductUsers(productId, companyInstanceId, personaId);
+            if (listProductUsers == null)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Product.ListProductUsers.5";
+                errorStatus.ErrorMsg = "Product - List Product Users: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            output.list = listProductUsers;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+        /// <summary>
+        /// Get product families
+        /// </summary>
+        /// <param name="personRealPageId">The user unique identifier (Optional - Use Logged-in user unique identifier if parameter value is Guid.Empty)</param>
+        /// <param name="accessFilter">filter products by area (such as "user details" or "rolesandrights")</param>
+        /// <returns>list of product families and products</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the product families", Type = typeof(IProductFamily))]
+        [SwaggerResponseExamples(typeof(IProductFamily), typeof(ProductFamilyMethodExample))]
+        [Route("productfamilies")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null)
+        {
+            IManagePersona managePersona = new ManagePersona(_userClaims);
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            ObjectListOutput<ProductFamily, IErrorData> output = new ObjectListOutput<ProductFamily, IErrorData>();
+            IList<ProductFamily> productFamilyList = new List<ProductFamily>();
+
+            Guid? userRealPageId = (personRealPageId == Guid.Empty || personRealPageId == null) ? _realpageUserId : personRealPageId;
+
+            if (_productRepository == null)
+            {
+                IManageProduct manageProduct = new ManageProduct(_userClaims);
+                //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
+                productFamilyList = manageProduct.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter);
+            }
+            else
+            {
+                productFamilyList = _productRepository.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter);
+            }
+
+            if (productFamilyList != null)
+            {
+                output.list = productFamilyList;
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            //When trying to get a list of Product Families that doesn't exists
+            errorStatus.Success = false;
+            errorStatus.ErrorCode = "Product.GetProductFamilies.1";
+            errorStatus.ErrorMsg = "Product Families: No data found.";
+            output.Status = errorStatus;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+        /// <summary>
+        /// Used to get product internal settings
+        /// </summary>
+        /// <param name="ProductId">The id of the product to get the settings for</param>
+        /// <param name="Key">A guid needed to retrieve the information. Only the system should get this information, no user should need to call this method.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the productsolutions", Type = typeof(ProductInternalSetting))]
+        [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
+        [Route("product/internalsettings")]
+        [Authorize]
+        [HttpGet]
+        public IList<ProductInternalSetting> GetProductInternalSettings(int ProductId, Guid Key)
+        {
+            ObjectListOutput<ProductInternalSetting, IErrorData> output = new ObjectListOutput<ProductInternalSetting, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            IList<ProductInternalSetting> productInternalSettingsList = new List<ProductInternalSetting>();
+            if (Key != new Guid(_key))
+            {
+                return productInternalSettingsList;
+            }
+
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            productInternalSettingsList = manageProduct.GetProductInternalSettings(ProductId);
+            output.list = productInternalSettingsList;
+            output.Status = errorStatus;
+            return productInternalSettingsList;
+        }
+
+        /// <summary>
+        /// Used to get product saml login
+        /// </summary>
+        /// <param name="ProductId">The id of the product to get the settings for</param>
+        /// <param name="PersonaId">Persona Id.</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the productsolutions", Type = typeof(ProductInternalSetting))]
+        [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
+        [Route("product/login")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetProductLoginInfo(int ProductId, long PersonaId)
+        {
+            var saml = new RealPageSAML(_userClaims);
+            try
+            {
+                return null;
+                //return saml.GetSaml(Request, ProductId, PersonaId);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+        /// <summary>
+        /// Get productTypes
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the productTypes", Type = typeof(ProductType))]
+        [SwaggerResponseExamples(typeof(ProductType), typeof(ProductTypeMethodExample))]
+        [Route("productTypes")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetProductTypes()
+        {
+            ObjectListOutput<ProductType, IErrorData> output = new ObjectListOutput<ProductType, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            IList<ProductType> productTypes = manageProduct.GetProductTypes();
+            output.list = productTypes;
+            output.Status = errorStatus;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+        /// <summary>
+        /// List Products
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the books products", Type = typeof(GbProductMap))]
+        [Route("booksproductmap")]
+        [Authorize]
+        [HttpGet]
+        public IList<GbProductMap> GetBooksProductMap()
+        {
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            IList<GbProductMap> booksProductMap = manageProduct.ListProducts();
+
+            return booksProductMap;
+        }
+
+
+        [Route("product/{productId}/persona/{personaId}")]
+        [Authorize]
+        [HttpGet]
+        public ProductLoginResponse GetProductLoginDetails(int productId, long personaId)
+        {
+            ProductLoginResponse productLoginResponse;
+            bool isProductReport = false;
+
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            string accessToken = (from nvp in currentClaimPrincipal.Claims where nvp.Type == "token" select nvp.Value).FirstOrDefault();
+
+            RealPageSAML rpsaml = new RealPageSAML(_userClaims);
+
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            IList<ProductInternalSetting> productInternalSettingsList = manageProduct.GetProductInternalSettings(productId);
+
+            string authenticationType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("AuthenticationType", StringComparison.OrdinalIgnoreCase))?.Value;
+            switch (authenticationType)
+            {
+                case "Redirect":
+                    productLoginResponse = GetProductRedirectUrl(productId);
+                    break;
+
+                case "SAML":
+                    string relayState = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_RelayState", StringComparison.OrdinalIgnoreCase))?.Value;
+                    string fallBackUrl = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_FallbackUrl", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                    productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, accessToken, relayState, fallBackUrl, false, null);
+                    break;
+
+                case "OpenIdCustom":
+                    string productName = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_OpenId_ProductName", StringComparison.OrdinalIgnoreCase))?.Value;
+                    string responseType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_OpenId_ResponseType", StringComparison.OrdinalIgnoreCase))?.Value;
+                    string scopesForAuth = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_OpenId_ScopesForAuth", StringComparison.OrdinalIgnoreCase))?.Value;
+                    string responseMode = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_OpenId_ResponseMode", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                    productLoginResponse = BuildLoginToken((ProductEnum) productId, productName, personaId, responseType, scopesForAuth, responseMode);
+                    break;
+
+                default:
+                    productLoginResponse = GetProductRedirectUrl(productId);
+                    break;
+            }
+
+            // add activity log
+            if (isProductReport)
+            {
+                AddActivityLog(productId, isEmailLinkActivity: isProductReport);
+            }
+            else
+            {
+                AddActivityLog(productId);
+            }
+
+            return productLoginResponse;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Used to log a user into an OAuth client
+        /// </summary>
+        /// <param name="product"></param>
+        /// <param name="productName"></param>
+        /// <param name="personaId"></param>
+        /// <param name="responseType"></param>
+        /// <param name="scopesForAuth"></param>
+        /// <param name="responseMode"></param>
+        /// <param name="usertoken"></param>
+        /// <returns></returns>
+        private ProductLoginResponse BuildLoginToken(ProductEnum product, string productName, long personaId, string responseType, string scopesForAuth, string responseMode)
+        {
+            ProductLoginResponse response = new ProductLoginResponse();
+
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+
+            Persona persona = GetPersona(_userClaims.UserRealPageGuid, personaId);
+
+            if (persona == null)
+            {
+                throw new Exception("Error getting product details, no persona found");
+            }
+
+            if (RealPageSAML.ProductDetails((int) product, persona, out var getOneSitePMCURL, out var getDocMgtDomain, out var getMarketingCenterUrl, out var productList))
+            {
+                throw new Exception("Error getting product details");
+            }
+
+            // only check status for products that have a status
+            if (productList?.Count > 0)
+            {
+                PersonaProductUserDetails productDetail = productList[0];
+
+                if (productDetail.ProductStatus != (int) ProductBatchStatusType.Success)
+                {
+                    response.ErrorMessage = "AccessDenied";
+                    return response;
+                }
+            }
+
+            // get the product details
+            var idp = (from nvp in currentClaimPrincipal.Claims where nvp.Type.Equals("idp", StringComparison.OrdinalIgnoreCase) || nvp.Type.Equals("http://schemas.microsoft.com/identity/claims/identityprovider", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
+
+            if (string.IsNullOrEmpty(idp))
+                throw new Exception("No idp included in redirect querystring!!");
+
+            var state = Guid.NewGuid().ToString("N");
+            var nonce = Guid.NewGuid().ToString("N");
+            var client = new OAuth2Client(new Uri(ConfigReader.GetIssuerUri + "/connect/authorize"));
+
+            // get the product Login url
+            var productRedirectUrl = GetProductRedirectUrl((int) product);
+
+            string loginUri = productRedirectUrl.RedirectUrl;
+
+            AddActivityLog((int) product);
+
+            response.IsRedirect = true;
+            response.RedirectUrl = client.CreateAuthorizeUrl(productName, responseType, scopesForAuth,
+                loginUri, state, nonce, acrValues: $"idp:{idp}", responseMode: responseMode);
+            return response;
+        }
+
+        /// <summary>
+        /// Used to get the persona for the given RealPage user
+        /// </summary>
+        /// <param name="realPageId">The id of the person</param>
+        /// <param name="personaId">The personaid for the person</param>
+        /// <returns>Persona object</returns>
+        private Persona GetPersona(Guid realPageId, long personaId)
+        {
+            Persona persona = new Persona();
+            ManagePersona personaManager = new ManagePersona();
+
+            if (personaId == 0)
+            {
+                // get the current users default persona
+                try
+                {
+                    //persona = personaManager.GetActivePersona(realPageId);
+                    personaId = _userClaims.PersonaId;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                try
+                {
+                    // verify the persona belongs to the caller
+                    persona = personaManager.GetPersona(personaId);
+                    bool hasImpersonate = _userClaims.Rights.Any(p => p.Equals("AccessToUnifiedPlatform", StringComparison.OrdinalIgnoreCase));
+                    if (persona == null || (persona.RealPageId != realPageId && !hasImpersonate))
+                    {
+                        throw new Exception("Invalid persona");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+
+            return persona;
+        }
+
+        private ProductLoginResponse GetProductRedirectUrl(int productId)
+        {
+            ProductLoginResponse productLoginResponse = new ProductLoginResponse();
+
+            if (productId == (int)ProductEnum.CIMPL)
+            {
+                if (CheckForCIMPLViewOnlyAccess())
+                {
+                    productLoginResponse.ErrorMessage = "ReadOnly";
+                    return productLoginResponse;
+                }
+            }
+            else if (CheckForViewOnlyAccess())
+            {
+                productLoginResponse.ErrorMessage = "ReadOnly";
+                return productLoginResponse;
+            }
+
+            // get the SAML settings for the given product
+            var productSamlSettings = new ProductSamlSettings();
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"productSamlSettings_{productId}";
+            productSamlSettings = rpcache.GetFromCache<ProductSamlSettings>(cacheKey, 600, () =>
+            {
+                // load from api
+                var samlRepository = new SamlRepository();
+                return samlRepository.GetProductSamlSettingsByProductId(productId);
+            });
+
+            productLoginResponse.IsRedirect = true;
+            productLoginResponse.RedirectUrl = productSamlSettings.LoginUri;
+
+            return productLoginResponse;
+        }
+
+        private bool CheckForCIMPLViewOnlyAccess()
+        {
+            return (_userClaims.Rights.All(p => !p.Equals("ViewCIMPLQuestions", StringComparison.OrdinalIgnoreCase) &&
+                                                !p.Equals("EmployeeViewCIMPLQuestions", StringComparison.OrdinalIgnoreCase)));
+        }
+
+        private bool CheckForViewOnlyAccess()
+        {
+            return (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)));
+        }
+
+        /// <summary>
+        /// Add Activity Log
+        /// </summary>
+        /// <param name="productId">productId</param>
+        /// <param name="message">message</param>
+        /// <param name="isEmailLinkActivity">Indicates if activity because user accessed link from email (e.g. report) </param>
+        private void AddActivityLog(int productId, string message = "", bool isEmailLinkActivity = false)
+        {
+            try
+            {
+                GbProductMap booksProductDetail = GetBooksMasterProductDetail(_userClaims, productId);
+
+                var logActivityTypeName = "Product Access";
+
+                if (isEmailLinkActivity)
+                {
+                    logActivityTypeName = "Product Activity";
+                    message = $"{_userClaims.FirstName} {_userClaims.LastName} opened {booksProductDetail.Name} Scheduled Reports from an email link..";
+                }
+
+                if (string.IsNullOrEmpty(message))
+                    message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.";
+
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = logActivityTypeName,
+                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    CorrelationId = _userClaims.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                    Message = message,
+
+                    FromUserLoginName = _userClaims.LoginName,
+                    FromUserLoginId = _userClaims.UserId,
+                    FromUserFirstName = _userClaims.FirstName,
+                    FromUserLastName = _userClaims.LastName,
+                    FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
+
+                    BooksProductCode = booksProductDetail.BooksProductCode
+                });
+            }
+            catch
+            {
+            }
+        }
+
+        public static GbProductMap GetBooksMasterProductDetail(DefaultUserClaim userClaim, int gbProductId)
+        {
+            var gbProductMap = GetGbProductMap(userClaim).FirstOrDefault(x => x.ProductId == gbProductId);
+            return gbProductMap;
+        }
+
+        private static IList<GbProductMap> GetGbProductMap(DefaultUserClaim userClaim)
+        {
+            // Get products
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "GB-BB-ProductMap";
+            var products = rpcache.GetFromCache<IList<GbProductMap>>(cacheKey, 3600, () =>
+            {
+                IManageProduct manageProduct = new ManageProduct(userClaim);
+                return manageProduct.ListProducts();
+            });
+
+            return products;
+        }
+
+        #region Output results for documentation
+
+        /// <summary>
+        /// Used to document examples of the ProductFamily Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class ProductFamilyMethodExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>ProductFamilyMethodExample example</returns>
+            public object GetExamples()
+            {
+                IList<ProductFamily> productFamilyList = new List<ProductFamily>();
+                IList<Solution> solutionList = new List<Solution>()
+                {
+                    new Solution()
+                    {
+                        FamilyId = 100,
+                        IsAssigned = false,
+                        ProductId = 1,
+                        ProductName = "OneSite",
+                        SubSolution = "OneSite Leasing & Rents, Facilities, Purchasing, Doc. Mgmt"
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 100,
+                        IsAssigned = false,
+                        ProductId = 8,
+                        ProductName = "Financial Suite",
+                        SubSolution = ""
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 100,
+                        IsAssigned = false,
+                        ProductId = 13,
+                        ProductName = "Spend Management",
+                        SubSolution = null
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 100,
+                        IsAssigned = false,
+                        ProductId = 16,
+                        ProductName = "Vendor Credentialing",
+                        SubSolution = "Vendor Compliance"
+                    }
+                };
+                productFamilyList.Add(new ProductFamily()
+                {
+                    ProductTypeId = 100,
+                    Name = "Property Management",
+                    Description = "Property Management",
+                    Solutions = solutionList
+                });
+
+                solutionList = new List<Solution>()
+                {
+                    new Solution()
+                    {
+                        FamilyId = 200,
+                        IsAssigned = false,
+                        ProductId = 15,
+                        ProductName = "Renters Insurance",
+                        SubSolution = null
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 200,
+                        IsAssigned = false,
+                        ProductId = 17,
+                        ProductName = "Active Building",
+                        SubSolution = null
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 200,
+                        IsAssigned = false,
+                        ProductId = 18,
+                        ProductName = "Utility Management",
+                        SubSolution = null
+                    }
+                };
+                productFamilyList.Add(new ProductFamily()
+                {
+                    ProductTypeId = 200,
+                    Name = "Resident Services",
+                    Description = "Resident Services",
+                    Solutions = solutionList
+                });
+
+                solutionList = new List<Solution>()
+                {
+                    new Solution()
+                    {
+                        FamilyId = 300,
+                        IsAssigned = false,
+                        ProductId = 6,
+                        ProductName = "Lead2Lease",
+                        SubSolution = null
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 300,
+                        IsAssigned = false,
+                        ProductId = 9,
+                        ProductName = "Websites & Syndication",
+                        SubSolution = null
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 300,
+                        IsAssigned = false,
+                        ProductId = 10,
+                        ProductName = "Prospect Contact Center",
+                        SubSolution = null
+                    }
+                };
+                productFamilyList.Add(new ProductFamily()
+                {
+                    ProductTypeId = 300,
+                    Name = "Lease Management",
+                    Description = "Lease Management",
+                    Solutions = solutionList
+                });
+
+                solutionList = new List<Solution>()
+                {
+                    new Solution()
+                    {
+                        FamilyId = 400,
+                        IsAssigned = false,
+                        ProductId = 4,
+                        ProductName = "Asset Optimization",
+                        SubSolution = null
+                    },
+                    new Solution()
+                    {
+                        FamilyId = 400,
+                        IsAssigned = false,
+                        ProductId = 7,
+                        ProductName = "YieldStar, LRO",
+                        SubSolution = null
+                    }
+                };
+                productFamilyList.Add(new ProductFamily()
+                {
+                    ProductTypeId = 400,
+                    Name = "Asset Optimization",
+                    Description = "Asset Optimization",
+                    Solutions = solutionList
+                });
+
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectListOutput<ProductFamily, IErrorData> output = new ObjectListOutput<ProductFamily, IErrorData>() {list = productFamilyList, Status = errorStatus};
+
+                return output;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the ProductType Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class ProductTypeMethodExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>ProductTypeMethodExample example</returns>
+            public object GetExamples()
+            {
+                IList<ProductType> productTypes = new List<ProductType>();
+                productTypes.Add(new ProductType
+                {
+                    Description = "",
+                    Name = "Property Management",
+                    ProductTypeGuid = Guid.NewGuid(),
+                    ProductTypeId = 100,
+                    ParentProductTypeId = null
+                });
+
+                productTypes.Add(new ProductType
+                {
+                    Description = null,
+                    Name = "Property Management",
+                    ProductTypeGuid = Guid.NewGuid(),
+                    ProductTypeId = 101,
+                    ParentProductTypeId = 100
+                });
+
+                productTypes.Add(new ProductType
+                {
+                    Description = null,
+                    Name = "Lease Management",
+                    ProductTypeGuid = Guid.NewGuid(),
+                    ProductTypeId = 200,
+                    ParentProductTypeId = 100
+                });
+
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectListOutput<ProductType, IErrorData> output = new ObjectListOutput<ProductType, IErrorData>() {list = productTypes, Status = errorStatus};
+
+                return output;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the ProductInternalSettingExample webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class ProductInternalSettingExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>ProductFamilyMethodExample example</returns>
+            public object GetExamples()
+            {
+                IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+                productInternalSettingList.Add(new ProductInternalSetting
+                {
+                    Name = "Some setting",
+                    Value = "some value"
+                });
+
+                productInternalSettingList.Add(new ProductInternalSetting
+                {
+                    Name = "Another setting",
+                    Value = "another value"
+                });
+                return productInternalSettingList;
+            }
+        }
+
+        #endregion
+    }
+}

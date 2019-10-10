@@ -1,0 +1,47 @@
+.raul-header-logo {
+	margin-left: 20px;
+}
+
+.message-container {
+	width: 460px;
+	height: 204px;
+	top: 20%;
+    left: 50%;
+    margin: 0 0 0 -230px;
+    position: fixed; 
+    align-content: center;
+}
+
+.lock-symbol {
+	height: 128px;
+    width: 128px;
+    display: block;
+    margin: auto;
+    padding-bottom: 20px;
+}
+
+.status-symbol {
+    height: 96px;
+    width: 96px;
+    display: block;
+    margin: auto;
+    padding-bottom: 20px;
+}
+
+.status-message {
+	color: rgba(14,24,28,0.87); 
+	font-family: Roboto; 
+	font-size: 20px; 
+	font-weight: 500; 
+	line-height: 24px; 
+	text-align: center;
+	padding-top: 40px;
+}
+
+.additional-status-info {
+	color: rgba(14,24,28,0.87);	
+	font-family: Roboto; 
+	font-size: 16px; 
+	line-height: 20px; 
+	text-align: center;	
+}

@@ -1,0 +1,106 @@
+﻿<?xml version="1.0"?>
+<parameters>
+  <parameter name="IssuerUri"
+             description="Used to identity the identity server used"
+             defaultValue="#{IssuerUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='IssuerUri']/@value" />
+  </parameter>
+  <parameter name="RequiredScope"
+             description="Used to identify the scopes needed to use the APIs"
+             defaultValue="#{RequiredScopeEnterprise}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='RequiredScope']/@value" />
+  </parameter>
+  <parameter name="LandingUri"
+             description="Used to identify the Unity web site"
+             defaultValue="#{LandingUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='LandingUri']/@value" />
+  </parameter>
+  <parameter name="ImagesUri"
+             description="DAM image location"
+             defaultValue="#{ImagesUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='ImagesUri']/@value" />
+  </parameter>
+  <parameter name="DocumentUri"
+             description="DAM asset location"
+             defaultValue="#{DocumentUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='DocumentUri']/@value" />
+  </parameter>
+  <parameter name="CESURL"
+             description="Common email service to use for Unified UI email generation"
+             defaultValue="#{CESURL}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='CESURL']/@value" />
+  </parameter>
+  <parameter name="IdentityServerSigningCertThumbprint"
+             description="The thumbprint of the SSL certificate to use with IdentityServer"
+             defaultValue="#{IdentityServerSigningCertThumbprint}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='IdentityServerSigningCertThumbprint']/@value" />
+  </parameter>
+  <parameter name="SystemGUID"
+             description="Used during email generation"
+             defaultValue="#{SystemGUID}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='SystemGUID']/@value" />
+  </parameter>
+  <parameter name="VendorServicesIssueUri"
+             description="Used to override the identity server used to get the api token when calling VendorServices"
+             defaultValue="#{VendorServicesIssueUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='VendorServicesIssueUri']/@value" />
+    <parameterValidation kind="AllowEmpty" />
+  </parameter>
+  <parameter name="OrgMasterId"
+             description="Used to store the RealPage blue book company id"
+             defaultValue="#{OrgMasterId}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='OrgMasterId']/@value" />
+  </parameter>
+
+  <!-- appSettings -->
+  <parameter name="cors_allowOrigins"
+             description="Origins allowed for CORS"
+             defaultValue="#{cors_allowOrigins}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='cors:allowOrigins']/@value" />
+  </parameter>
+  <parameter name="Environment"
+             description="Unity environment"
+             defaultValue="#{Environment}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Environment']/@value" />
+  </parameter>
+  <parameter name="ElasticSearchUri"
+             description="URL for Elastic Search"
+             defaultValue="#{ElasticSearchUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchUri']/@value" />
+  </parameter>
+  <parameter name="LogPath"
+             description="Path to use for file logging"
+             defaultValue="#{LogPath}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='LogPath']/@value" />
+  </parameter>
+  <parameter name="LogProductName"
+             description="Product name to use for logging"
+             defaultValue="#{LogProductName_LandingApiEnterprise}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='LogProductName']/@value" />
+  </parameter>
+  <parameter name="ElasticSearchIndexTypeName"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ElasticSearchIndexTypeName_LandingApiEnterprise}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchIndexTypeName']/@value" />
+  </parameter>
+  <parameter name="ShouldWriteInFile"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldWriteInFile}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldWriteInFile']/@value" />
+  </parameter>
+  <parameter name="ShouldLogPerformance"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldLogPerformance}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldLogPerformance']/@value" />
+  </parameter>
+  <parameter name="ShouldLogDiagnostic"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldLogDiagnostic}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldLogDiagnostic']/@value" />
+  </parameter>
+  <parameter name="ActivityMQName"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ActivityMQName}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ActivityMQName']/@value" />
+  </parameter>
+</parameters>

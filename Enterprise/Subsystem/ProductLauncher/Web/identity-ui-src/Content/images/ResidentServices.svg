@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60px" height="60px" viewBox="0 0 60 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 45.1 (43504) - http://www.bohemiancoding.com/sketch -->
+    <title>Resident Services</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="100%" x2="50%" y2="0%" id="linearGradient-1">
+            <stop stop-color="#0076CC" offset="0%"></stop>
+            <stop stop-color="#178DE3" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons" transform="translate(-79.000000, -242.000000)" fill-rule="nonzero" fill="url(#linearGradient-1)">
+            <g id="Resident-Services" transform="translate(24.000000, 212.000000)">
+                <g id="Filled_Icons" transform="translate(55.000000, 30.000000)">
+                    <path d="M59.1215678,27.87975 L32.1215678,0.87975 C30.9485678,-0.29325 29.0525678,-0.29325 27.8795678,0.87975 L0.879567773,27.87975 C0.0215677727,28.73775 -0.236432227,30.02775 0.228567773,31.14975 C0.690567773,32.27175 1.78856777,33.00075 3.00056777,33.00075 L6.00056777,33.00075 L6.00056777,60.00075 L54.0005678,60.00075 L54.0005678,33.00075 L57.0005678,33.00075 C58.2125678,33.00075 59.3105678,32.27175 59.7725678,31.14975 C60.2375678,30.02775 59.9765678,28.73775 59.1215678,27.87975 Z M33.6746667,37.0666667 L35.3333333,48.6666667 L24.6666667,48.6666667 L26.3253333,37.0666667 C23.768,35.7306667 22,33.0826667 22,30 C22,25.584 25.584,22 30,22 C34.416,22 38,25.584 38,30 C38,33.0826667 36.2346667,35.7306667 33.6746667,37.0666667 Z" id="Resident-Services"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

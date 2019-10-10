@@ -1,0 +1,67 @@
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Collections.Generic;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
+{
+	/// <summary>
+	/// Interface for CustomFieldsRepository
+	/// </summary>
+	public interface ICustomFieldsRepository
+	{
+		/// <summary>
+		/// Add/Update Custom Fields
+		/// </summary>
+		/// <param name="settings">A list of one Setting object where the Value is a JSON of the Custom Fields to Add/Update</param>
+		/// <param name="userId">Logged in UserId</param>
+		/// <param name="bookMasterId">BlackBookId MasterBook Id</param>
+		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse AddUpdateCustomFields(IList<Setting> settings, long userId, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId);
+
+		/// <summary>
+		/// Add/Update Custom Fields values for a user
+		/// </summary>
+		/// <param name="customFieldsValuesJson">Custom Fields values</param>
+		/// <param name="createdBy">Created/Modified by UserId</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse AddUpdateFieldValue(string customFieldsValuesJson, long createdBy);
+
+		/// <summary>
+		/// Get Custom Fields
+		/// </summary>
+		/// <param name="bookMasterId">Book MasterId</param>
+		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
+		/// <returns>Custom Fields (KeyValue pairs)</returns>
+		IList<Setting> GetCustomFields(long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId, RequestParameter dataFilterSort = null);
+
+		/// <summary>
+		/// Get Custom Fields
+		/// </summary>
+		/// <param name="bookMasterId">Book MasterId</param>
+		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
+		/// <returns>List of Custom Fields objects</returns>
+		IList<CustomField> GetCustomField(long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId, RequestParameter dataFilterSort = null);
+
+		/// <summary>
+		/// Get CustomField Type
+		/// </summary>
+		/// <param name="fieldTypeId">Optional FieldTypeId</param>
+		/// <returns>List of CustomField types</returns>
+		IList<CustomFieldType> GetCustomFieldType(byte? fieldTypeId = null);
+
+
+		/// <summary>
+		/// Get Custom Fields Values for a User
+		/// </summary>
+		/// <param name="organizationPartyId">Unique Organization PartyId</param>
+		/// <param name="userLoginPersonaId">userLoginPersonaId</param>
+		/// <param name="enabled">Enabled</param>
+		/// <returns>Custom Fields Values for a User</returns>
+		IList<CustomFieldValue> GetCustomFieldsValues(long organizationPartyId, long? userLoginPersonaId = null, bool? enabled = null);
+	}
+}

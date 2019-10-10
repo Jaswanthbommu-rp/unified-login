@@ -1,0 +1,7 @@
+{{{ include("controllers/change-password.js") }}}
+{{{ include("filters/change-password-translator.js") }}}
+{{{ include("models/change-password.js") }}}
+{{{ include("models/user-password-state.js") }}}
+{{{ include("models/change-password-config.js") }}}
+{{{ include("models/change-password-data.js") }}}
+{{{ include("services/change-password.js") }}}

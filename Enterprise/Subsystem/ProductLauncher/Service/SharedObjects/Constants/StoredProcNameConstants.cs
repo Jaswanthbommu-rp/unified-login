@@ -1,0 +1,357 @@
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
+{
+    public static class StoredProcNameConstants
+    {
+        #region Id server related configs
+
+        public const string SP_GetClientByClientCode = "Auth.GetClientByClientCode";
+        public const string SP_GetTokensBySubject = "Auth.GetTokensBySubject";
+        public const string SP_GetToken = "Auth.GetToken";
+        public const string SP_DeleteTokenByKey = "Auth.DeleteTokenByKey";
+        public const string SP_DeleteTokenBySubjectAndClient = "Auth.DeleteTokenBySubjectAndClient";
+        public const string SP_InsertToken = "Auth.InsertToken";
+        public const string SP_GetConsentBySubjectAndClient = "Auth.GetConsentBySubjectAndClient";
+        public const string SP_InsertConsent = "Auth.InsertConsent";
+        public const string SP_UpdateConsent = "Auth.UpdateConsent";
+        public const string SP_DeleteConsentBySubjectAndClient = "Auth.DeleteConsentBySubjectAndClient";
+        public const string SP_GetConsentsBySubject = "Auth.GetConsentsBySubject";
+        public const string SP_GetAllScopes = "Auth.GetAllScopes";
+        public const string SP_GetAllScopeClaims = "Auth.GetAllScopeClaims";
+        public const string SP_GetAllScopeSecrets = "Auth.GetAllScopeSecrets";
+        public const string SP_UpdateTokenExpiry = "Auth.UpdateTokenExpiry";
+        public const string SP_GetAllPortfolioProductUserClaims = "Auth.GetAllPortfolioProductUserClaims";
+        public const string SP_GetClientDetails = "Auth.GetClientDetails";
+        //public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
+
+        #endregion
+
+        #region Provider / user related SPs
+
+        // Provider
+        public const string SP_ListIdentityProviderByIdentityProviderTypeName = "Ident.ListIdentityProviderByIdentityProviderTypeName";
+
+        //IdentityProvider
+        public const string SP_ListIdentityProviderByIdentityProviderTypeId = "Ident.ListIdentityProviderByIdentityProviderTypeId-obsolete";
+
+        //IdentityProviderType
+
+        public const string SP_CreateIdentityProviderType = "Ident.CreateIdentityProviderType";
+
+        //IdentityProviderSettingType
+        public const string SP_CreateIdentityProviderSettingType = "Ident.CreateIdentityProviderSettingType";
+
+        //IdentityProviderSetting
+        public const string SP_CreateIdentityProviderSetting = "Ident.CreateIdentityProviderSetting";
+
+        #endregion
+
+
+        // WebApi Settings
+        public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
+
+        //TimeZone
+        public const string SP_ListTimeZone = "Enterprise.ListTimeZone";
+
+        // Forgot / Reset password
+        public const string SP_GetEnterpriseUserStatus = "Auth.GetEnterpriseUserStatus";
+        public const string SP_GetUserSecurityQuestionAnswers = "Ident.GetUserSecurityQuestionAnswer";
+        public const string SP_CreateActivityToken = "Ident.CreateActivityToken";
+        public const string SP_UpdateActivityAttempt = "Ident.UpdateActivityAttempt";
+        public const string SP_GetActivityToken = "Ident.GetActivityToken";
+        public const string SP_UpdateEnterpriseUserCredential = "Ident.UpdateEnterpriseUserCredential";
+        public const string SP_GetUserSecurityQuestionAnswer = "Ident.GetUserSecurityQuestionAnswer";
+        public const string SP_GetActivityAttemptExceeds = "Ident.GetActivityAttemptExceeds";
+        public const string SP_GetUserSelectedSecurityQuestions = "Ident.GetUserSelectedSecurityQuestions";
+        public const string SP_CreateUserSelectedSecurityQuestions = "Ident.CreateUserSelectedSecurityQuestions";
+        public const string SP_GetPasswordHistory = "Ident.GetPasswordHistory";
+
+        public const string SP_GetAuthenticateUser = "Auth.GetAuthenticateUser";
+        public const string SP_ResetEnterpriseUserCredential = "Ident.ResetEnterpriseUserCredential";
+        public const string SP_GetAllSecurityQuestions = "Ident.GetAllSecurityQuestions";
+
+        //PasswordPolicy
+        public const string SP_CreatePasswordPolicy = "Ident.CreatePasswordPolicy";
+        public const string SP_GetPasswordPolicy = "Ident.GetPasswordPolicy";
+        public const string SP_UpdatePasswordPolicy = "Ident.UpdatePasswordPolicy";
+
+        //User
+        public const string SP_GetUserByLoginId = "Ident.GetUserByLoginId";
+        public const string SP_GetUserById = "Auth.GetUserById";
+        public const string SP_GetUserBySearchCriteria = "Auth.GetUserBySearchCriteria";
+
+        //UserLogin
+        public const string SP_CreateUserLogin = "Ident.CreateUserLogin";
+        public const string SP_GetUserLogin = "Ident.GetUserLogin";
+        public const string SP_GetUserLoginOnly = "Ident.GetUserLoginOnly";
+        //public const string SP_GetUserLoginByName = "Ident.GetUserLoginByName";
+        public const string SP_UpdateUserLogin = "Ident.UpdateUserLogin";
+        public const string SP_UpdateLastLogin = "Ident.UpdateLastLogin";
+        public const string SP_UpdateUserStatusByCompany = "Ident.UpdateUserStatusByCompany";
+        public const string SP_LinkIdentityProviderToUserLogin = "Ident.LinkIdentityProviderToUserLogin";
+        public const string SP_UpdateBulkUserStatus = "Ident.UpdateBulkUserStatus";
+
+        //UserLoginPersona
+        public const string SP_CreateUserLoginPersona = "Ident.CreateUserLoginPersona";
+        public const string SP_GetUserLoginPersona = "Ident.GetUserLoginPersona";
+		public const string SP_UpdateUserLoginPersona = "Ident.UpdateUserLoginPersona";
+
+		//Activity Configuration
+		public const string SP_ListActivity = "Ident.ListActivity";
+        public const string SP_UpdateActivityConfiguration = "Ident.UpdateActivityConfiguration";
+
+        //Person
+        public const string SP_CreatePerson = "Person.CreatePerson";
+        public const string SP_GetPerson = "Person.GetPerson";
+        public const string SP_UpdatePerson = "Person.UpdatePerson";
+        public const string SP_ListPersons = "Person.ListPersons_Ver04";
+        public const string SP_ListPersonsByProductId = "Person.ListPersonsByProductId";
+        public const string SP_GetDefaultPersona = "Person.GetDefaultPersona";
+        public const string SP_ListUsers = "Person.ListPersonsForSupportTool";
+		public const string SP_GetNotificationEmailForPerson = "Person.GetNotificationEmailForPerson";
+
+		//Persona
+		public const string SP_GetPersona = "Person.GetPersona";
+        public const string SP_GetPersonaEnvironment = "Person.ListPersonaEnvironmentType";
+        public const string SP_CreatePersona = "Person.CreatePersona";
+        public const string SP_CreatePersonaType = "Person.CreatePersonaType";
+        public const string SP_ListPersona = "Person.ListPersona";
+        public const string SP_ListActivePersona = "Person.ListActivePersona";
+        public const string SP_ListPersonaByOrganizationPartyId = "Person.ListPersonaByOrganizationPartyId_Ver01";
+        public const string SP_GetActivePersona = "Person.GetActivePersona";
+        public const string SP_UpdateActivePersona = "Person.UpdateActivePersona";
+        public const string SP_RemovePersona = "Person.RemovePersona";
+        public const string SP_UpdatePersona = "Person.UpdatePersona";
+        public const string SP_CreatePersonaConfiguration = "Enterprise.CreatePersonaConfiguration";
+
+        //Set Password
+        public const string SP_SaveSecurityQuestionAnswers = "Ident.CreateSecurityQuestionAnswers";
+
+        //BlueBook
+        public const string SP_MapBlueBookIdtoPartyId = "Enterprise.MapBlueBookIdtoPartyId";
+        //public const string SP_GetBlueBookIdByOrganization = "Enterprise.GetBlueBookIdByOrganization";
+        public const string SP_GetBookIdByOrganization = "Enterprise.GetBookIdByOrganization";
+
+        //Organization
+        //public const string SP_SetupOrganization = "Enterprise.SetupOrganization";
+        public const string SP_SetupOrganization = "Enterprise.SetupOrganization_Ver01";
+        public const string SP_InsertOrganization = "Enterprise.CreateOrganization";
+        public const string SP_UpdateOrganization = "Enterprise.UpdateOrganization";
+        //public const string SP_GetOrganization = "Enterprise.GetOrganization"; 
+        public const string SP_GetOrganization = "Enterprise.GetOrganization_Ver03";
+        public const string SP_LinkPersonToOrganization = "Person.LinkPersonToOrganization";
+        public const string SP_UnlinkPersonToOrganization = "Person.UnlinkPersonToOrganization";
+        public const string SP_UpdatePersonToOrganization = "Person.UpdatePersonToOrganization";
+        public const string SP_LinkOrganizationToOrganization = "Enterprise.LinkOrganizationToOrganization";
+        //public const string SP_ListOrganizationByRealPageId = "Enterprise.ListOrganizationByRealPageId";
+        public const string SP_ListOrganizationByRealPageId = "Enterprise.ListOrganizationByRealPageId_Ver02";
+        public const string SP_GetOrganizationIdentityProviderType = "Enterprise.GetOrganizationIdentityProviderType";
+        //public const string SP_GetOrganizationByBlueBookId = "Enterprise.GetOrganizationByBlueBookId";
+        public const string SP_GetOrganizationByBlueBookId = "Enterprise.GetOrganizationByBlueBookId_Ver01";
+
+        public const string SP_CreateOrganizationProduct = "Enterprise.CreateOrganizationProduct";
+        public const string SP_DeleteOrganizationProduct = "Enterprise.DeleteOrganizationProduct";
+        public const string SP_SetupSuperUser = "Enterprise.SetupSuperUser";
+        public const string SP_ListOrganizationByLoginName = "Enterprise.ListOrganizationByLoginName";
+        public const string SP_ListOrganizationStatusByUserId = "Enterprise.ListOrganizationStatusByUserId";
+        public const string SP_ListOrganizationType = "Enterprise.ListOrganizationType";
+
+        //PartyRelationship
+        public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
+
+        //PartyRole
+        public const string SP_GetPartyRoleByRealPageId = "Enterprise.GetPartyRoleByRealPageId";
+        public const string SP_CreatePartyRoleByRealPageId = "Enterprise.CreatePartyRoleByRealPageId";
+        public const string SP_UpdatePartyRoleByRealPageId = "Enterprise.UpdatePartyRoleByRealPageId";
+        public const string SP_GetPartyRole = "Person.GetPartyRole";
+
+        //RelationshipType
+        public const string SP_ListRelationshipType = "Enterprise.ListRelationshipType";
+
+        //RoleType
+        public const string SP_ListRoleType = "Enterprise.ListRoleType";
+        public const string SP_ListRoleTypeDependency = "Enterprise.ListRoleTypeDependency";
+
+        //Products
+        public const string SP_UpdateProductSettingByPersona = "Enterprise.UpdateProductSettingByPersona";
+        public const string SP_ListProductsByOrganization = "Enterprise.ListProductsByOrganization";
+        public const string SP_ListProductSettingsByOrganization = "Enterprise.ListProductSettingsByOrganization";
+        public const string SP_ListProductSettingsByPersona = "Enterprise.ListProductSettingsByPersona";
+        public const string SP_ListProductSettingsByPersonaId = "Enterprise.ListProductSettingsByPersonaId";
+        public const string SP_ListGlobalSettingsForProduct = "Enterprise.ListGlobalSettingsForProduct";
+        public const string SP_CreateProductSetting = "Enterprise.CreateProductSetting";
+        public const string SP_CreateProductConfigurationbyPersonaId = "Enterprise.CreateProductConfigurationbyPersonaId";
+        public const string SP_ListProductBatchStatusesByRealPageId = "Enterprise.ListProductBatchByRealPageId";
+        public const string SP_GetProductSettingType = "Enterprise.GetProductSettingType";
+        public const string SP_ListProductFamilies = "Enterprise.ListProductFamilies";
+        public const string SP_ListProduct = "Enterprise.ListProduct";
+        public const string SP_ListProductsByPersonaId = "Enterprise.ListProductsByPersonaId";
+        public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
+
+        //Remove
+        public const string SP_ListProductTypes = "Enterprise.ListProductTypes";
+
+        //ProductSettingType
+        public const string SP_ListProductSettingType = "Enterprise.ListProductSettingType";
+
+        //Contact Mechanism
+        public const string SP_CreateContactMechanism = "Person.CreateContactMechanism";
+        public const string SP_LinkUsageTypeToPartyContactMechanism = "Person.LinkUsageTypeToPartyContactMechanism";
+        public const string SP_UpdateContactMechanismUsageForParty = "Person.UpdateContactMechanismUsageForParty";
+
+        //ContactMechanism To Party
+        public const string SP_LinkContactMechanismToParty = "Person.LinkContactMechanismToParty";
+
+        //Expire ContactMechanism to Party
+        public const string SP_ExpirePartyContactMechanism = "Person.ExpirePartyContactMechanism";
+
+        //Contact Mechanism for a Person (Electronic, Postal, & Telecommunication)
+        public const string SP_ListContactMechanismsForPerson = "Person.ListContactMechanismsForPerson";
+
+        //Contact Mechanism UsageType
+        public const string SP_ListContactMechanismUsageType = "Enterprise.ListContactMechanismUsageType";
+
+        //Electronic Address Contact Mechanism
+        public const string SP_CreateElectronicAddress = "Person.CreateElectronicAddress";
+        public const string SP_ListEmailsForPerson = "Person.ListEmailsForPerson";
+
+        //Geographic Boundary
+        public const string SP_CreateGeographicBoundary = "Person.CreateGeographicBoundary";
+        public const string SP_LinkGeographicBoundaryToContactMechanism = "Person.LinkGeographicBoundaryToContactMechanism";
+
+        //Telecommunication Number Contact Mechanism
+        public const string SP_CreateTelecommunicationNumber = "Person.CreateTelecommunicationsNumber";
+        public const string SP_ListTelecommunicationNumbersForPerson = "Person.ListTelecommunicationNumbersForPerson";
+
+        //Postal Address
+        public const string SP_CreateStreetAddress = "Person.CreateStreetAddress";
+
+        //Postal Address Contact Mechanism
+        public const string SP_ListPostalAddressesForPerson = "Person.ListPostalAddressesForPerson";
+
+        //Preferred Contact Method
+        public const string SP_ListPreferredContactMethods = "Person.ListPreferredContactMethods";
+        public const string SP_GetIdentityProviderTypeByLoginName = "Ident.GetIdentityProviderTypeByLoginName";
+
+        //SAML
+        public const string SP_GetProductSamlDetails = "Ident.GetProductSamlDetails";
+        public const string SP_GetProductSamlSettings = "Ident.GetProductSamlSettings";
+
+        public const string SP_CreateSamlUserAttribute = "Ident.CreateSamlUserAttribute";
+        public const string SP_DeleteSamlUserProductInfoAndStatus = "Enterprise.UnLinkProductFromPersona";
+        public const string SP_CreateSamlAttribute = "Ident.CreateSamlAttribute";
+        public const string SP_CreateSamlAttributeType = "Ident.CreateSamlAttributeType";
+        public const string SP_UpdateSamlUserAttribute = "Ident.UpdateSamlUserAttribute";
+
+        //Communication
+        public const string SP_GetEmailTemplateByParty = "Enterprise.GetEmailTemplateByParty";
+        public const string SP_CreateCESCommunicationEvent = "Enterprise.CreateCESCommunicationEvent";
+        public const string SP_CreateCommunicationEmailTemplate = "Enterprise.CreateCommunicationEmailTemplate";
+        public const string SP_CreateCommunicationEvent = "Enterprise.CreateCommunicationEvent";
+        public const string SP_CreateCommunicationEventEmail = "Enterprise.CreateCommunicationEventEmail";
+        public const string SP_CreateCommunicationEventPurposeType = "Enterprise.CreateCommunicationEventPurposeType";
+        public const string SP_CreateCommunicationEventRole = "Enterprise.CreateCommunicationEventRole";
+        public const string SP_CreateCommunicationEventRoleType = "Enterprise.CreateCommunicationEventRoleType";
+        public const string SP_ListCommunicationEmailTemplates = "Enterprise.ListCommunicationEmailTemplates";
+        public const string SP_ListCommunicationEventPurposeTypes = "Enterprise.ListCommunicationEventPurposeTypes";
+        public const string SP_ListCommunicationEventPurposeUsages = "Enterprise.ListCommunicationEventPurposeUsages";
+        public const string SP_ListCommunicationRoleTypes = "Enterprise.ListCommunicationRoleTypes";
+        public const string SP_ListCommunicationEvents = "Enterprise.ListCommunicationEvents";
+
+        //ProductBatch
+        public const string SP_CreateProductBatch = "Enterprise.CreateProductBatch";
+        public const string SP_UpdateProductBatch = "Enterprise.UpdateProductBatch";
+
+        //Green Book
+        public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";
+        public const string SP_ListPropertyMapping = "Enterprise.ListPropertyMapping";
+        public const string SP_ListRolesByParty = "Enterprise.ListRolesByParty";
+        public const string SP_ListRolesForProductsByPersonaId = "Enterprise.ListRolesForProductsByPersonaId";
+        public const string SP_ListRolesForProductsByPartyId = "Enterprise.ListRolesForProductsByPartyId";
+        public const string SP_ListRolesAssociatedWithRights = "Enterprise.ListRolesAssociatedWithRights";
+        public const string SP_ListRightsAssociatedWithRoles = "Enterprise.ListRightsAssociatedWithRoles";
+        public const string SP_ListRightForProductsByPartyId = "Enterprise.ListRightForProductsByPartyId";
+        public const string SP_CreateRole = "Enterprise.CreateRole";
+        public const string SP_UpdateRole = "Enterprise.UpdateRole";
+        public const string SP_DeleteRole = "Enterprise.DeleteRole";
+        public const string SP_LinkRightsToRoles = "Enterprise.LinkRightsToRoles";
+        public const string SP_ListAllRights = "Enterprise.ListAllRights";
+        public const string SP_ListSecurityStatus = "Enterprise.ListSecurityStatus";
+        public const string SP_SetDefaulteRole = "Enterprise.SetDefaultRole";
+
+        //Configuration Settings
+        public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";
+        public const string SP_UpdateMasterConfigurationSetting = "Enterprise.UpdateMasterConfigurationSetting";
+        public const string SP_ListOrganizationSettings = "Enterprise.ListOrganizationSettings";
+        public const string SP_ListOrganizations = "Enterprise.ListOrganizations_Ver01";
+        public const string SP_CreateMasterConfigurationSetting = "Enterprise.CreateMasterConfigurationSetting";
+
+        #region Persona Security
+        public const string SP_ListRolesByRealPageID = "Enterprise.ListRolesByRealPageID";
+        public const string SP_LinkPersonaToRole = "Enterprise.LinkPersonaToRole";
+        public const string SP_ListRightsByPersonaID = "Enterprise.ListPersonaRightsAndActionsByRoute";
+        public const string SP_ListPersonaRightsAndActionsByRoute = "Enterprise.ListPersonaRightsAndActionsByRoute";
+        #endregion
+
+        public const string SP_GetUserDetails = "Enterprise.GetUserDetails_Ver01";
+        public const string SP_GetUnifiedLoginDefaultRole = "Enterprise.GetUnifiedLoginDefaultRole";
+
+        #region Client settings
+        public const string SP_ClientsDelete = "Auth.ClientsDelete";
+        public const string SP_ClientsSelect = "Auth.ClientsSelect";
+        public const string SP_ClientsInsert = "Auth.ClientsInsert";
+        public const string SP_ClientsUpdate = "Auth.ClientsUpdate";
+        public const string SP_ClientsSelectClientDetails = "Auth.GetClientDetails";
+        public const string SP_ClientRedirectUrisInsert = "Auth.ClientRedirectUrisInsert";
+        public const string SP_ClientRedirectUrisUpdate = "Auth.ClientRedirectUrisUpdate";
+        public const string SP_ClientRedirectUrisDelete = "Auth.ClientRedirectUrisDelete";
+        public const string SP_ClientRedirectUrisSelect = "Auth.ClientRedirectUrisSelect";
+        public const string SP_ClientClaimsDelete = "Auth.ClientClaimsDelete";
+        public const string SP_ClientClaimsUpdate = "Auth.ClientClaimsUpdate";
+        public const string SP_ClientClaimsInsert = "Auth.ClientClaimsInsert";
+        public const string SP_ClientClaimsSelect = "Auth.ClientClaimsSelect";
+        public const string SP_ClientPostLogoutRedirectUrisSelect = "Auth.ClientPostLogoutRedirectUrisSelect";
+        public const string SP_ClientPostLogoutRedirectUrisInsert = "Auth.ClientPostLogoutRedirectUrisInsert";
+        public const string SP_ClientPostLogoutRedirectUrisUpdate = "Auth.ClientPostLogoutRedirectUrisUpdate";
+        public const string SP_ClientPostLogoutRedirectUrisDelete = "Auth.ClientPostLogoutRedirectUrisDelete";
+        public const string SP_ClientScopesSelect = "Auth.ClientScopesSelect";
+        public const string SP_ClientScopesInsert = "Auth.ClientScopesInsert";
+        public const string SP_ClientScopesUpdate = "Auth.ClientScopesUpdate";
+        public const string SP_ClientScopesDelete = "Auth.ClientScopesDelete";
+        public const string SP_ClientSecretsSelect = "Auth.ClientSecretsSelect";
+        public const string SP_ClientSecretsInsert = "Auth.ClientSecretsInsert";
+        public const string SP_ClientSecretsUpdate = "Auth.ClientSecretsUpdate";
+        public const string SP_ClientSecretsDelete = "Auth.ClientSecretsDelete";
+        public const string SP_ScopesSelect = "Auth.ScopesSelect";
+        public const string SP_ScopesInsert = "Auth.ScopesInsert";
+        public const string SP_ScopesUpdate = "Auth.ScopesUpdate";
+        public const string SP_ScopeSecretsSelect = "Auth.ScopeSecretsSelect";
+        public const string SP_ScopeSecretsInsert = "Auth.ScopeSecretsInsert";
+        public const string SP_ScopeSecretsUpdate = "Auth.ScopeSecretsUpdate";
+        public const string SP_ScopeSecretsDelete = "Auth.ScopeSecretsDelete";
+        public const string SP_ScopeClaimsSelect = "Auth.ScopeClaimsSelect";
+        public const string SP_ScopeClaimsInsert = "Auth.ScopeClaimsInsert";
+        public const string SP_ScopeClaimsUpdate = "Auth.ScopeClaimsUpdate";
+        public const string SP_ScopeClaimsDelete = "Auth.ScopeClaimsDelete";
+        #endregion
+
+        //StatusType
+        public const string SP_GetStatusTypes = "Enterprise.GetStatusTypes";
+
+        //Security Setting
+        public const string SP_GetSecuritySetting = "Ident.GetSecuritySetting";
+        public const string SP_UpdateSecuritySetting = "Ident.UpdateSecuritySetting";
+
+        //Custom Fields
+        public const string SP_AddUpdateFieldFromJSON = "CustomField.AddUpdateFieldFromJSON";
+        public const string SP_GetFieldsByMasterId = "CustomField.GetFieldsByMasterId";
+        public const string SP_GetFieldsValuesByUserLoginPersonaId = "CustomField.GetFieldsValuesByUserLoginPersonaId";
+        public const string SP_AddUpdateFieldValue = "CustomField.AddUpdateFieldValue";
+        public const string SP_GetFieldType = "CustomField.GetFieldType";
+    }
+
+    public static class EnterpriseStoredProcNameConstants
+    {
+        public const string SP_ListUserInformation = "Person.GetUserInformation_Ver02";
+        public const string SP_CreateUnityUser = "Ident.CreateUser_Ver01";
+    }
+}

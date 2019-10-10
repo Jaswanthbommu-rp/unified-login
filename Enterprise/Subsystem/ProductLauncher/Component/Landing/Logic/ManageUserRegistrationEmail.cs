@@ -1,0 +1,241 @@
+﻿using RP.Enterprise.Foundation.Audit.Core.Component;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
+{
+    public class ManageUserRegistrationEmail : IManageUserRegistrationEmail
+    {
+        private DefaultUserClaim _userClaim;
+        private IManageEmail _emailLogic;
+        private IContactMechanismRepository _contactMechanismRepository;
+        private IManageCommunicationEvents _communicationEventsLogic;
+        private IUserTokenRepository _userTokenRepository;
+        private IManagePerson _personManager;
+        private IUserLoginRepository _userLoginRepository;
+
+        /// <summary>
+        /// Manage user registration Email Constructor
+        /// </summary>
+
+        public ManageUserRegistrationEmail(DefaultUserClaim userClaim)
+        {
+            _emailLogic = new ManageEmail();
+            _contactMechanismRepository = new ContactMechanismRepository();
+            _communicationEventsLogic = new ManageCommunicationEvents();
+            _userTokenRepository = new UserTokenRepository();
+            _personManager = new ManagePerson();
+            _userLoginRepository = new UserLoginRepository();
+            _userClaim = userClaim;
+        }
+
+        public ManageUserRegistrationEmail(DefaultUserClaim userClaim, IManageEmail manageEmail, IContactMechanismRepository contactMechanismRepository, IManageCommunicationEvents manageCommunicationEvents, IUserTokenRepository userTokenRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository)
+        {
+            _emailLogic = manageEmail;
+            _contactMechanismRepository = contactMechanismRepository;
+            _communicationEventsLogic = manageCommunicationEvents;
+            _userTokenRepository = userTokenRepository;
+            _personManager = managePerson;
+            _userLoginRepository = userLoginRepository;
+            _userClaim = userClaim;
+        }
+
+        public bool SendNewUserRegistrationEmail(IProfileDetail profile)
+        {
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                Is3rdPartyIDP = profile.userLogin.Is3rdPartyIDP,
+                LoginName = profile.userLogin.LoginName,
+                RealPageId = profile.RealPageId,
+                UserId = profile.userLogin.UserId,
+                LastLogin = profile.userLogin.LastLogin
+            };
+
+            return SendNewUserRegistrationEmail(userLoginOnly, profile.organization[0].Name, profile.UserTypeId, profile.organization[0].PartyId);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userLoginOnly"></param>
+        /// <param name="companyName"></param>
+        /// <param name="userTypeId"></param>
+        /// <param name="organizationPartyId"></param>
+        /// <returns></returns>
+        public bool SendNewUserRegistrationEmail(UserLoginOnly userLoginOnly, string companyName, int userTypeId, long organizationPartyId)
+        {
+            var userPerson = _personManager.GetPerson(userLoginOnly.RealPageId);
+            var firstName = userPerson.FirstName;
+
+            var emailAddress = userLoginOnly.LoginName;
+            
+            if (userTypeId != UserTypeConstants.RegularUserNoEmail // not UserNoEmailRole
+                && !userLoginOnly.Is3rdPartyIDP // Not a user using 3rd party IDP
+                && EmailFormatValidation.IsValidEmail(emailAddress) // the email address appears to be valid
+                //&& profile.organization != null
+                //&& profile.organization.Count() > 0
+            )
+            {
+                try
+                {
+                    string userToken = "";
+                    var emailTemplate = new CommunicationEmail();
+                    var cesEmail = new Email();
+                    int audienceTypeId = 0, purposeTypeId = 0;
+
+                    //Generate a Token, build the Email, then Send if UserLogin is an Email
+                    //Create an activity token for user validation
+                    int activityId = (int) ActivityType.NewUserRegistration;
+
+                    switch (userTypeId)
+                    {
+                        case (int)UserRoleType.SuperUser:
+                            audienceTypeId = (int)CommunicationEventAudienceType.SuperUser;
+                            break;
+
+                        case (int)UserRoleType.User:
+                            audienceTypeId = (int)CommunicationEventAudienceType.RegularUser;
+                            break;
+
+                        case (int)UserRoleType.ExternalUser:
+                            audienceTypeId = (int)CommunicationEventAudienceType.ExternalUser;
+                            break;
+                    }
+
+                    var organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(userLoginOnly.RealPageId, null);
+
+                    if (organizationList.FirstOrDefault(p => p != null && p.PartyId == organizationPartyId).PrimaryOrganization)
+                    {
+                        var primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
+                        if (primaryOrgStatus.IsPending.Value)
+                        {
+                            userToken = _userTokenRepository.GetUserActivityToken(userLoginOnly.RealPageId, activityId, organizationPartyId);
+                        }
+                        else
+                        {
+                            audienceTypeId = (int)CommunicationEventAudienceType.MultiCompanyUser;
+                        }
+                    }
+                    else
+                    {
+                        audienceTypeId = (int) CommunicationEventAudienceType.MultiCompanyUser;
+                    }
+
+                    Guid orgRealPageId = organizationList.FirstOrDefault(p => p.PartyId == organizationPartyId).RealPageId;
+
+                    purposeTypeId = (int) CommunicationEventPurposeType.NewUserSetup;
+                    emailTemplate = _emailLogic.GetEmailTemplate(audienceTypeId, purposeTypeId);
+
+                    Log.Write(LogType.Information, new LogDetails
+                    {
+                        CorrelationId = _userClaim.CorrelationId.ToString(),
+                        Message = $"SendNewUserRegistrationEmail - email template generated - {userLoginOnly.RealPageId}",
+                        AdditionalInfo = null,
+                        ProductModule = this.GetType().ToString(),
+                        UserId = userLoginOnly.LoginName,
+                        PmcId = organizationPartyId.ToString(),
+                        Exception = null
+                    });
+
+                    IList<CommonAddress> contactMechanismList = _contactMechanismRepository.ListContactMechanismForPerson(orgRealPageId, "Email Notification");
+                    IList<CommonAddress> contactMechanismToList = _contactMechanismRepository.ListContactMechanismForPerson(userLoginOnly.RealPageId, "Email Notification");
+                    var senderEmailAddress = contactMechanismList[0].AddressString;
+                    var PartyContactMechanismIdFrom = contactMechanismList[0].PartyContactMechanismId;
+                    var PartyContactMechanismIdTo = contactMechanismToList[0].PartyContactMechanismId;
+
+                    cesEmail = _emailLogic.CreateWelcomeEmail(userLoginOnly.LoginName, firstName, companyName, organizationPartyId , emailTemplate, userToken, senderEmailAddress, emailAddress);
+                    Dictionary<string, object> logData = new Dictionary<string, object> {{"userToken", userToken}, {"cesEmail", cesEmail}, { "audienceTypeId", audienceTypeId } };
+                    if (cesEmail.EmailBody != null)
+                    {
+                        Log.Write(LogType.Information, new LogDetails
+                        {
+                            CorrelationId = _userClaim.CorrelationId.ToString(),
+                            Message = $"SendNewUserRegistrationEmail - email body generated - {userLoginOnly.RealPageId}",
+                            AdditionalInfo = logData,
+                            ProductModule = this.GetType().ToString(),
+                            UserId = userLoginOnly.LoginName,
+                            PmcId = organizationPartyId.ToString(),
+                            Exception = null
+                        });
+                    }
+
+                    DateTime utcStarted = DateTime.UtcNow;
+                    string emailStatus = "";
+#if (DEBUG)
+                    emailStatus = "success";
+#endif
+                    if (string.IsNullOrEmpty(emailStatus))
+                    {
+                        emailStatus = _emailLogic.SendEmail(cesEmail);
+                    } 
+                    DateTime utcEnded = DateTime.UtcNow;
+
+                    //Save Communication Event
+                    RepositoryResponse communicationEventResponse = new RepositoryResponse();
+                    string message = "";
+                    if (emailStatus.Contains("success"))
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int) EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                        message = $"SendNewUserRegistrationEmail - email sent - {userLoginOnly.RealPageId}";
+                    }
+                    else
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int) EmailStatusType.EmailError, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                        message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
+                    }
+
+                    Log.Write(LogType.Information, new LogDetails
+                    {
+                        CorrelationId = _userClaim.CorrelationId.ToString(),
+                        Message = message,
+                        AdditionalInfo = null,
+                        ProductModule = this.GetType().ToString(),
+                        UserId = userLoginOnly.LoginName,
+                        PmcId = organizationPartyId.ToString(),
+                        Exception = null
+                    });
+
+                    long communicationEventId = communicationEventResponse.Id;
+                    if (communicationEventResponse.Id != 0)
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEventEmail(emailTemplate.CommunicationEmailTemplateId, communicationEventId);
+                    }
+
+                    if (communicationEventResponse.Id != 0)
+                    {
+                        communicationEventResponse = _communicationEventsLogic.CreateCESCommunicationEventEmail(cesEmail.ClientUniqueID.ToString().ToUpper(), communicationEventId);
+                    }
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(LogType.Error, new LogDetails
+                    {
+                        CorrelationId = _userClaim.CorrelationId.ToString(),
+                        Message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}",
+                        AdditionalInfo = null,
+                        ProductModule = this.GetType().ToString(),
+                        UserId = userLoginOnly.LoginName,
+                        PmcId = organizationPartyId.ToString(),
+                        Exception = ex
+                    });
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+}

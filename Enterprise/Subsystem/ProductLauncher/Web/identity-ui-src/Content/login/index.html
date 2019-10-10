@@ -1,0 +1,60 @@
+
+<div class="login-form">
+    <div ng-show="page.model.changedPasswordMessage.state" class="changed-password-message text-success text-center">
+        {{:: "login_change_pwd_success" | loginText }}
+    </div>
+    <div ng-show="page.model.identityMsgData" ng-repeat="identityStatusMsg in page.model.identityMsgData" ng-class="page.model.loginStatusMsgs[identityStatusMsg].class" class="login-status-msg">
+        {{ page.model.loginStatusMsgs[identityStatusMsg].msg }}
+    </div>
+
+    <form name="page.loginForm" novalidate class="ft-form" role="form" method="post" action="{{model.loginUrl}}">
+        <anti-forgery-token token="model.antiForgery"></anti-forgery-token>
+        <fieldset>
+            <div class="form-group">
+                <label for="username">{{:: "login_username" | loginText }}</label>
+                <rp-form-input-text class="login-user-text login-username-field" config="page.loginConfig.username" rp-model="page.model.form.username">
+                </rp-form-input-text>
+            </div>
+            <div class="form-group">
+                <label for="username">{{:: "login_password" | loginText }}</label>
+                <rp-form-input-text class="login-user-text login-userpass-field" config="page.loginConfig.password" rp-model="page.model.form.password">
+                </rp-form-input-text>
+            </div>
+            <div ng-if="page.model.form.errorMessage" class="login-error-message text-danger">
+                <p>{{model.errorMessage}}</p>
+<!--                 <p data-ng-show="page.model.form.errorMessage">
+                    Your Username/Password is incorrect. <a class="text-primary" ui-sref="user-lookup">Reset password?</a>
+                </p> -->
+                <p data-ng-show="page.model.form.errorMessage">
+                   You may not be on the new RealPage Unified Platform.  To learn how you can enjoy one place to log in and access all of your products, <a class="text-primary" href="http://www.realpage.com/imready" target="rpup-video">watch this video</a>.
+                </p>
+            </div>
+             <rp-form-input-checkbox
+                rp-model="page.model.form.rememberMe"
+                rp-on-change="page.updateRememberMeCookies()"
+                rp-label-text=":: 'login_remember_me' | loginText">
+            </rp-form-input-checkbox>
+            <div class="forgot-password-action text-center text-primary" ui-sref="user-lookup">
+                {{:: "login_forgot" | loginText }}
+            </div>
+        </fieldset>
+        <section class="login-actions">
+            <div class="form-group">
+                <button class="rp-btn primary w-full"
+                        ng-click="page.validateFailed($event)"
+                        type="submit">
+                    {{:: "login_btn" | loginText }}
+                </button>
+            </div>
+            <!-- <ul class="list-unstyled">
+                <li ng-repeat="link in model.additionalLinks"><a ng-href="{{link.href}}">{{link.text}}</a></li>
+            </ul> -->
+        </section>
+    </form>
+</div><!-- /.login-form -->
+
+<!--
+<auto-logout-modal auto-display-modal
+    ng-if="page.alertMessages"
+    messages="page.alertMessages"></auto-logout-modal>
+-->

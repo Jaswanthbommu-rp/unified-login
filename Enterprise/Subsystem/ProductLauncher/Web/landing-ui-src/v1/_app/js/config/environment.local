@@ -1,0 +1,22 @@
+//  Environment Constant
+
+(function (angular) {
+    "use strict";
+
+    var envConfig = {};
+
+    envConfig = {
+        name: "local",
+		landingAPI: "https://www-local2.realpage.com/",
+        loggingAPI: "https://myactivitylocal.corp.realpage.com/",
+        helpUrl: "http://devhelp.onesitedev.realpage.com/",
+        ulmtUrl: "https://ulmtlocal.corp.realpage.com/",
+        currentEnv: "mock"
+	};
+
+	Object.freeze(envConfig);
+
+	angular
+		.module("settings")
+		.constant("ENV", envConfig);
+})(angular);

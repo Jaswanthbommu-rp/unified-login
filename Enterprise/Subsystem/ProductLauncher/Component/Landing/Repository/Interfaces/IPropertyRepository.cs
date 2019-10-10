@@ -1,0 +1,31 @@
+﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
+{
+	/// <summary>
+	/// Property Repository interface
+	/// </summary>
+	public interface IPropertyRepository
+	{
+		/// <summary>
+		/// List of Roles by User Persona ID
+		/// </summary>
+		/// <param name="userPersonaId">Persona ID</param>   
+		/// <param name="productId">Product ID</param>   
+		/// <returns>List of Properties/Role assigned to Persona</returns>
+		List<ProductProperty> ListPropertiesByPersona(long userPersonaId, ProductEnum productId);
+
+		/// <summary>
+		/// Insert or Remove a Property for the given User
+		/// </summary>
+		/// <param name="userPersonaId">User Persona ID</param>      
+		/// <param name="productId">Product ID</param>      
+		/// <param name="propertyId">Property ID</param>      
+		/// <param name="remove">isDeleted</param>   
+		/// <returns>List of Roles assigned to Persona</returns>
+		RepositoryResponse InsertRemoveAssignedPropertyToUser(long userPersonaId, ProductEnum productId, long propertyId, int remove = 0);
+	}
+}

@@ -1,0 +1,122 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutJquery.cshtml";
+}
+
+<header id="raul-page-header" class="raul-page-header">
+    <h2 id="raul-page-header-page" class="raul-page-header-page">Search Results</h2>
+    <div id="raul-page-header-breadcrumbs" class="raul-page-header-breadcrumbs">
+
+        <!-- MOBILE SOLUTION -->
+        <div id="raul-page-header-breadcrumbs-dropdown" class="raul-page-header-breadcrumbs-dropdown d-md-none">
+            <a class="raul-page-header-breadcrumbs-dropdown-breadcrumb rp-breadcrumbs-template hidden" href="/">RealPage</a>
+        </div>
+
+        <i id="raul-page-header-breadcrumbs-back" class="fa fa-angle-left d-md-none"></i>
+
+        <!-- DESKTOP SOLUTION -->
+
+        <div class="rp-breadcrumbs-wrapper rp-breadcrumbs-template1">
+            <a class="raul-page-header-breadcrumb hidden-sm-down h-t-settings" href="/setting">Settings</a>
+            <span class="hidden-sm-down">/</span>
+        </div>
+
+        <div class="rp-breadcrumbs-wrapper">
+            <a class="raul-page-header-breadcrumb hidden-sm-down _600" href="#">Search Results</a>
+        </div>
+
+    </div>
+</header>
+
+<main id="raul-page-container" class="raul-page-container">
+    <!--<a href="companysettings" id="companysetting"> Company settings</a>-->
+    <section>
+        <div class="background-charcoal-05 overflow-hidden">
+            <div class="text-center py-5">
+                <div class="search-settings-container">
+                    
+                    <div class="row">
+                        <div class="col-3"></div>
+
+                        <div class="col-6 form-group px-0">
+                            <div id="search-results-header" class="search-results-header text-left ft-s-16"></div>
+                            <form id="search-result-bar" class="settings-search-bar search-result-bar" ui-jp="parsley" ui-options="{}">
+                                <input type="search" name="example-input-11" class="form-control m-t-20" placeholder="Search all Realpage Settings" autocomplete="off" minlength="3" required>
+                                <button type="submit" class="form-icon-box search-settings-icon">
+                                    <i class="fa fa-search form-icon form-icon-search form-icon-black" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="col-3"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="background-white">
+
+                <div class="text-center row pt-3 pb-5 my-0">
+                    <div class="col-3 px-0"></div>
+
+                    <div id="search-settings-results" class="search-settings-results col-md-6 px-0">
+                        <div class="content-loader-wrapper p-3 m-3">
+                            <div class="content-loader"></div>
+                        </div>
+
+                        <table class="table raul-table table-font-size-small hidden">
+
+                            <tbody>
+                                <tr>
+                                    <td>Lead Information Here</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination-wrapper row align-items-center hidden">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-3"></div>
+                            <div class="pagination-pages col-md-6 text-right p-t-05 p-b-05">
+                                <i id="search-results-left" class="fa fa-angle-left go-to-page-icon" aria-hidden="true"></i> Page
+
+                                <input type="number"
+                                       name="page-number"
+                                       value="1"
+                                       min="1"
+                                       max="1"
+                                       class="pagination-page-number"> of
+
+                                <span class="pagination-total-pages"> 1</span>
+
+                                <i id="search-results-right" class="fa fa-angle-right go-to-page-icon" aria-hidden="true"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="col-3 px-0"></div>
+                </div>
+
+                    
+
+                </div>
+
+
+
+                
+
+            </div>
+
+            
+        </div>
+    </section>
+</main>
+
+<script src="@Url.Content("~/Assets/build/js/settings/load-scripts.js")"></script>
+<script>
+    loadFiles([
+        '/Assets/build/js/settings/common-functions.js',
+        '/Assets/build/js/settings/search-results.js'
+
+    ]);
+</script>
+

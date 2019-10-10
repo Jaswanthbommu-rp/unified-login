@@ -1,0 +1,1292 @@
+﻿using System;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Clients;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Clients;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Swashbuckle.Swagger.Annotations;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
+{
+	public class ClientSetupController : BaseApiController
+    {
+	    #region Private variables
+	    IRepositoryResponse repositoryResponse = new RepositoryResponse();
+		#endregion
+
+		#region Constructor
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public ClientSetupController() : base() { }
+        #endregion
+
+        #region Public Methods
+        [AllowAnonymous]
+        [Route("clientsetup/test")]
+        [HttpGet]
+        public HttpResponseMessage GetSuccessResult()
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, Guid.NewGuid());
+        }
+
+        #region Client
+        /// <summary>
+        /// Used to get a list of clients
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of client scopes", Type = typeof(Client))]
+		[Route("clientsetup/client")]
+		[HttpGet]
+		public IEnumerable<Client> GetClients()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClients();
+		}
+
+		/// <summary>
+		/// Used to get a client by id
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A client and its details", Type = typeof(Client))]
+		[Route("clientsetup/client/{id}")]
+		[HttpGet]
+		public Client GetClients(int id)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClientDetails(id);
+		}
+
+		/// <summary>
+		/// Used to create a client
+		/// </summary>
+		/// <param name="client"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client created", Type = typeof(Client))]
+		[Route("clientsetup/client")]
+		[HttpPost]
+		public HttpResponseMessage InsertClient(Client client)
+		{
+			ObjectOutput<Client, IErrorData> output = new ObjectOutput<Client, IErrorData>();
+
+			// validate inputs
+			if (!string.IsNullOrEmpty(validClient(client)))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = $"Insert failed, {validClient(client)}", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			Client clientResult = mcs.InsertClient(client);
+			output.obj = clientResult;
+
+			if (clientResult == null)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to update a client
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientUpdate"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client updated", Type = typeof(Client))]
+		[Route("clientsetup/client/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateClient(int id, ClientUpdate clientUpdate)
+		{
+			ObjectOutput<Client, IErrorData> output = new ObjectOutput<Client, IErrorData>();
+
+			if (!string.IsNullOrEmpty(validClient(clientUpdate.client)))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = $"Update failed. {validClient(clientUpdate.client)}", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			clientUpdate.client.ClientId = id;
+			clientUpdate.originalClient.ClientId = id;
+			Client clientResult = mcs.UpdateClient(clientUpdate.originalClient, clientUpdate.client);
+			output.obj = clientResult;
+
+			if (clientResult == null
+			    || clientUpdate.client.ClientCode != clientResult.ClientCode
+			    || clientUpdate.client.ClientName != clientResult.ClientName
+			    || clientUpdate.client.ClientUri != clientResult.ClientUri
+				|| clientUpdate.client.LogoUri != clientResult.LogoUri
+				|| clientUpdate.client.Flow != clientResult.Flow
+				|| clientUpdate.client.LogoutUri != clientResult.LogoutUri
+				|| clientUpdate.client.IdentityTokenLifetime != clientResult.IdentityTokenLifetime
+				|| clientUpdate.client.AccessTokenLifetime != clientResult.AccessTokenLifetime
+				|| clientUpdate.client.AuthorizationCodeLifetime != clientResult.AuthorizationCodeLifetime
+				|| clientUpdate.client.AbsoluteRefreshTokenLifetime != clientResult.AbsoluteRefreshTokenLifetime
+				|| clientUpdate.client.SlidingRefreshTokenLifetime != clientResult.SlidingRefreshTokenLifetime
+				|| clientUpdate.client.RefreshTokenUsage != clientResult.RefreshTokenUsage
+				|| clientUpdate.client.RefreshTokenExpiration != clientResult.RefreshTokenExpiration
+				|| clientUpdate.client.AccessTokenType != clientResult.AccessTokenType
+				|| clientUpdate.client.UpdateAccessTokenOnRefresh != clientResult.UpdateAccessTokenOnRefresh
+				|| clientUpdate.client.Enabled != clientResult.Enabled
+				|| clientUpdate.client.LogoutSessionRequired != clientResult.LogoutSessionRequired
+				|| clientUpdate.client.RequireSignOutPrompt != clientResult.RequireSignOutPrompt
+				|| clientUpdate.client.AllowAccessToAllScopes != clientResult.AllowAccessToAllScopes
+				|| clientUpdate.client.AllowClientCredentialsOnly != clientResult.AllowClientCredentialsOnly
+				|| clientUpdate.client.RequireConsent != clientResult.RequireConsent
+				|| clientUpdate.client.AllowRememberConsent != clientResult.AllowRememberConsent
+				|| clientUpdate.client.EnableLocalLogin != clientResult.EnableLocalLogin
+				|| clientUpdate.client.IncludeJwtId != clientResult.IncludeJwtId
+				|| clientUpdate.client.AlwaysSendClientClaims != clientResult.AlwaysSendClientClaims
+				|| clientUpdate.client.PrefixClientClaims != clientResult.PrefixClientClaims
+				|| clientUpdate.client.AllowAccessToAllGrantTypes != clientResult.AllowAccessToAllGrantTypes
+			)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a client
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="client"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client deleted")]
+		[Route("clientsetup/client/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteClient(int id, Client client)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+			
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			client.ClientId = id;
+			int result = mcs.DeleteClient(client);
+			if (result == 0)
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
+
+		#endregion
+
+		#region ClientClaims
+
+		/// <summary>
+		/// Used to get a list of client claims
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of client claims", Type = typeof(ClientClaim))]
+		[Route("clientsetup/clientclaim")]
+		[HttpGet]
+		public IEnumerable<ClientClaim> GetClientClaim()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClientClaim();
+		}
+
+		/// <summary>
+		/// Used to create a client claim
+		/// </summary>
+		/// <param name="clientClaim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client claim created", Type = typeof(ClientClaim))]
+		[Route("clientsetup/clientclaim")]
+		[HttpPost]
+		public HttpResponseMessage InsertClientClaim(ClientClaim clientClaim)
+		{
+			ObjectOutput<ClientClaim, IErrorData> output = new ObjectOutput<ClientClaim, IErrorData>();
+
+			// verify the client id exists
+			if (!ClientIdExists(clientClaim.ClientId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid client id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ClientClaim clientClaimResult = mcs.InsertClientClaim(clientClaim);
+			output.obj = clientClaimResult;
+
+			if (clientClaimResult == null)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to update a client claim
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientClaim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client claim updated")]
+		[Route("clientsetup/clientclaim/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateClientClaim(int id, ClientClaimUpdate clientClaim)
+		{
+			ObjectOutput<ClientClaim, IErrorData> output = new ObjectOutput<ClientClaim, IErrorData>();
+
+			// verify the client id exists
+			if (!ClientIdExists(clientClaim.clientClaim.ClientId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid client id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			clientClaim.clientClaim.Id = id;
+			clientClaim.originalClientClaim.Id = id;
+			ClientClaim clientClaimResult = mcs.UpdateClientClaim(clientClaim.originalClientClaim, clientClaim.clientClaim);
+			output.obj = clientClaimResult;
+
+			if (clientClaimResult == null
+			    || clientClaim.clientClaim.ClientId != clientClaimResult.ClientId
+			    || clientClaim.clientClaim.Type != clientClaimResult.Type
+			    || clientClaim.clientClaim.Value != clientClaimResult.Value
+			)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a client claim
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientClaim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client claim deleted")]
+		[Route("clientsetup/clientclaim/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteClientClaim(int id, ClientClaim clientClaim)
+		{
+			ObjectOutput<ClientClaim, IErrorData> output = new ObjectOutput<ClientClaim, IErrorData>();
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientClaim.Id = id;
+			int result = mcs.DeleteClientClaim(clientClaim);
+			if (result == 0)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Delete failed, no records deleted", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			output.Status = new Status<IErrorData>() { Success = true };
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		#endregion
+
+		#region Scope
+
+		/// <summary>
+		/// Used to get a list of scopes
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of client scopes", Type = typeof(Scope))]
+		[Route("clientsetup/scope")]
+		[HttpGet]
+		public IEnumerable<Scope> GetScopes()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetScopes();
+		}
+
+		/// <summary>
+		/// Used to get a scope by id
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A client scopes", Type = typeof(Scope))]
+		[Route("clientsetup/scope/{id}")]
+		[HttpGet]
+		public Scope GetScopeById(int id)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetScopeById(id);
+		}
+
+		/// <summary>
+		/// Used to create a scope
+		/// </summary>
+		/// <param name="scope"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope created", Type = typeof(Scope))]
+		[Route("clientsetup/scope")]
+		[HttpPost]
+		public Scope InsertScope(Scope scope)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.InsertScope(scope);
+		}
+
+		/// <summary>
+		/// Used to update a scope
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="scope"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope updated")]
+		[Route("clientsetup/scope/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateScope(int id, ScopeUpdate scope)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			scope.scope.ScopeId = id;
+			scope.originalScope.ScopeId = id;
+			Scope scopeResult = mcs.UpdateScope(scope.originalScope, scope.scope);
+			ObjectOutput<Scope, IErrorData> output = new ObjectOutput<Scope, IErrorData>() { obj = scopeResult };
+
+			if (scopeResult == null
+			    || scope.scope.Type != scopeResult.Type
+			    || scope.scope.AllowUnrestrictedIntrospection != scopeResult.AllowUnrestrictedIntrospection
+				|| scope.scope.Emphasize != scopeResult.Emphasize
+				|| scope.scope.ClaimsRule != scopeResult.ClaimsRule
+				|| scope.scope.Name != scopeResult.Name
+				|| scope.scope.DisplayName != scopeResult.DisplayName
+				|| scope.scope.Description != scopeResult.Description
+				|| scope.scope.Enabled != scopeResult.Enabled
+				|| scope.scope.Required != scopeResult.Required
+				|| scope.scope.IncludeAllClaimsForUser != scopeResult.IncludeAllClaimsForUser
+				|| scope.scope.ShowInDiscoveryDocument != scopeResult.ShowInDiscoveryDocument
+			)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		#endregion
+
+		#region Client Scopes
+
+		/// <summary>
+		/// Used to get a list of client scopes
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of client scopes", Type = typeof(ClientScope))]
+		[Route("clientsetup/clientscope")]
+		[HttpGet]
+		public IEnumerable<ClientScope> GetClientScopes()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClientScope();
+		}
+
+		/// <summary>
+		/// Used to create a client scope
+		/// </summary>
+		/// <param name="clientScope"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client scope created", Type = typeof(ClientScope))]
+		[Route("clientsetup/clientscope")]
+		[HttpPost]
+		public ClientScope InsertClientScope(ClientScope clientScope)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.InsertClientScope(clientScope);
+		}
+
+		/// <summary>
+		/// Used to update a client scope
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientScope"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client scope updated")]
+		[Route("clientsetup/clientscope/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateClientScope(int id, ClientScopeUpdate clientScope)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			// verify the client id exists
+			if (!ClientIdExists(clientScope.clientScope.ClientId))
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid client id");
+			}
+
+			clientScope.clientScope.Id = id;
+			clientScope.originalClientScope.Id = id;
+			ClientScope clientScopeResult = mcs.UpdateClientScope(clientScope.originalClientScope, clientScope.clientScope);
+			ObjectOutput<ClientScope, IErrorData> output = new ObjectOutput<ClientScope, IErrorData>() { obj = clientScopeResult };
+
+			if (clientScopeResult == null 
+				|| clientScope.clientScope.ClientId != clientScopeResult.ClientId
+			    || clientScope.clientScope.Scope != clientScopeResult.Scope
+			)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a client scope
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientScope"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client scope deleted")]
+		[Route("clientsetup/clientscope/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteClientScope(int id, ClientScope clientScope)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientScope.Id = id;
+			int result= mcs.DeleteClientScope(clientScope);
+			if (result == 0)
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
+		#endregion
+
+		#region ClientRedirectUri
+		/// <summary>
+		/// Used to get a list of client redirect uris
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of client redirect uris", Type = typeof(ClientRedirectUri))]
+		[Route("clientsetup/clientredirecturi")]
+		[HttpGet]
+		public IEnumerable<ClientRedirectUri> GetClientRedirectUri()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClientRedirectUri();
+		}
+
+		/// <summary>
+		/// Used to create a client redirect uri
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client redirect uri created", Type = typeof(ClientRedirectUri))]
+		[Route("clientsetup/clientredirecturi")]
+		[HttpPost]
+		public ClientRedirectUri InsertClientRedirectUri(ClientRedirectUri clientRedirectUri)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.InsertClientRedirectUri(clientRedirectUri);
+		}
+
+		/// <summary>
+		/// Used to update a client redirect uri
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client redirect uri updated", Type = typeof(ClientRedirectUri))]
+		[Route("clientsetup/clientredirecturi/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateClientRedirectUri(int id, ClientRedirectUriUpdate clientRedirectUri)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientRedirectUri.clientRedirectUri.Id = id;
+			clientRedirectUri.originalClientRedirectUri.Id = id;
+			ClientRedirectUri clientRedirectUriResult = mcs.UpdateClientRedirectUri(clientRedirectUri.originalClientRedirectUri, clientRedirectUri.clientRedirectUri);
+			ObjectOutput<ClientRedirectUri, IErrorData> output = new ObjectOutput<ClientRedirectUri, IErrorData>() { obj = clientRedirectUriResult };
+
+			if (clientRedirectUriResult == null 
+			    || clientRedirectUri.clientRedirectUri.ClientId != clientRedirectUriResult.ClientId
+				|| clientRedirectUri.clientRedirectUri.Uri != clientRedirectUriResult.Uri 
+				)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a client redirect uri
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientRedirectUri"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client redirect uri deleted")]
+		[Route("clientsetup/clientredirecturi/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteClientRedirectUri(int id, ClientRedirectUri clientRedirectUri)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientRedirectUri.Id = id;
+			int result = mcs.DeleteClientRedirectUri(clientRedirectUri);
+			if (result == 0)
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
+
+		#endregion
+
+		#region ClientPostLogoutRedirectUri
+		/// <summary>
+		/// Used to get a list of client post logout redirect uris
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of client post logout redirect uris", Type = typeof(ClientPostLogoutRedirectUri))]
+		[Route("clientsetup/clientpostlogoutredirecturi")]
+		[HttpGet]
+		public IEnumerable<ClientPostLogoutRedirectUri> GetClientPostLogoutRedirectUri()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClientPostLogoutRedirectUri();
+		}
+
+		/// <summary>
+		/// Used to create a client post logout redirect uri
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client post logout redirect uri created", Type = typeof(ClientPostLogoutRedirectUri))]
+		[Route("clientsetup/clientpostlogoutredirecturi")]
+		[HttpPost]
+		public HttpResponseMessage InsertClientPostLogoutRedirectUri(ClientPostLogoutRedirectUri clientPostLogoutRedirectUri)
+		{
+			ObjectOutput<ClientPostLogoutRedirectUri, IErrorData> output = new ObjectOutput<ClientPostLogoutRedirectUri, IErrorData>();
+			// verify the client id exists
+			if (!ClientIdExists(clientPostLogoutRedirectUri.ClientId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid client id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ClientPostLogoutRedirectUri clientPostLogoutRedirectUriResult = mcs.InsertClientPostLogoutRedirectUri(clientPostLogoutRedirectUri);
+			output.obj = clientPostLogoutRedirectUriResult;
+
+			if (clientPostLogoutRedirectUriResult == null)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to update a client post logout redirect uri
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client redirect uri updated", Type = typeof(ClientPostLogoutRedirectUri))]
+		[Route("clientsetup/clientpostlogoutredirecturi/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateClientPostLogoutRedirectUri(int id, ClientPostLogoutRedirectUriUpdate clientPostLogoutRedirectUri)
+		{
+			ObjectOutput<ClientPostLogoutRedirectUri, IErrorData> output = new ObjectOutput<ClientPostLogoutRedirectUri, IErrorData>();
+			// verify the client id exists
+			if (!ClientIdExists(clientPostLogoutRedirectUri.clientPostLogoutRedirectUri.ClientId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid client id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientPostLogoutRedirectUri.clientPostLogoutRedirectUri.Id = id;
+			clientPostLogoutRedirectUri.originalClientPostLogoutRedirectUri.Id = id;
+			ClientPostLogoutRedirectUri clientPostLogoutRedirectUriResult = mcs.UpdateClientPostLogoutRedirectUri(clientPostLogoutRedirectUri.originalClientPostLogoutRedirectUri, clientPostLogoutRedirectUri.clientPostLogoutRedirectUri);
+			output.obj = clientPostLogoutRedirectUriResult;
+
+			if (clientPostLogoutRedirectUriResult == null
+				|| clientPostLogoutRedirectUri.clientPostLogoutRedirectUri.ClientId != clientPostLogoutRedirectUriResult.ClientId
+				|| clientPostLogoutRedirectUri.clientPostLogoutRedirectUri.Uri != clientPostLogoutRedirectUriResult.Uri
+				)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a client post logout redirect uri
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientPostLogoutRedirectUri"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client post logout redirect uri deleted")]
+		[Route("clientsetup/clientpostlogoutredirecturi/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteClientPostLogoutRedirectUri(int id, ClientPostLogoutRedirectUri clientPostLogoutRedirectUri)
+		{
+			ObjectOutput<ClientPostLogoutRedirectUri, IErrorData> output = new ObjectOutput<ClientPostLogoutRedirectUri, IErrorData>();
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientPostLogoutRedirectUri.Id = id;
+			int result = mcs.DeleteClientPostLogoutRedirectUri(clientPostLogoutRedirectUri);
+			if (result == 0)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Delete failed, no records deleted", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			output.Status = new Status<IErrorData>() { Success = true };
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		#endregion
+
+		#region Client Secrets
+		/// <summary>
+		/// Used to get a list of client secrets
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of client secrets", Type = typeof(ClientSecret))]
+		[Route("clientsetup/clientsecret")]
+		[HttpGet]
+		public IEnumerable<ClientSecret> GetClientSecret()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+			
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			IEnumerable<ClientSecret> clientSecrets = mcs.GetClientSecret();
+			return clientSecrets;
+		}
+
+		/// <summary>
+		/// Used to create a client secret
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client secret created", Type = typeof(ClientSecret))]
+		[Route("clientsetup/clientsecret")]
+		[HttpPost]
+		public ClientSecret InsertClientSecret(ClientSecret clientSecret)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.InsertClientSecret(clientSecret);
+		}
+
+		/// <summary>
+		/// Used to update a client secret
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client secret updated")]
+		[Route("clientsetup/clientsecret/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateClientSecret(int id, ClientSecretUpdate clientSecret)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientSecret.clientSecret.Id = id;
+			clientSecret.originalClientSecret.Id = id;
+			ClientSecret clientSecretResult = mcs.UpdateClientSecret(clientSecret.originalClientSecret, clientSecret.clientSecret);
+			ObjectOutput<ClientSecret, IErrorData> output = new ObjectOutput<ClientSecret, IErrorData>() {obj = clientSecretResult};
+
+			if (clientSecretResult == null
+			    || clientSecret.clientSecret.ClientId != clientSecretResult.ClientId
+			    || clientSecret.clientSecret.Description != clientSecretResult.Description
+			    || clientSecret.clientSecret.Value != clientSecretResult.Value
+			    || clientSecret.clientSecret.Type != clientSecretResult.Type
+			)
+			{
+				output.Status = new Status<IErrorData>() {ErrorMsg = "Update failed", Success = false};
+				
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a client secret
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="clientSecret"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The client secret deleted")]
+		[Route("clientsetup/clientsecret/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteClientSecret(int id, ClientSecret clientSecret)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			clientSecret.Id = id;
+			int result = mcs.DeleteClientSecret(clientSecret);
+			if (result == 0)
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
+		#endregion
+
+		#region Scope Secrets
+		/// <summary>
+		/// Used to get a list of scope secrets
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of scope secrets", Type = typeof(ScopeSecret))]
+		[Route("clientsetup/scopesecret")]
+		[HttpGet]
+		public IEnumerable<ScopeSecret> GetScopeSecrets()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetScopeSecrets();
+		}
+
+		/// <summary>
+		/// Used to create a scope secret
+		/// </summary>
+		/// <param name="scopeSecret"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope secret created", Type = typeof(ScopeSecret))]
+		[Route("clientsetup/scopesecret")]
+		[HttpPost]
+		public HttpResponseMessage InsertScopeSecret(ScopeSecret scopeSecret)
+		{
+			ObjectOutput<ScopeSecret, IErrorData> output = new ObjectOutput<ScopeSecret, IErrorData>();
+
+			// verify the scope id exists
+			if (!ScopeIdExists(scopeSecret.ScopeId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid scope id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ScopeSecret scopeSecretResult = mcs.InsertScopeSecret(scopeSecret);
+			output.obj = scopeSecretResult;
+
+			if (scopeSecretResult == null)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to update a scope secret
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="scopeSecret"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope secret updated", Type = typeof(ScopeSecret))]
+		[Route("clientsetup/scopesecret/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateScopeSecret(int id, ScopeSecretUpdate scopeSecret)
+		{
+			ObjectOutput<ScopeSecret, IErrorData> output = new ObjectOutput<ScopeSecret, IErrorData>();
+
+			// verify the scope id exists
+			if (!ScopeIdExists(scopeSecret.scopeSecret.ScopeId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid scope id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			scopeSecret.scopeSecret.Id = id;
+			scopeSecret.originalScopeSecret.Id = id;
+			ScopeSecret scopeSecretResult = mcs.UpdateScopeSecret(scopeSecret.originalScopeSecret, scopeSecret.scopeSecret);
+			output.obj = scopeSecretResult;
+
+			if (scopeSecretResult == null
+			    || scopeSecret.scopeSecret.ScopeId != scopeSecretResult.ScopeId
+			    || scopeSecret.scopeSecret.Value != scopeSecretResult.Value
+				|| scopeSecret.scopeSecret.Description != scopeSecretResult.Description
+				|| scopeSecret.scopeSecret.Expiration != scopeSecretResult.Expiration
+				|| scopeSecret.scopeSecret.Type != scopeSecretResult.Type
+			)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a scope secret
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="scopeSecret"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope secret deleted")]
+		[Route("clientsetup/scopesecret/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteScopeSecret(int id, ScopeSecret scopeSecret)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			scopeSecret.Id = id;
+			int result = mcs.DeleteScopeSecret(scopeSecret);
+			if (result == 0)
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
+		#endregion
+
+		#region Scope Claims
+		/// <summary>
+		/// Used to get a list of scope claims
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of scope claims", Type = typeof(ScopeClaim))]
+		[Route("clientsetup/scopeclaim")]
+		[HttpGet]
+		public IEnumerable<ScopeClaim> GetScopeClaims()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetScopeClaims();
+		}
+
+		/// <summary>
+		/// Used to create a scope claim
+		/// </summary>
+		/// <param name="scopeClaim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope claim created", Type = typeof(ScopeClaim))]
+		[Route("clientsetup/scopeclaim")]
+		[HttpPost]
+		public HttpResponseMessage InsertScopeClaim(ScopeClaim scopeClaim)
+		{
+			ObjectOutput<ScopeClaim, IErrorData> output = new ObjectOutput<ScopeClaim, IErrorData>();
+
+			// verify the scope id exists
+			if (!ScopeIdExists(scopeClaim.ScopeId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid scope id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			ScopeClaim scopeClaimResult = mcs.InsertScopeClaim(scopeClaim);
+			output.obj = scopeClaimResult;
+
+			if (scopeClaimResult == null)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// used to update a scope claim
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="scopeClaim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope claim updated", Type = typeof(ScopeClaim))]
+		[Route("clientsetup/scopeclaim/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateScopeClaim(int id, ScopeClaimUpdate scopeClaim)
+		{
+			ObjectOutput<ScopeClaim, IErrorData> output = new ObjectOutput<ScopeClaim, IErrorData>();
+
+			// verify the scope id exists
+			if (!ScopeIdExists(scopeClaim.scopeClaim.ScopeId))
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Insert failed, invalid scope id", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			scopeClaim.scopeClaim.Id = id;
+			scopeClaim.originalScopeClaim.Id = id;
+			ScopeClaim scopeClaimResult = mcs.UpdateScopeClaim(scopeClaim.originalScopeClaim, scopeClaim.scopeClaim);
+			output.obj = scopeClaimResult;
+
+			if (scopeClaimResult == null
+				|| scopeClaim.scopeClaim.ScopeId != scopeClaimResult.ScopeId
+				|| scopeClaim.scopeClaim.Name != scopeClaimResult.Name
+				|| scopeClaim.scopeClaim.Description != scopeClaimResult.Description
+				|| scopeClaim.scopeClaim.AlwaysIncludeInIdToken != scopeClaimResult.AlwaysIncludeInIdToken
+			)
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+		/// <summary>
+		/// Used to delete a scope claim
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="scopeClaim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The scope claim deleted")]
+		[Route("clientsetup/scopeclaim/{id}")]
+		[HttpDelete]
+		public HttpResponseMessage DeleteScopeClaim(int id, ScopeClaim scopeClaim)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			scopeClaim.Id = id;
+			int result = mcs.DeleteScopeClaim(scopeClaim);
+			if (result == 0)
+			{
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
+		#endregion
+
+		/// <summary>
+		/// Used to get a list of cors urls
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of global settings", Type = typeof(GlobalSetting))]
+		[Route("clientsetup/globalsettings")]
+		[HttpGet]
+		public IEnumerable<GlobalSetting> GetGlobalSettings()
+		{
+			GlobalSettingRepository gsr = new GlobalSettingRepository();
+
+			return gsr.GetGlobalSettings();
+		}
+
+		#region private
+
+		/// <summary>
+		/// Used to verify if a given client id exists
+		/// </summary>
+		/// <param name="clientId"></param>
+		/// <returns></returns>
+		private bool ClientIdExists(int clientId)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			IEnumerable<Client> clientList = mcs.GetClients();
+			// verify the client id exists
+			if (!clientList.Any(p => p.ClientId == clientId))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Used to verify if a given scope id exists
+		/// </summary>
+		/// <param name="scopeId"></param>
+		/// <returns></returns>
+		private bool ScopeIdExists(int scopeId)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			IEnumerable<Scope> scopeList = mcs.GetScopes();
+			// verify the scope id exists
+			if (!scopeList.Any(p => p.ScopeId == scopeId))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Used to validate client settings
+		/// </summary>
+		/// <param name="client"></param>
+		/// <returns></returns>
+		private string validClient(Client client)
+		{
+
+			if (client.Flow < 0 || client.Flow > 7)
+			{
+				return "invalid flow type";
+			}
+
+			if (!(client.AccessTokenType == 0 || client.AccessTokenType == 1))
+			{
+				//output.Status = new Status<IErrorData>() {ErrorMsg = "Insert failed, invalid access token type", Success = false};
+				return "invalid access token type";
+			}
+
+			if (!(client.RefreshTokenExpiration == 0 || client.RefreshTokenExpiration == 1))
+			{
+				return "invalid refresh token expiration";
+			}
+
+			if (!(client.RefreshTokenUsage == 0 || client.RefreshTokenUsage == 1))
+			{
+				return "invalid refresh token usage";
+			}
+			return "";
+		}
+		#endregion
+
+		#endregion
+
+		#region Output classes
+		public class ClientSecretUpdate
+		{
+			public ClientSecret originalClientSecret { get; set; }
+			public ClientSecret clientSecret { get; set; }
+		}
+
+		public class ClientScopeUpdate
+		{
+			public ClientScope originalClientScope { get; set; }
+			public ClientScope clientScope { get; set; }
+		}
+
+		public class ClientRedirectUriUpdate
+		{
+			public ClientRedirectUri originalClientRedirectUri { get; set; }
+			public ClientRedirectUri clientRedirectUri { get; set; }
+		}
+
+		public class ClientUpdate
+		{
+			public Client originalClient { get; set; }
+			public Client client { get; set; }
+		}
+
+		public class ClientClaimUpdate
+		{
+			public ClientClaim originalClientClaim { get; set; }
+			public ClientClaim clientClaim { get; set; }
+
+		}
+
+		public class ClientPostLogoutRedirectUriUpdate
+		{
+			public ClientPostLogoutRedirectUri originalClientPostLogoutRedirectUri { get; set; }
+			public ClientPostLogoutRedirectUri clientPostLogoutRedirectUri { get; set; }
+		}
+
+		public class ScopeUpdate
+		{
+			public Scope originalScope { get; set; }
+			public Scope scope { get; set; }
+		}
+
+		public class ScopeSecretUpdate
+		{
+			public ScopeSecret originalScopeSecret { get; set; }
+			public ScopeSecret scopeSecret { get; set; }
+		}
+
+		public class ScopeClaimUpdate
+		{
+			public ScopeClaim originalScopeClaim { get; set; }
+			public ScopeClaim scopeClaim { get; set; }
+		}
+
+		#endregion
+	}
+}

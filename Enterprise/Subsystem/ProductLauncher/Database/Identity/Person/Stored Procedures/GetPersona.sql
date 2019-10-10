@@ -1,0 +1,31 @@
+﻿CREATE PROCEDURE [Person].[GetPersona](@PersonaId BIGINT)
+AS
+     BEGIN
+         DECLARE @NOW DATETIME= GETUTCDATE();
+         SELECT pe.PersonaId,
+                UL.PersonPartyId,
+                p.RealPageId,
+                ULP.OrganizationPartyId,
+                pe.PersonaTypeId,
+                pe.PersonaEnvironmentTypeId,
+                pt.Name,
+                pe.FromDate,
+                pe.ThruDate,
+                pe.IsDefault,
+                UL.UserId,
+                PR.RoleTypeIdFrom 'UserTypeId'
+		FROM Person.Persona PE
+		INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId
+		INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId
+		INNER JOIN Enterprise.Party p ON UL.PersonPartyId = P.PartyId
+		INNER JOIN Person.PersonaType pt ON(pe.PersonaTypeId = pt.PersonaTypeId)
+		INNER JOIN Enterprise.PartyRelationship PR ON(PR.PartyIdFrom = UL.PersonPartyId AND PR.PartyIdTo = ULP.OrganizationPartyId
+                                                            AND PR.RoleTypeIdTo = 205
+                                                            AND PR.ThruDate IS NULL)
+         WHERE pe.PersonaId = @PersonaId
+               AND ((@NOW BETWEEN pe.FromDate AND pe.ThruDate)
+                    OR (@NOW >= pe.FromDate
+                        AND pe.ThruDate IS NULL));
+     END;
+
+

@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="RP.Enterprise.Foundation.Activity.Service.Logging.Command.Writer" CodeBehind="Writer.svc.cs" %>

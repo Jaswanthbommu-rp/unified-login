@@ -1,0 +1,183 @@
+﻿using System;
+using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
+{
+    /// <summary>
+    /// Product Repository
+    /// </summary>
+    public interface IProductRepository
+    {
+        /// <summary>
+        /// Returns a list of products user has access to, filterable by favorites and resouce only
+        /// </summary>
+        /// <param name="persona">persona</param>   
+        /// <param name="productSelectType">productSelectType</param>
+        /// <param name="security">security</param>
+        /// <returns></returns>
+        IList<PersonaProductUserDetails> GetAssignedProductsByPersona(Persona persona, ProductSelectType? productSelectType = null, RouteSecurity security = null);
+
+        /// <summary>
+        /// Returns list of products that are resource type by filtering organization products
+        /// </summary>
+        /// <param name="organizationRealPageId">organizationRealPageId</param>
+        /// <returns></returns>
+        IList<ProductUI> GetProductsResourceType(Guid organizationRealPageId);
+
+        /// <summary>
+        /// Returns a list of all product settings that an organization has
+        /// </summary>
+        /// <param name="organizationRealPageId">organizationRealPageId</param>
+        /// <param name="productId">The id of the product to be filtered. null returns all product settings</param>
+        /// <returns></returns>
+        IList<ProductSettingList> GetProductSettings(Guid organizationRealPageId, int productId);
+
+        /// <summary>
+        /// Returns a list of all product settings for persona
+        /// </summary>
+        /// <param name="personaId">personaId</param>
+        /// <returns></returns>
+        IList<ProductSettingList> GetProductSettingsByPersona(long personaId);
+
+        /// <summary>
+        /// Returns a list of products that an organization has license using its organizationRealPageId
+        /// </summary>
+        /// <param name="organizationRealPageId">organizationRealPageId</param>
+        /// <param name="personaId">personaId</param>
+        /// <param name="resourceOnly">Only return resource type products</param>
+        /// <param name="allProducts">Return all product types</param>
+        /// <returns></returns>
+        IList<ProductUI> GetProducts(Guid organizationRealPageId, long personaId, bool resourceOnly = false, bool allProducts = false);
+
+        /// <summary>
+        /// Returns a list of productTypes
+        /// </summary>
+        /// <returns></returns>
+        IList<ProductType> GetProductTypes();
+
+        /// <summary>
+        /// Create ProductSetting
+        /// </summary>
+        /// <param name="PersonaId"></param>
+        /// <param name="ProductId"></param>
+        /// <param name="ProductSettingTypeId"></param>
+        /// <param name="Value"></param>
+        /// <returns>Repository response object</returns>
+        RepositoryResponse CreateProductSetting(long PersonaId, int ProductId, int ProductSettingTypeId, string Value);
+
+		/// <summary>
+		/// Create ProductSetting
+		/// </summary>
+		/// <param name="repository"></param>
+		/// <param name="PersonaId"></param>
+		/// <param name="ProductId"></param>
+		/// <param name="ProductSettingTypeId"></param>
+		/// <param name="Value"></param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse CreateProductSetting(IRepository repository, long PersonaId, int ProductId, int ProductSettingTypeId, string Value);
+
+		/// <summary>
+		/// Returns a list of productSettingType
+		/// </summary>
+		/// <returns></returns>
+		IList<ProductSettingType> ListProductSettingType();
+
+        /// <summary>
+        /// Create a new Product Batch
+        /// </summary>
+        /// <param name="realPageId">User unique identifier</param>
+        /// <param name="productBatch">ProductBatch object of the parameter values</param>
+        /// <returns>Repository response object</returns>
+        RepositoryResponse CreateProductBatch(Guid realPageId, IProductBatch productBatch);
+
+        /// <summary>
+        /// Update a Product Batch
+        /// </summary> 
+        /// <returns>Repository response object</returns>
+        RepositoryResponse UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null);
+
+        /// <summary>
+        /// Returns List of Product Batch Statuses
+        /// </summary>
+        IList<ProductBatchStatus> ListProductBatchStatuses(Guid realPageId, long assignUserPersonaId);
+
+        /// <summary>
+        /// Returns the id of ProductSettingType
+        /// </summary>
+        int GetProductSettingType(string productSettingName);
+
+		/// <summary>
+		/// Returns a list of productfamilies
+		/// </summary>
+		/// <param name="personRealPageId">Edited User enterprise Id</param>
+		/// <param name="accessFilter">Filter products</param>
+		/// <returns>List of Product Families</returns>
+		//IList<ProductFamily> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null);
+
+        IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null);
+        /// <summary>
+        /// List of Roles by Party ID, Product List and Product ID
+        /// </summary>
+        /// <param name="partyId">Party ID</param>
+        /// <param name="productIdList">List of product ids for the party</param>   
+        /// <param name="productId">Product ID</param>   
+        /// <returns>List of Roles by PartyId and Product</returns>
+        List<ProductRole> ListRolesForProductByParty(long partyId, IList<int> productIdList, int productId);
+
+        /// <summary>
+        /// List of Roles with Rights count
+        /// </summary>
+        /// <param name="partyId">Party ID</param>   
+        /// <param name="productId">Product ID</param>   
+        /// <param name="productIdList">Product ID's by Org</param>  
+        /// <returns>List of Roles and rights count by PartyId and Product</returns>
+        IList<RightRoleDetail> ListRoleWithRights(long partyId, int productId, List<int> productIdList); 
+
+        /// <summary>
+        /// List GB products
+        /// </summary>
+        IList<GbProductMap> ListProducts(int? productId, Guid? productGuid, string name, string booksProductCode);
+
+        /// <summary>
+        /// Returns product details for given product code.
+        /// This will get replaced with Blue book call in future
+        /// </summary> 
+        GbProductMap GetBooksMasterProductDetail(int gbProductId);
+
+		/// <summary>
+		/// Returns product properties roles details for given product code and persona.		
+		/// </summary> 
+		RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId);
+		
+	    /// <summary>
+	    /// Used to get a list of products ids for a company by the company guid
+	    /// </summary>
+	    /// <param name="organizationRealPageId"></param>
+	    /// <returns></returns>
+	    IList<int> GetProductIdsByCompany(Guid organizationRealPageId);
+
+	    /// <summary>
+	    /// Used to get a list of products ids for a company by the company party id
+	    /// </summary>
+	    /// <param name="organizationPartyId"></param>
+	    /// <returns></returns>
+	    IList<int> GetProductIdsByCompany(long organizationPartyId);
+
+		/// <summary>
+		/// Used to update the persona product setting type for the given user and setting
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <param name="settingType"></param>
+		/// <param name="value"></param>
+		void UpdateProductSettingProductStatus<T>(long userPersonaId, int productId, string settingType, T value);
+	}
+}

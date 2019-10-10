@@ -1,0 +1,610 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>Identity</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{124f2d36-0b63-4e62-a664-f1cecae510c7}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>Identity</RootNamespace>
+    <AssemblyName>Identity</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <GenerateCreateScript>False</GenerateCreateScript>
+    <IncludeSchemaNameInFileName>True</IncludeSchemaNameInFileName>
+    <IsReadyRollProject>True</IsReadyRollProject>
+    <ReadyRollToolsVersion>1.12</ReadyRollToolsVersion>
+    <DeployOnceSubFolder>Migrations</DeployOnceSubFolder>
+    <DeployChangesSubFolder>Programmable Objects</DeployChangesSubFolder>
+    <DeployChangesImportSchemaFolders>True</DeployChangesImportSchemaFolders>
+    <PreDeploymentSubFolder>Pre-Deployment</PreDeploymentSubFolder>
+    <PostDeploymentSubFolder>Post-Deployment</PostDeploymentSubFolder>
+    <GenerateSqlPackage>True</GenerateSqlPackage>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <ExcludeObjectsFromSync />
+    <IncludeObjectsInDataSync />
+    <DeployChangesInitialImportDone>True</DeployChangesInitialImportDone>
+    <DeployChangesExecutionOrder>
+9e188dd2-a73d-5eee-98d8-c90d84addb5b|Programmable Objects\dbo\Stored Procedures\PrintError.sql;
+f1a38c0e-77c6-50fd-9b31-293dfa5cba1a|Programmable Objects\dbo\Stored Procedures\LogError.sql;
+440d653b-1f13-53d8-a086-fba34d6ebb69|Programmable Objects\Auth\Stored Procedures\CreatePasswordPolicy.sql;
+0af50360-2176-51ba-89c4-ac84c736ba0f|Programmable Objects\Auth\Stored Procedures\UpdatePasswordPolicy.sql;
+c3647b40-dd0d-588f-b392-d3dc11590e74|Programmable Objects\dbo\Stored Procedures\CreateSamlUserAttribute.sql;
+02bd68b3-cfb6-59fb-a400-960335e1f500|Programmable Objects\Enterprise\Stored Procedures\CreateOrganization.sql;
+beb62f5c-9508-57f8-9713-46e5e6ebf76e|Programmable Objects\Enterprise\Stored Procedures\CreateParty.sql;
+0c3e31c1-a6c1-5308-99b9-e95ac20a6114|Programmable Objects\Enterprise\Stored Procedures\CreatePartyRoleByRealPageId.sql;
+9887c488-4c2d-5eac-9f48-4e5ce0ff29b2|Programmable Objects\Enterprise\Stored Procedures\CreatePersonaConfiguration.sql;
+831d3f29-5c6d-5d0b-a571-ed9245ff8692|Programmable Objects\Enterprise\Stored Procedures\CreateProductBatch.sql;
+f1297b5e-5b80-530b-97d7-a06dcc76df79|Programmable Objects\Enterprise\Stored Procedures\CreateProductConfiguration.sql;
+8073c14c-4fa5-5c2a-856f-489b74d62d47|Programmable Objects\Enterprise\Stored Procedures\CreateProductConfigurationbyPersonaId.sql;
+22956541-7f84-50e5-805d-31afe98e4a1b|Programmable Objects\Enterprise\Stored Procedures\CreateProductSetting.sql;
+f2161cd2-7b5c-5287-89ed-ebeee80f8b72|Programmable Objects\Enterprise\Stored Procedures\CreateProductSettingType.sql;
+6a2d4cd7-4d49-5bab-ac8d-eacbee7c25b9|Programmable Objects\Enterprise\Stored Procedures\GetOrganization.sql;
+23695610-5dcd-587b-9e9d-a633f226a03a|Programmable Objects\Enterprise\Stored Procedures\GetOrganizationByBlueBookId.sql;
+d14b2ae7-24be-5003-baa7-4104673601aa|Programmable Objects\Enterprise\Stored Procedures\LinkOrganizationToOrganization.sql;
+4cca66fe-70e8-54c4-b1e2-434d3f5b1b98|Programmable Objects\Enterprise\Stored Procedures\LinkProductSettingToConfiguration.sql;
+4dba2b88-5243-5115-ba24-bdf299f24ab7|Programmable Objects\Enterprise\Stored Procedures\UpdateOrganization.sql;
+bccfaf35-f462-5f40-a2ae-1969155da3b3|Programmable Objects\Enterprise\Stored Procedures\UpdatePartyRoleByRealPageId.sql;
+08f901d3-012e-5320-951b-06c19a6030f3|Programmable Objects\Enterprise\Stored Procedures\UpdateProductBatch.sql;
+d9b6c423-99e0-5219-82a7-76de4d688af9|Programmable Objects\Ident\Stored Procedures\CreateIdentityProviderSetting.sql;
+a810e123-3fe3-51ca-9d62-25217fc909eb|Programmable Objects\Ident\Stored Procedures\CreateIdentityProviderSettingType.sql;
+283ab47d-def4-5251-b55d-045461dbb275|Programmable Objects\Ident\Stored Procedures\CreateIdentityProviderType.sql;
+7aeffc7c-c1e0-51d2-9433-4ea0d7ceea3d|Programmable Objects\Ident\Stored Procedures\CreatePasswordPolicy.sql;
+981d9eeb-8439-51a3-95eb-66e0b40cde24|Programmable Objects\Ident\Stored Procedures\CreateSamlUserAttribute.sql;
+f51c7e5a-8348-5dd4-8f30-f3955629e507|Programmable Objects\Ident\Stored Procedures\CreateSamlAttribute.sql;
+3362915c-9222-51b1-8320-dabf36b316d9|Programmable Objects\Ident\Stored Procedures\CreateSamlAttributeType.sql;
+e0fff713-0e87-57e5-bf98-7472a683752b|Programmable Objects\Ident\Stored Procedures\CreateUserLogin.sql;
+aba9058e-74e1-5037-b662-5141b1cab349|Programmable Objects\Ident\Stored Procedures\CreateUserSelectedSecurityQuestions.sql;
+b995ef05-8eb3-59c5-8131-077651ad31a6|Programmable Objects\Ident\Stored Procedures\LinkIdentityProviderSettingToContactMechanism.sql;
+1f19eaf4-cd17-5874-9d8b-fbbbbbcd4c1d|Programmable Objects\Ident\Stored Procedures\UpdatePasswordPolicy.sql;
+04331513-1be2-5c2f-a081-d87f958576b4|Programmable Objects\Ident\Stored Procedures\UpdateSamlUserAttribute.sql;
+ce26d508-b261-5e35-bb36-a645ae4422ee|Programmable Objects\Ident\Stored Procedures\UpdateUserLogin.sql;
+a31e83e4-ee5b-5b28-b70c-3062bdfec06a|Programmable Objects\Person\Stored Procedures\CreateContactMechanism.sql;
+6ecf27b4-841a-500a-a78c-556b51a77758|Programmable Objects\Person\Stored Procedures\CreateElectronicAddress.sql;
+5a4c6680-0f44-5760-aada-6d1b889f0ed6|Programmable Objects\Person\Stored Procedures\CreateGeographicBoundary.sql;
+7a45fc56-b23f-5153-989d-67c13c223f60|Programmable Objects\Person\Stored Procedures\CreatePerson.sql;
+fd4bce06-ecec-5434-9c4d-bf0a8556e7f1|Programmable Objects\Person\Stored Procedures\CreatePersona.sql;
+51277394-653d-5d96-b4ee-75b4ae81fce1|Programmable Objects\Person\Stored Procedures\CreatePersonaType.sql;
+8185f1a1-bab5-54e7-aac9-187d0d691e43|Programmable Objects\Person\Stored Procedures\CreateStreetAddress.sql;
+cb980b2f-7ec4-50cd-b2ef-13011febca38|Programmable Objects\Person\Stored Procedures\CreateTelecommunicationsNumber.sql;
+c98a3ac6-1a20-5ffe-b63b-b7036d1ec42f|Programmable Objects\Person\Stored Procedures\GetPartyRole.sql;
+5e60370d-b276-5076-8c45-97cf04fa4056|Programmable Objects\Person\Stored Procedures\LinkContactMechanismToParty.sql;
+28b71b3a-fe74-5b0f-8849-8c3b432bb5e1|Programmable Objects\Person\Stored Procedures\LinkGeographicBoundaryToContactMechanism.sql;
+6a1c4c73-3803-5336-9397-4de127222304|Programmable Objects\Person\Stored Procedures\LinkPersonToOrganization.sql;
+89218e8c-7810-503d-94b7-00b9af59d844|Programmable Objects\Person\Stored Procedures\LinkUsageTypeToPartyContactMechanism.sql;
+46da6def-f0ef-5dd5-910b-63c3aef6715f|Programmable Objects\Person\Stored Procedures\RemovePersona.sql;
+aa1a0b02-71cb-5033-a0c7-dbb75b59fea5|Programmable Objects\Person\Stored Procedures\SetPartyRole.sql;
+31a9e355-5183-5b02-b948-58dfbe08c60c|Programmable Objects\Person\Stored Procedures\UnlinkPersonToOrganization.sql;
+12546b02-8d3b-5ff8-b82d-15a9bd2ddd57|Programmable Objects\Person\Stored Procedures\UpdateContactMechanismUsageForParty.sql;
+b74749bb-1c9f-56c9-9722-e8610fc2abf1|Programmable Objects\Person\Stored Procedures\UpdatePerson.sql;
+54b56e42-bd81-5544-a645-c39a1144488e|Programmable Objects\Person\Stored Procedures\UpdatePersona.sql;
+a43a58c3-6e61-56f2-94ed-23d510d36c59|Programmable Objects\Person\Stored Procedures\UpdatePersonToOrganization.sql;
+</DeployChangesExecutionOrder>
+    <BaselineAllDeployChangesMigrations>True</BaselineAllDeployChangesMigrations>
+    <SyncToOfflineSchemaModel>True</SyncToOfflineSchemaModel>
+    <DeployOnceUseSemver>True</DeployOnceUseSemver>
+    <SemverInitialBaseline>True</SemverInitialBaseline>
+    <DeployChangesForProgrammableObjects>True</DeployChangesForProgrammableObjects>
+  </PropertyGroup>
+  <!-- READYROLL OFFLINE SCHEMA MODEL OPTIONS -->
+  <PropertyGroup>
+    <!--
+    <SyncToOfflineSchemaModel>True</SyncToOfflineSchemaModel>
+    <SyncToOfflineSchemaModelBySchema>True</SyncToOfflineSchemaModelBySchema>
+    <SyncToOfflineSchemaModelObjectTypes>Table;Assembly;Contract;Default;EventNotification;FullTextCatalog;FullTextStoplist;MessageType;PartitionFunction;PartitionScheme;Queue;ServiceBinding;Role;Route;Rule;Schema;SearchPropertyList;Service;Sequence;Synonym;User;UserDefinedType;XmlSchemaCollection</SyncToOfflineSchemaModelObjectTypes>
+    <SchemaModelSubFolder>Schema-Model</SchemaModelSubFolder>
+    -->
+  </PropertyGroup>
+  <!-- READYROLL PROGRAMMABLE OBJECT OPTIONS -->
+  <PropertyGroup>
+    <!--
+    <DeployChangesForProgrammableObjects>True</DeployChangesForProgrammableObjects>
+    <DeployChangesInitialImportDone>False</DeployChangesInitialImportDone>
+    <DeployChangesImportObjectTypes>StoredProcedure;UserDefinedFunction;View;Trigger;DatabaseDdlTrigger</DeployChangesImportObjectTypes>
+    <DeployChangesSubFolder>Deploy-Changes</DeployChangesSubFolder>
+    -->
+  </PropertyGroup>
+  <!-- READYROLL SCRIPT GENERATION OPTIONS -->
+  <PropertyGroup>
+    <!-- These properties might be set by the Developer -->
+    <!--
+    <SyncOptionIncludeDependentObjects>False</SyncOptionIncludeDependentObjects>
+    <SyncOptionIncludeExistenceChecks>False</SyncOptionIncludeExistenceChecks>
+    <SyncOptionUseDropCreateInsteadOfAlter>False</SyncOptionUseDropCreateInsteadOfAlter>
+    <SyncOptionDisableDdlTriggers>True</SyncOptionDisableDdlTriggers>
+    <SyncOptionCaseSensitiveObjectDefinition>False</SyncOptionCaseSensitiveObjectDefinition>
+
+    <SyncOptionIgnoreExtendedProperties>False</SyncOptionIgnoreExtendedProperties>
+    <SyncOptionIgnoreCommentsInBodies>False</SyncOptionIgnoreCommentsInBodies>
+    <SyncOptionIgnoreAnsiOptions>False</SyncOptionIgnoreAnsiOptions>
+    <SyncOptionIgnoreCollations>True</SyncOptionIgnoreCollations>
+    <SyncOptionIgnoreColumnsOrder>True</SyncOptionIgnoreColumnsOrder>
+    <SyncOptionIgnoreWhiteSpace>True</SyncOptionIgnoreWhiteSpace>
+    <SyncOptionIgnoreSynonymDatabaseAndServerName>True</SyncOptionIgnoreSynonymDatabaseAndServerName>
+    <SyncOptionIgnoretSQLt>True</SyncOptionIgnoretSQLt>
+    <SyncOptionIgnoreDmlTriggers>False</SyncOptionIgnoreDmlTriggers> 
+    <SyncOptionIgnoreInsteadOfTriggers>False</SyncOptionIgnoreInsteadOfTriggers>
+    <SyncOptionIgnoreBindings>False</SyncOptionIgnoreBindings>
+    <SyncOptionIgnoreQueueEventNotifications>False</SyncOptionIgnoreQueueEventNotifications>
+    <SyncOptionIgnoreSquareBrackets>False</SyncOptionIgnoreSquareBrackets>
+    <SyncOptionIgnoreWithElementOrder>True</SyncOptionIgnoreWithElementOrder>
+    <SyncOptionIgnoreWithEncryption>False</SyncOptionIgnoreWithEncryption>
+    -->
+    <!-- These properties might be set by the DBA -->
+    <!--
+    <SyncOptionIgnoreDataspaces>True</SyncOptionIgnoreDataspaces>
+    <SyncOptionIgnoreConstraintNotForReplicationAttribute>True</SyncOptionIgnoreConstraintNotForReplicationAttribute>
+    <SyncOptionIgnoreFillFactor>True</SyncOptionIgnoreFillFactor>
+    <SyncOptionIgnoreIndexLockAttributes>False</SyncOptionIgnoreIndexLockAttributes>
+    <SyncOptionIgnoreStatistics>True</SyncOptionIgnoreStatistics>
+    <SyncOptionIgnoreDataCompression>True</SyncOptionIgnoreDataCompression>
+    <SyncOptionIgnoreFullTextIndexing>False</SyncOptionIgnoreFullTextIndexing>
+    <SyncOptionIgnoreReplicationTriggers>True</SyncOptionIgnoreReplicationTriggers>
+    <SyncOptionIgnoreSchemaObjectAuthorization>False</SyncOptionIgnoreSchemaObjectAuthorization>
+    <SyncOptionIgnoreStatisticsNorecompute>False</SyncOptionIgnoreStatisticsNorecompute>
+    <SyncOptionConsiderNextFilegroupInPartitionSchemes>False</SyncOptionConsiderNextFilegroupInPartitionSchemes>
+    -->
+    <!-- Shared Developer/DBA options -->
+    <!--
+    <SyncOptionIgnoreIndexes>False</SyncOptionIgnoreIndexes>
+    <SyncOptionIgnorePermissions>False</SyncOptionIgnorePermissions>
+    <SyncOptionIgnoreConstraintWithNoCheckAttribute>True</SyncOptionIgnoreConstraintWithNoCheckAttribute>
+    <SyncOptionIgnoreNocheckAndWithNocheckAttributes>False</SyncOptionIgnoreNocheckAndWithNocheckAttributes>
+    <SyncOptionIgnoreIdentitySeedAndIncrement>False</SyncOptionIgnoreIdentitySeedAndIncrement>
+    <SyncOptionIgnoreUserProperties>True</SyncOptionIgnoreUserProperties>
+    <SyncOptionIgnoreUsersPermissionsAndRoleMemberships>False</SyncOptionIgnoreUsersPermissionsAndRoleMemberships>
+    <SyncOptionAddWithEncryption>False</SyncOptionAddWithEncryption>
+    <SyncOptionDecryptEncryptedObjects>True</SyncOptionDecryptEncryptedObjects>
+    <SyncOptionUseCompatibilityLevel>False</SyncOptionUseCompatibilityLevel>
+    -->
+    <!-- Data comparison/sync options -->
+    <!--
+    <SyncDataOptionDropKeysIndexesAndConstraints>False</SyncDataOptionDropKeysIndexesAndConstraints>
+    <SyncDataOptionDisableForeignKeys>False</SyncDataOptionDisableForeignKeys>
+    <SyncDataOptionIncludeTimestampColumns>False</SyncDataOptionIncludeTimestampColumns>
+    <SyncDataOptionCaseSensitiveObjectDefinition>True</SyncDataOptionCaseSensitiveObjectDefinition>
+    <SyncDataOptionForceBinaryCollation>True</SyncDataOptionForceBinaryCollation>
+    <SyncDataOptionTrimTrailingSpaces>False</SyncDataOptionTrimTrailingSpaces>
+    <SyncDataOptionDisableDmlTriggers>False</SyncDataOptionDisableDmlTriggers>
+    <SyncDataOptionDisableDdlTriggers>True</SyncDataOptionDisableDdlTriggers>
+    <SyncDataOptionDontIncludeCommentsInScript>False</SyncDataOptionDontIncludeCommentsInScript>
+    <SyncDataOptionReseedIdentityColumns>False</SyncDataOptionReseedIdentityColumns>
+    <SyncDataOptionSkipIntegrityChecksForForeignKeys>False</SyncDataOptionSkipIntegrityChecksForForeignKeys>
+    <SyncDataOptionTransportClrDataTypesAsBinary>False</SyncDataOptionTransportClrDataTypesAsBinary>
+    <SyncDataOptionCompressTemporaryFiles>False</SyncDataOptionCompressTemporaryFiles>
+    <SyncDataOptionTreatEmptyStringAsNull>False</SyncDataOptionTreatEmptyStringAsNull>
+    <SyncDataOptionUseChecksumComparison>False</SyncDataOptionUseChecksumComparison>
+    <SyncDataOptionUseMaxPrecisionForFloatComparison>False</SyncDataOptionUseMaxPrecisionForFloatComparison>
+    -->
+    <!-- Exclude specific objects from being scripted, by object type & object name (using regular expression for name) -->
+    <!--
+    <ExcludeObjectsFromImport>
+      Assembly=\[myschemaname\];
+      Credential=\[mycredential\];
+      DatabaseDdlTrigger=\[ddltriggername\];
+      Default=\[dbautil\]\.\[(.*?)\];
+      PartitionFunction=\[mypartitionfunction\];
+      PartitionScheme=\[mypartitionfunction\];
+      Role=\[myrole\];
+      Rule=\[dbautil\]\.\[(.*?)\];
+      Schema=\[dbautil\];
+      Sequence=\[dbautil\]\.\[(.*?)\];
+      StoredProcedure=\[dbautil\]\.\[(.*?)\];
+      Synonym=\[dbautil\]\.\[(.*?)\];
+      Table=\[dbautil\]\.\[(.*?)\];
+      User=\[myusername\];
+      UserDefinedDataType=\[dbautil\]\.\[(.*?)\];
+      UserDefinedFunction=\[dbautil\]\.\[(.*?)\];
+      View=\[dbautil\]\.\[(.*?)\];
+      XmlSchemaCollection=\[dbautil\]\.\[(.*?)\];
+
+      Contract=\[myservicebrokercontract\];
+      EventNotification=\[myservicebrokereventnotification\];
+      MessageType=\[myservicebrokermessagetype\];
+      Queue=\[myservicebrokerqueue\];
+      RemoteServiceBinding=\[myservicebrokerremotebinding\];
+      Route=\[myservicebrokerroute\];
+      Service=\[myservicebrokerservice\];
+
+    </ExcludeObjectsFromImport>
+    -->
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <!--Import the settings-->
+  <PropertyGroup>
+    <AppDataPath>$(LOCALAPPDATA)</AppDataPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(AppDataPath)==''">
+    <AppDataPath>$(APPDATA)</AppDataPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ReadyRollTargetsPath>$(AppDataPath)\Microsoft\VisualStudio\12.0Exp\Extensions\ReadyRoll\ReadyRoll SQL Server Database Projects\1.0\ReadyRoll.Data.Schema.SSDT.targets</ReadyRollTargetsPath>
+  </PropertyGroup>
+  <Import Condition="Exists('$(ReadyRollTargetsPath)')" Project="$(ReadyRollTargetsPath)" />
+  <Import Condition="!Exists('$(ReadyRollTargetsPath)')" Project="$(MSBuildExtensionsPath)\ReadyRoll\ReadyRoll.Data.Schema.SSDT.targets" />
+  <ItemGroup>
+    <Folder Include="Properties\" />
+    <Folder Include="Pre-Deployment\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Post-Deployment\" />
+    <Folder Include="Schema-Model\" />
+    <Folder Include="Schema-Model\Auth\" />
+    <Folder Include="Schema-Model\Auth\Tables\" />
+    <Folder Include="Schema-Model\dbo\" />
+    <Folder Include="Schema-Model\dbo\Tables\" />
+    <Folder Include="Schema-Model\dbo\Types\" />
+    <Folder Include="Schema-Model\dbo\Types\User-defined Data Types\" />
+    <Folder Include="Schema-Model\Enterprise\" />
+    <Folder Include="Schema-Model\Enterprise\Tables\" />
+    <Folder Include="Schema-Model\Ident\" />
+    <Folder Include="Schema-Model\Ident\Tables\" />
+    <Folder Include="Schema-Model\Person\" />
+    <Folder Include="Schema-Model\Person\Tables\" />
+    <Folder Include="Schema-Model\Security\" />
+    <Folder Include="Schema-Model\Security\Roles\" />
+    <Folder Include="Schema-Model\Security\Schemas\" />
+    <Folder Include="Schema-Model\Security\Users\" />
+    <Folder Include="Programmable Objects\" />
+    <Folder Include="Programmable Objects\Auth\" />
+    <Folder Include="Programmable Objects\Auth\Stored Procedures\" />
+    <Folder Include="Programmable Objects\Database Triggers\" />
+    <Folder Include="Programmable Objects\dbo\" />
+    <Folder Include="Programmable Objects\dbo\Stored Procedures\" />
+    <Folder Include="Programmable Objects\Enterprise\" />
+    <Folder Include="Programmable Objects\Enterprise\Stored Procedures\" />
+    <Folder Include="Programmable Objects\Ident\" />
+    <Folder Include="Programmable Objects\Ident\Stored Procedures\" />
+    <Folder Include="Programmable Objects\Person\" />
+    <Folder Include="Programmable Objects\Person\Stored Procedures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Pre-Deployment\01_Create_Database.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Post-Deployment\01_Finalize_Deployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrations\0001_20170727-1259_cford.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Schema-Model\Auth\Tables\Activity.sql" />
+    <None Include="Schema-Model\Auth\Tables\ActivityAttempts.sql" />
+    <None Include="Schema-Model\Auth\Tables\ActivityToken.sql" />
+    <None Include="Schema-Model\Auth\Tables\Certificates.sql" />
+    <None Include="Schema-Model\Auth\Tables\CertificatesLocationType.sql" />
+    <None Include="Schema-Model\Auth\Tables\CertificatesType.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientClaims.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientCorsOrigins.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientCustomGrantTypes.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientIdentityProviderRestrictions.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientPostLogoutRedirectUris.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientRedirectUris.sql" />
+    <None Include="Schema-Model\Auth\Tables\Clients.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientScopes.sql" />
+    <None Include="Schema-Model\Auth\Tables\ClientSecrets.sql" />
+    <None Include="Schema-Model\Auth\Tables\Consents.sql" />
+    <None Include="Schema-Model\Auth\Tables\Developer.sql" />
+    <None Include="Schema-Model\Auth\Tables\DeveloperClients.sql" />
+    <None Include="Schema-Model\Auth\Tables\PasswordHistory.sql" />
+    <None Include="Schema-Model\Auth\Tables\PasswordPolicy.sql" />
+    <None Include="Schema-Model\Auth\Tables\Portfolio.sql" />
+    <None Include="Schema-Model\Auth\Tables\PortfolioProduct.sql" />
+    <None Include="Schema-Model\Auth\Tables\PortfolioProductUser.sql" />
+    <None Include="Schema-Model\Auth\Tables\PortfolioProductUserClaims.sql" />
+    <None Include="Schema-Model\Auth\Tables\Product.sql" />
+    <None Include="Schema-Model\Auth\Tables\ProductSamlSettings.sql" />
+    <None Include="Schema-Model\Auth\Tables\ProviderPortfolio.sql" />
+    <None Include="Schema-Model\Auth\Tables\SamlAttribute.sql" />
+    <None Include="Schema-Model\Auth\Tables\SamlAttributeStatement.sql" />
+    <None Include="Schema-Model\Auth\Tables\ScopeClaims.sql" />
+    <None Include="Schema-Model\Auth\Tables\Scopes.sql" />
+    <None Include="Schema-Model\Auth\Tables\ScopeSecrets.sql" />
+    <None Include="Schema-Model\Auth\Tables\SecurityQuestion.sql" />
+    <None Include="Schema-Model\Auth\Tables\Tokens.sql" />
+    <None Include="Schema-Model\Auth\Tables\UserLockAcitvity.sql" />
+    <None Include="Schema-Model\Auth\Tables\UserProviderPortfolio.sql" />
+    <None Include="Schema-Model\Auth\Tables\Users.sql" />
+    <None Include="Schema-Model\Auth\Tables\UserSamlAttribute.sql" />
+    <None Include="Schema-Model\Auth\Tables\UserSecurityAnswer.sql" />
+    <None Include="Schema-Model\dbo\Tables\BuildVersion.sql" />
+    <None Include="Schema-Model\dbo\Tables\DatabaseLog.sql" />
+    <None Include="Schema-Model\dbo\Tables\ErrorLog.sql" />
+    <None Include="Schema-Model\dbo\Types\User-defined Data Types\Name.sql" />
+    <None Include="Schema-Model\dbo\Types\User-defined Data Types\Phone.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CESCommunicationEvent.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CommunicationEmailTemplate.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CommunicationEvent.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CommunicationEventEmail.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CommunicationEventPurposeType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CommunicationEventPurposeUsage.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CommunicationEventRole.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\CommunicationEventRoleType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\Configuration.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ContactMechanism.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ContactMechanismBoundary.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ContactMechanismType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ContactMechanismUsage.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ContactMechanismUsageType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ContactMechanismValidEmail.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ContactMechanismValidRole.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\DataImportApplication.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\DataImportMapping.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ElectronicAddress.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\GeographicBoundary.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\GeographicBoundaryType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\GlobalProductConfiguration.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\Organization.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\OrganizationProduct.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\Party.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\PartyContactMechanism.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\PartyRelationship.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\PartyRole.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\PersonaConfiguration.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\PersonaOrganization.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\Product.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ProductBatch.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ProductConfiguration.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ProductRelationship.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ProductSetting.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ProductSettingType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\ProductType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\RelationshipType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\RoleType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\StatusType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\StatusTypeCategory.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\StatusTypeCategoryClassification.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\StatusTypeCategoryType.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\StreetAddress.sql" />
+    <None Include="Schema-Model\Enterprise\Tables\TelecommunicationsNumber.sql" />
+    <None Include="Schema-Model\Ident\Tables\Activity.sql" />
+    <None Include="Schema-Model\Ident\Tables\ActivityAttempts.sql" />
+    <None Include="Schema-Model\Ident\Tables\ActivityToken.sql" />
+    <None Include="Schema-Model\Ident\Tables\ContactMechanismIdentity.sql" />
+    <None Include="Schema-Model\Ident\Tables\IdentityProviderSetting.sql" />
+    <None Include="Schema-Model\Ident\Tables\IdentityProviderSettingType.sql" />
+    <None Include="Schema-Model\Ident\Tables\IdentityProviderType.sql" />
+    <None Include="Schema-Model\Ident\Tables\PasswordHistory.sql" />
+    <None Include="Schema-Model\Ident\Tables\PasswordPolicy.sql" />
+    <None Include="Schema-Model\Ident\Tables\SamlAttribute.sql" />
+    <None Include="Schema-Model\Ident\Tables\SamlAttributeStatement.sql" />
+    <None Include="Schema-Model\Ident\Tables\SamlAttributeType.sql" />
+    <None Include="Schema-Model\Ident\Tables\SamlProductSettings.sql" />
+    <None Include="Schema-Model\Ident\Tables\SamlUserAttribute.sql" />
+    <None Include="Schema-Model\Ident\Tables\SecurityQuestion.sql" />
+    <None Include="Schema-Model\Ident\Tables\UserCurrentStatus.sql" />
+    <None Include="Schema-Model\Ident\Tables\UserLogin.sql" />
+    <None Include="Schema-Model\Ident\Tables\UserSecurityAnswer.sql" />
+    <None Include="Schema-Model\Person\Tables\ActivePersona.sql" />
+    <None Include="Schema-Model\Person\Tables\Person.sql" />
+    <None Include="Schema-Model\Person\Tables\Persona.sql" />
+    <None Include="Schema-Model\Person\Tables\PersonaEnvironmentType.sql" />
+    <None Include="Schema-Model\Person\Tables\PersonaType.sql" />
+    <None Include="Schema-Model\Security\Roles\db_datareader.sql" />
+    <None Include="Schema-Model\Security\Roles\db_datawriter.sql" />
+    <None Include="Schema-Model\Security\Schemas\Auth.sql" />
+    <None Include="Schema-Model\Security\Schemas\Config.sql" />
+    <None Include="Schema-Model\Security\Schemas\Enterprise.sql" />
+    <None Include="Schema-Model\Security\Schemas\Ident.sql" />
+    <None Include="Schema-Model\Security\Schemas\Person.sql" />
+    <None Include="Schema-Model\Security\Users\IdentityServer.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Programmable Objects\Auth\Stored Procedures\CreateActivityToken.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\CreatePasswordPolicy.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\CreateSecurityQuestionAnswers.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\DeleteConsentBySubjectAndClient.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\DeleteTokenByKey.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\DeleteTokenBySubjectAndClient.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetActivityAttemptExceeds.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetActivityToken.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAllOrganizationClientUserClaims.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAllPortfolioProductUser.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAllPortfolioProductUserClaims.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAllScopeClaims.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAllScopes.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAllScopeSecrets.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAllSecurityQuestions.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetAuthenticateUser.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetClientByClientCode.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetClientDetails.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetClientRedirectUrisByClientId.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetClientScopesByClientId.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetClientSecretsByClientId.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetConsentBySubjectAndClient.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetConsentsBySubject.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetEnterpriseUserLockActivities.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetEnterpriseUserStatus.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetPasswordHistory.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetPasswordPolicy.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetProducts.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetProductSamlDetailsByPortfolioProductUserId.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetProductSamlDetailsByUserId.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetProductSamlSettings.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetProviderConfigurationByProvider.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetToken.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetTokensBySubject.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetUserById.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetUserByLoginId.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetUserByLoginIdAndProvider.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetUserProductDetailsByUserId.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetUsers.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\GetUserSecurityQuestionAnswer.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\InsertConsent.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\InsertToken.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\ResetEnterpriseUserCredential.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\UnlockUsers.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\UpdateActivityAttempt.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\UpdateActivityTokenFlag.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\UpdateConsent.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\UpdateEnterpriseUserCredential.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\UpdatePasswordPolicy.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\UpdateTokenExpiry.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\usp_GetClientForDeveloperLogin.sql" />
+    <None Include="Programmable Objects\Auth\Stored Procedures\VerifyPasswordHistory.sql" />
+    <None Include="Programmable Objects\Database Triggers\ddlDatabaseTriggerLog.sql" />
+    <None Include="Programmable Objects\dbo\Stored Procedures\CreateSamlUserAttribute.sql" />
+    <None Include="Programmable Objects\dbo\Stored Procedures\ListPersonContactMethods.sql" />
+    <None Include="Programmable Objects\dbo\Stored Procedures\LogError.sql" />
+    <None Include="Programmable Objects\dbo\Stored Procedures\PrintError.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreateOrganization.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreateParty.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreatePartyRoleByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreatePersonaConfiguration.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreateProductBatch.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreateProductConfiguration.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreateProductConfigurationbyPersonaId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreateProductSetting.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\CreateProductSettingType.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\GetBlueBookIdByOrganization.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\GetOrganization.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\GetOrganizationByBlueBookId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\GetPartyRelationshipByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\GetPartyRoleByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\GetProductSettingType.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\LinkEmailTemplateToValidEmail.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\LinkGlobalConfigurationToProduct.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\LinkOrganizationToOrganization.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\LinkProductConfigurationToPersona.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\LinkProductSettingToConfiguration.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListCommunicationEmailTemplates.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListCommunicationEventPurposeTypes.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListCommunicationEventPurposeUsages.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListCommunicationEventRoleTypes.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListContactMechanismTypes.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListContactMechanismUsageType.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListContactMechanismValidEmails.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListGlobalSettingsForProduct.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListOrganizationByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductBatch.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductBatchByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductFamilies.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductsByOrganization.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductsByPersonaId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductsByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductSettingsByOrganization.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductSettingsByPersona.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductSettingsByPersonaId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductSettingType.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductSolutions.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListProductTypes.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListRelationshipType.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListResourcesByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\ListRoleType.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\MapBlueBookIdtoPartyId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\UpdateOrganization.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\UpdatePartyRoleByRealPageId.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\UpdateProductBatch.sql" />
+    <None Include="Programmable Objects\Enterprise\Stored Procedures\UpdateProductSettingByPersona.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateActivityToken.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateIdentityProviderSetting.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateIdentityProviderSettingType.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateIdentityProviderType.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreatePasswordPolicy.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateSamlAttribute.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateSamlAttributeType.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateSamlUserAttribute.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateSecurityQuestionAnswers.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateUserLogin.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\CreateUserSelectedSecurityQuestions.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetActivityAttemptExceeds.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetActivityToken.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetAllSecurityQuestions.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetIdentityProviderTypeByLoginName.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetPasswordHistory.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetPasswordPolicy.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetProductSamlDetails.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetProductSamlSettings.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetProductsByPersonaId.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetUserCurrentStatuses.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetUserLogin.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetUserLoginByName.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetUserSecurityQuestionAnswer.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetUserSelectedSecurityQuestions.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\GetUserStatuses.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\LinkIdentityProviderSettingToContactMechanism.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\ListActivity.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\ListIdentityProviderByIdentityProviderTypeId.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\ListIdentityProviderByIdentityProviderTypeName.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\ListUserSecurityQuestionAnswerByRealPageId.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\ProviderConfigurationByName.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\RemoveSamlUserAttributeByProductId.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\ResetEnterpriseUserCredential.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\UpdateActivityAttempt.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\UpdateEnterpriseUserCredential.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\UpdatePasswordPolicy.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\UpdateSamlUserAttribute.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\UpdateUserLogin.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\UpdateUserStatus.sql" />
+    <None Include="Programmable Objects\Ident\Stored Procedures\VerifyPasswordHistory.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreateContactMechanism.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreateElectronicAddress.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreateGeographicBoundary.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreatePerson.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreatePersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreatePersonaType.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreateStreetAddress.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\CreateTelecommunicationsNumber.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\GetActivePersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\GetDefaultPersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\GetPartyRole.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\GetPerson.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\GetPersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\LinkContactMechanismToParty.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\LinkGeographicBoundaryToContactMechanism.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\LinkPersonToOrganization.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\LinkUsageTypeToPartyContactMechanism.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListContactMechanismsForPerson.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListEmailsForPerson.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListPersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListPersonaEnvironmentType.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListPersons.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListPostalAddressesForPerson.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListPreferredContactMethods.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\ListTelecommunicationNumbersForPerson.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\RemovePersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\SetPartyRole.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\UnlinkPersonToOrganization.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\UpdateActivePersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\UpdateContactMechanismUsageForParty.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\UpdatePerson.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\UpdatePersona.sql" />
+    <None Include="Programmable Objects\Person\Stored Procedures\UpdatePersonToOrganization.sql" />
+  </ItemGroup>
+</Project>

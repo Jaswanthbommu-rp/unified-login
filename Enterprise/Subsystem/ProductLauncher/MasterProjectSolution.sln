@@ -1,0 +1,180 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.LandingAPI", "Service\LandingAPI\Service.LandingAPI.csproj", "{6579D576-A2BB-441D-A638-8DD5E39DB642}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedObjects", "Service\SharedObjects\SharedObjects.csproj", "{941E5338-B2C7-41FD-BAD5-A34A8E732E19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "..\..\Foundation\DataAccess\DataAccess.csproj", "{255A94DC-A434-47CC-A472-E162EBDE6BCE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity", "Web\IdentityServer\Identity\Identity.csproj", "{52A9A9DB-2C3A-449E-8413-578AEFE5D509}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityHelper", "Web\IdentityServer\IdentityHelper\IdentityHelper.csproj", "{86748C72-89F8-438D-81D7-419007606978}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Landing", "Web\Landing\Landing.csproj", "{3046ACE6-862F-49F3-9D1A-C6C6831540B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.Core", "..\..\Foundation\Audit\Audit.Core\Audit.Core.csproj", "{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.MvcWeb", "..\..\Foundation\Audit\Audit.MvcWeb\Audit.MvcWeb.csproj", "{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.WebApi", "..\..\Foundation\Audit\Audit.WebApi\Audit.WebApi.csproj", "{FFAD1EF8-C442-499B-9959-8F8D43A84515}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LandingAPI.Test", "Service\LandingAPI\LandingAPI.Test\LandingAPI.Test.csproj", "{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Component.Landing", "Component\Landing\Component.Landing.csproj", "{5794A497-56D2-4B0C-A168-D0F75BB21FF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.LandingAPIEnterprise", "Service\LandingAPIEnterprise\Service.LandingAPIEnterprise.csproj", "{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Fortify|Any CPU = Fortify|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6579D576-A2BB-441D-A638-8DD5E39DB642}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6579D576-A2BB-441D-A638-8DD5E39DB642}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6579D576-A2BB-441D-A638-8DD5E39DB642}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{6579D576-A2BB-441D-A638-8DD5E39DB642}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{6579D576-A2BB-441D-A638-8DD5E39DB642}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6579D576-A2BB-441D-A638-8DD5E39DB642}.Release|Any CPU.Build.0 = Release|Any CPU
+		{941E5338-B2C7-41FD-BAD5-A34A8E732E19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{941E5338-B2C7-41FD-BAD5-A34A8E732E19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{941E5338-B2C7-41FD-BAD5-A34A8E732E19}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{941E5338-B2C7-41FD-BAD5-A34A8E732E19}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{941E5338-B2C7-41FD-BAD5-A34A8E732E19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{941E5338-B2C7-41FD-BAD5-A34A8E732E19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86748C72-89F8-438D-81D7-419007606978}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86748C72-89F8-438D-81D7-419007606978}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86748C72-89F8-438D-81D7-419007606978}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{86748C72-89F8-438D-81D7-419007606978}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{86748C72-89F8-438D-81D7-419007606978}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86748C72-89F8-438D-81D7-419007606978}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3046ACE6-862F-49F3-9D1A-C6C6831540B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3046ACE6-862F-49F3-9D1A-C6C6831540B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3046ACE6-862F-49F3-9D1A-C6C6831540B4}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{3046ACE6-862F-49F3-9D1A-C6C6831540B4}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{3046ACE6-862F-49F3-9D1A-C6C6831540B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3046ACE6-862F-49F3-9D1A-C6C6831540B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
+		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4313EFCC-954B-41B3-A231-ED429A7D2454}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 12
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccProjectUniqueName0 = Service\\SharedObjects\\SharedObjects.csproj
+		SccProjectName0 = Service/SharedObjects
+		SccAuxPath0 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath0 = Service\\SharedObjects
+		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName1 = ..\\..\\Foundation\\DataAccess\\DataAccess.csproj
+		SccProjectName1 = ../../Foundation/DataAccess
+		SccAuxPath1 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath1 = ..\\..\\Foundation\\DataAccess
+		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName2 = Web\\IdentityServer\\Identity\\Identity.csproj
+		SccProjectName2 = Web/IdentityServer/Identity
+		SccAuxPath2 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath2 = Web\\IdentityServer\\Identity
+		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName3 = Web\\IdentityServer\\IdentityHelper\\IdentityHelper.csproj
+		SccProjectName3 = Web/IdentityServer/IdentityHelper
+		SccAuxPath3 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath3 = Web\\IdentityServer\\IdentityHelper
+		SccProvider3 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName4 = Web\\Landing\\Landing.csproj
+		SccProjectName4 = Web/Landing
+		SccAuxPath4 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath4 = Web\\Landing
+		SccProvider4 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName5 = ..\\..\\Foundation\\Audit\\Audit.Core\\Audit.Core.csproj
+		SccProjectName5 = ../../Foundation/Audit/Audit.Core
+		SccAuxPath5 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath5 = ..\\..\\Foundation\\Audit\\Audit.Core
+		SccProvider5 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName6 = ..\\..\\Foundation\\Audit\\Audit.MvcWeb\\Audit.MvcWeb.csproj
+		SccProjectName6 = ../../Foundation/Audit/Audit.MvcWeb
+		SccAuxPath6 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath6 = ..\\..\\Foundation\\Audit\\Audit.MvcWeb
+		SccProvider6 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName7 = ..\\..\\Foundation\\Audit\\Audit.WebApi\\Audit.WebApi.csproj
+		SccProjectName7 = ../../Foundation/Audit/Audit.WebApi
+		SccAuxPath7 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath7 = ..\\..\\Foundation\\Audit\\Audit.WebApi
+		SccProvider7 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName8 = Service\\LandingAPI\\LandingAPI.Test\\LandingAPI.Test.csproj
+		SccProjectName8 = Service/LandingAPI/LandingAPI.Test
+		SccAuxPath8 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath8 = Service\\LandingAPI\\LandingAPI.Test
+		SccProvider8 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName9 = Service\\LandingAPI\\Service.LandingAPI.csproj
+		SccProjectName9 = Service/LandingAPI
+		SccAuxPath9 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath9 = Service\\LandingAPI
+		SccProvider9 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName10 = Component\\Landing\\Component.Landing.csproj
+		SccProjectName10 = Component/Landing
+		SccAuxPath10 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath10 = Component\\Landing
+		SccProvider10 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName11 = Service\\LandingAPIEnterprise\\Service.LandingAPIEnterprise.csproj
+		SccProjectName11 = Service/LandingAPIEnterprise
+		SccAuxPath11 = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath11 = Service\\LandingAPIEnterprise
+		SccProvider11 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+	EndGlobalSection
+EndGlobal

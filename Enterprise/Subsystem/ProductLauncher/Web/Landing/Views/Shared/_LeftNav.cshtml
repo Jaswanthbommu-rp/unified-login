@@ -1,0 +1,76 @@
+﻿<!-- MOVE THE BELOW CODE TO THE LEFT NAV INCLUDE -->
+<!-- LEFT NAVIGATION RAUL 2.0 -->
+<nav id="raul-left-navigation" class="raul-left-navigation raul-left-navigation-light">
+    @{
+        var active = "selected";
+        var notactive = "";
+    }
+    <ul id="raul-left-navigation-items" class="raul-left-navigation-items">
+        <li class="hidden" data-right="Dashboard">
+            <a class="raul-left-navigation-item no-subitems
+                    @if (Request.Path == "/home/" || Request.Path == "/home/dashboard") { @active ; } else { @notactive }" href="/home/">
+                <i class="raul-left-navigation-item-icon fa fa-home"></i>
+                <span class="raul-left-navigation-item-display">
+                    Home
+                </span>
+            </a>
+        </li>
+        @*<li>
+            <a class="raul-left-navigation-item no-subitems  @if (Request.Path == "/companies") { @active ; } else { @notactive } " href="/companies">
+                <i class="raul-left-navigation-item-icon fa fa-university"></i>
+                <span class="raul-left-navigation-item-display">Companies</span>
+            </a>
+        </li>
+        <li>
+            <a class="raul-left-navigation-item no-subitems  @if (Request.Path == "/properties") { @active ; } else { @notactive }" href="/properties">
+                <i class="raul-left-navigation-item-icon fa fa-building"></i>
+                <span class="raul-left-navigation-item-display">Properties</span>
+            </a>
+        </li>
+        <li>
+            <a class="raul-left-navigation-item no-subitems @if (Request.Path == "/products") { @active ; } else { @notactive } " href="/#/products">
+                <i class="raul-left-navigation-item-icon fa rp-icon-grid-2"></i>
+                <span class="raul-left-navigation-item-display">Products & Services</span>
+            </a>
+        </li>*@
+
+        <li class="hidden" data-right="People">
+            <span class="raul-left-navigation-item has-subitems">
+                <i class="raul-left-navigation-item-arrow fa fa-angle-down"></i>
+                <i class="raul-left-navigation-item-icon fa fa-users"></i>
+                <span class="raul-left-navigation-item-display">People</span>
+            </span>
+
+            <ul class="raul-left-navigation-subitems">
+                <li class="hidden" data-right="People">
+                    <a class="raul-left-navigation-subitem" href="/home/#/people/users">
+                        <span class="raul-left-navigation-item-display">Users</span>
+                    </a>
+                </li>
+
+                <li class="hidden" data-right="Activity Log">
+                    <a class="raul-left-navigation-subitem" href="/home/#/people/activity-log">
+                        <span class="raul-left-navigation-item-display">User Activity Log</span>
+                    </a>
+                </li>
+            </ul>
+
+        <li class="hidden" data-right="Roles And Rights">
+            <a class="raul-left-navigation-item no-subitems @if (Request.Path == "/home/roles-rights") { @active ; } else { @notactive } " href="/home/#/roles-and-rights/roles">
+                <i class="raul-left-navigation-item-icon fa fa-key"></i>
+                <span class="raul-left-navigation-item-display">Roles & Rights</span>
+            </a>
+        </li>
+
+        <li class="hidden" data-right="Settings">
+            <a class="raul-left-navigation-item no-subitems settings-gear @if (Request.Path.StartsWith("/home/setting") ) { @active ; } else { @notactive }  " href="/home/setting">
+                <i class="raul-left-navigation-item-icon fa fa-gear"></i>
+                <span class="raul-left-navigation-item-display">Settings</span>
+            </a>
+        </li>
+
+    </ul>
+</nav>
+
+
+

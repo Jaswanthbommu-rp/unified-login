@@ -1,0 +1,318 @@
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product
+{
+	/// <summary>
+	/// Used to store information about a property
+	/// </summary>
+	public class ProductProperty : IProductProperty
+    {
+        /// <summary>
+        /// The id of the property in the product
+        /// </summary>
+        public string ID { get; set; }
+        /// <summary>
+        /// The name of the property in the product
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// The first street address of the property in the product
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Street1 { get; set; }
+        /// <summary>
+        /// The second street address of the property in the product
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Street2 { get; set; }
+        /// <summary>
+        /// The city where the property is located
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string City { get; set; }
+        /// <summary>
+        /// The state where the property is located
+        /// </summary>
+        public string State { get; set; }
+        /// <summary>
+        /// The zip code where the property is located
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Zip { get; set; }
+        /// <summary>
+        /// Is the property assigned to the users
+        /// </summary>
+        public bool IsAssigned { get; set; }
+        /// <summary>
+        /// Is the property disabled to the users
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? disableSelection { get; set; } = false;
+	    /// <summary>
+	    /// Alias for the property
+	    /// </summary>
+	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+	    public string Alias { get; set; }
+
+		#region Examples
+		/// <summary>
+		/// Used to document examples of the Property Model webapi result
+		/// </summary>
+		[ExcludeFromCodeCoverage]
+        public class PropertyExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Property example</returns>
+            public object GetExamples()
+            {
+                IList<ProductProperty> list = new List<ProductProperty>();
+                ProductProperty example = new ProductProperty()
+                {
+                    ID = "1234567",
+                    Name = "Test Property",
+                    Street1 = "Street 1",
+                    Street2 = "Street 2",
+                    City = "Some City",
+                    State = "Some State",
+                    Zip = "12345",
+                    IsAssigned = true
+                };
+                list.Add(example);
+                ListResponse output = new ListResponse()
+                {
+                    Records = list.Cast<object>().ToList(),
+                    TotalRows = 1,
+                    RowsPerPage = 1000,
+                    TotalPages = 1,
+                };
+                return output;
+            }
+        }
+
+	    /// <summary>
+	    /// Used to document examples of the Property Model webapi result
+	    /// </summary>
+	    [ExcludeFromCodeCoverage]
+	    public class PropertySimpleExample : IProvideExamples
+	    {
+		    /// <summary>
+		    /// Example object data used by Swagger to document the output of the webapi method
+		    /// </summary>
+		    /// <returns>Property example</returns>
+		    public object GetExamples()
+		    {
+			    IList<ProductProperty> list = new List<ProductProperty>();
+			    ProductProperty example = new ProductProperty()
+			    {
+				    ID = "123",
+				    Name = "Test Property",
+				    IsAssigned = true
+			    };
+			    list.Add(example);
+			    ListResponse output = new ListResponse()
+			    {
+				    Records = list.Cast<object>().ToList(),
+				    TotalRows = 1,
+				    RowsPerPage = 1000,
+				    TotalPages = 1,
+			    };
+			    return output;
+		    }
+	    }
+
+        /// <summary>
+        /// Used to document examples of the Property Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class GetOpsAssetsResponse : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Property example</returns>
+            public object GetExamples()
+            {
+                IList<Portfolio> portfolioList = new List<Portfolio>()
+                {
+                    new Portfolio()
+                    {
+                      ID = "1321743",
+                      Name = "Archstone Lexington",
+                      Code = "TX527",
+                      Status = "active",
+                      ParentAssetId = null,
+                      AssetType = null,
+                      IsAssigned = false
+                    },
+                    new Portfolio()
+                    {
+                      ID = "1322948",
+                      Name = "Archstone Redmond Lakeview",
+                      Code = "WA539",
+                      Status = "active",
+                      ParentAssetId = null,
+                      AssetType = null,
+                      IsAssigned = false
+                    }
+                };
+                ListResponse listResponse = new ListResponse()
+                {
+                    Records = portfolioList.Cast<object>().ToList(),
+                    TotalRows = portfolioList.Count,
+                    RowsPerPage = portfolioList.Count,
+                    TotalPages = 1,
+                    ErrorReason = string.Empty,
+                    IsError = false
+                };
+                return listResponse;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the Property Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class GetOpsAssetGroupResponse : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Property example</returns>
+            public object GetExamples()
+            {
+                IList<AssetGroup> assetGroupList = new List<AssetGroup>()
+                {
+                    new AssetGroup()
+                    {
+                      ID = "19984",
+                      Name = "AVA Back Bay fna Avalon Prudential Center III",
+                      Code = "MA040",
+                      Description = string.Empty,
+                      Status = "active",
+                      GroupType = "property",
+                      AssetID = "1316308",
+                      IsAssigned = false
+                    },
+                    new AssetGroup()
+                    {
+                      ID = "19607",
+                      Name = "AVA Ballard",
+                      Code = "WA023",
+                      Description = string.Empty,
+                      Status = "active",
+                      GroupType = "property",
+                      AssetID = "1307920",
+                      IsAssigned = false
+                    }
+                };
+                ListResponse listResponse = new ListResponse()
+                {
+                    Records = assetGroupList.Cast<object>().ToList(),
+                    TotalRows = assetGroupList.Count,
+                    RowsPerPage = assetGroupList.Count,
+                    TotalPages = 1,
+                    ErrorReason = string.Empty,
+                    IsError = false
+                };
+                return listResponse;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the Property Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class CreateOpsAssetGroupResponse : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Property example</returns>
+            public object GetExamples()
+            {
+                IList<AssetGroup> assetGroupList = new List<AssetGroup>()
+                {
+                    new AssetGroup()
+                    {
+                        ID = "19984",
+                        Name = "AVA Back Bay fna Avalon Prudential Center III"
+                    }
+                };
+                ListResponse listResponse = new ListResponse()
+                {
+                    Records = assetGroupList.Cast<object>().ToList(),
+                    TotalRows = assetGroupList.Count,
+                    RowsPerPage = assetGroupList.Count,
+                    TotalPages = 1,
+                    ErrorReason = string.Empty,
+                    IsError = false
+                };
+                return listResponse;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the Property Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class UpdateOpsAssetGroupResponse : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Property example</returns>
+            public object GetExamples()
+            {
+                IList<AssetGroup> assetGroupList = new List<AssetGroup>()
+                {
+                    new AssetGroup()
+                    {
+                        ID = "19984",
+                        Name = "AVA Back Bay fna Avalon Prudential Center III",
+                        Code = "MA040",
+                        Description = string.Empty,
+                        Status = "active",
+                        GroupType = "property",
+                        AssetID = "1316308",
+                        IsAssigned = false,
+                        property_list = new List<Portfolio>()
+                        {
+                            new Portfolio()
+                            {
+                                ID = "1316308",
+                                Name = "AVA Back Bay fna Avalon Prudential Center III",
+                                Code = "MA040",
+                                Status = "active",
+                                ParentAssetId = null,
+                                AssetType = new AssetType()
+                                {
+                                    Id = "2367",
+                                    Name = "Property",
+                                    SystemName = "Property"
+                                }
+                            }
+                        }
+                    }
+                };
+                ListResponse listResponse = new ListResponse()
+                {
+                    Records = assetGroupList.Cast<object>().ToList(),
+                    TotalRows = assetGroupList.Count,
+                    RowsPerPage = assetGroupList.Count,
+                    TotalPages = 1,
+                    ErrorReason = string.Empty,
+                    IsError = false
+                };
+                return listResponse;
+            }
+        }
+        #endregion
+    }
+}

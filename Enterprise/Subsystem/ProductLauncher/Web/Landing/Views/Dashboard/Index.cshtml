@@ -1,0 +1,24 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutJquery.cshtml";
+}
+
+@Html.Partial("~/Views/Shared/_BreadCrumbs.cshtml")
+
+<main id="raul-page-container" class="raul-page-container">
+
+    <div class="contentWrapper background-offwhite p-a-md">
+
+        Dashboard...
+    </div>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var coreUrl = 'Assets/build/js/core.js';
+        var coreScript = document.createElement('script');
+        coreScript.src = coreUrl;
+        document.body.appendChild(coreScript);
+    });
+
+</script>
+

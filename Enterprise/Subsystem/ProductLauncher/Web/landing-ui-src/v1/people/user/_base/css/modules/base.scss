@@ -1,0 +1,27 @@
+.manage-user-wrapper {
+	padding-bottom: 150px;
+
+	.actions {
+		.btn {
+			margin-top: 10px;
+			
+			&-wrapper {
+				float: right;
+			}
+		}
+
+		.cancel .btn {
+			padding-top: 10px;
+		}
+	}
+
+	.md-check > i {
+		&:before {
+			border: 1px solid $ash-gray;
+		}
+		&:after {
+			border-color: $white;
+		}
+	}
+
+}

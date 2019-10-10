@@ -1,0 +1,108 @@
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
+{
+	/// <summary>
+	/// Security Settings Repository
+	/// </summary>
+	public class SecuritySettingsRepository : BaseRepository, ISecuritySettingsRepository
+	{
+		#region Constructor
+		/// <summary>
+		/// Security Settings base Constructor
+		/// </summary>
+		public SecuritySettingsRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+		{
+		}
+
+        public SecuritySettingsRepository(IRepository repository) : base(repository)
+        {
+
+        }
+		#endregion
+
+		#region public Security Settings methods
+		/// <summary>
+		/// Get Security Settings (Password and Activity Configuration Security Settings)
+		/// </summary>
+		/// <param name="bookMasterId">Book MasterId</param>
+		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <returns>Security Settings List objects (KeyValue pairs)</returns>
+		public IList<Setting> GetSecuritySettings(long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+		{
+			dynamic param = new
+			{
+				SourceId = bookMasterId,
+				DataImportApplicationId = bookMasterTypeId
+			};
+
+			using (var repository = GetRepository())
+			{
+				return repository.GetMany<Setting>(StoredProcNameConstants.SP_GetSecuritySetting, param);
+			}
+		}
+
+		/// <summary>
+		/// Update Security Settings (Password and Activity Configuration Security Settings)
+		/// </summary>
+		/// <param name="settings">Security Settings (Password and Activity Configuration Security Settings) object of the parameter values</param>
+		/// <param name="bookMasterId">BlackBookId MasterBook Id</param>
+		/// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
+		/// <returns>Repository response object</returns>
+		public RepositoryResponse UpdateSecuritySettings(IList<Setting> settings, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+		{
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+			repositoryResponse.Id = 0;
+
+			using (var repository = GetRepository())
+			{
+				repository.UnitOfWork.BeginTransaction();
+				try
+				{
+					dynamic param;
+					if (settings != null)
+					{
+							string jsonSecuritySettings = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
+							param = new
+							{
+								SourceId = bookMasterId,
+								DataImportApplicationId = bookMasterTypeId,
+								JsonSecuritySettings = jsonSecuritySettings
+							};
+							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateSecuritySetting, param);
+							if (repositoryResponse.Id == 0)
+							{
+								repositoryResponse.ErrorMessage = $"Update security settings Error: {repositoryResponse.ErrorMessage}.";
+							}
+					}
+				}
+				catch (Exception exception)
+				{
+					repositoryResponse.Id = 0;
+					repositoryResponse.ErrorMessage = "Update Security Settings Error: " + exception.Message;
+				}
+				finally
+				{
+					if (repositoryResponse.ErrorMessage.Length == 0)
+					{
+						//Commit and end transaction.
+						repository.UnitOfWork.Commit();
+					}
+					else
+					{
+						//Rollback transaction and dispose it.
+						repository.UnitOfWork.Rollback();
+					}
+				}
+				return repositoryResponse;
+			}
+		}
+		#endregion
+	}
+}

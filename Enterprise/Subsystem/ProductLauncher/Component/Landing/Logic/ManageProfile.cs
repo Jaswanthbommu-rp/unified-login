@@ -1,0 +1,243 @@
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
+{
+    /// <summary>
+    /// Manage Profile repository calls
+    /// </summary>
+    public class ManageProfile : IManageProfile
+    {
+		#region Private Variables
+		IProfileRepository _profileRepository;
+		IProductRepository _productRepository;
+		IManagePersona _personaLogic;
+        IManagePerson _personLogic;
+        IManageUserLogin _userLoginLogic;
+        IManageOrganization _organizationLogic;
+        IManagePartyRelationship _partyRelationshipLogic;
+        IManageContactMechanism _contactMechanismLogic;
+        IManagePartyRole _partyRoleLogic;
+		int? _parentPartyRoleTypeId = null;
+	    private DefaultUserClaim _userClaim;
+
+		#endregion
+
+		#region Constructors
+		/// <summary>
+		/// ManageProfile Constructor
+		/// </summary>
+		/// <param name="profileRepository">Profile Repository</param>
+		/// <param name="productRepository">Product Repository</param>
+		/// <param name="personaLogic">Persona Logic</param>
+		/// <param name="personLogic">Person Logic</param>
+		/// <param name="userLoginLogic">UserLogin Logic</param>
+		/// <param name="organizationLogic">Organization Logic</param>
+		/// <param name="partyRelationshipLogic">PartyRelationship Logic</param>
+		/// <param name="contactMechanismLogic">Contact Mechanism Logic</param>
+		/// <param name="partyRoleLogic">Party Role Logic</param>
+		/// <param name="userClaim">User claims</param>
+		public ManageProfile(IProfileRepository profileRepository, IProductRepository productRepository, IManagePersona personaLogic, IManagePerson personLogic, IManageUserLogin userLoginLogic, IManageOrganization organizationLogic, IManagePartyRelationship partyRelationshipLogic, IManageContactMechanism contactMechanismLogic, IManagePartyRole partyRoleLogic, DefaultUserClaim userClaim)
+        {
+            _profileRepository = profileRepository;
+			_productRepository = productRepository;
+			_personaLogic = personaLogic;
+            _personLogic = personLogic;
+            _userLoginLogic = userLoginLogic;
+            _organizationLogic = organizationLogic;
+            _partyRelationshipLogic = partyRelationshipLogic;
+            _contactMechanismLogic = contactMechanismLogic;
+			_userClaim = userClaim;
+		}
+
+	    /// <summary>
+	    /// Create a basic instance of the ManageProfile Controller class
+	    /// </summary>
+	    /// <param name="userClaim">Information about the user</param>
+	    public ManageProfile(DefaultUserClaim userClaim)
+	    {
+		    _profileRepository = new ProfileRepository(userClaim);
+			_productRepository = new ProductRepository(userClaim);
+		    _personaLogic = new ManagePersona();
+		    _personLogic = new ManagePerson();
+		    _userLoginLogic = new ManageUserLogin(userClaim);
+		    _organizationLogic = new ManageOrganization();
+		    _partyRelationshipLogic = new ManagePartyRelationship();
+		    _contactMechanismLogic = new ManageContactMechanism();
+		    _partyRoleLogic = new ManagePartyRole();
+			//For list Persons, return users of RoleType Parent = User Role (400)
+			_parentPartyRoleTypeId = (int)ParentUserRoleType.UserRole;
+		    _userClaim = userClaim;
+	    }
+        #endregion
+
+        #region Public methods
+        /// <summary>
+        /// Get Profile Detail for a person
+        /// </summary>
+        /// <param name="realPageId"></param>
+        /// <param name="orgPartyId"></param>
+        /// <param name="roleTypeFrom"></param>
+        /// <param name="roleTypeTo"></param>
+        /// <param name="relationshipType"></param>
+        /// <param name="contactMechanismUsageTypeName"></param>
+        /// <returns></returns>
+        public IProfileDetail GetProfileDetail(Guid realPageId, long orgPartyId, string roleTypeFrom = null, string roleTypeTo = null, string relationshipType = null, string contactMechanismUsageTypeName = null)
+        {
+            IProfileDetail profileDetail = new ProfileDetail();
+
+            IList<Organization> organizationList = new List<Organization>();
+            IList<CommonAddress> contactMechansimList = new List<CommonAddress>();
+            List<OrganizationSetting> organizationSettings = new List<OrganizationSetting>();
+
+            IPerson person = _personLogic.GetPerson(realPageId);
+            // TODO FIX!
+            var userLogin = _userLoginLogic.GetUserLogin(realPageId, orgPartyId); // keep for now
+            IManageConfigurationSetting configurationSettingLogic = new ManageConfigurationSetting();
+
+            organizationList = _userLoginLogic.ListOrganizationByEnterpriseUserId(realPageId, relationshipType).Where(p => p.PartyId == orgPartyId).ToList();
+
+            foreach (var organization in organizationList)
+            {
+                relationshipType = organization.RelationshipType;
+				PartyRelationship partyRelationship = _partyRelationshipLogic.GetPartyRelationship(realPageId, organization.RealPageId, roleTypeFrom, roleTypeTo, relationshipType);
+                if (partyRelationship != null)
+                {
+                    organization.partyRelationship = partyRelationship;
+                }
+            }
+
+            //var orgPartyId = organizationList.Select(p => p.PartyId).FirstOrDefault();
+            var orgSettings = configurationSettingLogic.ListOrganizationConfigurationSetting(orgPartyId, null);
+
+            if (orgSettings?.Count > 0)
+            {
+                foreach (var orgsetting in orgSettings)
+                {
+                    OrganizationSetting setting = new OrganizationSetting
+                    {
+                        Value = orgsetting.Value,
+                        Name = orgsetting.SettingName
+                    };
+                    organizationSettings.Add(setting);
+                }
+            }
+
+            contactMechansimList = _contactMechanismLogic.ListContactMechanismForPerson(realPageId, contactMechanismUsageTypeName);
+
+            profileDetail.PartyId = person.PartyId;
+            profileDetail.RealPageId = person.RealPageId;
+            profileDetail.Title = person.Title;
+            profileDetail.FirstName = person.FirstName;
+            profileDetail.MiddleName = person.MiddleName;
+            profileDetail.LastName = person.LastName;
+            profileDetail.Suffix = person.Suffix;
+            profileDetail.PreferredContactMethodId = person.PreferredContactMethodId;
+            profileDetail.userLogin = userLogin;
+            profileDetail.organization = organizationList;
+            profileDetail.contactMechanism = contactMechansimList;
+            profileDetail.OrganizationSettings = organizationSettings;
+            profileDetail.UserTypeId = (int)userLogin.UserRoleType;
+
+			var notificationEmail = profileDetail.contactMechanism.Where<CommonAddress>(p => p.contactMechanismUsageType.ContactMechanismUsageTypeId == 301).ToList();
+            if (notificationEmail.Count > 0)
+            {
+                var userTypes = new List<UserRoleType>() { UserRoleType.UserNoEmail };
+                if(profileDetail.organization.HasAnyUserRole(userTypes))
+                {
+                    profileDetail.NotificationEmail = notificationEmail[0].AddressString;
+                }
+            }
+            
+            //IManagePartyRole managePartyRole = new ManagePartyRole();
+            profileDetail.PartyRole =  _partyRoleLogic.GetPartyRole(realPageId);
+
+            return profileDetail;
+        }
+
+        /// <summary>
+        /// Update Profile
+        /// </summary>
+        /// <param name="realPageId">User unique identifier</param>
+        /// <param name="profile">Profile object of the parameter values</param>
+        /// <returns>RepositoryResponse object</returns>
+        public RepositoryResponse UpdateProfile(Guid realPageId, IProfile profile)
+        {
+            if (realPageId == Guid.Empty)
+            {
+				throw new Exception("Invalid parameter realPageId.");
+            }
+
+            if (profile == null)
+            {
+                throw new ArgumentNullException(nameof(profile), "Null Profile.");
+            }
+
+            return _profileRepository.UpdateProfile(realPageId, profile);
+        }
+
+        /// <summary>
+        /// Get a list of persons 
+        /// </summary>
+        /// <param name="globals">Parameter for filter and sort</param>
+        /// <param name="organizationRealPageId">Organization's realPageId</param>
+        /// <returns>List of Persons</returns>
+        public IList<ProfileDetail> ListProfileDetails(IDictionary<object, object> globals, Guid? organizationRealPageId = null)
+        {
+			IList<ProfileDetail> profileDetailList = new List<ProfileDetail>();
+            RequestParameter dataFilter = new RequestParameter();           
+
+            // for now, get the current user organization to filter the list of users
+            //ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+	        //if (currentClaimPrincipal.Identity.IsAuthenticated)
+	        //{
+		    //    Persona persona = _personaLogic.GetActivePersona(_userClaim.UserRealPageGuid);
+            if (organizationRealPageId == null || !_userClaim.RealPageEmployee)
+            {
+                organizationRealPageId = _userClaim.OrganizationRealPageGuid;
+            }
+
+			if (globals.ContainsKey(BaseType.RequestParameter))
+			{
+				dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
+			}
+
+			IList<int> organizationActiveProductIdList = _productRepository.GetProductIdsByCompany(_userClaim.OrganizationRealPageGuid);
+
+			profileDetailList = _profileRepository.ListPersons(
+				organizationActiveProductIdList: organizationActiveProductIdList,
+				realPageId: organizationRealPageId,
+				parentPartyRoleTypeId: _parentPartyRoleTypeId,
+				dataFilterSort: dataFilter);
+	
+            return profileDetailList;
+        }
+
+		/// <summary>
+		/// Returns a list of persons by ProductId
+		/// </summary>
+		/// <param name="productId">Single product to search by product id</param>
+		/// <param name="organizationRealPageId">Optional Organization realpage uniqueidentifier</param>
+		/// <param name="personaId">Optional personaId</param>
+		/// <returns>List of Person</returns>
+		public IList<ProductUsers> ListPersonsByProductId(int productId, Guid? organizationRealPageId = null, long? personaId = null)
+		{
+			IList<ProductUsers> productUsersList = new List<ProductUsers>();
+
+			productUsersList = _profileRepository.ListPersonsByProductId(productId, organizationRealPageId, personaId);
+
+			return productUsersList;
+		}
+		#endregion
+	}
+}

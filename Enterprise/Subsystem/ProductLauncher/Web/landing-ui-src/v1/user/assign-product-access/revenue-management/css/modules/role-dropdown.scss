@@ -1,0 +1,10 @@
+.rm-role-dropdown {
+    min-width: 40%;
+    max-width: 60%;
+
+    &-menu {
+        position: relative;
+        min-height: 1px;
+        width: 100%;
+    }
+}

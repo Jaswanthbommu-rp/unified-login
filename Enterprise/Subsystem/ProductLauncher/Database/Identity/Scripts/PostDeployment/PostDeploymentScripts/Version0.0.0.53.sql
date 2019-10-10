@@ -1,0 +1,13 @@
+﻿update enterprise.rightvaluetype set Value = 'Ability to create users', ShortName = 'CreateUser' Where Value = 'Create User'
+update enterprise.rightvaluetype set Value = 'Ability to clone users', ShortName = 'CloneUser' Where Value = 'Clone User'
+update enterprise.rightvaluetype set Value = 'Ability to edit users', ShortName = 'EditUsers' Where Value = 'Edit User'
+update enterprise.rightvaluetype set Value = 'Ability to edit profile of other users', ShortName = 'EditProfile' Where Value = 'Edit Profile of Others'
+update enterprise.rightvaluetype set Value = 'Ability to lock/unlock users', ShortName = 'LockUnlockUsers' Where Value = 'Lock/Unlock User'
+update enterprise.rightvaluetype set Value = 'Ability to view users', ShortName = 'ViewUsers' Where Value = 'View Users'
+update enterprise.rightvaluetype set Value = 'Ability to edit my own profile', ShortName = 'EditMyOwnProfile' Where Value = 'Edit Profile'
+update enterprise.rightvaluetype set Value = 'Ability to edit password', ShortName = 'EditPassword' Where Value = 'Edit Password'
+update enterprise.rightvaluetype set Value = 'Ability to view audit trail on user data' Where Value = 'View Audit Trail on User Data' 
+update enterprise.rightvaluetype set Value = 'Ability to manage roles and rights', ShortName = 'ManageRoleRight' Where Value = 'Manage Roles & Rights'
+update enterprise.rightvaluetype set Value = 'Ability to view roles and rights', ShortName = 'ViewRoleRight' Where Value = 'View Roles & Rights'
+
+EXEC sys.sp_updateextendedproperty @name=N'Build', @value='54'

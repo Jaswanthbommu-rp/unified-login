@@ -1,0 +1,47 @@
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Swashbuckle.Swagger.Annotations;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
+{
+	/// <summary>
+	/// Batch Process Controller
+	/// </summary>
+	public class BatchProcessController : BaseApiController
+    {
+        #region Public methods
+
+        /// <summary>
+        /// Used to process batch record by windows service
+        /// </summary>
+        /// <param name="batchRecord">Details to send to Realpage product for a user</param> 
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("batchprocessor")]
+        [AllowAnonymous]//TODO: Make it authorize by having client id for Windows Service in ID server
+        [HttpPost]
+        public HttpResponseMessage ProcessBatch(ProductUserProperitiesRoles batchRecord)
+        {
+            if (batchRecord == null)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "batchRecord null.");
+
+            //if (batchRecord.RealPageId == Guid.Empty)
+            //    return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+
+            var manageBatchProcess = new BatchProcessorLogic();
+            string result = manageBatchProcess.ProcessBatch(batchRecord);
+             
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
+
+            return Request.CreateResponse(HttpStatusCode.Created, result);
+        }
+
+        #endregion
+    }
+} 

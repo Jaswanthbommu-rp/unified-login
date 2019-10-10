@@ -1,0 +1,2 @@
+﻿CREATE USER [RRI\MKhaja] FOR LOGIN [RRI\MKhaja];
+

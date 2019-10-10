@@ -1,0 +1,45 @@
+﻿{
+  "options": {
+    "formatter": "stylish",
+    "merge-default-rules": false
+  },
+
+  "files": {
+    "include": "Assets/src/sass/pages/*.s+(a|c)ss",
+	"ignore": ["Assets/src/sass/*.s+(a|c)ss", "Assets/src/sass/custom/*.s+(a|c)ss"]
+  },
+  "rules": {
+    "property-sort-order": 0,
+	"attribute-quotes": [1, {"include": true}],
+	"brace-style": [1, {
+      "style": "1tbs",
+      "allow-single-line": false
+    }],
+
+	"empty-line-between-blocks": [1, {
+      "include": true,
+      "ignore-single-line-rulesets": false
+    }],
+	"no-ids": 1,
+	"no-mergeable-selectors": 1,
+    "no-misspelled-properties": 1,
+    "no-qualifying-elements": 0,
+    "no-trailing-whitespace": 0,
+    "no-trailing-zero": 1,
+	"quotes": [1, {"style": "single"}],
+    "shorthand-values": [1, {"allowed-shorthands": [1, 2]}],
+    "single-line-per-selector": 1,
+    "space-after-bang": [1, {"include": false}],
+    "space-after-colon": [1, {"include": true}],
+    "space-after-comma": [1, {"include": true}],
+    "space-around-operator": [1, {"include": true}],
+    "space-before-bang": [1, {"include": true}],
+    "space-before-brace": [1, {"include": true}],
+    "space-before-colon": [1, {"include": false}],
+    "space-between-parens": [1, {"include": false}],
+    "trailing-semicolon": [1, {"include": true}],
+    "url-quotes": 1,
+    "variable-for-property": 0
+  }
+
+}

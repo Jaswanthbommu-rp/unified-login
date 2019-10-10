@@ -1,0 +1,493 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutJquery.cshtml";
+}
+
+@*@Html.Partial("~/Views/Shared/_BreadCrumbs.cshtml")*@
+
+
+
+
+
+
+
+
+<!--  temparory static breadcrumbs -->
+
+<header id="raul-page-header" class="raul-page-header">
+    <h2 id="raul-page-header-page" class="raul-page-header-page">System &amp; Security</h2>
+    <div id="raul-page-header-breadcrumbs" class="raul-page-header-breadcrumbs">
+
+        <!-- MOBILE SOLUTION -->
+        <div id="raul-page-header-breadcrumbs-dropdown" class="raul-page-header-breadcrumbs-dropdown d-md-none">
+            <a class="raul-page-header-breadcrumbs-dropdown-breadcrumb rp-breadcrumbs-template hidden" href="/">RealPage</a>
+        </div>
+
+        <i id="raul-page-header-breadcrumbs-back" class="fa fa-angle-left d-md-none"></i>
+
+        <!-- DESKTOP SOLUTION -->
+        <!--  <div class="rp-breadcrumbs-wrapper rp-breadcrumbs-template hidden">
+        <a class="raul-page-header-breadcrumb hidden-sm-down" href="/">RealPage</a>
+        <span class="hidden-sm-down">/</span>
+    </div>
+      -->
+        <!-- DESKTOP SOLUTION -->
+        <div class="rp-breadcrumbs-wrapper rp-breadcrumbs-template">
+            <a class="raul-page-header-breadcrumb hidden-sm-down _600" href="/setting?CompanyId=@Request.QueryString["CompanyId"]&CompanyName=@Request.QueryString["CompanyName"]">Settings</a>
+            <span class="raul-page-header-breadcrumb hidden-sm-down">/ System &amp; Security</span>
+        </div>
+        <div class="rp-breadcrumbs-wrapper"></div>
+        </div>
+</header>
+
+<main class="raul-page-container">
+
+    <div class="system-security-container mt-3 p-3">
+
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-md-3 col-lg-3 system-security-leftnav ">
+                    <button type="button" class="close system-security-leftnav-close d-lg-none">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+
+                    <div>
+                        <h3 class="systerm-security-tab-head"><img src="~/Assets/build/images/settings-icons/settings-security.svg" alt="" width="20"><span class="system-head-in">System &amp; Security</span>  <i class="fa fa-search fa-3 pull-right mt-1"></i> </h3>
+                        <ul class="nav nav-pills nav-stacked systerm-security-tabs">
+                            <li class="system-security-tab system-security-tab-template hidden mt-1 w-100"><a href="javascript:void(0);" data-tabname="" data-toggle="pill"></a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+
+
+
+                <div class="tab-content system-security-content px-5 col-md-9">
+
+
+
+                    <div class="tab-pane" id="unified-platform-setup" style="display:block;">
+                        <form id="unified-platform-setup-wrap" data-parsley-validate ui-jp="parsley" ui-options="{}">
+                            <h4 class="systerm-security-head mb-4 systerm-security-tab-head"><i class="fa fa-bars d-lg-none system-security-leftnav-toggle" aria-hidden="true"></i> Unified Platform Setup </h4>
+
+                            <table class="table raul-table customTable-border table-font-size-small">
+                                <tr>
+                                    <td>
+                                        <div class="col-md-6 col-xs-12"><label class="form-label">Block Company Access to Product Learning Portal </label></div>
+                                    </td>
+                                    <td>
+                                        <div class="col-md-6 col-xs-12 pull-right">
+                                            <div class="pull-right">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" name="" class="custom-control-input" id="companyAccessToggle">
+                                                    <label class="custom-control-label" for="companyAccessToggle"></label>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="col-md-9 col-xs-12">
+                                            <label class="form-label">
+                                                How long are Temporary Passwords and New User Links Valid?(in days)
+                                                <a data-tooltip="Time frame must be between 1 to 21 days. RealPage recommends that temporary passwords and new user links be valid for 7 days." data-tooltip-pos="top" data-tooltip-size="200">
+                                                    <img src="../Assets/build/images/settings-icons/settings-notifications.svg" width="20" class="info-icon">
+                                                </a>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="col-md-8 col-xs-12 pull-right">
+                                            <div>
+                                                <input type="text" class="form-control" id="password-validate-field"
+                                                       data-parsley-type="number"
+                                                       data-parsley-min="1"
+                                                       data-parsley-max="21"
+                                                       data-parsley-error-message="Time frame must be between 1 to 21 days" />
+                                                <span class="error-msg error hidden ft-s-12"> Should not be more than 2 decimals</span>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Static data -->
+                                <tr>
+                                    <td>
+                                        <div class="col-md-9 col-xs-12">
+                                            <label class="form-label">
+                                                Number of Days Before Current Password Expires
+
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="col-md-8 col-xs-12 pull-right">
+                                            <div>
+                                                <input type="text" class="form-control" id="password-expire-field" value="90"
+                                                       data-parsley-type="number"
+                                                       required
+                                                       data-parsley-min="14"
+                                                       data-parsley-max="200"
+                                                       data-parsley-error-message="Please enter a value between 14 and 200" />
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <div class="col-md-9 col-xs-12">
+                                            <label class="form-label">
+                                                Minimum Number of Characters for RealPage Password
+
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="col-md-8 col-xs-12 pull-right">
+                                            <div>
+                                                <input type="text" class="form-control" id="password-min-characters"
+                                                       value="8"
+                                                       data-parsley-type="number"
+                                                       required
+                                                       data-parsley-min="8"
+                                                       data-parsley-max="20"
+                                                       data-parsley-error-message="Please enter value between 8 and 20" />
+
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="col-md-9 col-xs-12">
+                                            <label class="form-label">
+                                                Unified Platform User Time Out
+
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="col-md-8 col-xs-12 pull-right">
+                                            <div>
+                                                <input type="text" class="form-control" id="user-timeout"
+                                                       value="10"
+                                                       data-parsley-type="number"
+                                                       required
+                                                       data-parsley-min="1"
+                                                       data-parsley-max="120"
+                                                       data-parsley-error-message="Please enter value between 1 and 120 minutes" />
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </table>
+
+
+                            <br><br><br>
+
+                            <div class="pull-right i-p-action-btns mt-3">
+                                <button class="button button-primary button-outline" type="button" id="unified-platform-Cancel">Cancel</button>
+                                <button class="button button-primary" type="submit" id="unified-platform-save">Save</button>
+                            </div>
+                        </form>
+                    </div>
+
+
+
+
+
+
+                    <div class="tab-pane" id="identity-provider">
+                        <h4 class="systerm-security-head mb-4 systerm-security-tab-head"><i class="fa fa-bars d-lg-none system-security-leftnav-toggle" aria-hidden="true"></i> Identity Provider </h4>
+
+                        <form name="identity-provider-form" id="identity-provider-form">
+                            <table class="table raul-table customTable-border table-font-size-small mb-0">
+                                <tr>
+                                    <td>
+                                        <div class="col-md-6 col-xs-12"><label class="form-label">Type</label></div>
+                                    </td>
+                                    <td>
+                                        @*<div class="col-md-4 col-xs-12 pull-right">
+                                                <div>
+                                                    <label class="raul-select ip-select">
+                                                        <select class="form-control" id="IdentityProviderType" name="identityprovider-type"></select>
+                                                    </label>
+
+                                                </div>
+                                            </div>*@
+                                        <div class="form-group col-md-5 col-xs-12 pull-right">
+                                            <div class="form-control-wrapper">
+                                                <div class="raul-dropdown-select" id="IdentityProviderType">
+                                                    <div class="dropdown-toggle">
+                                                        <div class="dropdown-toggle-content">
+                                                            <span id="title-span" class="dropdown-title">&nbsp;</span>
+                                                            <i class="fa fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="dropdown-menu">
+                                                        <div class="dropdown-body">
+                                                            <div class="dropdown-group">
+                                                                <div class="dropdown-row">
+                                                                    <div class="dropdown-item" id="drp-item">
+                                                                        <label class="raul-radio-wrapper">
+                                                                            <span class="raul-form-input-text"></span>
+
+                                                                            <input type="radio"
+                                                                                   name="form-style-second-section"
+                                                                                   value=""
+                                                                                   data-text="">
+
+                                                                            <i class="fa fa-check dropdown-checked-icon"></i>
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div class="dynamic-form">
+                                <table class="ipType table raul-table  table-font-size-small customTable-border"> </table>
+                            </div>
+
+                        </form>
+
+                        <div class="pull-right i-p-action-btns  mt-3">
+                            <button class="button button-primary button-outline" type="button" id="identity-provider-cancel">Cancel</button>
+                            <button class="button button-primary" id="identity-provider-save">Save</button>
+                        </div>
+
+
+
+                    </div>
+
+                    <!-- Custom User Fields-->
+                    <div class="tab-pane custom-user-fields" id="custom-user-fields">
+                        <h4 class="systerm-security-head mb-4 ml-3 systerm-security-tab-head"><i class="fa fa-bars d-lg-none system-security-leftnav-toggle" aria-hidden="true"></i> Custom User Fields</h4>
+
+                        <div>
+                            <button class="right-modal button button-default noborder" id="create-custom-field"
+                                    data-toggle="modal"
+                                    data-target="custom-fields-modal">
+                                <img src="~/Assets/build/images/settings-icons/add-2.svg" class="addicon" alt="">
+                                <span class="raul-tables-global-action-title">New Custom Field</span>
+                            </button>
+                        </div>
+                        <div class="raul-datatable-wrapper">
+                            <table ui-jp="dataTable" ui-options="{
+                                    bInfo: false,
+                                    bPaginate: false,
+                                    rowReorder: {
+                                        selector: '.control-panel-drag-drop'
+                                    },
+                                    bFilter: false,
+                                    columnDefs: [
+                                        {
+                                            className: 'dt-left',
+                                            targets: '_all',
+                                        },
+                                        { orderable: false, targets: 3 },
+                                        { width: '82px', targets: [0] },
+                                        { width: '97px', targets: [2] },
+                                        { width: '154px', targets: [3] }
+                                    ],
+                                    autoWidth: false,
+                                    bAutoWidth: false,
+                                    language: {
+                                        searchPlaceholder: 'Search',
+                                    }
+                                }" id="settings-custom-fields" class="raul-datatable raul-status-table table simple-table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <span class="custom-fields-sequence">Sequence</span>
+                                        </th>
+
+                                        <th>
+                                            <span>Field</span>
+                                        </th>
+
+                                        <th class="custom-field-status">
+                                            <span>Status</span>
+                                        </th>
+
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!--Custom User Fields Modal-->
+                    <div class="modal right slide raul-aside-modal raul-single-aside pr-0"
+                         id="custom-fields-modal"
+                         tabindex="-1"
+                         role="dialog"
+                         aria-labelledby="example-modal-label"
+                         aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <h1 class="custom-fields-modal-header"></h1>
+                                    <div class="custom-field-title"></div>
+                                </div>
+                                <form id="new-custom-field-form" data-field-id="" data-parsley-validate ui-jp="parsley" ui-options="{}">
+                                    <div class="modal-body">
+                                        <div class="mt-0 text-charcoal-80">
+                                            <label class="ft-s-12 _500">
+                                                <span class="ft-s-12 _500">Field Name</span>
+                                            </label>
+                                            <input type="text" class="form-control" name="fieldName" placeholder="New custom field" required data-parsley-customfieldname="">
+                                        </div>
+                                        <div class="mt-3 text-charcoal-80">
+                                            <label class="ft-s-12 _500">
+                                                <span class="ft-s-12 _500">Field Type</span>
+                                            </label>
+                                            <div class="raul-dropdown-select ">
+                                                <div class="dropdown-toggle">
+                                                    <div class="dropdown-toggle-content">
+                                                        <span id="drpCustom-fieldsTitle" name="fieldType" class="dropdown-title">Alphanumeric</span>
+                                                        <i class="fa fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
+                                                    </div>
+                                                </div>
+
+                                                <div class="dropdown-menu">
+                                                    <div class="dropdown-body">
+                                                        <div class="dropdown-group">
+                                                            <div class="dropdown-row">
+                                                                <div class="dropdown-item checked" id="drpalpnum">
+                                                                    <label class="raul-radio-wrapper">
+                                                                        <span class="raul-form-input-text">Alphanumeric</span>
+
+                                                                        <input type="radio"
+                                                                               name="form-style-second-section"
+                                                                               value="Alphanumeric"
+                                                                               data-text="Alphanumeric">
+
+                                                                        <i class="fa fa-check dropdown-checked-icon"></i>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="dropdown-row">
+                                                                <div class="dropdown-item" id="drpnum">
+                                                                    <label class="raul-radio-wrapper">
+                                                                        <span class="raul-form-input-text">Numeric</span>
+
+                                                                        <input type="radio"
+                                                                               name="form-style-second-section"
+                                                                               value="Numeric"
+                                                                               data-text="Numeric">
+
+                                                                        <i class="fa fa-check dropdown-checked-icon"></i>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 text-charcoal-80">
+                                            <fieldset class="character-length clearfix">
+                                                <!--<legend class="ft-s-12 _500">Character length (Optional)</legend>-->
+
+                                                <label class="float-left">
+                                                    <span class="ft-s-12 _500">Min Length</span>
+                                                    <input class="form-control" id="new-field-min-char" name="minCharlength" placeholder="Min" data-parsley-min="1" />
+                                                </label>
+                                                <label class="float-right">
+                                                    <span class="ft-s-12 _500">Max Length</span>
+                                                    <input class="form-control" id="new-field-max-char" name="maxCharlength" placeholder="Max" data-parsley-max="1024" data-parsley-greaterorequal />
+                                                </label>
+                                            </fieldset>
+                                        </div>
+                                        <div class="mt-4 text-charcoal-80">
+                                            <div>
+                                                <span class="raul-form-input-text">Enable this field for use?</span>
+                                                <div class="custom-control custom-switch pull-right col-xs-12">
+                                                    <input type="checkbox" checked name="isFieldEnabled" class="custom-control-input" id="chkUseField">
+                                                    <label class="custom-control-label raul-switch" for="chkUseField"></label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="mt-4 text-charcoal-80">
+                                            <div class="custom-fields-required-toggle">
+                                                <span class="raul-form-input-text">Is this a required field?</span>
+                                                <div class="custom-control custom-switch pull-right col-xs-12">
+                                                    <input type="checkbox" name="isRequiredField" class="custom-control-input" id="chkReqField">
+                                                    <label class="custom-control-label raul-switch" for="chkReqField"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="custom-fields-btn-panel modal-footer clearfix">
+                                        <button type="reset" class="cancel-custom-field-btn button button-primary button-outline" data-dismiss="modal">Cancel</button>
+                                        <button id="create-custom-field-btn" type="submit" class="w-sm form-save button button-primary">Create</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END Custom User Fields-->
+
+
+
+                    <div class="tab-pane" id="apis">
+                        <h4>APIs</h4>
+                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</p>
+                    </div>
+                    <div class="tab-pane" id="lockbox">
+                        <h4>Lockbox</h4>
+                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</p>
+                    </div>
+                    <div class="tab-pane" id="mapping-ftp">
+                        <h4>Mapping FTP</h4>
+                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</p>
+                    </div>
+                    <div class="tab-pane" id="parameters">
+                        <h4>Parameters</h4>
+                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</p>
+                    </div>
+                </div><!-- tab content -->
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<script src="@Url.Content("~/Assets/build/js/settings/load-scripts.js")"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        loadFiles([
+            '@Url.Content("~/Assets/build/js/settings/common-functions.js")',
+            '@Url.Content("~/Assets/build/js/settings/identity-provider.js")',
+            '@Url.Content("~/Assets/build/js/settings/custom-fields.js")',
+            '@Url.Content("~/Assets/build/js/settings/system-security.js")'
+        ]);
+    });
+
+</script>

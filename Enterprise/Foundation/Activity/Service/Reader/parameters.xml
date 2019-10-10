@@ -1,0 +1,29 @@
+﻿<?xml version="1.0"?>
+<parameters>
+  <parameter name="IssuerUri"
+             description="Used to identity the identity server used"
+             defaultValue="#{IssuerUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='IssuerUri']/@value" />
+  </parameter>
+  <!-- appSettings -->
+  <parameter name="Environment"
+             description="Activity Reader environment"
+             defaultValue="#{Environment}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Environment']/@value" />
+  </parameter>
+  <parameter name="ElasticSearchUri"
+             description="URL for Elastic Search"
+             defaultValue="#{ElasticSearchUri}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchUri']/@value" />
+  </parameter>
+  <parameter name="ShouldWriteInFile"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ShouldWriteInFile}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldWriteInFile']/@value" />
+  </parameter>
+  <parameter name="CorsUrls"
+             description="Urls for servers allowed to post to the api"
+             defaultValue="#{ActivityCorsUrls}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='CorsUrls']/@value" />
+  </parameter>
+</parameters>

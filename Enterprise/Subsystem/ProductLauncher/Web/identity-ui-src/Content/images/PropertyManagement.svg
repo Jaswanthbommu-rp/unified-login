@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60px" height="60px" viewBox="0 0 60 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 45.1 (43504) - http://www.bohemiancoding.com/sketch -->
+    <title>Property Management</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="100%" x2="50%" y2="0%" id="linearGradient-1">
+            <stop stop-color="#0076CC" offset="0%"></stop>
+            <stop stop-color="#178DE3" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons" transform="translate(-79.000000, -52.000000)" fill-rule="nonzero" fill="url(#linearGradient-1)">
+            <g id="Property-Management" transform="translate(24.000000, 22.000000)">
+                <path d="M114.120829,57.8794015 C114.975818,58.7373908 115.236815,60.0273747 114.771821,61.1493606 C114.309826,62.2713466 113.21184,63.0003375 111.999855,63.0003375 L108.999893,63.0003375 L108.999893,90 L61.0004928,90 L61.0004928,63.0003375 L58.0005303,63.0003375 C56.7885454,63.0003375 55.6905591,62.2713466 55.2285649,61.1493606 C54.7635707,60.0273747 55.0215675,58.7373908 55.8795568,57.8794015 L82.8792193,30.879739 C84.0522046,29.7067537 85.9481809,29.7067537 87.1211663,30.879739 L114.120829,57.8794015 Z M96.2550008,75.5344987 L96.2550008,55.8385848 L73.7453848,55.8385848 L73.7453848,75.5344987 L85.0001928,81.1619027 L96.2550008,75.5344987 Z M90.6275968,61.4659888 L90.6275968,72.7207967 L85.0001928,75.5344987 L85.0001928,61.4659888 L90.6275968,61.4659888 Z"></path>
+            </g>
+        </g>
+    </g>
+</svg>

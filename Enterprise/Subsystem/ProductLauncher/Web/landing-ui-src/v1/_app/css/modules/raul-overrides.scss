@@ -1,0 +1,29 @@
+.ul-app-header {
+    z-index: 10;
+    background: #fff;
+    transition: left .5s;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.rp-app-content {
+    margin-left: 0 !important;
+}
+
+.rp-aside-modal {
+	top: 56px;
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  width: 0;
+}
+
+raul-scope .r-scope-subhead {
+    margin-top: 0 !important;
+}
+
+header[slot="header"] {
+    position: relative;
+    z-index: 10;
+}
+

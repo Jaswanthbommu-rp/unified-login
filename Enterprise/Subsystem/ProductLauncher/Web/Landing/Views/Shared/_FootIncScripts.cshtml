@@ -1,0 +1,28 @@
+﻿@*<script src="@Url.Content("~/Assets/build/js/vendor.js")"></script>
+    @*<script src="Assets/build/js/core.js"></script>*@
+
+<script>
+    // this code for SPA
+    @*$(window).on('hashchange', function (e) {
+        $(document).ready(function () {
+            $('#raul-page-header-page').text(''); //clear text of blue header in breadcrumbs panel
+
+            //remove all previous breadcrumbs
+            $('.rp-breadcrumbs-wrapper').not('.rp-breadcrumbs-template').remove();
+            $('.raul-page-header-breadcrumbs-dropdown-breadcrumb').not('.rp-breadcrumbs-template').remove();
+
+            $('.rp-breadcrumbs-wrapper.rp-breadcrumbs-template').addClass('hidden');
+            $('.raul-page-header-breadcrumbs-dropdown-breadcrumb.rp-breadcrumbs-template').addClass('hidden');
+        });
+    });*@
+
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-ZZZZZZZZZ-1', 'auto');
+    ga('send', 'pageview');
+</script>

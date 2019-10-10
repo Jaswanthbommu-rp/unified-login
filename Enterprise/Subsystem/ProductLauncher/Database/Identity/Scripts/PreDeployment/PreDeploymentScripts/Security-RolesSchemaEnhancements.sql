@@ -1,0 +1,80 @@
+﻿PRINT 'Security-RolesSchemaEnhancements is difussed'
+/*Backup data to history tables*/
+
+--SET @SchemaName = 'Enterprise';
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Role_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Dropping existing backup table -> Enterprise.Role_Backup.';
+--        DROP TABLE Enterprise.Role_Backup;
+--END;
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Right_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Dropping existing backup table -> Enterprise.Right_Backup.';
+--        DROP TABLE Enterprise.[Right_Backup];
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Role_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Backup current table: Enterprise.Role -> Enterprise.Role_Backup';
+--        SELECT *
+--        INTO Enterprise.Role_Backup
+--        FROM Enterprise.Role;
+--END;
+--IF NOT EXISTS
+--(
+--    SELECT *
+--    FROM sys.tables
+--    WHERE name = 'Right_Backup'
+--          AND schema_id = SCHEMA_ID(@SchemaName)
+--)
+--    BEGIN
+--        PRINT 'Backup current table: Enterprise.Right -> Enterprise.Right_Backup';
+--        SELECT *
+--        INTO Enterprise.Right_Backup
+--        FROM Enterprise.[Right];
+--END;
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM INFORMATION_SCHEMA.columns
+--    WHERE COLumn_name = 'Value'
+--          AND table_name = 'Role'
+--          AND table_schema = 'Enterprise'
+--)
+--    BEGIN
+--        UPDATE Enterprise.Role
+--          SET
+--              Value = -1;
+--END;
+--IF EXISTS
+--(
+--    SELECT *
+--    FROM INFORMATION_SCHEMA.columns
+--    WHERE COLumn_name = 'Value'
+--          AND table_name = 'Right'
+--          AND table_schema = 'Enterprise'
+--)
+--    BEGIN
+--        UPDATE Enterprise.[Right]
+--          SET
+--              Value = -1;
+--        DELETE FROM Enterprise.[Right]
+--        WHERE RoleId IS NULL;
+--END;

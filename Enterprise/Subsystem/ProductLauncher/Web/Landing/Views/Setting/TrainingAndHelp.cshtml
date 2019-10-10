@@ -1,0 +1,269 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutJquery.cshtml";
+}
+
+<header id="raul-page-header" class="raul-page-header">
+    <h2 id="raul-page-header-page" class="raul-page-header-page">Settings</h2>
+    <div id="raul-page-header-breadcrumbs" class="raul-page-header-breadcrumbs">
+
+        <!-- MOBILE SOLUTION -->
+        <div id="raul-page-header-breadcrumbs-dropdown" class="raul-page-header-breadcrumbs-dropdown d-md-none">
+            <a class="raul-page-header-breadcrumbs-dropdown-breadcrumb rp-breadcrumbs-template hidden" href="/">RealPage</a>
+        </div>
+
+        <i id="raul-page-header-breadcrumbs-back" class="fa fa-angle-left d-md-none"></i>
+
+        <!-- DESKTOP SOLUTION -->
+
+        <div class="rp-breadcrumbs-wrapper rp-breadcrumbs-template1">
+            <a class="raul-page-header-breadcrumb hidden-sm-down h-t-settings" href="/">Settings</a>
+            <span class="hidden-sm-down">/</span>
+        </div>
+
+
+        <div class="rp-breadcrumbs-wrapper">
+            <a class="raul-page-header-breadcrumb hidden-sm-down h-t-companysettings" href="#">Company Settings</a>
+            <span class="hidden-sm-down">/</span>
+        </div>
+
+        <div class="rp-breadcrumbs-wrapper">
+            <a class="raul-page-header-breadcrumb hidden-sm-down _600" href="#">Video Tutorials</a>
+        </div>
+
+    </div>
+</header>
+
+
+<main class="raul-page-container">
+ 
+
+    <div class="system-security-container mt-3 p-3">
+
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-md-3 col-lg-3 system-security-leftnav">
+                    <button type="button" class="close system-security-leftnav-close d-lg-none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+
+
+                    <div>
+                        <h3 class="systerm-security-tab-head mb-4"><img src="/home/Assets/build/images/settings-icons/settings-training-help.svg" alt="" width="30" style="width:30px"><span class="system-head-in">Help &amp; Training </span>  <i class="fa fa-search fa-3 pull-right mt-1"></i> </h3>
+                        <ul class="nav nav-pills nav-stacked systerm-security-tabs">
+
+                            <li class="system-security-tab system-security-tab-template active mt-1 w-100"><a href="javascript:void(0);" data-tabname="unified-platform-setup" data-toggle="pill">Video Tutorials</a></li>
+                            @*<li class="system-security-tab system-security-tab-template w-100"><span style="padding:5px; display:block;">EasyLMS</span></li>*@
+
+                        </ul>
+                    </div>
+
+                </div>
+
+
+
+
+
+          
+                    <div class="tab-content helpandtranining-content col-md-9">
+
+                        <div class="tab-pane active" id="unified-platform-setup" style="display:block;">
+
+                            <h4 class="systerm-security-head mb-5 systerm-security-tab-head mt-1"><i class="fa fa-bars d-lg-none system-security-leftnav-toggle" aria-hidden="true"></i> Video Tutorials </h4>
+
+
+                            <form id="video-settings" data-parsley-validate="">
+                                <h3 class="videoSetting-subhead">Video Tutorial Settings</h3>
+
+                                <div class="raul-list-group">
+
+                                    <div class="raul-list-group-item">
+
+                                        <ul>
+                                            <li>
+                                                <label>
+
+                                                    <div class="raul-list-item-first-line">
+                                                        Show video tutorials to new users
+                                                    </div>
+
+
+
+
+
+                                                    <div class="raul-switch-wrapper">
+
+                                                        <div class="raul-switch">
+                                                            <input type="checkbox" class="skipcontrolTrigger" id="showVideoTutToggle">
+                                                            <span class="raul-switch-slider"></span>
+                                                        </div>
+                                                    </div>
+
+                                                </label>
+                                            </li>
+
+                                            <li>
+                                                <label>
+
+                                                    <div class="raul-list-item-first-line">
+                                                        Show video tutorials to migrated users
+                                                    </div>
+
+
+
+
+                                                    <div class="clearfix">
+                                                        <div class="raul-switch-wrapper">
+                                                            <div class="raul-switch">
+                                                                <input type="checkbox" class="skipcontrolTrigger" id="showVideoTutMigrateToggle">
+                                                                <span class="raul-switch-slider"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+
+                                </div>
+
+
+
+                                <div class="skipControlWrap">
+
+                                    <h3 class="videoSetting-subhead mt-4">Video Skip Settings</h3>
+
+                                    <div class="raul-list-group">
+
+                                        <div class="raul-list-group-item">
+                                            <ul>
+                                                <li>
+                                                    <label>
+                                                        <div>
+                                                            <div class="raul-list-item-first-line">
+                                                                Allow users to skip video tutorials
+                                                            </div>
+
+
+                                                        </div>
+
+                                                        <div>
+                                                            <div class="raul-switch-wrapper">
+
+                                                                <div class="raul-switch">
+                                                                    <input type="checkbox" id="newuserSkipToggle">
+                                                                    <span class="raul-switch-slider"></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+
+                                                    <ul class="raul-sublist-group" id="AllowNewUsersRows">
+                                                        <li>
+                                                            <label>
+                                                                <div>
+                                                                    <img src="https://cdn.realpage.com/images/mask.svg" alt="mask">
+
+                                                                    <div class="raul-list-item-first-line">
+                                                                        Number of times a user can skip a video
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="clearfix text-right">
+                                                                
+                                                                        <input type="text" id="numberSkipVideo" class="form-control inline-input" required  value="3"  data-parsley-min='1' data-parsley-max='100' value="100" data-parsley-error-message="Please select a number between 1 and 100">
+
+                                                                
+                                                                </div>
+                                                            </label>
+                                                        </li>
+
+                                                        <li>
+                                                            <label>
+                                                                <div>
+                                                                    <img src="https://cdn.realpage.com/images/mask.svg" alt="mask">
+
+                                                                    <div class="raul-list-item-first-line">
+                                                                        Percentage of video user must watch before skipping
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="clearfix text-right position-relative">
+                                                                    
+                                                                        <input type="text" id="skipVideoAfterPercentage" maxlength="3" class="form-control inline-input" required  data-parsley-min='1' value="100" data-parsley-max='100' data-parsley-error-message="Please select a number between 1 and 100"><i class="fa fa-percent percent-icon" aria-hidden="true"></i>
+
+
+                                                                    
+                                                                </div>
+                                                            </label>
+                                                        </li>
+                                                        <li>
+                                                            <label>
+                                                                <div>
+                                                                    <img src="https://cdn.realpage.com/images/mask.svg" alt="mask">
+
+                                                                    <div class="raul-list-item-first-line">
+                                                                        Percentage of video user must watch to complete
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="clearfix text-right position-relative">
+                                                                    <input type="text" id="markVideoCompleteAfterPercentage" maxlength="3" class="form-control inline-input" data-parsley-min='1' data-parsley-max='100' required data-parsley-error-message="Please select a number between 1 and 100">
+                                                                    <i class="fa fa-percent percent-icon" aria-hidden="true"></i>
+                                                                </div>
+                                                            </label>
+                                                        </li>
+
+                                                    </ul>
+                                                </li>
+
+                                            </ul>
+                                        </div>
+
+                                    </div>
+
+
+                                </div>
+
+
+                                <div class="pull-right i-p-action-btns mt-3">
+                                    <button id="VideoSettingCancelBtn" class="button button-primary button-outline" type="button">Cancel</button>
+                                    <button class="button button-primary" id="saveVideoSetting" type="button">Save</button>
+                                </div>
+</form>
+
+
+
+
+
+
+                                <br><br><br>
+
+                        </div>
+
+                    </div><!-- tab content -->
+
+                    
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+
+
+<script src="@Url.Content("~/Assets/build/js/settings/load-scripts.js")"></script>
+<script>
+    loadFiles([
+		'@Url.Content("~/Assets/build/js/plugins/parsley.js")',
+		'@Url.Content("~/Assets/build/js/settings/common-functions.js")',
+		'@Url.Content("~/Assets/build/js/settings/ui-settings.js")',
+		'@Url.Content("~/Assets/build/js/settings/video-tutorials.js")'
+    ]);
+</script>
+
+

@@ -1,0 +1,41 @@
+﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces
+{
+    public interface IManageProductLead2Lease
+    {
+        ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
+        ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
+        string ManageLead2LeaseUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList);
+        string UnassignUser(long editorPersonaId, long userPersonaId);
+
+        /// <summary>
+        /// List all users
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="datafilter"></param>
+        /// <returns></returns>
+        ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter);
+
+        /// <summary>
+        /// Update the users migration status
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="migrateUsers"></param>
+        /// <returns></returns>
+        MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="username"></param>
+        /// <param name="productUserId"></param>
+        /// <param name="isActive"></param>
+        /// <returns></returns>
+        bool ChangeUserStatus(long editorPersonaId, string username, string productUserId, bool isActive = false);
+    }
+}

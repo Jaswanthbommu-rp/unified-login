@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.Core", "Audit.Core\Audit.Core.csproj", "{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.WebApi", "Audit.WebApi\Audit.WebApi.csproj", "{FFAD1EF8-C442-499B-9959-8F8D43A84515}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.MvcWeb", "Audit.MvcWeb\Audit.MvcWeb.csproj", "{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08C2A7D0-B20F-4CCF-8FF6-FAA8ADFE229A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 4
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://rcetfseisweb001:8080/tfs/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Audit.Core\\Audit.Core.csproj
+		SccProjectName1 = Audit.Core
+		SccLocalPath1 = Audit.Core
+		SccProjectUniqueName2 = Audit.WebApi\\Audit.WebApi.csproj
+		SccProjectName2 = Audit.WebApi
+		SccLocalPath2 = Audit.WebApi
+		SccProjectUniqueName3 = Audit.MvcWeb\\Audit.MvcWeb.csproj
+		SccProjectName3 = Audit.MvcWeb
+		SccLocalPath3 = Audit.MvcWeb
+	EndGlobalSection
+EndGlobal

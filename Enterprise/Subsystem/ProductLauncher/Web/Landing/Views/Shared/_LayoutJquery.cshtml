@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Unified Settings</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Application SEO description" />
+    <meta name="keywords" content="Application SEO keywords" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Google Webmaster Tools Ownership Validation : Sitemap Submission -->
+    <meta name="google-site-verification" content="DM705bPptJubpysWthq3tfuoctV-fTUGFTqbVcdzpaI" />
+
+    <!-- for ios 7 style, multi-resolution icon of 152x152 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">
+    <link rel="apple-touch-icon" href="Assets/build/images/logoCircles.png">
+    <meta name="apple-mobile-web-app-title" content="Flatkit">
+
+    <!-- for Chrome on Android, multi-resolution icon of 196x196 -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="shortcut icon" sizes="196x196" href="@Url.Content("~/Assets/build/images/logoCircles.png")">
+
+
+    <link rel="stylesheet" href="@Url.Content("~/Assets/build/foundation-ui-library/fonts/glyphicons/css/glyphicons.css")" type="text/css">
+    <link rel="stylesheet" href="@Url.Content("~/Assets/build/foundation-ui-library/fonts/font-awesome/css/font-awesome.css")" type="text/css">
+    <link rel="stylesheet" href="@Url.Content("~/Assets/build/foundation-ui-library/fonts/simple-line-icons/css/simple-line.css")" type="text/css">
+    <link rel="stylesheet" href="@Url.Content("~/Assets/build/foundation-ui-library/fonts/material-design-icons/css/material-design-icons.css")" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,500,500i,700,700i" type="text/css">
+
+
+    <link rel="stylesheet" href="https://cdn.realpage.com/raul/v2.78.1/css/raul.min.gz.css" type="text/css">
+
+
+    <!-- custom style -->
+    <link rel="stylesheet" href="@Url.Content("~/Assets/build/css/custom.css")" type="text/css" />
+
+    <!-- Promises support for IE -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.0.0/polyfill.min.js"></script>
+</head>
+@using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
+<body data-gb-uri="@ConfigReader.GetApiUri"
+      data-rb-uri="@ConfigReader.GetUnifiedSettingsApiUri"
+      data-orgid="@ViewBag.OrganizationMasterId"
+      data-viewright="@ViewBag.UnifiedSettingViewRights"
+      data-manageright="@ViewBag.UnifiedSettingManageRights">
+    <!-- MOVE THE BELOW CODE TO THE HEADER INCLUDE -->
+
+    <div class="overlay-cover" onclick="$('.modal').modal('hide');"></div>
+
+    @Html.Partial("~/Views/Shared/_Header.cshtml")
+
+    @Html.Partial("~/Views/Shared/_LeftNav.cshtml")
+
+
+    @RenderBody()
+
+    @*@Html.Partial("~/Views/Shared/_Footer.cshtml")
+
+        @Html.Partial("~/Views/Shared/_FootIncScripts.cshtml")*@
+    <script src="https://cdn.realpage.com/raul/v2.78.1/js/raul-no-babel-polyfill.min.js"></script>
+</body>
+</html>

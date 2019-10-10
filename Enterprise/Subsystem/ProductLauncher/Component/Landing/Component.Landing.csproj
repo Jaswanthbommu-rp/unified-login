@@ -1,0 +1,399 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5794A497-56D2-4B0C-A168-D0F75BB21FF9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RP.Enterprise.Subsystem.ProductLauncher.Component.Landing</RootNamespace>
+    <AssemblyName>RP.Enterprise.Subsystem.ProductLauncher.Component.Landing</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>false</Deterministic>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Fortify|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Fortify\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>bin\RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.xml</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dapper, Version=1.60.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dapper.1.60.1\lib\net451\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="IdentityModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IdentityModel.1.9.2\lib\net45\IdentityModel.dll</HintPath>
+    </Reference>
+    <Reference Include="JsonApiSerializer, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\JsonApiSerializer.1.6.0\lib\net45\JsonApiSerializer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Cors, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.Cors.5.2.7\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Cors, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Cors.5.2.7\lib\net45\System.Web.Http.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.Mvc.5.2.7\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.Razor.3.2.7\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attributes\AllowCorsAttribute.cs" />
+    <Compile Include="Attributes\AuthorizeRightAttribute.cs" />
+    <Compile Include="Attributes\AuthorizeScopeAttribute.cs" />
+    <Compile Include="Base\BaseUserRights.cs" />
+    <Compile Include="Logic\BatchProcessor\BatchProcessorLogic.cs" />
+    <Compile Include="Logic\BatchProcessor\Factory\IProcessExecution.cs" />
+    <Compile Include="Logic\BatchProcessor\Factory\ProcessExecutionFactory.cs" />
+    <Compile Include="Logic\BatchProcessor\Process\CreateUpdateProductUser.cs" />
+    <Compile Include="Logic\BatchProcessor\Process\DeactivateProductUser.cs" />
+    <Compile Include="Logic\BatchProcessor\Process\UpdateProductUserProfile.cs" />
+    <Compile Include="Logic\BatchProcessor\Process\ChangeProductUserType.cs" />
+    <Compile Include="Logic\Clients\ManageClientsSetup.cs" />
+    <Compile Include="Logic\Enterprise\User\Models\EntUserStatus.cs" />
+    <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
+    <Compile Include="Logic\IManageUserLoginPersona.cs" />
+    <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
+    <Compile Include="Logic\Interfaces\IManageStatusType.cs" />
+    <Compile Include="Logic\Interfaces\IManageBlueBook.cs" />
+    <Compile Include="Logic\Interfaces\IManageCommunicationEvents.cs" />
+    <Compile Include="Logic\Interfaces\IManageConfigurationSetting.cs" />
+    <Compile Include="Logic\Interfaces\IManageContactMechanism.cs" />
+    <Compile Include="Logic\Interfaces\IManageContactMechanismUsageType.cs" />
+    <Compile Include="Logic\Interfaces\IManageCredential.cs" />
+    <Compile Include="Logic\Interfaces\IManageDashboardContent.cs" />
+    <Compile Include="Logic\Interfaces\IManageElectronicAddress.cs" />
+    <Compile Include="Logic\Interfaces\IManageEmail.cs" />
+    <Compile Include="Logic\Interfaces\IManageEmployeeAccess.cs" />
+    <Compile Include="Logic\Interfaces\IManageGeographicBoundary.cs" />
+    <Compile Include="Logic\Interfaces\IManageOrganization.cs" />
+    <Compile Include="Logic\Interfaces\IManageOrganizationProduct.cs" />
+    <Compile Include="Logic\Interfaces\IManagePartyRelationship.cs" />
+    <Compile Include="Logic\Interfaces\IManagePartyRole.cs" />
+    <Compile Include="Logic\Interfaces\IManagePasswordPolicy.cs" />
+    <Compile Include="Logic\Interfaces\IManagePerson.cs" />
+    <Compile Include="Logic\Interfaces\IManagePersona.cs" />
+    <Compile Include="Logic\Interfaces\IManagePostalAddress.cs" />
+    <Compile Include="Logic\Interfaces\IManagePreferredContactMethod.cs" />
+    <Compile Include="Logic\Interfaces\IManageProduct.cs" />
+    <Compile Include="Logic\Interfaces\IManageSecuritySettings.cs" />
+    <Compile Include="Logic\ManageUserLoginPersona.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayOrganization.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayRole.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayUsers.cs" />
+    <Compile Include="Logic\ProductIntegration\ProductImplementation\ClickPayManagement.cs" />
+    <Compile Include="Logic\ProductIntegration\ProductImplementation\DepositAlternativeManagement.cs" />
+    <Compile Include="Logic\Product\ManageProductOneSiteAccounting.cs" />
+    <Compile Include="Logic\ManageSecuritySettings.cs" />
+    <Compile Include="Logic\ManageStatusType.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductClientPortal.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductEasyLMS.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductIntegrationMarketplace.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductLead2Lease.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductMarketingCenter.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductOmniChannel.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductOneSiteAccounting.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductProspectContact.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductRentersInsurance.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductResidentPortal.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductRum.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductSelfProvisioningPortal.cs" />
+    <Compile Include="Logic\Interfaces\IManageProductUser.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductVendorServices.cs" />
+    <Compile Include="Logic\Interfaces\IManageProfile.cs" />
+    <Compile Include="Logic\Interfaces\IManageRedBook.cs" />
+    <Compile Include="Logic\Interfaces\IManageRelationshipType.cs" />
+    <Compile Include="Logic\Interfaces\IManageRoleType.cs" />
+    <Compile Include="Logic\Interfaces\IManageSaml.cs" />
+    <Compile Include="Logic\Interfaces\IManageStreetAddress.cs" />
+    <Compile Include="Logic\Interfaces\IManageTelecommunicationNumber.cs" />
+    <Compile Include="Logic\Interfaces\IManageUnifiedLogin.cs" />
+    <Compile Include="Logic\Interfaces\IManageUser.cs" />
+    <Compile Include="Logic\Interfaces\IManageUserLogin.cs" />
+    <Compile Include="Logic\Interfaces\IManageUserProperty.cs" />
+    <Compile Include="Logic\Interfaces\IManageUserRegistrationEmail.cs" />
+    <Compile Include="Logic\Interfaces\IManageUserRoleRight.cs" />
+    <Compile Include="Logic\ManageBlueBook.cs" />
+    <Compile Include="Logic\ManageCloneProductBatch.cs" />
+    <Compile Include="Logic\ManageCommunicationEvents.cs" />
+    <Compile Include="Logic\ManageConfigurationSetting.cs" />
+    <Compile Include="Logic\ManageContactMechanism.cs" />
+    <Compile Include="Logic\ManageContactMechanismUsageType.cs" />
+    <Compile Include="Logic\ManageCredential.cs" />
+    <Compile Include="Logic\ManageCustomFields.cs" />
+    <Compile Include="Logic\ManageDashboardContent.cs" />
+    <Compile Include="Logic\ManageElectronicAddress.cs" />
+    <Compile Include="Logic\ManageEmail.cs" />
+    <Compile Include="Logic\ManageEmployeeAccess.cs" />
+    <Compile Include="Logic\ManageGeographicBoundary.cs" />
+    <Compile Include="Logic\ManageOrganization.cs" />
+    <Compile Include="Logic\ManageOrganizationProduct.cs" />
+    <Compile Include="Logic\ManagePartyRelationship.cs" />
+    <Compile Include="Logic\ManagePartyRole.cs" />
+    <Compile Include="Logic\ManagePasswordPolicy.cs" />
+    <Compile Include="Logic\ManagePerson.cs" />
+    <Compile Include="Logic\ManagePersona.cs" />
+    <Compile Include="Logic\ManagePostalAddress.cs" />
+    <Compile Include="Logic\ManagePreferredContactMethod.cs" />
+    <Compile Include="Logic\ManageProduct.cs" />
+    <Compile Include="Logic\Product\ManageProductBase.cs" />
+    <Compile Include="Logic\Product\ManageProductClientPortal.cs" />
+    <Compile Include="Logic\Product\ManageProductEasyLMS.cs" />
+    <Compile Include="Logic\Product\ManageProductIntegrationMarketplace.cs" />
+    <Compile Include="Logic\Product\ManageProductLead2Lease.cs" />
+    <Compile Include="Logic\Product\ManageProductMarketingCenter.cs" />
+    <Compile Include="Logic\Product\ManageProductOmniChannel.cs" />
+    <Compile Include="Logic\Product\ManageProductProspectContact.cs" />
+    <Compile Include="Logic\Product\ManageProductRentersInsurance.cs" />
+    <Compile Include="Logic\Product\ManageProductResidentPortal.cs" />
+    <Compile Include="Logic\Product\ManageProductRum.cs" />
+    <Compile Include="Logic\Product\ManageProductSelfProvisioningPortal.cs" />
+    <Compile Include="Logic\Product\ManageProductUser.cs" />
+    <Compile Include="Logic\Product\ManageProductVendorServices.cs" />
+    <Compile Include="Logic\ManageProfile.cs" />
+    <Compile Include="Logic\ManageRedBook.cs" />
+    <Compile Include="Logic\ManageRelationshipType.cs" />
+    <Compile Include="Logic\ManageRoleType.cs" />
+    <Compile Include="Logic\ManageSaml.cs" />
+    <Compile Include="Logic\ManageStreetAddress.cs" />
+    <Compile Include="Logic\ManageTelecommunicationNumber.cs" />
+    <Compile Include="Logic\ManageUnifiedLogin.cs" />
+    <Compile Include="Logic\ManageUser.cs" />
+    <Compile Include="Logic\ManageUserLogin.cs" />
+    <Compile Include="Logic\ManageUserProperty.cs" />
+    <Compile Include="Logic\ManageUserRegistrationEmail.cs" />
+    <Compile Include="Logic\ManageUserRoleRight.cs" />
+    <Compile Include="Logic\ProductIntegration\Factory\IManageProductIntegration.cs" />
+    <Compile Include="Logic\ProductIntegration\Factory\ManageProductFactory.cs" />
+    <Compile Include="Logic\ProductIntegration\Helpers\ApiIntegration.cs" />
+    <Compile Include="Logic\ProductIntegration\Helpers\DataCollector.cs" />
+    <Compile Include="Logic\ProductIntegration\Helpers\IDataCollector.cs" />
+    <Compile Include="Logic\ProductIntegration\Helpers\ProductActivityLogger.cs" />
+    <Compile Include="Logic\ProductIntegration\Helpers\ProductApiSecurity.cs" />
+    <Compile Include="Logic\ProductIntegration\ManageProductInvokerBase.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\IntegrationProductUser.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductEntityEnum.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductProperties.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductPropertyGroups.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductRole.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductUserProfile.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\ProductUserRolePropertiesGroups.cs" />
+    <Compile Include="Logic\ProductIntegration\ProductImplementation\LeadManagement.cs" />
+    <Compile Include="Logic\ProductIntegration\ProductImplementation\PortfolioManagement.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductAssetOptimization.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductOneSite.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductOnSite.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductOps.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageProductRPDocumentManagement.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageResearchApplication.cs" />
+    <Compile Include="Logic\Product\Interfaces\IManageUnifiedAmenities.cs" />
+    <Compile Include="Logic\Product\ManageProductAssetOptimization.cs" />
+    <Compile Include="Logic\Product\ManageProductOneSite.cs" />
+    <Compile Include="Logic\Product\ManageProductOnSite.cs" />
+    <Compile Include="Logic\Product\ManageProductOps.cs" />
+    <Compile Include="Logic\Product\ManageProductRPDocumentManagement.cs" />
+    <Compile Include="Logic\Product\ManageResearchApplication.cs" />
+    <Compile Include="Logic\Product\ManageUnifiedAmenities.cs" />
+    <Compile Include="Logic\Product\SAML\RealPageSAML.cs" />
+    <Compile Include="Logic\Security\IManageSecurity.cs" />
+    <Compile Include="Logic\Security\ManageSecurity.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repository\BaseRepository.cs" />
+    <Compile Include="Repository\Clients\ClientsSetupRepository.cs" />
+    <Compile Include="Repository\CommunicationEventRepository.cs" />
+    <Compile Include="Repository\ConfigurationSettingRepository.cs" />
+    <Compile Include="Repository\Constants\StoredProcConstants.cs" />
+    <Compile Include="Repository\ContactMechanismRepository.cs" />
+    <Compile Include="Repository\ContactMechanismUsageTypeRepository.cs" />
+    <Compile Include="Repository\CredentialRepository.cs" />
+    <Compile Include="Repository\CustomFieldsRepository.cs" />
+    <Compile Include="Repository\ElectronicAddressRepository.cs" />
+    <Compile Include="Repository\EmailRepository.cs" />
+    <Compile Include="Repository\Enterprise\EntUserRepository.cs" />
+    <Compile Include="Repository\Enterprise\IEntUserRepository.cs" />
+    <Compile Include="Repository\GeographicBoundaryRepository.cs" />
+    <Compile Include="Repository\GlobalSettingRepository.cs" />
+    <Compile Include="Repository\ICustomFieldsRepository.cs" />
+    <Compile Include="Repository\Interfaces\ICommunicationEventRepository.cs" />
+    <Compile Include="Repository\Interfaces\IConfigurationSettingRepository.cs" />
+    <Compile Include="Repository\Interfaces\IContactMechanismRepository.cs" />
+    <Compile Include="Repository\Interfaces\IContactMechanismUsageTypeRepository.cs" />
+    <Compile Include="Repository\Interfaces\ICredentialRepository.cs" />
+    <Compile Include="Repository\Interfaces\IElectronicAddressRepository.cs" />
+    <Compile Include="Repository\Interfaces\IEmailRepository.cs" />
+    <Compile Include="Repository\Interfaces\IGeographicBoundaryRepository.cs" />
+    <Compile Include="Repository\Interfaces\IGlobalSettingRepository.cs" />
+    <Compile Include="Repository\Interfaces\IOrganizationProductRepository.cs" />
+    <Compile Include="Repository\Interfaces\IOrganizationRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPartyRelationshipRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPartyRoleRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPasswordPolicyRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPersonaRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPersonRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPostalAddressRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPreferredContactMethodRepository.cs" />
+    <Compile Include="Repository\Interfaces\IProductInternalSettingRepository.cs" />
+    <Compile Include="Repository\Interfaces\IProductRepository.cs" />
+    <Compile Include="Repository\Interfaces\IProfileRepository.cs" />
+    <Compile Include="Repository\Interfaces\IPropertyRepository.cs" />
+    <Compile Include="Repository\Interfaces\IRelationshipTypeRepository.cs" />
+    <Compile Include="Repository\Interfaces\IRoleTypeRepository.cs" />
+    <Compile Include="Repository\Interfaces\ISamlRepository.cs" />
+    <Compile Include="Repository\Interfaces\ISecuritySettingsRepository.cs" />
+    <Compile Include="Repository\Interfaces\ISharedDataRepository.cs" />
+    <Compile Include="Repository\Interfaces\IStreetAddressRepository.cs" />
+    <Compile Include="Repository\Interfaces\ITelecommunicationNumberRepository.cs" />
+    <Compile Include="Repository\Interfaces\IUnifiedLoginRepository.cs" />
+    <Compile Include="Repository\Interfaces\IUserLoginRepository.cs" />
+    <Compile Include="Repository\Interfaces\IUserRepository.cs" />
+    <Compile Include="Repository\Interfaces\IUserRoleRightRepository.cs" />
+    <Compile Include="Repository\Interfaces\IUserTokenRepository.cs" />
+    <Compile Include="Repository\Interfaces\IStatusTypeRepository.cs" />
+    <Compile Include="Repository\Interfaces\IUserLoginPersonaRepository.cs" />
+    <Compile Include="Repository\StatusTypeRepository.cs" />
+    <Compile Include="Repository\OmniChannelRepository.cs" />
+    <Compile Include="Repository\OrganizationProductRepository.cs" />
+    <Compile Include="Repository\OrganizationRepository.cs" />
+    <Compile Include="Repository\PartyRelationshipRepository.cs" />
+    <Compile Include="Repository\PartyRoleRepository.cs" />
+    <Compile Include="Repository\PasswordPolicyRepository.cs" />
+    <Compile Include="Repository\PersonaRepository.cs" />
+    <Compile Include="Repository\PersonRepository.cs" />
+    <Compile Include="Repository\PostalAddressRepository.cs" />
+    <Compile Include="Repository\PreferredContactMethodRepository.cs" />
+    <Compile Include="Repository\ProductInternalSettingRepository.cs" />
+    <Compile Include="Repository\ProductRepository.cs" />
+    <Compile Include="Repository\ProfileRepository.cs" />
+    <Compile Include="Repository\PropertyRepository.cs" />
+    <Compile Include="Repository\RelationshipTypeRepository.cs" />
+    <Compile Include="Repository\ResearchApplicationRepository.cs" />
+    <Compile Include="Repository\RoleTypeRepository.cs" />
+    <Compile Include="Repository\SamlRepository.cs" />
+    <Compile Include="Repository\SecuritySettingsRepository.cs" />
+    <Compile Include="Repository\Security\IPersonaRightRepository.cs" />
+    <Compile Include="Repository\Security\PersonaRightRepository.cs" />
+    <Compile Include="Repository\SharedDataRepository.cs" />
+    <Compile Include="Repository\StreetAddressRepository.cs" />
+    <Compile Include="Repository\TelecommunicationNumberRepository.cs" />
+    <Compile Include="Repository\UnifiedLoginRepository.cs" />
+    <Compile Include="Repository\UserLoginPersonaRepository.cs" />
+    <Compile Include="Repository\UserLoginRepository.cs" />
+    <Compile Include="Repository\UserRepository.cs" />
+    <Compile Include="Repository\UserRoleRightRepository.cs" />
+    <Compile Include="Repository\UserTokenRepository.cs" />
+    <Compile Include="Swagger\ExamplesOperationFilter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Foundation\Audit\Audit.Core\Audit.Core.csproj">
+      <Project>{6f35c5e7-05ce-48d8-8ed5-fa191f57ae46}</Project>
+      <Name>Audit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Foundation\Audit\Audit.WebApi\Audit.WebApi.csproj">
+      <Project>{ffad1ef8-c442-499b-9959-8f8d43a84515}</Project>
+      <Name>Audit.WebApi</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Foundation\DataAccess\DataAccess.csproj">
+      <Project>{255a94dc-a434-47cc-a472-e162ebde6bce}</Project>
+      <Name>DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Service\SharedObjects\SharedObjects.csproj">
+      <Project>{941e5338-b2c7-41fd-bad5-a34a8e732e19}</Project>
+      <Name>SharedObjects</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Logic\Enterprise\Helpers\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props'))" />
+  </Target>
+</Project>

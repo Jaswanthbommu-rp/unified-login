@@ -1,0 +1,14 @@
+.ui-pnotify {
+
+	.change-password-link {
+		width: 120px;
+	}
+
+	.emphasize-countdown {
+		font-weight: bold;
+	}
+
+	@media #{$smScAndBelow} {
+		width: 80% !important; //override
+	}
+}

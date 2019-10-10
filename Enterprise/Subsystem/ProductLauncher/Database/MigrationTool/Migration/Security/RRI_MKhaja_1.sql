@@ -1,0 +1,3 @@
+﻿CREATE LOGIN [RRI\MKhaja]
+    FROM WINDOWS WITH DEFAULT_LANGUAGE = [us_english];
+

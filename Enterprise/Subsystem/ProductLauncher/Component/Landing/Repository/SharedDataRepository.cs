@@ -1,0 +1,95 @@
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
+{
+	/// <summary>
+	/// Product Repository
+	/// </summary>
+	public class SharedDataRepository : BaseRepository, ISharedDataRepository
+	{
+		private DefaultUserClaim _userClaim;
+
+		#region Ctor
+		/// <summary>
+		/// base Constructor
+		/// </summary>
+		public SharedDataRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+		{
+			_userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+		}
+
+		/// <summary>
+		/// Used when the user is known
+		/// </summary>
+		/// <param name="userClaim"></param>
+		public SharedDataRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+		{
+			if (userClaim == null)
+				userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+
+			_userClaim = userClaim;
+		}
+		#endregion
+
+		#region Public Methods
+		
+		/// <summary>
+		/// Used to get a list of products ids for a company by the company guid
+		/// </summary>
+		/// <param name="organizationRealPageId"></param>
+		/// <returns></returns>
+		public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
+		{
+			RPObjectCache rpCache = new RPObjectCache();
+			var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";
+
+			return rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
+			{
+				using (var repository = GetRepository())
+				{
+                    IList<int> productIdList = new List<int>();
+                    IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+					foreach (ProductUI pui in productList)
+					{
+						productIdList.Add(pui.ProductId);
+					}
+                    return productIdList;
+                }
+			});
+		}
+
+		/// <summary>
+		/// Used to get a list of products ids for a company by the company party id
+		/// </summary>
+		/// <param name="organizationPartyId"></param>
+		/// <returns></returns>
+		public IList<int> GetProductIdsByCompany(long organizationPartyId)
+		{
+			RPObjectCache rpCache = new RPObjectCache();
+			var cacheKey = $"getProductIdsByCompanyPartyId_{organizationPartyId}";
+
+			return rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
+			{
+				using (var repository = GetRepository())
+				{
+                    IList<int> productIdList = new List<int>();
+                    IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { PartyId = organizationPartyId }).ToList();
+					foreach (ProductUI pui in productList)
+					{
+						productIdList.Add(pui.ProductId);
+					}
+                    return productIdList;
+                }
+			});
+		}
+
+		#endregion
+	}
+}

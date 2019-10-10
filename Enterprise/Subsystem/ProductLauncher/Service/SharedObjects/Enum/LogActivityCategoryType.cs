@@ -1,0 +1,13 @@
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
+{
+    /// <summary>
+    /// Activity Category Type for logging
+    /// </summary>
+    public enum LogActivityCategoryType
+    {
+        Security = 1,
+        User = 2,
+        ProductAccess = 3,
+        Email = 4,
+    }
+}
