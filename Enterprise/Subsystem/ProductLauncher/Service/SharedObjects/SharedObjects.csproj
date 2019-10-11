@@ -350,6 +350,7 @@
     <Compile Include="Product\Migration\VendorServiceMigrateUser.cs" />
     <Compile Include="Product\Ops\AssetGroupCommon.cs" />
     <Compile Include="Product\Ops\AssetGroupCreate.cs" />
+    <Compile Include="Product\Ops\AssetGroupPatch.cs" />
     <Compile Include="Product\Ops\AssetGroupProperty.cs" />
     <Compile Include="Product\Ops\OpsInput.cs" />
     <Compile Include="Product\Ops\OpsPagination.cs" />

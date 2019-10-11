@@ -312,11 +312,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.NoContent, Description = "AssetGroup patched", Type = typeof(AssetGroup))]
+        [SwaggerResponse(HttpStatusCode.NoContent, Description = "AssetGroup patched", Type = typeof(AssetGroupPatch))]
         [Route("product/ops/assetgroups/{assetGroupId}")]
         [AuthorizeScope("enterpriseapi")]
         [HttpPatch]
-        public HttpResponseMessage PatchOpsAssetGroups([FromBody] AssetGroupCreate assetGroup, int assetGroupId)
+        public HttpResponseMessage PatchOpsAssetGroups([FromBody] AssetGroupPatch assetGroup, int assetGroupId)
         {
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
             ErrorResponse error = new ErrorResponse()

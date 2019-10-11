@@ -182,7 +182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="assetGroupId">assetGroupId being updated</param>
         /// <param name="assetGroup">AssetGroup object (Name, Description, and List of Properties {Ids, OR Codes}</param>
         /// <returns>ListResponse object</returns>
-        public ListResponse PatchOpsAssetGroup(long editorPersonaId, long userPersonaId, int assetGroupId, AssetGroupCreate assetGroup)
+        public ListResponse PatchOpsAssetGroup(long editorPersonaId, long userPersonaId, int assetGroupId, AssetGroupPatch assetGroup)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -2490,7 +2490,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="assetGroupId">assetGroupId being updated</param>
         /// <param name="assetGroup">AssetGroup object (Name, Description, and List of Properties {Ids, OR Codes}</param>
         /// <returns>ListResponse object</returns>
-        private ListResponse PatchAssetGroup(long editorPersonaId, long userPersonaId, int assetGroupId, AssetGroupCreate assetGroup)
+        private ListResponse PatchAssetGroup(long editorPersonaId, long userPersonaId, int assetGroupId, AssetGroupPatch assetGroup)
         {
             ListResponse listResponse = new ListResponse();
             IList<AssetGroup> assetGroupList = new List<AssetGroup>();
@@ -2527,7 +2527,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         req.Content = new StringContent(JsonConvert.SerializeObject(assetGroup), System.Text.Encoding.Default, "application/json");
                         var patchResponse = _client.SendAsync(req).Result;
 
-                        IList<AssetGroupCreate> assetGroupCreateList = new List<AssetGroupCreate>()
+                        IList<AssetGroupPatch> assetGroupCreateList = new List<AssetGroupPatch>()
                         {
                             assetGroup
                         };

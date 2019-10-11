@@ -1236,9 +1236,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //get the active personaId for the user being edited enterprise UserId
                 using (var repository = GetRepository())
                 {
-                    personaId = repository.GetOne<long>(StoredProcNameConstants.SP_GetActivePersona, new {RealPageId = personRealPageId});
+                    var personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, new {RealPageId = personRealPageId});
+                    personaId = personaList.FirstOrDefault(p => p.OrganizationPartyId == _userClaim.OrganizationPartyId).PersonaId;
                 }
-
+                
                 //get user login for persona
                 IManageUserLogin userLoginLogic = new ManageUserLogin();
                 var userLogin = userLoginLogic.GetUserLoginOnly(personRealPageId.Value);

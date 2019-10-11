@@ -1360,12 +1360,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 foreach (var item in aoUserCompanyPropertyRoleDetails)
                 {
-                    UpdateProductSettingProductStatus(userPersonaId,
-                        _productSettingType_ProductStatus, (int) ProductEnumHelper.GetAoProductEnum(item.ProductName), (int) ProductBatchStatusType.Deleted);
+                    if (!item.IsAssigned)
+                    {
+                        UpdateProductSettingProductStatus(userPersonaId,
+                            _productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName), (int)ProductBatchStatusType.Deleted);
 
-                    // add activity log
-                    WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int) ProductEnumHelper.GetAoProductEnum(item.ProductName),
-                        "User {0} {1} access is removed for product {2} by user {3} {4}.");
+                        // add activity log
+                        WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName),
+                            "User {0} {1} access is removed for product {2} by user {3} {4}.");
+                    }
+
+                    if (item.IsAssigned)
+                    {
+                        UpdateProductSettingProductStatus(userPersonaId,
+                            _productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName), (int)ProductBatchStatusType.Success);
+
+                        // add activity log
+                        WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName),
+                            "User {0} {1} access is assigned for product {2} by user {3} {4}.");
+                    }
                 }
             }
             else
