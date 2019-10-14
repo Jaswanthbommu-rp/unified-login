@@ -200,12 +200,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             Guid personRealPageId = Guid.Empty;
             long userEmailContactMechanismId = 0;
             bool removedExternalCompany = false;
+			bool profileChanged = false;
 
-            IUserLoginRepository userLoginRepository = new UserLoginRepository();
+			IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
-            if (userLoginOnly != null)
+			if (userLoginOnly != null)
             {
-                userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(newProfile.userLogin.LoginName);
+				//Get User Details before save
+				UserDetails userDetails = GetUserDetails(personaId: null, userRealPageId: userLoginOnly.RealPageId.ToString());
+				//Check if ONLY user profile changed without any product changes
+				profileChanged = IsUserProfileChanged(newProfile, userDetails);
+
+				userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(newProfile.userLogin.LoginName);
                 if (userPersonaOrganizationList.ToList().Any(i => i.OrganizationPartyId.Equals(newProfile.organization[0].PartyId)))
                 {
                     errorStatus.Success = false;
@@ -297,9 +303,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 repository.UnitOfWork.BeginTransaction();
                 try
                 {
-                    #region Status
+					#region Status
 
-                    fromDate = newProfile.userLogin.FromDate.HasValue ? newProfile.userLogin.FromDate.Value : fromDate;
+					fromDate = newProfile.userLogin.FromDate.HasValue ? newProfile.userLogin.FromDate.Value : fromDate;
                     if (newProfile.userLogin.ThruDate.HasValue)
                     {
                         thruDate = newProfile.userLogin.ThruDate.Value;
@@ -383,9 +389,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         processTracker = "Create UserLogin";
                         param = new
                         {
-                            newProfile.RealPageId,
-                            newProfile.userLogin.LoginName,
-                            CreateUserSourceType = sourceType
+							newProfile.RealPageId,
+							newProfile.userLogin.LoginName,
+							CreateUserSourceType = sourceType
                         };
 
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, param);
@@ -414,38 +420,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         userId = repositoryResponse.Id;
                         personRealPageId = newProfile.RealPageId;
 
-                        #endregion
+						#endregion
 
-                        #region Update UserLogin (Password)
+						#region Update UserLogin (Password)
 
-                        processTracker = "Update UserLogin";
+						processTracker = "Update UserLogin";
 
-                        //Set Password
-                        if (!string.IsNullOrEmpty(newProfile.Password))
-                        {
-                            var pwd = newProfile.Password.PasswordHash();
-                            newProfile.userLogin.PasswordHash = pwd.PasswordHash;
-                            newProfile.userLogin.PasswordSalt = pwd.PasswordSalt;
-                        }
+						//Set Password
+						if (!string.IsNullOrEmpty(newProfile.Password))
+						{
+							var pwd = newProfile.Password.PasswordHash();
+							newProfile.userLogin.PasswordHash = pwd.PasswordHash;
+							newProfile.userLogin.PasswordSalt = pwd.PasswordSalt;
+						}
 
-                        //Update UserLogin
-                        param = new
-                        {
-                            newProfile.RealPageId,
-                            newProfile.userLogin.LoginName,
-                            newProfile.userLogin.PasswordHash,
-                            newProfile.userLogin.PasswordSalt,
-                            FromDate = fromDate,
-                            newProfile.userLogin.ThruDate,
-                            PartyId = organizationPartyId
-                        };
-                        UserLogin newUserLogin = repository.GetOne<UserLogin>(StoredProcNameConstants.SP_UpdateUserLogin, param);
+						//Update UserLogin
+						param = new
+						{
+							newProfile.RealPageId,
+							newProfile.userLogin.LoginName,
+							newProfile.userLogin.PasswordHash,
+							newProfile.userLogin.PasswordSalt,
+							FromDate = fromDate,
+							newProfile.userLogin.ThruDate,
+							PartyId = organizationPartyId
+						};
+						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, param);
 
-                        #endregion
+						#endregion
 
-                        #region Preferred Contact Method and Tele-Communication
+						#region Preferred Contact Method and Tele-Communication
 
-                        if ((newProfile.TelecommunicationNumber.Count > 0) && (newProfile.PreferredContactMethodId > 0))
+						if ((newProfile.TelecommunicationNumber.Count > 0) && (newProfile.PreferredContactMethodId > 0))
                         {
                             var response = UpdateProfile(repository, newProfile.RealPageId, newProfile);
 
@@ -650,8 +656,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //else, Delete from External Users and Add user to this organizatiom as Primary (Switch Primary Organization from External Users to this organization)
                         else if (newProfile.UserTypeId != (int)UserRoleType.ExternalUser && userPersonaOrganizationList.ToList().Any(x => ((x.PrimaryOrganization.Equals(true) && x.OrganizationPartyId.Equals(organizationExternalUser.PartyId)))))
                         {
-                            //Unlink the user from External Users (Enterprise.PartyRelationship)
-                            param = new
+							//Unlink the user from External Users (Enterprise.PartyRelationship)
+							param = new
                             {
                                 PersonRealPageId = userLoginOnly.RealPageId,
                                 OrganizationRealPageId = organizationExternalUser.RealPageId
@@ -695,9 +701,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                             };
                         }
-                    }
 
-                    processTracker = "Pending email notification";
+						if ((profileChanged) && (newProfile.UserTypeId != (int)UserRoleType.ExternalUser))
+						{
+							param = new
+							{
+								RealPageId = newProfile.RealPageId,
+								FirstName = newProfile.FirstName,
+								MiddleName = newProfile.MiddleName,
+								LastName = newProfile.LastName
+							};
+							//Update the person's info
+							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
+							if (repositoryResponse.Id == 0)
+							{
+								repository.UnitOfWork.Rollback();
+								errorStatus.Success = false;
+								errorStatus.ErrorCode = "User.CreateUser.26";
+								errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
+								createUserResponse.Status = errorStatus;
+								createUserResponse.UserStatus = errorStatus.ErrorMsg;
+								return createUserResponse;
+							}
+						}
+					}
+
+					processTracker = "Pending email notification";
                     if (identityProviderType.IsLocal)
                     {
                         IList<CommonAddress> orgMechanismList = ListContactMechanismForPerson(repository, organizationRealPageId, emailUsageType);
@@ -1511,7 +1540,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PartyId = orgPartyId
                     };
 
-                    currentUserLogin = repository.GetOne<UserLogin>(StoredProcNameConstants.SP_UpdateUserLogin, paramUpdateUserLogin);
+					response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, paramUpdateUserLogin);
 
                     processTracker = "Update UserLogin Statuses";
 
@@ -2458,7 +2487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     #region Update Person
                     repositoryResponse.Id = userDetails.PersonPartyId;
-                    if ((profileChanged) && (isCurrentOrgThePrimaryOrg))
+                    if ((profileChanged) && ((isCurrentOrgThePrimaryOrg) || (userTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
                     {
                         //Setup the parameter values to update the person's info
                         param = new

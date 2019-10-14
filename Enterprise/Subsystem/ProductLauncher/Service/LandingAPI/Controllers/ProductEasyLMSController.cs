@@ -61,7 +61,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			bool bUserEnteredUserName = !String.IsNullOrWhiteSpace(userName);
 			int SamlUserAttributeId = 0;
 			int productId = Convert.ToInt32(ProductEnum.EasyLMS);
-			long personaId = 0;
 			string productEasyLMSUri = string.Empty;
 			string productUserName = string.Empty;
 			string requestUri = string.Empty;
@@ -81,11 +80,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			//Get the Unified login UserName (GB UserName) to Update the SamlUserAttribute is exists OR to create SamlUserAttribute
 			productUserName = (bUserEnteredUserName == true) ? userName : _loginName;
 
-			//Get Active Persona by Enterpise UserId
-			//personaId = personaLogic.GetActivePersonaId(_realpageUserId);
-
 			ManageProductEasyLMS manageProductEasyLMS = new ManageProductEasyLMS(_realpageUserId);
-			CustomerCompanyMap companyMap = manageProductEasyLMS.GetCompanyAPICodeAndKey(personaId, personaId);
+			CustomerCompanyMap companyMap = manageProductEasyLMS.GetCompanyAPICodeAndKey(_userClaims.PersonaId, _userClaims.PersonaId);
 			if ((companyMap == null) || (Convert.ToInt32(companyMap.CompanyInstanceSourceId) == 0))
 			{
 				output.obj = productEasyLMS;
@@ -153,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IManageSaml samlLogic = new ManageSaml();
 			//Get the User email associated with EasyLMS
 			ISamlAttributes samlAttribute = new SamlAttributes();
-			IList<SamlAttributes> samlAttributesList = samlLogic.GetProductSamlDetails(personaId, productId);
+			IList<SamlAttributes> samlAttributesList = samlLogic.GetProductSamlDetails(_userClaims.PersonaId, productId);
 			//Did you previously create an account on EasyLMS? Yes
 			if (samlAttributesList.Count > 0)
 			{
@@ -213,7 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				else
 				{
 					//Add productUsername attribute value in Ident.SamlUserAttribute
-					repositoryResponse = samlLogic.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.productUsername, productUserName);
+					repositoryResponse = samlLogic.CreateSamlUserAttribute(_userClaims.PersonaId, productId, SamlAttributeEnum.productUsername, productUserName);
 				}
 			}
 			else

@@ -96,6 +96,7 @@
 			"User.CreateUser.23": "Link Identity Provider to UserLogin failed.",
             "User.CreateUser.24": "Unable to create new user.",
 			"User.CreateUser.25": "No value(s) were provided for enabled and required custom field(s).",
+			"User.CreateUser.26": "An error was encountered when updating a multi-company user First, Middle, and/or Last name.",
 
             "User.UpdateUser.1": "Profile is required.",
             "User.UpdateUser.2": "User already exists",

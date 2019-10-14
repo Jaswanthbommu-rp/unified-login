@@ -21,7 +21,6 @@
             "label.thruDate",
             "label.isActive",
             "label.is3rdPartyIDP",
-           // "label.timeZoneOffset",
 
             "label.phone",
             "label.phoneType",
@@ -45,7 +44,6 @@
             "errorMsgs.passwordCopy.passwordsMatch",
             "errorMsgs.passwordCopy.required",
             "errorMsgs.userTypeId.required",
-           // "errorMsgs.TimeZoneOffset.required",
 
             "User.CreateUser.1",
             "User.CreateUser.2",
@@ -72,6 +70,7 @@
 			"User.CreateUser.23",
 			"User.CreateUser.24",
 			"User.CreateUser.25",
+			"User.CreateUser.26",
 
             "User.UpdateUser.1",
             "User.UpdateUser.2",

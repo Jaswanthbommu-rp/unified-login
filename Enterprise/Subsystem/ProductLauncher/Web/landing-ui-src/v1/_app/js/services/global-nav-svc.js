@@ -138,12 +138,12 @@
                 if ( (compId === -1 ) && (persona.hasAccessSettingsAdmin()  ) ) {
 
                     if (navModel.data !== undefined && (navModel.data.length > 0) && !settingsAdded) {
-                              var tmpl = {
-                                   linkId: "Manage Templates",
-                                   title: "Manage Templates",
-                                   url: "../settings/templates" 
-                               };
-                        setting.items.push(tmpl);                        
+                        //       var tmpl = {
+                        //            linkId: "Manage Templates",
+                        //            title: "Manage Templates",
+                        //            url: "../settings/templates" 
+                        //        };
+                        // setting.items.push(tmpl);                        
                         navModel.data.push(setting);
                         settingsAdded = true;
                         svc.personaWatch();

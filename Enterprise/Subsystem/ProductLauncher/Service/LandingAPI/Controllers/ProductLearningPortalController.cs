@@ -59,7 +59,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             bool bUserEnteredUserName = !String.IsNullOrWhiteSpace(userName);
             int SamlUserAttributeId = 0;
             int productId = Convert.ToInt32(ProductEnum.ProductLearningPortal);
-            long personaId = 0;
             string productLearningPortalUri = "";
             string productUserName = "";
             string requestUri = "";
@@ -77,11 +76,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             //Get the Unified login UserName (GB UserName) to Update the SamlUserAttribute is exists OR to create SamlUserAttribute
             productUserName = (bUserEnteredUserName == true) ? userName : _loginName;
 
-            //Get Active Persona by Enterpise UserId
-            //personaId = personaLogic.GetActivePersonaId(_realpageUserId);
-
-            //Get the Product Internal Setting for Product Learning Portal
-            IList<ProductInternalSetting> productInternalSettingList = productLogic.GetProductInternalSettings(productId);
+			//Get the Product Internal Setting for Product Learning Portal
+			IList<ProductInternalSetting> productInternalSettingList = productLogic.GetProductInternalSettings(productId);
             if (productInternalSettingList.Count == 0)
             {
                 output.obj = productLearningPortal;
@@ -113,12 +109,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IManageSaml samlLogic = new ManageSaml();
             //Get the User email associated with Product Learning Portal
             ISamlAttributes samlAttribute = new SamlAttributes();
-            IList<SamlAttributes> samlAttributesList = samlLogic.GetProductSamlDetails(personaId, productId);
+            IList<SamlAttributes> samlAttributesList = samlLogic.GetProductSamlDetails(_userClaims.PersonaId, productId);
 
 			if ((samlAttributesList.Count == 0) && (resultResponse.status == 1))
 			{
 				//Add productUsername attribute value in Ident.SamlUserAttribute
-				repositoryResponse = samlLogic.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.productUsername, productUserName);
+				repositoryResponse = samlLogic.CreateSamlUserAttribute(_userClaims.PersonaId, productId, SamlAttributeEnum.productUsername, productUserName);
 				productLearningPortalUri = resultResponse.loginURL;
 			}
 			else
@@ -198,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						if ((bUserEnteredUserName == true) || (createUser == true))
 						{
 							//Add productUsername attribute value in Ident.SamlUserAttribute
-							repositoryResponse = samlLogic.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.productUsername, productUserName);
+							repositoryResponse = samlLogic.CreateSamlUserAttribute(_userClaims.PersonaId, productId, SamlAttributeEnum.productUsername, productUserName);
 						}
 					}
 				}
