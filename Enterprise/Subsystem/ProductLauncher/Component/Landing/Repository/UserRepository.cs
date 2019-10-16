@@ -1226,7 +1226,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         return createUserResponse;
                     }
 
-                    FindAndAddExistingProductPersona(repository, newProfile.productBatch, AssignUserPersonaId, newProfile.RealPageId);
+                    //FindAndAddExistingProductPersona(repository, newProfile.productBatch, AssignUserPersonaId, newProfile.RealPageId);
 
                     int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
 
@@ -1285,6 +1285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (foundExistingAOUser)
             {
+                productsToAdd.Add((int)ProductEnum.AssetOptimizer);
                 // get any existing AO user details and add it to the new products being added so it will append to the existing AO user
                 foreach (int productId in ProductEnumHelper.GetAoProductList())
                 {

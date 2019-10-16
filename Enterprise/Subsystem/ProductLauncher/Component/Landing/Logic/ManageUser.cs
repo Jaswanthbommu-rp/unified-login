@@ -324,8 +324,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, auditMessage, "CreateUser", profile);
 
 				string message = "";
-				//Send Email only when the from date is the same date as today utc
-                if (profile.userLogin.FromDate.Value.Date == DateTimeOffset.UtcNow.Date)
+                //Send Email only when time time difference between server utc time and user from date less than 15 minutes
+                if (profile.userLogin.FromDate.Value.Subtract(DateTime.UtcNow).TotalMinutes <= 15)
                 {
                     UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(profile.userLogin.LoginName);
                     bool isNotified = _manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, profile.organization[0].Name, profile.UserTypeId, profile.organization[0].PartyId);
@@ -416,7 +416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile);
 			if (repositoryResponse.Id > 0)
 			{
-				if (sendNotification)
+				if (sendNotification && !profile.userLogin.Is3rdPartyIDP)
 				{
 					IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_userClaim);
 					string message = "";

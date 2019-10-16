@@ -118,7 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (organizationList.FirstOrDefault(p => p != null && p.PartyId == organizationPartyId).PrimaryOrganization)
                     {
                         var primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
-                        if (primaryOrgStatus.IsPending.Value)
+                        if (primaryOrgStatus.IsPending.Value || primaryOrgStatus.IsExpired.Value)
                         {
                             userToken = _userTokenRepository.GetUserActivityToken(userLoginOnly.RealPageId, activityId, organizationPartyId);
                         }

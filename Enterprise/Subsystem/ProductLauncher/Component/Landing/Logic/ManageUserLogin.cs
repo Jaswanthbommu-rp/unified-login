@@ -647,7 +647,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
 
                             //Feature user (with disabled state) and user never logged in
-                            if (orgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && DateTimeOffset.UtcNow.Date == orgStatus.FromDate.Date && userLogin.LastLogin == null)
+                            
+                            if (orgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && orgStatus.FromDate.Subtract(DateTime.UtcNow).TotalMinutes <= 15 && userLogin.LastLogin == null)
                             {
                                 int statusTypeId = (int)UserUiStatusType.Pending;
                                 string statusType = UserUiStatusType.Pending.ToString();
