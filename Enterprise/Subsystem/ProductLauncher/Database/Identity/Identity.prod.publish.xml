@@ -5,10 +5,10 @@
     <TargetDatabaseName>Identity</TargetDatabaseName>
     <DeployScriptFileName>Identity.sql</DeployScriptFileName>
     <TargetConnectionString>Data Source=greenbookdb.realpage.com;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True</TargetConnectionString>
+	<TreatVerificationErrorsAsWarnings>True</TreatVerificationErrorsAsWarnings>
     <ProfileVersionNumber>1</ProfileVersionNumber>
     <BlockWhenDriftDetected>False</BlockWhenDriftDetected>
-    <RegisterDataTierApplication>True</RegisterDataTierApplication>
-    <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+    <BlockOnPossibleDataLoss>False</BlockOnPossibleDataLoss>
     <IgnoreExtendedProperties>True</IgnoreExtendedProperties>
   </PropertyGroup>
 </Project>

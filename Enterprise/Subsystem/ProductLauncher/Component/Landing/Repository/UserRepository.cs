@@ -882,7 +882,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         Persona personaFromUI = persona[0];
 
-
                         if (currentPrimaryOrgStatus != null && organizationExternalUser.PartyId == currentOrg.OrganizationPartyId)
                         {
                             // set the external persona from date to be the same as the current primary company
@@ -1195,7 +1194,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     long CreateUserPersonaId = 0L;
 
-                    //string saveProductBatchError = "Save Product(s) Error: ";
                     try
                     {
                         //Get the logged in user Current Persona Id
@@ -1208,27 +1206,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                     }
 
-                    //Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
-                    param = new
-                    {
-                        UserId = userId,
-                        ContactMechanismID = identityProviderType.ContactMechanismId
-                    };
-                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
-                    if (repositoryResponse.Id == 0)
-                    {
-                        repository.UnitOfWork.Rollback();
-                        errorStatus.Success = false;
-                        errorStatus.ErrorCode = "User.CreateUser.23";
-                        errorStatus.ErrorMsg = "Create User Error: Link Identity Provider to UserLogin failed.";
-                        createUserResponse.Status = errorStatus;
-                        createUserResponse.UserStatus = errorStatus.ErrorMsg;
-                        return createUserResponse;
-                    }
+					if (primaryOrgId.Equals(organizationPartyId))
+					{
+						//Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
+						param = new
+						{
+							UserId = userId,
+							ContactMechanismID = identityProviderType.ContactMechanismId
+						};
+						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
+						if (repositoryResponse.Id == 0)
+						{
+							repository.UnitOfWork.Rollback();
+							errorStatus.Success = false;
+							errorStatus.ErrorCode = "User.CreateUser.23";
+							errorStatus.ErrorMsg = "Create User Error: Link Identity Provider to UserLogin failed.";
+							createUserResponse.Status = errorStatus;
+							createUserResponse.UserStatus = errorStatus.ErrorMsg;
+							return createUserResponse;
+						}
+					}
 
-                    //FindAndAddExistingProductPersona(repository, newProfile.productBatch, AssignUserPersonaId, newProfile.RealPageId);
-
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
+					int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
 
                     #endregion
 
@@ -2359,6 +2358,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //Get the logged-in user Current Persona Id
             createUserPersonaId = personaRespository.GetActivePersonaId(realPageId: loggedInUserRealPageId);
 
+            IList<Persona> personaList = personaRespository.ListActivePersona(profile.RealPageId, true);
+            if (!currentOrgStatus.PrimaryOrganization)
+            {
+                personaList = personaList.Where(p => p.OrganizationPartyId == currentOrgStatus.PartyId).ToList();
+            }
+
             IList<string> aoProductsAvailableForUser = null;
             // Get AO roles before transaction scope begins
             if (profile.UserTypeId == (int)UserRoleType.SuperUser)
@@ -2516,22 +2521,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             idpt = identityProviderTypeList[0];
                         }
 
-                        //Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
-                        param = new
-                        {
-                            UserId = profile.userLogin.UserId,
-                            ContactMechanismID = idpt.ContactMechanismId
-                        };
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
-                        if (repositoryResponse.Id == 0)
-                        {
-                            repositoryResponse.ErrorMessage = "Update User Error: Link Identity Provider to UserLogin failed.";
-                            throw new Exception(repositoryResponse.ErrorMessage);
-                        }
+						if (isCurrentOrgThePrimaryOrg || userTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))
+						{
+							//Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
+							param = new
+							{
+								UserId = profile.userLogin.UserId,
+								ContactMechanismID = idpt.ContactMechanismId
+							};
+							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
+							if (repositoryResponse.Id == 0)
+							{
+								repositoryResponse.ErrorMessage = "Update User Error: Link Identity Provider to UserLogin failed.";
+								throw new Exception(repositoryResponse.ErrorMessage);
+							}
+						}
 
-                        #region Update UserLogin
+						#region Update UserLogin
 
-                        if (profile.userLogin != null)
+						if (profile.userLogin != null)
                         {
                             //check to see if user from date changed to feature date
                             isFeatureUser = profile.userLogin.FromDate.Value.Date > DateTime.Now.Date ? true : false;
@@ -2990,7 +2998,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (!userIsActive)
                         {
-                            DisableAllCompanyProducts(loggedInUserRealPageId, profile, currentOrg, repository, assignUserPersonaId, createUserPersonaId);
+                            DisableAllCompanyProducts(loggedInUserRealPageId, profile, currentOrg, repository, assignUserPersonaId, createUserPersonaId, personaList);
                         }
 
                         if ((profile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || (!priorNotificationEmail.Equals(profile.NotificationEmail, StringComparison.OrdinalIgnoreCase))))
@@ -3123,20 +3131,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        private void DisableAllCompanyProducts(Guid loggedInUserRealPageId, IProfileDetail profile, Organization currentOrg, IRepository repository, long assignUserPersonaId, long createUserPersonaId)
+        private void DisableAllCompanyProducts(Guid loggedInUserRealPageId, IProfileDetail profile, Organization currentOrg, IRepository repository, long assignUserPersonaId, long createUserPersonaId, IList<Persona> personaList)
         {
             long editorPersonaId = 0;
             var editorRealPageId = Guid.Empty;
-
-            dynamic param = new
-            {
-                RealPageId = profile.RealPageId
-            };
-            IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListActivePersona, param);
-            if (!currentOrg.PrimaryOrganization)
-            {
-                personaList = personaList.Where(p => p.OrganizationPartyId == currentOrg.PartyId).ToList();
-            }
 
             foreach (var companyPersona in personaList)
             {

@@ -526,7 +526,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="userTypeId"></param>
         /// <param name="manageProfile"></param>
         /// <returns></returns>
-        private OrganizationStatus CheckPrimaryOrganizationStatus(UserLoginOnly userLogin, DateTime? lastLoginDate, int userTypeId, ManageProfile manageProfile)
+        private OrganizationStatus CheckPrimaryOrganizationStatus(UserLoginOnly userLogin, DateTime? lastLoginDate, int userTypeId, ManageProfile manageProfile, DefaultUserClaim adminUserClaim)
         {
             var primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, lastLoginDate, 0, true);
             var organization = _organizationLogic.GetOrganization(primaryOrgStatus.RealPageId);
@@ -581,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             BooksMasterOrganizationId = organization.BooksMasterId,
                             Message = message,
                             FromUserLoginName = "automatedsystem",
-                            FromUserLoginId = userLogin.UserId,
+                            FromUserLoginId = adminUserClaim.UserId,
                             ToUserLoginName = userLogin.LoginName,
                             ToUserLoginId = userLogin.UserId
                         });
@@ -628,13 +628,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         //Get User Profile			
                         var profileDetail = profileLogic.GetProfileDetail(user.UserRealPageId, org.PartyId);
 
+                        //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona
+                        currentUserClaim = GetCurrentUserClaim(profileLogic, org);
+
                         //check primary Org status
-                        var primaryOrgStatus = CheckPrimaryOrganizationStatus(userLogin, userLogin.LastLogin, profileDetail.UserTypeId, profileLogic);
+                        var primaryOrgStatus = CheckPrimaryOrganizationStatus(userLogin, userLogin.LastLogin, profileDetail.UserTypeId, profileLogic, currentUserClaim);
 
                         if (userLogin.LoginName != null && org.PartyId != primaryOrgStatus.PartyId)
                         {
-                            //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona
-                            currentUserClaim = GetCurrentUserClaim(profileLogic, org);
 
                             //pending users who are not activated before status thru date,then expire them
                             if ((orgStatus.StatusTypeId == (int)UserUiStatusType.Pending || orgStatus.StatusTypeId == (int)UserUiStatusType.ForceResetPassword) &&
@@ -693,7 +694,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         BooksMasterOrganizationId = org.BooksMasterId,
                                         Message = message,
                                         FromUserLoginName = "automatedsystem",
-                                        FromUserLoginId = userLogin.UserId,
+                                        FromUserLoginId = currentUserClaim.UserId,
                                         ToUserLoginName = profileDetail.userLogin.LoginName,
                                         ToUserLoginId = profileDetail.userLogin.UserId
                                     });

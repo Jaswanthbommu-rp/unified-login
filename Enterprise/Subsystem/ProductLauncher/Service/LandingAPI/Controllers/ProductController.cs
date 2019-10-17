@@ -301,6 +301,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             IManageProduct manageProduct = new ManageProduct(_userClaims);
             IList<ProductInternalSetting> productInternalSettingsList = manageProduct.GetProductInternalSettings(productId);
 
+            IUserLoginRepository userLoginRepository = new UserLoginRepository();
+            var userLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.UserRealPageGuid);
+            var orgStatus = userLoginRepository.GetUserOrganizationWithStatus(_userClaims.UserId, userLoginOnly.LastLogin, _userClaims.OrganizationPartyId, false);
+
+            if ((orgStatus.IsActive.HasValue && !orgStatus.IsActive.Value) || orgStatus.IsLocked == true)
+            {
+                return new ProductLoginResponse() {ErrorMessage = "User not active"};
+            }
+
             string authenticationType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("AuthenticationType", StringComparison.OrdinalIgnoreCase))?.Value;
             switch (authenticationType)
             {
@@ -311,8 +320,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 case "SAML":
                     string relayState = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_RelayState", StringComparison.OrdinalIgnoreCase))?.Value;
                     string fallBackUrl = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_FallbackUrl", StringComparison.OrdinalIgnoreCase))?.Value;
-
-                    productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, accessToken, relayState, fallBackUrl, false, null);
+                    try
+                    {
+                        productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, accessToken, relayState, fallBackUrl, false, null);
+                    }
+                    catch (Exception exception)
+                    {
+                        return new ProductLoginResponse() {ErrorMessage = exception.Message};
+                    }
                     break;
 
                 case "OpenIdCustom":

@@ -778,6 +778,7 @@
     <Build Include="CustomField\Stored Procedures\GetFieldsValuesByUserLoginPersonaId.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUserLoginPersona.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2019Release.sql" />
+    <Build Include="Person\Stored Procedures\GetNotificationEmailForPerson.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

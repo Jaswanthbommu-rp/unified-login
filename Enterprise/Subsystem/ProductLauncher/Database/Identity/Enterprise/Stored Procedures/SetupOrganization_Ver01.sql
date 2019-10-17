@@ -209,6 +209,10 @@ BEGIN
 	(
 		@OrganizationId,
 		404
+	), 
+	(
+		@OrganizationId,
+		405
 	);
 
 	--Setup activity configuration
