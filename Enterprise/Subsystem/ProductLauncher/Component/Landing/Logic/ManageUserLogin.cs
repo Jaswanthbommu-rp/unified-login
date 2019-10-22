@@ -32,6 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IUserRepository _userRepository;
         IProductRepository _productRepository;
 		IOrganizationRepository _organizationRepository;
+        private IRoleTypeRepository _roleTypeRepository;
 		private IPersonRepository _personRepository;
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -48,6 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userRepository = new UserRepository(repository);
             _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
+            _roleTypeRepository = new RoleTypeRepository(repository);
             _defaultUserClaim = userClaim;
         }
 
@@ -62,6 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userRepository = new UserRepository();
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
+            _roleTypeRepository = new RoleTypeRepository();
         }
 
 		/// <summary>
@@ -76,30 +79,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userRepository = new UserRepository(userClaim);
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
+            _roleTypeRepository = new RoleTypeRepository();
             _defaultUserClaim = userClaim;
         }
-
-		/// <summary>
-		/// Used for dependency injection
-		/// </summary>
-		/// <param name="userLoginRepository"></param>
-		/// <param name="credentialRepository"></param>
-		/// <param name="manageOrganization"></param>
-		/// <param name="userRepository"></param>
-		/// <param name="productRepository"></param>
-		/// <param name="personRepository"></param>
-		/// <param name="defaultUserClaim"></param>
-		public ManageUserLogin(IUserLoginRepository userLoginRepository, ICredentialRepository credentialRepository, IManageOrganization manageOrganization, IUserRepository userRepository, IProductRepository productRepository, IPersonRepository personRepository, IOrganizationRepository organizationRepository, DefaultUserClaim defaultUserClaim)
-		{
-			_userLoginRepository = userLoginRepository;
-			_credentialRepository = credentialRepository;
-			_organizationLogic = manageOrganization;
-			_userRepository = userRepository;
-			_productRepository = productRepository;
-			_personRepository = personRepository;
-			_organizationRepository = organizationRepository;
-			_defaultUserClaim = defaultUserClaim;
-		}
 
 		#endregion
 
@@ -189,6 +171,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return _userLoginRepository.GetUserLoginOnly(userId); ;
+        }
+
+        /// <summary>
+        /// GetUserLogin
+        /// </summary>
+        /// <param name="userLogin"></param>
+        /// <param name="userStatuses"></param>
+        /// <returns>UserLogin with statuses</returns>
+        public UserLogin GetUserLogin(UserLogin userLogin, long orgPartyId, IList<UserStatus> userStatuses)
+        {
+            if (userLogin == null)
+            {
+                throw new Exception("Missing user login.");
+            }
+
+            if (userStatuses == null)
+            {
+                throw new Exception("Missing user statuses.");
+            }
+
+            return GetUserLogin(Guid.Empty, orgPartyId, userLogin, userStatuses);
         }
 
         /// <summary>
@@ -1244,6 +1247,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (userOrganizationExists.UserExists)
             {
+                if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(up => up.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee))
+                {
+                    userOrganizationExists.UserExistsNotAvailable = true;
+                    return userOrganizationExists;
+                }
+
+                // get the companies current roles and make sure External user type exists
+                ManageRoleType roleTypes = new ManageRoleType();
+                // use the organization id of the person creating the user
+                IList<RoleType> userRoles = _roleTypeRepository.GetRoleType("User Role", _defaultUserClaim.OrganizationPartyId);
+                if (userRoles.All(c => c.PartyRoleTypeId != (int) UserRoleType.ExternalUser))
+                {
+                    userOrganizationExists.UserExistsNotAvailable = true;
+                    return userOrganizationExists;
+                }
+
                 var ulo = GetUserLoginOnly(loginName);
                 var p = _personRepository.GetPerson(ulo.RealPageId);
                 if (p != null)

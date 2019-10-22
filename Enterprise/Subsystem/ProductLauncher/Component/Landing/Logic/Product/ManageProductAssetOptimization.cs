@@ -87,8 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/";
                 var editorUserProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
-                var productDivisionName =
-                    ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName));
+                var productDivisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName));
 
                 var ac = editorUserProfile.Divisions.Where(x => x.Division == productDivisionName).ToList();
                 var allCompanies = ac.SelectMany(f => f.Companies).ToList();
@@ -457,7 +456,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog(
                         $"ManageProductAssetOptimization.ManageAssetOptimizationUser user is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
 
-                    aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId);
+                    if (string.IsNullOrEmpty(_productUsername))
+                    {
+                        aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId);
+                    }
 
                     try
                     {
@@ -1391,16 +1393,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (!samlUserDetails.Any())
                     {
                         WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - No AO record found in GB for AO user -{productLoginName}. Creating new one.");
-                        _samlRepository.CreateSamlUserAttribute(userPersonaId, (int) ProductEnum.AssetOptimizer,
-                            SamlAttributeEnum.productUsername, productLoginName);
-                        _samlRepository.CreateSamlUserAttribute(userPersonaId, (int) ProductEnum.AssetOptimizer,
-                            SamlAttributeEnum.UserId, productLoginName);
-
-                        UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductEnum.AssetOptimizer, (int) ProductBatchStatusType.Success);
-
+                        _samlRepository.CreateSamlUserAttribute(userPersonaId, (int) ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
+                        _samlRepository.CreateSamlUserAttribute(userPersonaId, (int) ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
+                        
                         // add activity log
                         WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
                     }
+                    
+                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
 
                     //if product is assigned
                     foreach (var product in productAssigned)
@@ -1414,11 +1414,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - No {product} record found in GB for AO user -{productLoginName}. Creating new one.");
 
-                            _samlRepository.CreateSamlUserAttribute(userPersonaId,
-                                (int) ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername,
-                                productLoginName);
-                            _samlRepository.CreateSamlUserAttribute(userPersonaId,
-                                (int) ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
+                            _samlRepository.CreateSamlUserAttribute(userPersonaId, (int) ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername, productLoginName);
+                            _samlRepository.CreateSamlUserAttribute(userPersonaId, (int) ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
 
                             // add activity log
                             WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int) ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} assigned for product {2} by user {3} {4}.");
@@ -1499,7 +1496,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             Division = division,
                             GroupId = groupId,
                             ProductName = productId,
-                            IsEnabled = true
+                            IsEnabled = aoProductPropertyGroup.IsAssigned
                         };
 
                         groupModelList.Add(groupModel);
@@ -1753,7 +1750,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var match in matches)
                     {
-                        copiedAoUserCompanyPropertyRoleDetails.Remove(match);
+                        match.IsAssigned = false;
+                        //copiedAoUserCompanyPropertyRoleDetails.Remove(match);
                     }
                 }
             }

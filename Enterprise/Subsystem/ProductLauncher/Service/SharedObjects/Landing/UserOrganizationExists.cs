@@ -28,6 +28,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public bool UserExistsAsNoEmail { get; set; }
 
         /// <summary>
+        /// Used to indicate if the user login exists but is not usable
+        /// </summary>
+        [JsonProperty(PropertyName = "UserExistsNotAvailable")]
+        public bool UserExistsNotAvailable { get; set; }
+
+        /// <summary>
         /// The attributes about the person if it exists
         /// </summary>
         public IPerson Person { get; set; }

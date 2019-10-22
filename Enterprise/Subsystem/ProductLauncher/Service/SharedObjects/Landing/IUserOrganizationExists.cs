@@ -22,6 +22,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Used to indicate if the user login already used is a user type of Regular User (No Email)
         /// </summary>
         bool UserExistsAsNoEmail { get; set; }
+        
+        /// <summary>
+        /// Used to indicate if the user login exists but is not usable
+        /// </summary>
+        bool UserExistsNotAvailable { get; set; }
 
         /// <summary>
         /// The attributes about the person if it exists

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Castle.Components.DictionaryAdapter;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using Xunit;
 
@@ -401,11 +402,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 		[Fact]
 		public void IsLoginNameExists_MockInputData_ReturnValidUserOrganizationExists()
-		{
-			//Arrange
+        {
+            List<RoleType> roleTypes = new List<RoleType>()
+            {
+                new RoleType() {PartyRoleTypeId = 401, Name = "User", ParentPartyRoleTypeId = 400},
+                new RoleType() {PartyRoleTypeId = 402, Name = "SuperUser", ParentPartyRoleTypeId = 400},
+                new RoleType() {PartyRoleTypeId = 403, Name = "RealPage Employee", ParentPartyRoleTypeId = 400},
+                new RoleType() {PartyRoleTypeId = 404, Name = "User(No Email)", ParentPartyRoleTypeId = 400},
+                new RoleType() {PartyRoleTypeId = 405, Name = "External User", ParentPartyRoleTypeId = 400}
+            };
+
+            //Arrange
             _mockRepository.Setup(m => m.GetOne(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
                 .Returns(new Person());
 
+            _mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
+                .Returns(roleTypes);
+            
             //Act
             IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
             IUserOrganizationExists userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
@@ -415,7 +428,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				userOrganizationExists.UserExists == true
 				&& userOrganizationExists.UserExistsInThisOrganization == true
 			);
-		}
+
+            RPObjectCache rpCache = new RPObjectCache();
+            rpCache.BustCache();
+
+            roleTypes = new List<RoleType>()
+            {
+                new RoleType() {PartyRoleTypeId = 401, Name = "User", ParentPartyRoleTypeId = 400},
+                new RoleType() {PartyRoleTypeId = 402, Name = "SuperUser", ParentPartyRoleTypeId = 400},
+                new RoleType() {PartyRoleTypeId = 403, Name = "RealPage Employee", ParentPartyRoleTypeId = 400},
+                new RoleType() {PartyRoleTypeId = 404, Name = "User(No Email)", ParentPartyRoleTypeId = 400},
+            };
+
+            _mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
+                .Returns(roleTypes);
+
+            userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
+            Assert.True(
+                userOrganizationExists.UserExists == true
+                && userOrganizationExists.UserExistsNotAvailable == true
+            );
+        }
 
         //
         [Fact]
