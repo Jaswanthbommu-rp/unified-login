@@ -92,6 +92,35 @@
             s.multiCompany = s.companies.length > 1;
         };
 
+        p.setAllRoles = function(rolesData, val) {
+            var s = this;
+            rolesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.roles = rolesData;
+        };
+
+        p.setAllPropertiesData = function (propertiesData,val) {
+            var s = this;
+
+             propertiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.properties.properties = propertiesData;
+        };
+
+        p.setAllPropertyGroups = function (propertyGroupData,val) {
+            var s = this;
+
+            propertyGroupData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.propertyGroup = propertyGroupData;
+        };
+        
         p.setCompanyRoles = function (data) {
             var s = this;
             s.ready = true;

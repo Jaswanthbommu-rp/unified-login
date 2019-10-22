@@ -33,6 +33,7 @@
             s.roles = [];
             s.properties = [];
             s.companies = [];
+            s.entities = [];
             s._data = angular.copy(s.data);
         };
 
@@ -110,6 +111,16 @@
             });
 
             s.companies = companiesData;
+        };
+
+        p.setAllEntities = function (EntitiesData,val) {
+            var s = this;
+
+            EntitiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.entities = EntitiesData;
         };
 
         p.setAllProperties = function(propertiesData, val) {
@@ -326,6 +337,7 @@
             s.changed = false;
             s.properties = [];
             s.companies = [];
+            s.entities = [];
 
             s.data = angular.copy(s._data);
         };

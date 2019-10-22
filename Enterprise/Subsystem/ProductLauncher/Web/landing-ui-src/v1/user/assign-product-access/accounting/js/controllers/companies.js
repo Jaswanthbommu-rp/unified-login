@@ -139,7 +139,7 @@
         };
 
         vm.selectAllCompanies = function (val) {
-            ADataModel.setAllCompanies(vm.dataReq.records, val);
+            ADataModel.setallCompanies(vm.dataReq.records, val);
         };
 
         vm.setViewUserState = function(data) {
@@ -219,6 +219,7 @@
         vm.destroy = function() {
             vm.destWatch();
             vm.allCompWatch();
+            vm.gridAllWatch();
             // vm.gridSelectionWatch();
             // vm.gridSelectAllWatch();
             vm.propChangeWatch();

@@ -32,8 +32,9 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
-
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
             vm.updateGridWatch = pubsub.subscribe("businessIntelligence.updateGrids", vm.updateGrid);
+            
         };
 
         vm.updateGrid = function () {
@@ -128,8 +129,13 @@
             return !persona.data.hasManageAssetOptimizationProductAccess;
         };
 
+        vm.selectAllProperties = function (val) {
+            BIDataModel.setAllPropertiesData(vm.dataReq.records[0].properties, val);
+        };
+
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             vm.updateGridWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();

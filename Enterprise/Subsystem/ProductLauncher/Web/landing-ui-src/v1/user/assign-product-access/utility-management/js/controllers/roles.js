@@ -31,6 +31,8 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
+
+            vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
         };
 
         vm.isActive = function () {
@@ -87,8 +89,13 @@
             }
         };
 
+        vm.selectAllRoles = function(val){
+            UtilManDataModel.setAllRoles(vm.dataReq.records, val);
+        };
+
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             rolesGrid.destroy();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();

@@ -24,6 +24,7 @@
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.aoStatusWatch = statusModel.subscribeBI(vm.loadData);
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllPropertyGroups);
         };
 
         vm.allPropertiesSelected = function (val) {
@@ -86,8 +87,13 @@
             return !persona.data.hasManageAssetOptimizationProductAccess;
         };
 
+        vm.selectAllPropertyGroups = function (val) {
+            dataModel.setAllPropertyGroups(vm.dataReq.records, val);
+        };
+
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             vm.aoStatusWatch();
             vm.personaWatch();
             if (vm.dataReq) {

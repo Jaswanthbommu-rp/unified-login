@@ -39,6 +39,8 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
+
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllRoles);
         };
 
         vm.isActive = function () {
@@ -109,6 +111,10 @@
             }
         };
 
+        vm.selectAllRoles = function(val){
+            lead2LeaseDataModel.setAllRoles(vm.dataReq.records, val);
+        };
+
         vm.setPresetRoles = function (roles) {
             vm.presetRoles.push(presetModel.getData());
             roles.forEach(function (option) {
@@ -123,6 +129,7 @@
 
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }
