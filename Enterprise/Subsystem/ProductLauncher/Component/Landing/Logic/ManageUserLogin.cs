@@ -1247,6 +1247,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (userOrganizationExists.UserExists)
             {
+                var ulo = GetUserLoginOnly(loginName);
+                userOrganizationExists.Person = new Person() { RealPageId = ulo.RealPageId };
+
                 if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(up => up.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee))
                 {
                     userOrganizationExists.UserExistsNotAvailable = true;
@@ -1263,7 +1266,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return userOrganizationExists;
                 }
 
-                var ulo = GetUserLoginOnly(loginName);
                 var p = _personRepository.GetPerson(ulo.RealPageId);
                 if (p != null)
                 {
