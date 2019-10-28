@@ -331,7 +331,11 @@
             var bPrompt = true;
             if ($params.realPageId && (userTypeId !== model.getOrgUserTypeId())) {
                 if (userTypeId === vm.userTypes.regularUserNoEmail) {
-                    changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
+                    if(model.isClonedUser()){
+                            bPrompt = false;
+                        }else{
+                            changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
+                     }                    
                 }
                 else if (userStatus.isSuperUser()) {
                     if (userTypeId === vm.userTypes.externalUser) {

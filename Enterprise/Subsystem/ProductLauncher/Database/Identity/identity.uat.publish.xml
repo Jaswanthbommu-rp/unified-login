@@ -2,13 +2,12 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
-    <TargetDatabaseName>Identity</TargetDatabaseName>
+    <TargetDatabaseName>UPUAT</TargetDatabaseName>
     <DeployScriptFileName>Identity.sql</DeployScriptFileName>
-    <TargetConnectionString>Data Source=greenbookdb.realpage.com;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True</TargetConnectionString>
+    <TargetConnectionString>Data Source=unifiedloginuatdb.Corp.realpage.com;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True</TargetConnectionString>
+    <BlockOnPossibleDataLoss>False</BlockOnPossibleDataLoss>
     <TreatVerificationErrorsAsWarnings>True</TreatVerificationErrorsAsWarnings>
     <ProfileVersionNumber>1</ProfileVersionNumber>
-    <BlockWhenDriftDetected>False</BlockWhenDriftDetected>
-    <BlockOnPossibleDataLoss>False</BlockOnPossibleDataLoss>
     <IgnoreExtendedProperties>True</IgnoreExtendedProperties>
   </PropertyGroup>
 </Project>

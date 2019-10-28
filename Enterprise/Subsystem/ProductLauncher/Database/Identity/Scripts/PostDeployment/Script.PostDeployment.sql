@@ -26,8 +26,8 @@ Post-Deployment Script Template
 --:r .\PostDeploymentScripts\June2019Release.sql
 --:r .\PostDeploymentScripts\August2019Release.sql
 --:r .\PostDeploymentScripts\September2019Release.sql
-:r .\PostDeploymentScripts\PopulateMultiCompanySchema.sql
-:r .\PostDeploymentScripts\October2019Release.sql
+--:r .\PostDeploymentScripts\PopulateMultiCompanySchema.sql
+--:r .\PostDeploymentScripts\October2019Release.sql
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 
 

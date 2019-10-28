@@ -29,14 +29,17 @@
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
 
             if (persona.isReady()) {
+                vm.allPropSwitch = switchConfig({
+                    onChange: vm.setAllProperties,
+                    disabled: security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()
+                });
                 vm.loadData();
             }
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
-             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
-
+            
         };
 
         vm.isActive = function () {
@@ -49,10 +52,6 @@
 
         vm.loadData = function () {
             if (persona.isReady() && vm.isActive()) {
-                 vm.allPropSwitch = switchConfig({
-                    onChange: vm.setAllProperties,
-                    disabled: security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()
-                });
                 grid.busy(true);
                 var params = {
                     userPersonaId: userDetailsModel.getPersonaId(),
@@ -101,7 +100,7 @@
             if (val) {
                 var allPropertiesArray = [];
                 allPropertiesArray.push("all");
-                OSDataModel.setAllProperties(vm.dataReq.records, val);
+                OSDataModel.setProperties(allPropertiesArray);
 
                 //clear selections, if theres any
                 vm.grid.selectAll(false);
@@ -110,10 +109,6 @@
             else {
                 OSDataModel.setProperties(vm.dataReq.records);
             }
-        };
-
-        vm.selectAllProperties = function (val) {
-            OSDataModel.setAllProperties(vm.dataReq.records, val);
         };
 
         vm.setViewUserState = function (data) {
@@ -133,7 +128,6 @@
         vm.destroy = function () {
             vm.destWatch();
             grid.destroy();
-            vm.gridAllWatch();
             gridTransform.destroy();
             gridPagination.destroy();
             if (vm.dataReq) {
