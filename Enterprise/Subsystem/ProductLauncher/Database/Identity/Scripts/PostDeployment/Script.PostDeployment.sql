@@ -10,10 +10,8 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
-
 --:r .\PostDeploymentScripts\June2018Release.sql
 --:r .\PostDeploymentScripts\July2018Release.sql
-
 --:r .\PostDeploymentScripts\September2018Release.sql
 --:r .\PostDeploymentScripts\October2018Release.sql
 --:r .\PostDeploymentScripts\November2018Release.sql
@@ -28,8 +26,9 @@ Post-Deployment Script Template
 --:r .\PostDeploymentScripts\September2019Release.sql
 --:r .\PostDeploymentScripts\PopulateMultiCompanySchema.sql
 --:r .\PostDeploymentScripts\October2019Release.sql
-:r .\PostDeploymentScripts\UpdateStatistics.sql
 
+:r .\PostDeploymentScripts\November2019Release.sql
+:r .\PostDeploymentScripts\UpdateStatistics.sql
 
 ----IF  (   SELECT 1
 ----        FROM   (   SELECT [value] ,
