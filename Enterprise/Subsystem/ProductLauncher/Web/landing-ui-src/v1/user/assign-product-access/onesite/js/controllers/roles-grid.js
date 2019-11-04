@@ -31,7 +31,8 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
-            
+
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectionAll);
         };
 
         vm.isActive = function () {
@@ -85,10 +86,14 @@
             return !persona.data.hasManageOneSiteProductAccess;
         };
 
-      
+        vm.selectionAll = function (bool) {
+            OSDataModel.setAllRoles(vm.dataReq.records, bool);
+        };
+
         vm.destroy = function () {
             vm.destWatch();
-            grid.destroy();          
+            grid.destroy();
+            vm.gridAllWatch();
             gridTransform.destroy();
             gridPagination.destroy();
             if (vm.dataReq) {

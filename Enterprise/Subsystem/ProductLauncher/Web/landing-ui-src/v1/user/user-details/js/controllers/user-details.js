@@ -85,8 +85,7 @@
             }
         };
 
-        vm.noEmailValidationUpdate = function () {        
-            logc("no email req");    
+        vm.noEmailValidationUpdate = function () {                    
             vm.formConfig.notificationEmail.required = false;
             vm.userDetailsForm.notificationEmail.$validate();
         };
@@ -116,9 +115,18 @@
                 tabs.push("productAccess");
             }
 
-            if (model.userExists() && !model.isClonedUser() && !model.is3rdPartyIDP() && !vm.isExternalUser()) {
+            if (model.userExists() && !model.isClonedUser() && !model.is3rdPartyIDP() && !vm.isExternalUser()  ) {
+                
                 tabs.push("securityQuestions");
                 tabs.push("resetPassword");
+                tabs.push("activityLog");
+            }
+
+            if (model.userExists() && !model.isClonedUser() &&  (vm.isExternalUser() && vm.getExternalUserData() === undefined) ) {
+
+                tabs.push("securityQuestions");
+                tabs.push("resetPassword");
+                tabs.push("activityLog");
             }
 
             //tabs.push("activityLog");
@@ -128,28 +136,30 @@
 
         vm.updateTabsMenuExternalUser = function (data) {
 
-            if(data.restricted !== null && data.restricted.tabs !== undefined){
+            if(data){
+                if(data.restricted !== null && data.restricted !== undefined && data.restricted.tabs !== undefined){
 
-                var tabs = [];
-                tabsModel.tabsList.forEach(function (item) {
-                    tabs.push(item.id);
-                });
+                    var tabs = [];
+                    tabsModel.tabsList.forEach(function (item) {
+                        tabs.push(item.id);
+                    });
 
-                if(data.restricted.tabs.indexOf('securityQuestions') !== -1 ){
-                   var i = tabs.indexOf('securityQuestions');                    
-                    if(i > 0){
-                        tabs.splice(i, 1);
+                    if(data.restricted.tabs.indexOf('securityQuestions') !== -1 ){
+                       var i = tabs.indexOf('securityQuestions');                    
+                        if(i > 0){
+                            tabs.splice(i, 1);
+                        }
                     }
-                }
 
-                if(data.restricted.tabs.indexOf('resetPassword') !== -1 ){                    
-                    var j = tabs.indexOf('resetPassword');
-                    if(j > 0){
-                        tabs.splice(j, 1);
+                    if(data.restricted.tabs.indexOf('resetPassword') !== -1 ){                    
+                        var j = tabs.indexOf('resetPassword');
+                        if(j > 0){
+                            tabs.splice(j, 1);
+                        }
                     }
-                }
 
-                tabsModel.setTabs(tabs).activateTab("userDetails");
+                    tabsModel.setTabs(tabs).activateTab("userDetails");
+                }
             }
             
            
@@ -208,7 +218,7 @@
 
         // Actions
 
-        vm.checkLoginName = function (loginName) {            
+        vm.checkLoginName = function (loginName) {                        
             if (userStatus.loginNameIsEmail()) {
                 var isValid = model.loginNameIsValidEmail();
                 vm.validateLoginNameReq[isValid ? "resolve" : "reject"]();
@@ -253,8 +263,8 @@
 
             
             // if(vm.isExternalUser()){
-                // vm.updateTabsMenuExternalUser();
-                // vm.setExternalUserControl(true);
+            //     vm.updateTabsMenuExternalUser();
+            //     vm.setExternalUserControl(true);
             // }
 
             formConfig.setUserTypeOptions(resp.data);
@@ -333,6 +343,7 @@
                 if (userTypeId === vm.userTypes.regularUserNoEmail) {
                     if(model.isClonedUser()){
                             bPrompt = false;
+                             vm.processUserTypeChange(userTypeId);
                         }else{
                             changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
                      }                    
@@ -349,6 +360,7 @@
                     if (userTypeId === vm.userTypes.regularUser) {
                         if(model.isClonedUser()){
                             bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
                         }else{
                             changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToRegular);
                         }
@@ -359,6 +371,7 @@
                     else if (userTypeId === vm.userTypes.externalUser) {
                         if(model.isClonedUser()){
                             bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
                         }else{
                             changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToExternal);
                         }
@@ -368,6 +381,7 @@
                     if (userTypeId === vm.userTypes.externalUser ) {
                         if(model.isClonedUser()){
                             bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
                         }else{
                             changeUserType.setChangeMode(changeUserType.changeModes.RegularToExternal);
                         }
@@ -380,6 +394,7 @@
                     if (userTypeId === vm.userTypes.regularUser ) {
                         if(model.isClonedUser()){
                             bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
                         }else{
                             changeUserType.setChangeMode(changeUserType.changeModes.ExternalToRegular);
                         }    
@@ -404,8 +419,8 @@
             
             if (vm.isExternalUser()) {
                 model.set3rdPartyIDP(false);
-                
-                if(model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000"){
+                            
+                if(model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && vm.getExternalUserData()){
                     if(!vm.isEditingSelf() && existingExtUser){
                         vm.setExternalUserControl(true);
                     }else{
@@ -600,7 +615,7 @@
         vm.emailIsReqd = function () {
             return model.emailIsReqd();
         };
-
+        
         vm.passwordIsReqd = function () {
             if (model.isClonedUser()) {
                 return model.passwordIsReqd();
@@ -703,9 +718,9 @@
                  }
             }else{        
                 chkEmailModel.setIsBusy(false);         
-
+                
                 vm.userDetailsForm.loginName.$validate();
-                vm.userDetailsForm.$setSubmitted();
+                vm.userDetailsForm.$setSubmitted();                
             }
 
         };
@@ -746,8 +761,12 @@
                     userRealPageId : userRPId                    
                 };
 
-                externalUserSvc.getData(params)
+                if(model.data.userLogin.loginName !== null){
+                    externalUserSvc.getData(params)
                     .then(vm.setData, vm.setDataErr);
+                }
+
+                
         };
 
         vm.setData = function(resp) {       
@@ -758,21 +777,23 @@
 
         vm.setExternalUserControlLoad =function (data) {
 
-            if(data.restricted !== null && data.restricted.fields !== undefined){
+            if(data){
+                if(data.restricted !== null && data.restricted !== undefined  && data.restricted.fields !== undefined){
 
-                if(data.restricted.fields.indexOf('FirstName') !== -1 ){
-                    vm.setFirstNameDisabled(true);
-                }
-                if(data.restricted.fields.indexOf('MiddleName') !== -1 ){
-                    vm.setMiddleNameDisabled(true);
-                }
-                if(data.restricted.fields.indexOf('LastName') !== -1 ){
-                    vm.setLastNameDisabled(true);
-                }
-                if(data.restricted.fields.indexOf('LoginName') !== -1 ){
-                    vm.setLoginNameDisabled(true);
-                }
-            }            
+                    if(data.restricted.fields.indexOf('FirstName') !== -1 ){
+                        vm.setFirstNameDisabled(true);
+                    }
+                    if(data.restricted.fields.indexOf('MiddleName') !== -1 ){
+                        vm.setMiddleNameDisabled(true);
+                    }
+                    if(data.restricted.fields.indexOf('LastName') !== -1 ){
+                        vm.setLastNameDisabled(true);
+                    }
+                    if(data.restricted.fields.indexOf('LoginName') !== -1 ){
+                        vm.setLoginNameDisabled(true);
+                    }
+                } 
+            }           
         };
 
         vm.setDataErr = function(data) {
@@ -804,7 +825,7 @@
 
            model.setExternalUserData(resp.data);
            var isModalOpen = false;
-           
+                      
            // Not an Employee
            if(model.data.userTypeId !== 403){
 

@@ -395,7 +395,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					}
 
 					setting = new Setting();
-					setting = settings.ToList().FirstOrDefault(p => p.Name.Equals("ForgotPassword", StringComparison.OrdinalIgnoreCase));
+					setting = settings.ToList().FirstOrDefault(p => p.Name.Equals("Login", StringComparison.OrdinalIgnoreCase));
 					//MaxActivityAttemptCount
 					if ((setting != null) && ((Convert.ToInt32(setting.Value) < 1) || (Convert.ToInt32(setting.Value) > 10)))
 					{
