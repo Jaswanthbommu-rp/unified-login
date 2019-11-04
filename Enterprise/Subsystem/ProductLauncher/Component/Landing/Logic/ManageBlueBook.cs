@@ -414,6 +414,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (companyInstance == null)
             {
                 int splitSize = (int)(booksCompanyMasterList.Count * .2);
+                if (splitSize == 0)
+                {
+                    splitSize = 10;
+                }
+
                 var splitCompanyList = SplitList<UnifiedLoginCompany>(booksCompanyMasterList, splitSize);
                 ConcurrentBag<Company> result = new ConcurrentBag<Company>();
                 Parallel.ForEach(splitCompanyList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList =>
