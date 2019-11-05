@@ -3,10 +3,14 @@
 }
 
 .existing-user-modal {
-    max-width: 300px;
+    max-width: 500px;
 }
 
 .user-modal-link{
 	@include link;	
 	text-align: center;
 }
+
+.rp-supp-link {            
+    @include link;            
+  }
