@@ -2,9 +2,9 @@
 	@RealPageId uniqueidentifier = NULL,
 	@ParentPartyRoleTypeId int = NULL,
 	@UserListFilterType tinyint = 0,
-	@AssignedProducts nvarchar(max), --{"assignedProducts":[{"ColumName":"ProductId","SearchValue":"1,1,3,8,9,14,16,19,21,27,28,36,37,45,46"}]}
-	@FilterBy nvarchar(max), --'{"filterBy":[{"ColumnName":"Status","SearchValue":"1,2,3,4,5"}]}'
-	@SortBy nvarchar(max), --'{"sortBy":[{"ColumnName":"Name","SortDirection":"DESC"}]}'
+	@AssignedProducts nvarchar(max),
+	@FilterBy nvarchar(max),
+	@SortBy nvarchar(max),
 	@RowsPerPage int = 0,
 	@PageNumber int = 1
 )
