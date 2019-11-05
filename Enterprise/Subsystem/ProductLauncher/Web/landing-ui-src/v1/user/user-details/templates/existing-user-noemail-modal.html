@@ -4,39 +4,12 @@
         <div class="modal-width rp-modal-dialog add-user-success-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="eu.dismissModal()"></span>
-                <h2 class="rp-modal-header-title">Existing User</h2>
+                <h2 class="rp-modal-header-title">Username already exists in another company</h2>
             </div>
             <div class="rp-modal-content"> 
-                <label for="">This user already exists in the RealPage platform as a Regular User (No Email). This username cannot be re-used to add to a new company. Please select a different username. If this user is your employee, or you feel that this is incorrect, please contact RealPage support.</label>
-
-                 <div class="row">
-                    
-                    <div class="col-md-4"> 
-                        <label class="rp-modal-header-subtitle">Login </label> 
-                    </div>
-                    <div class="col-md-8">  {{::eu.model.data.userLogin.loginName}}</div>
-                    
-
-                    <div class="col-md-4">
-                        <label class="rp-modal-header-subtitle">First Name </label>  
-                    </div>
-                    <div class="col-md-8">  {{::eu.model.externalUserData.person.firstName}}
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="rp-modal-header-subtitle">Last Name </label>  
-                    </div>
-                    <div class="col-md-8"> {{::eu.model.externalUserData.person.lastName}}
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="rp-modal-header-subtitle">Middle Name </label>  
-                    </div>
-                    <div class="col-md-8"> {{::eu.model.externalUserData.person.middleName}}
-                    </div>
-                    
-                </div>
-                                         
+                <label for="">The username you entered is associated to a user account with user type Regular user (no email).
+                    <br>
+                This user type is ineligible for multi-company access. Please specify a different username.</label>
             </div>
 
             <div class="rp-modal-footer">
