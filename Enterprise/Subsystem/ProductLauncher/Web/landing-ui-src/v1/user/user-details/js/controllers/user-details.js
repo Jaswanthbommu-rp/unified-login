@@ -263,8 +263,8 @@
 
             
             // if(vm.isExternalUser()){
-            //     vm.updateTabsMenuExternalUser();
-            //     vm.setExternalUserControl(true);
+                // vm.updateTabsMenuExternalUser();
+                // vm.setExternalUserControl(true);
             // }
 
             formConfig.setUserTypeOptions(resp.data);
@@ -338,75 +338,47 @@
         };
 
         vm.onUserTypeChange = function (userTypeId) {
-            var bPrompt = true;
             if ($params.realPageId && (userTypeId !== model.getOrgUserTypeId())) {
                 if (userTypeId === vm.userTypes.regularUserNoEmail) {
-                    if(model.isClonedUser()){
-                            bPrompt = false;
-                             vm.processUserTypeChange(userTypeId);
-                        }else{
-                            changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
-                     }                    
+                    changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
                 }
                 else if (userStatus.isSuperUser()) {
                     if (userTypeId === vm.userTypes.externalUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.SuperToExternal);
                     }
-                    else if (userTypeId === vm.userTypes.regularUser) {                        
-                        changeUserType.setChangeMode(changeUserType.changeModes.SuperToRegular);                        
+                    else if (userTypeId === vm.userTypes.regularUser) {
+                        changeUserType.setChangeMode(changeUserType.changeModes.SuperToRegular);
                     }
                 }
                 else if (userStatus.isRegularUserNoEmail()) {
                     if (userTypeId === vm.userTypes.regularUser) {
-                        if(model.isClonedUser()){
-                            bPrompt = false;
-                            vm.processUserTypeChange(userTypeId);
-                        }else{
-                            changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToRegular);
-                        }
+                        changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToRegular);
                     }
                     else if (userTypeId === vm.userTypes.superUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToSuper);
                     }
                     else if (userTypeId === vm.userTypes.externalUser) {
-                        if(model.isClonedUser()){
-                            bPrompt = false;
-                            vm.processUserTypeChange(userTypeId);
-                        }else{
-                            changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToExternal);
-                        }
+                        changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToExternal);
                     }
                 }
                 else if (userStatus.isRegularUser() && !userStatus.isExternalUser()) {
-                    if (userTypeId === vm.userTypes.externalUser ) {
-                        if(model.isClonedUser()){
-                            bPrompt = false;
-                            vm.processUserTypeChange(userTypeId);
-                        }else{
-                            changeUserType.setChangeMode(changeUserType.changeModes.RegularToExternal);
-                        }
+                    if (userTypeId === vm.userTypes.externalUser) {
+                        changeUserType.setChangeMode(changeUserType.changeModes.RegularToExternal);
                     }
                     else if (userTypeId === vm.userTypes.superUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.RegularToSuper);
                     }
                 }
                 else if (userStatus.isExternalUser()) {
-                    if (userTypeId === vm.userTypes.regularUser ) {
-                        if(model.isClonedUser()){
-                            bPrompt = false;
-                            vm.processUserTypeChange(userTypeId);
-                        }else{
-                            changeUserType.setChangeMode(changeUserType.changeModes.ExternalToRegular);
-                        }    
+                    if (userTypeId === vm.userTypes.regularUser) {
+                        changeUserType.setChangeMode(changeUserType.changeModes.ExternalToRegular);
                     }
                     else if (userTypeId === vm.userTypes.superUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.ExternalToSuper);
                     }
                 }
                 vm.newTypeId = userTypeId;
-                if(bPrompt){
-                    vm.promptUserTypeChange();
-                }
+                vm.promptUserTypeChange();
             }
             else {
                 vm.processUserTypeChange(userTypeId);
@@ -825,39 +797,51 @@
 
            model.setExternalUserData(resp.data);
            var isModalOpen = false;
-                      
+           
            // Not an Employee
            if(model.data.userTypeId !== 403){
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
-                    existingNoEmailUserModal.show();
-               }
-           
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                  
+
+               if(resp.data.userExistsNotAvailable === true && resp.data.userExists === true  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){
                     vm.showExistingUserModal(true, resp.data.person.realPageId);
-               }
+               }else{
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                   
-                    vm.showExistingUserModal(false, resp.data.person.realPageId);
-               }
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                  
+                        vm.showExistingUserModal(true, resp.data.person.realPageId);
+                   }
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                   
-                    existingNoEmailUserModal.show();
-               }
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                   
+                        vm.showExistingUserModal(false, resp.data.person.realPageId);
+                   }
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
-                    isModalOpen = true;
-                    externalUserModal.show();
-               }
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                   
+                        existingNoEmailUserModal.show();
+                   }
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                   
-                    vm.showExistingUserModal(true, resp.data.person.realPageId);
-               }
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
+                        isModalOpen = true;
+                        externalUserModal.show();
+                   }
+
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                   
+                        vm.showExistingUserModal(true, resp.data.person.realPageId);
+                   }
+
+                   if(resp.data.userExistsNotAvailable === true && resp.data.userExistsAsNoEmail === false && ( (resp.data.person !== null && model.data.realPageId !== resp.data.person.realPageId) || (resp.data.person === null) ) ){                                   
+                        vm.showExistingUserModal(false, "");
+                   }
+
+                   if(  resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
+                        existingNoEmailUserModal.show();
+                   }
+
+               }                          
+               
            }else{
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
-                    existingNoEmailUserModal.show();
-               }
+              if(resp.data.userExistsNotAvailable === true && resp.data.userExists === true  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){
+                    vm.showExistingUserModal(true, resp.data.person.realPageId);
+               }               
 
                if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                  
                     vm.showExistingUserModal(true, resp.data.person.realPageId);

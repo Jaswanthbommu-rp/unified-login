@@ -1,14 +1,15 @@
 ﻿CREATE PROCEDURE [Person].[UpdatePerson] (
-    @RealPageId UNIQUEIDENTIFIER ,
-    @Title NVARCHAR(50) = NULL ,
-    @FirstName Name = NULL ,
-    @MiddleName Name = NULL ,
-    @LastName Name = NULL ,
-    @Suffix NVARCHAR(10) = NULL,
+	@RealPageId UNIQUEIDENTIFIER ,
+	@Title NVARCHAR(50) = NULL ,
+	@FirstName Name = NULL ,
+	@MiddleName Name = NULL ,
+	@LastName Name = NULL ,
+	@Suffix NVARCHAR(10) = NULL,
 	@PreferredContactMethodId int = NULL
 )
 AS
 BEGIN
+	-- testing
 	BEGIN TRY
         BEGIN TRANSACTION;
 		UPDATE  [Person]

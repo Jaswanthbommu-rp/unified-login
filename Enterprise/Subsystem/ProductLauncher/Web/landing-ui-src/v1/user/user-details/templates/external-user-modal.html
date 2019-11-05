@@ -4,43 +4,25 @@
         <div class="modal-width rp-modal-dialog add-user-success-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="eu.dismissModal()"></span>
-                <h2 class="rp-modal-header-title">Existing User</h2>
+                <h2 class="rp-modal-header-title">Username exists in another company</h2>
             </div>
             <div class="rp-modal-content"> 
-                <label for="">This user already exists in the RealPage platform.  We are designating the user as External so you can continue.  If this user is your employee, please contact RealPage support</label>
+                <label for="">It looks like you are trying to create a multi-company user. To grant this user access to your company as an external user, click ok.
+                </label>
+                   <br/> 
+                <label>    
+                        Not an external user? Please contact <a target="_blank"  class="rp-supp-link" href="https://www.realpage.com/support/#support_request_form">RealPage Support </a> for assistance. 
+                </label>
 
                  <div class="row">
                     
-                    <div class="col-md-4"> 
-                        <label class="rp-modal-header-subtitle">Login </label> 
+                    <div class="col-md-3"> 
+                        <label class="rp-modal-header-subtitle">Username </label> 
                     </div>
-                    <div class="col-md-8">  {{::eu.model.data.userLogin.loginName}}</div>
-                    
-
-                    <div class="col-md-4">
-                        <label class="rp-modal-header-subtitle">First Name </label>  
-                    </div>
-                    <div class="col-md-8">  {{::eu.model.externalUserData.person.firstName}}
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="rp-modal-header-subtitle">Last Name </label>  
-                    </div>
-                    <div class="col-md-8"> {{::eu.model.externalUserData.person.lastName}}
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="rp-modal-header-subtitle">Middle Name </label>  
-                    </div>
-                    <div class="col-md-8"> {{::eu.model.externalUserData.person.middleName}}
-                    </div>
-                    <!-- <div>&nbsp;</div> -->
+                    <div class="col-md-9">  {{::eu.model.data.userLogin.loginName}}</div>
 
                 </div>
-
-               <div> Continuing will associate the selected product access to this user.</div>
-
-                <div>Do you want to give this user access?</div>                                
+                                              
             </div>
 
             <div class="rp-modal-footer">
@@ -49,7 +31,7 @@
                         Cancel
                     </button>
                     <button class="rp-modal-footer-btn rp-btn primary add-user-success-modal-footer-btn" ng-click="eu.selectUser()">
-                        Switch
+                        Ok
                     </button>
                 </div>
             </div>
