@@ -4,11 +4,13 @@
         <div class="existing-user-modal rp-modal-dialog add-user-success-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="eu.dismissModal()"></span>
+                <h2 class="rp-modal-header-title">User already exists</h2>
             </div>
             <div class="rp-modal-content"> 
-                <label for="">User already exists</label>
+                <label for="">This username already exists in the RealPage platform. Please select another username.</label>
                 <div class="user-modal-link" ng-if="eu.getShowExistingUserLink()"> 
-                    <span  ng-click="eu.showExistingUser()">Edit User</span></div>
+                    <!-- <span  ng-click="eu.showExistingUser()">Edit User</span> -->
+                </div>
             </div>
             <div class="rp-modal-footer">
                 <div class="rp-modal-footer-btns add-user-success-modal-footer-btns">
