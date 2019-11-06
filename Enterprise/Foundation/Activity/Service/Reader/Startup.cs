@@ -36,7 +36,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
  
             var cors = new EnableCorsAttribute("*", "*", "*");
             config.EnableCors(cors); 
-
+ 
             app.UseWebApi(config);
 
             var formatters = config.Formatters;
