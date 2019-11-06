@@ -199,7 +199,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(realPageId), "Null realPageId.");
             }
 
-            IList<ProductUI> productList = _productRepository.GetProducts(realPageId, personaId, allProducts);
+            IList<ProductUI> productList = _productRepository.GetProducts(organizationRealPageId: realPageId, personaId:personaId, allProducts:allProducts);
             IList<PersonaProductUserDetails> personaProducts = new List<PersonaProductUserDetails>();
 
             if (personaId > 0)
