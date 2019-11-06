@@ -33,7 +33,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
             {
                     SwaggerConfig.Register(config);
             }
- 
+
+
             var cors = new EnableCorsAttribute("*", "*", "*");
             config.EnableCors(cors); 
  
