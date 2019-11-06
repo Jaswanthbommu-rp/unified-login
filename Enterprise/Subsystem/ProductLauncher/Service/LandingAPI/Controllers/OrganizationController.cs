@@ -560,6 +560,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             Persona persona = null;
             IManagePersona managePersona = new ManagePersona();
+            long personaId = 0;
 
             if (mergePersonaAccess.HasValue && mergePersonaAccess.Value == true)
             {
@@ -573,6 +574,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     output.Status = errorStatus;
                     return Request.CreateResponse(HttpStatusCode.BadRequest, output);
                 }
+
+                personaId = persona.PersonaId;
             }
 
 			IManageCredential manageCredential = new ManageCredential(_userClaims);
@@ -580,7 +583,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if ((checkPasswordExpirationResponse != null) && (!checkPasswordExpirationResponse.IsPasswordExpired))
 			{
 				var manageProduct = new ManageProduct(_userClaims);
-				IList<ProductUI> productList = manageProduct.GetProducts(org.RealPageId, _userClaims.PersonaId, (allProducts.HasValue ? allProducts.Value : false));
+				IList<ProductUI> productList = manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
 
 				output.list = productList;
 			}
