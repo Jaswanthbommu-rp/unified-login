@@ -5,7 +5,6 @@ BEGIN
  
 	SET NOCOUNT ON;
 	-- Get Product, log type & log category list to display in drop-down box of search UI
-	-- testing
 	select ProductID, BooksProductCode from Logging.Product
 	select LogCategoryTypeid, Name  from   Logging.LogCategoryType
 	select LogTypeId,Name,LogcategoryTypeId from Logging.LogType
