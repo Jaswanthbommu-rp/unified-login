@@ -35,7 +35,7 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
-            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            
         };
 
         vm.isActive = function () {
@@ -90,10 +90,6 @@
             }
         };
 
-        vm.selectAllProperties = function(val){
-            MCDataModel.setAllProperties(vm.dataReq.records, val);
-        };
-
         vm.setAllProperties = function (val) {
             if (val) {
                 var allPropertiesArray = [];
@@ -115,7 +111,6 @@
 
         vm.destroy = function () {
             vm.destWatch();
-            vm.gridAllWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }

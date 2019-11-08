@@ -22,6 +22,7 @@
                 recordsPerPage: 25
             });
 
+
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
@@ -33,7 +34,6 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
-            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
         };
 
         vm.isActive = function () {
@@ -90,17 +90,13 @@
             }
         };
 
-        vm.selectAllProperties = function(val){
-            ILMLMDataModel.setAllProperties(vm.dataReq.records, val);
-        };
-
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageILMLeadManagemementProductAccess;
         };
 
         vm.destroy = function () {
             vm.destWatch();
-            vm.gridAllWatch();
+
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }
