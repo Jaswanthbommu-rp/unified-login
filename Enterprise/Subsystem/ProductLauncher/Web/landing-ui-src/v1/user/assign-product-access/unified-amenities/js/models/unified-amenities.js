@@ -60,16 +60,6 @@
             s.allProperties = allProperties;
         };
 
-        p.selectAllProperties = function (propertiesData,val) {
-            var s = this;
-
-             propertiesData.forEach(function (item) {
-               item["isAssigned"] = val;
-            });
-
-            s.properties = propertiesData;
-        };
-
         p.setRoles = function (rolesData) {
             var s = this;
             s.roles = rolesData;
