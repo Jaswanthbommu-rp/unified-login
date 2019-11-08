@@ -47,7 +47,6 @@
             }
 
             vm.updateWatch = pubsub.subscribe("vc.property-group-radio", vm.updateGroupRecords);
-            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
         };
 
         vm.isActive = function () {
@@ -195,13 +194,8 @@
             }
         };
 
-        vm.selectAllProperties = function (val) {
-            VendCompDataModel.setAllProperties(vm.dataReq.records, val);
-        };
-
         vm.destroy = function () {
             vm.destWatch();
-            vm.gridAllWatch();
             vm.updateWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
