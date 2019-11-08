@@ -33,6 +33,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	    IUnifiedLoginRepository _unifiedLoginRepository;
 	    DefaultUserClaim _defaultUserClaim;
 
+        private readonly object rightLock = new object();
+
 		#region Ctor
 
 		/// <summary>
@@ -146,17 +148,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 listRightByRole = listRightRoleDetail.ToList().FindAll(rrd => rrd.RoleId == ro.RoleID);
                 listRightByRole.ToList().ForEach(r =>
                 {
-                    if (!ro.Right.Any(rr => rr.RightId == r.RightId && rr.RightName.Equals(r.RightName,StringComparison.OrdinalIgnoreCase) && rr.RightValueTypeId == r.RightValueTypeId && rr.RightNickName.Equals(r.RightNickName, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        ro.Right.Add(
-                            new Right()
-                            {
-                                RightId = r.RightId,
-                                RightName = r.RightName,
-                                RightValueTypeId = r.RightValueTypeId,
-                                RightNickName = r.RightNickName
-                            }
-                        );
+                    lock(rightLock){
+                        if (!ro.Right.Any(rr => rr.RightId == r.RightId && rr.RightName.Equals(r.RightName, StringComparison.OrdinalIgnoreCase) && rr.RightValueTypeId == r.RightValueTypeId && rr.RightNickName.Equals(r.RightNickName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            ro.Right.Add(
+                                new Right()
+                                {
+                                    RightId = r.RightId,
+                                    RightName = r.RightName,
+                                    RightValueTypeId = r.RightValueTypeId,
+                                    RightNickName = r.RightNickName
+                                }
+                            );
+                        }
                     }
                 });
             });
@@ -527,5 +531,3 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
     }
 }
-
-
