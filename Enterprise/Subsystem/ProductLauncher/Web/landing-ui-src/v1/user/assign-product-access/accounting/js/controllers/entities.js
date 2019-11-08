@@ -30,7 +30,7 @@
             // vm.cmpChangeWatch = pubsub.subscribe("Acct.compChange", vm.setPropertiesByCompany);
             vm.gridSelectionWatch = vm.entitiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.gridSelectAllWatch = vm.entitiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
-            vm.gridAllWatch = entitiesGrid.subscribe("selectAll", vm.selectAllEntities);
+
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -187,14 +187,11 @@
             vm.gridPagination.setGridData();
         };
 
-        vm.selectAllEntities = function (val) {
-            ADataModel.setAllEntities(vm.dataReq.records, val);
-        };
+
 
         vm.destroy = function() {
             vm.destWatch();
             vm.allEntWatch();
-            vm.gridAllWatch();
             // vm.cmpChangeWatch();
             vm.gridSelectionWatch();
             vm.gridSelectAllWatch();

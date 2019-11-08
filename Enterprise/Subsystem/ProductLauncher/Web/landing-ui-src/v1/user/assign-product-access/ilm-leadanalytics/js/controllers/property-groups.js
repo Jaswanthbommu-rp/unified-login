@@ -37,7 +37,6 @@
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectionAll);
             vm.updateGridWatch = pubsub.subscribe("ilmla.updateGrids", vm.updateGrid);
             vm.updateAll = pubsub.subscribe("ilmla.allProperties", vm.allPropertiesSelected);
-            vm.gridAllPropertyGroupWatch = grid.subscribe("selectAll", vm.selectAllPropertyGroups);
         };
 
         vm.isActive = function () {
@@ -120,14 +119,9 @@
             return !persona.data.hasManageILMLeasingAnalyticsProductAccess;
         };
 
-        vm.selectAllPropertyGroups = function (val) {
-            ILMLADataModel.setAllPropertyGroups(vm.dataReq.records, val);
-        };
-
         vm.destroy = function () {
             vm.destWatch();
             vm.gridSelectionWatch();
-            vm.gridAllPropertyGroupWatch();
             vm.gridAllWatch();
             vm.updateGridWatch();
             vm.updateAll();

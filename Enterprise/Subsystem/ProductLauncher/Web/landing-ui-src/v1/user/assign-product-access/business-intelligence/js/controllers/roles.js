@@ -31,7 +31,6 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadCompanyRoleData);
             }
-            vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
         };
 
         vm.isActive = function () {
@@ -89,13 +88,8 @@
             return !persona.data.hasManageAssetOptimizationProductAccess;
         };
 
-        vm.selectAllRoles = function (val) {
-            BIDataModel.setAllRoles(vm.dataReq.records[0].roles, val);
-        };
-
         vm.destroy = function () {
             vm.destWatch();
-            vm.gridAllWatch();
             vm.activeWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();

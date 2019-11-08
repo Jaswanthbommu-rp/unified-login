@@ -32,8 +32,6 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
-
-            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
         };
 
         vm.isActive = function () {
@@ -83,17 +81,12 @@
             }
         };
 
-        vm.selectAllProperties = function(val){
-            lead2LeaseDataModel.setAllProperties(vm.dataReq.records, val);
-        };
-
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageLead2LeaseProductAccess;
         };
 
         vm.destroy = function () {
             vm.destWatch();
-            vm.gridAllWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }
