@@ -138,8 +138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             listProductUsers = _manageProfile.ListPersonsByProductId(productId, organization.RealPageId, userPersonaId);
-            roleList = _manageUserRoleRight.GetAssignedRoleForPersona((ProductEnum)productId, userPersonaId,
-                organization.PartyId);
+            roleList = _manageUserRoleRight.GetAssignedRoleForPersona((ProductEnum)productId, userPersonaId, organization.PartyId);
 
             //Build a list of Right by Role
             roleList.ToList().ForEach(ro =>
@@ -147,15 +146,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 listRightByRole = listRightRoleDetail.ToList().FindAll(rrd => rrd.RoleId == ro.RoleID);
                 listRightByRole.ToList().ForEach(r =>
                 {
-                    ro.Right.Add(
-                        new Right()
-                        {
-                            RightId = r.RightId,
-                            RightName = r.RightName,
-                            RightValueTypeId = r.RightValueTypeId,
-                            RightNickName = r.RightNickName
-                        }
-                    );
+                    if (!ro.Right.Any(rr => rr.RightId == r.RightId && rr.RightName.Equals(r.RightName,StringComparison.OrdinalIgnoreCase) && rr.RightValueTypeId == r.RightValueTypeId && rr.RightNickName.Equals(r.RightNickName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        ro.Right.Add(
+                            new Right()
+                            {
+                                RightId = r.RightId,
+                                RightName = r.RightName,
+                                RightValueTypeId = r.RightValueTypeId,
+                                RightNickName = r.RightNickName
+                            }
+                        );
+                    }
                 });
             });
 
