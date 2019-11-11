@@ -174,12 +174,12 @@ BEGIN
 		)
 		SELECT	pe.PersonaId 
 		FROM	Enterprise.MasterConfigurationType mct
-					INNER JOIN Enterprise.MasterSettingType MST ON mst.MasterConfigurationTypeId = mct.MasterCOnfigurationTypeId
+					INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterConfigurationTypeId = mct.MasterCOnfigurationTypeId
 					INNER JOIN Enterprise.MasterSetting ms ON ms.MasterSettingTypeId = mst.MasterSettingTYpeId
 					INNER JOIN Enterprise.Party p ON p.RealPageId = ms.Value
-					INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = P.PartyId
-					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId
-					INNER JOIN Person.Persona pe ON PE.UserLoginPersonaId = ULP.USerLoginPersonaId
+					INNER JOIN Ident.UserLogin ul ON ul.PersonPartyId = p.PartyId
+					INNER JOIN Ident.UserLoginPersona ulp ON ulp.UserLoginId = ul.UserId
+					INNER JOIN Person.Persona pe ON pe.UserLoginPersonaId = ulp.UserLoginPersonaId
 		WHERE	mct.Name = 'Organization'
 		AND		mst.Name = 'RealPageEmployeeAccessID'
 		AND		ULP.OrganizationPartyId = @PartyId
@@ -191,13 +191,13 @@ BEGIN
 			PersonaId
 		)
 		SELECT	P.PersonaId
-		FROM	Person.Persona P
-					INNER JOIN Ident.UserLoginPersona ULP on P.UserLoginPersonaId = ULP.UserLoginPersonaId
-					INNER JOIN Ident.UserLogin UL ON ULP.UserLoginId = UL.UserId
-					INNER JOIN Enterprise.PartyRelationship PR ON PR.PartyIdFrom = UL.PersonPartyId
-					INNER JOIN Enterprise.RoleType RT ON RT.PartyRoleTYpeId = PR.RoleTypeIdFrom
-		WHERE	RT.Name = 'SuperUser'
-		AND		ULP.OrganizationPartyId = @PartyId
+		FROM	Person.Persona p
+					INNER JOIN Ident.UserLoginPersona ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
+					INNER JOIN Ident.UserLogin ul ON ulp.UserLoginId = ul.UserId
+					INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = ul.PersonPartyId
+					INNER JOIN Enterprise.RoleType rt ON rt.PartyRoleTYpeId = pr.RoleTypeIdFrom
+		WHERE	rt.Name = 'SuperUser'
+		AND		ulp.OrganizationPartyId = @PartyId
 	END
 
 	IF (@UserListFilterType = 0)	
