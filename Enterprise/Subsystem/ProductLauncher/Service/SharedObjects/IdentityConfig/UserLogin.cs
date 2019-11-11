@@ -285,7 +285,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
                 IsSuperUser = false,
                 FromDate = dToday,
                 ThruDate = DateTime.MaxValue.ToUniversalTime(),
-                //StatusSetDate = dToday
             });
             userLoginList.Add(new UserLogin()
             {
@@ -301,7 +300,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
                 IsSuperUser = true,
                 FromDate = dToday,
                 ThruDate = DateTime.MaxValue.ToUniversalTime(),
-                //StatusSetDate = dToday
             });
             return userLoginList;
         }

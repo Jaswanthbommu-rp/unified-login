@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -16,14 +17,13 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
-using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-    /// <summary>
-    /// Manage UserLogin repository calls
-    /// </summary>
-    public class ManageUserLogin : IManageUserLogin
+	/// <summary>
+	/// Manage UserLogin repository calls
+	/// </summary>
+	public class ManageUserLogin : IManageUserLogin
     {
         #region Private Variables
         IUserLoginRepository _userLoginRepository;

@@ -237,15 +237,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		}
 
 		/// <summary>
-		/// Get Time zone Options
-		/// </summary> 
-		/// <returns>TimeZones object</returns>
-		public List<UserTimeZone> GetUsertimezones()
-		{
-			return _userRepository.GetUserTimeZones();
-		}
-
-		/// <summary>
 		/// Get Starter Profile Options
 		/// </summary> 
 		/// <param name="enterpriseUserName">Enterprise UserName</param>
