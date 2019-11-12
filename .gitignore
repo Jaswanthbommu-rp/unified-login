@@ -28,6 +28,7 @@ TestResults/
 packages/
 node_modules/
 v1.10.*/
+
 Enterprise/Subsystem/ProductLauncher/Web/IdentityServer/Identity/Content/
 Enterprise/Subsystem/ProductLauncher/Web/identity-ui-src/Content/lib/
 
@@ -64,3 +65,4 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/assets/css/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/images/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/js/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/omnibar/
+
