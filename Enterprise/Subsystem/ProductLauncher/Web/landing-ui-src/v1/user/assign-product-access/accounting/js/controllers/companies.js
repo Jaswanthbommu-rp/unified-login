@@ -7,7 +7,7 @@
         var vm = this,
             companiesGrid = gridModel(),
             companiesGridTransform = gridTransformSvc(),
-            gridPagination = gridPaginationModel();
+            gridPagination = gridPaginationModel()
 
         vm.init = function() {
 
