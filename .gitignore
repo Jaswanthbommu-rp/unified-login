@@ -28,6 +28,7 @@ TestResults/
 packages/
 node_modules/
 v1.10.*/
+
 Enterprise/Subsystem/ProductLauncher/Web/IdentityServer/Identity/Content/
 Enterprise/Subsystem/ProductLauncher/Web/identity-ui-src/Content/lib/
 
