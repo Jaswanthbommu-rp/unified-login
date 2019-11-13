@@ -58,16 +58,16 @@ BEGIN
 						INNER JOIN Ident.ActivityType iat ON iat.ActivityTypeId = iac.ActivityTypeId
 						INNER JOIN Enterprise.DataImportMapping edim ON iac.PartyId = edim.PartyId 
 						INNER JOIN (
-												SELECT		Name,
-																Value
-												FROM	OPENJSON (@JsonSecuritySettings)
-															WITH
-															(
-																Name varchar(max) '$.Name',
-																Value int '$.Value'
-															)
-												WHERE	ISJSON(@JsonSecuritySettings) > 0
-												AND			Name IN ('ForcedLock', 'ForgotPassword', 'NewUserRegistration')
+									SELECT		Name,
+													Value
+									FROM	OPENJSON (@JsonSecuritySettings)
+												WITH
+												(
+													Name varchar(max) '$.Name',
+													Value int '$.Value'
+												)
+									WHERE	ISJSON(@JsonSecuritySettings) > 0
+									AND			Name IN ('ForcedLock', 'ForgotPassword', 'NewUserRegistration')
 					) u ON (iat.ActivityCode = u.Name)
 		WHERE	edim.SourceId = @SourceId 
 		AND			edim.DataImportApplicationId = @DataImportApplicationId
