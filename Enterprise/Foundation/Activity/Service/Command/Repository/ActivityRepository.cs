@@ -41,9 +41,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository
 
             dparm.Add("BooksMasterOrganizationId", activityLog.BooksMasterOrganizationId, DbType.Int64);
             dparm.Add("BooksProductCode", activityLog.BooksProductCode, DbType.String);
-
             dparm.Add("Message", activityLog.Message, DbType.String);
-             
             dparm.Add("ServerName", activityLog.ServerName, DbType.String);
             dparm.Add("Timestamp", activityLog.ApplicationTimestamp, DbType.DateTime);
 
