@@ -44,7 +44,7 @@ BEGIN
 		UPDATE	iac
 						SET	iac.MaxActivityAttemptCount =
 							CASE
-								WHEN ((u.Name = 'ForgotPassword') AND (u.Value > 0)) THEN u.Value
+								WHEN ((u.Name = 'Login') AND (u.Value > 0)) THEN u.Value
 								ELSE iac.MaxActivityAttemptCount
 							END,
 							iac.ActivityTokenExpirationMinutes =
@@ -67,7 +67,7 @@ BEGIN
 																Value int '$.Value'
 															)
 												WHERE	ISJSON(@JsonSecuritySettings) > 0
-												AND			Name IN ('ForcedLock', 'ForgotPassword', 'NewUserRegistration')
+												AND			Name IN ('ForcedLock', 'Login', 'NewUserRegistration')
 					) u ON (iat.ActivityCode = u.Name)
 		WHERE	edim.SourceId = @SourceId 
 		AND			edim.DataImportApplicationId = @DataImportApplicationId
