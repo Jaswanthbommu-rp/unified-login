@@ -17,6 +17,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public long PartyId { get; set; }
 
         /// <summary>
+        /// OrganizationPartyId
+        /// </summary>
+        [JsonProperty(PropertyName = "OrganizationPartyId")]
+        public long OrganizationPartyId { get; set; }
+
+        /// <summary>
         /// RealPageId
         /// </summary>
         [JsonProperty(PropertyName = "RealPageId")]

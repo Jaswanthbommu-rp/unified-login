@@ -288,8 +288,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				{
                     WriteToDiagnosticLog(message: $"{getUser.ErrorReason}. For User -{enterpriseUserName}");
 				}
+                else if (getUser.Records != null)
+                {
+                    var manageUserLogin = new ManageUserLogin(_userClaims);
+                    OrganizationStatus orgStatus = manageUserLogin.GetUserOrganizationWithStatus(((UserLoginOnly)getUser.Records[0]).UserId, DateTime.MinValue, 0, true);
+                    ((UserLoginOnly)getUser.Records[0]).OrganizationPartyId = orgStatus.PartyId;
+                }
 
-				return getUser;
+                return getUser;
 			}
 			catch (Exception ex)
 			{
