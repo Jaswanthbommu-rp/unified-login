@@ -3,7 +3,7 @@
 (function (angular) {
     "use strict";
 
-    function factory($filter, baseFormConfig, inputTextConfig, menuConfig) {
+    function factory($filter, baseFormConfig, inputTextConfig, menuConfig, dateTimePickerConfig) {
         var model = baseFormConfig();
 
 
@@ -29,6 +29,25 @@
                 nameKey: "label",
                 valueKey: "value",
                 onChange: model.getMethod("filterByDates")
+            });
+            model.startDate = dateTimePickerConfig({
+                id: "startDate",
+                fieldName: "startDate",
+                required: false,
+                iconClass: "rp-icon-calendar",
+                format: "MM/DD/YYYY",
+                maxDate: new Date(),
+                onChange: model.methods.get("filterByStartDate")
+            });
+
+            model.endDate = dateTimePickerConfig({
+                id: "endDate",
+                fieldName: "endDate",
+                required: false,
+                iconClass: "rp-icon-calendar",
+                format: "MM/DD/YYYY",
+                maxDate: new Date(),
+                onChange: model.methods.get("filterByEndDate")
             });
 
             model.sortby = menuConfig({
@@ -64,6 +83,7 @@
             "baseFormConfig",
             "rpFormInputTextConfig",
             "rpFormSelectMenuConfig",
+            "rpDatetimepickerConfig",
             factory
         ]);
 })(angular);
