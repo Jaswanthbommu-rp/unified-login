@@ -338,47 +338,75 @@
         };
 
         vm.onUserTypeChange = function (userTypeId) {
+            var bPrompt = true;
             if ($params.realPageId && (userTypeId !== model.getOrgUserTypeId())) {
                 if (userTypeId === vm.userTypes.regularUserNoEmail) {
-                    changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
+                    if(model.isClonedUser()){
+                            bPrompt = false;
+                             vm.processUserTypeChange(userTypeId);
+                        }else{
+                            changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
+                     }                    
                 }
                 else if (userStatus.isSuperUser()) {
                     if (userTypeId === vm.userTypes.externalUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.SuperToExternal);
                     }
-                    else if (userTypeId === vm.userTypes.regularUser) {
-                        changeUserType.setChangeMode(changeUserType.changeModes.SuperToRegular);
+                    else if (userTypeId === vm.userTypes.regularUser) {                        
+                        changeUserType.setChangeMode(changeUserType.changeModes.SuperToRegular);                        
                     }
                 }
                 else if (userStatus.isRegularUserNoEmail()) {
                     if (userTypeId === vm.userTypes.regularUser) {
-                        changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToRegular);
+                        if(model.isClonedUser()){
+                            bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
+                        }else{
+                            changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToRegular);
+                        }
                     }
                     else if (userTypeId === vm.userTypes.superUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToSuper);
                     }
                     else if (userTypeId === vm.userTypes.externalUser) {
-                        changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToExternal);
+                        if(model.isClonedUser()){
+                            bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
+                        }else{
+                            changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToExternal);
+                        }
                     }
                 }
                 else if (userStatus.isRegularUser() && !userStatus.isExternalUser()) {
-                    if (userTypeId === vm.userTypes.externalUser) {
-                        changeUserType.setChangeMode(changeUserType.changeModes.RegularToExternal);
+                    if (userTypeId === vm.userTypes.externalUser ) {
+                        if(model.isClonedUser()){
+                            bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
+                        }else{
+                            changeUserType.setChangeMode(changeUserType.changeModes.RegularToExternal);
+                        }
                     }
                     else if (userTypeId === vm.userTypes.superUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.RegularToSuper);
                     }
                 }
                 else if (userStatus.isExternalUser()) {
-                    if (userTypeId === vm.userTypes.regularUser) {
-                        changeUserType.setChangeMode(changeUserType.changeModes.ExternalToRegular);
+                    if (userTypeId === vm.userTypes.regularUser ) {
+                        if(model.isClonedUser()){
+                            bPrompt = false;
+                            vm.processUserTypeChange(userTypeId);
+                        }else{
+                            changeUserType.setChangeMode(changeUserType.changeModes.ExternalToRegular);
+                        }    
                     }
                     else if (userTypeId === vm.userTypes.superUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.ExternalToSuper);
                     }
                 }
                 vm.newTypeId = userTypeId;
-                vm.promptUserTypeChange();
+                if(bPrompt){
+                    vm.promptUserTypeChange();
+                }
             }
             else {
                 vm.processUserTypeChange(userTypeId);
