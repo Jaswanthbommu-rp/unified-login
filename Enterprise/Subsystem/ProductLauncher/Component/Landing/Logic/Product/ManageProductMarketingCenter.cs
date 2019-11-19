@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -667,8 +668,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Company Setup Error: Please Contact Support.";
             }
 
-			
-			mcUser = new MC.MarketingCenterUser()
+            // get a login name that isn't in use for the new user
+            bool foundUserName = false;
+            int incrementor = 0;
+            string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" +
+                                        $"{person.LastName.TrimWhiteSpace()}".ToLower();
+
+            while (!foundUserName)
+            {
+                if (CheckIfUserExistInProduct(userEmailAddress))
+                {
+                    incrementor++;
+                    userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+                }
+                else
+                {
+                    foundUserName = true;
+                }
+
+                if (incrementor == 10)
+                {
+                    // after 10 tries something might be wrong, so bail out.
+                    WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {userEmailAddress}");
+                    return "An error occurred. Unable to get username.";
+                }
+            }
+
+            mcUser = new MC.MarketingCenterUser()
             {
                 CompanyId = Convert.ToInt32(company.CompanyInstanceSourceId),
                 ContactRoleId = roleId,
@@ -880,14 +906,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return true;
 		}
-		/// <summary>
-		/// Sets Product user status
-		/// </summary>
-		/// <param name="isActive"></param>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="mcUserId"></param>
-		/// <returns></returns>
-		private bool SetMarketingCenterUserStatus(bool isActive, long editorPersonaId, string mcUserId)
+
+        private bool CheckIfUserExistInProduct(string _productUserId)
+        {
+            var url = _productUrl + $"/v2/contact/{_productUserId}/details";
+            var response = _client.GetAsync(url).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                WriteToDiagnosticLog($"ManageMarketingCenterUser.CheckIfUserExistInProduct - Email address {_productUserId} already exist in Marketing Center.");
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sets Product user status
+        /// </summary>
+        /// <param name="isActive"></param>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="mcUserId"></param>
+        /// <returns></returns>
+        private bool SetMarketingCenterUserStatus(bool isActive, long editorPersonaId, string mcUserId)
 		{
 			try 
 			{				
