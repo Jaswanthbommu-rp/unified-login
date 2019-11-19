@@ -132,6 +132,15 @@
     <None Include="AuditDB.PREPROD.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="AuditDB.LOAD.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="AuditDB.TRAINING.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="AuditDB.UAT.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Logging\Scripts\PostDeployment\Data.Logging.LogCategoryType.sql" />

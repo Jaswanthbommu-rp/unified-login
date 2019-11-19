@@ -26,7 +26,7 @@ BEGIN
 	UNION
 	SELECT	iat.[ActivityCode] AS 'Name',
 				CASE
-					WHEN iat.ActivityCode = 'ForgotPassword' THEN iac.MaxActivityAttemptCount
+					WHEN iat.ActivityCode = 'Login' THEN iac.MaxActivityAttemptCount
 					WHEN iat.ActivityCode = 'NewUserRegistration' THEN iac.ActivityTokenExpirationMinutes / 1440
 					ELSE iac.ActivityTokenExpirationMinutes
 				END AS 'Value'
@@ -35,5 +35,5 @@ BEGIN
 				INNER JOIN Enterprise.DataImportMapping edim ON iac.PartyId = edim.PartyId 
 	WHERE	edim.SourceId = @SourceId
 	AND			edim.DataImportApplicationId = @DataImportApplicationId
-	AND			iat.ActivityCode IN ('ForgotPassword', 'ForcedLock', 'NewUserRegistration')
+	AND			iat.ActivityCode IN ('Login', 'ForcedLock', 'NewUserRegistration')
 END
