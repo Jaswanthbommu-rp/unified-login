@@ -88,21 +88,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Get User time zones List
-        /// </summary>
-        /// <returns>UserTimeZone object</returns>
-        public List<UserTimeZone> GetUserTimeZones()
-        {
-            List<UserTimeZone> userTimeZones;
-            using (var repo = GetRepository())
-            {
-                userTimeZones = repo.GetMany<UserTimeZone>(StoredProcNameConstants.SP_ListTimeZone, null).ToList();
-            }
-
-            return userTimeZones;
-        }
-
-        /// <summary>
         /// Get Enterprise User
         /// </summary>
         /// <param name="enterpriseUserName">Enterprise UserName</param>
@@ -1332,35 +1317,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Get User CustomFields
-        /// </summary>
-        /// <param name="userId">UserId</param>
-        /// <returns>List of ConfigurationSetting</returns>
-        public List<ConfigurationSetting> GetUserCustomFields(long userId)
-        {
-            List<ConfigurationSetting> result = new List<ConfigurationSetting>();
-            using (var repository = GetRepository())
-            {
-                try
-                {
-                    dynamic customFields = new
-                    {
-                        @UserId = userId,
-                        @SettingName = "CustomFields"
-                    };
-
-                    result = repository.GetMany<ConfigurationSetting>(StoredProcNameConstants.SP_ListUserLoginSettings, customFields);
-                    return result;
-                }
-                catch
-                {
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
         /// Update User
         /// </summary>
         /// <param name="userLogin">userLogin</param>
@@ -1546,7 +1502,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     DateTime? statusThruDate = null;
 
-                    var clientLocalDatetime = ClientTimezone.ConvertUTCWithUserTimeZone(userProfile.userLogin.TimeZoneOffset);
                     var userFromDate = fromDate.Value;
                     //set active or inactive only when eff date is current/past and exp date is in future or not set
                     if ((fromDate.Value <= DateTime.UtcNow)
@@ -3182,57 +3137,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #endregion
 
         #region Private methods
-
-        /// <summary>
-        /// Update UserTimezone Setting
-        /// </summary>
-        /// <param name="repository"></param>
-        /// <param name="userId"></param>
-        /// <param name="settingValue"></param>
-        /// <returns>RepositoryResponse</returns>
-        private RepositoryResponse UpdateUserTimezoneSetting(IRepository repository, long userId, string settingValue)
-        {
-            RepositoryResponse repositoryResponse = new RepositoryResponse();
-
-            try
-            {
-                dynamic timeZoneParams = new
-                {
-                    @UserId = userId,
-                    @SettingName = "TimeZone"
-                };
-
-                IList<ConfigurationSetting> result = repository.GetMany<ConfigurationSetting>(StoredProcNameConstants.SP_ListUserLoginSettings, timeZoneParams);
-                if (result.Count == 0)
-                {
-                    repositoryResponse.ErrorMessage = "User TimeZone Create/Update Error: Unable to get Time zone Setting.";
-                    return repositoryResponse;
-                }
-
-                var settingId = result.Where(t => t.SettingName == "TimeZone").Select(a => a.MasterConfigurationSettingId).FirstOrDefault();
-                if (settingId > 0)
-                {
-                    dynamic timeZoneSaveParams = new
-                    {
-                        @MasterConfigurationSettingId = settingId,
-                        @Value = settingValue
-                    };
-                    RepositoryResponse response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateMasterConfigurationSetting, timeZoneSaveParams);
-                    if (response.Id == 0)
-                    {
-                        repositoryResponse.ErrorMessage = "User Timezone Create/Update Error: Unable to Save Time zone Setting.";
-                        return repositoryResponse;
-                    }
-                }
-
-                return repositoryResponse;
-            }
-            catch (Exception exception)
-            {
-                repositoryResponse.ErrorMessage = "User Timezone Create/Update Error:" + exception.Message;
-                return repositoryResponse;
-            }
-        }
 
         /// <summary>
         /// List ContactMechanism For Person

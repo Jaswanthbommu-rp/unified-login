@@ -607,7 +607,6 @@
     <Build Include="Enterprise\Stored Procedures\SetupOrganization.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateOrganizationProduct.sql" />
     <Build Include="Enterprise\Stored Procedures\DeleteOrganizationProduct.sql" />
-    <Build Include="Enterprise\Stored Procedures\ListTimeZone.sql" />
     <Build Include="Enterprise\Stored Procedures\ListIdentityProviderType.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.47.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.48.sql" />

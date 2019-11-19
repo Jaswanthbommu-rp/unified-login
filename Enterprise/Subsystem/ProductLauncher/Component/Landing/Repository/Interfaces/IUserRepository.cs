@@ -97,10 +97,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="profile">Edited User detail and Products</param>
 		/// <returns>Repository response object</returns>
 		RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile);
-		/// <summary>
-		/// Gets User Time Zones
-		/// </summary>
-        List<UserTimeZone> GetUserTimeZones();
 
 		/// <summary>
 		/// Used to disable a list of users across all products the users have access to
@@ -118,12 +114,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="userLogins"></param>
 		void ActivateUserProducts(Guid createUserRealPageId, long createUserPersonaId, IList<UserLoginOnly> userLogins);
 		
-		/// <summary>
-		/// Used to get user custom fields data
-		/// </summary>
-		/// <param name="userId"></param>
-		List<ConfigurationSetting> GetUserCustomFields(long userId);
-
 		/// <summary>
 		/// Get User details by Persona Id or user realpage id
 		/// </summary>
