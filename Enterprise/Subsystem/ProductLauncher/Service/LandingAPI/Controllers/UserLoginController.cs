@@ -418,8 +418,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				}
 
 				return Request.CreateResponse(HttpStatusCode.ExpectationFailed, response);
-
-
 			}
 			return Request.CreateResponse(HttpStatusCode.OK, response);
 		}

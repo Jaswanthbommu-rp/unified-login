@@ -124,18 +124,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// Get or Set status thru date
 		/// </summary>
 		DateTime? StatusThruDate { get; set; }
+
 		/// <summary>
 		/// Get or Set status Id
 		/// </summary>
 		int StatusId { get; set; }
+
 		/// <summary>
 		/// Is LoginName Null or WhiteSpace
 		/// </summary>
 		bool IsLoginNameNullOrWhiteSpace { get; }
-        /// <summary>
-		/// User Time Zone Offset Value
-		/// </summary>
-        string TimeZoneOffset { get; set; }
+
 		/// <summary>
 		/// Force Temporary Password Set
 		/// </summary>

@@ -255,7 +255,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			updateObject.userLogin.Is3rdPartyIDP = userProductDetails.UserProfileDetails.IsExternalIdp;
 			updateObject.userLogin.UserId = updateUserDetails.UserId;
 			updateObject.userLogin.LoginName = userProductDetails.UserProfileDetails.LoginName; //??
-			updateObject.userLogin.TimeZoneOffset = "Central Standard Time";
 
 			// Organization
 			updateObject.organization.Add(new Organization
