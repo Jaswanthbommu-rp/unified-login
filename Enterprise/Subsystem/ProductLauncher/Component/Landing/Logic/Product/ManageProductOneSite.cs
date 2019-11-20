@@ -1086,38 +1086,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private OneSiteUser ParseOneSiteGetUser(NameValuePair[] response)
         {
             OneSiteUser osu = new OneSiteUser();
-            if (response.Any(a => a.Name.ToUpper() == "USERID"))
+            if (response.Any(a => a.Name.Equals("USERID", StringComparison.OrdinalIgnoreCase)))
             {
-                osu.UserId = Convert.ToInt32((from a in response where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault());
+                osu.UserId = Convert.ToInt32((from a in response where a.Name.Equals("USERID", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault());
             }
-            if (response.Any(a => a.Name.ToUpper() == "SYSTEMIDENTIFIER"))
+            if (response.Any(a => a.Name.Equals("SYSTEMIDENTIFIER", StringComparison.OrdinalIgnoreCase)))
             {
-                osu.SystemIdentifier = (from a in response where a.Name.ToUpper() == "SYSTEMIDENTIFIER" select a.Value).FirstOrDefault();
+                osu.SystemIdentifier = (from a in response where a.Name.Equals("SYSTEMIDENTIFIER", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
             }
-            if (response.Any(a => a.Name.ToUpper() == "FIRSTNAME"))
+            if (response.Any(a => a.Name.Equals("FIRSTNAME", StringComparison.OrdinalIgnoreCase)))
             {
-                osu.FirstName = (from a in response where a.Name.ToUpper() == "FIRSTNAME" select a.Value).FirstOrDefault();
+                osu.FirstName = (from a in response where a.Name.Equals("FIRSTNAME", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
             }
-            if (response.Any(a => a.Name.ToUpper() == "LASTNAME"))
+            if (response.Any(a => a.Name.Equals("LASTNAME", StringComparison.OrdinalIgnoreCase)))
             {
-                osu.LastName = (from a in response where a.Name.ToUpper() == "LASTNAME" select a.Value).FirstOrDefault();
+                osu.LastName = (from a in response where a.Name.Equals("LASTNAME", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
             }
-            if (response.Any(a => a.Name.ToUpper() == "USERPIN"))
+            if (response.Any(a => a.Name.Equals("USERPIN", StringComparison.OrdinalIgnoreCase)))
             {
-                string userPin = (from a in response where a.Name.ToUpper() == "USERPIN" select a.Value).FirstOrDefault();
+                string userPin = (from a in response where a.Name.Equals("USERPIN", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
                 if (!string.IsNullOrEmpty(userPin))
                 {
                     osu.UserPin = Convert.ToInt32(userPin);
                 }
             }
-            if (response.Any(a => a.Name.ToUpper() == "USERALLPROPERTY"))
+            if (response.Any(a => a.Name.Equals("USERALLPROPERTY", StringComparison.OrdinalIgnoreCase)))
             {
-                string allProperties = (from a in response where a.Name.ToUpper() == "USERALLPROPERTY" select a.Value).FirstOrDefault();
+                string allProperties = (from a in response where a.Name.Equals("USERALLPROPERTY", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
                 osu.AllProperties = (allProperties == "1" ? true : false);
             }
-			if (response.Any(a => a.Name.ToUpper() == "USERTHIRDPARTYREFERENCE"))
+			if (response.Any(a => a.Name.Equals("USERTHIRDPARTYREFERENCE", StringComparison.OrdinalIgnoreCase)))
 			{
-				osu.UserThirdPartyReference = (from a in response where a.Name.ToUpper() == "USERTHIRDPARTYREFERENCE" select a.Value).FirstOrDefault();
+				osu.UserThirdPartyReference = (from a in response where a.Name.Equals("USERTHIRDPARTYREFERENCE", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
 			}
 			return osu;
         }
@@ -1197,7 +1197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 NameValuePair[] response;
                 string errorMessage = "";
 
-				if (!string.IsNullOrEmpty(_systemIdentifier))
+				if (!string.IsNullOrWhiteSpace(_systemIdentifier))
 				{
 					var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
 					userThirdPartyReference = onesiteuser.UserThirdPartyReference;
