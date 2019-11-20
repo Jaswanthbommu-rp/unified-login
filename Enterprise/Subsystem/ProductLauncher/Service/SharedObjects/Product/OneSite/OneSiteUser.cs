@@ -29,6 +29,10 @@
         /// Does the user have access to all properties in OneSite
         /// </summary>
         public bool AllProperties { get; set; } = false;
+		/// <summary>
+		/// The user ThirdPartyReference in OneSite
+		/// </summary>
+		public string UserThirdPartyReference { get; set; } = "";
 
-    }
+	}
 }
