@@ -45,12 +45,8 @@
 
         #endregion
 
-
         // WebApi Settings
         public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
-
-        //TimeZone
-        public const string SP_ListTimeZone = "Enterprise.ListTimeZone";
 
         // Forgot / Reset password
         public const string SP_GetEnterpriseUserStatus = "Auth.GetEnterpriseUserStatus";
@@ -83,7 +79,6 @@
         public const string SP_CreateUserLogin = "Ident.CreateUserLogin";
         public const string SP_GetUserLogin = "Ident.GetUserLogin";
         public const string SP_GetUserLoginOnly = "Ident.GetUserLoginOnly";
-        //public const string SP_GetUserLoginByName = "Ident.GetUserLoginByName";
         public const string SP_UpdateUserLogin = "Ident.UpdateUserLogin";
         public const string SP_UpdateLastLogin = "Ident.UpdateLastLogin";
         public const string SP_UpdateUserStatusByCompany = "Ident.UpdateUserStatusByCompany";

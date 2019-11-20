@@ -278,9 +278,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IList<LE.User> listUsers = new List<LE.User>();
 
 			ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
-            // TODO: FIGURE OUT WHAT TO DO FOR TIMEZONE IN MULTI COMPANY
 			var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
-			TimeZoneInfo timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(userLogin.TimeZoneOffset);
 
 			if (profileDetailList != null)
 			{
@@ -306,11 +304,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 							LastName = p.LastName,
 							LoginName = p.userLogin.LoginName,
 							Products = p.SummaryCount.TotalAssignedProducts,
-							LastLogin = p.userLogin.LastLogin != null ? TimeZoneInfo.ConvertTimeFromUtc(p.userLogin.LastLogin.Value, timeZoneInfo).ToString() : string.Empty,
+							LastLogin = p.userLogin.LastLogin != null ? p.userLogin.LastLogin.Value.ToShortDateString() : string.Empty,
                             Status = p.userLogin.Status.ToString().Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Deactivated" : p.userLogin.Status.ToString(),
                             IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No",
-							EffectiveDate = p.userLogin.FromDate != null ? TimeZoneInfo.ConvertTimeFromUtc(p.userLogin.FromDate.Value, timeZoneInfo).ToShortDateString() : string.Empty,
-							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : TimeZoneInfo.ConvertTimeFromUtc(p.userLogin.ThruDate.Value, timeZoneInfo).ToShortDateString(),
+							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate.Value.ToShortDateString() : string.Empty,
+							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate.Value.ToShortDateString(),
 							CustomField = p.CustomField
 						}
 					);
@@ -365,7 +363,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Newly created Person Id", Type = typeof(Persona))]
-        //[SwaggerResponseExamples(typeof(Person.PersonOutputResult), typeof(NewPersonOutputResultExample))]
         [HttpGet]
         [Route("person/persona/{realPageId}")]
         public HttpResponseMessage GetActivePersona([FromUri] Guid realPageId)
@@ -383,7 +380,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			ManagePersona personaManager = new ManagePersona(_userClaims);
-            //Persona persona = personaManager.GetActivePersona(realPageId);
             Persona persona = personaManager.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
 
 			if ((persona != null) && (persona.PersonaId > 0))
@@ -499,8 +495,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     PartyId = 100,
                     PasswordModifiedDate = DateTime.Now.AddDays(-30),
                     RealPageId = Guid.NewGuid(),
-                    //Status = "active",
-                    //StatusSetDate = DateTime.Now.AddDays(-7),
                     ThruDate = DateTime.Now.AddDays(30),
                     UserId = 1
                 };

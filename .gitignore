@@ -14,6 +14,7 @@
 *.zip
 *.bak.*
 *.bak
+package-lock.json
 Enterprise/Subsystem/ProductLauncher/Service/LandingAPI/RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.XML
 Enterprise/Subsystem/ProductLauncher/Service/LandingAPIEnterprise/RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.xml
 Enterprise/Subsystem/ProductLauncher/Service/SharedObjects/RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.XML
@@ -27,6 +28,7 @@ TestResults/
 packages/
 node_modules/
 v1.10.*/
+
 Enterprise/Subsystem/ProductLauncher/Web/IdentityServer/Identity/Content/
 Enterprise/Subsystem/ProductLauncher/Web/identity-ui-src/Content/lib/
 
@@ -63,4 +65,4 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/assets/css/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/images/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/js/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/omnibar/
-Enterprise/Subsystem/ProductLauncher/Web/landing-ui-src/package-lock.json
+
