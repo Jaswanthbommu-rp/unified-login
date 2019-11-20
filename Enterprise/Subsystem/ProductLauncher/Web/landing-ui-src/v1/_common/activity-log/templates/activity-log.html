@@ -11,11 +11,27 @@
             rp-model="al.filter.model.activity">
         </rp-form-select-menu>
 
-        <rp-form-select-menu
+        <!-- <rp-form-select-menu
             class="activity-log-filter-daterange"
             config="al.filter.config.daterange"
             rp-model="al.filter.model.daterange">
-        </rp-form-select-menu>
+        </rp-form-select-menu> -->
+        <div class="col-md-2 labelFrom">
+                <label>From</label>
+             <rp-datetimepicker 
+                class="activity-log-filter"
+                config="al.filter.config.startDate" 
+                rp-model="al.filter.model.startDate">
+            </rp-datetimepicker>
+        </div>
+        <div class="col-md-2 labelTo">
+                <label>To</label>
+            <rp-datetimepicker 
+                class="activity-log-filter"
+                config="al.filter.config.endDate" 
+                rp-model="al.filter.model.endDate">
+            </rp-datetimepicker>
+        </div>
 
         <div class="activity-log-filter-sortby-group">
             <span class="activity-log-filter-sortby-label">Sort By:</span>
