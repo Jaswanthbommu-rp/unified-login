@@ -1115,8 +1115,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string allProperties = (from a in response where a.Name.ToUpper() == "USERALLPROPERTY" select a.Value).FirstOrDefault();
                 osu.AllProperties = (allProperties == "1" ? true : false);
             }
-
-            return osu;
+			if (response.Any(a => a.Name.ToUpper() == "USERTHIRDPARTYREFERENCE"))
+			{
+				osu.UserThirdPartyReference = (from a in response where a.Name.ToUpper() == "USERTHIRDPARTYREFERENCE" select a.Value).FirstOrDefault();
+			}
+			return osu;
         }
 
         /// <summary>
@@ -1133,8 +1136,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Default to XXXX to tell OneSite to use existing pin
             string onesitePin = "XXXX";
 	        bool existingUser = false;
-            
-            WriteToDiagnosticLog("Beginning ManageOneSiteUser");
+			string userThirdPartyReference = "";
+
+			WriteToDiagnosticLog("Beginning ManageOneSiteUser");
 
             // use the persona to get the user id, organization id and system identifier for the user
             //string pmcid = GetOneSitePMCIDFromPersona(AdminPersona);
@@ -1193,20 +1197,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 NameValuePair[] response;
                 string errorMessage = "";
 
-                if (!isSuperUser)
+				if (!string.IsNullOrEmpty(_systemIdentifier))
+				{
+					var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
+					userThirdPartyReference = onesiteuser.UserThirdPartyReference;
+				}
+
+				if (!isSuperUser)
                 {
                     WriteToDiagnosticLog("ManageOneSiteUser - isSuperUser = false");
-                    // build the call to OneSite to create the user
-                    userArray = new List<NameValuePair> {
-                        new NameValuePair() { Name = "FirstName", Value = new string(person.FirstName.Where(Char.IsLetter).ToArray())},
-                        new NameValuePair() { Name = "LastName", Value = new string(person.LastName.Where(Char.IsLetter).ToArray())},
-                        new NameValuePair() { Name = "Pin", Value = onesitePin },
-                        new NameValuePair() { Name = "PMCID", Value = _pmcID },
-                        new NameValuePair() { Name = "IsSuperuser", Value = "0" },
-                        new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
-                        new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
+					
+
+					// build the call to OneSite to create the user
+					userArray = new List<NameValuePair> {
+						new NameValuePair() { Name = "FirstName", Value = new string(person.FirstName.Where(Char.IsLetter).ToArray())},
+						new NameValuePair() { Name = "LastName", Value = new string(person.LastName.Where(Char.IsLetter).ToArray())},
+						new NameValuePair() { Name = "Pin", Value = onesitePin },
+						new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
+						new NameValuePair() { Name = "PMCID", Value = _pmcID },
+						new NameValuePair() { Name = "IsSuperuser", Value = "0" },
+						new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
+						new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
 						new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress.Contains("@bogusemail.com") ? string.Empty : userEmailAddress }
-                    };
+					};
+
                     try
                     {
                         logData = new Dictionary<string, object>();
@@ -1269,7 +1283,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	                    new NameValuePair() { Name = "FirstName", Value = new string(person.FirstName.Where(Char.IsLetter).ToArray())},
 	                    new NameValuePair() { Name = "LastName", Value = new string(person.LastName.Where(Char.IsLetter).ToArray())},
 						new NameValuePair() { Name = "Pin", Value = onesitePin },
-                        new NameValuePair() { Name = "PMCID", Value = _pmcID },
+						new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
+						new NameValuePair() { Name = "PMCID", Value = _pmcID },
                         new NameValuePair() { Name = "IsSuperuser", Value = "1" },
                         new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
                         new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
