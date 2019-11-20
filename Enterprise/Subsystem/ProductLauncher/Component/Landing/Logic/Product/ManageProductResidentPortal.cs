@@ -467,7 +467,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						//User exists under a different company (User logged in Unified Login companyId is differnt that Resident Portal CompanyId)
 						if (_companyInstanceSourceId != _residentPortalUser.CompanyId)
 						{
-                            //Format should be jsmith_{org id}@test.com as in GB-6879, but check the format with line no:450.
+                            //Format should be jsmith_{org id}@test.com as in GB-6879
                             string[] loginNameSubStrings = userEmailAddress.Split('@');                            
                             userEmailAddress = !userEmailAddress.Contains("@") ? string.Concat(userEmailAddress, _companyInstanceSourceId.ToString())
                                                 : string.Concat(loginNameSubStrings[0], "_", _companyInstanceSourceId.ToString(), "@", loginNameSubStrings[1]);
