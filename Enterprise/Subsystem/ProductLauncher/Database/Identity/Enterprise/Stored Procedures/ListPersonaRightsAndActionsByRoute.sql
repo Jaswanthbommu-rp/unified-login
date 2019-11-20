@@ -1,4 +1,5 @@
-﻿CREATE PROCEDURE [Enterprise].[ListPersonaRightsAndActionsByRoute]
+﻿
+CREATE PROCEDURE [Enterprise].[ListPersonaRightsAndActionsByRoute]
 ( 
 				@PersonaID bigint, @RouteID nvarchar(50)
 )
@@ -146,7 +147,7 @@ BEGIN
 		BEGIN
 			DELETE FROM #HoldRoutes
 			WHERE ObjectValue <> @RouteId AND 
-				  ObjectValue NOT IN( N'SideMenu', N'Dashboard', N'Products', N'People', 'Roles and rights', 'Activity Log', 'Manage Unified Settings', 'View Unified Settings',  'Settings');
+				  ObjectValue NOT IN( N'SideMenu', N'Dashboard', N'Products', N'People', 'Roles and rights', 'Activity Log', 'Manage Unified Settings', 'View Unified Settings',  'Settings',  'Manage Settings Templates');
 			 IF EXISTS(SELECT 1 FROM #HoldRoutes WHERE Objectvalue IN  ('Dashboard', 'Settings') AND ObjectType = 'Route')
 			 BEGIN
 				DELETE FROM #HoldRoutes WHERE ObjectType = 'ROute' and ObjectValue IN  ('Dashboard', 'Settings') 
@@ -317,7 +318,7 @@ BEGIN
 					INNER JOIN Enterprise.Organization O ON O.PartyId = ULP.OrganizationPartyId 
 					WHERE OrganizationPartyId = @OrganizationId AND PersonaId = @PersonaId ) <> @OrganizationName
 			 BEGIN
-				DELETE FROM #HoldRights WHERE ObjectValue IN ('Manage Unified Settings', 'View Unified Settings', 'Import Users', 'Manage Custom Fields', 'Manage Platform Security')
+				DELETE FROM #HoldRights WHERE ObjectValue IN ('Manage Unified Settings', 'View Unified Settings', 'Import Users', 'Manage Custom Fields', 'Manage Platform Security', 'Manage Settings Templates')
 			 END
 			 SELECT DISTINCT NULL AS 'ActionId', ObjectType, ObjectValue AS 'Action', NULL AS 'ParentActionId', NULL AS 'ActionValueTypeId'
 				FROM #HoldRights
