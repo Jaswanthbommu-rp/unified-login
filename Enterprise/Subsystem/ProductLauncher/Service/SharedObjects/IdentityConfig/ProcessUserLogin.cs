@@ -8,7 +8,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         private DateTime _fromDate;
         private bool _fromDateNull = true;
 
-
         /// <summary>
         /// RealPageId
         /// </summary>
