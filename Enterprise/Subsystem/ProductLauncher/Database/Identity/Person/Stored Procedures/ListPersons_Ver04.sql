@@ -1,4 +1,4 @@
-﻿CREATE OR ALTER PROCEDURE [Person].[ListPersons_Ver04] (
+﻿CREATE PROCEDURE [Person].[ListPersons_Ver04] (
 	@RealPageId uniqueidentifier = NULL,
 	@ParentPartyRoleTypeId int = NULL,
 	@UserListFilterType tinyint = 0,
