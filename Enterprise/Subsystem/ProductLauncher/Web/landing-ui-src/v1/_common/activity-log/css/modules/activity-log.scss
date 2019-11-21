@@ -20,15 +20,16 @@
     &s > * {
         margin-bottom: 20px;
         margin-right: 20px;
+        margin-top: 10px;
     }
 
     &-keyword {
-        width: 300px;
+        width: 210px;
         float: left;
     }
 
     &-activity {
-        width: 220px;
+        width: 205px;
         float: left;
     }
 
@@ -39,6 +40,7 @@
 
     &-sortby-group {
         float: left;
+        margin-left: 12px;
     }
 
     &-sortby-label {
@@ -57,6 +59,43 @@
         float: left;
         margin-top: 10px;
     }
+}
+.labelFrom {
+    padding: 3px;
+    border: 1px solid #e4e6e8;
+    // margin: -3px 0px 0px 6px;
+}
+.labelFrom>label {
+    position: absolute;
+    bottom: 29px;
+    left: 20px;
+    background-color: white;
+}
+.labelFrom .rp-datetimepicker-text {
+    border: none;
+    box-shadow: none !important;
+}
+.labelFrom .rp-datetimepicker-icon-wrap {
+    border: none;
+}
+.labelTo {
+    padding: 3px;
+    border: 1px solid #e4e6e8;
+    // margin: -3px 0px 0px 6px;
+}
+.labelTo>label {
+    position: absolute;
+    bottom: 29px;
+    left: 20px;
+    background-color: white;
+    margin-left: 6px;
+}
+.labelTo .rp-datetimepicker-text {
+    border: none;
+    box-shadow: none !important;
+}
+.labelTo .rp-datetimepicker-icon-wrap {
+    border: none;
 }
 
 .rp-actions-menu-panel {

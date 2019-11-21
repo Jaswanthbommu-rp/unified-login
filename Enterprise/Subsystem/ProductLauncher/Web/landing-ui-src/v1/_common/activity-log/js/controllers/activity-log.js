@@ -23,6 +23,8 @@
             vm.singleUser = true;
             vm.register();
             vm.loadData();
+            vm.filterByStartDate(moment().subtract(7, 'd'));
+            vm.filterByEndDate(moment());
 
             vm.exportMenu = exportMenu(vm);
         };
@@ -42,7 +44,7 @@
 
         vm.initFilterDropdowns = function () {
             activityLogFormConfig.setOptions("activities", filterOptions.getActivityTypes());
-            activityLogFormConfig.setOptions("daterange", filterOptions.getDateRanges());
+            //activityLogFormConfig.setOptions("daterange", filterOptions.getDateRanges());
             activityLogFormConfig.setOptions("sortby", filterOptions.getSortFilters());
         };
 
@@ -83,6 +85,34 @@
             vm.payloadModel.setDateRange(daterange);
             vm.loadData();
         };
+        vm.filterByStartDate = function (date) {
+            var dateToday = moment();
+            var selectedDate = moment(date);
+            if (date) {
+                if (selectedDate.isSameOrBefore(dateToday, "day")) {
+                    activityLogFormConfig.endDate.minDate(selectedDate);
+                    activityLogFormConfig.endDate.maxDate(dateToday);
+                }
+            }
+            vm.payloadModel.setStartDate(date);
+            vm.loadData();
+        };
+        vm.filterByEndDate = function (date) {
+            var dateToday = moment();
+            var selectedDate = moment(date);
+            if (date) {
+                if (selectedDate.isSameOrBefore(dateToday, "day")) {
+                    activityLogFormConfig.startDate.maxDate(selectedDate);
+                    activityLogFormConfig.endDate.maxDate(dateToday);
+
+                } else {
+                    activityLogFormConfig.endDate.maxDate(dateToday);
+                    activityLogFormConfig.startDate.maxDate(dateToday);
+                }
+            }
+            vm.payloadModel.setEndDate(date);
+            vm.loadData();
+        };
 
         vm.sortByFilter = function (filterItem) {
             vm.payloadModel.setSortOrderPayload(filterItem);
@@ -102,7 +132,7 @@
 
         vm.setData = function (resp) {
             grid.busy(false);
-            resp.data.forEach(function(item) {
+            resp.data.forEach(function (item) {
                 item.activityDate = vm.setActivityDate(item.applicationTimestamp);
             });
             gridPagination.setData(resp.data).goToPage({
@@ -110,7 +140,7 @@
             });
         };
 
-        vm.setActivityDate = function(activityDate) {
+        vm.setActivityDate = function (activityDate) {
             if (activityDate) {
                 activityDate = moment(activityDate).toDate();
             }
