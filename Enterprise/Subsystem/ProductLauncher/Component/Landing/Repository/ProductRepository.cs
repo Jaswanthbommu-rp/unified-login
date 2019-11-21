@@ -1570,7 +1570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// </summary> 
 		public GbProductMap GetBooksMasterProductDetail(int gbProductId)
 		{
-			var gbProductMap = GetGbProductMap().FirstOrDefault(x => x.ProductId == gbProductId);
+			var gbProductMap = GetAllProducts().FirstOrDefault(x => x.ProductId == gbProductId);
 			return gbProductMap;
 		}
 
@@ -1580,7 +1580,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// </summary> 
 		public GbProductMap GetBooksMasterProductDetail(string blueBookProductCode)
 		{
-			var gbProductMap = GetGbProductMap().FirstOrDefault(x => x.BooksProductCode.ToUpper() == blueBookProductCode.ToUpper());
+			var gbProductMap = GetAllProducts().FirstOrDefault(x => x.BooksProductCode.ToUpper() == blueBookProductCode.ToUpper());
 			return gbProductMap;
 		}
 
@@ -1601,10 +1601,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			return propertyrolelist;
 		}
-		#endregion
 
-		#region Private Methods
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <summary>
+        /// Returns all the products
+        /// </summary>
+        /// <returns></returns>
+        public IList<GbProductMap> GetAllProducts()
+        {
+            // Get products
+            ObjectCache productCache = MemoryCache.Default;
+            var products = productCache["GB-BB-ProductMap"] as IList<GbProductMap>;
+
+            if (products == null)
+            {
+                products = ListProducts(null, null, null, null);
+
+                var cachePolicy = new CacheItemPolicy
+                {
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60)// Expier cache every after 60 minutes 
+                };
+
+                productCache.Set("GB-BB-ProductMap", products, cachePolicy);
+            }
+
+            return products;
+        }
+        #endregion
+
+        #region Private Methods
+        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
 			Log.Write(logType, new LogDetails
 			{
@@ -1718,27 +1743,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						break;
 				}
 			}
-		}
-
-		private IList<GbProductMap> GetGbProductMap()
-		{
-			// Get products
-			ObjectCache productCache = MemoryCache.Default;
-			var products = productCache["GB-BB-ProductMap"] as IList<GbProductMap>;
-
-			if (products == null)
-			{
-				products = ListProducts(null, null, null, null);
-
-				var cachePolicy = new CacheItemPolicy
-				{
-					AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60)// Expier cache every after 60 minutes 
-				};
-
-				productCache.Set("GB-BB-ProductMap", products, cachePolicy);
-			}
-
-			return products;
 		}
 		#endregion
 	}

@@ -179,5 +179,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="settingType"></param>
 		/// <param name="value"></param>
 		void UpdateProductSettingProductStatus<T>(long userPersonaId, int productId, string settingType, T value);
-	}
+
+        /// <summary>
+	    /// Returns all the products
+	    /// </summary>
+	    IList<GbProductMap> GetAllProducts();
+    }
 }

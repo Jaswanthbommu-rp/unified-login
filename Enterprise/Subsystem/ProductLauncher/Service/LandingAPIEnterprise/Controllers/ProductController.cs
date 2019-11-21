@@ -36,7 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             IProductRepository productRepository = new ProductRepository();
             
             //Passing null to get all the Products
-            var result = productRepository.ListProducts(null, null, null, null);
+            var result = productRepository.GetAllProducts();
             IList<string> excludeProducts = new List<string>() { "UI", "UL", "SF" };
             result = result.Where(x => !excludeProducts.Contains(x.BooksProductCode)).ToList();
 
