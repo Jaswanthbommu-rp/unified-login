@@ -227,9 +227,18 @@ BEGIN
 				iul.UserId,
 				iulp.UserLoginPersonaId,
 				iul.LoginName,
-				DATEADD(minute, @OffsetMinutes, iul.LastLoginDate),
-				DATEADD(minute, @OffsetMinutes, iulp.FromDate),
-				DATEADD(minute, @OffsetMinutes, iulp.ThruDate),
+				CASE
+					WHEN DATEDIFF(day, iul.LastLoginDate, '12/31/9999') = 0 THEN iul.LastLoginDate
+					ELSE DATEADD(minute, @OffsetMinutes, iul.LastLoginDate)
+				END AS 'LastLoginDate',
+				CASE
+					WHEN DATEDIFF(day, iulp.FromDate, '12/31/9999') = 0 THEN iulp.FromDate
+					ELSE DATEADD(minute, @OffsetMinutes, iulp.FromDate)
+				END AS 'FromDate',
+				CASE
+					WHEN DATEDIFF(day, iulp.ThruDate, '12/31/9999') = 0 THEN iulp.ThruDate
+					ELSE DATEADD(minute, @OffsetMinutes, iulp.ThruDate)
+				END AS 'ThruDate',
 				iul.IdentityProviderTypeId,
 				iulp.StatusTypeId,
 				CASE
@@ -237,7 +246,10 @@ BEGIN
 					WHEN ((iulp.StatusTypeId = 12) AND (iul.LastLoginDate IS NOT NULL)) THEN 'Active'
 					ELSE est.Name
 				END AS 'StatusName',
-				DATEADD(minute, @OffsetMinutes, iulp.StatusThruDate)
+				CASE
+					WHEN DATEDIFF(day, iulp.StatusThruDate, '12/31/9999') = 0 THEN iulp.StatusThruDate
+					ELSE DATEADD(minute, @OffsetMinutes, iulp.StatusThruDate)
+				END AS 'StatusThruDate'
 	FROM	Person.Persona pe
 				INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)
 				INNER JOIN Ident.UserLogin iul ON iulp.UserLoginId = iul.UserId
