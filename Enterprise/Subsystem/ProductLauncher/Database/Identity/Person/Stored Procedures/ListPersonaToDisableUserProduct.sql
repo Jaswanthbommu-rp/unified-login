@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [Person].[ListPersonaToDisableUserProduct] (
+CREATE PROCEDURE [Person].[ListPersonaToDisableUserProduct] (
 	@OrganizationPartyId bigint,
 	@PersonRealPageId uniqueidentifier
 )
