@@ -190,9 +190,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			RepositoryResponse repositoryResponse = new RepositoryResponse();
 
 			IUserRepository userRepository = new UserRepository();
-			IOrganizationRepository organizationRepository = new OrganizationRepository();
 
-			IOrganization organization = organizationRepository.GetOrganization(realPageId: null, organizationPartyId: organizationPartyId, blueBookId: null, blackBookId: null);
+			IOrganization organization = _organizationRepository.GetOrganization(realPageId: null, organizationPartyId: organizationPartyId, blueBookId: null, blackBookId: null);
 
 			using (var repository = GetRepository())
             {

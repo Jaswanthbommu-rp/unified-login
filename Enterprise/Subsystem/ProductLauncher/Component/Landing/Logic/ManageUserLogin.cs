@@ -50,7 +50,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
-            _defaultUserClaim = userClaim;
+			_organizationRepository = new OrganizationRepository(repository);
+			_defaultUserClaim = userClaim;
         }
 
         /// <summary>
@@ -65,7 +66,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
-        }
+			_organizationRepository = new OrganizationRepository();
+		}
 
 		/// <summary>
 		/// Create a basic instance of the ManageUser Controller class
@@ -80,7 +82,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
-            _defaultUserClaim = userClaim;
+			_organizationRepository = new OrganizationRepository();
+			_defaultUserClaim = userClaim;
         }
 
 		#endregion
