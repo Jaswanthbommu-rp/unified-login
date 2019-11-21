@@ -117,9 +117,10 @@
         public const string SP_RemovePersona = "Person.RemovePersona";
         public const string SP_UpdatePersona = "Person.UpdatePersona";
         public const string SP_CreatePersonaConfiguration = "Enterprise.CreatePersonaConfiguration";
+		public const string SP_ListPersonaToDisableUserProduct = "Person.ListPersonaToDisableUserProduct";
 
-        //Set Password
-        public const string SP_SaveSecurityQuestionAnswers = "Ident.CreateSecurityQuestionAnswers";
+		//Set Password
+		public const string SP_SaveSecurityQuestionAnswers = "Ident.CreateSecurityQuestionAnswers";
 
         //BlueBook
         public const string SP_MapBlueBookIdtoPartyId = "Enterprise.MapBlueBookIdtoPartyId";
