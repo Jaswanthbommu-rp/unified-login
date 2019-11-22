@@ -138,13 +138,14 @@ BEGIN
 	SELECT @ActionID AS N'@ActionID';
 END;
 
+
 SELECT DISTINCT 
-	   IDENTITY(int, 1, 1) AS RowNumber, OrganizationPartyID, 0 AS PStatus
+	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId OrganizationPartyID, 0 AS PStatus
 INTO #HoldPartyForUnifiedSettings
-FROM Person.Persona AS P
-	 INNER JOIN
-	 Enterprise.Organization AS O
-	 ON P.OrganizationPartyId = O.PartyId
+FROM Enterprise.Organization o
+	 INNER JOIN Enterprise.Party p
+
+	 ON P.partyid  = O.PartyId
 WHERE O.Name = 'RealPage Employee'
 
 WHILE EXISTS
