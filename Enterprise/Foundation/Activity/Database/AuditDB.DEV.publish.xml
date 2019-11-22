@@ -13,7 +13,7 @@
     <ExcludeUsers>True</ExcludeUsers>
     <DropObjectsNotInSource>True</DropObjectsNotInSource>
     <GenerateSmartDefaults>True</GenerateSmartDefaults>
-    <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
+    <BackupDatabaseBeforeChanges>False</BackupDatabaseBeforeChanges>
     <DoNotDropPermissions>True</DoNotDropPermissions>
     <DoNotDropLogins>True</DoNotDropLogins>
     <DoNotDropUsers>True</DoNotDropUsers>
