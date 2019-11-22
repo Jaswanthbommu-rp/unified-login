@@ -166,6 +166,7 @@
     <Compile Include="IdentityConfig\CommonAddress.cs" />
     <Compile Include="IdentityConfig\ContactMechanismBoundary.cs" />
     <Compile Include="IdentityConfig\ContactMechanismUsageType.cs" />
+    <Compile Include="IdentityConfig\OrgUserData.cs" />
     <Compile Include="IdentityConfig\ProcessUserLogin.cs" />
     <Compile Include="IdentityConfig\ElectronicAddress.cs" />
     <Compile Include="IdentityConfig\GeographicBoundary.cs" />
