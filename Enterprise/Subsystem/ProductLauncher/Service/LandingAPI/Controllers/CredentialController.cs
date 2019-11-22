@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -13,6 +14,8 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -21,6 +24,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	/// </summary>
 	public class CredentialController : BaseApiController
     {
+        #region Constructor
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public CredentialController()
+        {
+            _userLoginRepository = new UserLoginRepository();
+        }
+
+        /// <summary>
+        /// Used for dependency injection
+        /// </summary>
+        
+        /// <param name="userLoginRepository"></param>
+        
+        public CredentialController(IUserLoginRepository userLoginRepository)
+        {
+            _userLoginRepository = userLoginRepository;
+        }
+        #endregion
+        #region Private variables
+ 
+        IUserLoginRepository _userLoginRepository;
+
+        #endregion
+
+        #region Private Methods
+        private OrgUserData MapOrganizationUserData(UserLoginOnly objUserLoginOnly)
+        {
+            OrgUserData objOrgUserData = new OrgUserData();
+            objOrgUserData.PartyId = objUserLoginOnly.PartyId;
+            objOrgUserData.RealPageId = objUserLoginOnly.RealPageId;
+            objOrgUserData.PersonaId = objUserLoginOnly.PersonaId;
+            objOrgUserData.LoginNameType = objUserLoginOnly.LoginNameType;
+            objOrgUserData.PasswordHash = objUserLoginOnly.PasswordHash;
+            objOrgUserData.PasswordSalt = objUserLoginOnly.PasswordSalt;
+            objOrgUserData.PasswordModifiedDate = objUserLoginOnly.PasswordModifiedDate;
+            objOrgUserData.LastLogin = objUserLoginOnly.LastLogin;
+            objOrgUserData.Password = objUserLoginOnly.Password;
+            objOrgUserData.Is3rdPartyIDP = objUserLoginOnly.Is3rdPartyIDP;
+            objOrgUserData.LoginName = objUserLoginOnly.LoginName;
+            objOrgUserData.UserId = objUserLoginOnly.UserId;
+            return objOrgUserData;
+        }
+        #endregion
         #region Public Methods
         /// <summary>
         /// Get Security Questions for user on forgot password
@@ -283,7 +331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				
                 var credentialManageService = new ManageCredential(_userClaims);
                 var getUser = credentialManageService.GetUser(enterpriseUserName.Trim());
-
+                
 				if (getUser.IsError)
 				{
                     WriteToDiagnosticLog(message: $"{getUser.ErrorReason}. For User -{enterpriseUserName}");
@@ -291,8 +339,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 else if (getUser.Records != null)
                 {
                     var manageUserLogin = new ManageUserLogin(_userClaims);
-                    OrganizationStatus orgStatus = manageUserLogin.GetUserOrganizationWithStatus(((UserLoginOnly)getUser.Records[0]).UserId, DateTime.MinValue, 0, true);
-                    ((UserLoginOnly)getUser.Records[0]).OrganizationPartyId = orgStatus.PartyId;
+                    //OrgUserData objOrgUserData = new OrgUserData();
+                    var objOrgUserData = MapOrganizationUserData((UserLoginOnly)getUser.Records[0]);
+                    objOrgUserData.OrganizationPartyId = _userLoginRepository.GetPrimaryOrgIdByUserId(((UserLoginOnly)getUser.Records[0]).UserId);
+
+                    IList<object> list = new List<object>();
+                    list.Add(objOrgUserData);
+                    var response = new ListResponse()
+                    {
+                        Records = list,
+                        TotalRows = list.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                    getUser = response;
                 }
 
                 return getUser;
