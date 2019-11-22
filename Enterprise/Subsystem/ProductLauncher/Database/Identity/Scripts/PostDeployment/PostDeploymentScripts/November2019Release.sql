@@ -347,3 +347,4 @@ BEGIN
 	VALUES( @RightValueTypeId, @DashBoard );
 
 END;
+GO
