@@ -9,6 +9,6 @@
     <TreatVerificationErrorsAsWarnings>True</TreatVerificationErrorsAsWarnings>
     <ProfileVersionNumber>1</ProfileVersionNumber>
     <IgnoreExtendedProperties>True</IgnoreExtendedProperties>
-    <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
+    <BackupDatabaseBeforeChanges>False</BackupDatabaseBeforeChanges>
   </PropertyGroup>
 </Project>
