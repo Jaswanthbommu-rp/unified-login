@@ -72,12 +72,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="PartyId">Party ID (Organization ID)</param>
 		/// <returns>A list of Password Polic(y|ies) Details</returns>
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when PasswordPolicy object have invalid entries / when Information is out of sync with the server)")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		//[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(IPasswordPolicy))]
         [SwaggerResponseExamples(typeof(IPasswordPolicy), typeof(PasswordPolicyExample))]
         [Route("passwordpolicies/{PartyId}")]
         [HttpGet]
+        [AllowAnonymous]
         public HttpResponseMessage GetPasswordPolicy(long PartyId)
         {
 			IPasswordPolicy passwordPolicy = new PasswordPolicy();
