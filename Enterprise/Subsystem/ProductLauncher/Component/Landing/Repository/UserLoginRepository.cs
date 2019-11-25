@@ -208,18 +208,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				//remove products
 				//If Primary Organization - List all Persona(s) across all user companies
 				//Else List Persona(s) for a company
-				param = new
-				{
-					OrganizationPartyId = organizationPartyId,
-					PersonRealPageId = realPageId
-				};
-				var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPersonaToDisableUserProduct, param);
-				foreach (var item in result)
-				{
-					userRepository.ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
-				}
+                if (statusTypeId == (int) UserUiStatusType.Disabled || statusTypeId == (int)UserUiStatusType.Expired)
+                {
+                    param = new
+                    {
+                        OrganizationPartyId = organizationPartyId,
+                        PersonRealPageId = realPageId
+                    };
+                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPersonaToDisableUserProduct, param);
+                    foreach (var item in result)
+                    {
+                        userRepository.ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
+                    }
+                }
 
-				return repositoryResponse;
+                return repositoryResponse;
 			}
         }
 
