@@ -17,7 +17,8 @@ GO
 
 CREATE NONCLUSTERED INDEX [IX_Person_Persona_UserLoginPersonaId]
 	ON [Person].[Persona] ([UserLoginPersonaId])
-
+GO
+CREATE NONCLUSTERED INDEX IDX_Persona_PersonaID ON Person.Persona(PersonaId ASC) INCLUDE(UserLoginPersonaId);
 --CREATE NONCLUSTERED INDEX [IX_Person_Persona_UserId_OrganizationPartyId]
 ----    ON [Person].[Persona]([UserLoginPersonaId] ASC, [OrganizationPartyId] ASC) WITH (FILLFACTOR = 80);
 --GO
