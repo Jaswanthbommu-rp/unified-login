@@ -17,3 +17,8 @@ go
 CREATE INDEX [IX_PartyContactMechanism_Comp01] 
 ON [Enterprise].[PartyContactMechanism]([ContactMechanismId]) 
 INCLUDE([PartyContactMechanismId], [PartyId], [FromDate], [ThruDate]);
+GO 
+CREATE NONCLUSTERED INDEX IDX_PartyContactMechanism_Comp01 ON [Enterprise].[PartyContactMechanism]
+([ThruDate]
+) INCLUDE([PartyContactMechanismId], [PartyId], [ContactMechanismId]);
+GO
