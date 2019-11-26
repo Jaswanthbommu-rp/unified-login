@@ -94,7 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// <summary>
         /// Used to store the users offset to UTC for display date requirements
         /// </summary>
-        [JsonProperty(PropertyName = "OffsetMinutes")]
+        [JsonIgnore]
         public int OffsetMinutes { get; set; } = 0;
 
         /// <summary>
