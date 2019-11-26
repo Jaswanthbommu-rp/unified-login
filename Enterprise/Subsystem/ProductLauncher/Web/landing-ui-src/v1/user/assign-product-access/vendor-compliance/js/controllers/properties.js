@@ -177,9 +177,11 @@
 
         vm.clearPropertyGroups = function () {
             // Since the radio is custom type, the selection is ot getting cleared by selectAll method
-            vm.propertyGroups.forEach(function (item) {
-                item.isAssigned = false;
-            });
+            if(vm.propertyGroups){
+                vm.propertyGroups.forEach(function (item) {
+                    item.isAssigned = false;
+                });
+            }
             vm.propertyGroupGrid.selectAll(false);
             vm.propertyGroupGrid.updateSelected();
         };
