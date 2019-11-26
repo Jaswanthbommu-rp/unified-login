@@ -115,6 +115,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// </summary>
         DateTime? PasswordModifiedDate { get; set; }
 
+        int OffsetMinutes { get; set; }
+
 		/// <summary>
 		/// Use third party identity service provider.  Default to true so that the toggle switch is on on the Add new User.
 		/// </summary>
