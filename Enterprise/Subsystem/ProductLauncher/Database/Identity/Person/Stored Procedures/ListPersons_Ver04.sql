@@ -341,6 +341,7 @@ BEGIN
 		Properties,
 		UserType,
 		PartyRoleTypeId,
+		OffsetMinutes,
 		TotalRecords,
 		RowNumber
 	)
@@ -374,6 +375,7 @@ BEGIN
 					0 AS Properties,
 					ISNULL(rt.Name, '') AS UserType,
 					prs.RoleTypeIdFrom AS PartyRoleTypeId,
+					@OffsetMinutes,
 					COUNT(1) OVER () AS TotalRecords,
 					CASE @sortValue
 						WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName ASC)
@@ -425,10 +427,11 @@ BEGIN
 				StatusName,
 				StatusThruDate,
 				Is3rdPartyIDP,
+				OffsetMinutes,
 				Products,
 				Properties,
 				UserType,
-				PartyRoleTypeId
+				PartyRoleTypeId				
 	FROM	cteUsersFinal
 	ORDER BY RowNumber
 	OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS
