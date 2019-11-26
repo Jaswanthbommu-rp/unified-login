@@ -11,7 +11,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 		/// <param name="userLogin">user Login</param>
 		/// <returns>User object</returns>
 		public static UserLogin SetUserLoginStatus(UserLogin userLogin)
-		{
+        {
+            DateTime utcNowWithOffset = DateTime.UtcNow.AddMinutes(userLogin.OffsetMinutes);
+
 			userLogin.IsPending = false;
 			userLogin.IsExpired = false;
 			userLogin.IsActive = false;
@@ -27,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 				switch (status)
 				{
 					case UserUiStatusType.ForceResetPassword:
-						if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value >= DateTime.UtcNow)
+						if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value >= utcNowWithOffset)
 						{
 							userLogin.IsForceReSetPassword = true;
 							userLogin.IsActive = true;
@@ -39,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 								userLogin.Status = UserUiStatusType.Pending;
 							}							
 						}
-						else if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value < DateTime.UtcNow)
+						else if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value < utcNowWithOffset)
 						{
 							userLogin.IsExpired = true;
 							userLogin.IsActive = true;
@@ -47,13 +49,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 						}
 						break;
 					case UserUiStatusType.Pending:
-						if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value >= DateTime.UtcNow)
+						if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value >= utcNowWithOffset)
 						{
 							userLogin.IsPending = true;
 							userLogin.IsActive = true;
 							userLogin.Status = UserUiStatusType.Pending;
 						}
-						else if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value < DateTime.UtcNow)
+						else if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value < utcNowWithOffset)
 						{
 							userLogin.IsExpired = true;
 							userLogin.IsActive = true;
@@ -61,12 +63,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 						}
 						break;
 					case UserUiStatusType.Active:						
-						if (userLogin.StatusThruDate == null && userLogin.FromDate <= DateTime.UtcNow && (userLogin.ThruDate == null || userLogin.ThruDate.Value >= DateTime.UtcNow))
+						if (userLogin.StatusThruDate == null && userLogin.FromDate <= utcNowWithOffset && (userLogin.ThruDate == null || userLogin.ThruDate.Value >= utcNowWithOffset))
 						{
 							userLogin.IsActive = true;
 							userLogin.Status = UserUiStatusType.Active;
 						}
-						else if (userLogin.StatusThruDate == null && userLogin.FromDate <= DateTime.UtcNow 	&& userLogin.ThruDate.Value < DateTime.UtcNow)
+						else if (userLogin.StatusThruDate == null && userLogin.FromDate <= utcNowWithOffset 	&& userLogin.ThruDate.Value < utcNowWithOffset)
 						{
 							userLogin.IsActive = false;
 							userLogin.Status = UserUiStatusType.Disabled;
