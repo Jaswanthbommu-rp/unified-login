@@ -9,3 +9,5 @@
     CONSTRAINT [FK_DataImportMapping_DataImportApplication] FOREIGN KEY ([DataImportApplicationId]) REFERENCES [Enterprise].[DataImportApplication]([DataImportApplicationId]) ON UPDATE CASCADE ON DELETE CASCADE, 
     CONSTRAINT [FK_DataImportMapping_Party] FOREIGN KEY ([PartyId]) REFERENCES [Enterprise].[Party]([PartyId]) ON UPDATE CASCADE ON DELETE CASCADE
 )
+GO
+CREATE INDEX IDX_DataImportMapping ON Enterprise.DataImportMapping (DataImportApplicationId) INCLUDE (SourceId, PartyId)
