@@ -225,8 +225,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
                 IdentityProvider idp = new IdentityProvider(new EntityId(provider.EntityId), authServicesOptions.SPOptions)
                 {
-                    LoadMetadata = true,
                     MetadataLocation = provider.MetadataLocation,
+                    LoadMetadata = true,
                     AllowUnsolicitedAuthnResponse = true,
                 };
 
