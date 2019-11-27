@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Person].[ListPersons_Ver04] (
+﻿CREATE or alter PROCEDURE [Person].[ListPersons_Ver04a] (
 	@RealPageId uniqueidentifier = NULL,
 	@ParentPartyRoleTypeId int = NULL,
 	@UserListFilterType tinyint = 0,
@@ -27,7 +27,7 @@ BEGIN
 	DECLARE @filterStatus TABLE (
 		StatusTypeId int PRIMARY KEY
 	)
-
+	
 	DECLARE @HoldPersona TABLE (
 		PersonaId bigint
 	)
@@ -39,21 +39,6 @@ BEGIN
 	DECLARE @tblFilterBy TABLE (
 		ColumnName varchar(128),
 		SearchValue varchar(max)
-	)
-
-	DECLARE @UserLoginPersona TABLE (
-		PersonaId bigint,
-		PersonPartyId bigint,
-		UserId bigint,
-		UserLoginPersonaId bigint,
-		LoginName varchar(255),
-		LastLogin datetime,
-		FromDate datetime,
-		ThruDate datetime,
-		IdentityProviderTypeId int,
-		StatusId int,
-		StatusName varchar(50),
-		StatusThruDate datetime
 	)
 
 	DECLARE @PersonaProduct TABLE (
@@ -161,7 +146,7 @@ BEGIN
 	SELECT	@PartyId = PartyId
 	FROM		Enterprise.Party
 	WHERE	RealPageId = @RealPageId
-	
+
 	SELECT @minSequence = MIN(Sequence)
 	FROM  [CustomField].[Field]
 	WHERE	OrganizationId = @PartyId
@@ -208,82 +193,27 @@ BEGIN
 		SELECT  0 
 	END;
 
-	INSERT INTO @UserLoginPersona (
-		PersonaId,
-		PersonPartyId,
-		UserId,
-		UserLoginPersonaId,
-		LoginName,
-		LastLogin,
-		FromDate,
-		ThruDate,
-		IdentityProviderTypeId,
-		StatusId,
-		StatusName,
-		StatusThruDate
-	)
-	SELECT	pe.PersonaId,
-				iul.PersonPartyId,
-				iul.UserId,
-				iulp.UserLoginPersonaId,
-				iul.LoginName,
-				CASE
-					WHEN DATEDIFF(day, iul.LastLoginDate, '12/31/9999') = 0 THEN iul.LastLoginDate
-					ELSE DATEADD(minute, @OffsetMinutes, iul.LastLoginDate)
-				END AS 'LastLoginDate',
-				CASE
-					WHEN DATEDIFF(day, iulp.FromDate, '12/31/9999') = 0 THEN iulp.FromDate
-					ELSE DATEADD(minute, @OffsetMinutes, iulp.FromDate)
-				END AS 'FromDate',
-				CASE
-					WHEN DATEDIFF(day, iulp.ThruDate, '12/31/9999') = 0 THEN iulp.ThruDate
-					ELSE DATEADD(minute, @OffsetMinutes, iulp.ThruDate)
-				END AS 'ThruDate',
-				iul.IdentityProviderTypeId,
-				iulp.StatusTypeId,
-				CASE
-					WHEN ((iulp.StatusTypeId = 12) AND (iul.LastLoginDate IS NULL)) THEN 'Pending'
-					WHEN ((iulp.StatusTypeId = 12) AND (iul.LastLoginDate IS NOT NULL)) THEN 'Active'
-					ELSE est.Name
-				END AS 'StatusName',
-				CASE
-					WHEN DATEDIFF(day, iulp.StatusThruDate, '12/31/9999') = 0 THEN iulp.StatusThruDate
-					ELSE DATEADD(minute, @OffsetMinutes, iulp.StatusThruDate)
-				END AS 'StatusThruDate'
-	FROM	Person.Persona pe
-				INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)
-				INNER JOIN Ident.UserLogin iul ON iulp.UserLoginId = iul.UserId
-				INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId
-				LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)
-	WHERE	iulp.OrganizationPartyId = @PartyId
-	AND		((@csvStatus IS NULL) OR (NOT fs.StatusTypeId IS NULL))
-	AND		pe.PersonaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)
-	AND		(
-					pe.PersonaId IN
-					(
-						SELECT	PersonaID
-						FROM		@PersonaProduct
-						WHERE	ProductId = @filterProductId
-					)
-					OR @filterProductId IS NULL
-				)
-
 	INSERT INTO @PersonaProduct (
 		PersonaId,
 		ProductId
 	)
-	SELECT	ulp.PersonaID,
-				pec.ProductId
-	FROM	@UserLoginPersona ulp
-		INNER JOIN Enterprise.PersonaConfiguration pec ON ulp.PersonaId = pec.PersonaId
-		INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
-		INNER JOIN Enterprise.ProductSetting ps ON (prc.ProductSettingId = ps.ProductSettingId AND ps.ProductSettingTypeId = @ProductSettingTypeId AND ps.Value = '8')
-	WHERE	((@NOW BETWEEN pec.FromDate AND pec.ThruDate) OR (@NOW >= pec.FromDate AND pec.ThruDate IS NULL))
-	AND		((@NOW BETWEEN prc.FromDate AND prc.ThruDate) OR (@NOW >= prc.FromDate AND prc.ThruDate IS NULL))
-	AND		((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
-	AND		pec.ProductId NOT IN (14, 19, 24, 25, 34, 39); --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
+	SELECT	p.PersonaID,
+			pec.ProductId
+		FROM	
+			Person.Persona p
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
+		WHERE	
+				((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+		AND		((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+		AND		((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+		AND		((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+		AND		pec.ProductId NOT IN (14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
+		AND		ULP.OrganizationPartyId = @PartyId
 
-	WITH cteProductCount
+	;WITH cteProductCount
 	(
 		PersonaId,
 		ProductCount
@@ -317,6 +247,56 @@ BEGIN
 		WHERE		cff.OrganizationId = @PartyId
 		AND				cff.Sequence = @minSequence
 		AND				((NOT cffv.Value IS NULL) OR (LEN(cffv.Value) = 0))
+	),
+	cteUserLogin
+	(
+		UserLoginPersonaId,
+		PersonaId,
+		PersonPartyId,
+		UserId,
+		LoginName,
+		LastLogin,
+		FromDate,
+		ThruDate,
+		IdentityProviderTypeId,
+		StatusId,
+		StatusName,
+		StatusThruDate
+	)
+	AS
+	(
+		SELECT		iulp.UserLoginPersonaId,
+					pe.PersonaId,
+					ul.PersonPartyId,
+					ul.UserId,
+					ul.LoginName,
+					ul.LastLoginDate,
+					iulp.FromDate,
+					iulp.ThruDate,
+					ul.IdentityProviderTypeId,
+					iulp.StatusTypeId,
+					CASE
+						WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) THEN 'Pending'
+						WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NOT NULL)) THEN 'Active'
+						ELSE est.Name
+					END AS 'StatusName',
+					iulp.StatusThruDate
+		FROM	Person.Persona pe
+					INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)
+					INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId
+					INNER JOIN Enterprise.StatusType est ON iulp.StatusTypeId = est.StatusTypeId
+					LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)
+		WHERE	iulp.OrganizationPartyId = @PartyId
+		AND		pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)
+		--AND		(
+		--			pe.PersonaId IN
+		--			(
+		--				SELECT	PersonaID
+		--				FROM	@PersonaProduct
+		--				WHERE	ProductId = @filterProductId
+		--			)
+		--			OR @filterProductId IS NULL
+		--		)
 	),
  	cteUsersFinal
 	(
@@ -389,7 +369,7 @@ BEGIN
 						WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)
 						WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)
 					END AS RowNumber
-		FROM	@UserLoginPersona ulp
+		FROM	cteUserLogin ulp
 					INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId
 					INNER JOIN Enterprise.Party pa ON p.PartyId = pa.PartyID
 					INNER JOIN Enterprise.PartyRelationship prs ON prs.PartyIdFrom = ulp.PersonPartyId AND prs.PartyIdTo = @PartyId
