@@ -41,7 +41,7 @@ BEGIN
 		SearchValue varchar(max)
 	)
 
-	DECLARE @PersonaProduct TABLE (
+	CREATE TABLE #PersonaProduct(
 		PersonaId bigint,
 		ProductId bigint
 	)
@@ -193,7 +193,7 @@ BEGIN
 		SELECT  0 
 	END;
 
-	INSERT INTO @PersonaProduct (
+	INSERT INTO #PersonaProduct (
 		PersonaId,
 		ProductId
 	)
@@ -205,14 +205,16 @@ BEGIN
 			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
 			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
 			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
-		WHERE	
-				((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
-		AND		((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
-		AND		((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
-		AND		((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+		WHERE
+				ULP.OrganizationPartyId = @PartyId
 		AND		pec.ProductId NOT IN (14, 19, 24, 25, 34, 39) --Client Portal, Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace
-		AND		ULP.OrganizationPartyId = @PartyId
-
+		AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+	
+	CREATE INDEX [IX_Temp_PersonaProduct] ON #PersonaProduct([PersonaID]) ON [PRIMARY]
+	
 	;WITH cteProductCount
 	(
 		PersonaId,
@@ -222,7 +224,7 @@ BEGIN
 	(
 		SELECT	pp.PersonaId,
 					COUNT(pp.ProductId)
-		FROM	@PersonaProduct pp
+		FROM	#PersonaProduct pp
 					INNER JOIN @AssignedProductIds ap ON (ap.ProductId = pp.ProductId)
 		GROUP BY pp.PersonaId
 	),
@@ -288,15 +290,15 @@ BEGIN
 					LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)
 		WHERE	iulp.OrganizationPartyId = @PartyId
 		AND		pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)
-		--AND		(
-		--			pe.PersonaId IN
-		--			(
-		--				SELECT	PersonaID
-		--				FROM	@PersonaProduct
-		--				WHERE	ProductId = @filterProductId
-		--			)
-		--			OR @filterProductId IS NULL
-		--		)
+		AND		(
+					pe.PersonaId IN
+					(
+						SELECT	PersonaID
+						FROM	#PersonaProduct
+						WHERE	PE.PersonaId = PersonaID AND ProductId = @filterProductId
+					)
+					OR @filterProductId IS NULL
+				)
 	),
  	cteUsersFinal
 	(
@@ -417,4 +419,6 @@ BEGIN
 	OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS
 	FETCH NEXT(@RowsPerPage) ROWS ONLY
 	OPTION (RECOMPILE)
+
+	drop table #PersonaProduct
 END;
