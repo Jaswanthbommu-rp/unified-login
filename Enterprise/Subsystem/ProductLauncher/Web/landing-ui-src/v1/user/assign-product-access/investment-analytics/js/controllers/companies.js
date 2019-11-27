@@ -8,7 +8,8 @@
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            userRealPageId =  "00000000-0000-0000-0000-000000000000";
 
         vm.init = function () {
             vm.grid = grid;
@@ -33,7 +34,13 @@
             }
 
             vm.updateGridWatch = pubsub.subscribe("IA.updateGrids", vm.updateGrid);
+            vm.aoUserUpdateWatch = pubsub.subscribe("settings.aoUserUpdate", vm.updateLoad);
+        };
 
+        vm.updateLoad = function (userRealPageId) {            
+            logc("Comp userRealPageId", userRealPageId);
+            userRealPageId = userRealPageId;
+            vm.loadData();
         };
 
         vm.updateGrid = function () {
@@ -50,7 +57,8 @@
                 var params = {
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
-                    productName: "MA"
+                    productName: "MA",
+                    userRealPageId: userDetailsModel.getAOUserRPId() === undefined ? userRealPageId : userDetailsModel.getAOUserRPId() 
                 };
 
                 vm.personaWatch();
@@ -92,6 +100,7 @@
         vm.destroy = function () {
             vm.destWatch();
             vm.updateGridWatch();
+            vm.aoUserUpdateWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }

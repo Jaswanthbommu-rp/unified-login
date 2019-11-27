@@ -8,7 +8,8 @@
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            userRealPageId =  "00000000-0000-0000-0000-000000000000";
 
         vm.init = function () {
             vm.rolesGrid = rolesGrid;
@@ -24,6 +25,7 @@
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadCompanyRoleData);
+            vm.aoUserUpdateWatch = pubsub.subscribe("settings.aoUserUpdate", vm.updateLoad);
 
             if (persona.isReady()) {
                 vm.loadCompanyRoleData();
@@ -32,6 +34,13 @@
                 vm.personaWatch = persona.subscribe(vm.loadCompanyRoleData);
             }
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
+        };
+
+        vm.updateLoad = function (userRealPageId) {
+            logc("Roles statusModel", statusModel);
+            logc("Roles userRealPageId", userRealPageId);
+            userRealPageId = userRealPageId;
+            vm.loadCompanyRoleData(statusModel.BICompanyId);
         };
 
         vm.isActive = function () {
@@ -44,7 +53,8 @@
                 var params = {
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
-                    productName: "BI"
+                    productName: "BI",
+                    userRealPageId: userDetailsModel.getAOUserRPId() === undefined ? userRealPageId : userDetailsModel.getAOUserRPId() 
                 };
 
                 vm.activeWatch();
@@ -97,6 +107,7 @@
             vm.destWatch();
             vm.gridAllWatch();
             vm.activeWatch();
+            vm.aoUserUpdateWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }

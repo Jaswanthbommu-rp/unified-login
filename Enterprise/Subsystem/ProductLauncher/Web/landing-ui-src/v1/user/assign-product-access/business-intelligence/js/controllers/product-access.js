@@ -3,12 +3,13 @@
 (function (angular, undefined) {
     "use strict";
 
-    function BusinessIntelligenceProductAccessCtrl($scope, $filter, tabsMenu, tabsData, model, pubsub) {
+    function BusinessIntelligenceProductAccessCtrl($scope, $filter, tabsMenu, tabsData, model, pubsub, userDetailsModel) {
         var vm = this;
 
         vm.init = function () {
             vm.tabsList = [];
             vm.productDisabled = false;
+            vm.userDetailsModel = userDetailsModel;
             vm.productAccessWatch = pubsub.subscribe("pa.regUserNoEmailNotAllowed", vm.setProductDisabled);
             vm.tabsMenu = tabsMenu().setData(tabsData.getList());
             vm.tabsList = tabsData.getList();
@@ -53,6 +54,7 @@
             "BusinessIntelligenceTabsNavModel",
             "businessIntelligenceDataModel",
             "pubsub",
+            "userDetailsModel",
             BusinessIntelligenceProductAccessCtrl
         ]);
 })(angular);

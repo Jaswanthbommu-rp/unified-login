@@ -388,6 +388,15 @@
             return s.form;
         };
 
+        p.setAOUserRPId = function (id) {
+            var s = this;
+            s.aoUserRPId = id;
+        };
+
+        p.getAOUserRPId = function () {
+            var s = this;
+            return s.aoUserRPId;
+        };
         // Assertions
 
         p.is3rdPartyIDP = function () {

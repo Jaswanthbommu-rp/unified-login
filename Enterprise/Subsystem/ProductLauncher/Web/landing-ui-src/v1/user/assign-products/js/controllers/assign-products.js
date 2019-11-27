@@ -24,7 +24,8 @@
                 if (model.isEmpty()) {
                     var reqData = {
                         personRealPageId: realPageId,
-                        accessFilter: "UserDetails"
+                        accessFilter: "UserDetails",
+                        loginName: userStatus.getLoginName()
                     };
 
                     svc.get(reqData, vm.onGetData);

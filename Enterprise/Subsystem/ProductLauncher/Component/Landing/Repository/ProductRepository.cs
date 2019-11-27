@@ -1151,7 +1151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="accessFilter">Products Filter</param>
         /// <returns>List of Product Families</returns>
         //public IList<ProductFamily> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null)
-        public IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null)
+        public IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null, string loginName = null)
         {
             //if personRealPageId is valid guid then we are editing the user assigned products
             bool setIsAssigned = ((personRealPageId != Guid.Empty) && (personRealPageId != null));
@@ -1181,7 +1181,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // get products for personaId
                     var aoLogic = new ManageProductAssetOptimization(_userClaim.UserRealPageGuid);
-                    aoUserProducts = aoLogic.GetGbSupportedAoEditorUserProductsToAssign(_userClaim.PersonaId);
+
+					if (personRealPageId == null && loginName != null)
+					{
+						aoUserProducts = aoLogic.GetGbSupportedAoEditorUserProductsToAssign(_userClaim.PersonaId, loginName);
+					}
+                    else
+					{
+						aoUserProducts = aoLogic.GetGbSupportedAoEditorUserProductsToAssign(_userClaim.PersonaId);
+					}
 
                     //var aoProductFamily = productFamilyList.Where(p => p.ProductTypeId == 400).ToList().FirstOrDefault();
                     if (personaProductUserDetails.Count > 0)
