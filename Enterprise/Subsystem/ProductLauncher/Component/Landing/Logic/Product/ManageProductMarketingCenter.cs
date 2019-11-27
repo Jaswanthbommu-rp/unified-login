@@ -900,8 +900,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						isActive = isActive,
 						isActiveUnifiedUser = isActive,
-						auditUserId = editorPersonaId
-					};
+						auditUserId = Convert.ToInt64(_editorProductUserId)
+                    };
 					
 					logData = new Dictionary<string, object>();
 					logData.Add("url", url);
