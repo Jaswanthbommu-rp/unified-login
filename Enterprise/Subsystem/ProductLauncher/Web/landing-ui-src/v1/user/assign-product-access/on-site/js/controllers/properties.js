@@ -39,6 +39,7 @@
             sync.setPropertySelectKey("isAssigned");
             vm.gridSelectionWatch = grid.subscribe("selectChange", vm.selectionChange);
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectionAll);
+            vm.gridSelectAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
             vm.updateGridWatch = pubsub.subscribe("onsite.updateGrids", vm.updateGrid);
         };
 
@@ -138,11 +139,15 @@
             return !persona.data.hasManageOnSiteProductAccess;
         };
 
+        vm.selectAllProperties = function (val) {
+            dataModel.setAllPropertiesData(vm.dataReq.records, val);
+        };
 
         vm.destroy = function () {
             vm.destWatch();
             vm.gridSelectionWatch();
             vm.gridAllWatch();
+            vm.gridSelectAllWatch();
             vm.updateGridWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
