@@ -588,7 +588,7 @@
             userStatus.setLoginName(loginName);
             return vm.validateLoginNameReq.promise;
         };
-
+        
         vm.validatePasswordMatch = function () {
             var match = model.passwordsMatch(),
                 method = match ? "resolve" : "reject";

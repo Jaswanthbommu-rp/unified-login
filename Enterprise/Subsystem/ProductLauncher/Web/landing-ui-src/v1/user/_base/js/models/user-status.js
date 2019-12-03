@@ -43,6 +43,7 @@
             var s = this;
             return s.loginName;
         };
+        
         // Actions
 
         p.subscribe = function (callback) {
