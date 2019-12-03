@@ -17,6 +17,7 @@ BEGIN
 		@sortValue int = 100,
 		@filterName nvarchar(512),
 		@filterProductId int = NULL,
+		@filterStatusTypeId int = 0,
 		@filterPartyRoleTypeId int = NULL,
 		@minSequence smallint,
 		@csvAssignedProducts varchar(max),
@@ -142,6 +143,10 @@ BEGIN
 		SELECT	CONVERT(int, value)
 		FROM		STRING_SPLIT(@csvStatus, ',');
 	END
+
+	SELECT	@filterStatusTypeId = COUNT(StatusTypeId)
+	FROM		@filterStatus
+	WHERE	StatusTypeId > 0
 
 	SELECT	@PartyId = PartyId
 	FROM		Enterprise.Party
@@ -299,6 +304,7 @@ BEGIN
 					)
 					OR @filterProductId IS NULL
 				)
+		AND		((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))
 	),
  	cteUsersFinal
 	(
