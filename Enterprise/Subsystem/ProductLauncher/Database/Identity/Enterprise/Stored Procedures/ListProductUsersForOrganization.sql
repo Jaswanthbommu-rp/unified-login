@@ -59,11 +59,8 @@ AS
                       INNER JOIN Ident.SamlUserAttribute sua ON sua.PersonaId = cp.PersonaId
                                                                 AND sua.SamlAttributeId = 1
                                                                 AND sua.ProductId IN(SELECT *
-                                                                                     FROM STRING_SPLIT(@ProductId, ','))
-                      INNER JOIN Enterprise.DataImportMapping dim ON ULP.OrganizationPartyId = dim.PartyId
-                      INNER JOIN Enterprise.DataImportApplication dia ON dim.DataImportApplicationId = dia.DataImportApplicationId
-                 WHERE dia.Name = 'Bluebook'
-                       AND dim.PartyId = @OrgPartyId)
+                                                                                     FROM STRING_SPLIT(@ProductId, ','))                     
+                 WHERE ULP.OrganizationPartyId = @OrgPartyId)
              SELECT UserId, 
                     LoginName, 
                     FirstName, 
