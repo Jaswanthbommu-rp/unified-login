@@ -150,9 +150,10 @@
         public const string SP_ListOrganizationByLoginName = "Enterprise.ListOrganizationByLoginName";
         public const string SP_ListOrganizationStatusByUserId = "Enterprise.ListOrganizationStatusByUserId";
         public const string SP_ListOrganizationType = "Enterprise.ListOrganizationType";
+		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
 
-        //PartyRelationship
-        public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
+		//PartyRelationship
+		public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
         //PartyRole
         public const string SP_GetPartyRoleByRealPageId = "Enterprise.GetPartyRoleByRealPageId";

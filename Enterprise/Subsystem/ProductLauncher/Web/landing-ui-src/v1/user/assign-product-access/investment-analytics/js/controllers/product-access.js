@@ -3,12 +3,13 @@
 (function (angular, undefined) {
     "use strict";
 
-    function InvestmentAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, IADatamodel, pubsub) {
+    function InvestmentAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, IADatamodel, pubsub, userDetailsModel) {
         var vm = this;
 
         vm.init = function () {
             vm.tabsList = [];
             vm.productDisabled = false;
+            vm.userDetailsModel = userDetailsModel;
             vm.productAccessWatch = pubsub.subscribe("pa.regUserNoEmailNotAllowed", vm.setProductDisabled);
             vm.tabsMenu = tabsMenu().setData(tabsDatasvc.getList());
             vm.tabsList = tabsDatasvc.getList();
@@ -54,6 +55,7 @@
             "investmentAnalyticsTabsData",
             "investmentAnalyticsDataModel",
             "pubsub",
+            "userDetailsModel",
             InvestmentAnalyticsProductAccessCtrl
         ]);
 })(angular);

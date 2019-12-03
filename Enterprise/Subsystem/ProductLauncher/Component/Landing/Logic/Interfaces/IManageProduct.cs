@@ -71,8 +71,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="realpageUserId"></param>
         /// <param name="personRealPageId">Edited User enterprise Id</param>
         /// <param name="accessFilter">Filter Products</param>
+		/// <param name="loginName">User Login Name</param>
         /// <returns>List of Product Families</returns>
-        IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid realpageUserId, Guid? personRealPageId, string accessFilter = null);
+        IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid realpageUserId, Guid? personRealPageId, string accessFilter = null, string loginName = null);
 
         /// <summary>
         /// List user(s)

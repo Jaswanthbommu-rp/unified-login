@@ -4316,7 +4316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             // if company has AO product assigned then get products available to assign based on editor User
             if (productsAssignedToCompany.Any(w => w.ProductId == (int)ProductEnum.AssetOptimizer))
             {
-                var ao = new ManageProductAssetOptimization(userRealPageGuid);
+                var ao = new ManageProductAssetOptimization(_userClaim);
                 IList<string> aoProductsAvailableForUserListResponse =
                     ao.GetGbSupportedAoEditorUserProductsToAssign(personaId);
 
@@ -4563,7 +4563,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             var productBatchList = new List<ProductBatch>();
 
-            var manageProductAssetOptimization = new ManageProductAssetOptimization(editorRealPageGuid);
+            var manageProductAssetOptimization = new ManageProductAssetOptimization(_userClaim);
             var aoUserCompanyPropertyRoleDetails = manageProductAssetOptimization.CopyRegularUser(editorPersonaId, newUserPersonaId);
 
             foreach (var aoUserCompanyPropertyRoleDetail in aoUserCompanyPropertyRoleDetails)
