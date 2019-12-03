@@ -8,6 +8,7 @@
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
+            userLoginName = "",
             genericDataErrorReason = "";
 
 
@@ -53,7 +54,8 @@
                 var params = {
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
-                    productName: "BI"
+                    productName: "BI",
+                    userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName() 
                 };
 
                 vm.activeWatch();
