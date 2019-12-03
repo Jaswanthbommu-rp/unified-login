@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private readonly string _apiPassword;
 		private readonly string _apiEndPoint;
 		private readonly string _aoSuperUser;
-
+		private DefaultUserClaim _userClaims;
 		#endregion
 
 		#region Ctor
@@ -40,15 +40,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="editorRealPageId">Real page Id of user</param>
-		public ManageProductAssetOptimization(Guid editorRealPageId) : base((int)ProductEnum.AssetOptimizer, null)
+		/// <param name="userClaims">DefaultUserClaim of user</param>
+		public ManageProductAssetOptimization(DefaultUserClaim userClaims) : base((int)ProductEnum.AssetOptimizer, userClaims,null)
 		{
 			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
 			_productId = (int)ProductEnum.AssetOptimizer;
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
-			_editorRealPageId = editorRealPageId;
-
-			_blueBook = new ManageBlueBook();
+			_editorRealPageId = userClaims.UserRealPageGuid;
+			_userClaims = userClaims;
+			_blueBook = new ManageBlueBook(userClaims);
 
 			_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
 			_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
@@ -68,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		///Get companies
 		/// </summary>
-		public ListResponse GetCompanies(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter)
+		public ListResponse GetCompanies(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetCompanies at beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}");
@@ -87,6 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
+				string productUserId = _productUserId;
 				var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/";
 				var editorUserProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
 				var productDivisionName =
@@ -95,9 +96,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var ac = editorUserProfile.Divisions.Where(x => x.Division == productDivisionName).ToList();
 				var allCompanies = ac.SelectMany(f => f.Companies).ToList();
 
-				if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId))
+				if (userPersonaId == 0 && string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
 				{
-					productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{_productUserId.ToLower()}/";
+					productUserId = userLoginName;
+				}
+				if (!string.IsNullOrEmpty(productUserId))
+				{
+					productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
 					var productUserProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
 
 					var productUserComp =
@@ -137,20 +142,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		///Get companies and roles
 		/// </summary>
-		public ListResponse GetCompaniesWithRoles(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter)
+		public ListResponse GetCompaniesWithRoles(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetCompaniesWithRoles at beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}");
 
 			var response = new ListResponse();
 			try
 			{
-				var allCompanies = GetCompanies(editorPersonaId, userPersonaId, productName, datafilter).Records.Cast<AoCompany>();
+				var allCompanies = GetCompanies(editorPersonaId, userPersonaId, productName, datafilter, userLoginName).Records.Cast<AoCompany>();
 
 				IList<AoCompanyRoles> companyRoles = new List<AoCompanyRoles>();
 				// for each company get roles
 				foreach (var company in allCompanies)
 				{
-					List<AORoles> roles = GetRoles(company.CompanyId, productName).ToList();
+					List<AORoles> roles = GetRoles(company.CompanyId, productName, userLoginName).ToList();
 					roles = roles.OrderBy(x => x.DisplayName).ToList();
 
 					companyRoles.Add(new AoCompanyRoles
@@ -191,7 +196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Get Companies With Properties
 		/// </summary>
-		public ListResponse GetCompaniesWithProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter)
+		public ListResponse GetCompaniesWithProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetCompaniesWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
@@ -201,13 +206,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 				var allCompanies =
-					GetCompanies(editorPersonaId, userPersonaId, productName, datafilter).Records.Cast<AoCompany>();
+					GetCompanies(editorPersonaId, userPersonaId, productName, datafilter, userLoginName).Records.Cast<AoCompany>();
 
 				IList<AoCompanyProperties> companyProperties = new List<AoCompanyProperties>();
 				// for each compnay get properties
 				foreach (var company in allCompanies)
 				{
-					List<AoProperty> properties = GetProperties(company.CompanyId, productName).ToList();
+					List<AoProperty> properties = GetProperties(company.CompanyId, productName, userLoginName).ToList();
 					properties = properties.OrderBy(x => x.PropertyName).ToList();
 
 					if (properties != null)
@@ -298,8 +303,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return response;
 			}
 
+			var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+			ProductRepository productRepository = new ProductRepository();
+			string product = Convert.ToString((int)ProductEnum.AssetOptimizer);
+			IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_userClaims.OrganizationPartyId, product);
+			List<AssetOptimizationMigrationUser> usersData = new List<AssetOptimizationMigrationUser>();
+			var orgMigrationUsersData = migrationResponse.Where(m => m.CompanySourceInstanceId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
+			if (productUserList?.Count > 0)
+			{
+				 usersData = orgMigrationUsersData.Where(o => productUserList.Any(p => p.ProductUserName != o.UserName)).ToList();
+			}
+			else
+			{
+				usersData = orgMigrationUsersData;
+			}
+
 			var migrationUsers = new List<MigrationUser>();
-			foreach (var user in migrationResponse)
+			foreach (var user in usersData)
 			{
 				var migrationUser = new MigrationUser
 				{
@@ -459,44 +479,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//Check to see if user has multicompany, then get user products and assign before any updates
 					if (personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0)
 					{
-						var products = GetAOProductsForNewMultiCompanyUser(productUserGbLogin.LoginName);
+						var products = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
 						if (products?.Count > 0)
 						{
 							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, products, productUserGbLogin.LoginName.ToLower());
 							_productUsername = productUserGbLogin.LoginName.ToLower();
 						}
 						
-					}
-					//// need to see if the user exits already in this company and if so link to the existing products
-					//var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{_productUserId.ToLower()}/";
-					//var productUserProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
-					//if (!string.IsNullOrEmpty(productUserProfile.Login))
-					//{
-					//	AssociateAoUserWithGb(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName, productUserProfile, blueAOCompanyInfo);
-					//	_productUsername = productUserProfile.Login;
-
-					//	// Call AO to indicate user is associated (use migration API)
-					//	var result = PutApi($"{_apiEndPoint}unity/migration/users",
-					//		new List<string> { productUserGbLogin.LoginName.ToLower() });
-
-					//	try
-					//	{
-					//		var jsObj = JsonConvert.DeserializeObject<dynamic>(result)[0];
-					//		if (jsObj.success == true)
-					//		{
-					//			return "";
-					//		}
-					//		else
-					//		{
-					//			return $"False result for user {productUserGbLogin.LoginName.ToLower()} while parsing AO migration API response. Result from API {_apiEndPoint}unity/migration/users is {result}";
-					//		}
-					//	}
-					//	catch (Exception ex)
-					//	{
-					//		WriteToErrorLog($"ManageProductAssetOptimization ManageAssetOptimizationUser - ERROR for user {productUserGbLogin.LoginName.ToLower()} while parsing AO migration API response. Result from API {_apiEndPoint}unity/migration/users is {result}");
-					//		return result;
-					//	}
-					//}
+					}					
 				}
 
 				// Check if GB super user
@@ -796,7 +786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Get Property Groups
 		/// </summary>
-		public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, IList<int> selectedCompanies)
+		public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, IList<int> selectedCompanies, string userLoginName = "")
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetPropertyGroups at beginning of method for user with editorPersona id - {editorPersonaId}");
@@ -832,12 +822,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 				}
 
-				if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
+				string productUserId = _productUserId;
+				if (userPersonaId == 0 && string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
+				{
+					productUserId = userLoginName;
+				}
+				if (!string.IsNullOrEmpty(productUserId)) // Called during updating Existing User
 				{
 					// existing user
 					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
 
-					var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{_productUserId.ToLower()}/";
+					var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
 					var userProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
 					propertyGroups = GetPropertyGroupsForExistingUser(assgnPropertGroups, userProfile, productName);
 				}
@@ -888,38 +883,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Gets products available for assigning
 		/// </summary> 
-		public IList<string> GetGbSupportedAoEditorUserProductsToAssign(long userPersonaId, string loginName = null)
+		public IList<string> GetGbSupportedAoEditorUserProductsToAssign(long userPersonaId)
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign - Begin with editorPersona id - {userPersonaId}.");
 
 			var products = new List<string>();
+			var aoUserProducts = new List<string>();		
 
 			var samlProductUserName = GetSamlProductUserName(userPersonaId).ToLower();
-
-			if (string.IsNullOrEmpty(samlProductUserName))
+			string productUserProfileApiUrl = "";
+			if (!string.IsNullOrEmpty(samlProductUserName) )
 			{
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign - Error -unable to find product User name with persona id - {userPersonaId}.");
+				//	if (!string.IsNullOrWhiteSpace(loginName))
+				//	{
+				//		aoUserProducts = GetAOProductsForNewMultiCompanyUser(loginName);
+				//	}
+				//	else 
+				//	{
+				//		WriteToErrorLog(
+				//		$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign - Error -unable to find product User name with persona id - {userPersonaId}.");
 
-				return products;
+				//	}
+				//	return products;
+				//}
+				//else 
+				//{
+				
+				productUserProfileApiUrl = $"{_apiEndPoint}user/divisions/{samlProductUserName}/";
+				var aoDivisionProduct = GetResultFromApi<IList<AoDivisionProduct>>(productUserProfileApiUrl);
+
+				if (aoDivisionProduct != null && aoDivisionProduct.Count > 0)
+				{
+					aoUserProducts = aoDivisionProduct.SelectMany(c => c.Products).Select(s => s.Product).ToList();					
+				}
 			}
 
-			string productUserProfileApiUrl = $"{_apiEndPoint}user/divisions/{samlProductUserName}/";
-			var aoDivisionProduct = GetResultFromApi<IList<AoDivisionProduct>>(productUserProfileApiUrl);
-			
-			if (aoDivisionProduct != null && aoDivisionProduct.Count > 0)
+			if (aoUserProducts.Count > 0)
 			{
-				var aoUserProducts = aoDivisionProduct.SelectMany(c => c.Products).Select(s => s.Product).ToList();
-
-				if (aoUserProducts.Count > 0)
+				foreach (var product in aoUserProducts)
 				{
-					foreach (var product in aoUserProducts)
+					if (ProductEnumHelper.CheckAoProductSupportedByGreenBook(product))
 					{
-						if (ProductEnumHelper.CheckAoProductSupportedByGreenBook(product))
-						{
-							products.Add(product);
-						}
+						products.Add(product);
 					}
 				}
 			}
@@ -934,16 +940,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Gets products available for assigning
 		/// </summary> 
-		public IList<string> GetAOProductsForNewMultiCompanyUser(string loginName)
+		public List<string> GetAOProductsForNewMultiCompanyUser(long editorUserPersonaId, string loginName)
 		{
 			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetMultiCompanyUserProductsToAssign - Begin with name - {loginName}.");
+				$"ManageProductAssetOptimization.GetAOProductsForNewMultiCompanyUser - Begin with name - {loginName}.");
 
 			var products = new List<string>();
+			ListResponse result = new ListResponse();
 			string productUserProductApiUrl = "";
 			try
 			{
-				ListResponse result = GetCompanyEditorAndUserDetails(userPersonaId, 0);
+				if (_editorPersona == null)
+				{
+					result = GetCompanyEditorAndUserDetails(editorUserPersonaId, 0);
+				}
 				var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
 
 				productUserProductApiUrl = $"{_apiEndPoint}user/ao-token?userId={loginName}";
@@ -958,8 +968,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//CreateProductUserInGreenBook(editorPersonaId, userPersonaId, products, objProductData.username);
 				}
 				WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign at end of method for user with " +
-				$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, product count {products.Count}");
+				$"ManageProductAssetOptimization.GetAOProductsForNewMultiCompanyUser at end of method for user with " +
+				$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {products}");
 			}
 			catch (Exception ex)
 			{
@@ -1723,16 +1733,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return products;
 		}
 
-		private IList<AORoles> GetRoles(int companyId, string productName)
+		private IList<AORoles> GetRoles(int companyId, string productName ,string userLoginName = "")
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetRoles at beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId} companyId - {companyId} productName {productName}");
 
 			string roleApiUrl;
-			if (!string.IsNullOrEmpty(_productUserId))
+			string productUserId = _productUserId;
+			if (!string.IsNullOrWhiteSpace(userLoginName) && string.IsNullOrWhiteSpace(_productUserId))
+			{
+				productUserId = userLoginName;
+			}
+			if (!string.IsNullOrEmpty(productUserId))
 			{
 				// Called during updating Existing User
-				roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{_productUserId.ToLower()}/{companyId}/{productName}";
+				roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/{companyId}/{productName}";
 			}
 			else
 			{
@@ -1744,10 +1759,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
 
 			// get product user roles & set isAssigned flag
-			if (!string.IsNullOrEmpty(_productUserId))
+			if (!string.IsNullOrEmpty(productUserId))
 			{
 				// existing user - get active authorities & check if exists in all roles
-				var authorityApiUrl = $"{_apiEndPoint}user/active-authorities/{_editorProductUserId.ToLower()}/{_productUserId.ToLower()}/";
+				var authorityApiUrl = $"{_apiEndPoint}user/active-authorities/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
 				var activeAuthorities = GetResultFromApi<IList<AoActiveAuthorities>>(authorityApiUrl);
 				allRoles = CheckAuthorities(allRoles, activeAuthorities, productName, companyId);
 			}
@@ -1758,7 +1773,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return allRoles;
 		}
 
-		private IList<AoProperty> GetProperties(long companyId, string productName)
+		private IList<AoProperty> GetProperties(long companyId, string productName, string userLoginName = "")
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetProperties - at beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
@@ -1768,14 +1783,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetProperties-Received {aoPropertyList.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
-
-			if (!string.IsNullOrEmpty(_productUserId))
+			
+			string productUserId = _productUserId;
+			if (string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
 			{
-				productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{_productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
+				productUserId = userLoginName;
+			}
+
+			if (!string.IsNullOrEmpty(productUserId))
+			{
+				productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
 				aoPropertyList = GetPropertiesForExistingProductUser(aoPropertyList, productPropertyApiUrl, productName);
 
 				WriteToDiagnosticLog(
-					$"ManageProductAssetOptimization.GetProperties-Received {aoPropertyList.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}.");
+					$"ManageProductAssetOptimization.GetProperties-Received {aoPropertyList.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {productUserId}  companyId - {companyId} productName {productName}.");
 			}
 
 			return aoPropertyList;

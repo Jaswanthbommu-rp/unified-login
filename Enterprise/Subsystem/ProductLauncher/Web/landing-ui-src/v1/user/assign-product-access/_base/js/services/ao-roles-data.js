@@ -12,9 +12,9 @@
             editorPersonaId: "@editorPersonalID",
             userPersonaId: "@userPersonalID",
             productName: "@productDivisionName",
-            userRealPageId: "@userRealPageId"
+            userLoginName: "@userLoginName"
         };
-
+        logc(params);
         actions = {
             get: {
                 method: "GET",

@@ -24,13 +24,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
 		/// <param name="productName">product division name in AO (BI/AX/PO/PA)</param>
 		/// <param name="datafilter">A datafilter used to filter the properties.</param>
+		/// <param name="userLoginName">User Login Name</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/ao/companies")]
 		[HttpGet]
-		public HttpResponseMessage GetCompanies(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter)
+		public HttpResponseMessage GetCompanies(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
@@ -38,8 +39,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var manageProductAoBi = new ManageProductAssetOptimization(_realpageUserId);
-			var result = manageProductAoBi.GetCompanies(editorPersonaId, userPersonaId, productName, datafilter);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
+			var result = manageProductAoBi.GetCompanies(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
 
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -55,13 +56,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="selectedCompanies"></param>
 		/// <param name="datafilter">A datafilter used to filter the properties.</param>
 		/// <param name="productName"></param>
+		/// <param name="userLoginName">User Login Name</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/ao/propertygroups")]
 		[HttpGet]
-		public HttpResponseMessage GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, [FromUri] IList<int> selectedCompanies, RequestParameter datafilter)
+		public HttpResponseMessage GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, [FromUri] IList<int> selectedCompanies, RequestParameter datafilter, string userLoginName = "")
 		{
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
@@ -69,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var manageProductAoBi = new ManageProductAssetOptimization(_realpageUserId);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
 			var result = manageProductAoBi.GetPropertyGroups(editorPersonaId, userPersonaId, productName, selectedCompanies);
 
 			if (result.IsError)
@@ -99,7 +101,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var manageProductAoBi = new ManageProductAssetOptimization(_realpageUserId);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
 			var result = manageProductAoBi.GetPropertiesInGroup(editorPersonaId, userPersonaId, propertyGroupId);
 
 			if (result.IsError)
@@ -116,13 +118,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="userPersonaId">To user</param> 
 		/// <param name="productName">AO product name</param>
 		/// <param name="datafilter">A datafilter used to filter.</param> 
+		/// <param name="userLoginName">User Login Name</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("products/ao/companyroles")]
 		[HttpGet]
-		public HttpResponseMessage GetCompaniesWithRoles(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter)
+		public HttpResponseMessage GetCompaniesWithRoles(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
@@ -130,8 +133,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var manageProductAoBi = new ManageProductAssetOptimization(_realpageUserId);
-			var result = manageProductAoBi.GetCompaniesWithRoles(editorPersonaId, userPersonaId, productName, datafilter);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
+			var result = manageProductAoBi.GetCompaniesWithRoles(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
 
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -146,6 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="userPersonaId">To user</param> 
 		/// <param name="productName">AO product name</param>
 		/// <param name="datafilter">A datafilter used to filter.</param> 
+		/// <param name="userLoginName">User Login Name</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
@@ -156,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[Route("products/ao/companyproperties")]
 		[HttpGet]
 		public HttpResponseMessage GetCompaniesWithProperties(long editorPersonaId, long userPersonaId,
-			string productName, RequestParameter datafilter)
+			string productName, RequestParameter datafilter, string userLoginName = "")
 		{
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
@@ -164,8 +168,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var manageProductAoBi = new ManageProductAssetOptimization(_realpageUserId);
-			var result = manageProductAoBi.GetCompaniesWithProperties(editorPersonaId, userPersonaId, productName, datafilter);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
+			var result = manageProductAoBi.GetCompaniesWithProperties(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
 
 			if (result.IsError)
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
@@ -189,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpPut]
 		public HttpResponseMessage UpdateAOUserStatus(ProductUser productUser)
 		{
-			var manageProductAoBi = new ManageProductAssetOptimization(_realpageUserId);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
 			if (!manageProductAoBi.ChangeUserStatus(_personaId, productUser.UserName, productUser.FirstName, productUser.LastName))
 			{
 				if (productUser.IsAssigned)
@@ -223,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			var persona = managePersona.GetPersona(editorPersonaId);
 			if (persona == null)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
-			var manageProductAoBi = new ManageProductAssetOptimization(persona.RealPageId);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
 			return Request.CreateResponse(HttpStatusCode.OK, manageProductAoBi.GetMigrationUsers(editorPersonaId, datafilter));
 		}
 
@@ -240,7 +244,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpPut]
 		public HttpResponseMessage UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers)
 		{
-			var manageProductAoBi = new ManageProductAssetOptimization(_realpageUserId);
+			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
 			return Request.CreateResponse(HttpStatusCode.OK, manageProductAoBi.UpdateUsersMigrationStatus(_personaId, migrateUsers));
 		}
 		#endregion

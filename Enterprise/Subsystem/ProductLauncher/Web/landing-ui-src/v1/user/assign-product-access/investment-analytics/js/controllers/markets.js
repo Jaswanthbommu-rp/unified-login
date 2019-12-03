@@ -9,6 +9,7 @@
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
             genericDataErrorReason = "",
+            userLoginName = "",
             userRealPageId =  "00000000-0000-0000-0000-000000000000";
 
         vm.init = function () {
@@ -62,7 +63,7 @@
                     editorPersonaId: persona.getId(),
                     selectedCompanies: [0],
                     productName: "MA",
-                    userRealPageId: userDetailsModel.getAOUserRPId() === undefined ? userRealPageId : userDetailsModel.getAOUserRPId() 
+                    userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                 };
 
                 vm.activeWatch();

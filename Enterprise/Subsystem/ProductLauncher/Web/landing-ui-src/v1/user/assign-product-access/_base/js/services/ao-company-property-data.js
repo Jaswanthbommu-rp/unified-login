@@ -12,7 +12,7 @@
             editorPersonaId: "@editorPersonalID",
             userPersonaId:   "@userPersonalID",
             productName:     "@productName",
-            userRealPageId: "@userRealPageId"
+            userLoginName: "@userLoginName"
         };
 
         actions = {
