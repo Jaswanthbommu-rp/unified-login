@@ -148,7 +148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("productfamilies")]
         [Authorize]
         [HttpGet]
-        public HttpResponseMessage GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null)
+        public HttpResponseMessage GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null, string loginName = null)
         {
             IManagePersona managePersona = new ManagePersona(_userClaims);
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -161,11 +161,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 IManageProduct manageProduct = new ManageProduct(_userClaims);
                 //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
-                productFamilyList = manageProduct.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter);
+                productFamilyList = manageProduct.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter, loginName);
             }
             else
             {
-                productFamilyList = _productRepository.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter);
+                productFamilyList = _productRepository.GetProductFamilies(_userClaims.OrganizationRealPageGuid, _realpageUserId, personRealPageId, accessFilter, loginName);
             }
 
             if (productFamilyList != null)

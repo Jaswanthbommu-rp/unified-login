@@ -11,7 +11,8 @@
         params = {
             editorPersonaId: "@editorPersonalID",
             userPersonaId:   "@userPersonalID",
-            propertyGroupId: "@propertyGroupId"
+            propertyGroupId: "@propertyGroupId",
+            userLoginName: "@userLoginName"
         };
 
         actions = {

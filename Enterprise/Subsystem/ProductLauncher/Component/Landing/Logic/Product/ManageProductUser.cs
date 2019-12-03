@@ -228,7 +228,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							productUser.AssignUserPersonaId, productPropertiesRoles);
 						break;
 					case ProductEnum.AssetOptimizer:
-						product = new AssetOptimizerProduct();
+						product = new AssetOptimizerProduct(_defaultUserClaim);
 						productPropertiesRoles =
 							GetProductPropertiesRoles<AoUserCompanyPropertyRoleDetails>(productUser.InputJson);
 						result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -404,7 +404,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					result = product.UpdateUserDetails(productUserAccountDetails);
 					break;
 				case ProductEnum.AssetOptimizer:
-					product = new AssetOptimizerProduct(_productInternalSettingRepository);
+					product = new AssetOptimizerProduct(_defaultUserClaim,_productInternalSettingRepository);
 					result = product.UpdateUserDetails(productUserAccountDetails);
 					break;
 				case ProductEnum.LeadManagement:
@@ -522,7 +522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
 						break;
 					case ProductEnum.AssetOptimizer:
-						product = new AssetOptimizerProduct();
+						product = new AssetOptimizerProduct(_defaultUserClaim);
 						result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
 						break;
 					case ProductEnum.LeadManagement:
@@ -723,7 +723,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
 						break;
 					case ProductEnum.AssetOptimizer:
-						product = new AssetOptimizerProduct();
+						product = new AssetOptimizerProduct(_defaultUserClaim);
 						productPropertiesRoles =
 							GetProductPropertiesRoles<AoUserCompanyPropertyRoleDetails>(batchRecord.InputJson);
 						result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -2764,7 +2764,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// default constructor
 		/// </summary>
-		public AssetOptimizerProduct() : base((int)ProductEnum.AssetOptimizer, null)
+		public AssetOptimizerProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.AssetOptimizer, userClaim, null)
 		{
 		}
 
@@ -2772,7 +2772,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Test constructor
 		/// </summary>
 		/// <param name="productInternalSettingRepository">Internal settings for a product</param>
-		public AssetOptimizerProduct(IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.AssetOptimizer, productInternalSettingRepository)
+		public AssetOptimizerProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.AssetOptimizer, userClaim, productInternalSettingRepository)
 		{
 		}
 
@@ -2791,8 +2791,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				return "Input JSON parsing issue; Null object.";
 			}
-
-			var productAo = new ManageProductAssetOptimization(createUserRealPageId);
+			base.UserClaim.UserRealPageGuid = createUserRealPageId;
+			var productAo = new ManageProductAssetOptimization(base.UserClaim);
 
 			// create, update or UNASSIGN user
 			return productAo.ManageAssetOptimizationUser(createUserPersonaId, assignUserPersonaId, roleProp.AoUserCompanyPropertyRoleDetailList);
@@ -2827,8 +2827,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				return "Input JSON parsing issue; Null object.";
 			}
-
-			var productAo = new ManageProductAssetOptimization(createUserRealPageId);
+			base.UserClaim.UserRealPageGuid = createUserRealPageId;
+			var productAo = new ManageProductAssetOptimization(base.UserClaim);
 
 			// create, update or UNASSIGN user
 			return productAo.ChangeAssetOptimizationProductUserType(createUserPersonaId, assignUserPersonaId, roleProp.AoUserCompanyPropertyRoleDetailList, batchProcessType);
