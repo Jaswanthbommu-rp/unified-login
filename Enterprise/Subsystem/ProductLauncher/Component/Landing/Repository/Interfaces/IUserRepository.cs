@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -136,5 +137,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRealPageId">Organization enterprise Id</param>
         /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
         void AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0);
+
+		/// <summary>
+		/// ProcessDisableUserProductData
+		/// </summary>
+		/// <param name="repository"></param>
+		/// <param name="assignUserPersonaId"></param>
+		/// <param name="createUserRealPageId"></param>
+		/// <param name="createUserPersonaId"></param>
+		void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId);
 	}
 }

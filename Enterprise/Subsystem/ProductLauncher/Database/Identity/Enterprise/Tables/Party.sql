@@ -9,3 +9,6 @@ GO
 
 CREATE UNIQUE NONCLUSTERED INDEX [AK_Party_rowguid]
 	ON [Enterprise].[Party]([RealPageId] ASC);
+GO
+CREATE INDEX IDX_Party_Comp01 ON Enterprise.Party
+(PartyId, RealPageId);

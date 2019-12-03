@@ -78,7 +78,10 @@ EXECUTE sp_addextendedproperty
 
 
 GO
-CREATE NONCLUSTERED INDEX [IX_UserLogin_PersonPartyId]
-    ON [Ident].[UserLogin]([PersonPartyId] ASC)
-    INCLUDE([UserId]);
 
+
+CREATE NONCLUSTERED INDEX [IX_UserLogin_PersonPartyId] ON [Ident].[UserLogin]
+([PersonPartyId] ASC
+) INCLUDE([UserId], LoginName) WITH(PAD_INDEX = ON, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 95) ON [PRIMARY];
+GO
+CREATE INDEX IDX_UserLogin_Comp01 ON Ident.UserLogin(UserId) INCLUDE(LoginName);

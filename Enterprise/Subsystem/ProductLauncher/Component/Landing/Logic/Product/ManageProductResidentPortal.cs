@@ -467,13 +467,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						//User exists under a different company (User logged in Unified Login companyId is differnt that Resident Portal CompanyId)
 						if (_companyInstanceSourceId != _residentPortalUser.CompanyId)
 						{
-							String[] emailSubstrings = userEmailAddressCopy.Split('@');
-							string includeUserName = IsRegularUserNoEmail(userPersonaId) ? userLogin.LoginName.Replace("@", "") : "";
-							if (emailSubstrings.Length == 2)
-							{
-								userEmailAddress = string.Concat(emailSubstrings[0], "+ul", includeUserName, userPersonaId.ToString(), "ul@", emailSubstrings[1]);
-							}
-							_productUsername = userEmailAddress;
+                            string[] loginNameSubStrings = userEmailAddress.Split('@');
+                            userEmailAddress = loginNameSubStrings.Length == 2 ? string.Concat(loginNameSubStrings[0], "+ul", _companyInstanceSourceId.ToString(), "ul@", loginNameSubStrings[1]) :
+                                                                                 string.Concat(userEmailAddress, "+ul", _companyInstanceSourceId.ToString());
+
+                            _productUsername = userEmailAddress;
 						}
 					}
 					_residentPortalUser = new ResidentPortalUser();

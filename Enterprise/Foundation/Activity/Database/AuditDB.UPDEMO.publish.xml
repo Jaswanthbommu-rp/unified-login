@@ -10,6 +10,6 @@
     <RegisterDataTierApplication>True</RegisterDataTierApplication>
     <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
     <IgnoreExtendedProperties>True</IgnoreExtendedProperties>
-    <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
+    <BackupDatabaseBeforeChanges>False</BackupDatabaseBeforeChanges>
   </PropertyGroup>
 </Project>

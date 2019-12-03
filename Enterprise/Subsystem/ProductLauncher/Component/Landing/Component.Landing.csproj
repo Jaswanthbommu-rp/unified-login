@@ -282,7 +282,6 @@
     <Compile Include="Repository\Clients\ClientsSetupRepository.cs" />
     <Compile Include="Repository\CommunicationEventRepository.cs" />
     <Compile Include="Repository\ConfigurationSettingRepository.cs" />
-    <Compile Include="Repository\Constants\StoredProcConstants.cs" />
     <Compile Include="Repository\ContactMechanismRepository.cs" />
     <Compile Include="Repository\ContactMechanismUsageTypeRepository.cs" />
     <Compile Include="Repository\CredentialRepository.cs" />
@@ -387,6 +386,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Logic\Enterprise\Helpers\" />
+    <Folder Include="Repository\Constants\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

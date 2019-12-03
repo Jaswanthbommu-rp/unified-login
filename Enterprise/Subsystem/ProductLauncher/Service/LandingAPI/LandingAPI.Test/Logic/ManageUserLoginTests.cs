@@ -161,8 +161,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, It.IsAny<object>()))
                 .Returns(_userLogin);
-            //return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
-
         }
 
 
@@ -321,7 +319,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             };
 
-            IdentityProviderType _expectedIdentityProviderType = new IdentityProviderType()
+			IList<Organization> organizationList = new List<Organization>()
+			{
+				new Organization()
+				{
+					RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D"),
+					CreateDate = DateTime.MaxValue.ToUniversalTime(),
+					Name = "CF Real Estate Services",
+					PartyId = 54321,
+					BooksMasterId = 2116,
+					BooksCustomerMasterId = 379,
+					OrganizationTypeId = 6,
+					organizationType = new OrganizationType()
+					{
+						OrganizationTypeId = 6
+					}
+				}
+			};
+
+			IdentityProviderType _expectedIdentityProviderType = new IdentityProviderType()
             {
                 AuthenticationType = "local"
             };
@@ -355,8 +371,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
                 .Returns(_person);
 
-            //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
+			_mockRepository
+				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+				.Returns(organizationList);
+
+			//Act
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
             IRepositoryResponse repositoryResponse = manageUserLogin.UpdateUserLogin(realPageId, userLogin);
 
 			//Assert

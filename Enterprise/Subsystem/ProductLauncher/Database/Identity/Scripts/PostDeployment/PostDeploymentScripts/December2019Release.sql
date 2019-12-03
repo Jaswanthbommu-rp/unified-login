@@ -1,61 +1,4 @@
-GO
-
-DECLARE @MasterSettingTypeName nvarchar(200) = 'CustomFields',
-	@MasterConfigurationTypeName nvarchar(100) = 'UserLogin'
-
-DECLARE	@MasterConfiguration TABLE (
-	MasterConfigurationId bigint
-)
-
-DECLARE @MasterSetting TABLE (
-	MasterSettingId bigint
-)
-
-INSERT INTO @MasterSetting (
-	MasterSettingId
-)
-SELECT	DISTINCT ems.MasterSettingId
-FROM	Enterprise.MasterConfigurationType emct
-			INNER JOIN Enterprise.MasterSettingType emst ON emct.MasterConfigurationTypeId = emst.MasterConfigurationTypeId
-			INNER JOIN Enterprise.MasterSetting ems ON emst.MasterSettingTypeId = ems.MasterSettingTypeId
-			LEFT OUTER JOIN Enterprise.MasterConfigurationSetting emcs ON emcs.MasterSettingId = ems.MasterSettingId
-			LEFT OUTER JOIN Enterprise.MasterConfiguration emc ON emc.MasterConfigurationId = emcs.MasterConfigurationId
-WHERE	emct.Name = @MasterConfigurationTypeName
- AND		emst.Name = @MasterSettingTypeName
- 
-INSERT INTO @MasterConfiguration (
-	MasterConfigurationId
-)
-SELECT	DISTINCT emc.MasterConfigurationId
-FROM	Enterprise.MasterConfiguration emc
-			INNER JOIN Enterprise.MasterConfigurationType emct ON (emc.MasterConfigurationTypeId = emct.MasterConfigurationTypeId)
-			INNER JOIN Enterprise.MasterConfigurationSetting emcs ON emc.MasterConfigurationId = emcs.MasterConfigurationId
-			INNER JOIN Enterprise.MasterSetting ems ON emcs.MasterSettingId = ems.MasterSettingId
-			INNER JOIN Enterprise.MasterSettingType emst ON ems.MasterSettingTypeId = emst.MasterSettingTypeId
-WHERE	emct.Name = @MasterConfigurationTypeName
- AND		emst.Name = @MasterSettingTypeName
-
-DELETE emcs
-FROM	Enterprise.MasterConfigurationSetting emcs
-			INNER JOIN @MasterSetting ms ON (emcs.MasterSettingId = ms.MasterSettingId)
-
-DELETE	emc
-FROM	Enterprise.MasterConfiguration emc
-			INNER JOIN @MasterConfiguration mc ON (emc.MasterConfigurationId = mc.MasterConfigurationId)
-			INNER JOIN Enterprise.MasterConfigurationSetting emcs ON emc.MasterConfigurationId = emcs.MasterConfigurationId
-			INNER JOIN Enterprise.MasterSetting ems ON emcs.MasterSettingId = ems.MasterSettingId
-			INNER JOIN Enterprise.MasterSettingType emst ON ems.MasterSettingTypeId = emst.MasterSettingTypeId
-WHERE	emst.Name = @MasterSettingTypeName
-
-DELETE ems
-FROM	Enterprise.MasterSetting ems
-			INNER JOIN @MasterSetting ms ON (ems.MasterSettingId = ms.MasterSettingId)
-
-DELETE emst
-FROM	Enterprise.MasterSettingType emst
-WHERE	emst.Name = @MasterSettingTypeName
-GO
-
+﻿
 DECLARE @OrgRowNum INT;
 DECLARE @ActionID INT;
 DECLARE @RightID INT;
@@ -106,7 +49,7 @@ CREATE TABLE #RightsUnifiedSettings
 );
 
 INSERT INTO #RightsUnifiedSettings( rightid, name, description, shortname )
-VALUES( 1, 'Access to Settings Admin for OneSite', 'Access to Settings Admin for OneSite', 'AccessSettingsAdminOneSite' );
+VALUES( 1, 'Manage Settings Templates', 'Manage Settings Templates', 'ManageSettingsTemplates' );
 
 SELECT @ProductId = ProductId
 FROM Enterprise.Product
@@ -169,11 +112,11 @@ IF NOT EXISTS
 (
 	SELECT 1
 	FROM Enterprise.ACTION
-	WHERE ObjectValue = 'Access Settings Admin OneSite' AND 
+	WHERE ObjectValue = 'Manage Settings Templates' AND 
 		  ParentActionId IS NULL
 )
 BEGIN
-	EXEC Enterprise.CreateAction @ProductID = @ProductId, @Action = N'Access Settings Admin OneSite', @ActionTarget = N'Right', @ActionbValueTypeId = 1, @Description = '', @ActionID = @ActionID OUTPUT;
+	EXEC Enterprise.CreateAction @ProductID = @ProductId, @Action = N'Manage Settings Templates', @ActionTarget = N'Right', @ActionbValueTypeId = 1, @Description = '', @ActionID = @ActionID OUTPUT;
 	SELECT @ActionID AS N'@ActionID';
 END;
 
@@ -187,18 +130,18 @@ IF NOT EXISTS
 (
 	SELECT 1
 	FROM Enterprise.ACTION
-	WHERE ObjectValue = 'Access Settings Admin OneSite' AND 
+	WHERE ObjectValue = 'Manage Settings Templates' AND 
 		  ParentActionID = @ParentActionId
 )
 BEGIN
-	EXEC [Enterprise].[CreateAction] @ProductID = @ProductId, @Action = N'Access Settings Admin OneSite', @ActionTarget = N'Right', @ActionbValueTypeId = 1, @Description = '', @ParentActionID = @ParentActionId, @ActionID = @ActionID OUTPUT;
+	EXEC [Enterprise].[CreateAction] @ProductID = @ProductId, @Action = N'Manage Settings Templates', @ActionTarget = N'Right', @ActionbValueTypeId = 1, @Description = '', @ParentActionID = @ParentActionId, @ActionID = @ActionID OUTPUT;
 	SELECT @ActionID AS N'@ActionID';
 END;
+
 
 SELECT DISTINCT 
 	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId OrganizationPartyID, 0 AS PStatus
 INTO #HoldPartyForUnifiedSettings
-
 FROM Enterprise.Organization o
 	 INNER JOIN Enterprise.Party p
 
@@ -229,13 +172,13 @@ BEGIN
 	FETCH Rights INTO @TRightId, @TRightName, @TRightDesc, @TRightShortName;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = 'Default_AccessSettingsAdminOneSite', @ShortName = 'AccessSettingsAdminOneSite', @RightCategoryId = @RightCategory, @PartyId = @PartyId, @ProductId = @ProductId, @Description = '',  @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @RightId OUTPUT;
+		EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = 'Default_ManageSettingsTemplates', @ShortName = 'ManageSettingsTemplates', @RightCategoryId = @RightCategory, @PartyId = @PartyId, @ProductId = @ProductId, @Description = '',  @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @RightId OUTPUT;
 		EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @TRightName, @RightCategoryId = @RightCategory, @PartyId = @PartyId, @ProductId = @ProductId, @Shortname = @TRightShortName, @Description = @TRightDesc, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @RightId OUTPUT;
 
 
 		SELECT @ActionID = ActionID
 		FROM Enterprise.ACTION
-		WHERE ObjectValue = 'Access Settings Admin OneSite'  AND 
+		WHERE ObjectValue = 'Manage Settings Templates'  AND 
 			  ObjectType = 'Right' AND 
 			  ParentActionId IS NULL;
 		EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @RightId, @StatusId = @Status, @UserActionId = @UserActionId OUTPUT;
@@ -245,20 +188,14 @@ BEGIN
 			 INNER JOIN
 			 Enterprise.RightValueType AS RR
 			 ON RR.RightValueTypeId = R.RightValueTypeId
-		WHERE RR.Value = 'Default_AccessSettingsAdminOneSite';
+		WHERE RR.Value = 'Default_ManageSettingsTemplates';
 		SELECT @ActionID = ActionID
 		FROM Enterprise.ACTION
-		WHERE ObjectValue = 'Access Settings Admin OneSite'   AND 
+		WHERE ObjectValue = 'Manage Settings Templates'   AND 
 			  ObjectType = 'Right' AND 
 			  ParentActionId IS NULL;
 		EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @RightId, @StatusId = @Status, @UserActionId = @UserActionId OUTPUT;
 
-		SELECT @ActionID = ActionID
-		FROM Enterprise.ACTION
-		WHERE ObjectValue = 'Access Settings Admin OneSite'  AND 
-			  ObjectType = 'Right' AND 
-			  ParentActionId IS NULL;
-		EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @RightId, @StatusId = @Status, @UserActionId = @UserActionId OUTPUT;
 
 
 		FETCH Rights INTO @TRightId, @TRightName, @TRightDesc, @TRightShortName;
@@ -269,20 +206,20 @@ BEGIN
 	  SET PStatus = 1
 	WHERE RowNumber = @PartyRowNum;
 END;
-
 GO
 DECLARE @Dashboard int;
-DECLARE @SideMenu int
+DECLARE @SideMenuRight INT
+DECLARE @SideMenuRoute INT
 DECLARE @RightValueTypeId INT
-
+DECLARE @UnifiedS INT
 
 SELECT @DashBoard = RightValueTypeId
 FROM Enterprise.RightValueType
-WHERE value = 'Default_AccessSettingsAdminOneSite';
+WHERE value = 'Default_ManageSettingsTemplates';
 
 SELECT @RightValueTypeId = RightValueTypeId
 FROM Enterprise.RightValueType
-WHERE value IN( 'Access to Settings Admin for OneSite' );
+WHERE value IN( 'Manage Settings Templates' );
 
 IF NOT EXISTS
 (
@@ -297,54 +234,66 @@ BEGIN
 
 END;
 
-SELECT @DashBoard = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = 'Default_SettingsRoute';
 
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.RightDependency
-	WHERE RightValueTypeId = @RightValueTypeId AND 
-		  DependentRightValueTypeId = @DashBoard
-)
-BEGIN
-	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
-	VALUES( @RightValueTypeId, @DashBoard );
-
-END;
-
-SELECT @DashBoard = RightValueTypeId
+SELECT @SideMenuRight = RightValueTypeId
 FROM Enterprise.RightValueType
 WHERE value = 'Default_SettingsRight';
 
+SELECT @RightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value IN( 'Manage Settings Templates' );
+
 IF NOT EXISTS
 (
 	SELECT 1
 	FROM Enterprise.RightDependency
 	WHERE RightValueTypeId = @RightValueTypeId AND 
-		  DependentRightValueTypeId = @DashBoard
+		  DependentRightValueTypeId = @SideMenuRight
 )
 BEGIN
 	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
-	VALUES( @RightValueTypeId, @DashBoard );
+	VALUES( @RightValueTypeId, @SideMenuRight );
 
 END;
 
-SELECT @DashBoard = RightValueTypeId
+SELECT @SideMenuRoute = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value = 'Default_SettingsRoute';
+
+SELECT @RightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value IN( 'Manage Settings Templates' );
+
+IF NOT EXISTS
+(
+	SELECT 1
+	FROM Enterprise.RightDependency
+	WHERE RightValueTypeId = @RightValueTypeId AND 
+		  DependentRightValueTypeId = @SideMenuRoute
+)
+BEGIN
+	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
+	VALUES( @RightValueTypeId, @SideMenuRoute );
+
+END;
+
+SELECT @UnifiedS = RightValueTypeId
 FROM Enterprise.RightValueType
 WHERE value = 'Default_Sidemenu_UnifiedSetting';
 
+SELECT @RightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value IN( 'Manage Settings Templates' );
+
 IF NOT EXISTS
 (
 	SELECT 1
 	FROM Enterprise.RightDependency
 	WHERE RightValueTypeId = @RightValueTypeId AND 
-		  DependentRightValueTypeId = @DashBoard
+		  DependentRightValueTypeId = @UnifiedS
 )
 BEGIN
 	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
-	VALUES( @RightValueTypeId, @DashBoard );
+	VALUES( @RightValueTypeId, @UnifiedS );
 
 END;
-GO
