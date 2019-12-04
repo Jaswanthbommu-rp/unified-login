@@ -17,6 +17,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using System.Dynamic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -476,15 +477,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LastName = person.LastName,
 				};
 
-				//var aoUserExists = CheckUniqueAOUserName(productUserGbLogin.LoginName.ToLower());
-
-				if (string.IsNullOrEmpty(_productUsername))// && aoUserExists)
+				if (string.IsNullOrEmpty(_productUsername))
 				{
-
-					IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+					IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
 
 					//Check to see if user has multicompany, then get user products and assign before any updates
-					if (personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0)
+					if (organizationList?.Count > 1)
 					{
 						var products = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
 						if (products?.Count > 0)
