@@ -319,12 +319,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var orgMigrationUsersData = migrationResponse.Where(m => m.CompanySourceInstanceId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
 			if (productUserList?.Count > 0)
 			{
-				 usersData = orgMigrationUsersData.Where(o => productUserList.Any(p => p.ProductUserName != o.UserName)).ToList();
+				orgMigrationUsersData.RemoveAll(o => productUserList.Any(p => p.ProductUserName == o.UserName));				
 			}
-			else
-			{
-				usersData = orgMigrationUsersData;
-			}
+			usersData = orgMigrationUsersData;
 
 			var migrationUsers = new List<MigrationUser>();
 			foreach (var user in usersData)
@@ -489,8 +486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						{
 							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, products, productUserGbLogin.LoginName.ToLower());
 							_productUsername = productUserGbLogin.LoginName.ToLower();
-						}
-						
+						}						
 					}					
 				}
 
@@ -974,7 +970,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetAOProductsForNewMultiCompanyUser at end of method for user with " +
-				$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {products}");
+				$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {products.ToString()}");
 			}
 			catch (Exception ex)
 			{
@@ -983,6 +979,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return products;
 		}
+		
 		#endregion
 
 		#region user Status
