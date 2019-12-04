@@ -15,7 +15,6 @@
             vm.grid = grid;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             vm.allProperties = false;
-
             gridTransform.watch(grid);
             grid.setConfig(gridConfig);
             gridPagination.setGrid(grid);
@@ -98,17 +97,15 @@
         };
 
         vm.setAllProperties = function (val) {
-            if (val) {
-                var allPropertiesArray = [];
-                allPropertiesArray.push("all");
-                OSDataModel.setAllProperties(vm.dataReq.records, val);
-
-                //clear selections, if theres any
-                vm.grid.selectAll(false);
+            var allPropertiesArray = [];
+            allPropertiesArray.push("all");
+            OSDataModel.setProperties(allPropertiesArray);
+            if(val){
                 vm.grid.updateSelected();
             }
-            else {
-                OSDataModel.setProperties(vm.dataReq.records);
+            else{
+                vm.grid.selectAll(false);
+                vm.grid.updateSelected();
             }
         };
 
