@@ -56,7 +56,6 @@
              switchModel.setHasAccessToCurrentFutureProp(val);
             
             if (val) {
-                
                 ADataModel.clearProperties();                                
                 
                 //clear grid selections company/entities, if theres any
@@ -65,7 +64,10 @@
               
             }
             else {
-                            
+
+                ADataModel.clearProperties();
+                pubsub.publish("Acct.allEntChange");
+                pubsub.publish("Acct.allCompChange");
                 if(switchModel.getIsAccountingAdmin() === true){
                     switchModel.setIsAccountingAdmin(false);
                     vm.accountingAdmin = false;

@@ -34,9 +34,10 @@
             }
             sync.setGroupSelectKey("isAssigned");
             vm.gridSelectionWatch = grid.subscribe("selectChange", vm.selectionChange);
-            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectionAll);
+            // vm.gridAllWatch = grid.subscribe("selectAll", vm.selectionAll);
             vm.updateGridWatch = pubsub.subscribe("onsite.updateGrids", vm.updateGrid);
             vm.updateAll = pubsub.subscribe("onsite.allProperties", vm.allPropertiesSelected);
+            vm.gridSelectAllWatch = grid.subscribe("selectAll", vm.selectAllPropertyGroup);
         };
 
         vm.allPropertiesSelected = function (val) {
@@ -111,10 +112,16 @@
             return !persona.data.hasManageOnSiteProductAccess;
         };
 
+        vm.selectAllPropertyGroup = function (val) {
+            dataModel.setAllPropertyGroupData(vm.dataReq.records, val);
+            sync.allGroupToPropertySync();
+        };
+
         vm.destroy = function () {
             vm.destWatch();
             vm.gridSelectionWatch();
             vm.gridAllWatch();
+            vm.gridSelectAllWatch();
             vm.updateGridWatch();
             vm.updateAll();
             if (vm.dataReq) {
