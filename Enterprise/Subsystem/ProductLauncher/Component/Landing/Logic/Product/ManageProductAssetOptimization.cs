@@ -105,11 +105,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
 					var productUserProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
 
-					var productUserComp =
+					if (productUserProfile != null)
+					{
+						var productUserComp =
 						productUserProfile.Divisions.Where(x => x.Division == productDivisionName).ToList();
-					var productUserCompanies = productUserComp.SelectMany(f => f.Companies).ToList();
+						var productUserCompanies = productUserComp.SelectMany(f => f.Companies).ToList();
 
-					allCompanies = FilterAssignedCompanies(allCompanies, productUserCompanies);
+						allCompanies = FilterAssignedCompanies(allCompanies, productUserCompanies);
+					}					
 				}
 
 				allCompanies = allCompanies.OrderBy(x => x.CompanyName).ToList();
@@ -156,16 +159,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				foreach (var company in allCompanies)
 				{
 					List<AORoles> roles = GetRoles(company.CompanyId, productName, userLoginName).ToList();
-					roles = roles.OrderBy(x => x.DisplayName).ToList();
 
-					companyRoles.Add(new AoCompanyRoles
+					if (roles?.Count > 0)
 					{
-						CompanyId = company.CompanyId,
-						CompanyName = company.CompanyName,
-						IsAssigned = company.IsAssigned,
-						Status = company.Status,
-						Roles = roles,
-					});
+						roles = roles.OrderBy(x => x.DisplayName).ToList();
+
+						companyRoles.Add(new AoCompanyRoles
+						{
+							CompanyId = company.CompanyId,
+							CompanyName = company.CompanyName,
+							IsAssigned = company.IsAssigned,
+							Status = company.Status,
+							Roles = roles,
+						});
+					}					
 				}
 
 				response = new ListResponse()
