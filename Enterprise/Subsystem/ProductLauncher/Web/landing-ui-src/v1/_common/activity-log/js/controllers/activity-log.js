@@ -94,7 +94,6 @@
         vm.filterByStartDate = function (date) {
             var dateToday = moment();
             var selectedDate = moment(date);
-            var dvStartDate = document.querySelector('#dvFromDate');
             if (date) {
                 if (selectedDate.isSameOrBefore(dateToday, "day")) {
                     activityLogFormConfig.endDate.minDate(selectedDate);
@@ -102,7 +101,6 @@
                 }
                 vm.fromDateRequired = false;
                 vm.lblFromDateText = "From";
-                angular.element(dvStartDate).removeClass("dateRequired");
                 vm.payloadModel.setStartDate(date);
                 if (!vm.toDateRequired) {
                     vm.loadData();
@@ -110,14 +108,12 @@
             } else {
                 vm.fromDateRequired = true;
                 vm.lblFromDateText = "From Date is required";
-                angular.element(dvStartDate).addClass("dateRequired");
             }
 
         };
         vm.filterByEndDate = function (date) {
             var dateToday = moment();
             var selectedDate = moment(date);
-            var dvEndDate = document.querySelector('#dvToDate');
             if (date) {
                 if (selectedDate.isSameOrBefore(dateToday, "day")) {
                     activityLogFormConfig.startDate.maxDate(selectedDate);
@@ -129,7 +125,6 @@
                 }
                 vm.toDateRequired = false;
                 vm.lblToDateText = "To";
-                angular.element(dvEndDate).removeClass("dateRequired");
                 vm.payloadModel.setEndDate(date);
                 if (!vm.fromDateRequired) {
                     vm.loadData();
@@ -137,7 +132,6 @@
             } else {
                 vm.toDateRequired = true;
                 vm.lblToDateText = "To Date is required";
-                angular.element(dvEndDate).addClass("dateRequired");
             }
 
         };
