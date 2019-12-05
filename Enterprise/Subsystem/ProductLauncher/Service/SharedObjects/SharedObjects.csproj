@@ -109,6 +109,7 @@
     <Compile Include="DapperMappingGuides\IProductSettingList.cs" />
     <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
     <Compile Include="Enterprise\ProductDetail.cs" />
+    <Compile Include="Enterprise\ProductUsers.cs" />
     <Compile Include="Enterprise\UserData.cs" />
     <Compile Include="Enterprise\UserDataCommon.cs" />
     <Compile Include="Enterprise\UserProductDetails.cs" />
