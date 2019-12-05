@@ -16,22 +16,24 @@
             config="al.filter.config.daterange"
             rp-model="al.filter.model.daterange">
         </rp-form-select-menu> -->
-        <div class="col-md-2 labelFrom">
-                <label>From</label>
+        <div id="dvFromDate" class="col-md-2 labelFrom">
+                <label ng-class="{'lblTextReq': al.fromDateRequired}">{{al.lblFromDateText}}</label>
              <rp-datetimepicker 
                 class="activity-log-filter"
                 config="al.filter.config.startDate" 
                 rp-model="al.filter.model.startDate">
             </rp-datetimepicker>
         </div>
-        <div class="col-md-2 labelTo">
-                <label>To</label>
+        
+        <div id="dvToDate" class="col-md-2 labelTo">
+                <label ng-class="{'lblTextReq': al.toDateRequired}">{{al.lblToDateText}}</label>
             <rp-datetimepicker 
                 class="activity-log-filter"
                 config="al.filter.config.endDate" 
                 rp-model="al.filter.model.endDate">
             </rp-datetimepicker>
         </div>
+        
 
         <div class="activity-log-filter-sortby-group">
             <span class="activity-log-filter-sortby-label">Sort By:</span>

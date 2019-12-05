@@ -9,7 +9,7 @@
                 keyword: "",
                 activity: "",
                 daterange: "1-CM",
-                startDate: moment().subtract(7,'d'),
+                startDate: moment().startOf('month'),
                 endDate:moment(),
                 sortby: "ApplicationTimeStamp-DESC"
             };

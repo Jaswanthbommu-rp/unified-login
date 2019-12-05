@@ -1,9 +1,10 @@
+
 // Activity Log Filter Configuration
 
 (function (angular) {
     "use strict";
 
-    function factory($filter, baseFormConfig, inputTextConfig, menuConfig, dateTimePickerConfig) {
+    function factory($filter, baseFormConfig, inputTextConfig, menuConfig, dateTimePickerConfig, moment) {
         var model = baseFormConfig();
 
 
@@ -36,7 +37,7 @@
                 required: false,
                 iconClass: "rp-icon-calendar",
                 format: "MM/DD/YYYY",
-                maxDate: new Date(),
+                maxDate: moment().toDate(),
                 onChange: model.methods.get("filterByStartDate")
             });
 
@@ -46,7 +47,8 @@
                 required: false,
                 iconClass: "rp-icon-calendar",
                 format: "MM/DD/YYYY",
-                maxDate: new Date(),
+                maxDate: moment().toDate(),
+                minDate: moment().startOf('month').toDate(),
                 onChange: model.methods.get("filterByEndDate")
             });
 
@@ -84,6 +86,7 @@
             "rpFormInputTextConfig",
             "rpFormSelectMenuConfig",
             "rpDatetimepickerConfig",
+            "moment",
             factory
         ]);
 })(angular);
