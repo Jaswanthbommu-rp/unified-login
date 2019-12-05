@@ -61,41 +61,31 @@
     }
 }
 .labelFrom {
-    padding: 3px;
-    border: 1px solid #e4e6e8;
-    // margin: -3px 0px 0px 6px;
+    padding: 0px;
 }
 .labelFrom>label {
     position: absolute;
-    bottom: 29px;
-    left: 20px;
+    bottom: 22px;
+    left: 12px;
     background-color: white;
-}
-.labelFrom .rp-datetimepicker-text {
-    border: none;
-    box-shadow: none !important;
-}
-.labelFrom .rp-datetimepicker-icon-wrap {
-    border: none;
+    z-index:10;
 }
 .labelTo {
-    padding: 3px;
-    border: 1px solid #e4e6e8;
-    // margin: -3px 0px 0px 6px;
+    padding: 0px;
 }
 .labelTo>label {
     position: absolute;
-    bottom: 29px;
-    left: 20px;
+    bottom: 22px;
+    left: 12px;
     background-color: white;
     margin-left: 6px;
+    z-index:10;
 }
-.labelTo .rp-datetimepicker-text {
-    border: none;
-    box-shadow: none !important;
+.dateRequired{
+    border:1px solid red;
 }
-.labelTo .rp-datetimepicker-icon-wrap {
-    border: none;
+.lblTextReq{
+    color:red;
 }
 
 .rp-actions-menu-panel {
