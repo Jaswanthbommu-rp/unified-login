@@ -227,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			var persona = managePersona.GetPersona(editorPersonaId);
 			if (persona == null)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
-			var manageProductAoBi = new ManageProductAssetOptimization(base._userClaims);
+			var manageProductAoBi = new ManageProductAssetOptimization(persona.RealPageId);
 			return Request.CreateResponse(HttpStatusCode.OK, manageProductAoBi.GetMigrationUsers(editorPersonaId, datafilter));
 		}
 
