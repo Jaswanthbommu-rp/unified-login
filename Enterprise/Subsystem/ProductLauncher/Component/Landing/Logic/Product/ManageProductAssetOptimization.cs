@@ -338,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
 			ProductRepository productRepository = new ProductRepository();
 			string product = Convert.ToString((int)ProductEnum.AssetOptimizer);
-			IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_userClaims.OrganizationPartyId, product);
+			IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
 			List<AssetOptimizationMigrationUser> usersData = new List<AssetOptimizationMigrationUser>();
 			var orgMigrationUsersData = migrationResponse.Where(m => m.CompanySourceInstanceId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
 			if (productUserList?.Count > 0)
