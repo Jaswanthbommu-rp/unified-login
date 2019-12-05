@@ -20,7 +20,7 @@
             s.timezoneOffset = undefined;
             s.timeStr = '18:25:03';
             s.setDateRange("1-CM");
-            s.setStartDate(moment().subtract(7,'d'));
+            s.setStartDate(moment().startOf('month'));
             s.setEndDate(moment());
             s.setSortOrderPayload();
         };
@@ -114,7 +114,8 @@
         };
         p.setStartDate=function(startDate){
             var s = this,
-            dateStr= moment(startDate).format("YYYY-MM-DD");
+             offset = moment().utcOffset(),
+            dateStr= moment(startDate).subtract(offset, "m").format("YYYY-MM-DD");
             var startdate = dateStr + ' ' +  s.timeStr;
             s.startDatePayload = {
                 "name": "StartDate",
@@ -124,7 +125,8 @@
         };
         p.setEndDate=function(endDate){
             var s = this,
-            dateStr= moment(endDate).format("YYYY-MM-DD");
+            offset = moment().utcOffset(),
+            dateStr= moment(endDate).subtract(offset, "m").format("YYYY-MM-DD");
             var enddate = dateStr + ' ' +  s.timeStr;
             s.endDatePayload = {
                 "name": "EndDate",

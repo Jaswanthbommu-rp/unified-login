@@ -21,9 +21,13 @@
             vm.filter = vm.initForm();
             vm.activityLog = {};
             vm.singleUser = true;
+            vm.fromDateRequired = false;
+            vm.toDateRequired = false;
+            vm.lblFromDateText = "";
+            vm.lblToDateText = "";
             vm.register();
             vm.loadData();
-            vm.filterByStartDate(moment().subtract(7, 'd'));
+            vm.filterByStartDate(moment().startOf('month'));
             vm.filterByEndDate(moment());
 
             vm.exportMenu = exportMenu(vm);
@@ -78,7 +82,9 @@
 
         vm.filterByActivities = function (activityValue) {
             vm.payloadModel.buildActivityPayload(activityValue);
-            vm.loadData();
+            if (!vm.fromDateRequired && !vm.toDateRequired) {
+                vm.loadData();
+            }
         };
 
         vm.filterByDates = function (daterange) {
@@ -88,18 +94,30 @@
         vm.filterByStartDate = function (date) {
             var dateToday = moment();
             var selectedDate = moment(date);
+            var dvStartDate = document.querySelector('#dvFromDate');
             if (date) {
                 if (selectedDate.isSameOrBefore(dateToday, "day")) {
                     activityLogFormConfig.endDate.minDate(selectedDate);
                     activityLogFormConfig.endDate.maxDate(dateToday);
                 }
+                vm.fromDateRequired = false;
+                vm.lblFromDateText = "From";
+                angular.element(dvStartDate).removeClass("dateRequired");
+                vm.payloadModel.setStartDate(date);
+                if (!vm.toDateRequired) {
+                    vm.loadData();
+                }
+            } else {
+                vm.fromDateRequired = true;
+                vm.lblFromDateText = "From Date is required";
+                angular.element(dvStartDate).addClass("dateRequired");
             }
-            vm.payloadModel.setStartDate(date);
-            vm.loadData();
+
         };
         vm.filterByEndDate = function (date) {
             var dateToday = moment();
             var selectedDate = moment(date);
+            var dvEndDate = document.querySelector('#dvToDate');
             if (date) {
                 if (selectedDate.isSameOrBefore(dateToday, "day")) {
                     activityLogFormConfig.startDate.maxDate(selectedDate);
@@ -109,9 +127,19 @@
                     activityLogFormConfig.endDate.maxDate(dateToday);
                     activityLogFormConfig.startDate.maxDate(dateToday);
                 }
+                vm.toDateRequired = false;
+                vm.lblToDateText = "To";
+                angular.element(dvEndDate).removeClass("dateRequired");
+                vm.payloadModel.setEndDate(date);
+                if (!vm.fromDateRequired) {
+                    vm.loadData();
+                }
+            } else {
+                vm.toDateRequired = true;
+                vm.lblToDateText = "To Date is required";
+                angular.element(dvEndDate).addClass("dateRequired");
             }
-            vm.payloadModel.setEndDate(date);
-            vm.loadData();
+
         };
 
         vm.sortByFilter = function (filterItem) {
