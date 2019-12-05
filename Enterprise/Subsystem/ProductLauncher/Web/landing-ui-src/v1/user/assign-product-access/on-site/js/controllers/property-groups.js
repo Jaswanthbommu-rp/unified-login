@@ -34,7 +34,6 @@
             }
             sync.setGroupSelectKey("isAssigned");
             vm.gridSelectionWatch = grid.subscribe("selectChange", vm.selectionChange);
-            // vm.gridAllWatch = grid.subscribe("selectAll", vm.selectionAll);
             vm.updateGridWatch = pubsub.subscribe("onsite.updateGrids", vm.updateGrid);
             vm.updateAll = pubsub.subscribe("onsite.allProperties", vm.allPropertiesSelected);
             vm.gridSelectAllWatch = grid.subscribe("selectAll", vm.selectAllPropertyGroup);
@@ -122,7 +121,6 @@
         vm.destroy = function () {
             vm.destWatch();
             vm.gridSelectionWatch();
-            // vm.gridAllWatch();
             vm.updateGridWatch();
             vm.gridSelectAllWatch();
             vm.updateAll();
