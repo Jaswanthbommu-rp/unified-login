@@ -27,7 +27,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allCompWatch = pubsub.subscribe("Acct.allCompChange", vm.clearGridSelections);
-            // vm.gridSelectionWatch = vm.companiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
+            vm.setAllCompaniesGrid = pubsub.subscribe("Acct.setAllCompaniesGridValue",vm.setGridSelections);
+            vm.gridSelectionWatch = vm.companiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.propChangeWatch = pubsub.subscribe("Acct.propChange", vm.changeCompSelection);
             // vm.gridSelectAllWatch = vm.companiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
 
@@ -50,6 +51,11 @@
         vm.clearGridSelections = function() {
             //clear selections, if theres any
             vm.companiesGrid.selectAll(false);
+            vm.companiesGrid.updateSelected();
+        };
+
+        vm.setGridSelections = function(val) {
+            vm.companiesGrid.selectAll(val);
             vm.companiesGrid.updateSelected();
         };
 
