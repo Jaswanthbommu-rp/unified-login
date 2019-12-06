@@ -585,9 +585,10 @@
         vm.validateLoginName = function (loginName) {
             vm.validateLoginNameReq = $q.defer();
             timeout(vm.checkLoginName, 10);
+            userStatus.setLoginName(loginName);
             return vm.validateLoginNameReq.promise;
         };
-
+        
         vm.validatePasswordMatch = function () {
             var match = model.passwordsMatch(),
                 method = match ? "resolve" : "reject";

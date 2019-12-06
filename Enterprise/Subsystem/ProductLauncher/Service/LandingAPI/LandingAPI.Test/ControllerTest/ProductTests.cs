@@ -133,7 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 			var mockRepository = new Mock<IProductRepository>();
 			mockRepository
-                .Setup(m => m.GetProductFamilies(organizationRealPageId, editorRealpageUserId, userRealPageId, null))
+                .Setup(m => m.GetProductFamilies(organizationRealPageId, editorRealpageUserId, userRealPageId, null, null))
                 .Returns(() => expectedProductFamilyList);
 
             DefaultUserClaim userClaim = new DefaultUserClaim() {PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid()};
@@ -259,7 +259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 			var mockRepository = new Mock<IProductRepository>();
 			mockRepository
-                .Setup(m => m.GetProductFamilies(organizationRealPageId, editorRealpageUserId, userRealPageId, "userdetails"))
+                .Setup(m => m.GetProductFamilies(organizationRealPageId, editorRealpageUserId, userRealPageId, "userdetails",null))
                 .Returns(() => expectedProductFamilyList);
 
             DefaultUserClaim userClaim = new DefaultUserClaim() { PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid() };

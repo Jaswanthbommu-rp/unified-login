@@ -246,8 +246,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Roles = changedUserRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
 				PropertyRoles = changedUserRolePropertiesRegion.PropertyRoleList,
 				OrganizationRoles = productUserOrgRoleList,//changedUserRolePropertiesRegion.OrganizationRoleList,
-				CanReceiveMonthlyReport = changedUserRolePropertiesRegion.CanReceiveMonthlyReport
-			};
+				CanReceiveMonthlyReport = changedUserRolePropertiesRegion.CanReceiveMonthlyReport,
+                IsMigratedUser = true
+            };
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
 			{
