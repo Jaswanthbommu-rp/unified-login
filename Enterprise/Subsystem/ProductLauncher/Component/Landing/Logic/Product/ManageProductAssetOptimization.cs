@@ -1893,9 +1893,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var matches = copiedAoUserCompanyPropertyRoleDetails.Where(p => p.ProductName == unAssignedProduct.ProductName).ToList();
 				if (matches.Any())
 				{
+					//Remove Roles for the product which un assigned
 					foreach (var match in matches)
 					{
-						copiedAoUserCompanyPropertyRoleDetails.Remove(match);
+						match.SelectedRoleValues = new List<string>(); 						
 					}
 				}
 			}
