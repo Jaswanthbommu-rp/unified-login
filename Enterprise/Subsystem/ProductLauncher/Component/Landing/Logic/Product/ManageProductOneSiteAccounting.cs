@@ -421,6 +421,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
                     }
+
+                    aUser.HasAccessToAllCurrentFutureProperties = ComputeFlagBasedOnCompanyAndPropertySelected(editorPersonaId, userPersonaId, datafilter);
                 }
                 if (userResp == null) { userResp = new NameValuePair[1]; }
                 
@@ -445,6 +447,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return response;
+        }
+
+        private bool ComputeFlagBasedOnCompanyAndPropertySelected(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+        {
+            bool hasAccessToAllCurrentAndFutureProperties = false;
+            List<ACProperty> companyPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+            int totalCompanies = 0;
+            int totalProperties = 0;
+            int totalCompaniesSelected = 0;
+            int totalPropertiesUnSelected = 0;
+
+            totalCompanies = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId == string.Empty);
+
+            totalProperties = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId != string.Empty);
+
+            totalCompaniesSelected = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId == string.Empty && c.IsAssigned == true);
+
+            totalPropertiesUnSelected = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId != string.Empty && c.IsAssigned == false);
+
+            if ((totalCompanies == totalCompaniesSelected) && (totalProperties == totalPropertiesUnSelected))
+                hasAccessToAllCurrentAndFutureProperties = true;
+
+            return hasAccessToAllCurrentAndFutureProperties;
         }
 
         private List<ACCompany> GetUserCompaniesDetails(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
@@ -655,6 +680,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #endregion
 
+        /// <summary>
+        /// Get current companies and assign to user for Allow access to all current and future companies
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="propertiesToAssign"></param>
+        /// <param name="isAccountingAdmin"></param>
+        /// <returns></returns>
+        public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType)
+        {
+            RequestParameter datafilter = new RequestParameter();
+            Dictionary<string, object> logData = new Dictionary<string, object>();            
+            List<ACProperty> currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+            logData = new Dictionary<string, object>();
+            logData.Add("currentPropertyList", currentPropertyList);
+            WriteToDiagnosticLog($"AssignAllCurrentCompaniesToUser - Current companies to be assigned to user - currentPropertyList", logData);
+            propertiesToAssign.Clear();
+            // Get the current property list what is already assigned and remove them.
+            foreach (ACProperty prop in currentPropertyList)
+            {
+                //Only add Company details
+                if (prop.MConsoleId != string.Empty && prop.PropertyId == string.Empty)
+                {
+                    propertiesToAssign.Add(prop.MConsoleId);
+                }                
+            }
+
+            return UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertiesToAssign, isAccountingAdmin, batchProcessType);            
+        }
+            
 
         /// <summary>
         /// Update the properties assigned to the given user
@@ -664,7 +719,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="propertiesToAssign"></param>
         /// <param name="isAccountingAdmin"></param>
         /// <param name="batchProcessType"></param>
-        /// <returns></returns>
+        /// <returns></returns
         public string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
 			ListResponse response = new ListResponse();
@@ -1370,12 +1425,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
                 if ((!isSuperUser && !isUnRestrictedAccessToProp) && PropertyList.Count > 0)
                 {
-                    string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
+                    string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);                    
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
                         return updateResultProp;
                     }
                 }
+
+                // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
+                //if ((!isSuperUser && isUnRestrictedAccessToProp) && PropertyList.Count > 0)
+                if ((!isSuperUser && isUnRestrictedAccessToProp))
+                {
+                    //string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, new List<string> { "All"}, isAccountingAdmin, batchProcessType);
+                    string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
+                    if (!string.IsNullOrEmpty(updateResultProp))
+                    {
+                        return updateResultProp;
+                    }
+                }
+
 
 
                 if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
