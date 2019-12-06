@@ -74,6 +74,24 @@
             s.roles = rolesData;
         };
 
+        p.setAllPropertiesData = function (propertiesData,val) {
+            var s = this;
+             propertiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.properties = propertiesData;
+        };
+
+        p.setAllPropertyGroupData = function (propertyGroupData,val) {
+            var s = this;
+            propertyGroupData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.propertyGroups = propertyGroupData;
+        };
+
         p.getData = function () {
             var s = this,
                 hasRoles = false;

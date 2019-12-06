@@ -8,7 +8,8 @@
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            userLoginName = "";
 
         vm.init = function () {
             vm.grid = grid;
@@ -46,7 +47,8 @@
                             userPersonaId: userDetailsModel.getPersonaId(),
                             editorPersonaId: persona.getId(),
                             selectedCompanies: [record.companyId],
-                            productName: "PO"
+                            productName: "PO",
+                            userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                         };
                         vm.companyId = record.companyId;
                         vm.dataReq = dataSvc.get(params, vm.setData);

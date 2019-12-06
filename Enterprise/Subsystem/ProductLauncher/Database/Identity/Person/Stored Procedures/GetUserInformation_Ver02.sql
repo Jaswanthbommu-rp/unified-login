@@ -107,7 +107,7 @@ BEGIN
 					INNER JOIN Enterprise.RoleValueType rvt ON rvt.RoleValueTypeId = ro.ROleValueTYpeId
 					INNER JOIN Enterprise.[Right] rt ON rt.RoleId = ro.RoleId
 					INNER JOIN Enterprise.RightValueType rtvt ON rtvt.RightValueTypeId = rt.RightValueTypeId
-		WHERE	rtvt.ProductId = 3
+		WHERE	rtvt.ProductId = 3 AND ro.PartyID = @OrganizationId
 	),
 	cteUserProductSAML
 	(

@@ -50,7 +50,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
-            _defaultUserClaim = userClaim;
+			_organizationRepository = new OrganizationRepository(repository);
+			_defaultUserClaim = userClaim;
         }
 
         /// <summary>
@@ -65,7 +66,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
-        }
+			_organizationRepository = new OrganizationRepository();
+		}
 
 		/// <summary>
 		/// Create a basic instance of the ManageUser Controller class
@@ -80,7 +82,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
-            _defaultUserClaim = userClaim;
+			_organizationRepository = new OrganizationRepository();
+			_defaultUserClaim = userClaim;
         }
 
 		#endregion
@@ -639,7 +642,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                         if (userLogin.LoginName != null && org.PartyId != primaryOrgStatus.PartyId)
                         {
-
                             //pending users who are not activated before status thru date,then expire them
                             if ((orgStatus.StatusTypeId == (int)UserUiStatusType.Pending || orgStatus.StatusTypeId == (int)UserUiStatusType.ForceResetPassword) &&
                                 orgStatus.StatusThruDate != null &&
@@ -647,12 +649,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 !userLogin.Is3rdPartyIDP)
                             {
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgStatus.PartyId, (int)UserUiStatusType.Expired, orgStatus.FromDate, null);
-                                AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedLogin.ToEnumDescription(), currentUserClaim);
-                            }
+								AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedLogin.ToEnumDescription(), currentUserClaim);
+							}
 
-                            //Feature user (with disabled state) and user never logged in
-                            
-                            if (orgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && orgStatus.FromDate.Subtract(DateTime.UtcNow).TotalMinutes <= 15 && userLogin.LastLogin == null)
+							//Feature user (with disabled state) and user never logged in
+							if (orgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && orgStatus.FromDate.Subtract(DateTime.UtcNow).TotalMinutes <= 15 && userLogin.LastLogin == null)
                             {
                                 int statusTypeId = (int)UserUiStatusType.Pending;
                                 string statusType = UserUiStatusType.Pending.ToString();

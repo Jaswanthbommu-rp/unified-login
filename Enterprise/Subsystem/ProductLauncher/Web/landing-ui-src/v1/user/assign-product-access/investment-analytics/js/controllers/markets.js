@@ -8,7 +8,9 @@
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            userLoginName = "",
+            userRealPageId =  "00000000-0000-0000-0000-000000000000";
 
         vm.init = function () {
             vm.grid = grid;
@@ -35,6 +37,13 @@
             }
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllMarkets);
             vm.updateGridWatch = pubsub.subscribe("IAM.updateGrids", vm.updateGrid);
+            vm.aoUserUpdateWatch = pubsub.subscribe("settings.aoUserUpdate", vm.updateLoad);
+        };
+
+        vm.updateLoad = function (userRealPageId) {            
+            logc("Prop userRealPageId", userRealPageId);
+            userRealPageId = userRealPageId;
+            vm.loadData();
         };
 
         vm.updateGrid = function () {
@@ -53,7 +62,8 @@
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
                     selectedCompanies: [0],
-                    productName: "MA"
+                    productName: "MA",
+                    userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                 };
 
                 vm.activeWatch();
@@ -102,6 +112,7 @@
             vm.destWatch();
             vm.gridAllWatch();
             vm.updateGridWatch();
+            vm.aoUserUpdateWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }

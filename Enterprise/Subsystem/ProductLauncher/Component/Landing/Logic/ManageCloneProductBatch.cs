@@ -231,7 +231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var aoProductList = userProducts.Where(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
 			if (aoProductList.Any())
 			{
-				var batches = CreateAoBatchRecords(userClaim.UserRealPageGuid, createUserPersonaId, personaId);
+				var batches = CreateAoBatchRecords(userClaim, createUserPersonaId, personaId);
 				foreach (var productBatch in batches)
 				{
 					// add only if userProducts has productId else product is modified after clone
@@ -601,11 +601,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return pb;
 		}
 
-		private IList<ProductBatch> CreateAoBatchRecords(Guid editorRealPageGuid, long editorPersonaId, long newUserPersonaId)
+		private IList<ProductBatch> CreateAoBatchRecords(DefaultUserClaim userClaim, long editorPersonaId, long newUserPersonaId)
 		{
 			var productBatchList = new List<ProductBatch>();
 
-			var manageProductAssetOptimization = new ManageProductAssetOptimization(editorRealPageGuid);
+			var manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim);
 			var aoUserCompanyPropertyRoleDetails = manageProductAssetOptimization.CopyRegularUser(editorPersonaId, newUserPersonaId);
 
 			foreach (var aoUserCompanyPropertyRoleDetail in aoUserCompanyPropertyRoleDetails)

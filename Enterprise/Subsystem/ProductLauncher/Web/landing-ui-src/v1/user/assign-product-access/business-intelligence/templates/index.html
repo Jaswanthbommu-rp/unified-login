@@ -11,14 +11,22 @@
         This product cannot be assigned when User Type is Regular user (no email).
     </div>
 
-     <rp-scrolling-tabs-menu
-        class="asset-optimization-tabs"
-        ng-class="{visible: bipactrl.model.tabsReady}"
-        model="bipactrl.tabsMenu">
-    </rp-scrolling-tabs-menu>
-    <ng-include
-        src="tab.incUrl"
-        ng-show="tab.isActive"
-        ng-repeat="tab in bipactrl.tabsList">
-    </ng-include>
+    <div ng-show="!bipactrl.userDetailsModel.getForm().loginName.$valid" class="assign-product-access-error-msg">
+        Please enter a Username in User Details Tab
+    </div>
+
+    <div ng-show="bipactrl.userDetailsModel.getForm().loginName.$valid" >
+
+        <rp-scrolling-tabs-menu
+            class="asset-optimization-tabs"
+            ng-class="{visible: bipactrl.model.tabsReady}"
+            model="bipactrl.tabsMenu">
+        </rp-scrolling-tabs-menu>
+        <ng-include
+            src="tab.incUrl"
+            ng-show="tab.isActive"
+            ng-repeat="tab in bipactrl.tabsList">
+        </ng-include>
+
+    </div>
 </div>

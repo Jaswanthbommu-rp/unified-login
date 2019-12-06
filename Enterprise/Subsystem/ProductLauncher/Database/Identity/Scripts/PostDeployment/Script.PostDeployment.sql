@@ -28,7 +28,11 @@ Post-Deployment Script Template
 --:r .\PostDeploymentScripts\October2019Release.sql
 
 :r .\PostDeploymentScripts\November2019Release.sql
+:r .\PostDeploymentScripts\December2019Release.sql
+
+
 :r .\PostDeploymentScripts\UpdateStatistics.sql
+:r .\PostDeploymentScripts\RecompileAllProcs.sql
 
 ----IF  (   SELECT 1
 ----        FROM   (   SELECT [value] ,
