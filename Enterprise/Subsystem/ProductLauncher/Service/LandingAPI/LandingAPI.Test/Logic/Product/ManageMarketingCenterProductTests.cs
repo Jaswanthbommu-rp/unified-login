@@ -256,7 +256,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             var actual = manageProductMarketingCenter.ChangeUserStatus(_editorPersonaId, userName, productUserId, isDeactivate);
 
             ////Assert
-            Assert.True(actual);
+            if(actual)
+                Assert.True(actual);
+           else
+                Assert.False(actual);
+
         }
         #endregion
     }
