@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function CPCompRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, cpDataModel, userDetailsModel, security) {
+    function CPCompRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, cpDataModel, userDetailsModel, security , roleModel) {
         var vm = this,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
@@ -40,19 +40,16 @@
             }
             vm.cpCompWatch = pubsub.subscribe("clickpay.companies", vm.refreshGrid);
             vm.cpPropWatch = pubsub.subscribe("clickpay.properties", vm.refreshGrid);
-            
+            vm.cpLlcWatch = pubsub.subscribe("clickpay.llc", vm.refreshGrid);
             
         };
 
-        vm.refreshGrid = function (items) {
+         vm.refreshGrid = function (assigned) {
             
-            vm.data.forEach(function (role) {
-                items.forEach(function (item) {
-
-                    if(item.roleId === role.id){                       
-                        role.orgsAssigned++;                       
-                    }
-                });
+            vm.data.forEach(function (role) {                
+                if(roleModel.getRoleID() === role.id){
+                     role.orgsAssigned = assigned;
+                 }
             });
 
             grid.updateSelected();
@@ -192,7 +189,8 @@
             "personaDetails",
             "clickPayProductAccessModel",
             "userDetailsModel",            
-            "routeSecurity",            
+            "routeSecurity",           
+             "cpRoleModel",     
             CPCompRolesGridCtrl
         ]);
 })(angular);

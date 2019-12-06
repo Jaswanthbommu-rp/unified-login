@@ -154,14 +154,14 @@
             hasOrgnizationRoleList = s.data.inputJson.organizationRoleList.length > 0;
 
             
-            // s.roles.forEach(function (item) {                
-            //     if(item.orgsAssigned > 0){
-            //         noRoleAssigned = false;
-            //     }
-            // });
+             s.roles.forEach(function (item) {                
+                if(item.orgsAssigned > 0){
+                    noRoleAssigned = false;
+                }
+            });
            
 
-            if ((!hasOrgnizationRoleList && !s.newuser) || (hasOrgnizationRoleList && s.newuser) || (hasOrgnizationRoleList && !s.newuser) ) { // && !noRoleAssigned
+            if ( ((!hasOrgnizationRoleList && !s.newuser) || (hasOrgnizationRoleList && s.newuser) || (hasOrgnizationRoleList && !s.newuser) )  && !noRoleAssigned) {  
                 return s.data;
             }
 
