@@ -4,6 +4,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -47,14 +49,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
+        #region Unified notifications endpoint
+        /// Get list of users by companyid or productids
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company and products", Type = typeof(ProductUsers))]
+        [Route("usersbycompanyproducts")]
+        //[AuthorizeScope("userinfoapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUsersByCompanyorProducts([FromUri]PageRequest datafilter, int? companyId = null)
+        {
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
+            IProductRepository productRepository = new ProductRepository();
+            var result = productRepository.GetUsersByCompanyorProducts(datafilter, companyId);
+            var logData = new Dictionary<string, object>();
+            logData.Add("result", result);
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+        #endregion
+
+        #region Private methods
         /// <summary>
-		/// Used to write to the log
-		/// </summary>
-		/// <param name="logType">Log Type</param>
-		/// <param name="message">Message to log</param>
-		/// <param name="logData">Data to log</param>
-		/// <param name="exception">Exception details</param>
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// Used to write to the log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message to log</param>
+        /// <param name="logData">Data to log</param>
+        /// <param name="exception">Exception details</param>
+        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             try
             {
@@ -74,5 +101,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 /*ignored*/
             }
         }
+        #endregion
     }
 }

@@ -16,11 +16,13 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using EnterpriseProductUser = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise.ProductUsers;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.Caching;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -1679,6 +1681,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             return products;
         }
+
+        /// <summary>
+        /// Search by company and product ids and returns userlist
+        /// </summary>
+        /// <param name="datafilter"></param>
+        /// <param name="companyId"></param>
+        /// <returns>List of Users by product or company</returns>
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, int? companyId)
+        {
+            //Ignoring filter and Sort
+            IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
+
+            dynamic param = new
+            {
+                CompanyId = companyId,
+                //ProductId = null,
+                RowsPerPage = datafilter.ResultsPerPage,
+                PageNumber = (datafilter.StartRow <= 0) ? 1 : datafilter.StartRow
+            };
+
+            using (var repository = GetRepository())
+            {
+                productUsers = repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
+            }
+
+            return productUsers;
+        }
         #endregion
 
         #region Private Methods
@@ -1797,6 +1826,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				}
 			}
 		}
-		#endregion
-	}
+        #endregion
+    }
 }
