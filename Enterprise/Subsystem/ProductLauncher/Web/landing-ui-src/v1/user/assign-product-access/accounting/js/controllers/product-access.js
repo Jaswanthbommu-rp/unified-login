@@ -54,18 +54,13 @@
 
         vm.setAllProperties = function (val) {
              switchModel.setHasAccessToCurrentFutureProp(val);
-            
+             ADataModel.clearProperties();
+             pubsub.publish("Acct.allCompChange");                                
             if (val) {
-                
-                ADataModel.clearProperties();                                
-                
                 //clear grid selections company/entities, if theres any
                 pubsub.publish("Acct.allEntChange");
-                pubsub.publish("Acct.allCompChange");
-              
             }
             else {
-                            
                 if(switchModel.getIsAccountingAdmin() === true){
                     switchModel.setIsAccountingAdmin(false);
                     vm.accountingAdmin = false;
