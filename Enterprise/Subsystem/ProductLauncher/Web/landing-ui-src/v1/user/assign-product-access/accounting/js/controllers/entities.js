@@ -153,7 +153,8 @@
         vm.gridSelectAllChange = function(val) {
 
             if (ADataModel.getCompanies() != undefined) {
-
+                var checkAllCompanies = 0;
+                
                 ADataModel.getCompanies().forEach(function(comp) {
 
                     var propertiesByComp = $filter("filter")(ADataModel.getProperties(), {
@@ -161,24 +162,26 @@
                     }, true);
 
                     if (propertiesByComp.length > 0) {
-
                         var properties = $filter("filter")(propertiesByComp, {
-                            isAssigned: true
+                            isAssigned: val
                         }, true);
 
-                        // if (properties.length > 0) {
-                        //     comp.isAssigned = false;
-                        // } else {
-                        //     comp.isAssigned = true;
-                        // }
+                        comp.isAssigned = val;
 
-                        if (properties.length > 0) {
-                            comp.isAssigned = true;
-                        }
+             
                     }
 
+                    if(comp.isAssigned){
+                        checkAllCompanies++;
+                    }
                 });
-
+                
+                if(ADataModel.getCompanies().length === checkAllCompanies){
+                    pubsub.publish("Acct.setAllCompaniesGridValue",true);
+                }
+                else if(checkAllCompanies === 0) {
+                    pubsub.publish("Acct.setAllCompaniesGridValue",false);
+                }
             }
         };
 
