@@ -23,7 +23,7 @@
             $scope.gridPagination = gridPagination;
 
             gridPagination.setConfig({
-                recordsPerPage: 10
+                recordsPerPage: 20
             });
 
             vm.personaWatch = angular.noop;
@@ -242,14 +242,15 @@
                         isAssigned: true
                         }); 
         	
-        	if( assigned.length === 0){ //sitesArr.length === 0 &&
-                vm.setError(true);
-                return;
-            } 
+        	// if( assigned.length === 0){ //sitesArr.length === 0 &&
+         //        vm.setError(true);
+         //        return;
+         //    } 
 
         	cpDataModel.setProperties(sitesArr);	
         	aside.hide();
-        	// pubsub.publish("clickpay.properties", sitesArr);
+        	
+            pubsub.publish("clickpay.properties", assigned.length);
         };
 
         vm.setError = function(val) {
