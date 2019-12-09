@@ -870,17 +870,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			try
 			{
-                if (!SetMarketingCenterUserStatus(isActive, editorPersonaId, _productUserId)){
-                    return false;
-                }
+                return SetMarketingCenterUserStatus(isActive, editorPersonaId, _productUserId);
             }
 			catch (Exception ex)
 			{
 				WriteToErrorLog($"ManageMarketingCenter.ChangeUserActiveStatus - Updating user status failed for user {companyInstanceSourceId}|{username} by editorPersonaId = {editorPersonaId}", exception: ex);
 				return false;
 			}
-
-			return true;
 		}
 		/// <summary>
 		/// Sets Product user status
@@ -895,7 +891,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{				
 				Dictionary<string, object> logData = new Dictionary<string, object>();
                 if (string.IsNullOrEmpty(_editorProductUserId)){
-                    throw new Exception("_editorProductUserId cannot be null or empty");
+                    WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status. Editor Product User Id cannot be null or empty.");
+                    return false;
                 }
                 if (mcUserId?.Length > 0 && mcUserId !="0") 
 				{
