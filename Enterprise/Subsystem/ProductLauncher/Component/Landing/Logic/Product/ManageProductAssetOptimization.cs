@@ -581,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// store existing assigned products
 				var existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
 
-				UpdateProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, realPageId);
+				UpdateProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, persona);
 
 				aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
 				aoUser.Divisions = new List<Divisions>();
@@ -1878,7 +1878,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return products;
 		}
 
-		private void UpdateProductRolePropertyDetails(IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails, IList<AoUserCompanyPropertyRoleDetail> copiedAoUserCompanyPropertyRoleDetails, Guid personaRealpageID)
+		private void UpdateProductRolePropertyDetails(IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails, IList<AoUserCompanyPropertyRoleDetail> copiedAoUserCompanyPropertyRoleDetails, Persona persona)
 		{
 			if (aoGbUserCompanyPropertyRoleDetails == null)
 				return;
@@ -1887,7 +1887,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
 			var modifiedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned);
 
-			IList<Persona> personaList = _managePersona.ListActivePersona(personaRealpageID, false);
+			IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
 
 			// remove products
 			foreach (var unAssignedProduct in unAssignedProducts)
@@ -1899,7 +1900,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					foreach (var match in matches)
 					{
 						//Check to see if user has multicompany persona, then remove roles otherwise remove product completely
-						if (personaList?.Count > 1)
+						if (hasMultiCompany && !persona.Organization.PrimaryOrganization)
 						{
 							match.SelectedRoleValues = new List<string>();
 						}
