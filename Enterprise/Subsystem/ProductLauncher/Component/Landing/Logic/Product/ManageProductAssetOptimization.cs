@@ -596,7 +596,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(updateResult))
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts.Count, aoGbUserCompanyPropertyRoleDetails);
+					UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
 				}
 				else
 				{
@@ -626,7 +626,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							{
 								// Disable products from GB
 								UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId,
-									productUserGbLogin.LoginName.ToLower(), existingAoProducts.Count,
+									productUserGbLogin.LoginName.ToLower(), existingAoProducts,
 									aoGbUserCompanyPropertyRoleDetails);
 								return string.Empty;
 							}
@@ -1412,7 +1412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private void UpdateProductUserInGreenBook(long editorPersonaId,
 			long userPersonaId,
 			string productLoginName,
-			int existingAssignedProductCount,
+			IList<AoUserCompanyPropertyRoleDetail> existingAssignedProducts,
 			IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails)
 		{
 			var productAssigned = new List<string>();
@@ -1434,8 +1434,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			productAssigned = productAssigned.Distinct<string>().ToList();
 			productUnAssigned = productUnAssigned.Distinct<string>().ToList();
 
+			var bmProduct = existingAssignedProducts.Where(p => p.ProductName.Equals("BM")).ToList();
+			if (productUnAssigned.Contains("BM") && !bmProduct.Any())
+			{
+				productUnAssigned.Remove("BM");
+			}
 			//set delete status if all products are unassigned.
-			if (existingAssignedProductCount == productUnAssigned.Count)
+			if (existingAssignedProducts.Count == productUnAssigned.Count)
 			{
 				// remove all association from GB
 				UpdateProductSettingProductStatus(userPersonaId,
