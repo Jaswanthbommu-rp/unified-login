@@ -213,10 +213,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona.hasManageCustomFields = userClaim.Rights.Contains("ManageCustomFields", StringComparer.OrdinalIgnoreCase);
                 persona.hasManagePlatFormSecurity = userClaim.Rights.Contains("ManagePlatFormSecurity", StringComparer.OrdinalIgnoreCase);
                 persona.hasAccessSettingsAdmin = userClaim.Rights.Contains("AccessSettingsAdmin", StringComparer.OrdinalIgnoreCase);
+                persona.hasManageSettingsTemplates = userClaim.Rights.Contains("ManageSettingsTemplates", StringComparer.OrdinalIgnoreCase);
+
                 // For Import User Access - Support tool Employee
                 persona.hasImportUsersAccess = persona.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId && userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
 
-                if (!persona.hasViewOnlySettingsAccess || !persona.hasManageUnifiedSettings || !persona.hasManageCustomFields || !persona.hasManagePlatFormSecurity)
+                if (!persona.hasViewOnlySettingsAccess || !persona.hasManageUnifiedSettings || !persona.hasManageCustomFields || !persona.hasManagePlatFormSecurity || persona.hasManageSettingsTemplates)
                 {
                     // check to see impersonating, if they are then check that users rights
                     if (userClaim.ImpersonatedBy != Guid.Empty)
@@ -262,6 +264,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         if (right.RightNickName.Equals("ManagePlatFormSecurity", StringComparison.OrdinalIgnoreCase))
                                         {
                                             persona.hasManagePlatFormSecurity = true;
+                                        }
+
+                                        if (right.RightNickName.Equals("ManageSettingsTemplates", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            persona.hasManageSettingsTemplates = true;
                                         }
                                     }
                                 }
