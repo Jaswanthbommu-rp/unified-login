@@ -24,6 +24,7 @@
                 }
             };
             s._data = angular.copy(s.data);
+            s.roles = [];
         };
 
         p.setActive = function (bool) {
