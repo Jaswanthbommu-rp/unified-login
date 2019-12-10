@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		string emailSubject { get; set; }
 
 		/// <summary>
-		/// from email address
+		/// from email address: Supports user specified and Default email address
 		/// </summary>
 		EmailAddress fromAddress { get; set; }
 
@@ -36,6 +36,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Message: Plain Text Email and HTML Email must be a string
 		/// </summary>
 		string message { get; set; }
+
+		/// <summary>
+		/// Email of High or Low Importance
+		/// </summary>
+		string priority { get; set; }
 
 		/// <summary>
 		/// List of To email address
