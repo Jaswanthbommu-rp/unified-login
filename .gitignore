@@ -65,9 +65,3 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/assets/css/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/images/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/js/
 Enterprise/Subsystem/ProductLauncher/Web/landing/assets/omnibar/
-
-/Enterprise/Subsystem/ProductLauncher/Component/Landing/Logic/Enterprise/Notification/NotificationManagement.cs
-/Enterprise/Subsystem/ProductLauncher/Component/Landing/Repository/Interfaces/INotificationRepository.cs
-/Enterprise/Subsystem/ProductLauncher/Component/Landing/Repository/NotificationRepository.cs
-/Enterprise/Subsystem/ProductLauncher/WinService/BatchProcessor
-/Enterprise/Subsystem/ProductLauncher/Enterprise - Shortcut.lnk
