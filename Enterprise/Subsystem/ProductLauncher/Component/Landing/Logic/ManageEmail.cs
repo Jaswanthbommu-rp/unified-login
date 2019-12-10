@@ -34,7 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 		#region Constructors
 		/// <summary>
-		/// ManageEmail Constructor
+		/// ManageEmail  (xUnit Tests)
 		/// </summary>
 		/// <param name="defaultUserClaim">User Claim</param>
 		/// <param name="emailRepository">Email Repository</param>

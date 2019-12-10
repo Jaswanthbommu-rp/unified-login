@@ -1,5 +1,8 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using Moq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
@@ -27,6 +30,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		};
 
 		IManageEmail _manageEmail;
+		Mock<IEmailRepository> _mockEmailRepository = new Mock<IEmailRepository>();
+		Mock<IProductInternalSettingRepository> _mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
 		#endregion
 
 		#region Public xUnit tests
@@ -153,6 +158,94 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			//Assert
 			Assert.Throws<ArgumentNullException>(() => _manageEmail.SendGridEmail(sendGridEmail));
+		}
+
+		[Fact]
+		public void SendGridEmail_SendGridDisabled_ExceptionThrown()
+		{
+			//Arrange
+			ISendGridEmail sendGridEmail = new SendGridEmail()
+			{
+				emailSubject = "Email Subject",
+				toAddress = new List<EmailAddress>()
+				{
+					new EmailAddress()
+					{
+						email = "Joe@Example.com",
+						name = "Joe"
+					}
+				},
+				fromAddress = new EmailAddress()
+				{
+					email = "noreply@realpage.com",
+					name = "RealPage"
+				},
+				category = "xUnit Test",
+				message = "Email Body",
+				transId = "12345"
+			};
+
+			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
+			{
+				new ProductInternalSetting()
+				{
+					Name = "IsSendGridEnabled",
+					Value = "0"
+				}
+			};
+
+			_mockProductInternalSettingRepository
+				.Setup(m => m.GetProductInternalSettings(It.IsAny<int>()))
+				.Returns(productInternalSettingList);
+
+			_manageEmail = new ManageEmail(_userClaims, _mockEmailRepository.Object, _mockProductInternalSettingRepository.Object);
+
+			//Act
+			string response = _manageEmail.SendGridEmail(sendGridEmail);
+
+			//Assert
+			Assert.Equal("SendGrid emails is disabled.", response, true, true, true);
+		}
+
+		[Fact]
+		public void SendGridEmail_InvalidProductSetting_ExceptionThrown()
+		{
+			//Arrange
+			ISendGridEmail sendGridEmail = new SendGridEmail()
+			{
+				emailSubject = "Email Subject",
+				toAddress = new List<EmailAddress>()
+				{
+					new EmailAddress()
+					{
+						email = "Joe@Example.com",
+						name = "Joe"
+					}
+				},
+				fromAddress = new EmailAddress()
+				{
+					email = "noreply@realpage.com",
+					name = "RealPage"
+				},
+				category = "xUnit Test",
+				message = "Email Body",
+				transId = "12345"
+			};
+
+			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+			productInternalSettingList = null;
+
+			_mockProductInternalSettingRepository
+				.Setup(m => m.GetProductInternalSettings(It.IsAny<int>()))
+				.Returns(productInternalSettingList);
+
+			_manageEmail = new ManageEmail(_userClaims, _mockEmailRepository.Object, _mockProductInternalSettingRepository.Object);
+
+			//Act
+			string response = _manageEmail.SendGridEmail(sendGridEmail);
+
+			//Assert
+			Assert.Equal("An error occured when sending the email.", response, true, true, true);
 		}
 		#endregion
 	}
