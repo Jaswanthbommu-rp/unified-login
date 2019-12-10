@@ -452,19 +452,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private bool ComputeFlagBasedOnCompanyAndPropertySelected(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
             bool hasAccessToAllCurrentAndFutureProperties = false;
-            List<ACProperty> companyPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+            List<ACCompany> companyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
+            ListResponse propertyList = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
             int totalCompanies = 0;
             int totalProperties = 0;
             int totalCompaniesSelected = 0;
             int totalPropertiesUnSelected = 0;
 
-            totalCompanies = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId == string.Empty);
+            totalCompanies = companyList.Count;
+            totalCompaniesSelected = companyList.Count(c => c.isAssigned == true);
 
-            totalProperties = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId != string.Empty);
-
-            totalCompaniesSelected = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId == string.Empty && c.IsAssigned == true);
-
-            totalPropertiesUnSelected = companyPropertyList.Count(c => c.MConsoleId != string.Empty && c.PropertyId != string.Empty && c.IsAssigned == false);
+            totalProperties = propertyList.Records.Count;
+            totalPropertiesUnSelected = propertyList.Records.Count(p => ((ACProperty)p).IsAssigned == false);
 
             if ((totalCompanies == totalCompaniesSelected) && (totalProperties == totalPropertiesUnSelected))
                 hasAccessToAllCurrentAndFutureProperties = true;
@@ -691,20 +690,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType)
         {
             RequestParameter datafilter = new RequestParameter();
-            Dictionary<string, object> logData = new Dictionary<string, object>();            
-            List<ACProperty> currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            List<ACCompany> currentCompanyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
+            
             logData = new Dictionary<string, object>();
-            logData.Add("currentPropertyList", currentPropertyList);
-            WriteToDiagnosticLog($"AssignAllCurrentCompaniesToUser - Current companies to be assigned to user - currentPropertyList", logData);
+            logData.Add("currentCompanyList", currentCompanyList);
+            WriteToDiagnosticLog($"AssignAllCurrentCompaniesToUser - Current companies to be assigned to user - currentCompanyList", logData);
             propertiesToAssign.Clear();
-            // Get the current property list what is already assigned and remove them.
-            foreach (ACProperty prop in currentPropertyList)
+
+            foreach (ACCompany company in currentCompanyList)
             {
-                //Only add Company details
-                if (prop.MConsoleId != string.Empty && prop.PropertyId == string.Empty)
-                {
-                    propertiesToAssign.Add(prop.MConsoleId);
-                }                
+                propertiesToAssign.Add(company.Id);               
             }
 
             return UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertiesToAssign, isAccountingAdmin, batchProcessType);            
