@@ -1,11 +1,11 @@
+var glob = require("glob"),
+    path = require("path"),
+    extend = require("extend");
+
 module.exports = function (grunt, env) {
     "use strict";
 
-    var task,
-        path = require("path"),
-        extend = require("extend");
-
-    task = {
+    var task = {
         filters: env.prov.getSvc("filters"),
         dev: grunt.cli.tasks.indexOf("dev") != -1,
         watch: grunt.cli.tasks.indexOf("watch") != -1,
@@ -27,12 +27,18 @@ module.exports = function (grunt, env) {
         return env.testPath + path.replace(/_/g, "");
     };
 
+    task.deleteFile = function (file) {
+        grunt.file.delete(file, {
+            force: true
+        });
+    };
+
     task.dirExists = function (path) {
         return grunt.file.isDir(path);
     };
 
     task.expand = function (filePath) {
-        return grunt.file.expand(filePath);
+        return glob.sync(filePath);
     };
 
     task.fileExists = function (filePath) {
@@ -96,8 +102,12 @@ module.exports = function (grunt, env) {
         return grunt.option(name);
     };
 
-    task.log = function () {
-        grunt.log.writeln.apply(grunt.log, arguments);
+    task.log = function (data, isObj) {
+        if (isObj) {
+            data = JSON.stringify(data, null, 4);
+        }
+
+        grunt.log.writeln(data);
     };
 
     task.setAppConfig = function (config) {

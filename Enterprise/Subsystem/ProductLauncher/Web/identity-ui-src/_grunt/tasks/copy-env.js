@@ -3,6 +3,17 @@ module.exports = function (task, env) {
 
     var logged = false;
 
+    task.getEnv = function (appName) {
+        var env = task.gruntOption("env"),
+            allowed = ["local", "token"];
+
+        if (!env || allowed.indexOf(env) == -1) {
+            env = "local";
+        }
+
+        return env;
+    };
+
     task.getSrc = function (appName) {
         var env = task.getEnv(appName);
 
@@ -12,7 +23,7 @@ module.exports = function (task, env) {
     };
 
     task.getDefParams = function (appName) {
-        var env = task.getEnv();
+        var env = task.getEnv(appName);
 
         if (!logged) {
             logged = true;

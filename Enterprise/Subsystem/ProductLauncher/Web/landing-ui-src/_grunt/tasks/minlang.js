@@ -13,6 +13,8 @@ module.exports = function (task, env) {
 
     task.getOptions = function () {
         return {
+            drop_console: true,
+
             compress: {
                 pure_funcs: ["logc", "logw", "console.log"]
             }
@@ -20,8 +22,6 @@ module.exports = function (task, env) {
     };
 
     task.getDefParams = function (appName) {
-        var buFo = task.buildFolder(appName);
-
         return {
             src: task.getSrc(appName)
         };

@@ -2,11 +2,13 @@ module.exports = function (task, env) {
     "use strict";
 
     task.getOptions = function () {
+        var prefix = env.buildPath + task.getCdnVer() + env.ds + "testing" + env.ds;
+
         return {
             files: [
-                env.testPath + "lib/app/js-tests/scripts.js",
-                env.testPath + "lib/app/js-tests/mocks.js",
-                env.testPath + "rp-core/app/js-tests/mocks.js"
+                prefix + "base/js/scripts.js",
+                prefix + "framework/js/scripts.js",
+                prefix + "mocks/js/*.js"
             ]
         };
     };

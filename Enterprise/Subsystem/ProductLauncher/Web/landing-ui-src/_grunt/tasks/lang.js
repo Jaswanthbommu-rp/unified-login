@@ -6,7 +6,7 @@ module.exports = function (task, env) {
             prefix: "{{{ ",
             suffix: " }}}",
             processIncludeContents: function (fileData, local) {
-                var filePath = local.includePath.replace(env.basePath, "");
+                var filePath = local.incPath.replace(env.basePath, "");
                 return "//  Source: " + filePath + "\n" + fileData.trim() + "\n";
             }
         };
