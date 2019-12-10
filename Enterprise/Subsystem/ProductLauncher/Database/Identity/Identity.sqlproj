@@ -781,7 +781,8 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\November2019Release.sql" />
     <Build Include="Person\Stored Procedures\ListPersonaToDisableUserProduct.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\RecompileAllProcs.sql" />
-	<Build Include="Enterprise\Stored Procedures\ListProductUsersForOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListProductUsersForOrganization.sql" />
+    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\January2020Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
