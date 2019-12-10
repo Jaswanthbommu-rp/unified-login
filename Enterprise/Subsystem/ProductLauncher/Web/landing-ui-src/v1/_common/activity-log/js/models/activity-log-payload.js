@@ -18,7 +18,9 @@
             s.endDatePayload = undefined;
             s.keywordPayload = undefined;
             s.timezoneOffset = undefined;
-            s.timeStr = '18:25:03';
+            s.startTimeStr = '00:00:00';
+            s.endTimeStr = '23:59:59';
+
             s.setDateRange("1-CM");
             s.setSortOrderPayload();
         };
@@ -111,20 +113,16 @@
             s.activityPayload = activityPayload;
         };
         p.setStartDate=function(startDate){
-            var s = this,
-             offset = moment().utcOffset(),
-            startDdateStr= moment(startDate).subtract(offset, "m").format("YYYY-MM-DD");
-            var startdate = startDdateStr + ' ' +  s.timeStr;
+            var s = this;
+            var startdate =  moment(startDate).format("YYYY-MM-DD") + ' ' +  s.startTimeStr;
             s.startDatePayload = {
                 "name": "StartDate",
                 "value": startdate
             };
         };
         p.setEndDate=function(endDate){
-            var s = this,
-            offset = moment().utcOffset(),
-            endDateStr= moment(endDate).subtract(offset, "m").format("YYYY-MM-DD");
-            var enddate = endDateStr + ' ' +  s.timeStr;
+            var s = this;
+            var enddate = moment(endDate).format("YYYY-MM-DD") + ' ' +  s.endTimeStr;
             s.endDatePayload = {
                 "name": "EndDate",
                 "value": enddate
