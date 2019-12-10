@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -97,10 +98,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="profile">Edited User detail and Products</param>
 		/// <returns>Repository response object</returns>
 		RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile);
-		/// <summary>
-		/// Gets User Time Zones
-		/// </summary>
-        List<UserTimeZone> GetUserTimeZones();
 
 		/// <summary>
 		/// Used to disable a list of users across all products the users have access to
@@ -118,12 +115,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="userLogins"></param>
 		void ActivateUserProducts(Guid createUserRealPageId, long createUserPersonaId, IList<UserLoginOnly> userLogins);
 		
-		/// <summary>
-		/// Used to get user custom fields data
-		/// </summary>
-		/// <param name="userId"></param>
-		List<ConfigurationSetting> GetUserCustomFields(long userId);
-
 		/// <summary>
 		/// Get User details by Persona Id or user realpage id
 		/// </summary>
@@ -146,5 +137,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRealPageId">Organization enterprise Id</param>
         /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
         void AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0);
+
+		/// <summary>
+		/// ProcessDisableUserProductData
+		/// </summary>
+		/// <param name="repository"></param>
+		/// <param name="assignUserPersonaId"></param>
+		/// <param name="createUserRealPageId"></param>
+		/// <param name="createUserPersonaId"></param>
+		void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId);
 	}
 }

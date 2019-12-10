@@ -18,11 +18,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty(PropertyName = "LoginName")]
 		public string LoginName { get; set; }
-
-		/// <summary>
-		/// User Time Zone Offset Value
-		/// </summary>
-		[JsonProperty(PropertyName = "TimeZoneOffset")]
-		public string TimeZoneOffset { get; set; }
 	}
 }

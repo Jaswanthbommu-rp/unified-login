@@ -92,6 +92,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public DateTime? PasswordModifiedDate { get; set; }
 
         /// <summary>
+        /// Used to store the users offset to UTC for display date requirements
+        /// </summary>
+        [JsonIgnore]
+        public int OffsetMinutes { get; set; } = 0;
+
+        /// <summary>
         /// When the account can be used
         /// </summary>
         [JsonProperty(PropertyName = "FromDate")]
@@ -285,7 +291,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
                 IsSuperUser = false,
                 FromDate = dToday,
                 ThruDate = DateTime.MaxValue.ToUniversalTime(),
-                //StatusSetDate = dToday
             });
             userLoginList.Add(new UserLogin()
             {
@@ -301,7 +306,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
                 IsSuperUser = true,
                 FromDate = dToday,
                 ThruDate = DateTime.MaxValue.ToUniversalTime(),
-                //StatusSetDate = dToday
             });
             return userLoginList;
         }

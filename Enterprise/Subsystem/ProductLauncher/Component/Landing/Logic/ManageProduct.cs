@@ -321,11 +321,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="editorRealPageId">Populates while creating new user</param>
         /// <param name="personRealPageId">Populates when updating user</param>
         /// <param name="accessFilter">Filter Products</param>
+		/// <param name="loginName">User Login Name</param>
         /// <returns>List of Product Families</returns>
-        public IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId, string accessFilter = null)
+        public IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId, string accessFilter = null, string loginName = null)
         {
             //IProductRepository productRepository = new ProductRepository();
-            var productFamilyList = _productRepository.GetProductFamilies(organizationRealPageId, editorRealPageId, personRealPageId, accessFilter);
+            var productFamilyList = _productRepository.GetProductFamilies(organizationRealPageId, editorRealPageId, personRealPageId, accessFilter, loginName);
 
             return productFamilyList;
         }

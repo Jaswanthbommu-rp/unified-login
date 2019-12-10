@@ -118,10 +118,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// </summary>
 		/// <param name="personRealPageId">Edited User enterprise Id</param>
 		/// <param name="accessFilter">Filter products</param>
+		/// <param name="loginName">User Login Name</param>
 		/// <returns>List of Product Families</returns>
 		//IList<ProductFamily> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null);
 
-        IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null);
+		IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null, string loginName = null);
         /// <summary>
         /// List of Roles by Party ID, Product List and Product ID
         /// </summary>
@@ -179,5 +180,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="settingType"></param>
 		/// <param name="value"></param>
 		void UpdateProductSettingProductStatus<T>(long userPersonaId, int productId, string settingType, T value);
-	}
+
+        /// <summary>
+	    /// Returns all the products
+	    /// </summary>
+	    IList<GbProductMap> GetAllProducts();
+    }
 }

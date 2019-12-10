@@ -358,7 +358,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				profileDetail.userLogin.Is3rdPartyIDP = userLogin.Is3rdPartyIDP;
 				profileDetail.userLogin.IsActive = userLogin.IsActive;
 				profileDetail.userLogin.FromDate = DateTime.UtcNow;
-				profileDetail.userLogin.TimeZoneOffset = userLogin.TimeZoneOffset;
 				profileDetail.NotificationEmail = null;
                 
                 if (profileDetail.TelecommunicationNumber.Count == 0)
@@ -912,10 +911,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // PBI 78569 [All Browsers] - Able to create the user with Disabled status when today's date as 
             // effective and expiration date even after getting 'User Creation Failed' error 
             // -- Should not allow user to enter same date for both Effective and Expiration
-            DateTime fromDate = newProfile.userLogin.FromDate.HasValue
-				? newProfile.userLogin.FromDate.Value
-				: DateTime.UtcNow;
-			DateTime? thruDate = null;
+            DateTime fromDate = newProfile.userLogin.FromDate.HasValue ? newProfile.userLogin.FromDate.Value : DateTime.UtcNow;
 
 			if (newProfile.userLogin.ThruDate.HasValue)
 			{
@@ -1038,33 +1034,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				TotalPages = 1
 			};
 			return Request.CreateResponse(HttpStatusCode.OK, response);
-		}
-
-		/// <summary>
-		/// List User time Zones
-		/// </summary>
-		/// <returns>A list of time zones</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the time zones")]
-		[Route("usertimezones")]
-		[HttpGet]
-		public HttpResponseMessage ListUserTimeZones()
-		{
-			IList<UserTimeZone> timeZoneList = new List<UserTimeZone>();
-
-			ManageUser manageUser = new ManageUser(_userClaims);
-
-			timeZoneList = manageUser.GetUsertimezones();
-
-			if (timeZoneList != null)
-			{
-				ObjectListOutput<UserTimeZone, IErrorData> output = new ObjectListOutput<UserTimeZone, IErrorData>() {list = timeZoneList};
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
-
-			//When trying to get a list of roleTypes that doesn't exists
-			return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
 		}
 
 		/// <summary>

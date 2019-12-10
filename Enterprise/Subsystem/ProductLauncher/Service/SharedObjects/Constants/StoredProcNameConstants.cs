@@ -45,12 +45,8 @@
 
         #endregion
 
-
         // WebApi Settings
         public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
-
-        //TimeZone
-        public const string SP_ListTimeZone = "Enterprise.ListTimeZone";
 
         // Forgot / Reset password
         public const string SP_GetEnterpriseUserStatus = "Auth.GetEnterpriseUserStatus";
@@ -83,7 +79,6 @@
         public const string SP_CreateUserLogin = "Ident.CreateUserLogin";
         public const string SP_GetUserLogin = "Ident.GetUserLogin";
         public const string SP_GetUserLoginOnly = "Ident.GetUserLoginOnly";
-        //public const string SP_GetUserLoginByName = "Ident.GetUserLoginByName";
         public const string SP_UpdateUserLogin = "Ident.UpdateUserLogin";
         public const string SP_UpdateLastLogin = "Ident.UpdateLastLogin";
         public const string SP_UpdateUserStatusByCompany = "Ident.UpdateUserStatusByCompany";
@@ -122,9 +117,10 @@
         public const string SP_RemovePersona = "Person.RemovePersona";
         public const string SP_UpdatePersona = "Person.UpdatePersona";
         public const string SP_CreatePersonaConfiguration = "Enterprise.CreatePersonaConfiguration";
+		public const string SP_ListPersonaToDisableUserProduct = "Person.ListPersonaToDisableUserProduct";
 
-        //Set Password
-        public const string SP_SaveSecurityQuestionAnswers = "Ident.CreateSecurityQuestionAnswers";
+		//Set Password
+		public const string SP_SaveSecurityQuestionAnswers = "Ident.CreateSecurityQuestionAnswers";
 
         //BlueBook
         public const string SP_MapBlueBookIdtoPartyId = "Enterprise.MapBlueBookIdtoPartyId";
@@ -154,9 +150,10 @@
         public const string SP_ListOrganizationByLoginName = "Enterprise.ListOrganizationByLoginName";
         public const string SP_ListOrganizationStatusByUserId = "Enterprise.ListOrganizationStatusByUserId";
         public const string SP_ListOrganizationType = "Enterprise.ListOrganizationType";
+		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
 
-        //PartyRelationship
-        public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
+		//PartyRelationship
+		public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
         //PartyRole
         public const string SP_GetPartyRoleByRealPageId = "Enterprise.GetPartyRoleByRealPageId";

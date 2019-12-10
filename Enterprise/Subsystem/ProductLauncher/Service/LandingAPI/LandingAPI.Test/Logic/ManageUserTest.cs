@@ -99,8 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IUserLogin newUserLogin = new UserLogin()
             {
                 LoginName = "johndoe@test.com",
-                FromDate = DateTime.UtcNow,
-                TimeZoneOffset = "Central Standard Time"
+                FromDate = DateTime.UtcNow
             };
             Persona newUserPersona = new Persona()
             {

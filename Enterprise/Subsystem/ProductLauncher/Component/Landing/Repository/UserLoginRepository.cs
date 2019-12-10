@@ -187,18 +187,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>RepositoryResponse object</returns>
         public RepositoryResponse UpdateUserStatusByCompany(Guid realPageId, long organizationPartyId, int statusTypeId, DateTime fromDate, DateTime? thruDate)
         {
-            using (var repository = GetRepository())
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+
+			IUserRepository userRepository = new UserRepository();
+
+			IOrganization organization = _organizationRepository.GetOrganization(realPageId: null, organizationPartyId: organizationPartyId, blueBookId: null, blackBookId: null);
+
+			using (var repository = GetRepository())
             {
-                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany,
-                new
+				dynamic param = new
+				{
+					RealPageId = realPageId,
+					OrganizationPartyId = organizationPartyId,
+					StatusTypeId = statusTypeId,
+					FromDate = fromDate,
+					StatusThruDate = thruDate
+				};
+				repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, param);
+
+				//remove products
+				//If Primary Organization - List all Persona(s) across all user companies
+				//Else List Persona(s) for a company
+                if (statusTypeId == (int) UserUiStatusType.Disabled || statusTypeId == (int)UserUiStatusType.Expired)
                 {
-                    RealPageId = realPageId,
-                    OrganizationPartyId = organizationPartyId,
-                    StatusTypeId = statusTypeId,
-                    FromDate = fromDate,
-                    StatusThruDate = thruDate
-                });
-            }
+                    param = new
+                    {
+                        OrganizationPartyId = organizationPartyId,
+                        PersonRealPageId = realPageId
+                    };
+                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPersonaToDisableUserProduct, param);
+                    foreach (var item in result)
+                    {
+                        userRepository.ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
+                    }
+                }
+
+                return repositoryResponse;
+			}
         }
 
         /// <summary>

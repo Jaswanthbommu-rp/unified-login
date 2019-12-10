@@ -20,15 +20,16 @@
     &s > * {
         margin-bottom: 20px;
         margin-right: 20px;
+        margin-top: 10px;
     }
 
     &-keyword {
-        width: 300px;
+        width: 210px;
         float: left;
     }
 
     &-activity {
-        width: 220px;
+        width: 205px;
         float: left;
     }
 
@@ -39,6 +40,7 @@
 
     &-sortby-group {
         float: left;
+        margin-left: 12px;
     }
 
     &-sortby-label {
@@ -57,6 +59,33 @@
         float: left;
         margin-top: 10px;
     }
+}
+.labelFrom {
+    padding: 0px;
+}
+.labelFrom>label {
+    position: absolute;
+    bottom: 22px;
+    left: 12px;
+    background-color: white;
+    z-index:10;
+}
+.labelTo {
+    padding: 0px;
+}
+.labelTo>label {
+    position: absolute;
+    bottom: 22px;
+    left: 12px;
+    background-color: white;
+    margin-left: 6px;
+    z-index:10;
+}
+.dateRequired{
+    border:1px solid red;
+}
+.lblTextReq{
+    color:red;
 }
 
 .rp-actions-menu-panel {

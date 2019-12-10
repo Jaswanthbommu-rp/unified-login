@@ -539,7 +539,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					(f.Key.Equals("Name", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("ProductId", StringComparison.OrdinalIgnoreCase)) ||
 					(f.Key.Equals("Status", StringComparison.OrdinalIgnoreCase)) ||
-					(f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase))
+					(f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
+					(f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase))
 					)
 				{
 					filterBy.Add(
@@ -586,11 +587,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			using (var repository = GetRepository())
 			{
-				var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, string, ProfileDetail>(
+				var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
 					StoredProcNameConstants.SP_ListPersons,
-					(profiledetail, userlogin, userproductcount, userType, userTimeZone) =>
+					(profiledetail, userlogin, userproductcount, userType) =>
 					{
-						userlogin.TimeZoneOffset = userTimeZone;
 						profiledetail.userLogin = userlogin;
 						profiledetail.userLogin.PartyId = profiledetail.PartyId;
 						profiledetail.userLogin.RealPageId = profiledetail.RealPageId;
@@ -621,7 +621,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						profiledetail.userLogin.IsLocked = false;
 						profiledetail.userLogin.Status = UserUiStatusType.Active;
 
-						//var userStatuses = statuses.Where(s => s.UserId == profiledetail.userLogin.UserId).ToList();
 						profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 						return profiledetail;
 					},
@@ -635,7 +634,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 						RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
 						PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
 					},
-					splitOn: "UserId, Products, UserType, TimeZoneOffset");
+					splitOn: "UserId, Products, UserType");
 
 				//Set the product count to 0 when the user status is disabled.
 				items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
@@ -666,17 +665,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			using (var repository = GetRepository())
 			{
-				var items = repository.GetManyWithSpliOn<ProductUsers, UserLoginCommon, string, ProductUsers>(
+				var items = repository.GetManyWithSpliOn<ProductUsers, UserLoginCommon, ProductUsers>(
 					StoredProcNameConstants.SP_ListPersonsByProductId,
-					(productUsers, userlogin, userTimeZone) =>
+					(productUsers, userlogin) =>
 					{
-						userlogin.TimeZoneOffset = userTimeZone;
 						productUsers.userLogin = userlogin;
 
 						return productUsers;
 					},
 					param: (object)param,
-					splitOn: "UserId, TimeZoneOffset");
+					splitOn: "UserId");
 
 				return items.ToList();
 			}
