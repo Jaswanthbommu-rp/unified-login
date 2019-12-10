@@ -238,7 +238,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             Assert.Equal(actual.Message, expected.Message);
             Assert.True(actual.Status);
         }
+        [Fact]
+        public void ChangeUserStatus_Given_UserName_Disable_ShouldReturn_False()
+        {
+            //Arrange
+            var productUserId = "123";
+            var userName = "abc@test.com";
+            var isDeactivate = true;
 
+            HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            string url = $"{_apiEndPoint}/v2/contact/{productUserId}/status";
+
+            mockHttpMessageHandler.Setup(HttpMethod.Put, url, userResponse);
+
+            ////Act
+            var actual = manageProductMarketingCenter.ChangeUserStatus(_editorPersonaId, userName, productUserId, isDeactivate);
+
+            ////Assert
+            Assert.False(actual);
+
+
+        }
         [Fact]
         public void ChangeUserStatus_Given_UserName_Disable_ShouldReturn_True()
         {
@@ -248,6 +268,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             var isDeactivate = true;
 
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            userResponse.Content = new StringContent("{}");
             string url = $"{_apiEndPoint}/v2/contact/{productUserId}/status";
 
             mockHttpMessageHandler.Setup(HttpMethod.Put, url, userResponse);
@@ -256,7 +277,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             var actual = manageProductMarketingCenter.ChangeUserStatus(_editorPersonaId, userName, productUserId, isDeactivate);
 
             ////Assert
-            Assert.True(actual);
+                Assert.True(actual);
+       
+
         }
         #endregion
     }
