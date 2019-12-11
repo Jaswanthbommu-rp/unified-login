@@ -297,41 +297,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				WriteToLog(LogType.Information, "ManageEmail.SendGridEmail: Email details.", logData, null);
 
 				IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(ProductId: (int)ProductEnum.UnifiedLogin);
-				bool IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
-				if (IsSendGridEnabled)
+				if (productSettingList.Count > 0)
 				{
-					string url = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("SendGridApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-					HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url)
+					bool IsSendGridEnabled = false;
+					if (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)))
 					{
-						Content = new StringContent(JsonConvert.SerializeObject(sendGridEmail), Encoding.Default, "application/json")
-					};
+						IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
+					}
+					if (IsSendGridEnabled)
+					{
+						string SendGridApiEndPoint = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("SendGridApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+						string SendGridSendEmailEndPoint = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("SendGridSendEmailEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+						string SendGridSendEmailUrl = string.Concat(SendGridApiEndPoint, SendGridSendEmailEndPoint);
+						HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, SendGridSendEmailUrl)
+						{
+							Content = new StringContent(JsonConvert.SerializeObject(sendGridEmail), Encoding.Default, "application/json")
+						};
 
-					HttpClient httpClient = new HttpClient();
-					Task<HttpResponseMessage> httpResponseMessage = httpClient.SendAsync(httpRequestMessage);
-					if (httpResponseMessage.Result.IsSuccessStatusCode)
-					{
-						string toEmai = string.Join(";", sendGridEmail.toAddress.ToList().Select(e => EmailFormatValidation.IsValidEmail(e.email) == true).ToArray());
-						logData = new Dictionary<string, object>()
+						HttpClient httpClient = new HttpClient();
+						Task<HttpResponseMessage> httpResponseMessage = httpClient.SendAsync(httpRequestMessage);
+						if (httpResponseMessage.Result.IsSuccessStatusCode)
+						{
+							string toEmai = string.Join(";", sendGridEmail.toAddress.ToList().Select(e => EmailFormatValidation.IsValidEmail(e.email) == true).ToArray());
+							logData = new Dictionary<string, object>()
 						{
 							{"Response",  httpResponseMessage.Result}
 						};
-						WriteToLog(LogType.Information, $"ManageEmail.SendGridEmail: Email from {sendGridEmail.fromAddress.email} to {toEmai} sent successfully.", logData, null);
-						return "Email sent successfully.";
+							WriteToLog(LogType.Information, $"ManageEmail.SendGridEmail: Email from {sendGridEmail.fromAddress.email} to {toEmai} sent successfully.", logData, null);
+							return "Email sent successfully.";
+						}
+						else
+						{
+							logData = new Dictionary<string, object>()
+						{
+							{"Response",  httpResponseMessage.Result}
+						};
+							WriteToLog(LogType.Information, "ManageEmail.SendGridEmail: An error occured when sending the email.", logData, null);
+							return "An error occured when sending the email.";
+						}
 					}
 					else
 					{
-						logData = new Dictionary<string, object>()
-						{
-							{"Response",  httpResponseMessage.Result}
-						};
-						WriteToLog(LogType.Information, "ManageEmail.SendGridEmail: An error occured when sending the email.", logData, null);
-						return "An error occured when sending the email.";
+						WriteToLog(LogType.Information, "ManageEmail.SendGridEmail: SendGrid emails is disabled.", null, null);
+						return "SendGrid emails is disabled.";
 					}
 				}
 				else
 				{
-					WriteToLog(LogType.Information, "ManageEmail.SendGridEmail: SendGrid emails is disabled.", null, null);
-					return "SendGrid emails is disabled.";
+					WriteToLog(LogType.Information, "ManageEmail.SendGridEmail: Invalid product settings for Unified Platform.", null, null);
+					return "Invalid product settings for Unified Platform.";
 				}
 			}
 			catch (Exception ex)

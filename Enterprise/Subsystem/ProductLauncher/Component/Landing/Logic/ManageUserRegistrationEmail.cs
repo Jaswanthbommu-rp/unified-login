@@ -105,8 +105,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			if (userTypeId != UserTypeConstants.RegularUserNoEmail // not UserNoEmailRole
 				&& !userLoginOnly.Is3rdPartyIDP // Not a user using 3rd party IDP
 				&& EmailFormatValidation.IsValidEmail(emailAddress) // the email address appears to be valid
-																	//&& profile.organization != null
-																	//&& profile.organization.Count() > 0
 			)
 			{
 				try
@@ -200,7 +198,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (string.IsNullOrEmpty(emailStatus))
 					{
 						IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(ProductId: (int)ProductEnum.UnifiedLogin);
-						bool IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
+						bool IsSendGridEnabled = false;
+						if ((productSettingList.Count > 0) && (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase))))
+						{
+							IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
+						}
 						if (IsSendGridEnabled)
 						{
 							ISendGridEmail sendGridEmail = new SendGridEmail()

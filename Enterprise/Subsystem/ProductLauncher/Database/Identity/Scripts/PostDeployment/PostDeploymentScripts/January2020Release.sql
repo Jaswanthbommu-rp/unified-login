@@ -6,10 +6,8 @@ EXEC Enterprise.ListGlobalSettingsForProduct
 
 DECLARE	@Now datetime = GETUTCDATE(),
 	@ProductId int,
-	@IsSendGridEnabled nvarchar(100) = N'IsSendGridEnabled',
-	@IsSendGridEnabledValue nvarchar(2000) = N'1',
-	@SendGridApiEndPoint nvarchar(100) = N'SendGridApiEndPoint',
-	@SendGridApiEndPointUrl nvarchar(2000) = N'https://ueapi-dev.realpage.com/emails/api/v1/sendEmail/',
+	@ProductSettingType nvarchar(100),
+	@ProductSettingValue nvarchar(2000),
 	@ProductConfigurationId int
 
 DECLARE @ProductSetting TABLE (
@@ -20,53 +18,70 @@ SELECT	@ProductId = ProductId
 FROM		Enterprise.Product
 WHERE	Name = 'Unified Platform'
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE Name = @IsSendGridEnabled)
+SET @ProductSettingType = N'IsSendGridEnabled'
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE Name = @ProductSettingType)
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType (
 		Name,
 		Description
 	)
 	VALUES (
-		@IsSendGridEnabled,
-		'Is SendGrid Email Enabled in Unified Platform'
+		@ProductSettingType,
+		'Is SendGrid Email Enabled in Unified Platform?'
 	)
 END
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE Name = @SendGridApiEndPoint)
+SET @ProductSettingType = N'SendGridApiEndPoint'
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE Name = @ProductSettingType)
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType (
 		Name,
 		Description
 	)
 	VALUES (
-		@SendGridApiEndPoint,
-		'SendGrid Email Api Endpoint'
+		@ProductSettingType,
+		'SendGrid Email Api EndPoint'
 	)
 END
 
-SELECT DISTINCT TOP 1 @ProductConfigurationId = pc.ConfigurationId
-FROM	Enterprise.GlobalProductConfiguration gpc  
-			INNER JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
-			INNER JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
-			INNER JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
-WHERE		gpc.ProductId = @ProductId
-AND			((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
-AND			((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
-AND			((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
-ORDER BY pc.ConfigurationId DESC
+SET @ProductSettingType = N'SendGridSendEmailEndPoint'
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE Name = @ProductSettingType)
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType (
+		Name,
+		Description
+	)
+	VALUES (
+		@ProductSettingType,
+		'SendGrid: SendEmail EndPoint'
+	)
+END
 
+SELECT DISTINCT TOP 1 @ProductConfigurationId = epc.ConfigurationId
+FROM	Enterprise.GlobalProductConfiguration egpc  
+			INNER JOIN Enterprise.ProductConfiguration epc ON epc.ConfigurationId = egpc.ConfigurationId  
+			INNER JOIN Enterprise.ProductSetting eps ON eps.ProductSettingId = epc.ProductSettingId  
+			INNER JOIN Enterprise.ProductSettingType epst ON epst.ProductSettingTypeId = eps.ProductSettingTypeId  
+WHERE		egpc.ProductId = @ProductId
+AND			((@NOW BETWEEN egpc.FromDate AND egpc.ThruDate) OR (@NOW >= egpc.FromDate AND egpc.ThruDate IS NULL))  
+AND			((@NOW BETWEEN epc.FromDate AND epc.ThruDate) OR (@NOW >= epc.FromDate AND epc.ThruDate IS NULL))  
+AND			((@NOW BETWEEN eps.FromDate AND eps.ThruDate) OR (@NOW >= eps.FromDate AND eps.ThruDate IS NULL))  
+ORDER BY epc.ConfigurationId DESC
+
+SET @ProductSettingType = N'IsSendGridEnabled'
+SET @ProductSettingValue = N'0'
 IF NOT EXISTS (
 	SELECT TOP 1 1 
-	FROM	Enterprise.GlobalProductConfiguration gpc  
-				INNER JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
-				INNER JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
-				INNER JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
-	WHERE	gpc.ProductId = @ProductId  
-	AND			((@Now BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@Now >= gpc.FromDate AND gpc.ThruDate IS NULL))  
-	AND			((@Now BETWEEN pc.FromDate AND pc.ThruDate) OR (@Now >= pc.FromDate AND pc.ThruDate IS NULL))  
-	AND			((@Now BETWEEN ps.FromDate AND ps.ThruDate) OR (@Now >= ps.FromDate AND ps.ThruDate IS NULL))  
-	AND			pst.Name = @IsSendGridEnabled
-	AND			ps.Value = @IsSendGridEnabledValue
+	FROM	Enterprise.GlobalProductConfiguration egpc  
+				INNER JOIN Enterprise.ProductConfiguration epc ON epc.ConfigurationId = egpc.ConfigurationId  
+				INNER JOIN Enterprise.ProductSetting eps ON eps.ProductSettingId = epc.ProductSettingId  
+				INNER JOIN Enterprise.ProductSettingType epst ON epst.ProductSettingTypeId = eps.ProductSettingTypeId  
+	WHERE	egpc.ProductId = @ProductId  
+	AND			((@Now BETWEEN egpc.FromDate AND egpc.ThruDate) OR (@Now >= egpc.FromDate AND egpc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN epc.FromDate AND epc.ThruDate) OR (@Now >= epc.FromDate AND epc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN eps.FromDate AND eps.ThruDate) OR (@Now >= eps.FromDate AND eps.ThruDate IS NULL))  
+	AND			epst.Name = @ProductSettingType
+	AND			eps.Value = @ProductSettingValue
 )
 BEGIN
 	IF (@ProductConfigurationId IS NOT NULL)
@@ -84,11 +99,11 @@ BEGIN
 		OUTPUT INSERTED.ProductSettingId INTO @ProductSetting (ProductSettingId)
 		SELECT	@ProductId,
 						ProductSettingTypeId,
-						@IsSendGridEnabledValue,
+						@ProductSettingValue,
 						@Now,
 						NULL
 		FROM		Enterprise.ProductSettingType
-		WHERE	Name = @IsSendGridEnabled
+		WHERE	Name = @ProductSettingType
 
 		INSERT INTO Enterprise.ProductConfiguration (
 			ConfigurationId,
@@ -104,18 +119,20 @@ BEGIN
 	END
 END
 
+SET @ProductSettingType = N'SendGridApiEndPoint'
+SET @ProductSettingValue = N'https://ueapi-dev.realpage.com'
 IF NOT EXISTS (
 	SELECT TOP 1 1 
-	FROM	Enterprise.GlobalProductConfiguration gpc  
-				INNER JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
-				INNER JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
-				INNER JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
-	WHERE	gpc.ProductId = @ProductId  
-	AND			((@Now BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@Now >= gpc.FromDate AND gpc.ThruDate IS NULL))  
-	AND			((@Now BETWEEN pc.FromDate AND pc.ThruDate) OR (@Now >= pc.FromDate AND pc.ThruDate IS NULL))  
-	AND			((@Now BETWEEN ps.FromDate AND ps.ThruDate) OR (@Now >= ps.FromDate AND ps.ThruDate IS NULL))  
-	AND			pst.Name = @SendGridApiEndPoint
-	AND			ps.Value = @SendGridApiEndPointUrl
+	FROM	Enterprise.GlobalProductConfiguration egpc  
+				INNER JOIN Enterprise.ProductConfiguration epc ON epc.ConfigurationId = egpc.ConfigurationId  
+				INNER JOIN Enterprise.ProductSetting eps ON eps.ProductSettingId = epc.ProductSettingId  
+				INNER JOIN Enterprise.ProductSettingType epst ON epst.ProductSettingTypeId = eps.ProductSettingTypeId  
+	WHERE	egpc.ProductId = @ProductId  
+	AND			((@Now BETWEEN egpc.FromDate AND egpc.ThruDate) OR (@Now >= egpc.FromDate AND egpc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN epc.FromDate AND epc.ThruDate) OR (@Now >= epc.FromDate AND epc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN eps.FromDate AND eps.ThruDate) OR (@Now >= eps.FromDate AND eps.ThruDate IS NULL))  
+	AND			epst.Name = @ProductSettingType
+	AND			eps.Value = @ProductSettingValue
 )
 BEGIN
 	IF (@ProductConfigurationId IS NOT NULL)
@@ -133,11 +150,62 @@ BEGIN
 		OUTPUT INSERTED.ProductSettingId INTO @ProductSetting (ProductSettingId)
 		SELECT	@ProductId,
 						ProductSettingTypeId,
-						@SendGridApiEndPointUrl,
+						@ProductSettingValue,
 						@Now,
 						NULL
 		FROM		Enterprise.ProductSettingType
-		WHERE	Name = @SendGridApiEndPoint
+		WHERE	Name = @ProductSettingType
+
+		INSERT INTO Enterprise.ProductConfiguration (
+			ConfigurationId,
+			ProductSettingId,
+			FromDate,
+			ThruDate
+		)
+		SELECT		@ProductConfigurationId,
+						ProductSettingId, 
+						@Now,
+						NULL
+		FROM		@ProductSetting
+	END
+END
+
+SET @ProductSettingType = N'SendGridSendEmailEndPoint'
+SET @ProductSettingValue = N'/emails/api/v1/sendEmail/'
+IF NOT EXISTS (
+	SELECT TOP 1 1 
+	FROM	Enterprise.GlobalProductConfiguration egpc  
+				INNER JOIN Enterprise.ProductConfiguration epc ON epc.ConfigurationId = egpc.ConfigurationId  
+				INNER JOIN Enterprise.ProductSetting eps ON eps.ProductSettingId = epc.ProductSettingId  
+				INNER JOIN Enterprise.ProductSettingType epst ON epst.ProductSettingTypeId = eps.ProductSettingTypeId  
+	WHERE	egpc.ProductId = @ProductId  
+	AND			((@Now BETWEEN egpc.FromDate AND egpc.ThruDate) OR (@Now >= egpc.FromDate AND egpc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN epc.FromDate AND epc.ThruDate) OR (@Now >= epc.FromDate AND epc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN eps.FromDate AND eps.ThruDate) OR (@Now >= eps.FromDate AND eps.ThruDate IS NULL))  
+	AND			epst.Name = @ProductSettingType
+	AND			eps.Value = @ProductSettingValue
+)
+BEGIN
+	IF (@ProductConfigurationId IS NOT NULL)
+	BEGIN
+		DELETE
+		FROM	@ProductSetting
+
+		INSERT INTO Enterprise.ProductSetting (
+			ProductId,
+			ProductSettingTypeId,
+			Value,
+			FromDate,
+			ThruDate
+		)
+		OUTPUT INSERTED.ProductSettingId INTO @ProductSetting (ProductSettingId)
+		SELECT	@ProductId,
+						ProductSettingTypeId,
+						@ProductSettingValue,
+						@Now,
+						NULL
+		FROM		Enterprise.ProductSettingType
+		WHERE	Name = @ProductSettingType
 
 		INSERT INTO Enterprise.ProductConfiguration (
 			ConfigurationId,

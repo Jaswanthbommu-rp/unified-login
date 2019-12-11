@@ -191,6 +191,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				{
 					Name = "IsSendGridEnabled",
 					Value = "0"
+				},
+				new ProductInternalSetting()
+				{
+					Name = "SendGridApiEndPoint",
+					Value = "https://ueapi-dev.realpage.com"
+				},
+				new ProductInternalSetting()
+				{
+					Name = "SendGridSendEmailEndPoint",
+					Value = "/emails/api/v1/sendEmail/'"
 				}
 			};
 
@@ -246,6 +256,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			//Assert
 			Assert.Equal("An error occured when sending the email.", response, true, true, true);
+		}
+
+		[Fact]
+		public void SendGridEmail_InvalidProductSetting_NoProductSetting()
+		{
+			//Arrange
+			ISendGridEmail sendGridEmail = new SendGridEmail()
+			{
+				emailSubject = "Email Subject",
+				toAddress = new List<EmailAddress>()
+				{
+					new EmailAddress()
+					{
+						email = "Joe@Example.com",
+						name = "Joe"
+					}
+				},
+				fromAddress = new EmailAddress()
+				{
+					email = "noreply@realpage.com",
+					name = "RealPage"
+				},
+				category = "xUnit Test",
+				message = "Email Body",
+				transId = "12345"
+			};
+
+			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+
+			_mockProductInternalSettingRepository
+				.Setup(m => m.GetProductInternalSettings(It.IsAny<int>()))
+				.Returns(productInternalSettingList);
+
+			_manageEmail = new ManageEmail(_userClaims, _mockEmailRepository.Object, _mockProductInternalSettingRepository.Object);
+
+			//Act
+			string response = _manageEmail.SendGridEmail(sendGridEmail);
+
+			//Assert
+			Assert.Equal("Invalid product settings for Unified Platform.", response, true, true, true);
 		}
 		#endregion
 	}
