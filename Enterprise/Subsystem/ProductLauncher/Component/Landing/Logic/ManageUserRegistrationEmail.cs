@@ -225,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 								transId = userLoginOnly.UserId.ToString(),
 								category = "RegistrationEmail"
 							};
-							string result = _emailLogic.SendGridEmail(sendGridEmail);
+							emailStatus = _emailLogic.SendGridEmail(sendGridEmail);
 						}
 						else
 						{

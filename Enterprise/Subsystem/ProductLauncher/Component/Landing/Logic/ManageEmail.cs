@@ -311,27 +311,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						string SendGridSendEmailUrl = string.Concat(SendGridApiEndPoint, SendGridSendEmailEndPoint);
 						HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, SendGridSendEmailUrl)
 						{
-							Content = new StringContent(JsonConvert.SerializeObject(sendGridEmail), Encoding.Default, "application/json")
+							Content = new StringContent(JsonConvert.SerializeObject(sendGridEmail), Encoding.UTF8, "application/json")
 						};
 
 						HttpClient httpClient = new HttpClient();
 						Task<HttpResponseMessage> httpResponseMessage = httpClient.SendAsync(httpRequestMessage);
 						if (httpResponseMessage.Result.IsSuccessStatusCode)
 						{
-							string toEmai = string.Join(";", sendGridEmail.toAddress.ToList().Select(e => EmailFormatValidation.IsValidEmail(e.email) == true).ToArray());
+							string toEmai = string.Join(";", sendGridEmail.toAddress.ToList().Select(e => e.email).ToArray());
 							logData = new Dictionary<string, object>()
-						{
-							{"Response",  httpResponseMessage.Result}
-						};
+							{
+								{"Response",  httpResponseMessage.Result}
+							};
 							WriteToLog(LogType.Information, $"ManageEmail.SendGridEmail: Email from {sendGridEmail.fromAddress.email} to {toEmai} sent successfully.", logData, null);
 							return "Email sent successfully.";
 						}
 						else
 						{
 							logData = new Dictionary<string, object>()
-						{
-							{"Response",  httpResponseMessage.Result}
-						};
+							{
+								{"Response",  httpResponseMessage.Result}
+							};
 							WriteToLog(LogType.Information, "ManageEmail.SendGridEmail: An error occured when sending the email.", logData, null);
 							return "An error occured when sending the email.";
 						}
