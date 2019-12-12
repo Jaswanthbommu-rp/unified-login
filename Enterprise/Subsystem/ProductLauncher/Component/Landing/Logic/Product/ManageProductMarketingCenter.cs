@@ -907,8 +907,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private bool CheckIfUserExistInProduct(string _productUserId)
         {
-            var url = _productUrl + $"/v2/contact/{_productUserId}/details";
-            var response = _client.GetAsync(url).Result;
+            var url = _productUrl + $"/v2/contact/details?emailAddress={_productUserId}";
+            var response = _client.GetAsync(url).Result;            
             if (response.IsSuccessStatusCode)
             {
                 WriteToDiagnosticLog($"ManageMarketingCenterUser.CheckIfUserExistInProduct - Email address {_productUserId} already exist in Marketing Center.");
