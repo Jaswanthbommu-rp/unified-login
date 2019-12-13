@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using blueBook = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
@@ -1280,6 +1281,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 string randomPassword = Guid.NewGuid().ToString().Replace("-", "");
 
+                accountingLoginName = RemoveSpecialCharacter(accountingLoginName);
+
                 List<NameValuePair> parameters = new List<NameValuePair>{
 					new NameValuePair { Name = "CompanyID", Value = _companyName },
 					new NameValuePair { Name = "Login", Value = _intactLogin },
@@ -1427,20 +1430,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         return updateResultProp;
                     }
                 }
-
-                // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
-                //if ((!isSuperUser && isUnRestrictedAccessToProp) && PropertyList.Count > 0)
+                                
                 if ((!isSuperUser && isUnRestrictedAccessToProp))
                 {
-                    //string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, new List<string> { "All"}, isAccountingAdmin, batchProcessType);
                     string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
                         return updateResultProp;
                     }
                 }
-
-
 
                 if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
@@ -1455,6 +1453,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog($"ManageAccountingUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
                 return $"Error - {ex.Message}";
             }
+        }
+
+        private string RemoveSpecialCharacter(string accountingLoginName)
+        {
+            switch (accountingLoginName)
+            {
+                case "portluser":
+                case "realpage":
+                case "CPAUser":
+                case "ExtUser":
+                case "SvcUser":
+                case "Services":
+                case "CNS_":
+                    accountingLoginName = $"{accountingLoginName}-1";
+                    break;
+            }
+
+            var reg = new Regex(@"[^\w\s\-\.]");
+            accountingLoginName = reg.Replace(accountingLoginName, string.Empty);
+
+            if(accountingLoginName.Length > 80)
+                accountingLoginName = accountingLoginName.Substring(1, 80);
+
+            return accountingLoginName;
         }
 
         /// <summary>
