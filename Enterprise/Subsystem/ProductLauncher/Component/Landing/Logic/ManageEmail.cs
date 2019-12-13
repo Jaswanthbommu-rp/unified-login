@@ -121,7 +121,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				String emailAddressTo = notificationEmail;
 				int expiryDays = 0;
 
-
 				ICredentialRepository _credentialRepository = new CredentialRepository();
 				var actvityDetail = _credentialRepository.GetActivities(orgPartyId);
 				var newUserRegistrationActivity = actvityDetail.FirstOrDefault(x => x.ActivityTypeId == (int)ActivityType.NewUserRegistration);
@@ -138,14 +137,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				emailBodyBuilder.Replace("{COMPANY NAME}", companyName);
 				emailBodyBuilder.Replace("{FIRST NAME}", firstName);
 				emailBodyBuilder.Replace("{LINK}", BuildNewUserLink(newUserToken, loginName));
-				//emailBodyBuilder.Replace("{TOKEN}", newUserToken);
-				//emailBodyBuilder.Replace("{LOGIN ID}", loginName);
-				//emailBodyBuilder.Replace("{LANDING}", ConfigReader.GetLandingUri);
 				emailBodyBuilder.Replace("{IMAGES}", ConfigReader.GetImagesUri);
 				emailBodyBuilder.Replace("{UNIFIED}", ConfigReader.GetDocumentUri);
 				emailBodyBuilder.Replace("{EXPIRYDAYS}", Convert.ToString(expiryDays));
 				cesEmail.EmailBody = emailBodyBuilder.ToString();
-
 			}
 			catch (Exception ex)
 			{
