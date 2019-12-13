@@ -97,6 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <returns></returns>
 		public bool SendNewUserRegistrationEmail(UserLoginOnly userLoginOnly, string companyName, int userTypeId, long organizationPartyId)
 		{
+			bool IsSendGridEnabled = false;
 			var userPerson = _personManager.GetPerson(userLoginOnly.RealPageId);
 			var firstName = userPerson.FirstName;
 
@@ -198,7 +199,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					if (string.IsNullOrEmpty(emailStatus))
 					{
 						IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(ProductId: (int)ProductEnum.UnifiedLogin);
-						bool IsSendGridEnabled = false;
 						if ((productSettingList.Count > 0) && (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase))))
 						{
 							IsSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
@@ -265,7 +265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						communicationEventResponse = _communicationEventsLogic.CreateCommunicationEventEmail(emailTemplate.CommunicationEmailTemplateId, communicationEventId);
 					}
 
-					if (communicationEventResponse.Id != 0)
+					if ((communicationEventResponse.Id != 0) && (!IsSendGridEnabled))
 					{
 						communicationEventResponse = _communicationEventsLogic.CreateCESCommunicationEventEmail(cesEmail.ClientUniqueID.ToString().ToUpper(), communicationEventId);
 					}
