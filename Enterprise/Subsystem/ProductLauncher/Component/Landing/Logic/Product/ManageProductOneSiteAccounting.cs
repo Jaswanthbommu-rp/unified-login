@@ -716,7 +716,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="propertiesToAssign"></param>
         /// <param name="isAccountingAdmin"></param>
         /// <param name="batchProcessType"></param>
-        /// <returns></returns
+        /// <returns></returns>
         public string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
 			ListResponse response = new ListResponse();
