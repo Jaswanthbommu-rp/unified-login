@@ -136,6 +136,7 @@
     <Compile Include="ControllerTest\PasswordPolicyTests.cs" />
     <Compile Include="ControllerTest\LogTests.cs" />
     <Compile Include="ControllerTest\PersonaTests.cs" />
+    <Compile Include="ControllerTest\EmailControllerTests.cs" />
     <Compile Include="Logic\ManageCredentialTest.cs" />
     <Compile Include="Logic\ManageUserLoginPersonaTests.cs" />
     <Compile Include="Logic\ProductIntegration\ClickPayIntegrationTest.cs" />
@@ -210,6 +211,7 @@
     <Compile Include="Logic\Security\ManageSecurityTests.cs" />
     <Compile Include="Logic\ManageStatusTypeTests.cs" />
     <Compile Include="Logic\ManageSecuritySettingsTests.cs" />
+    <Compile Include="Logic\ManageEmailTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

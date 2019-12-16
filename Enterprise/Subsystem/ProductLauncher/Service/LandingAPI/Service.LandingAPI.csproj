@@ -8,7 +8,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>
     </ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion> 
+    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{6579D576-A2BB-441D-A638-8DD5E39DB642}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
@@ -229,6 +229,7 @@
     <Compile Include="Controllers\CustomFieldController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\ElectronicAddressController.cs" />
+    <Compile Include="Controllers\EmailController.cs" />
     <Compile Include="Controllers\EmployeeAccessController.cs" />
     <Compile Include="Controllers\ProductIntegrationMarketplaceController.cs" />
     <Compile Include="Controllers\ProductOneSiteAccountingController.cs" />
