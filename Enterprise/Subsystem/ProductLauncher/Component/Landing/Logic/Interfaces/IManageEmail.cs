@@ -37,5 +37,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>Email Status</returns>
 		string SendEmail(Email email);
 
-    }
+		/// <summary>
+		/// Send an Email through SendGrid
+		/// </summary>
+		/// <param name="sendGridEmail">SendGrid Email object</param>
+		/// <returns>Email Status</returns>
+		string SendGridEmail(ISendGridEmail sendGridEmail);
+	}
 }
