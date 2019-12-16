@@ -126,7 +126,7 @@
                         });
 
                         if (records != undefined && records.length > 0) {
-                            records[0].isAssigned = true;
+                            records[0].isAssigned = item.isAssigned;
                         }
                     }
                 });
@@ -194,12 +194,15 @@
                         isAssigned: true
                         }); 
 
-            if( assigned.length === 0){  //llcArr.length === 0 &&
-                vm.setError(true);
-                return;
-            } 
+            // if( assigned.length === 0){  //llcArr.length === 0 &&
+            //     vm.setError(true);
+            //     return;
+            // } 
+            
             cpDataModel.setLlc(llcArr);  
             aside.hide();    
+
+             pubsub.publish("clickpay.llc", assigned.length);
               
                                     
         };

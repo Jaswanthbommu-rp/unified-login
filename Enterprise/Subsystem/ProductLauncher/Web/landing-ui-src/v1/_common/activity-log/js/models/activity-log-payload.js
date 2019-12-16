@@ -18,10 +18,10 @@
             s.endDatePayload = undefined;
             s.keywordPayload = undefined;
             s.timezoneOffset = undefined;
-            s.timeStr = '18:25:03';
+            s.startTimeStr = '00:00:00';
+            s.endTimeStr = '23:59:59';
+
             s.setDateRange("1-CM");
-            s.setStartDate(moment().subtract(7,'d'));
-            s.setEndDate(moment());
             s.setSortOrderPayload();
         };
 
@@ -113,19 +113,16 @@
             s.activityPayload = activityPayload;
         };
         p.setStartDate=function(startDate){
-            var s = this,
-            dateStr= moment(startDate).format("YYYY-MM-DD");
-            var startdate = dateStr + ' ' +  s.timeStr;
+            var s = this;
+            var startdate =  moment(startDate).format("YYYY-MM-DD") + ' ' +  s.startTimeStr;
             s.startDatePayload = {
                 "name": "StartDate",
                 "value": startdate
             };
-            
         };
         p.setEndDate=function(endDate){
-            var s = this,
-            dateStr= moment(endDate).format("YYYY-MM-DD");
-            var enddate = dateStr + ' ' +  s.timeStr;
+            var s = this;
+            var enddate = moment(endDate).format("YYYY-MM-DD") + ' ' +  s.endTimeStr;
             s.endDatePayload = {
                 "name": "EndDate",
                 "value": enddate

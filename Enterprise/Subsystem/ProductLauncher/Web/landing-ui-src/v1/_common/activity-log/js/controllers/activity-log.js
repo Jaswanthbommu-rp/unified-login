@@ -21,9 +21,13 @@
             vm.filter = vm.initForm();
             vm.activityLog = {};
             vm.singleUser = true;
+            vm.fromDateRequired = false;
+            vm.toDateRequired = false;
+            vm.lblFromDateText = "";
+            vm.lblToDateText = "";
             vm.register();
             vm.loadData();
-            vm.filterByStartDate(moment().subtract(7, 'd'));
+            vm.filterByStartDate(moment().startOf('month'));
             vm.filterByEndDate(moment());
 
             vm.exportMenu = exportMenu(vm);
@@ -78,7 +82,9 @@
 
         vm.filterByActivities = function (activityValue) {
             vm.payloadModel.buildActivityPayload(activityValue);
-            vm.loadData();
+            if (!vm.fromDateRequired && !vm.toDateRequired) {
+                vm.loadData();
+            }
         };
 
         vm.filterByDates = function (daterange) {
@@ -93,9 +99,17 @@
                     activityLogFormConfig.endDate.minDate(selectedDate);
                     activityLogFormConfig.endDate.maxDate(dateToday);
                 }
+                vm.fromDateRequired = false;
+                vm.lblFromDateText = "From";
+                vm.payloadModel.setStartDate(date);
+                if (!vm.toDateRequired) {
+                    vm.loadData();
+                }
+            } else {
+                vm.fromDateRequired = true;
+                vm.lblFromDateText = "From Date is required";
             }
-            vm.payloadModel.setStartDate(date);
-            vm.loadData();
+
         };
         vm.filterByEndDate = function (date) {
             var dateToday = moment();
@@ -109,9 +123,17 @@
                     activityLogFormConfig.endDate.maxDate(dateToday);
                     activityLogFormConfig.startDate.maxDate(dateToday);
                 }
+                vm.toDateRequired = false;
+                vm.lblToDateText = "To";
+                vm.payloadModel.setEndDate(date);
+                if (!vm.fromDateRequired) {
+                    vm.loadData();
+                }
+            } else {
+                vm.toDateRequired = true;
+                vm.lblToDateText = "To Date is required";
             }
-            vm.payloadModel.setEndDate(date);
-            vm.loadData();
+
         };
 
         vm.sortByFilter = function (filterItem) {
@@ -142,7 +164,8 @@
 
         vm.setActivityDate = function (activityDate) {
             if (activityDate) {
-                activityDate = moment(activityDate).toDate();
+                var offset=moment().utcOffset(); 
+                activityDate = moment(activityDate).subtract(offset,'m').toDate();
             }
             else {
                 activityDate = "";

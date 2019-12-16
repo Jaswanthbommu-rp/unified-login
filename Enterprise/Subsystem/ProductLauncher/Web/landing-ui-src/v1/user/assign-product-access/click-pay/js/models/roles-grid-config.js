@@ -13,11 +13,11 @@
             }, {
                 key: "orgType"
             }, 
-            // {
-            //     key: "orgsAssigned",
-            //     type: "custom",
-            //     templateUrl: "user/assign-product-access/click-pay/templates/roles-info-count.html"
-            // },
+            {
+                key: "orgsAssigned",
+                type: "custom",
+                templateUrl: "user/assign-product-access/click-pay/templates/roles-info-count.html"
+            },
             {
                 key: "orgTypeLink",
                 type: "custom",
@@ -35,10 +35,10 @@
                     key: "orgType",
                     text: "Org Type",
                 },
-                // {
-                //     key: "orgsAssigned",
-                //     text: "Assigned To",
-                // },
+                {
+                    key: "orgsAssigned",
+                    text: "Assigned To",
+                },
                 {
                     key: "orgTypeLink",
                     text: "",
@@ -78,10 +78,10 @@
                         }
                     ]
                 },
-                // {
-                //     key: "orgsAssigned",
-                //     type: "",                    
-                // },
+                {
+                    key: "orgsAssigned",
+                    type: "",                    
+                },
                 {
                     key: "orgTypeLink",
                     type: "",                    

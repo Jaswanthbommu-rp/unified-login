@@ -39,7 +39,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				var roleList = GetResultFromApi<ClickPayRoles>(baseUrlAndQuery).ClickPayRoleList;
 
-				return new ListResponse
+                // The OrgsAssignedCount received from product is not correct, so resetting the count to 0
+                WriteToDiagnosticLog(
+                       $"ClickPayManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Resetting OrgsAssignedCount to 0 ");
+
+                foreach (var item in roleList)
+                {
+                    item.OrgsAssignedCount = 0;
+                }
+
+                // Get Orgs assigned to Role count for User
+                if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
+                {
+                    WriteToDiagnosticLog(
+                        $"ClickPayManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetProductUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+
+                    var user = GetProductUser();
+
+                    if (user != null)
+                    {
+                        WriteToDiagnosticLog(
+                            $"ClickPayManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge OrgsAssignedCount for subject persona Id -{SubjectUserDetails.PersonaId}");
+
+                        foreach (var item in roleList)
+                        {
+                            item.OrgsAssignedCount = user.OrganizationRoles.FindAll(f => f.RoleId == item.Id).Count;
+                        }
+
+                    }
+                }
+
+                return new ListResponse
 				{
 					Records = roleList.Cast<object>().ToList(),
 					TotalRows = roleList.Count,
@@ -221,9 +251,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					else if (!changedUserOrgRoles.IsAssigned)
 					{
-						// remove role
-						productUserOrgRoleList.Remove(changedUserOrgRoles);
-					}
+                        // remove role
+                        //productUserOrgRoleList.Remove(changedUserOrgRoles);
+                        productUserOrgRoleList.RemoveAll(x => x.OrganizationId == changedUserOrgRoles.OrganizationId && x.RoleId == changedUserOrgRoles.RoleId);
+                    }
 				}
 			}
 			else
@@ -246,8 +277,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Roles = changedUserRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
 				PropertyRoles = changedUserRolePropertiesRegion.PropertyRoleList,
 				OrganizationRoles = productUserOrgRoleList,//changedUserRolePropertiesRegion.OrganizationRoleList,
-				CanReceiveMonthlyReport = changedUserRolePropertiesRegion.CanReceiveMonthlyReport
-			};
+				CanReceiveMonthlyReport = changedUserRolePropertiesRegion.CanReceiveMonthlyReport,
+                IsMigratedUser = true
+            };
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
 			{

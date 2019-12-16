@@ -581,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// store existing assigned products
 				var existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
 
-				UpdateProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails);
+				UpdateProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, persona);
 
 				aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
 				aoUser.Divisions = new List<Divisions>();
@@ -596,7 +596,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(updateResult))
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts.Count, aoGbUserCompanyPropertyRoleDetails);
+					UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
 				}
 				else
 				{
@@ -626,7 +626,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							{
 								// Disable products from GB
 								UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId,
-									productUserGbLogin.LoginName.ToLower(), existingAoProducts.Count,
+									productUserGbLogin.LoginName.ToLower(), existingAoProducts,
 									aoGbUserCompanyPropertyRoleDetails);
 								return string.Empty;
 							}
@@ -1412,7 +1412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private void UpdateProductUserInGreenBook(long editorPersonaId,
 			long userPersonaId,
 			string productLoginName,
-			int existingAssignedProductCount,
+			IList<AoUserCompanyPropertyRoleDetail> existingAssignedProducts,
 			IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails)
 		{
 			var productAssigned = new List<string>();
@@ -1434,8 +1434,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			productAssigned = productAssigned.Distinct<string>().ToList();
 			productUnAssigned = productUnAssigned.Distinct<string>().ToList();
 
+			var bmProduct = existingAssignedProducts.Where(p => p.ProductName.Equals("BM")).ToList();
+			if (productUnAssigned.Contains("BM") && !bmProduct.Any())
+			{
+				productUnAssigned.Remove("BM");
+			}
 			//set delete status if all products are unassigned.
-			if (existingAssignedProductCount == productUnAssigned.Count)
+			if (existingAssignedProducts.Count == productUnAssigned.Count)
 			{
 				// remove all association from GB
 				UpdateProductSettingProductStatus(userPersonaId,
@@ -1474,20 +1479,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					// First check default AO record exists 
 					WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking AO record in GB -productUsername -{productLoginName} for AO user..");
 					var samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnum.AssetOptimizer);
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
+					
 					if (!samlUserDetails.Any())
 					{
 						WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - No AO record found in GB for AO user -{productLoginName}. Creating new one.");
 						_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer,
 							SamlAttributeEnum.productUsername, productLoginName);
 						_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer,
-							SamlAttributeEnum.UserId, productLoginName);
-
-						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
+							SamlAttributeEnum.UserId, productLoginName);					
 
 						// add activity log
 						WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
 					}
-
+					
 					//if product is assigned
 					foreach (var product in productAssigned)
 					{
@@ -1878,7 +1883,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return products;
 		}
 
-		private void UpdateProductRolePropertyDetails(IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails, IList<AoUserCompanyPropertyRoleDetail> copiedAoUserCompanyPropertyRoleDetails)
+		private void UpdateProductRolePropertyDetails(IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails, IList<AoUserCompanyPropertyRoleDetail> copiedAoUserCompanyPropertyRoleDetails, Persona persona)
 		{
 			if (aoGbUserCompanyPropertyRoleDetails == null)
 				return;
@@ -1887,15 +1892,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
 			var modifiedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned);
 
+			IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+
 			// remove products
 			foreach (var unAssignedProduct in unAssignedProducts)
 			{
 				var matches = copiedAoUserCompanyPropertyRoleDetails.Where(p => p.ProductName == unAssignedProduct.ProductName).ToList();
 				if (matches.Any())
 				{
+					//Remove Roles for the product which un assigned
 					foreach (var match in matches)
 					{
-						copiedAoUserCompanyPropertyRoleDetails.Remove(match);
+						//Check to see if user has multicompany persona, then remove roles otherwise remove product completely
+						if (hasMultiCompany && !persona.Organization.PrimaryOrganization)
+						{
+							match.SelectedRoleValues = new List<string>();
+						}
+						else 
+						{
+							copiedAoUserCompanyPropertyRoleDetails.Remove(match);
+						}
 					}
 				}
 			}
