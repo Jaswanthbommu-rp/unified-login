@@ -16,6 +16,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -638,20 +639,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         bool foundNewUserName = false;
                         int incrementor = 0;
+                        string updatedproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" +
+                                        $"{person.LastName.TrimWhiteSpace()}".ToLower();
                         while (!foundNewUserName)
                         {
                             var result = IsUsernameAvailable(productLoginName);
                             if (!result)
                             {
-                                incrementor++;
-                                productLoginName = newproductUsername + incrementor.ToString();
                                 WriteToDiagnosticLog($"User {productLoginName} already exists in Vendor Credentialing product with editorPersona id -{editorPersonaId}. Getting new one.");
+                                incrementor++;
+                                productLoginName = $"{updatedproductUsername}{productUserPersonaId}";                                
                             }
                             else
                             {
                                 foundNewUserName = true;
                             }
                         }
+                        // Product username cannot be more than 50 characters
+                        if(productLoginName.Length > 50)
+                            productLoginName = productLoginName.Substring(1, 50);
+                        vendorServicesUser.Username = productLoginName;
                     }
 
                     WriteToDiagnosticLog($"ManageProductVendorServices.ManageVendorServicesUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
