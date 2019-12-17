@@ -648,12 +648,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 WriteToDiagnosticLog($"User {productLoginName} already exists in Vendor Credentialing product with editorPersona id -{editorPersonaId}. Getting new one.");
                                 incrementor++;
-                                productLoginName = $"{updatedproductUsername}{productUserPersonaId}";                                
+                                if(incrementor == 1)
+                                    productLoginName = $"{updatedproductUsername}{productUserPersonaId}";                                
+                                else
+                                    productLoginName = $"{updatedproductUsername}{productUserPersonaId}{incrementor}";
                             }
                             else
                             {
                                 foundNewUserName = true;
                             }
+                            if(incrementor == 10)
+                                throw new Exception($"Could not find a unique username for user persona id {productUserPersonaId} after {incrementor} try.");
                         }
                         // Product username cannot be more than 50 characters
                         if(productLoginName.Length > 50)
