@@ -5,3 +5,5 @@
 {{{ include("models/set-password-config.js") }}}
 {{{ include("models/change-password-data.js") }}}
 {{{ include("services/change-password.js") }}}
+{{{ include("services/get-user.js") }}}
+{{{ include("services/password-policy.js") }}}

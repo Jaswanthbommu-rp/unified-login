@@ -11,20 +11,36 @@
 
         var p = PassReqModel.prototype;
 
-        p.init = function () {
+        p.init = function (settings) {
             var s = this;
-
+            s.data = {
+                realPageId: "",
+                oldPassword: "",
+                newPassword: "",
+                newPasswordCopy: ""
+            };
+            
+            if (settings) {
             s.count = {
-                minChars: 8,
-                maxChars: 20,
+                minimumLength: 8,
+                maximumLength: 20,
                 uppercaseChars: 1,
                 lowercaseChars: 1,
                 numChars: 1,
                 specialChars: 1
             };
+                angular.extend(s.count, settings);
+            }
+
+            s._data = angular.copy(s.data);
         };
 
         // Getters
+
+        p.getData = function () {
+            var s = this;
+            return s.data;
+        };
 
         p.getMatchCount = function (pattern) {
             var s = this;
@@ -57,12 +73,12 @@
 
         p.hasMinChars = function () {
             var s = this;
-            return s.password && s.password.length >= 8;
+            return s.password && s.password.length >= s.count.minimumLength;
         };
 
         p.hasMaxChars = function () {
             var s = this;
-            return s.password && s.password.length <= 20;
+            return s.password && s.password.length <= s.count.maximumLength;
         };
 
         p.hasNumChars = function () {

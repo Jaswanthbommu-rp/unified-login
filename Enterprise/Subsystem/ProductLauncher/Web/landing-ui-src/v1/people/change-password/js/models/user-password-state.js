@@ -38,8 +38,8 @@
 
         form.state = {};
         form.settings = {
-            minCharacters: 8,
-            maxCharacers: 20
+            minimumLength: 8,
+            maximumLength: 20
         };
 
         form.init = function(settings) {
@@ -48,10 +48,8 @@
             if(settings) {
                 angular.extend(form.settings, settings);
             }
-
-            keys.char_count_check.lbl = keys.char_count_check.lbl.replace("{{min}}", form.settings.minCharacters);
-            keys.char_count_check.lbl = keys.char_count_check.lbl.replace("{{max}}", form.settings.maxCharacers);
-
+            keys.char_count_check.lbl = keys.char_count_check.lbl.replace("{{min}}", form.settings.minimumLength);
+            keys.char_count_check.lbl = keys.char_count_check.lbl.replace("{{max}}", form.settings.maximumLength);
             //number of characters
             state[keys.char_count_check.val] = {
                 label: keys.char_count_check.lbl,
@@ -113,7 +111,7 @@
         };
 
         form.isCountWithinRange = function(val) {
-            return val && (val.length >= form.settings.minCharacters) && (val.length <= form.settings.maxCharacers);
+            return val && (val.length >= form.settings.minimumLength) && (val.length <= form.settings.maximumLength);
         };
 
         form.hasUppercases = function(val) {
