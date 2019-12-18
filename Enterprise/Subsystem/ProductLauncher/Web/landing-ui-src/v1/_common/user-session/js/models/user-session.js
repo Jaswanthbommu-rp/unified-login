@@ -86,6 +86,11 @@
             return s.data.partyId;
         };
 
+        p.getOrganization = function () {
+            var s = this;
+            return s.data.organization;
+        };
+
         p.getPersonaId = function () {
             var s = this;
             return s.data.partyId;

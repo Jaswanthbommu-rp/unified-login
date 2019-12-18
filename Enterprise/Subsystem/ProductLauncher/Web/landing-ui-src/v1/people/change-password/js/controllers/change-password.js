@@ -16,7 +16,9 @@
         passwordConfig,
         passwordDetails,
         headerActions,
-        userAcctNfnSvc) {
+        userAcctNfnSvc,
+        PasswordPolicySvc,
+        userDetSvc) {
         var vm = this;
 
         vm.init = function () {
@@ -33,9 +35,11 @@
             vm.passwordConfig = passwordConfig;
             passwordConfig.setMethodsSrc(vm);
             passwordModel.setData(passwordData);
+            
             vm.changePasswordForm = null;
             vm.model = passwordData;
-            vm.formState.password = userPasswordState.init();
+            
+            
             vm.formState.canCancel = true; //TODO (userModel.getAccountExpiry() > 0);
             vm.passwordData = passwordData;
             vm.passcheck = false;
@@ -58,7 +62,8 @@
         vm.updateUser = function () {
             if (userModel.isReady()) {
                 vm.formState.title = vm.formState.title.replace(":username", userModel.getUsername());
-
+                vm.getUserInfo(userModel.getUsername());
+                
                  if (userModel.isPasswordExpired()) {
                     userAcctNfnSvc.setPwdExpired(true);
                 }
@@ -83,6 +88,40 @@
                     .finally(vm.toggleSaving);
             }
             return;
+        };
+
+        vm.getUserInfo = function(enterPriseUserName){
+            var params = {
+                enterpriseUserName: enterPriseUserName
+            };
+            userDetSvc.get(params, vm.onDataReady, vm.setDataErr);
+
+        };
+        
+        vm.onDataReady = function (resp) {
+            if (resp.isError === false) {
+                if (resp.records.length > 0) {
+                    vm.validatePasswordPolicy(resp.records[0].organizationPartyId);
+                }
+            }
+        };
+
+        vm.validatePasswordPolicy = function(orgPartyId) {
+            
+            var params = {
+                    PartyId: orgPartyId
+            };
+            PasswordPolicySvc.get(params, vm.onResponseReady, vm.setDataErr);
+        };
+
+        vm.onResponseReady = function (resp) {
+                var settings = resp.data;
+                vm.formState.title = vm.formState.title.replace(":ExpirationDays", settings.passwordExpirationPeriodInDays);
+                vm.formState.password = userPasswordState.init(settings);
+        };
+
+        vm.setDataErr = function (resp) {
+            alert(resp);
         };
 
         vm.toggleSaving = function (flag) {
@@ -234,6 +273,8 @@
             "passwordDetails",
             "rpGlobalHeaderActions",
             "userAccountNotificationSvc",
+            "PasswordPolicySvc",
+            "getUserSvc",
             changePwdController
         ]);
 
