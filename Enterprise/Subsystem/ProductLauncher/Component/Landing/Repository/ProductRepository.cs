@@ -570,7 +570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				//IList<ProductUI> products = new List<ProductUI>();
 				RPObjectCache rpCache = new RPObjectCache();
-				var cacheKey = $"getProductsByCompanyPartyId_{organizationPartyId}";
+				var cacheKey = $"getProductUsersByCompanyPartyId_{organizationPartyId}";
 
 				IList<OrganizationProductUser> productUsers = rpCache.GetFromCache<IList<OrganizationProductUser>>(cacheKey, 180, () =>
 				{
