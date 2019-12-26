@@ -564,25 +564,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (string.IsNullOrEmpty(_productUsername))
 				{
 					if (aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").Count() > 0)
-					{
-						var biProductData = aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").ToList();
-						if (biProductData.Any())
-						{
-							foreach (var biProduct in biProductData)
-							{
-								aoGbUserCompanyPropertyRoleDetails.Remove(biProduct);								
-							}
-						}		
-						
+					{	
 						if (IsAOBIProductExistsInOtherOrganization(editorPersonaId, productUserGbLogin.LoginName))
 						{
+							var biProductData = aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").ToList();
+							if (biProductData.Any())
+							{
+								foreach (var biProduct in biProductData)
+								{
+									aoGbUserCompanyPropertyRoleDetails.Remove(biProduct);
+								}
+							}
+
 							string biLoginName = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" +
 												 $"{person.LastName.TrimWhiteSpace()}".ToLower() + "_" +
 												 $"{blueAOCompanyInfo.CompanyInstanceSourceId.ToString()}@noreply.com";
 
-							//var biLogin = $"{newproductUsername}{blueAOCompanyInfo.CompanyInstanceSourceId.ToString()}@noreply.com";
-							//string.Concat(productUserGbLogin.LoginName, "+", blueAOCompanyInfo.CompanyInstanceSourceId.ToString()).ToLower();
-							if (!IsAOBIProductExistsInOtherOrganization(editorPersonaId, biLoginName))
+							if (!CheckUniqueAOUserName(biLoginName))
 							{
 								var biAOUser = new AOUser
 								{
@@ -1483,6 +1481,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			//need super user else won't return user info for other companies that are not associated with editor User
 			string productUserProfileApiUrl = $"{_apiEndPoint}users/{loginName}/validation";
 			var validationResult = GetResultFromApi<dynamic>(productUserProfileApiUrl);
+
+			// dump diagnostic info
+			DumpApiCallInfoToDiagnosticLog($"ManageProductAssetOptimization.CheckUniqueAOUserName - API Url - {productUserProfileApiUrl}",
+				validationResult);
 
 			if (validationResult != null)
 				return validationResult.exists;
