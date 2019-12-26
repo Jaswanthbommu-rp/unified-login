@@ -23,7 +23,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	public class ManageProductAssetOptimization : ManageProductBase, IManageProductAssetOptimization
 	{
