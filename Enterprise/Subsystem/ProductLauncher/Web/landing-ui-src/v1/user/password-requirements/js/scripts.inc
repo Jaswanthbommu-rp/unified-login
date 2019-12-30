@@ -2,3 +2,4 @@
 {{{ include("models/popover-config.js") }}}
 {{{ include("models/password-requirements.js") }}}
 {{{ include("templates/templates.inc.js") }}}
+{{{ include("services/password-policy.js") }}}

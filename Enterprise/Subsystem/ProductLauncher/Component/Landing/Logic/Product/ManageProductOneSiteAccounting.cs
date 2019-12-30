@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using blueBook = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
@@ -421,6 +422,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
                     }
+
+                    aUser.HasAccessToAllCurrentFutureProperties = ComputeFlagBasedOnCompanyAndPropertySelected(editorPersonaId, userPersonaId, datafilter);
                 }
                 if (userResp == null) { userResp = new NameValuePair[1]; }
                 
@@ -445,6 +448,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return response;
+        }
+
+        private bool ComputeFlagBasedOnCompanyAndPropertySelected(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+        {
+            bool hasAccessToAllCurrentAndFutureProperties = false;
+            List<ACCompany> companyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
+            ListResponse propertyList = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
+            int totalCompanies = 0;
+            int totalProperties = 0;
+            int totalCompaniesSelected = 0;
+            int totalPropertiesUnSelected = 0;
+
+            totalCompanies = companyList.Count;
+            totalCompaniesSelected = companyList.Count(c => c.isAssigned == true);
+
+            totalProperties = propertyList.Records.Count;
+            totalPropertiesUnSelected = propertyList.Records.Count(p => ((ACProperty)p).IsAssigned == false);
+
+            if ((totalCompanies == totalCompaniesSelected) && (totalProperties == totalPropertiesUnSelected))
+                hasAccessToAllCurrentAndFutureProperties = true;
+
+            return hasAccessToAllCurrentAndFutureProperties;
         }
 
         private List<ACCompany> GetUserCompaniesDetails(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
@@ -655,6 +680,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #endregion
 
+        /// <summary>
+        /// Get current companies and assign to user for Allow access to all current and future companies
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="propertiesToAssign"></param>
+        /// <param name="isAccountingAdmin"></param>
+        /// <returns></returns>
+        public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType)
+        {
+            RequestParameter datafilter = new RequestParameter();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            List<ACCompany> currentCompanyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
+            
+            logData = new Dictionary<string, object>();
+            logData.Add("currentCompanyList", currentCompanyList);
+            WriteToDiagnosticLog($"AssignAllCurrentCompaniesToUser - Current companies to be assigned to user - currentCompanyList", logData);
+            propertiesToAssign.Clear();
+
+            foreach (ACCompany company in currentCompanyList)
+            {
+                propertiesToAssign.Add(company.Id);               
+            }
+
+            return UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertiesToAssign, isAccountingAdmin, batchProcessType);            
+        }
+            
 
         /// <summary>
         /// Update the properties assigned to the given user
@@ -1229,6 +1281,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 string randomPassword = Guid.NewGuid().ToString().Replace("-", "");
 
+                accountingLoginName = RemoveSpecialCharacter(accountingLoginName);
+
                 List<NameValuePair> parameters = new List<NameValuePair>{
 					new NameValuePair { Name = "CompanyID", Value = _companyName },
 					new NameValuePair { Name = "Login", Value = _intactLogin },
@@ -1370,13 +1424,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
                 if ((!isSuperUser && !isUnRestrictedAccessToProp) && PropertyList.Count > 0)
                 {
-                    string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
+                    string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);                    
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
                         return updateResultProp;
                     }
                 }
-
+                                
+                if ((!isSuperUser && isUnRestrictedAccessToProp))
+                {
+                    string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
+                    if (!string.IsNullOrEmpty(updateResultProp))
+                    {
+                        return updateResultProp;
+                    }
+                }
 
                 if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
@@ -1391,6 +1453,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog($"ManageAccountingUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
                 return $"Error - {ex.Message}";
             }
+        }
+
+        private string RemoveSpecialCharacter(string accountingLoginName)
+        {
+            switch (accountingLoginName)
+            {
+                case "portluser":
+                case "realpage":
+                case "CPAUser":
+                case "ExtUser":
+                case "SvcUser":
+                case "Services":
+                case "CNS_":
+                    accountingLoginName = $"{accountingLoginName}-1";
+                    break;
+            }
+
+            var reg = new Regex(@"[^\w\s\-\.]");
+            accountingLoginName = reg.Replace(accountingLoginName, string.Empty);
+
+            if(accountingLoginName.Length > 80)
+                accountingLoginName = accountingLoginName.Substring(1, 80);
+
+            return accountingLoginName;
         }
 
         /// <summary>

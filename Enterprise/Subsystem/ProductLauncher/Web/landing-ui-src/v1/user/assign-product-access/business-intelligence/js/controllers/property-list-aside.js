@@ -7,7 +7,8 @@
         var vm = this,
             asideGrid = gridModel(),
             gridTransform = gridTransformSvc(),
-            gridPagination = gridPaginationModel();
+            gridPagination = gridPaginationModel(),
+            userLoginName = "";
 
         vm.init = function () {
             vm.title = "Property Group Detail";
@@ -40,7 +41,8 @@
             var params = {
                 editorPersonaId: persona.getId(),
                 userPersonaId: userModel.getPersonaId(),
-                propertyGroupId: groupModel.getPropertyGroupID()
+                propertyGroupId: groupModel.getPropertyGroupID(),
+                userLoginName: userModel.getLoginName() === undefined ? userLoginName : userModel.getLoginName() 
             };
 
             vm.dataReq = dataSvc.get(params, vm.setData);

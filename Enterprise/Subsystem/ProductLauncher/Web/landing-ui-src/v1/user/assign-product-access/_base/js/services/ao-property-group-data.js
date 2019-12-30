@@ -12,7 +12,8 @@
             editorPersonaId: "@editorPersonalID",
             userPersonaId: "@userPersonalID",
             productName: "@productName",
-            selectedCompanies: "@selectedCompanies"
+            selectedCompanies: "@selectedCompanies",
+            userLoginName: "@userLoginName"
         };
 
         actions = {

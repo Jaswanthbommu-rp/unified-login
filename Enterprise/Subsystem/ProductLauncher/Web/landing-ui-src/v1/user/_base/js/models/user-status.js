@@ -14,6 +14,7 @@
         p.init = function () {
             var s = this;
             s.statusId = 0;
+            s.loginName = "";
             s.update = eventStream();
         };
 
@@ -26,12 +27,23 @@
             return s;
         };
 
+        p.setLoginName= function (name) {
+            var s = this;
+            s.loginName = name;
+            return s;
+        };
+
         // Getters
         p.getStatusId = function () {
             var s = this;
             return s.statusId;
         };
 
+        p.getLoginName= function () {
+            var s = this;
+            return s.loginName;
+        };
+        
         // Actions
 
         p.subscribe = function (callback) {

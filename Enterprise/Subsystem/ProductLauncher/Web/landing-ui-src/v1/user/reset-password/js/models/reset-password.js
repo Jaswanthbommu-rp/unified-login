@@ -11,7 +11,7 @@
 
         var p = ResetPasswordModel.prototype;
 
-        p.init = function () {
+        p.init = function (settings) {
             var s = this;
             s.data = {
                 realPageId: "",
@@ -21,13 +21,17 @@
             };
 
             s.count = {
-                minChars: 8,
-                maxChars: 20,
+                minimumLength: 8,
+                maximumLength: 20,
                 numChars: 1,
                 specialChars: 1,
                 upperCaseChars: 1,
                 lowerCaseChars: 1
             };
+
+            if (settings) {
+                angular.extend(s.count, settings);
+            }
 
             s._data = angular.copy(s.data);
             
@@ -77,12 +81,12 @@
 
         p.hasMinChars = function () {
             var s = this;
-            return s.data.newPassword && s.data.newPassword.length >= 8;
+            return s.data.newPassword && s.data.newPassword.length >= s.count.minimumLength;
         };
 
         p.hasMaxChars = function () {
             var s = this;
-            return s.data.newPassword && s.data.newPassword.length <= 20;
+            return s.data.newPassword && s.data.newPassword.length <= s.count.maximumLength;
         };
 
         p.hasNumChars = function () {
