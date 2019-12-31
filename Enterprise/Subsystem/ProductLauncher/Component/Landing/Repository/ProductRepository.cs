@@ -560,42 +560,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-		/// <summary>
-		/// Used to get a list of products by company party id
-		/// </summary>
-		/// <param name="organizationPartyId"></param>
-		/// <param name="productId">products "," sepereated</param>
-		/// <returns></returns>
-		public IList<OrganizationProductUser> GetProductUsersByCompany(long organizationPartyId,string productId)
-		{
-			{
-				//IList<ProductUI> products = new List<ProductUI>();
-				RPObjectCache rpCache = new RPObjectCache();
-				var cacheKey = $"getProductUsersByCompanyPartyId_{organizationPartyId}";
+        /// <summary>
+        /// Used to get a list of products by company party id
+        /// </summary>
+        /// <param name="organizationPartyId"></param>
+        /// <param name="productId">products "," sepereated</param>
+        /// <returns></returns>
+        public IList<OrganizationProductUser> GetProductUsersByCompany(long organizationPartyId, string productId)
+        {
+            {
+                //IList<ProductUI> products = new List<ProductUI>();
+                RPObjectCache rpCache = new RPObjectCache();
+                var cacheKey = $"getProductUsersByCompanyPartyId_{organizationPartyId}";
 
-				IList<OrganizationProductUser> productUsers = rpCache.GetFromCache<IList<OrganizationProductUser>>(cacheKey, 180, () =>
-				{
-					using (var repository = GetRepository())
-					{
-						productUsers = repository.GetMany<OrganizationProductUser>(StoredProcNameConstants.SP_ListProductUsersForOrganization, new { OrgPartyId = organizationPartyId, ProductId = productId }).ToList();
-					}
+                IList<OrganizationProductUser> productUsers = rpCache.GetFromCache<IList<OrganizationProductUser>>(cacheKey, 180, () =>
+                {
+                    using (var repository = GetRepository())
+                    {
+                        productUsers = repository.GetMany<OrganizationProductUser>(StoredProcNameConstants.SP_ListProductUsersForOrganization, new { OrgPartyId = organizationPartyId, ProductId = productId }).ToList();
+                    }
 
-					return productUsers;
-				});
+                    return productUsers;
+                });
 
-				return productUsers;
-			}
-		}
+                return productUsers;
+            }
+        }
 
-		/// <summary>
-		/// Used to get a list of products ids for a company by the company guid
-		/// </summary>
-		/// <param name="organizationRealPageId"></param>
-		/// <returns></returns>
-		public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
-		{
-			RPObjectCache rpCache = new RPObjectCache();
-			var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";
+        /// <summary>
+        /// Used to get a list of products ids for a company by the company guid
+        /// </summary>
+        /// <param name="organizationRealPageId"></param>
+        /// <returns></returns>
+        public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            var cacheKey = $"getProductIdsByCompanyGuid_{organizationRealPageId}";
 
             IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
             {
@@ -1189,8 +1189,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ProductSettingList productSetting = new ProductSettingList();
             ProductInternalSetting productInternalSetting = new ProductInternalSetting();
             IList<string> aoUserProducts = null;
-			List<string> aoNonMigratedUserProducts = null;
-			IList<ProductFamily> productFamilyList = null;
+            List<string> aoNonMigratedUserProducts = null;
+            IList<ProductFamily> productFamilyList = null;
             IList<Solution> personaProductUserDetails = null;
 
             using (var repository = GetRepository())
@@ -1209,19 +1209,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // get products for personaId
                     var aoLogic = new ManageProductAssetOptimization(_userClaim);
-					aoUserProducts = aoLogic.GetGbSupportedAoEditorUserProductsToAssign(_userClaim.PersonaId);
+                    aoUserProducts = aoLogic.GetGbSupportedAoEditorUserProductsToAssign(_userClaim.PersonaId);
 
-					if (personRealPageId == null && loginName != null)
-					{
-						aoNonMigratedUserProducts = aoLogic.GetAOProductsForNewMultiCompanyUser(_userClaim.PersonaId, loginName);
-						if (aoNonMigratedUserProducts?.Count > 0)
-						{
-							aoNonMigratedUserProducts.RemoveAll(p => p.Contains("BM"));							
-						}
-					}
+                    if (personRealPageId == null && loginName != null)
+                    {
+                        aoNonMigratedUserProducts = aoLogic.GetAOProductsForNewMultiCompanyUser(_userClaim.PersonaId, loginName);
+                        if (aoNonMigratedUserProducts?.Count > 0)
+                        {
+                            aoNonMigratedUserProducts.RemoveAll(p => p.Contains("BM"));
+                        }
+                    }
 
-					//var aoProductFamily = productFamilyList.Where(p => p.ProductTypeId == 400).ToList().FirstOrDefault();
-					if (personaProductUserDetails.Count > 0)
+                    //var aoProductFamily = productFamilyList.Where(p => p.ProductTypeId == 400).ToList().FirstOrDefault();
+                    if (personaProductUserDetails.Count > 0)
                     {
                         foreach (var aoProduct in aoUserProducts)
                         {
@@ -1233,9 +1233,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     FamilyId = 400,
                                     IsAssigned = false,
-                                    ProductId = (int) aoProductEnum,
-									ProductCode = prodDetails.BooksProductCode,
-									ProductName = prodDetails.Name,
+                                    ProductId = (int)aoProductEnum,
+                                    ProductCode = prodDetails.BooksProductCode,
+                                    ProductName = prodDetails.Name,
                                     SolutionId =
                                         productTypes.Where(x => x.Name.Trim() == prodDetails.Name.Trim())
                                             .Select(z => z.ProductTypeId)
@@ -1365,22 +1365,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
 
-						if (aoNonMigratedUserProducts?.Count > 0 && !setIsAssigned && !string.IsNullOrWhiteSpace(s.ProductCode))
-						{
-							if (aoNonMigratedUserProducts.Any(item => item.Contains(s.ProductCode)))
-							{
-								s.IsAssigned = true;
-								productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("ProductStatus", StringComparison.OrdinalIgnoreCase) && item.ProductId == s.ProductId);
-								if (productSetting != null)
-								{
-									s.ProductStatus = Convert.ToInt32(productSetting.Value);
-									if (s.ProductStatus == (int)ProductBatchStatusType.Deleted || s.ProductStatus == (int)ProductBatchStatusType.Inactive)
-									{
-										s.IsAssigned = false;
-									}
-								}
-							}							
-						}
+                        if (aoNonMigratedUserProducts?.Count > 0 && !setIsAssigned && !string.IsNullOrWhiteSpace(s.ProductCode))
+                        {
+                            if (aoNonMigratedUserProducts.Any(item => item.Contains(s.ProductCode)))
+                            {
+                                s.IsAssigned = true;
+                                productSetting = productSettingList.FirstOrDefault(item => item.Name.Equals("ProductStatus", StringComparison.OrdinalIgnoreCase) && item.ProductId == s.ProductId);
+                                if (productSetting != null)
+                                {
+                                    s.ProductStatus = Convert.ToInt32(productSetting.Value);
+                                    if (s.ProductStatus == (int)ProductBatchStatusType.Deleted || s.ProductStatus == (int)ProductBatchStatusType.Inactive)
+                                    {
+                                        s.IsAssigned = false;
+                                    }
+                                }
+                            }
+                        }
                         //Does the Product requires a User (e.g. Resident Portal)
                         if (s.ProductAPIRequiresUser == true)
                         {
