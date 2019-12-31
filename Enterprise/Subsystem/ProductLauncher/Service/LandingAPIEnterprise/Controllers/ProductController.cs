@@ -59,7 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company and products", Type = typeof(ProductUsers))]
         [Route("usersbycompanyproducts")]
-        //[AuthorizeScope("userinfoapi")]
+        [AuthorizeScope("userinfoapi")]
         [HttpGet]
         public HttpResponseMessage GetUsersByCompanyorProducts([FromUri]PageRequest datafilter, int? companyId = null, [FromUri] IList<int> products = null)
         {
