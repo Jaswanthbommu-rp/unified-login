@@ -50,40 +50,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private int _userInvalidOrganizationPartyId = 5544;
 
-        protected Persona _editorPersona;
-        protected Persona _userPersona;
-        protected Persona _nullPersona;
-        protected Persona _newUserPersona;
-        protected Persona _userInvalidPersona;
-
-        protected IList<ProductSettingType> _productSettingType = new List<ProductSettingType>();
-        protected IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
-
-        protected RepositoryResponse _repositoryResponseProductStatus = new RepositoryResponse();
-	    protected RepositoryResponse _repositoryResponsePropertySuccess = new RepositoryResponse();
-	    protected RepositoryResponse _repositoryResponsePropertyFail = new RepositoryResponse();
-
-
+		protected Persona _editorPersona;
+		protected Persona _userPersona;
+		protected Persona _nullPersona;
+		protected Persona _newUserPersona;
+		protected Persona _userInvalidPersona;
+		
+		protected IList<ProductSettingType> _productSettingType = new List<ProductSettingType>();
+		protected IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
+		
+		protected RepositoryResponse _repositoryResponseProductStatus = new RepositoryResponse();
+		protected RepositoryResponse _repositoryResponsePropertySuccess = new RepositoryResponse();
+		protected RepositoryResponse _repositoryResponsePropertyFail = new RepositoryResponse();
+		
+		
 		protected IList<IC.ProductInternalSetting> _productInternalSettings = new List<IC.ProductInternalSetting>();
-        protected IList<IC.ElectronicAddress> _electronicAddressList = new List<IC.ElectronicAddress>();
-        
-        protected List<SamlAttributes> _editorSamlAttributes;
-        protected List<SamlAttributes> _userSamlAttributes;
-        protected List<SamlAttributes> _emptySamlAttributes;
-
-        protected List<ProductProperty> _resultPropertyList;
-        protected List<ACProperty> _resultPropertyListFinSuite;
-        protected List<ProductRole> _resultRoleList;
-
-        protected HttpClient client;
-        protected Mock<HttpMessageHandler> mockHttpMessageHandler;
-        protected Mock<HttpMessageHandler> mockTokenHttpMessageHandler;
-        protected BatchProcessType batchProcessTypeCreUpd = BatchProcessType.CreateUpdateProductUser;
-
-        protected List<OrganizationStatus> _organizationStatusListEditorPersona = new List<OrganizationStatus>();
-        protected List<OrganizationStatus> _organizationStatusListUserPersona = new List<OrganizationStatus>();
-        protected List<OrganizationStatus> _organizationStatusListNewUserPersona = new List<OrganizationStatus>();
-        protected List<OrganizationStatus> _organizationStatusListInvalidPersona = new List<OrganizationStatus>();
+		protected IList<IC.ElectronicAddress> _electronicAddressList = new List<IC.ElectronicAddress>();
+		
+		protected List<SamlAttributes> _editorSamlAttributes;
+		protected List<SamlAttributes> _userSamlAttributes;
+		protected List<SamlAttributes> _emptySamlAttributes;
+		
+		protected List<ProductProperty> _resultPropertyList;
+		protected List<ACProperty> _resultPropertyListFinSuite;
+		protected List<ProductRole> _resultRoleList;
+		
+		protected HttpClient client;
+		protected Mock<HttpMessageHandler> mockHttpMessageHandler;
+		protected Mock<HttpMessageHandler> mockTokenHttpMessageHandler;
+		protected BatchProcessType batchProcessTypeCreUpd = BatchProcessType.CreateUpdateProductUser;
+		
+		protected List<OrganizationStatus> _organizationStatusListEditorPersona = new List<OrganizationStatus>();
+		protected List<OrganizationStatus> _organizationStatusListUserPersona = new List<OrganizationStatus>();
+		protected List<OrganizationStatus> _organizationStatusListNewUserPersona = new List<OrganizationStatus>();
+		protected List<OrganizationStatus> _organizationStatusListInvalidPersona = new List<OrganizationStatus>();
 
         protected OrganizationStatus _organizationStatusEditorPersona;
         protected OrganizationStatus _organizationStatusUserPersona;
