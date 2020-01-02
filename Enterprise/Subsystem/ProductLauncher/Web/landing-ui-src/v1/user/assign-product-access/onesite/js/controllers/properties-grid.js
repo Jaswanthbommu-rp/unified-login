@@ -6,6 +6,7 @@
     function OSPropertiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, OSDataModel, switchConfig, userDetailsModel, security) {
         var vm = this,
             allProperties,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -35,7 +36,8 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
-             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
 
         };
 
@@ -45,6 +47,13 @@
 
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageOneSiteProductAccess;
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+            if(OSDataModel.getSelectAllCheckboxChecked()){
+                OSDataModel.setAllPropertiesData(vm.filteredRecords, vm.dataReq.records, true);    
+            }
         };
 
         vm.loadData = function () {
@@ -95,6 +104,7 @@
                     vm.dataErrorReason = genericDataErrorReason;
                 }
             }
+            OSDataModel.setSelectAllCheckboxChecked(vm.dataReq.records);
         };
 
         vm.setAllProperties = function (val) {
@@ -111,7 +121,12 @@
         };
 
         vm.selectAllProperties = function (val) {
-            OSDataModel.setAllProperties(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                OSDataModel.setAllPropertiesData(vm.filteredRecords, vm.dataReq.records, val);
+            }
+            else{
+                OSDataModel.setAllPropertiesData(vm.dataReq.records, vm.dataReq.records, val);
+            } 
         };
 
         vm.setViewUserState = function (data) {

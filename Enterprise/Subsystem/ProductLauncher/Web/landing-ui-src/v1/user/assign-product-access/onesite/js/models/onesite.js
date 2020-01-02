@@ -27,6 +27,7 @@
 
             s.roles = [];
             s.properties = [];
+            s.selectAllCheckboxChecked = false;
             s._data = angular.copy(s.data);
         };
 
@@ -57,14 +58,33 @@
             s.properties = propertiesData;
         };
 
-        p.setAllProperties = function (propertiesData,val) {
+        p.setAllPropertiesData = function (filteredPropertiesData, allPropertiesData, val) {
             var s = this;
+            s.selectAllCheckboxChecked = val;
 
-             propertiesData.forEach(function (item) {
+            allPropertiesData.forEach(function (item) {
+                item["isAssigned"] = !val;
+             });
+
+            filteredPropertiesData.forEach(function (item) {
                item["isAssigned"] = val;
             });
+        };
 
-            s.properties = propertiesData;
+        p.setSelectAllCheckboxChecked = function(propertiesData){
+            var s = this;
+            
+             s.selectAllCheckboxChecked = true;
+             propertiesData.forEach(function (item) {
+                 if(item["isAssigned"] === false){
+                    s.selectAllCheckboxChecked = false;
+                }
+            });
+        };
+
+        p.getSelectAllCheckboxChecked = function(){
+            var s = this;
+            return s.selectAllCheckboxChecked;
         };
 
         p.setRoles = function (rolesData) {
