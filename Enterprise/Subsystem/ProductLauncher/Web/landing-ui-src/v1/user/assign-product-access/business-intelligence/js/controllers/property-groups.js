@@ -26,12 +26,17 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.aoStatusWatch = statusModel.subscribeBI(vm.loadData);
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllPropertyGroups);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.allPropertiesSelected = function (val) {
             vm.allProperties = val;
             vm.grid.selectAll(false);
             vm.grid.updateSelected();
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
         vm.updateGrid = function () {
@@ -90,7 +95,12 @@
         };
 
         vm.selectAllPropertyGroups = function (val) {
-            dataModel.setAllPropertyGroups(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                dataModel.setAllPropertyGroups(vm.filteredRecords, val);
+            }
+            else{
+                dataModel.setAllPropertyGroups(vm.dataReq.records, val);
+            } 
         };
 
         vm.destroy = function () {
@@ -109,6 +119,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
+            vm.filteredRecords = undefined;
         };
 
         vm.init();
