@@ -5,6 +5,7 @@
 
     function VendCompPropertiesGridCtrl($scope, $filter, dataSvc, dataGroupSvc, gridModel, gridConfig, gridGroupConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, VendCompDataModel, userDetailsModel, security) {
         var vm = this,
+            filteredRecords,
             propertiesGrid = gridModel(),
             propertyGroupGrid = gridModel(),
             propertyGroupGridTransform = gridTransformSvc(),
@@ -48,12 +49,15 @@
 
             vm.updateWatch = pubsub.subscribe("vc.property-group-radio", vm.updateGroupRecords);
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
             return VendCompDataModel.isActive();
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
         vm.loadData = function () {
             if (persona.isReady() && vm.isActive()) {
                 propertiesGrid.busy(true);
@@ -198,7 +202,13 @@
         };
 
         vm.selectAllProperties = function (val) {
-            VendCompDataModel.setAllProperties(vm.dataReq.records, val);
+            //VendCompDataModel.setAllProperties(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                VendCompDataModel.setAllProperties(vm.filteredRecords, val);
+            }
+            else{
+                VendCompDataModel.setAllProperties(vm.dataReq.records, val);
+            } 
         };
 
         vm.destroy = function () {
