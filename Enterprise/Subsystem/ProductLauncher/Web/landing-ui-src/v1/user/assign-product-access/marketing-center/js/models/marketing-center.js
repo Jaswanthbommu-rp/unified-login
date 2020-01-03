@@ -67,7 +67,7 @@
             propertiesData.forEach(function(item){
                 item["isAssigned"] = val;
             });
-            s.properties = propertiesData;
+            //s.properties = propertiesData;
         };
 
         p.getData = function () {
