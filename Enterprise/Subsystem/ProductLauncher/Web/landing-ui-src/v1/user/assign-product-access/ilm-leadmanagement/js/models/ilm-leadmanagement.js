@@ -67,7 +67,6 @@
             propertiesData.forEach(function(item){
                 item["isAssigned"] = val;
             });
-            s.properties = propertiesData;
         };
 
         p.setAllRoles = function(rolesData, val){
