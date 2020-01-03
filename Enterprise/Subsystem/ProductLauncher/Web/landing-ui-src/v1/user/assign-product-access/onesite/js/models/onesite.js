@@ -1,3 +1,4 @@
+
 //  OSData Model
 
 (function (angular, undefined) {
@@ -27,7 +28,6 @@
 
             s.roles = [];
             s.properties = [];
-            s.selectAllCheckboxChecked = false;
             s._data = angular.copy(s.data);
         };
 
@@ -58,33 +58,11 @@
             s.properties = propertiesData;
         };
 
-        p.setAllPropertiesData = function (filteredPropertiesData, allPropertiesData, val) {
+        p.setAllPropertiesData = function (filteredPropertiesData, val) {
             var s = this;
-            s.selectAllCheckboxChecked = val;
-
-            allPropertiesData.forEach(function (item) {
-                item["isAssigned"] = !val;
-             });
-
             filteredPropertiesData.forEach(function (item) {
                item["isAssigned"] = val;
             });
-        };
-
-        p.setSelectAllCheckboxChecked = function(propertiesData){
-            var s = this;
-            
-             s.selectAllCheckboxChecked = true;
-             propertiesData.forEach(function (item) {
-                 if(item["isAssigned"] === false){
-                    s.selectAllCheckboxChecked = false;
-                }
-            });
-        };
-
-        p.getSelectAllCheckboxChecked = function(){
-            var s = this;
-            return s.selectAllCheckboxChecked;
         };
 
         p.setRoles = function (rolesData) {
@@ -120,7 +98,6 @@
 
                 hasRoles = s.data.inputJson.roleList.length > 0;
             }
-
             if (s.properties && s.properties.length) {
                 s.data.inputJson.propertyList = [];
 

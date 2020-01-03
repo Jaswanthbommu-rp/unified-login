@@ -51,9 +51,6 @@
 
         vm.filter = function(filterBy){
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
-            if(OSDataModel.getSelectAllCheckboxChecked()){
-                OSDataModel.setAllPropertiesData(vm.filteredRecords, vm.dataReq.records, true);    
-            }
         };
 
         vm.loadData = function () {
@@ -104,7 +101,6 @@
                     vm.dataErrorReason = genericDataErrorReason;
                 }
             }
-            OSDataModel.setSelectAllCheckboxChecked(vm.dataReq.records);
         };
 
         vm.setAllProperties = function (val) {
@@ -122,10 +118,10 @@
 
         vm.selectAllProperties = function (val) {
             if(vm.filteredRecords !== undefined){
-                OSDataModel.setAllPropertiesData(vm.filteredRecords, vm.dataReq.records, val);
+                OSDataModel.setAllPropertiesData(vm.filteredRecords, val);
             }
             else{
-                OSDataModel.setAllPropertiesData(vm.dataReq.records, vm.dataReq.records, val);
+                OSDataModel.setAllPropertiesData(vm.dataReq.records, val);
             } 
         };
 
