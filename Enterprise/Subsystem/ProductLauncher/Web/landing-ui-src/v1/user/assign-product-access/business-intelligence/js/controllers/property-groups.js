@@ -5,6 +5,7 @@
 
     function BusinessIntelligencePropertyGroupsCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, userDetailsModel, pubsub, statusModel, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -119,7 +120,6 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
-            vm.filteredRecords = undefined;
         };
 
         vm.init();
