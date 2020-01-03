@@ -5,6 +5,7 @@
 
     function AEntitiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, ADataModel, switchConfig, userDetailsModel, security, switchModel, pubsub) {
         var vm = this,
+            filteredRecords,
             entitiesGrid = gridModel(),
             entitiesGridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -31,6 +32,7 @@
             vm.gridSelectionWatch = vm.entitiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.gridSelectAllWatch = vm.entitiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
             vm.gridAllWatch = entitiesGrid.subscribe("selectAll", vm.selectAllEntities);
+            vm.filterData = vm.entitiesGrid.subscribe("filterBy", vm.filter.bind(vm));
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -54,6 +56,9 @@
             return !persona.data.hasManageAccountingProductAccess;
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
 
         vm.isActive = function() {
             return ADataModel.isActive();
@@ -166,9 +171,7 @@
                             isAssigned: val
                         }, true);
 
-                        comp.isAssigned = val;
-
-             
+                        comp.isAssigned = val;             
                     }
 
                     if(comp.isAssigned){
@@ -191,7 +194,13 @@
         };
 
         vm.selectAllEntities = function (val) {
-            ADataModel.setAllEntities(vm.dataReq.records, val);
+            //ADataModel.setAllEntities(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                ADataModel.setAllEntities(vm.filteredRecords, val);
+            }
+            else{
+                ADataModel.setAllEntities(vm.dataReq.records, val);
+            }
         };
 
         vm.destroy = function() {
@@ -213,6 +222,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
+            vm.filteredRecords = undefined;
         };
 
         vm.init();
