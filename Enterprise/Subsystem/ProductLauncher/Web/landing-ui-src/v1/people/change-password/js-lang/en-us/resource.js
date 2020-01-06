@@ -5,7 +5,7 @@
         var bundle = appLangBundle.lang("en-us").app("people.changePassword");
 
         bundle.set({
-            "label.instructions": "Enter a new password for :username.",
+            "label.instructions": "You are required to change your password after :ExpirationDays days. Please set a new password for :username.",
             "label.rules": "Password must have at least:",
             "label.placeholder.currentPassword": "Current Password",
             "label.placeholder.newPassword": "Set Password",

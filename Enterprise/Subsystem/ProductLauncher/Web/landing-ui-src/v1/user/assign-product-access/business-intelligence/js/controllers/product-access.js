@@ -10,7 +10,7 @@
             vm.tabsList = [];
             vm.productDisabled = false;
             vm.userDetailsModel = userDetailsModel;
-            vm.productAccessWatch = pubsub.subscribe("pa.regUserNoEmailNotAllowed", vm.setProductDisabled);
+            vm.productAccessWatch = pubsub.subscribe("ao.regUserNoEmailNotAllowed", vm.setProductDisabled);
             vm.tabsMenu = tabsMenu().setData(tabsData.getList());
             vm.tabsList = tabsData.getList();
             vm.panelName = $filter("productPanelText")("panelName.businessintelligence");
@@ -30,6 +30,7 @@
         };
 
         vm.setProductDisabled = function (value) {
+            logc("bi value",value);
             vm.productDisabled = value;
         };
 
