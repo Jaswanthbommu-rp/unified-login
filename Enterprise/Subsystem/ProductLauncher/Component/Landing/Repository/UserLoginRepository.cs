@@ -191,8 +191,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			IUserRepository userRepository = new UserRepository();
 
-			IOrganization organization = _organizationRepository.GetOrganization(realPageId: null, organizationPartyId: organizationPartyId, blueBookId: null, blackBookId: null);
-
 			using (var repository = GetRepository())
             {
 				dynamic param = new
@@ -208,7 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				//remove products
 				//If Primary Organization - List all Persona(s) across all user companies
 				//Else List Persona(s) for a company
-                if (statusTypeId == (int) UserUiStatusType.Disabled || statusTypeId == (int)UserUiStatusType.Expired)
+                if (statusTypeId == (int) UserUiStatusType.Disabled)
                 {
                     param = new
                     {
