@@ -9,7 +9,7 @@
         vm.init = function () {
             vm.tabsList = [];
             vm.productDisabled = false;
-            vm.productAccessWatch = pubsub.subscribe("pa.regUserNoEmailNotAllowed", vm.setProductDisabled);
+            vm.productAccessWatch = pubsub.subscribe("ao.regUserNoEmailNotAllowed", vm.setProductDisabled);
             vm.tabsMenu = tabsMenu().setData(tabsDatasvc.getList());
             vm.tabsList = tabsDatasvc.getList();
             vm.destWatch = $scope.$on("$destroy", vm.destroy);

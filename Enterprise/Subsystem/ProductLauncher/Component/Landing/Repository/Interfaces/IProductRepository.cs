@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using EnterpriseProductUser = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise.ProductUsers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -185,5 +187,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 	    /// Returns all the products
 	    /// </summary>
 	    IList<GbProductMap> GetAllProducts();
+
+        /// <summary>
+        /// Search by company and product ids and returns userlist
+        /// </summary>
+        /// <param name="datafilter"></param>
+        /// <param name="companyId"></param>
+        /// <param name="products"></param>
+        /// <returns>List of Users by product or company</returns>
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, int? companyId, IList<int> products);
     }
 }
