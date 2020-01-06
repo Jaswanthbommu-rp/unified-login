@@ -272,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     MetadataAddress = (!string.IsNullOrEmpty(provider.MetadataLocation) ? provider.MetadataLocation : null),
                     Notifications = new OpenIdConnectAuthenticationNotifications()
                     {
-                        
+
                         SecurityTokenValidated = n =>
                         {
                             //Making available new claim id_token_serverUID in the AuthenticateExternalAsync to 
@@ -281,11 +281,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             if (n.AuthenticationTicket.Properties.Dictionary.ContainsKey("signinid"))
                             {
                                 var signinid = n.AuthenticationTicket.Properties.Dictionary["signinid"];
-                                if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null)
+                                if (n.OwinContext.Request.Cookies["userinfo." + signinid] != null)
                                 {
-                                    n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["userinfo."+ signinid]))));
-                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/" });
-                                    
+                                    n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["userinfo." + signinid]))));
+                                    n.OwinContext.Response.Cookies.Delete("userinfo." + signinid, new Microsoft.Owin.CookieOptions() {Path = "/"});
+
                                 }
                             }
 
@@ -300,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/" });
+                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions() {Path = "/"});
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
@@ -378,7 +378,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
             return null;
         }
-
 
         /// <summary>
         /// Used to get the settings for the given provider. Retry up to 10 times in case the server may still be starting up.
