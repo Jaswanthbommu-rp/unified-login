@@ -1688,7 +1688,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="companyId"></param>
         /// <param name="products"></param>
         /// <returns>List of Users by product or company</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, string companyId, IList<int> products)
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, string companyId, IList<int?> products)
         {
             //Ignoring filter and Sort
             IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
