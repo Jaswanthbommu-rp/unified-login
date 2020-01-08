@@ -86,7 +86,7 @@
             rolesData.forEach(function(item){
                 item["isAssigned"] = val;
             });
-            s.roles = rolesData;
+            //s.roles = rolesData;
         };
 
         p.getData = function () {

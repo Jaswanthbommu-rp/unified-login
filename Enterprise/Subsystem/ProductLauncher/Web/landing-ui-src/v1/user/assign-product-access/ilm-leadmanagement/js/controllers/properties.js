@@ -34,6 +34,7 @@
             }
 
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
@@ -90,8 +91,17 @@
             }
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
         vm.selectAllProperties = function(val){
-            ILMLMDataModel.setAllProperties(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                ILMLMDataModel.setAllProperties(vm.filteredRecords, val);
+            }
+            else{
+                ILMLMDataModel.setAllProperties(vm.dataReq.records, val);
+            }              
         };
 
         vm.isUserHasManageProductAccess = function () {
