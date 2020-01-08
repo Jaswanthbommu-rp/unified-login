@@ -195,6 +195,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="companyId"></param>
         /// <param name="products"></param>
         /// <returns>List of Users by product or company</returns>
-        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, int? companyId, IList<int> products);
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, string companyId, IList<int> products);
     }
 }
