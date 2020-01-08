@@ -111,12 +111,9 @@
 
         p.setAllMarkets = function (marketsData,val) {
             var s = this;
-
             marketsData.forEach(function (item) {
                item["isAssigned"] = val;
             });
-
-            s.markets = marketsData;
         };
 
         p.getCompanies = function () {

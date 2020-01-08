@@ -110,7 +110,7 @@
                item["isAssigned"] = val;
             });
 
-            s.companies = companiesData;
+            //s.companies = companiesData;
         };
 
         p.setAllEntities = function (EntitiesData,val) {
@@ -120,7 +120,7 @@
                item["isAssigned"] = val;
             });
 
-            s.entities = EntitiesData;
+            //s.entities = EntitiesData;
         };
 
         p.setAllProperties = function(propertiesData, val) {

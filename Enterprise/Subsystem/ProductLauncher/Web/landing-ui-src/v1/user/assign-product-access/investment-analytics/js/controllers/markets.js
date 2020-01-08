@@ -5,6 +5,7 @@
 
     function InvestmentAnalyticsMarketsCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, IADataModel, userDetailsModel, pubsub, switchConfig, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -36,6 +37,7 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllMarkets);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("IAM.updateGrids", vm.updateGrid);
             vm.aoUserUpdateWatch = pubsub.subscribe("settings.aoUserUpdate", vm.updateLoad);
         };
@@ -53,7 +55,9 @@
         vm.isActive = function () {
             return IADataModel.isActive();
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
         vm.loadData = function () {
             if (persona.isReady() && IADataModel.isActive()) {
                 grid.busy(true);
@@ -105,7 +109,12 @@
         };
 
         vm.selectAllMarkets = function (val) {
-            IADataModel.setAllMarkets(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                IADataModel.setAllMarkets(vm.filteredRecords, val);
+            }
+            else{
+                IADataModel.setAllMarkets(vm.dataReq.records, val);
+            } 
         };
 
         vm.destroy = function () {
