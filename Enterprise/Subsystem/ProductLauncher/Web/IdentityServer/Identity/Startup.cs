@@ -58,6 +58,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                 {
                     AuthenticationType = ConfigReader.Environment + "-IDCookie",
                 });
+
+                app.Use(typeof(CookieSameSiteNoneMiddleware));
 			}
 			catch (Exception ex)
 			{
