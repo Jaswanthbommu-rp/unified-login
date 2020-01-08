@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("usersbycompanyproducts")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
-        public HttpResponseMessage GetUsersByCompanyorProducts([FromUri]PageRequest datafilter, int? companyId = null, [FromUri] IList<int> products = null)
+        public HttpResponseMessage GetUsersByCompanyorProducts([FromUri]PageRequest datafilter, string companyId, [FromUri] IList<int> products = null)
         {
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
             IProductRepository productRepository = new ProductRepository();
