@@ -108,7 +108,7 @@
                item["isAssigned"] = val;
             });
 
-            s.properties.properties = propertiesData;
+             //s.properties.properties = propertiesData;
         };
 
         p.setAllPropertyGroups = function (propertyGroupData,val) {
@@ -118,7 +118,7 @@
                item["isAssigned"] = val;
             });
 
-            s.propertyGroup = propertyGroupData;
+            // s.propertyGroup = propertyGroupData;
         };
         
         p.setCompanyRoles = function (data) {

@@ -69,7 +69,7 @@
                item["isAssigned"] = val;
             });
 
-            s.properties = propertiesData;
+            //s.properties = propertiesData;
         };
 
         p.setRoles = function (rolesData) {
