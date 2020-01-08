@@ -5,6 +5,7 @@
 
     function OnSitePropertiesCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, userDetailsModel, sync, pubsub, switchConfig, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             hasViewUserAccess,
             gridTransform = gridTransformSvc(),
@@ -40,6 +41,7 @@
             vm.gridSelectionWatch = grid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
             vm.updateGridWatch = pubsub.subscribe("onsite.updateGrids", vm.updateGrid);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.updateGrid = function () {
@@ -48,6 +50,10 @@
 
         vm.selectionAll = function () {
             sync.allPropertyToGroupSync();
+        };
+        
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
         vm.selectionChange = function (record) {
@@ -135,7 +141,12 @@
         };
 
         vm.selectAllProperties = function (val) {
-            dataModel.setAllPropertiesData(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                dataModel.setAllPropertiesData(vm.filteredRecords, val);
+            }
+            else{
+                dataModel.setAllPropertiesData(vm.dataReq.records, val);
+            }
             sync.allPropertyToGroupSync();
         };
 

@@ -6,6 +6,7 @@
     function MCPropertiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, MCDataModel, userDetailsModel, security, switchConfig) {
         var vm = this,
             allProperties,
+            filteredRecords,
             propertiesGrid = gridModel(),
             propertiesGridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel();
@@ -36,12 +37,15 @@
             }
 
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
             return MCDataModel.isActive();
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
         vm.loadData = function () {
             if (persona.isReady() && MCDataModel.isActive()) {
                 vm.allPropSwitch = switchConfig({
@@ -91,7 +95,13 @@
         };
 
         vm.selectAllProperties = function(val){
-            MCDataModel.setAllProperties(vm.dataReq.records, val);
+            // MCDataModel.setAllProperties(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                MCDataModel.setAllProperties(vm.filteredRecords, val);
+            }
+            else{
+                MCDataModel.setAllProperties(vm.dataReq.records, val);
+            } 
         };
 
         vm.setAllProperties = function (val) {
