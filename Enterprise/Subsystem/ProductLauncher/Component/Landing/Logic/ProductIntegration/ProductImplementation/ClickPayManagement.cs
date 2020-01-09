@@ -283,7 +283,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
 			{
-				ApplySuperUserData(productUser);
+
+                if(productUser.OrganizationRoles == null)
+                {
+                   var roles = GetProductRoles(null, "").Records.Cast<ClickPayRole>();
+                   var role = roles.FirstOrDefault(x => x.Name.ToUpperInvariant() == "MANAGEMENT SUPER ADMIN");
+                    
+                    var orgrole = new OrganizationRole() { OrganizationId = productUser.CompanyId, RoleId = role.Id, IsAssigned = true };
+                    productUser.OrganizationRoles = new List<OrganizationRole>();
+                    productUser.OrganizationRoles.Add(orgrole);
+                }
+
+                ApplySuperUserData(productUser);
 			}
 
 			return productUser;
