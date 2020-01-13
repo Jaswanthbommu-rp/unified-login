@@ -307,7 +307,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		{
 			//Arrange
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
-			long orgPartyId = 350;
 			UserLogin userLogin = new UserLogin()
 			{
 				LoginName = "test@test.com",

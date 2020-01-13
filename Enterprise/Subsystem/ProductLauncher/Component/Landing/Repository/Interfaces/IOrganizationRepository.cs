@@ -78,6 +78,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="productIdList">List of product ids</param>   
         /// <returns></returns>
         RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, IList<int> productIdList);
+
+        /// <summary>
+        /// Used to get the RealPageId of the admin user of the organization
+        /// </summary>
+        /// <param name="organizationRealPageId">Optional organization enterprise Id</param>
+        /// <returns>List of admin user of the organization</returns>
+        IList<dynamic> ListOrganizationAdmin(Guid? organizationRealPageId = null);
         #endregion
 
         #region Organization Type methods

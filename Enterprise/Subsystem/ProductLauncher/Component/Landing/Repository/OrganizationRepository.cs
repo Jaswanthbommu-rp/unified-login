@@ -178,19 +178,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var realPageEmployeeAccessIdString = rpCache.GetFromCache<string>(cacheKey, 180, () =>
             {
                 string realPageId = "";
-                using (var repository = GetRepository())
+                var result = ListOrganizationAdmin(organizationRealPageId);
+                if (result != null)
                 {
-                    dynamic param = new
+                    foreach (var item in result)
                     {
-                        RealPageId = organizationRealPageId
-                    };
-                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
-                    if (result != null)
-                    {
-                        foreach (var item in result)
-                        {
-                            realPageId = item.PersonRealPageId;
-                        }
+                        realPageId = item.PersonRealPageId;
                     }
                 }
 
@@ -203,6 +196,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
             
             return realPageEmployeeAccessId;
+        }
+
+        /// <summary>
+        /// Used to get the RealPageId of the admin user of the organization
+        /// </summary>
+        /// <param name="organizationRealPageId">Optional organization enterprise Id</param>
+        /// <returns>List of admin user of the organization</returns>
+        public IList<dynamic> ListOrganizationAdmin(Guid? organizationRealPageId = null)
+        {
+            IList<dynamic> result;
+            dynamic param = new
+            {
+                RealPageId = organizationRealPageId
+            };
+            using (var repository = GetRepository())
+            {
+                result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
+            }
+
+            return result;
         }
 
         /// <summary>

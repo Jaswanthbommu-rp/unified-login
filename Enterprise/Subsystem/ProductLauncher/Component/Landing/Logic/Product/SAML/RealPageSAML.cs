@@ -721,7 +721,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>Document Management DomainURL</returns>
 		private string GetDocManagementDomainURL(string samlEndpointURL, long personaId, IList<SamlAttributes> samlList)
 		{
-			string pmcID = "";
 			ListResponse domainInfoResult = new ListResponse();
 			var _manageProductRPDocumentManagement = new ManageProductRPDocumentManagement(_userClaims);
 
