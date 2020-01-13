@@ -335,8 +335,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
 
                 bool newUserWithFeatureDate = false;
-                bool IsUserExpired = false;
-                bool NewUserwithActiveStatus = false;
+                bool isUserExpired = false;
+                bool newUserwithActiveStatus = false;
 
                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
@@ -347,19 +347,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (DateTime.UtcNow > orgStatus.ThruDate)
                         {
-                            IsUserExpired = true;
+                            isUserExpired = true;
                         }
                     }
                     if (orgStatus.StatusThruDate != null)
                     {
                         if (DateTime.UtcNow > orgStatus.StatusThruDate)
                         {
-                            IsUserExpired = true;
+                            isUserExpired = true;
                         }
                     }
 
-                    if(userLoginOnly.LastLogin == null && userLoginOnly.PasswordModifiedDate != null && !IsUserExpired)
-                        NewUserwithActiveStatus = true;
+                    if(userLoginOnly.LastLogin == null && userLoginOnly.PasswordModifiedDate != null && !isUserExpired)
+                        newUserwithActiveStatus = true;
 
 
                     fromUtcDateTime = orgStatus.FromDate;
@@ -375,7 +375,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     RepositoryResponse response = _userLoginRepository.UpdateUserLogin(realPageId, ul, _defaultUserClaim.OrganizationPartyId);
                     //user changed to feature from date or user never logged in and status changing from disabled to active and not previously locked
-                    if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !NewUserwithActiveStatus)
+                    if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
                     {
                         IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
                         bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLogin.UserRoleType, orgStatus.PartyId);
