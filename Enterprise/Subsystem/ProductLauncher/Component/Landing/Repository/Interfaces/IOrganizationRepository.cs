@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, IList<int> productIdList);
 
         /// <summary>
-        /// Used to get the RealPageId of the admin user of the organization
+        /// Used to get or list the RealPageId of the admin user(s) of the organization
         /// </summary>
         /// <param name="organizationRealPageId">Optional organization enterprise Id</param>
         /// <returns>List of admin user of the organization</returns>

@@ -199,7 +199,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Used to get the RealPageId of the admin user of the organization
+        /// Used to get or list the RealPageId of the admin user(s) of the organization
         /// </summary>
         /// <param name="organizationRealPageId">Optional organization enterprise Id</param>
         /// <returns>List of admin user of the organization</returns>
