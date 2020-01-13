@@ -164,8 +164,7 @@
 
         vm.setActivityDate = function (activityDate) {
             if (activityDate) {
-                var offset=moment().utcOffset(); 
-                activityDate = moment(activityDate).subtract(offset,'m').toDate();
+                activityDate = moment(activityDate).toDate();
             }
             else {
                 activityDate = "";
