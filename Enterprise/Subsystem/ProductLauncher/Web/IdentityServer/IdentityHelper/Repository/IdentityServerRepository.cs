@@ -204,6 +204,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
             }
 
         }
+
+        public List<ClientUserClaim> GetUserClaimTypesForClient(string clientId)
+        {
+            dynamic param = new
+            {
+                ClientName = clientId
+            };
+
+            using (var repository = GetRepository())
+            {
+                var clientUserClaims = repository.GetMany<ClientUserClaim>(StoredProcNameConstants.SP_GetUserClaimTypesRequiredForClient, param);
+                return clientUserClaims;
+            }
+        }
         #endregion
     }
 }

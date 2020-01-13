@@ -44,11 +44,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         private IEnumerable<Claim> GetClaimsFromUnifiedAmenities(Persona persona)
         {
             var claims = new List<Claim>();
-            IList<SamlAttributes> _;
-            var userClaim = GetSamlUserClaimAndAttributesForProduct("os-userinfo", "UserId", persona.PersonaId,
-                ProductEnum.OneSite, out _); // the _ on out just means unused out variable
-            if (userClaim != null)
-                claims.Add(userClaim);
 
             var roles = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.UnifiedAmenities);
             if (roles != null)
@@ -65,23 +60,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             }
 
             return claims;
-        }
-
-        private IEnumerable<Claim> GetClaimsFromOnsite(Persona persona)
-        {
-            var claimsToReturn = new List<Claim>();
-            IList<SamlAttributes> samlAttributes;
-            var userClaim = GetSamlUserClaimAndAttributesForProduct("user_id", "UserId", persona.PersonaId, ProductEnum.OnSite, out samlAttributes);
-
-            if (userClaim != null)
-            {
-                claimsToReturn.Add(userClaim);
-
-                var companyId = (from saml in samlAttributes where saml.Name == "PMCID" select saml.Value).FirstOrDefault();
-                claimsToReturn.Add(new Claim("company_id", companyId));
-            }
-
-            return claimsToReturn;
         }
 
         private Claim GetSamlUserClaimAndAttributesForProduct(string claimType, string samlAttrName, long personaId, ProductEnum product, out IList<SamlAttributes> samlAttributes)
