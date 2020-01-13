@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
             }
             int compId;
-            if(!int.TryParse(companyId,out compId))
+            if(!int.TryParse(companyId,out compId) && products == null)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
             }
