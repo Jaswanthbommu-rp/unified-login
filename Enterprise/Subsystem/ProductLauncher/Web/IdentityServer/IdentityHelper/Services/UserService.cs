@@ -512,12 +512,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 || string.IsNullOrEmpty(impersonating))
             {
                 var issuedClaims = GetClaimsForUser(user, persona.OrganizationPartyId, context.Client.ClientId);
+                if (!string.IsNullOrEmpty(impersonating) && issuedClaims.Find(p => p.Type.Equals("ImpersonatedBy", StringComparison.OrdinalIgnoreCase)) == null)
+                {
+                    issuedClaims.Add(new Claim("ImpersonatedBy", impersonating));
+                }
+
                 context.IssuedClaims = issuedClaims;
             }
             else
             {
                 context.IssuedClaims = context.Subject.Claims;
             }
+
+            
 
             return Task.FromResult(0);
         }
