@@ -1,34 +1,74 @@
 
 GO
+
+/*
 sp_helptext 'Auth.GetUserClaimTypesRequiredForClient'
 
-sp_helptext 'Enterprise.GetRolesForProductsByPersonaId'
+
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'integrationmarketplace'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'blackbook'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'UNIFIEDAMENITIES'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'CIMPL'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'createcompany'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'unifiedamenities'
 
 
-exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'onesite'
+select * from auth.ClientUserClaim where clientid = 188
+select * from auth.Clients where ClientCode like 'unifiedamen%'
+
+select * from auth.clientuserclaim where clientuserclaimid = 49
+select * from auth.claim
+select * from auth.ClientUserClaim where clientid = 188
+
+insert into auth.clientuserclaim ( clientid, claimid ) values ( 188, 4 )
+insert into auth.clientuserclaim ( clientid, claimid ) values ( 188, 7 )
 
 
+insert into auth.claim ( claimname, samlattributename, productid ) values ( 'role|rights', '', 3 )
+
+update auth.clientuserclaim set claimid = 24 where clientuserclaimid = 49
+update auth.clientuserclaim set claimid = 20 where clientuserclaimid = 49
+
+update auth.claim set claimname = 'phonenumber' where claimid = 24
+
+delete from auth.clientuserclaim where clientuserclaimid = 49
+
+select c.clientcode,cc.*, cl.*
+	FROM Auth.Clients C
+	INNER JOIN Auth.ClientUserClaim AS cc ON C.ClientId = CC.ClientId
+	INNER JOIN Auth.Claim CL ON CL.ClaimId = CC.ClaimId
+
+select * from auth.clients where clientcode like 'cimpl%'
 select * from auth.Claim
-select * from enterprise.product
+*/
 
+if not exists ( select top 1 1 from auth.claim )
+begin
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'userId', '', 3 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'productuserid', 'UserId', 18 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'userId', 'UserId', 40 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'userId', 'UserId', 41 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'os-userinfo', 'UserId', 1 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'pam-username', 'productUsername', 44 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'pam-orgid', 'PMCID', 44 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'onesite-pmcid', 'PMCID', 1 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'accounting-userinfo', 'UserId', 8 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'im-role', 'RoleCode', 39 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'ao-username', 'productUsername', 4 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'diq-userid', 'productUsername', 47 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'clkpay-username', 'productUsername', 48 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'ops-buyer-username', 'productUsername', 13 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'vendorcompliance-username', 'productUsername', 16 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'user_id', 'UserId', 23 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'company_id', 'PMCID', 23 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'os-userinfo', 'UserId', 26 )
 
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'productuserid', 'UserId', 18 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'userId', 'UserId', 40 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'userId', 'UserId', 41 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'os-userinfo', 'UserId', 1 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'pam-username', 'productUsername', 44 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'pam-orgid', 'PMCID', 44 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'onesite-pmcid', 'PMCID', 1 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'accounting-userinfo', 'UserId', 8 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'im-role', 'RoleCode', 39 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'ao-username', 'productUsername', 4 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'diq-userid', 'productUsername', 47 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'clkpay-username', 'productUsername', 48 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'ops-buyer-username', 'productUsername', 13 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'vendorcompliance-username', 'productUsername', 16 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'user_id', 'UserId', 23 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'company_id', 'PMCID', 23 )
-insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'os-userinfo', 'UserId', 26 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'role', '', 3 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'role|rolealias', '', 24 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'role|rights', '', 26 )
+
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'phonenumber', '', 3 )
+end
 
 if exists ( select top 1 1 from auth.clients where clientcode = 'UM-USERMGMT-SWAGGER' ) AND not exists (SELECT top 1 1 from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'UM-USERMGMT-SWAGGER') 
 begin
@@ -126,46 +166,83 @@ begin
 		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'VENDORCOMPLIANCE%'  and c1.ProductId = 16
 end
 
+if exists ( select top 1 1 from auth.clients where clientcode like 'UNIFIEDAMENITIES%'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode like 'UNIFIEDAMENITIES%' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'UNIFIEDAMENITIES%'  and c1.ProductId = 3
+end
 
+if exists ( select top 1 1 from auth.clients where clientcode like 'blackbook%'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode like 'blackbook%' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'blackbook%'  and c1.ProductId = 3
+end
 
+if exists ( select top 1 1 from auth.clients where clientcode like 'blackbook%'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode like 'blackbook%' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'blackbook%'  and c1.ProductId = 3
+end
 
-select * from auth.clients where clientcode like 'VENDORCOMPLIANCE%' 
+if exists ( select top 1 1 from auth.clients where clientcode = 'landing'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'landing' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'landing'  and c1.ProductId = 3
+end
 
-select * from enterprise.product
+if exists ( select top 1 1 from auth.clients where clientcode = 'rplandingapi'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'rplandingapi' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'rplandingapi'  and c1.ProductId = 3
+end
 
-SELECT CL.ClaimName
-		  ,CL.SAMLAttributeName
-		  ,CL.ProductId 
-	FROM Auth.Clients C
-	INNER JOIN Auth.ClientUserClaim AS cc ON C.ClientId = CC.ClientId
-	INNER JOIN Auth.Claim CL ON CL.ClaimId = CC.ClaimId
-	WHERE C.ClientCode= @ClientName
-	
+if exists ( select top 1 1 from auth.clients where clientcode = 'qaautomation'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'qaautomation' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'qaautomation'  and c1.ProductId = 3
+end
 
-select c.clientcode,cc.*, cl.*
-	FROM Auth.Clients C
-	INNER JOIN Auth.ClientUserClaim AS cc ON C.ClientId = CC.ClientId
-	INNER JOIN Auth.Claim CL ON CL.ClaimId = CC.ClaimId
+if exists ( select top 1 1 from auth.clients where clientcode like 'migration%'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode like 'migration%' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'migration%'  and c1.ProductId = 3
+end
 
+if exists ( select top 1 1 from auth.clients where clientcode = 'settings-management'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'settings-management' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'settings-management'  and c1.ProductId = 3
+end
 
-select * from Auth.ClientUserClaim cc
-	INNER JOIN Auth.Claim CL ON CL.ClaimId = CC.ClaimId
+if exists ( select top 1 1 from auth.clients where clientcode = 'greenbookoidc'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'greenbookoidc' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'greenbookoidc'  and c1.ProductId = 3
+end
 
-select * from auth.clientgroup
-select * from auth.Claim
-select * from ident.personaclient
-update auth.claim set productid = 1 where claimid = 4
+if exists ( select top 1 1 from auth.clients where clientcode = 'createcompany'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'createcompany' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'createcompany'  and c1.ProductId = 3
+end
 
- SELECT   
-   [Role].[RoleId]  
-  ,[Role].[RoleName]  
-  ,[Role].[Description]  
-  ,[Role].[CreatedBy]  
-  ,[Role].[CreatedDate]  
- FROM [Security].[Role]  
- INNER JOIN [Security].[PersonaRole] ON [PersonaRole].[RoleId] = [Role].[RoleId]  
- LEFT OUTER JOIN [Security].[RoleAlias] ON [Role].RoleId = [RoleAlias].RoleId  
- INNER JOIN [Security].[ProductRole] ON [ProductRole].[RoleId] = [Role].[RoleId]  
- INNER JOIN [Enterprise].[Product] ON [Product].[ProductId] = [ProductRole].[ProductId]  
- WHERE [PersonaRole].[PersonaId] = @PersonaId  
- AND [Product].[ProductId] = @ProductId;  
+if exists ( select top 1 1 from auth.clients where clientcode = 'blackbook'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'blackbook' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 24 and c2.SAMLAttributeName = '' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'blackbook'  and c1.ProductId = 24
+end
+
+if exists ( select top 1 1 from auth.clients where clientcode = 'integrationmarketplace'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode = 'integrationmarketplace' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' and ClaimName = 'phonenumber' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode = 'integrationmarketplace'  and c1.ProductId = 3 and ClaimName = 'phonenumber'
+end
+
+if exists ( select top 1 1 from auth.clients where clientcode like 'cimpl%'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode like 'cimpl%' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' and ClaimName = 'role' ) 
+begin
+	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
+		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'cimpl%'  and c1.ProductId = 3 and ClaimName = 'role'
+end
+
+--select * from auth.claim
+GO

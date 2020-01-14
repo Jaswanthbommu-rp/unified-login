@@ -3,6 +3,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
 using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using DbConnectionEnum = RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Enum.DbConnectionEnum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
@@ -207,16 +208,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 
         public List<ClientUserClaim> GetUserClaimTypesForClient(string clientId)
         {
-            dynamic param = new
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"getUserClaimTypesForClient{clientId}";
+            List<ClientUserClaim> clientUserClaims = rpcache.GetFromCache<List<ClientUserClaim>>(cacheKey, 120, () =>
             {
-                ClientName = clientId
-            };
+                dynamic param = new
+                {
+                    ClientName = clientId
+                };
 
-            using (var repository = GetRepository())
-            {
-                var clientUserClaims = repository.GetMany<ClientUserClaim>(StoredProcNameConstants.SP_GetUserClaimTypesRequiredForClient, param);
-                return clientUserClaims;
-            }
+                using (var repository = GetRepository())
+                {
+                    var result = repository.GetMany<ClientUserClaim>(StoredProcNameConstants.SP_GetUserClaimTypesRequiredForClient, param);
+                    return result;
+                }
+            });
+            return clientUserClaims;
         }
         #endregion
     }
