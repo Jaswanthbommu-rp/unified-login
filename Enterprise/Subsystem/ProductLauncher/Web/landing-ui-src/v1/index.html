@@ -14,67 +14,73 @@
 
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
 
-    <link rel="stylesheet" href="../assets/omnibar/raul.css" />
+    <!-- <link rel="stylesheet" href="../assets/omnibar/raul.css" /> -->
+    <script type="module" src="../assets/omnibar/omnibar/omnibar.esm.js"></script>
+    <script nomodule="" src="../assets/omnibar/omnibar/omnibar.js"></script>
 
-    <script src="../assets/omnibar/raul.js"></script>
+    <!-- <script src="../assets/omnibar/raul.js"></script> -->
 </head>
 
 <body class="rp-app-wrap" ng-controller="AppCtrl as app" ng-show="app.ready" ng-class="app.getState()">
 
-    <raul-shell product-code="UL">
+    <omnibar-shell product-code="UL">
 
-        <raul-scope
+        <omnibar-scope
               slot="scope"
               product="RealPage Unified Platform"
-        ></raul-scope>
+        ></omnibar-scope>
 
-        <raul-navigation slot="navigation">
-        </raul-navigation>
+        <omnibar-navigation slot="navigation">
+        </omnibar-navigation>
 
-        <raul-unified-menu slot="unified-menu">
+        <omnibar-unified-menu slot="unified-menu">
 
-            <raul-unified-switcher authenticated="true" slot="switcher">
-            </raul-unified-switcher>
+            <omnibar-unified-switcher authenticated="true" slot="switcher">
+            </omnibar-unified-switcher>
 
-            <raul-unified-help
+            <omnibar-unified-notifications
+            slot="notifications">
+            </omnibar-unified-notifications>
+
+            <omnibar-unified-help
                 slot="help"
-            ></raul-unified-help>
+            ></omnibar-unified-help>
 
             <div slot="user">
-                <raul-user-menu-item
+                <omnibar-user-menu-item
                     class="ng-hide"
                     menu-name="Manage Profile">
                     <a href="/manage-profile"
                         class="raul-manage-profile">
                         Manage Profile
                     </a>
-                </raul-user-menu-item>
+                </omnibar-user-menu-item>
 
-                 <raul-user-menu-item
+                 <omnibar-user-menu-item
                     class="ng-hide"
                     menu-name="Client Portal">
                     <a href="/client-portal"
                         class="raul-client-portal">
                         Client Portal
                     </a>
-                </raul-user-menu-item>
+                </omnibar-user-menu-item>
 
-                <raul-user-menu-item
+                <omnibar-user-menu-item
                     class="ng-hide"
                     menu-name="Change Company">
                     <span class="raul-switch-company">
                         Change Company
                     </span>
-                </raul-user-menu-item>
+                </omnibar-user-menu-item>
             </div>
            
 
-            <raul-user-menu-item slot="user-logout"
+            <omnibar-user-menu-item slot="user-logout"
                                  menu-name="Log Out">
                 <a href="/home/signout">Log Out</a>
-            </raul-user-menu-item>
+            </omnibar-user-menu-item>
 
-        </raul-unified-menu>
+        </omnibar-unified-menu>
 
         <header slot="header">
             <div class="ul-app-header">
@@ -86,7 +92,7 @@
             <div ui-view class="rp-app-content">
             </div>
         </main>
-    </raul-shell>
+    </omnibar-shell>
 
     <div class="rp-app-footer" ng-if="appLayout.appFooter">
     </div>

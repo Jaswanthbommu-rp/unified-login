@@ -84,7 +84,7 @@
             if (personaReady && navListReady)
             {
                 svc.updateSettingsLink();
-                var leftNav = document.querySelector('raul-navigation');
+                var leftNav = document.querySelector('omnibar-navigation');
                 leftNav.items = navModel.data;
             }
         };

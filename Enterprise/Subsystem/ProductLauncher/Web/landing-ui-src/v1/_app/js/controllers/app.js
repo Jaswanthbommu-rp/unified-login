@@ -84,7 +84,7 @@
                 token = sessionModel.getVerificationToken(),
                 identityToken = cookie.read("access_token");
 
-            var omnibar = document.querySelector('raul-shell');
+            var omnibar = document.querySelector('omnibar-shell');
             omnibar.environment = ENV.currentEnv;
             omnibar.servers = {
               unity: ENV.landingAPI,
@@ -93,11 +93,12 @@
 
             omnibar.auth = identityToken;
 
-            var helpWidget = document.querySelector('raul-unified-help');
+            var helpWidget = document.querySelector('omnibar-unified-help');
             $rootScope.$on("$stateChangeSuccess", function (_, toState) {
-                helpWidget.helpPageId = "";
+                helpWidget.helpQuery = "";
+                //helpWidget.helpQuery = 'pg=ul-activity&vr=40&scrver=350'
                 if (pageContext[toState.name]) {
-                    helpWidget.helpPageId = pageContext[toState.name].pg;
+                    helpWidget.helpQuery = pageContext[toState.name].pg;
                 }
                 omnibar.pageId = (window.location.hash === "#/employee-access") ? "" : window.location.hash;
             });
