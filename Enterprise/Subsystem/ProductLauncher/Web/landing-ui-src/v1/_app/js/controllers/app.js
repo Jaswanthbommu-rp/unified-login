@@ -69,6 +69,7 @@
 
         vm.init = function () {
             vm.saveTimezone();
+            vm.orgName = "";
             $scope.appLayout = layout.getData();
             sessionModel.subscribe(vm.onSessionReady);
             vm.readyStateTimer = $timeout(vm.setReady, 100);
@@ -83,7 +84,14 @@
             var username = sessionModel.getUsername(),
                 token = sessionModel.getVerificationToken(),
                 identityToken = cookie.read("access_token");
-
+                
+                var org = sessionModel.getOrganization();
+                if(org){
+                    if(org.length > 0){
+                        vm.orgName = org[0].name;
+                    }
+                }
+                
             var omnibar = document.querySelector('omnibar-shell');
             omnibar.environment = ENV.currentEnv;
             omnibar.servers = {
