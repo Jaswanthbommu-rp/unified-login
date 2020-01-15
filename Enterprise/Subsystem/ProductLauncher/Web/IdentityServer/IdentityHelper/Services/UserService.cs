@@ -40,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         private readonly SamlRepository _samlRepository;
         private readonly ManageContactMechanismUsageType _contactMechanismUsageType;
         private readonly ManageTelecommunicationNumber _manageTelecommunicationNumber;
+        private readonly IdentityServerRepository _identityServerRepository;
         private readonly IOwinContext _ctx;
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             _samlRepository = new SamlRepository();
             _contactMechanismUsageType = new ManageContactMechanismUsageType();
             _manageTelecommunicationNumber = new ManageTelecommunicationNumber();
+            _identityServerRepository = new IdentityServerRepository();
             _ctx = new OwinContext(owinEnv.Environment);
         }
 
@@ -524,8 +526,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 context.IssuedClaims = context.Subject.Claims;
             }
 
-            
-
             return Task.FromResult(0);
         }
 
@@ -562,200 +562,135 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var persona = _personaManager.GetPersona(activePersonaId);
 
             claims.AddRange(GetOrganizationClaims(persona.Organization));
+            claims.AddRange(GetUserClaims(person, userInfo, persona));
 
             IList<ProductRole> roleList;
-            Claim userClaim;
             IList<SamlAttributes> _;
+
+            // add any dynamic claims for the given client
+            var userClaimTypesForClients = _identityServerRepository.GetUserClaimTypesForClient(clientId);
+            foreach (var clientClaim in userClaimTypesForClients)
+            {
+                if (!string.IsNullOrEmpty(clientClaim.SamlAttributeName))
+                {
+                    var userClaim = GetSamlUserClaimAndAttributesForProduct(clientClaim.ClaimName, clientClaim.SamlAttributeName, persona.PersonaId, (ProductEnum) clientClaim.ProductId, out _);
+                    if (userClaim != null)
+                        claims.Add(userClaim);
+                    break;
+                }
+
+                if (string.IsNullOrEmpty(clientClaim.SamlAttributeName))
+                {
+                    switch (clientClaim.ClaimName.ToUpperInvariant())
+                    {
+                        case "USERID":
+                            claims.Add(new Claim("userId", userInfo.UserId.ToString()));
+                            break;
+
+                        case "ROLE":
+                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum) clientClaim.ProductId);
+                            if (roleList != null && roleList.Count > 0)
+                            claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
+                            break;
+
+                        case "ROLE|ROLEID":
+                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum) clientClaim.ProductId);
+                            if (roleList != null && roleList.Count > 0)
+                            {
+                                claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
+                                claims.AddRange(roleList.Select(a => new Claim("roleId", a.ID)).ToList());
+                            }
+                            break;
+
+                        case "ROLE|ROLEALIAS":
+                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum) clientClaim.ProductId);
+                            if (roleList != null && roleList.Count > 0)
+                            {
+                                claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
+                                claims.AddRange(roleList.Select(a => new Claim("rolealias", a.Alias)).ToList());
+                            }
+                            break;
+
+                        case "ROLE|RIGHTS":
+                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum)clientClaim.ProductId);
+                            if (roleList != null && roleList.Count > 0)
+                            {
+                                claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
+                                claims.AddRange(roleList.Select(a => new Claim("roleId", a.ID)).ToList());
+                                claims.AddRange(roleList.Select(a => new Claim("rolealias", a.Alias)).ToList());
+                            }
+
+                            foreach (var productRole in roleList)
+                            {
+                                var roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, (ProductEnum)clientClaim.ProductId, Convert.ToInt32(productRole.ID));
+                                claims.AddRange(roleRights.Select(a => new Claim("right", a.Alias)).ToList());
+                            }
+
+                            break;
+                        case "PHONENUMBER":
+                            IList<TelecommunicationNumber> telecommunicationNumbers = _manageTelecommunicationNumber.ListTelecommunicationNumberForPerson(person.RealPageId, null);
+                            string ph = "";
+                            string ut = "";
+
+                            if (telecommunicationNumbers != null && telecommunicationNumbers.Count > 0)
+                            {
+                                telecommunicationNumbers.OrderBy(a => a.ContactMechanismId);
+                                TelecommunicationNumber tnObj = telecommunicationNumbers[0];
+                                IList<ContactMechanismUsageType> usagetype = _contactMechanismUsageType.ListContactMechanismUsageType("Phone Type");
+
+                                ph = tnObj.AreaCode + tnObj.PhoneNumber;
+                                ut = usagetype.FirstOrDefault(s => s.ContactMechanismUsageTypeId == tnObj.ContactMechanismUsageTypeId).Name;
+                                //ut = cm.Name;
+                            }
+
+                            claims.Add(new Claim("PhoneNumber", ph));
+                            claims.Add(new Claim("PhoneType", ut));
+                            break;
+                    }
+                }
+            }
+
             switch (clientId.ToUpperInvariant())
             {
-                case "LANDING":         // unified login clients 
-                case "RPLANDINGAPI":
-                case "QAAUTOMATION":
-                case "MIGRATION":
-                case "MIGRATIONAPI":
-                case "SETTINGS-MANAGEMENT":
-                case "GREENBOOKOIDC":
-                case "CREATECOMPANY":
-                    roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.UnifiedLogin);
-
-                    claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
-                    break;
                 case "PROPERTYPHOTOS":
                     if (!CheckForRight(ProductEnum.PropertyPhotos, persona))
                     {
                         throw new Exception("User not authorized for this product");
                     }
                     break;
+
                 case "VENDORMARKETPLACE":
                     if (!CheckForRight(ProductEnum.VendorMarketplace, persona))
                     {
                         throw new Exception("User not authorized for this product");
                     }
                     break;
-                case "BLACKBOOK":
-                    roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.ResearchApplication);
-                    claims.Add(new Claim("userId", userInfo.UserId.ToString()));
-                    claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
-                    claims.AddRange(roleList.Select(a => new Claim("rolealias", a.Alias)).ToList());
-                    break;
-                case "UM-USERMGMT-SWAGGER":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("productuserid", "UserId", persona.PersonaId, ProductEnum.UtilityManagement, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-                case "LEADMANAGEMENT":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("userId", "UserId", persona.PersonaId, ProductEnum.LeadManagement, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-                case "LEADANALYTICS":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("userId", "UserId", persona.PersonaId, ProductEnum.LeadAnalytics, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-                case "FACILITIES-PLUS":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("os-userinfo", "UserId", persona.PersonaId, ProductEnum.OneSite, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-                case "PORTFOLIOMANAGEMENT":
-                case "PIM":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("pam-username", "productUsername", persona.PersonaId,
-                        ProductEnum.PortfolioManagement, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
 
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("pam-orgid", "PMCID", persona.PersonaId,
-                        ProductEnum.PortfolioManagement, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-                case "INTEGRATIONMARKETPLACE":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("onesite-pmcid", "UserId", persona.PersonaId,
-                        ProductEnum.OneSite, out _);
-                    if (userClaim != null)
-                    {
-                        userClaim = new Claim(userClaim.Type, userClaim.Value.Split('|')[0]);
-                        claims.Add(userClaim);
-                    }
-
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("accounting-companyname", "UserId", persona.PersonaId,
-                        ProductEnum.FinancialSuite, out _);
-                    if (userClaim != null)
-                    {
-                        userClaim = new Claim(userClaim.Type, userClaim.Value.Split('|')[0]);
-                        claims.Add(userClaim);
-                    }
-
-                    // add IM specific GB Role in claims
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("im-role", "RoleCode", persona.PersonaId,
-                        ProductEnum.IntegrationMarketplace, out _);
-                    if (userClaim != null)
-                    {
-                        claims.Add(userClaim);
-                    }
-
-                    IList<TelecommunicationNumber> telecommunicationNumbers = _manageTelecommunicationNumber.ListTelecommunicationNumberForPerson(person.RealPageId, null);
-                    string ph = "";
-                    string ut = "";
-
-                    if (telecommunicationNumbers != null && telecommunicationNumbers.Count > 0)
-                    {
-                        telecommunicationNumbers.OrderBy(a => a.ContactMechanismId);
-                        TelecommunicationNumber tnObj = telecommunicationNumbers[0];
-                        IList<ContactMechanismUsageType> usagetype = _contactMechanismUsageType.ListContactMechanismUsageType("Phone Type");
-
-                        ph = tnObj.AreaCode + tnObj.PhoneNumber;
-                        ut = usagetype.FirstOrDefault(s => s.ContactMechanismUsageTypeId == tnObj.ContactMechanismUsageTypeId).Name;
-                        //ut = cm.Name;
-                    }
-
-                    claims.Add(new Claim("PhoneNumber", ph));
-                    claims.Add(new Claim("PhoneType", ut));
-
-                    break;
-                case "PURCHASINGPORTAL":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("accounting-userinfo", "UserId", persona.PersonaId,
-                        ProductEnum.FinancialSuite, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
                 case "RUM":
                     //TODO:  NWP access token is not cached -- should it be??
                     claims.AddRange(GetClaimsFromUtilityManagement(persona.PersonaId));
                     break;
-                case "ONSITE":
-                    claims.AddRange(GetClaimsFromOnsite(persona));
-                    break;
-                case "ASSETOPTIMIZATION":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("ao-username", "productUsername", persona.PersonaId,
-                        ProductEnum.AssetOptimizer, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-                case "DEPOSITALTERNATIVE":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("diq-userid", "productUsername", persona.PersonaId,
-                        ProductEnum.DepositAlternative, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-                case "CLICKPAY":
-                    userClaim = GetSamlUserClaimAndAttributesForProduct("clkpay-username", "productUsername", persona.PersonaId,
-                        ProductEnum.ClickPay, out _);
-                    if (userClaim != null)
-                        claims.Add(userClaim);
-                    break;
-
-
-            }
-
-            if (clientId.ToUpper().StartsWith("OPS-BUYER"))  // many clientids start with this and share claim needs
-            {
-                userClaim = GetSamlUserClaimAndAttributesForProduct("ops-buyer-username", "productUsername", persona.PersonaId,
-                    ProductEnum.OpsBuyer, out _);
-                if (userClaim != null)
-                    claims.Add(userClaim);
-            }
-
-            if (clientId.ToUpper().StartsWith("ONESITE"))  // many clientids start with this and share claim needs
-            {
-                userClaim = GetSamlUserClaimAndAttributesForProduct("os-userinfo", "UserId", persona.PersonaId, ProductEnum.OneSite, out _);
-                if (userClaim != null)
-                    claims.Add(userClaim);
-            }
-
-            if (clientId.ToUpper().StartsWith("UNIFIEDAMENITIES"))  // many clientids start with this and share claim needs
-            {
-                claims.Add(new Claim("userId", userInfo.UserId.ToString()));
-                claims.AddRange(GetClaimsFromUnifiedAmenities(persona));
-            }
-
-            if (clientId.ToUpper().StartsWith("CIMPL"))  // many clientids start with this and share claim needs
-            {
-                roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.UnifiedLogin);
-                claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
-            }
-
-            if (clientId.ToUpper().StartsWith("VENDORCOMPLIANCE"))  // many clientids start with this and share claim needs
-            {
-                userClaim = GetSamlUserClaimAndAttributesForProduct("vendorcompliance-username", "productUsername", persona.PersonaId,
-                    ProductEnum.VendorServices, out _);
-                if (userClaim != null)
-                    claims.Add(userClaim);
             }
 
             claims.AddRange(GetPortfolioProductUserClaims(persona.OrganizationPartyId, clientId, userInfo.UserId));
+            
+            return claims;
+        }
 
-            claims.Add(new Claim("correlationId", Guid.NewGuid().ToString())); // used to track user log across all system
-
-            claims.Add(new Claim("firstName", person.FirstName));
-            claims.Add(new Claim("middleName", person.MiddleName));
-            claims.Add(new Claim("lastName", person.LastName));
-            claims.Add(new Claim("loginName", userInfo.LoginName));
-            claims.Add(new Claim("realPageId", userInfo.RealPageId.ToString()));
-            claims.Add(new Claim("greenBookUrl", ConfigReader.GetReturnUri));
-            claims.Add(new Claim("personaId", persona.PersonaId.ToString()));
-            claims.Add(new Claim("userPartyId", person.PartyId.ToString()));
+        private IEnumerable<Claim> GetUserClaims(IPerson person, RPModel.IUserLoginOnly userInfo, IPersona persona)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim("correlationId", Guid.NewGuid().ToString()),
+                new Claim("firstName", person.FirstName),
+                new Claim("middleName", person.MiddleName),
+                new Claim("lastName", person.LastName),
+                new Claim("loginName", userInfo.LoginName),
+                new Claim("realPageId", userInfo.RealPageId.ToString()),
+                new Claim("greenBookUrl", ConfigReader.GetReturnUri),
+                new Claim("personaId", persona.PersonaId.ToString()),
+                new Claim("userPartyId", person.PartyId.ToString())
+            };
 
             if (claims.All(a => a.Type != "sub"))
                 claims.Add(new Claim("sub", userInfo.UserId.ToString()));
