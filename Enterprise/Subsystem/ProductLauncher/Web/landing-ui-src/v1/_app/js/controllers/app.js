@@ -95,10 +95,9 @@
 
             var helpWidget = document.querySelector('omnibar-unified-help');
             $rootScope.$on("$stateChangeSuccess", function (_, toState) {
-                helpWidget.helpQuery = "";
-                //helpWidget.helpQuery = 'pg=ul-activity&vr=40&scrver=350'
+                helpWidget.helpQuery = "";                
                 if (pageContext[toState.name]) {
-                    helpWidget.helpQuery = pageContext[toState.name].pg;
+                    helpWidget.helpQuery = 'pg=ul-' + pageContext[toState.name].pg + '&vr=40&scrver=350';
                 }
                 omnibar.pageId = (window.location.hash === "#/employee-access") ? "" : window.location.hash;
             });
