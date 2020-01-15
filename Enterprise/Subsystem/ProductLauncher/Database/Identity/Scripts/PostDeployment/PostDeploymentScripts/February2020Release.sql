@@ -6,19 +6,30 @@ sp_helptext 'Auth.GetUserClaimTypesRequiredForClient'
 
 
 exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'integrationmarketplace'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'greenbookoidc'
 exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'blackbook'
 exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'UNIFIEDAMENITIES'
 exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'CIMPL'
 exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'createcompany'
-exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'unifiedamenities'
 
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'CREATECOMPANY'
+
+select * from auth.clientuserclaim 
 
 select * from auth.ClientUserClaim where clientid = 188
-select * from auth.Clients where ClientCode like 'unifiedamen%'
+select * from auth.Clients where ClientCode like 'VENDORCOMPLIANCE%'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'vendorcompliance'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'vendorcomplianceui'
+exec Auth.GetUserClaimTypesRequiredForClient @clientname = 'cimplapitest'
 
-select * from auth.clientuserclaim where clientuserclaimid = 49
+
+select * from auth.clientuserclaim where clientuserclaimid = 192
 select * from auth.claim
-select * from auth.ClientUserClaim where clientid = 188
+
+insert into auth.clientuserclaim ( clientid, claimid ) values ( 192, 8 )
+delete from auth.ClientUserClaim  where clientid = 192 and clientuserclaimid = 57
+select * from auth.ClientUserClaim where clientid = 192
+update auth.claim set claimname = 'accounting-companyname', samlattributename = 'UserId~|0' where claimid = 8
 
 insert into auth.clientuserclaim ( clientid, claimid ) values ( 188, 4 )
 insert into auth.clientuserclaim ( clientid, claimid ) values ( 188, 7 )
@@ -52,7 +63,7 @@ begin
 	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'pam-username', 'productUsername', 44 )
 	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'pam-orgid', 'PMCID', 44 )
 	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'onesite-pmcid', 'PMCID', 1 )
-	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'accounting-userinfo', 'UserId', 8 )
+	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'accounting-companyname', 'UserId~|0', 8 )
 	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'im-role', 'RoleCode', 39 )
 	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'ao-username', 'productUsername', 4 )
 	insert into auth.claim ( ClaimName, SAMLAttributeName, ProductId ) values ( 'diq-userid', 'productUsername', 47 )
@@ -170,12 +181,6 @@ if exists ( select top 1 1 from auth.clients where clientcode like 'UNIFIEDAMENI
 begin
 	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
 		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'UNIFIEDAMENITIES%'  and c1.ProductId = 3
-end
-
-if exists ( select top 1 1 from auth.clients where clientcode like 'blackbook%'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode like 'blackbook%' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 
-begin
-	insert into auth.ClientUserClaim ( ClientId, ClaimId ) 
-		SELECT clientid, c1.ClaimId from auth.clients c cross join auth.claim c1  where c.clientcode like 'blackbook%'  and c1.ProductId = 3
 end
 
 if exists ( select top 1 1 from auth.clients where clientcode like 'blackbook%'  ) AND not exists (SELECT * from auth.clients c inner join auth.ClientUserClaim c1 on c.clientid = c1.clientid and c.clientcode like 'blackbook%' inner join auth.Claim c2 on c1.ClaimId = c2.ClaimId and c2.ProductId = 3 and c2.SAMLAttributeName = '' ) 

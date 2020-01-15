@@ -70,8 +70,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 samlAttributes = GetSamlProductAttributesForPersona(personaId, product);
                 if (samlAttributes.Any())
                 {
-                    var userId = (from saml in samlAttributes where saml.Name == samlAttrName select saml.Value).FirstOrDefault();
-                    return new Claim(claimType, userId);
+                    // check the saml attribute name to see if it needs to be parsed
+                    bool splitSamlValue = false;
+                    int splitIndex = 0;
+                    char splitChar = new char();
+
+                    if (samlAttrName.Contains("~"))
+                    {
+                        splitSamlValue = true;
+                        var parseSamlAttribute = samlAttrName.Split('~');
+                        splitChar = parseSamlAttribute[1].Substring(0, 1)[0];
+                        splitIndex = Convert.ToInt16(parseSamlAttribute[1].Substring(1, parseSamlAttribute[1].Length - 1));
+                        samlAttrName = parseSamlAttribute[0];
+                    }
+                    var samlValue = (from saml in samlAttributes where saml.Name == samlAttrName select saml.Value).FirstOrDefault();
+
+                    if (splitSamlValue && !string.IsNullOrEmpty(samlValue))
+                    {
+                        samlValue = samlValue.Split(splitChar)[splitIndex];
+                    }
+                    return new Claim(claimType, samlValue);
                 }
             }
 
