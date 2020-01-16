@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -19,6 +12,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 
@@ -28,12 +27,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	/// Marketing Center
 	/// </summary>
 	public class ManageProductMarketingCenter : ManageProductBase, IManageProductMarketingCenter
-    {
-        private string _username;
-        private string _password;
+	{
+		private string _username;
+		private string _password;
 		private string _marketingCenterApiSourceID;
 		private DefaultUserClaim _userClaims;
-
 
 		#region Ctor
 		/// <summary>
@@ -41,33 +39,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		/// <param name="userClaims">The RealPageId of the editor</param>
 		public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, null)
-        {
-            _editorRealPageId = userClaims.UserRealPageGuid;
-            _blueBook = new Logic.ManageBlueBook(userClaims);
-	        _userClaims = userClaims;
+		{
+			_editorRealPageId = userClaims.UserRealPageGuid;
+			_blueBook = new Logic.ManageBlueBook(userClaims);
+			_userClaims = userClaims;
 
-            _productUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MarketingCenterApiSourceID", StringComparison.OrdinalIgnoreCase)).Value;			
-			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));
-            _password = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value));
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
-            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
-            _client.BaseAddress = new Uri(_productUrl);
-            _client.SetBasicAuthentication(_username, _password);
-            var credCache = new CredentialCache();
-            credCache.Add(new Uri(_productUrl), "Digest", new NetworkCredential(_username, _password));
-            var HttpHandler = new HttpClientHandler();
-            HttpHandler.Credentials = credCache;
-            _client = new HttpClient(HttpHandler);
+			_productUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
+			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MarketingCenterApiSourceID", StringComparison.OrdinalIgnoreCase)).Value;
+			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));
+			_password = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIPASSWORD", StringComparison.OrdinalIgnoreCase)).Value));
+			// TODO REMOVE WHEN POSTING TO TRUSTED URL
+			ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+			// TODO REMOVE WHEN POSTING TO TRUSTED URL
+			_client.BaseAddress = new Uri(_productUrl);
+			_client.SetBasicAuthentication(_username, _password);
+			var credCache = new CredentialCache();
+			credCache.Add(new Uri(_productUrl), "Digest", new NetworkCredential(_username, _password));
+			var HttpHandler = new HttpClientHandler();
+			HttpHandler.Credentials = credCache;
+			_client = new HttpClient(HttpHandler);
+		}
 
-            //ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-            //Guid realGuid;
-            //if (Guid.TryParse((from nvp in currentClaimPrincipal.Claims where nvp.Type == "realPageId" select nvp.Value).FirstOrDefault(), out realGuid))
-            //    _editorRealPageId = realGuid;
-        }
-
-        /// <summary>
+		/// <summary>
 		/// Unit test constructor
 		/// </summary>
 		/// <param name="editorRealPageId"></param>
@@ -77,128 +70,127 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="managePersona"></param>
 		/// <param name="samlRepository"></param>
 		/// <param name="manageBlueBook"></param>
-        public ManageProductMarketingCenter(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-            IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook)
-            : base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository)
-        {
-            _editorRealPageId = editorRealPageId;
-            _messageHandler = httpMessageHandler;
-            _productInternalSettingRepository = productInternalSettingRepository;
-            _managePersona = managePersona;
-            _samlRepository = samlRepository;
-            _blueBook = manageBlueBook;
-	        _userClaims = userClaims;
+		public ManageProductMarketingCenter(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook)
+			: base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository)
+		{
+			_editorRealPageId = editorRealPageId;
+			_messageHandler = httpMessageHandler;
+			_productInternalSettingRepository = productInternalSettingRepository;
+			_managePersona = managePersona;
+			_samlRepository = samlRepository;
+			_blueBook = manageBlueBook;
+			_userClaims = userClaims;
 
-            _productUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.ToUpper() == "MARKETINGCENTERAPISOURCEID").Value;
-			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));
-            _password = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value));
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
-            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-            // TODO REMOVE WHEN POSTING TO TRUSTED URL
+			_productUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
+			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MARKETINGCENTERAPISOURCEID", StringComparison.OrdinalIgnoreCase)).Value;
+			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));
+			_password = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIPASSWORD", StringComparison.OrdinalIgnoreCase)).Value));
+			// TODO REMOVE WHEN POSTING TO TRUSTED URL
+			ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+			// TODO REMOVE WHEN POSTING TO TRUSTED URL
 
-            _client = new HttpClient(httpMessageHandler);            
-        }
-        #endregion
+			_client = new HttpClient(httpMessageHandler);
+		}
+		#endregion
 
-        /// <summary>
-        /// Used to get roles for Marketing Center
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId"></param>
-        /// <param name="datafilter"></param>
-        /// <returns></returns>
-        public ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
-        {
-            ListResponse result = new ListResponse();
-            IList<MC.Role> rolesList = new List<MC.Role>();
-            Dictionary<string,object> logData = new Dictionary<string, object>();
+		#region Public methods
+		/// <summary>
+		/// Used to get roles for Marketing Center
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+		{
+			ListResponse result = new ListResponse();
+			IList<MC.Role> rolesList = new List<MC.Role>();
+			Dictionary<string, object> logData = new Dictionary<string, object>();
 
-            result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 
-            try
-            {
-                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
-                string marketingCompanyId = company.CompanyInstanceSourceId;
-                if (string.IsNullOrEmpty(marketingCompanyId))
-                {
-	                result = new ListResponse {IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-	                WriteToDiagnosticLog("GetRoles - Error looking for company id in bluebook.");
-                    return result;
-                }
-                WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
-                var url = _productUrl + $"/v2/company/{marketingCompanyId}/contact/roles";
-                logData = new Dictionary<string, object>();
-                logData.Add("url", url);
-                WriteToDiagnosticLog("GetRoles - Posting to url", logData);
-                var response = _client.GetAsync(url).Result;
+			try
+			{
+				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
+				string marketingCompanyId = company.CompanyInstanceSourceId;
+				if (string.IsNullOrEmpty(marketingCompanyId))
+				{
+					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					WriteToDiagnosticLog("GetRoles - Error looking for company id in bluebook.");
+					return result;
+				}
+				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
+				var url = _productUrl + $"/v2/company/{marketingCompanyId}/contact/roles";
+				logData = new Dictionary<string, object>();
+				logData.Add("url", url);
+				WriteToDiagnosticLog("GetRoles - Posting to url", logData);
+				var response = _client.GetAsync(url).Result;
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    rolesList = JsonConvert.DeserializeObject<IList<MC.Role>>(jsonContent);
-                    if (rolesList == null) { rolesList = new List<MC.Role>(); }
-                    logData = new Dictionary<string, object>();
-                    logData.Add("rolesList", rolesList);
-                    WriteToDiagnosticLog("GetRoles - Got response", logData);
+				if (response.IsSuccessStatusCode)
+				{
+					var jsonContent = response.Content.ReadAsStringAsync().Result;
+					rolesList = JsonConvert.DeserializeObject<IList<MC.Role>>(jsonContent);
+					if (rolesList == null) { rolesList = new List<MC.Role>(); }
+					logData = new Dictionary<string, object>();
+					logData.Add("rolesList", rolesList);
+					WriteToDiagnosticLog("GetRoles - Got response", logData);
 
-                    IList<ProductRole> list = rolesList.ToGBRoles();
-                    if (list == null) { list = new List<ProductRole>(); }
+					IList<ProductRole> list = rolesList.ToGBRoles();
+					if (list == null) { list = new List<ProductRole>(); }
 
-                    // need to do a filter on the result
-                    if (userPersonaId != 0)
-                    {
-                        // merge the given user details with the list
-                        MC.MarketingCenterUserDetails mUser = GetUserDetails();
-                        if (mUser == null)
-                        {
-                            WriteToDiagnosticLog($"GetRoles - Error looking for user. userPersonaId={userPersonaId.ToString()}");
-                            return new ListResponse() { IsError = true, ErrorReason = "User not found" };
-                        }
-                        logData = new Dictionary<string, object>();
-                        logData.Add("mUser", mUser);
-                        WriteToDiagnosticLog("GetRoles - Looking for role for user.", logData);
+					// need to do a filter on the result
+					if (userPersonaId != 0)
+					{
+						// merge the given user details with the list
+						MC.MarketingCenterUserDetails mUser = GetUserDetails();
+						if (mUser == null)
+						{
+							WriteToDiagnosticLog($"GetRoles - Error looking for user. userPersonaId={userPersonaId.ToString()}");
+							return new ListResponse() { IsError = true, ErrorReason = "User not found" };
+						}
+						logData = new Dictionary<string, object>();
+						logData.Add("mUser", mUser);
+						WriteToDiagnosticLog("GetRoles - Looking for role for user.", logData);
 
-                        if (list.Any(a => a.ID == mUser.ContactRoleId.ToString()))
-                        {
-                            ProductRole pr = (from a in list
-                                              where a.ID == mUser.ContactRoleId.ToString()
-                                              select a).FirstOrDefault();
-                            if (pr != null)
-                            {
-                                pr.IsAssigned = true;
-                                WriteToDiagnosticLog($"GetRoles - Found role for user. Role: {pr.Name}");
-                            }
-                        }
-                    }
-                    logData = new Dictionary<string, object>();
-                    logData.Add("list", list);
-                    WriteToDiagnosticLog("GetRoles - Returning role list.", logData);
+						if (list.Any(a => a.ID == mUser.ContactRoleId.ToString()))
+						{
+							ProductRole pr = (from a in list where a.ID == mUser.ContactRoleId.ToString() select a).FirstOrDefault();
+							if (pr != null)
+							{
+								pr.IsAssigned = true;
+								WriteToDiagnosticLog($"GetRoles - Found role for user. Role: {pr.Name}");
+							}
+						}
+					}
+					logData = new Dictionary<string, object>();
+					logData.Add("list", list);
+					WriteToDiagnosticLog("GetRoles - Returning role list.", logData);
 
-                    result = new ListResponse()
-                    {
-                        Records = list.Cast<object>().ToList(),
-                        TotalRows = list.Count,
-                        RowsPerPage = list.Count,
-                        TotalPages = 1,
-                        ErrorReason = ""
-                    };
-                }
-                else
-                {
-                    result.IsError = true;
-                    result.ErrorReason = "There was a problem getting the roles";
-                    WriteToErrorLog("GetRoles - Error. " + response.Content.ReadAsStringAsync().Result);
-                }
-            }
-            catch (Exception ex)
-            {
-                result.IsError = true;
-                result.ErrorReason = "There was a problem getting the roles";
-                WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
-            }
-            return result;
-        }
+					result = new ListResponse()
+					{
+						Records = list.Cast<object>().ToList(),
+						TotalRows = list.Count,
+						RowsPerPage = list.Count,
+						TotalPages = 1,
+						ErrorReason = ""
+					};
+				}
+				else
+				{
+					result.IsError = true;
+					result.ErrorReason = "There was a problem getting the roles";
+					WriteToErrorLog("GetRoles - Error. " + response.Content.ReadAsStringAsync().Result);
+				}
+			}
+			catch (Exception ex)
+			{
+				result.IsError = true;
+				result.ErrorReason = "There was a problem getting the roles";
+				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+			}
+			return result;
+		}
 
 		/// <summary>
 		/// Used to get properties for Marketing Center
@@ -221,35 +213,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				// get the PMCID from BlueBook because the user doesn't have the PMCID for Marketing Center yet
 				WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Getting info from BlueBook.GetCompanyMap");
-                //IList<CompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.MarketingCenter);
-                IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, BlueBookProductConstants.MarketingCenter);
-                WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Done getting info from BlueBook.GetCompanyMap");
-				if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.ToUpper() == BlueBookProductConstants.MarketingCenter))
+				//IList<CompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.MarketingCenter);
+				IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, BlueBookProductConstants.MarketingCenter);
+				WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Done getting info from BlueBook.GetCompanyMap");
+				if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.Equals(BlueBookProductConstants.MarketingCenter, StringComparison.OrdinalIgnoreCase)))
 				{
 					WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Getting PMC ID from BlueBook result");
-					marketingCenterCompanyId = companyMap.First(a => a.Source.ToUpper() == BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId;
+					marketingCenterCompanyId = companyMap.First(a => a.Source.Equals(BlueBookProductConstants.MarketingCenter, StringComparison.OrdinalIgnoreCase)).CompanyInstanceSourceId;
 					WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Found PMC ID from BlueBook result: {marketingCenterCompanyId}");
 
-                    if (marketingCenterCompanyId == string.Empty || Convert.ToInt32(marketingCenterCompanyId) == 0)
-                    {
-                        WriteToErrorLog(
-                            $"GetMarketingCenterPMCIDFromPersona.GetProperties - Error looking for companyInstanceSourceId in bluebook for user with editorPersona id - {editorPersonaId}.");
-                        return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                    }
-                }
+					if (marketingCenterCompanyId == string.Empty || Convert.ToInt32(marketingCenterCompanyId) == 0)
+					{
+						WriteToErrorLog(
+							$"GetMarketingCenterPMCIDFromPersona.GetProperties - Error looking for companyInstanceSourceId in bluebook for user with editorPersona id - {editorPersonaId}.");
+						return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					}
+				}
 
-                if (companyMap == null)
-                {
-                    WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - companyMap is NULL");
+				if (companyMap == null)
+				{
+					WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - companyMap is NULL");
 
-                    WriteToErrorLog(
-                        $"GetMarketingCenterPMCIDFromPersona.GetProperties - Unable to get companyInstanceSourceId info in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					WriteToErrorLog($"GetMarketingCenterPMCIDFromPersona.GetProperties - Unable to get companyInstanceSourceId info in bluebook for user with editorPersona id - {editorPersonaId}.");
+					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+				}
 
-                }
-
-                //companyInstanceId = 779893; // LeaseStar id 438
-                IList<ProductPropertyMap> propertyList = new List<ProductPropertyMap>();
+				//companyInstanceId = 779893; // LeaseStar id 438
+				IList<ProductPropertyMap> propertyList = new List<ProductPropertyMap>();
 				var url = _productUrl + $"/v2/properties?companyId= { marketingCenterCompanyId} ";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
@@ -281,16 +271,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						// if a user record exists
 						if (mUser.AssignedProperties != null)
 						{
-                            logData = new Dictionary<string, object>();
-                            List<MC.Property> prop = mUser.AssignedProperties;
-                            int i = 0;
+							logData = new Dictionary<string, object>();
+							List<MC.Property> prop = mUser.AssignedProperties;
+							int i = 0;
 							foreach (MC.Property p in prop)
 							{
 								if (list.Any(a => a.ID == p.Id.ToString()))
 								{
-									ProductProperty pp = (from a in list
-														  where a.ID == p.Id.ToString()
-														  select a).FirstOrDefault();
+									ProductProperty pp = (from a in list where a.ID == p.Id.ToString() select a).FirstOrDefault();
 									if (pp != null)
 									{
 										pp.IsAssigned = true;
@@ -301,11 +289,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 									// if the property wasn't found, we need to add it to the list.
 									list.Add(new ProductProperty() { Name = p.Name, ID = p.Id.ToString(), IsAssigned = p.Active, State = p.Address.StateCode, Street1 = p.Address.Address1, City = p.Address.CityName, Zip = p.Address.PostalCode });
 									logData.Add("Property" + i.ToString(), p.Name);
-                                    i++;
+									i++;
 								}
 							}
-                            WriteToDiagnosticLog($"GetProperties - Adding extra property.", logData);
-                        }
+							WriteToDiagnosticLog($"GetProperties - Adding extra property.", logData);
+						}
 						allProperties.Add("allProperties", mUser.AssignNewProperty);
 					}
 
@@ -343,21 +331,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Unassign User
 		/// </summary>
 		public string UnassignUser(long editorPersonaId, long userPersonaId)
-        {
-            ListResponse listResponse = new ListResponse();
-            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (listResponse.IsError) { return listResponse.ErrorReason; }
+		{
+			string response = string.Empty;
+			ListResponse listResponse = new ListResponse();
+			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			if (listResponse.IsError)
+			{
+				return listResponse.ErrorReason;
+			}
 
-            
-            bool status = SetMarketingCenterUserStatus(false, editorPersonaId, _productUserId);
-			WriteToDiagnosticLog($"UnassignUser userPersonaId:{userPersonaId}");
-            UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+			bool status = SetMarketingCenterUserStatus(false, _productUserId);
+			if (status)
+			{
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.UnassignUser - userPersonaId: {userPersonaId}");
+				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+				// Activity Logging
+				WriteUnassignActivityLog(editorPersonaId, userPersonaId);
+			}
+			else
+			{
+				response = $"ManageMarketingCenterUser.UnassignUser errored- userPersonaId: {userPersonaId}";
+			}
 
-            // Activity Logging
-            WriteUnassignActivityLog(editorPersonaId, userPersonaId);
-
-            return "";
-        }
+			return response;
+		}
 
 		/// <summary>
 		/// Update User Profile
@@ -369,8 +366,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 				listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (listResponse.IsError) { return listResponse.ErrorReason; }
-
+				if (listResponse.IsError)
+				{
+					return listResponse.ErrorReason;
+				}
 
 				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Begin update user profile");
 				string productLoginName = "";
@@ -385,27 +384,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				UserLoginOnly userLogin = new UserLoginOnly();
 				userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-                // get the email address
-                WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Begin get user email address");
-                string userEmailAddress = "";
+				// get the email address
+				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Begin get user email address");
+				string userEmailAddress = "";
 				string userLeadEmailAddress = "";
 				ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
-                IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
-                WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Got list of electronic address");
-                if (_addresses != null)
-                {
-                    if (_addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
-                    {
-                        userEmailAddress = (from a in _addresses where a.AddressType.ToUpper() == "EMAIL" 
-							select a.AddressString).FirstOrDefault();
-                        WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Found email address. {userEmailAddress}");
-                    }
-                }
-                if (string.IsNullOrEmpty(userEmailAddress))
-                {
-                    userEmailAddress = userLogin.LoginName;
-                    WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Using login name for email address.");
-                }
+				IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
+				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Got list of electronic address");
+				if (_addresses != null)
+				{
+					if (_addresses.Any(a => a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase)))
+					{
+						userEmailAddress = (from a in _addresses where a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) select a.AddressString).FirstOrDefault();
+						WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Found email address. {userEmailAddress}");
+					}
+				}
+				if (string.IsNullOrEmpty(userEmailAddress))
+				{
+					userEmailAddress = userLogin.LoginName;
+					WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Using login name for email address.");
+				}
 
 				if (IsRegularUserNoEmail(userPersonaId))
 				{
@@ -416,25 +414,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Validating email address. Email: {userLogin.LoginName}");
 				if (userPersona.UserTypeId == (int)UserTypeConstants.RegularUserNoEmail)
 				{
-					userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
-										string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
+					userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
 				}
 				else
 				{
 					userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
 				}
-                
-                WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Validated email address. Email: {userEmailAddress}");
+
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Validated email address. Email: {userEmailAddress}");
 				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Product User Name : {_productUsername}");
 
 				if (string.IsNullOrEmpty(_productUsername))
-                {
-                    productLoginName = userEmailAddress;
-                }
-                else
-                {
-                    productLoginName = _productUsername;
-                }
+				{
+					productLoginName = userEmailAddress;
+				}
+				else
+				{
+					productLoginName = _productUsername;
+				}
 
 				MC.MarketingCenterUserDetails mUser = GetUserDetails();
 				if (mUser == null)
@@ -443,31 +440,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "User not found in product";
 				}
 
-                var mcUser = new MC.MarketingCenterUser()
-                {
-                    CompanyId = mUser.CompanyId,
-                    ContactRoleId = mUser.ContactRoleId,
-                    FirstName = person.FirstName,
-                    LastName = person.LastName,
-                    EmailAddress = userEmailAddress,
+				var mcUser = new MC.MarketingCenterUser()
+				{
+					CompanyId = mUser.CompanyId,
+					ContactRoleId = mUser.ContactRoleId,
+					FirstName = person.FirstName,
+					LastName = person.LastName,
+					EmailAddress = userEmailAddress,
 					LeadEmailAddress = userLeadEmailAddress,
 					WelcomeEmailSent = true
 				};
 
-                var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
-                logData = new Dictionary<string, object>();
-                logData.Add("url", url);
+				var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
+				logData = new Dictionary<string, object>();
+				logData.Add("url", url);
 				logData.Add("mcuser", mcUser);
 				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Update user profile.", logData);
-                var response = _client.PutAsJsonAsync(url, mcUser).Result;
+				var response = _client.PutAsJsonAsync(url, mcUser).Result;
 
 				if (response.IsSuccessStatusCode)
 				{
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - StartUpdate user SAMLAttribute User_email=" + userEmailAddress);
-                    UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userEmailAddress);
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - Update user SAMLAttribute User_email success. Saved user id");
+					WriteToDiagnosticLog("ManageMarketingCenterUser - StartUpdate user SAMLAttribute User_email=" + userEmailAddress);
+					UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userEmailAddress);
+					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user SAMLAttribute User_email success. Saved user id");
 
-                    WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
+					WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
 					return string.Empty;
 				}
 				else
@@ -479,8 +476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					catch
 					{/*Ignored*/ }
-					WriteToErrorLog(
-						$"ManageMarketingCenterUser.UpdateUserProfile Error for user with editorPersona id - {editorPersonaId}.", logData);
+					WriteToErrorLog($"ManageMarketingCenterUser.UpdateUserProfile Error for user with editorPersona id - {editorPersonaId}.", logData);
 					return $"There was a problem updating user profile for user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
 				}
 			}
@@ -500,43 +496,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="PropertyList">The list of property id's to assign to the user</param>
 		/// <returns></returns>
 		public string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList)
-        {
-            ListResponse listResponse = new ListResponse();
-            Dictionary<string, object> logData = new Dictionary<string, object>();
+		{
+			ListResponse listResponse = new ListResponse();
+			Dictionary<string, object> logData = new Dictionary<string, object>();
 			List<int> mcProperties = new List<int>();
-            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (listResponse.IsError) { return listResponse.ErrorReason; }
+			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			if (listResponse.IsError)
+			{
+				return listResponse.ErrorReason;
+			}
 
-            
-            WriteToDiagnosticLog("ManageMarketingCenterUser - Begin create/update user");
-            string productLoginName = "";
+			WriteToDiagnosticLog("ManageMarketingCenterUser - Begin create/update user");
+			string productLoginName = "";
 
-            Persona userPersona = _managePersona.GetPersona(userPersonaId);
-            WriteToDiagnosticLog("ManageMarketingCenterUser - Got persona info");
-            Guid realPageId = userPersona.RealPageId;
+			Persona userPersona = _managePersona.GetPersona(userPersonaId);
+			WriteToDiagnosticLog("ManageMarketingCenterUser - Got persona info");
+			Guid realPageId = userPersona.RealPageId;
 
-            IC.IPerson person = _managePerson.GetPerson(realPageId);
-            WriteToDiagnosticLog("ManageMarketingCenterUser - Got person info");
+			IC.IPerson person = _managePerson.GetPerson(realPageId);
+			WriteToDiagnosticLog("ManageMarketingCenterUser - Got person info");
 
-            IUserLoginOnly userLogin = new UserLoginOnly();
-            userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+			IUserLoginOnly userLogin = new UserLoginOnly();
+			userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-            // get the email address
-            WriteToDiagnosticLog("ManageMarketingCenterUser - Begin get user email address");
-            string userEmailAddress = "";
+			// get the email address
+			WriteToDiagnosticLog("ManageMarketingCenterUser - Begin get user email address");
+			string userEmailAddress = "";
 			string userLeadEmailAddress = "";
 			ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
-            IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
-            WriteToDiagnosticLog("ManageMarketingCenterUser - Got list of electronic address");
-            if (_addresses != null)
-            {
-                if (_addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
-                {
-                    userEmailAddress = (from a in _addresses where a.AddressType.ToUpper() == "EMAIL" 
-						select a.AddressString).FirstOrDefault();
-                    WriteToDiagnosticLog($"ManageMarketingCenterUser - Found email address. {userEmailAddress}");
-                }
-            }
+			IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
+			WriteToDiagnosticLog("ManageMarketingCenterUser - Got list of electronic address");
+			if (_addresses != null)
+			{
+				if (_addresses.Any(a => a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase)))
+				{
+					userEmailAddress = (from a in _addresses where a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) select a.AddressString).FirstOrDefault();
+					WriteToDiagnosticLog($"ManageMarketingCenterUser - Found email address. {userEmailAddress}");
+				}
+			}
 			if (IsRegularUserNoEmail(userPersonaId))
 			{
 				userLeadEmailAddress = userEmailAddress;
@@ -547,8 +544,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "ManageMarketingCenterUser - Error.No Valid Notification Email Provided";
 				}
 
-				userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
-										string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
+				userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
 			}
 			else
 			{
@@ -561,23 +557,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// verify email address looks valid, will fail if not
 			WriteToDiagnosticLog($"ManageMarketingCenterUser - Validating email address. Email: {userEmailAddress}");
-            userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
-            WriteToDiagnosticLog($"ManageMarketingCenterUser - Validated email address. Email: {userEmailAddress}");
+			userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
+			WriteToDiagnosticLog($"ManageMarketingCenterUser - Validated email address. Email: {userEmailAddress}");
 
-            if (string.IsNullOrEmpty(_productUsername))
-            {
-                productLoginName = userEmailAddress;
-            }
-            else
-            {
-                productLoginName = _productUsername;
-            }
+			if (string.IsNullOrEmpty(_productUsername))
+			{
+				productLoginName = userEmailAddress;
+			}
+			else
+			{
+				productLoginName = _productUsername;
+			}
 
-            bool isSuperUser = IsSuperUser(userPersonaId);
+			bool isSuperUser = IsSuperUser(userPersonaId);
 
-            if (!isSuperUser && (RoleList.Count == 0 || PropertyList.Count == 0))
-            {
-				if (RoleList.Count == 0) 
+			if (!isSuperUser && (RoleList.Count == 0 || PropertyList.Count == 0))
+			{
+				if (RoleList.Count == 0)
 				{
 					WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.There is are no roles active in this company.  Please contact the implementation team for this product.");
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Stop);
@@ -590,171 +586,166 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				WriteToDiagnosticLog($"ManageMarketingCenterUser - Create user error. PropertyList.Count={PropertyList.Count.ToString()} , RoleList.Count={RoleList.Count.ToString()}");
-                // stop batch process
-                return ProductBatchStatusType.Stop.ToString();
-            }
+				// stop batch process
+				return ProductBatchStatusType.Stop.ToString();
+			}
 
-            // get the current roles for the company
-            ListResponse roleListResponse = GetRoles(editorPersonaId, 0, null);
-            List<ProductRole> roleList = roleListResponse.Records.Cast<ProductRole>().ToList();
+			// get the current roles for the company
+			ListResponse roleListResponse = GetRoles(editorPersonaId, 0, null);
+			List<ProductRole> roleList = roleListResponse.Records.Cast<ProductRole>().ToList();
 
-            // get the current properties for the company
-            ListResponse propertyListResponse = GetProperties(editorPersonaId, 0, null);
-            List<ProductProperty> propertyList = propertyListResponse.Records.Cast<ProductProperty>().ToList();
+			// get the current properties for the company
+			ListResponse propertyListResponse = GetProperties(editorPersonaId, 0, null);
+			List<ProductProperty> propertyList = propertyListResponse.Records.Cast<ProductProperty>().ToList();
 			bool allPropertiesSelected = false;
 
-            int roleId = 0;
-            if (isSuperUser)
-            {
-                // get the role id for Corporate Operations and assign it to the new super user
-                if (roleList.Any(a => a.Name.ToUpper() == "CORPORATE OPERATIONS"))
-                {
-                    ProductRole p = (from a in roleList
-                                     where
-                                   a.Name.ToUpper() == "CORPORATE OPERATIONS"
-                                   select a).FirstOrDefault();
-                    if (p != null)
-                    {
-                        roleId = Convert.ToInt32(p.ID);
-                    }
-                }
-                if (roleId == 0)
-                {
-                    logData = new Dictionary<string, object>();
-                    logData.Add("roleList", roleList);
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - Error getting role id for Corporate Operations for super user.", logData);
+			int roleId = 0;
+			if (isSuperUser)
+			{
+				// get the role id for Corporate Operations and assign it to the new super user
+				if (roleList.Any(a => a.Name.Equals("CORPORATE OPERATIONS", StringComparison.OrdinalIgnoreCase)))
+				{
+					ProductRole p = (from a in roleList where a.Name.Equals("CORPORATE OPERATIONS", StringComparison.OrdinalIgnoreCase) select a).FirstOrDefault();
+					if (p != null)
+					{
+						roleId = Convert.ToInt32(p.ID);
+					}
+				}
+				if (roleId == 0)
+				{
+					logData = new Dictionary<string, object>();
+					logData.Add("roleList", roleList);
+					WriteToDiagnosticLog("ManageMarketingCenterUser - Error getting role id for Corporate Operations for super user.", logData);
 					WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.There is no Corporate Operations role active in this company.Please contact the implementation team for this product.");
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Stop);
 					// stop batch process
 					return ProductBatchStatusType.Stop.ToString();
 				}
 
-                // get all properties and assign it to the new super user
-                //PropertyList = new List<string>();
-                mcProperties.AddRange((from a in propertyList select Convert.ToInt32(a.ID)).ToArray());
-            }
-            else
-            {
-                if (roleList.Any(a => a.ID == RoleList[0].ToString()))
-                {
-                    roleId = RoleList[0];
-                }
-                else
-                {
-                    logData = new Dictionary<string, object>();
-                    logData.Add("roleList", roleList);
-                    WriteToDiagnosticLog($"ManageMarketingCenterUser - Error getting role id {RoleList[0]} from role list.", logData);
-                    // write an error
-                    return $"Role id {RoleList[0]} not found";
-                }
+				// get all properties and assign it to the new super user
+				//PropertyList = new List<string>();
+				mcProperties.AddRange((from a in propertyList select Convert.ToInt32(a.ID)).ToArray());
+			}
+			else
+			{
+				if (roleList.Any(a => a.ID == RoleList[0].ToString()))
+				{
+					roleId = RoleList[0];
+				}
+				else
+				{
+					logData = new Dictionary<string, object>();
+					logData.Add("roleList", roleList);
+					WriteToDiagnosticLog($"ManageMarketingCenterUser - Error getting role id {RoleList[0]} from role list.", logData);
+					// write an error
+					return $"Role id {RoleList[0]} not found";
+				}
 
-				if (PropertyList[0].ToString().ToUpper() != "ALL")
+				if (!PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase))
 				{
 					foreach (var prop in PropertyList)
 					{
 						mcProperties.Add(Convert.ToInt32(prop));
 					}
-				}				
-            }
-            
-            WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
-            MC.MarketingCenterUser mcUser = new MC.MarketingCenterUser();
-            CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
+				}
+			}
 
-            if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
-            {
-                WriteToDiagnosticLog("ManageMarketingCenterUser - Error looking for company id in bluebook.");
-                // write an error
-                return "Company Setup Error: Please Contact Support.";
-            }
+			WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
+			MC.MarketingCenterUser mcUser = new MC.MarketingCenterUser();
+			CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
 
-            // get a login name that isn't in use for the new user
-            bool foundUserName = false;
-            int incrementor = 0;
-            string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" +
-                                        $"{person.LastName.TrimWhiteSpace()}".ToLower();
+			if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
+			{
+				WriteToDiagnosticLog("ManageMarketingCenterUser - Error looking for company id in bluebook.");
+				// write an error
+				return "Company Setup Error: Please Contact Support.";
+			}
 
-            while (!foundUserName)
-            {
-                if (CheckIfUserExistInProduct(userEmailAddress))
-                {
-                    incrementor++;
-                    userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
-                }
-                else
-                {
-                    foundUserName = true;
-                }
+			// get a login name that isn't in use for the new user
+			bool foundUserName = false;
+			int incrementor = 0;
+			string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
 
-                if (incrementor == 10)
-                {
-                    // after 10 tries something might be wrong, so bail out.
-                    WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {userEmailAddress}");
-                    return "An error occurred. Unable to get username.";
-                }
-            }
+			while (!foundUserName)
+			{
+				if (CheckIfUserExistInProduct(userEmailAddress))
+				{
+					incrementor++;
+					userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+				}
+				else
+				{
+					foundUserName = true;
+				}
 
-            mcUser = new MC.MarketingCenterUser()
-            {
-                CompanyId = Convert.ToInt32(company.CompanyInstanceSourceId),
-                ContactRoleId = roleId,
-                ContactRoleName = null,
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                EmailAddress = userEmailAddress,
+				if (incrementor == 10)
+				{
+					// after 10 tries something might be wrong, so bail out.
+					WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {userEmailAddress}");
+					return "An error occurred. Unable to get username.";
+				}
+			}
+
+			mcUser = new MC.MarketingCenterUser()
+			{
+				CompanyId = Convert.ToInt32(company.CompanyInstanceSourceId),
+				ContactRoleId = roleId,
+				ContactRoleName = null,
+				FirstName = person.FirstName,
+				LastName = person.LastName,
+				EmailAddress = userEmailAddress,
 				LeadEmailAddress = userLeadEmailAddress,
 				WelcomeEmailSent = true, // send true so it doesn't send an email
-                AssignUnassignProperties = true
-            };
+				AssignUnassignProperties = true
+			};
 
-            mcUser.AssignPropertyIds = mcProperties;
-			if (PropertyList != null && PropertyList.Count > 0 && PropertyList[0].ToString().ToUpper() == "ALL" && !isSuperUser)
+			mcUser.AssignPropertyIds = mcProperties;
+			if (PropertyList != null && PropertyList.Count > 0 && PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase) && !isSuperUser)
 			{
 				allPropertiesSelected = true;
 				mcUser.AssignPropertyIds = null;
-			}else if (isSuperUser)
-            {
-                allPropertiesSelected = true;
-            }
+			}
+			else if (isSuperUser)
+			{
+				allPropertiesSelected = true;
+			}
 
 			logData = new Dictionary<string, object>();
-            logData.Add("mcUser", mcUser);
-            WriteToDiagnosticLog("ManageMarketingCenterUser - User details.", logData);
+			logData.Add("mcUser", mcUser);
+			WriteToDiagnosticLog("ManageMarketingCenterUser - User details.", logData);
 
-            if (string.IsNullOrEmpty(_productUsername))
-            {
-                // create user
-                try
-                {
+			if (string.IsNullOrEmpty(_productUsername))
+			{
+				// create user
+				try
+				{
 					mcUser.AssignAllProperties = allPropertiesSelected;
 
-					
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Running);
 
 					var url = _productUrl + $"/v2/contact?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}";
-					
-                    
-                    logData = new Dictionary<string, object>();
-                    logData.Add("url", url);
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - Create user.", logData);
-                    WriteToDiagnosticLog($"ManageMarketingCenterUser - JSON input " + JsonConvert.SerializeObject(mcUser));
-                    var response = _client.PostAsJsonAsync(url, mcUser).Result;
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-                        logData = new Dictionary<string, object>();
-                        logData.Add("userResult", userResult);
-                        WriteToDiagnosticLog("ManageMarketingCenterUser - Create User. Got result from marketing center.", logData);
-                        _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userEmailAddress);
-                        // now the id!
-                        long newid = userResult.id;
-                        WriteToDiagnosticLog($"ManageMarketingCenterUser - Create user. newid={newid}");
-                        _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
-                        WriteToDiagnosticLog("ManageMarketingCenterUser - Create user success. Saved user id");
-                        UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-                        WriteToDiagnosticLog("ManageMarketingCenterUser - Create user success. Set product status to Success");
-	                    WriteCreateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
+					logData = new Dictionary<string, object>();
+					logData.Add("url", url);
+					WriteToDiagnosticLog("ManageMarketingCenterUser - Create user.", logData);
+					WriteToDiagnosticLog($"ManageMarketingCenterUser - JSON input " + JsonConvert.SerializeObject(mcUser));
+					var response = _client.PostAsJsonAsync(url, mcUser).Result;
+
+					if (response.IsSuccessStatusCode)
+					{
+						var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+						logData = new Dictionary<string, object>();
+						logData.Add("userResult", userResult);
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Create User. Got result from marketing center.", logData);
+						_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userEmailAddress);
+						// now the id!
+						long newid = userResult.id;
+						WriteToDiagnosticLog($"ManageMarketingCenterUser - Create user. newid={newid}");
+						_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Create user success. Saved user id");
+						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Create user success. Set product status to Success");
+						WriteCreateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
 
 						//update user migration status
 						// Update UL flag in product
@@ -772,27 +763,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						if (!updateResponse.Status)
 							return updateResponse.Message;
 					}
-                    else
-                    {
-                        // write an error                        
-                        WriteToDiagnosticLog("ManageMarketingCenterUser - Create user errored. Set product status to Error");
-                        return ParseErrorPosting(response, "Create", editorPersonaId, userPersonaId);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // write an error
-                    WriteToDiagnosticLog($"ManageMarketingCenterUser - Create user errored. {ex.Message}");
-                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - Create user errored. Set product status to Error");
-                    return "There was a problem creating the user";
-                }
-            }
-            else
-            {
-                // update user
-                try
-                {
+					else
+					{
+						// write an error                        
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Create user errored. Set product status to Error");
+						return ParseErrorPosting(response, "Create", editorPersonaId, userPersonaId);
+					}
+				}
+				catch (Exception ex)
+				{
+					// write an error
+					WriteToDiagnosticLog($"ManageMarketingCenterUser - Create user errored. {ex.Message}");
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+					WriteToDiagnosticLog("ManageMarketingCenterUser - Create user errored. Set product status to Error");
+					return "There was a problem creating the user";
+				}
+			}
+			else
+			{
+				// update user
+				try
+				{
 					if (!isSuperUser)
 					{
 						if (!allPropertiesSelected)
@@ -820,8 +811,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								}
 								mcUser.UnassignPropertyIds = removePropertyList;
 							}
-						}						
-
+						}
 						mcUser.AssignAllProperties = allPropertiesSelected;
 					}
 					var url = "";
@@ -833,45 +823,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={(string.IsNullOrEmpty(_editorProductUserId) ? _marketingCenterApiSourceID : _editorProductUserId)}&unassignAllProperties=false";
 					}
-                    logData = new Dictionary<string, object>();
-                    logData.Add("url", url);
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - Update user.", logData);
-                    WriteToDiagnosticLog($"ManageMarketingCenterUser - JSON input " + JsonConvert.SerializeObject(mcUser));
-                    var response = _client.PutAsJsonAsync(url, mcUser).Result;
+					logData = new Dictionary<string, object>();
+					logData.Add("url", url);
+					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user.", logData);
+					WriteToDiagnosticLog($"ManageMarketingCenterUser - JSON input " + JsonConvert.SerializeObject(mcUser));
+					var response = _client.PutAsJsonAsync(url, mcUser).Result;
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-                        var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-                        logData = new Dictionary<string, object>();
-                        logData.Add("userResult", userResult);
-                        WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. Got result from marketing center.", logData);
-                        long newid = userResult.id;
-                        WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. newid=" + newid);
-                        UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
-                        WriteToDiagnosticLog("ManageMarketingCenterUser - Update user success. Saved user id");
-	                    WriteUpdateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
-						bool status = SetMarketingCenterUserStatus(true, editorPersonaId, newid.ToString());
+					if (response.IsSuccessStatusCode)
+					{
+						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+						var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+						logData = new Dictionary<string, object>();
+						logData.Add("userResult", userResult);
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. Got result from marketing center.", logData);
+						long newid = userResult.id;
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user. newid=" + newid);
+						UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
+						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user success. Saved user id");
+						WriteUpdateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
+						bool status = SetMarketingCenterUserStatus(true, newid.ToString());
 					}
-                    else
-                    {
-                        return ParseErrorPosting(response, "Update", editorPersonaId, userPersonaId);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // write an error
-                    //UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                    WriteToDiagnosticLog($"ManageMarketingCenterUser - Update user errored. {ex.Message}");
-                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - Update user errored. Set product status to Error");
-                    return "There was a problem updating the user";
-                }
-            }
-            WriteToDiagnosticLog("ManageMarketingCenterUser - Done create/update user");
-           
-            return "";
-        }
+					else
+					{
+						return ParseErrorPosting(response, "Update", editorPersonaId, userPersonaId);
+					}
+				}
+				catch (Exception ex)
+				{
+					// write an error
+					//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+					WriteToDiagnosticLog($"ManageMarketingCenterUser - Update user errored. {ex.Message}");
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user errored. Set product status to Error");
+					return "There was a problem updating the user";
+				}
+			}
+			WriteToDiagnosticLog("ManageMarketingCenterUser - Done create/update user");
+
+			return "";
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -890,384 +881,364 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
 			if (companyInstanceSourceId == 0)
 			{
-				WriteToErrorLog(
-					$"ManageProductMarketingCente.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+				WriteToErrorLog($"ManageProductMarketingCente.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
 				return false;
 			}
 			try
 			{
-                return SetMarketingCenterUserStatus(isActive, editorPersonaId, _productUserId);
-            }
+				return SetMarketingCenterUserStatus(isActive, _productUserId);
+			}
 			catch (Exception ex)
 			{
 				WriteToErrorLog($"ManageMarketingCenter.ChangeUserActiveStatus - Updating user status failed for user {companyInstanceSourceId}|{username} by editorPersonaId = {editorPersonaId}", exception: ex);
 				return false;
 			}
 		}
+		#endregion
 
-        private bool CheckIfUserExistInProduct(string _productUserId)
-        {
-            var url = _productUrl + $"/v2/contact/details?emailAddress={_productUserId}";
-            var response = _client.GetAsync(url).Result;            
-            if (response.IsSuccessStatusCode)
-            {
-                WriteToDiagnosticLog($"ManageMarketingCenterUser.CheckIfUserExistInProduct - Email address {_productUserId} already exist in Marketing Center.");
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Sets Product user status
-        /// </summary>
-        /// <param name="isActive"></param>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="mcUserId"></param>
-        /// <returns></returns>
-        private bool SetMarketingCenterUserStatus(bool isActive, long editorPersonaId, string mcUserId)
+		#region Private methods
+		private bool CheckIfUserExistInProduct(string _productUserId)
 		{
-			try 
-			{				
+			var url = _productUrl + $"/v2/contact/details?emailAddress={_productUserId}";
+			var response = _client.GetAsync(url).Result;
+			if (response.IsSuccessStatusCode)
+			{
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.CheckIfUserExistInProduct - Email address {_productUserId} already exist in Marketing Center.");
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Sets Product user status
+		/// </summary>
+		/// <param name="isActive"></param>
+		/// <param name="mcUserId"></param>
+		/// <returns></returns>
+		private bool SetMarketingCenterUserStatus(bool isActive, string mcUserId)
+		{
+			try
+			{
 				Dictionary<string, object> logData = new Dictionary<string, object>();
-                if (string.IsNullOrEmpty(_editorProductUserId)){
-                    WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status. Editor Product User Id cannot be null or empty.");
-                    return false;
-                }
-                if (mcUserId?.Length > 0 && mcUserId !="0") 
+				if (string.IsNullOrEmpty(_editorProductUserId))
 				{
-					var url = _productUrl + $"/v2/contact/{ mcUserId }/status";
-					
-					var mcUser = new MC.MarketingCenterUserStatus
+					WriteToDiagnosticLog("ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update user status. Editor Product User Id cannot be null or empty.");
+					return false;
+				}
+				if (mcUserId?.Length > 0 && mcUserId != "0")
+				{
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update user status Admin userId: {_editorProductUserId}");
+
+					string url = _productUrl + $"/v2/contact/{ _editorProductUserId }/status";
+					var response = _client.GetAsync(url).Result;
+					if (!response.IsSuccessStatusCode)
+					{
+						WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update user status errored.  Invalid admin user: {_editorProductUserId}");
+						return false;
+					}
+
+					url = _productUrl + $"/v2/contact/{ mcUserId }/status";
+					MC.MarketingCenterUserStatus mcUser = new MC.MarketingCenterUserStatus()
 					{
 						isActive = isActive,
 						isActiveUnifiedUser = isActive,
 						auditUserId = Convert.ToInt64(_editorProductUserId)
-                    };
-					
-					logData = new Dictionary<string, object>();
-					logData.Add("url", url);
-					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status.", logData);
-					var response = _client.PutAsJsonAsync(url, mcUser).Result;
+					};
+					logData = new Dictionary<string, object>
+					{
+						{ "url", url }
+					};
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status Put url", logData);
 
-					var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-					logData = new Dictionary<string, object>();
-					logData.Add("userResult", userResult);
+					logData = new Dictionary<string, object>
+					{
+						{ "mcUser", mcUser }
+					};
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status object", logData);
+
+					response = _client.PutAsJsonAsync(url, mcUser).Result;
+					dynamic userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+					logData = new Dictionary<string, object>
+					{
+						{ "userResult", userResult }
+					};
 					if (response.IsSuccessStatusCode)
-					{	
-						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status. Got result from marketing center.", logData);
-						return true;				
+					{
+						WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status. Got result from marketing center.", logData);
+						return true;
 					}
 					else
 					{
-						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status.", logData);
+						WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status errored.", logData);
 						return false;
 					}
 				}
 				return false;
 			}
-			catch (Exception ex) {
-				WriteToDiagnosticLog($"ManageMarketingCenterUser - Update user status errored. {ex.Message}");				
+			catch (Exception ex)
+			{
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update user status errored. {ex.Message}");
 				return false;
 			}
 		}
 
-        #region Migration
-        /// <summary>
-        /// List all users
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="datafilter"></param>
-        /// <returns></returns>
-        public ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter)
-        {
-            var response = new ListResponse()
-            {
-                IsError = true,
-                ErrorReason = "No Users."
-            };
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
+		private T GetResultFromApi<T>(string baseUrlAndQuery) where T : class
+		{
+			T results = null;
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+			logData.Add("uri", baseUrlAndQuery);
+			var response = _client.GetAsync(baseUrlAndQuery).Result;
+			if (response.IsSuccessStatusCode)
+			{
+				var jsonContent = response.Content.ReadAsStringAsync().Result;
+				results = JsonConvert.DeserializeObject(jsonContent, typeof(T)) as T;
+			}
+			else
+			{
+				logData = new Dictionary<string, object>
+				{
+					{ "error", response.Content.ReadAsStringAsync().Result },
+					{ "status", response.StatusCode }
+				};
+				WriteToDiagnosticLog("GetAsync - Exiting after error. ", logData);
+			}
+			return results;
+		}
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
-            {
-                WriteToErrorLog(
-                    $"ManageProductMarketingCenter.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var filter = "NonMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
-                {
-                    filter = datafilter.FilterBy["filter"];
-                }
-                if (datafilter.Pages != null)
-                {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
-                }
-            }
-
-            var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductMarketingCenter.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
-
-            var migrationResponse = GetResultFromApi<MigrationResponse<IList<MigrationUser>>>(url);
-
-            if (migrationResponse == null)
-            {
-                WriteToErrorLog($"ManageProductMarketingCenter.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
-            }
-            WriteToDiagnosticLog($"ManageProductMarketingCenter.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = migrationResponse.Data.Cast<object>().ToList();
-            response.TotalRows = migrationResponse.Data.Count();
-            return response;
-        }
-
-        /// <summary>
-        /// Update the users migration status
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="migrateUsers"></param>
-        /// <returns></returns>
-        public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
-        {
-            var migrateResponse = new MigrateResponse()
-            {
-                Status = false
-            };
-            
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
-
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
-            {
-                WriteToErrorLog(
-                    $"ManageProductMarketingCenter.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
-            }
-
-			//Below logic is needed when product user migrated to existing UL user,we need to send notification email address
-			//to product to update email
-			foreach (var user in migrateUsers){
-				if (string.IsNullOrEmpty(user.LeadEmailAddress)){
-					// get the email address
-					ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
-					IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(user.UnifiedLoginUserName,_editorPersona.OrganizationPartyId, "");
-					
-					if (_addresses != null)
-					{
-						if (_addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
-						{
-							user.LeadEmailAddress = (from a in _addresses
-												where a.AddressType.ToUpper() == "EMAIL"
-												select a.AddressString).FirstOrDefault();							
-						}
-					}
+		private string ParseErrorPosting(HttpResponseMessage response, string action, long editorPersonaId, long userPersonaId)
+		{
+			var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+			bool emailAlreadyExists = false;
+			try
+			{
+				// see if the error is from the user email already existing
+				string errorText = userResult.fieldErrors.Error.message;
+				if (errorText.Contains("duplicate") && errorText.Contains("emailAddress"))
+				{
+					emailAlreadyExists = true;
 				}
 			}
-			
-            var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/migrate-users";
-            var response = _client.PostAsJsonAsync(url, migrateUsers).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
-
-            var logData = new Dictionary<string, object>
-            {
-                { "Url", url },
-                { "Response", responseContent },
-                { "EditorPersonaId", editorPersonaId },
-                { "MigratedUser", migrateUsers }
-            };
-            if (response.IsSuccessStatusCode)
-            {
-                var migrationResponse = JsonConvert.DeserializeObject<MigrationResponse<MigrateResponse>>(responseContent);
-                WriteToDiagnosticLog("ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = migrationResponse.Data.Message;
-                migrateResponse.Status = migrationResponse.Data.Status;
-                return migrateResponse;
-            }
-            else
-            {
-                WriteToErrorLog($"ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = "Cannot update user status to migrated.";
-                return migrateResponse;
-            }
-        }
-        #endregion
-
-        private string ParseErrorPosting(HttpResponseMessage response, string action, long editorPersonaId, long userPersonaId)
-        {
-            var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-            bool emailAlreadyExists = false;
-			try
-            {
-                // see if the error is from the user email already existing
-                string errorText = userResult.fieldErrors.Error.message;
-                if (errorText.Contains("duplicate") && errorText.Contains("emailAddress"))
-                {
-                    emailAlreadyExists = true;
-                }
-            }
-            catch (Exception)
-            {
-                // couldn't parse the response from the product, so move on
-            }
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-            logData.Add("response.Content.ReadAsStringAsync().Result", userResult);
-            WriteToDiagnosticLog($"ManageMarketingCenterUser - {action} errored." + (emailAlreadyExists ? " Email already exists" : ""), logData);
-            string result = "";
-            switch (action.ToUpper())
-            {
-                case "CREATE":
-                    result = "There was a problem creating the user." + (emailAlreadyExists ? " Email already exists" : "");					
+			catch (Exception)
+			{
+				// couldn't parse the response from the product, so move on
+			}
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+			logData.Add("response.Content.ReadAsStringAsync().Result", userResult);
+			WriteToDiagnosticLog($"ManageMarketingCenterUser - {action} errored." + (emailAlreadyExists ? " Email already exists" : ""), logData);
+			string result = "";
+			switch (action.ToUpper())
+			{
+				case "CREATE":
+					result = "There was a problem creating the user." + (emailAlreadyExists ? " Email already exists" : "");
 					break;
-                case "UPDATE":
-                    result = "There was a problem updating the user." + (emailAlreadyExists ? " Email already exists" : "");
-                    break;
-            }
+				case "UPDATE":
+					result = "There was a problem updating the user." + (emailAlreadyExists ? " Email already exists" : "");
+					break;
+			}
 
-			if (emailAlreadyExists) 
-			{				
-			   WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.A user already exists with this email address.Please try using the Migration Tool.");
-			   UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Stop);
+			if (emailAlreadyExists)
+			{
+				WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.A user already exists with this email address.Please try using the Migration Tool.");
+				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Stop);
 				// stop batch process
-				result =  ProductBatchStatusType.Stop.ToString();
+				result = ProductBatchStatusType.Stop.ToString();
 			}
 			else
 			{
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-			}			
+			}
 			return result;
-        }        
+		}
 
-        /*
-        /// <summary>
-        /// Used to update product status for the user
-        /// </summary>
-        /// <param name="userPersonaId"></param>
-        /// <param name="status"></param>
-        private void UpdateProductSetting(long userPersonaId, ProductBatchStatusType status)
-        {
-            // add the new status flag to the product before we start
-            IList<ProductSettingType> productSettingTypes = _productRepository.ListProductSettingType();
-            RepositoryResponse repositoryResponse = new RepositoryResponse();
-            // get the id for ProductStatus type
-            if (productSettingTypes.Any(a => a.Name.ToUpper() == "PRODUCTSTATUS"))
-            {
-                int productStatusTypeId = (from a in productSettingTypes where a.Name.ToUpper() == "PRODUCTSTATUS" select a.ProductSettingTypeId).FirstOrDefault();
-                repositoryResponse = _productRepository.CreateProductSetting(userPersonaId, _productId, productStatusTypeId, status.ToString());
-            }
-        }
-        */
+		/// <summary>
+		/// Used to get info about a user
+		/// </summary>
+		/// <returns></returns>
+		private MC.MarketingCenterUserDetails GetUserDetails()
+		{
+			MC.MarketingCenterUserDetails mDetails = new MC.MarketingCenterUserDetails();
+			if (!string.IsNullOrEmpty(_productUserId))
+			{
+				try
+				{
+					var url = _productUrl + $"/v2/contact/{_productUserId}/details";
+					var response = _client.GetAsync(url).Result;
 
-        /// <summary>
-        /// Used to get info about a user
-        /// </summary>
-        /// <returns></returns>
-        private MC.MarketingCenterUserDetails GetUserDetails()
-        {
-            MC.MarketingCenterUserDetails mDetails = new MC.MarketingCenterUserDetails();
-            if (!string.IsNullOrEmpty(_productUserId))
-            {
-                try
-                {
-                    var url = _productUrl + $"/v2/contact/{_productUserId}/details";
-                    var response = _client.GetAsync(url).Result;
+					if (response.IsSuccessStatusCode)
+					{
+						mDetails = JsonConvert.DeserializeObject<MC.MarketingCenterUserDetails>(response.Content.ReadAsStringAsync().Result);
+					}
+				}
+				catch (Exception ex)
+				{
+				}
+			}
+			return mDetails;
+		}
+		#endregion
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        mDetails = JsonConvert.DeserializeObject<MC.MarketingCenterUserDetails>(response.Content.ReadAsStringAsync().Result);
+		#region Migration
+		/// <summary>
+		/// List all users
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		public ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter)
+		{
+			var response = new ListResponse()
+			{
+				IsError = true,
+				ErrorReason = "No Users."
+			};
+			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+			if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-                    }
-                }
-                catch (Exception ex)
-                {
+			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
+			if (companyInstanceSourceId == 0)
+			{
+				WriteToErrorLog(
+					$"ManageProductMarketingCenter.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+				response.ErrorReason = "Company Setup Error: Please Contact Support.";
+				return response;
+			}
+			var filter = "NonMigrated";
+			var startRow = 0;
+			var resultPerRow = 1000;
+			if (datafilter != null)
+			{
+				if (datafilter.FilterBy.ContainsKey("filter"))
+				{
+					filter = datafilter.FilterBy["filter"];
+				}
+				if (datafilter.Pages != null)
+				{
+					startRow = datafilter.Pages.StartRow;
+					resultPerRow = datafilter.Pages.ResultsPerPage;
+				}
+			}
 
-                }
-            }
-            return mDetails;
-        }
+			var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
+			WriteToDiagnosticLog("ManageProductMarketingCenter.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
 
-        #region Privates
-        private T GetResultFromApi<T>(string baseUrlAndQuery) where T : class
-        {
-            T results = null;
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-            logData.Add("uri", baseUrlAndQuery);
-             var response = _client.GetAsync(baseUrlAndQuery).Result;
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonContent = response.Content.ReadAsStringAsync().Result;
-                results = JsonConvert.DeserializeObject(jsonContent, typeof(T)) as T;
-            }
-            else
-            {
-                logData = new Dictionary<string, object>
-                {
-                    { "error", response.Content.ReadAsStringAsync().Result },
-                    { "status", response.StatusCode }
-                };
-                WriteToDiagnosticLog("GetAsync - Exiting after error. ", logData);
-            }
-            return results;
-        }
+			var migrationResponse = GetResultFromApi<MigrationResponse<IList<MigrationUser>>>(url);
 
-        /* /// <summary>
-           /// 
-           /// </summary>
-           /// <returns></returns>
-           private CompanyMap GetMarketingCenterCompanyInstanceId2()
-           {
-               IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.MarketingCenter);
-               CompanyMap company = new CompanyMap();
-               if (companyProductList.Any(a => a.Source.ToUpper() == BlueBookProductConstants.MarketingCenter))
-               {
-                   company = (from a in companyProductList where a.Source.ToUpper() == BlueBookProductConstants.MarketingCenter select a).FirstOrDefault();
-               }
-               return company;
-           }*/
+			if (migrationResponse == null)
+			{
+				WriteToErrorLog($"ManageProductMarketingCenter.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+				return response;
+			}
+			WriteToDiagnosticLog($"ManageProductMarketingCenter.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+			response.RowsPerPage = resultPerRow;
+			response.ErrorReason = string.Empty;
+			response.IsError = false;
+			response.TotalPages = 1;
+			response.Records = migrationResponse.Data.Cast<object>().ToList();
+			response.TotalRows = migrationResponse.Data.Count();
+			return response;
+		}
 
-        #endregion
+		/// <summary>
+		/// Update the users migration status
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="migrateUsers"></param>
+		/// <returns></returns>
+		public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
+		{
+			var migrateResponse = new MigrateResponse()
+			{
+				Status = false
+			};
 
-    }
+			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+			if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-    /// <summary>
-    /// Used to help convert product classes to GreenBook classes
-    /// </summary>
-    public static class ManageProductMarketingCenterHelpers
+			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
+			if (companyInstanceSourceId == 0)
+			{
+				WriteToErrorLog(
+					$"ManageProductMarketingCenter.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+				migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+				return migrateResponse;
+			}
+
+			//Below logic is needed when product user migrated to existing UL user,we need to send notification email address
+			//to product to update email
+			foreach (var user in migrateUsers)
+			{
+				if (string.IsNullOrEmpty(user.LeadEmailAddress))
+				{
+					// get the email address
+					ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
+					IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(user.UnifiedLoginUserName, _editorPersona.OrganizationPartyId, "");
+
+					if (_addresses != null)
+					{
+						if (_addresses.Any(a => a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase)))
+						{
+							user.LeadEmailAddress = (from a in _addresses where a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) select a.AddressString).FirstOrDefault();
+						}
+					}
+				}
+			}
+
+			var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/migrate-users";
+			var response = _client.PostAsJsonAsync(url, migrateUsers).Result;
+			var responseContent = response.Content.ReadAsStringAsync().Result;
+
+			var logData = new Dictionary<string, object>
+			{
+				{ "Url", url },
+				{ "Response", responseContent },
+				{ "EditorPersonaId", editorPersonaId },
+				{ "MigratedUser", migrateUsers }
+			};
+			if (response.IsSuccessStatusCode)
+			{
+				var migrationResponse = JsonConvert.DeserializeObject<MigrationResponse<MigrateResponse>>(responseContent);
+				WriteToDiagnosticLog("ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+				migrateResponse.Message = migrationResponse.Data.Message;
+				migrateResponse.Status = migrationResponse.Data.Status;
+				return migrateResponse;
+			}
+			else
+			{
+				WriteToErrorLog($"ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+				migrateResponse.Message = "Cannot update user status to migrated.";
+				return migrateResponse;
+			}
+		}
+		#endregion
+	}
+
+	/// <summary>
+	/// Used to help convert product classes to GreenBook classes
+	/// </summary>
+	public static class ManageProductMarketingCenterHelpers
 	{
-        /// <summary>
-        /// Used to convert a product role into a GreenBook role to be used by the UI
-        /// </summary>
-        /// <param name="roles">The list of roles to convert</param>
-        /// <returns></returns>
-        public static IList<ProductRole> ToGBRoles(this IList<MC.Role> roles)
-        {
-            if (roles == null) return null;
-            IList<ProductRole> results = new List<ProductRole>();
-            foreach (MC.Role role in roles)
-            {
-                if (role.IsActive)
-                {
-                    results.Add(new ProductRole
-                    {
-                        ID = role.RoleId.ToString(),
-                        Name = role.RoleName,
-                    });
-                }
-            }
-            return (from role in results orderby role.Name select role).ToList();
-        }
+		/// <summary>
+		/// Used to convert a product role into a GreenBook role to be used by the UI
+		/// </summary>
+		/// <param name="roles">The list of roles to convert</param>
+		/// <returns></returns>
+		public static IList<ProductRole> ToGBRoles(this IList<MC.Role> roles)
+		{
+			if (roles == null) return null;
+			IList<ProductRole> results = new List<ProductRole>();
+			foreach (MC.Role role in roles)
+			{
+				if (role.IsActive)
+				{
+					results.Add(new ProductRole
+					{
+						ID = role.RoleId.ToString(),
+						Name = role.RoleName,
+					});
+				}
+			}
+			return (from role in results orderby role.Name select role).ToList();
+		}
 
 		/// <summary>
 		/// Used to convert a Product property into a GreenBook property
