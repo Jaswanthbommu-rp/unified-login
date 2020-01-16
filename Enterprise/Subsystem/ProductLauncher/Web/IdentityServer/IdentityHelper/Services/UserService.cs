@@ -576,7 +576,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     var userClaim = GetSamlUserClaimAndAttributesForProduct(clientClaim.ClaimName, clientClaim.SamlAttributeName, persona.PersonaId, (ProductEnum) clientClaim.ProductId, out _);
                     if (userClaim != null)
                         claims.Add(userClaim);
-                    break;
+                    continue;
                 }
 
                 if (string.IsNullOrEmpty(clientClaim.SamlAttributeName))
