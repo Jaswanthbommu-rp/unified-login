@@ -944,17 +944,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						isActiveUnifiedUser = isActive,
 						auditUserId = Convert.ToInt64(_editorProductUserId)
 					};
+
 					logData = new Dictionary<string, object>
 					{
 						{ "url", url }
 					};
 					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status Put url", logData);
 
-					logData = new Dictionary<string, object>
-					{
-						{ "mcUser", mcUser }
-					};
-					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status object", logData);
+					string mcUserJson = JsonConvert.SerializeObject(mcUser);
+
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status object: {mcUserJson}");
 
 					response = _client.PutAsJsonAsync(url, mcUser).Result;
 					dynamic userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
