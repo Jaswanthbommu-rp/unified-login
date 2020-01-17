@@ -783,6 +783,10 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\RecompileAllProcs.sql" />
     <Build Include="Enterprise\Stored Procedures\ListProductUsersForOrganization.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\January2020Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\February2020Release.sql" />
+    <Build Include="Auth\Tables\ClientUserClaim.sql" />
+    <Build Include="Auth\Tables\Claim.sql" />
+    <Build Include="Auth\Stored Procedures\GetUserClaimTypesRequiredForClient.sql" />
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId.sql" />
   </ItemGroup>
   <ItemGroup>
