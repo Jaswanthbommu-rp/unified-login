@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using System;
 using System.Collections.Generic;
@@ -18,8 +19,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -105,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
 		{
 			ListResponse result = new ListResponse();
-			IList<MC.Role> rolesList = new List<MC.Role>();
+			IList<Role> rolesList = new List<Role>();
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 
 			result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -130,8 +129,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (response.IsSuccessStatusCode)
 				{
 					var jsonContent = response.Content.ReadAsStringAsync().Result;
-					rolesList = JsonConvert.DeserializeObject<IList<MC.Role>>(jsonContent);
-					if (rolesList == null) { rolesList = new List<MC.Role>(); }
+					rolesList = JsonConvert.DeserializeObject<IList<Role>>(jsonContent);
+					if (rolesList == null) { rolesList = new List<Role>(); }
 					logData = new Dictionary<string, object>();
 					logData.Add("rolesList", rolesList);
 					WriteToDiagnosticLog("GetRoles - Got response", logData);
@@ -143,7 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (userPersonaId != 0)
 					{
 						// merge the given user details with the list
-						MC.MarketingCenterUserDetails mUser = GetUserDetails();
+						MarketingCenterUserDetails mUser = GetUserDetails();
 						if (mUser == null)
 						{
 							WriteToDiagnosticLog($"GetRoles - Error looking for user. userPersonaId={userPersonaId.ToString()}");
@@ -259,7 +258,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (userPersonaId != 0)
 					{
 						// merge the given user details with the list
-						MC.MarketingCenterUserDetails mUser = GetUserDetails();
+						MarketingCenterUserDetails mUser = GetUserDetails();
 						if (mUser == null)
 						{
 							WriteToDiagnosticLog($"GetProperties - Error looking for user. userPersonaId={userPersonaId.ToString()}");
@@ -272,9 +271,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						if (mUser.AssignedProperties != null)
 						{
 							logData = new Dictionary<string, object>();
-							List<MC.Property> prop = mUser.AssignedProperties;
+							List<Property> prop = mUser.AssignedProperties;
 							int i = 0;
-							foreach (MC.Property p in prop)
+							foreach (Property p in prop)
 							{
 								if (list.Any(a => a.ID == p.Id.ToString()))
 								{
@@ -389,7 +388,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string userEmailAddress = "";
 				string userLeadEmailAddress = "";
 				ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
-				IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
+				IList<ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
 				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Got list of electronic address");
 				if (_addresses != null)
 				{
@@ -433,14 +432,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productLoginName = _productUsername;
 				}
 
-				MC.MarketingCenterUserDetails mUser = GetUserDetails();
+				MarketingCenterUserDetails mUser = GetUserDetails();
 				if (mUser == null)
 				{
 					WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Error looking for user. userPersonaId={userPersonaId.ToString()}");
 					return "User not found in product";
 				}
 
-				var mcUser = new MC.MarketingCenterUser()
+				var mcUser = new MarketingCenterUser()
 				{
 					CompanyId = mUser.CompanyId,
 					ContactRoleId = mUser.ContactRoleId,
@@ -513,7 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			WriteToDiagnosticLog("ManageMarketingCenterUser - Got persona info");
 			Guid realPageId = userPersona.RealPageId;
 
-			IC.IPerson person = _managePerson.GetPerson(realPageId);
+			IPerson person = _managePerson.GetPerson(realPageId);
 			WriteToDiagnosticLog("ManageMarketingCenterUser - Got person info");
 
 			IUserLoginOnly userLogin = new UserLoginOnly();
@@ -524,7 +523,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string userEmailAddress = "";
 			string userLeadEmailAddress = "";
 			ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
-			IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
+			IList<ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
 			WriteToDiagnosticLog("ManageMarketingCenterUser - Got list of electronic address");
 			if (_addresses != null)
 			{
@@ -651,7 +650,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
-			MC.MarketingCenterUser mcUser = new MC.MarketingCenterUser();
+			MarketingCenterUser mcUser = new MarketingCenterUser();
 			CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
 
 			if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
@@ -686,7 +685,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			mcUser = new MC.MarketingCenterUser()
+			mcUser = new MarketingCenterUser()
 			{
 				CompanyId = Convert.ToInt32(company.CompanyInstanceSourceId),
 				ContactRoleId = roleId,
@@ -938,22 +937,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 
 					url = _productUrl + $"/v2/contact/{ mcUserId }/status";
-					MC.MarketingCenterUserStatus mcUser = new MC.MarketingCenterUserStatus()
+					MarketingCenterUserStatus mcUser = new MarketingCenterUserStatus()
 					{
 						isActive = isActive,
 						isActiveUnifiedUser = isActive,
 						auditUserId = Convert.ToInt64(_editorProductUserId)
 					};
 
+					string mcUserJson = JsonConvert.SerializeObject(mcUser);
+
 					logData = new Dictionary<string, object>
 					{
 						{ "url", url }
 					};
-					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status Put url", logData);
-
-					string mcUserJson = JsonConvert.SerializeObject(mcUser);
-
-					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status object: {mcUserJson}");
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} url and user status request object: {mcUserJson}", logData);
 
 					response = _client.PutAsJsonAsync(url, mcUser).Result;
 					dynamic userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
@@ -1053,9 +1050,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Used to get info about a user
 		/// </summary>
 		/// <returns></returns>
-		private MC.MarketingCenterUserDetails GetUserDetails()
+		private MarketingCenterUserDetails GetUserDetails()
 		{
-			MC.MarketingCenterUserDetails mDetails = new MC.MarketingCenterUserDetails();
+			MarketingCenterUserDetails mDetails = new MarketingCenterUserDetails();
 			if (!string.IsNullOrEmpty(_productUserId))
 			{
 				try
@@ -1065,7 +1062,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					if (response.IsSuccessStatusCode)
 					{
-						mDetails = JsonConvert.DeserializeObject<MC.MarketingCenterUserDetails>(response.Content.ReadAsStringAsync().Result);
+						mDetails = JsonConvert.DeserializeObject<MarketingCenterUserDetails>(response.Content.ReadAsStringAsync().Result);
 					}
 				}
 				catch (Exception ex)
@@ -1170,7 +1167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					// get the email address
 					ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
-					IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(user.UnifiedLoginUserName, _editorPersona.OrganizationPartyId, "");
+					IList<ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(user.UnifiedLoginUserName, _editorPersona.OrganizationPartyId, "");
 
 					if (_addresses != null)
 					{
@@ -1221,11 +1218,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		/// <param name="roles">The list of roles to convert</param>
 		/// <returns></returns>
-		public static IList<ProductRole> ToGBRoles(this IList<MC.Role> roles)
+		public static IList<ProductRole> ToGBRoles(this IList<Role> roles)
 		{
 			if (roles == null) return null;
 			IList<ProductRole> results = new List<ProductRole>();
-			foreach (MC.Role role in roles)
+			foreach (Role role in roles)
 			{
 				if (role.IsActive)
 				{

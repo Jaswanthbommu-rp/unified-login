@@ -3,7 +3,7 @@
 	/// <summary>
 	/// THe Marketing Center user Status
 	/// </summary>
-	public class MarketingCenterUserStatus
+	public class MarketingCenterUserStatus : IMarketingCenterUserStatus
 	{
 		public bool isActive { get; set; }
 
