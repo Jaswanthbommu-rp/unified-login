@@ -107,8 +107,8 @@
         };
 
         vm.onTabActive = function () {
-            var helpWidget = document.querySelector('omnibar-unified-help');            
-            helpWidget.helpQuery = 'pg=ul-securityQuestions&vr=40&scrver=350';
+            var helpWidget = document.querySelector('raul-unified-help');
+            helpWidget.helpPageId = "securityQuestions";
             vm.active = true;
             return vm;
         };

@@ -27,8 +27,8 @@
         };
 
         vm.onTabActive = function () {
-            var helpWidget = document.querySelector('omnibar-unified-help');            
-            helpWidget.helpQuery = 'pg=ul-productAccess&vr=40&scrver=350';
+            var helpWidget = document.querySelector('raul-unified-help');
+            helpWidget.helpPageId = "productAccess";
             vm.active = true;
             model.setActive();
             return vm;

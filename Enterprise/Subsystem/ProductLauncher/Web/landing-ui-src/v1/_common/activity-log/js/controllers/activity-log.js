@@ -60,8 +60,8 @@
         };
 
         vm.onTabActive = function () {
-            var helpWidget = document.querySelector('omnibar-unified-help');            
-            helpWidget.helpQuery = 'pg=ul-activity&vr=40&scrver=350';
+            var helpWidget = document.querySelector('raul-unified-help');
+            helpWidget.helpPageId = "activity";
             vm.active = true;
             return vm;
         };

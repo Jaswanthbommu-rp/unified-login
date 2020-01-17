@@ -69,7 +69,6 @@
 
         vm.init = function () {
             vm.saveTimezone();
-            vm.orgName = "";
             $scope.appLayout = layout.getData();
             sessionModel.subscribe(vm.onSessionReady);
             vm.readyStateTimer = $timeout(vm.setReady, 100);
@@ -84,15 +83,8 @@
             var username = sessionModel.getUsername(),
                 token = sessionModel.getVerificationToken(),
                 identityToken = cookie.read("access_token");
-                
-                var org = sessionModel.getOrganization();
-                if(org){
-                    if(org.length > 0){
-                        vm.orgName = org[0].name;
-                    }
-                }
-                
-            var omnibar = document.querySelector('omnibar-shell');
+
+            var omnibar = document.querySelector('raul-shell');
             omnibar.environment = ENV.currentEnv;
             omnibar.servers = {
               unity: ENV.landingAPI,
@@ -101,11 +93,11 @@
 
             omnibar.auth = identityToken;
 
-            var helpWidget = document.querySelector('omnibar-unified-help');
+            var helpWidget = document.querySelector('raul-unified-help');
             $rootScope.$on("$stateChangeSuccess", function (_, toState) {
-                helpWidget.helpQuery = "";                
+                helpWidget.helpPageId = "";
                 if (pageContext[toState.name]) {
-                    helpWidget.helpQuery = 'pg=ul-' + pageContext[toState.name].pg + '&vr=40&scrver=350';
+                    helpWidget.helpPageId = pageContext[toState.name].pg;
                 }
                 omnibar.pageId = (window.location.hash === "#/employee-access") ? "" : window.location.hash;
             });

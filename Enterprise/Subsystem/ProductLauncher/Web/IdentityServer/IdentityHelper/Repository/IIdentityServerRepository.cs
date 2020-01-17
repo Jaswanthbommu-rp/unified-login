@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 {
@@ -24,6 +23,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
         void UpdateIdentityTokenExpiry(string tokenKey, DateTimeOffset expiry);
         //IEnumerable<OrganizationClientUserClaim> GetAllOrganizationClientUserClaims(int organizationId, string clientCode, long userId);
         IEnumerable<PortfolioProductUserClaims> GetAllPortfolioProductUserClaims(int portfolioId, string clientCode, long userId);
-        List<ClientUserClaim> GetUserClaimTypesForClient(string clientId);
-    }
+	}
 }

@@ -30,7 +30,7 @@
                 "propertyName": "",
                 "userRole": persona.getUserRole()
             });
-            // var omnibar = document.querySelector('omnibar-scope');
+            // var omnibar = document.querySelector('raul-scope');
             // omnibar.scopeProduct="RealPage Unified Platform";
             // omnibar.scopeBase = persona.getCompanyName();
             // omnibar.scopeSelected = "";

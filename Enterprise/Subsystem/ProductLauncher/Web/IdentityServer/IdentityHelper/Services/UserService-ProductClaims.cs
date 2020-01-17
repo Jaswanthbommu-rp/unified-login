@@ -44,6 +44,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         private IEnumerable<Claim> GetClaimsFromUnifiedAmenities(Persona persona)
         {
             var claims = new List<Claim>();
+            IList<SamlAttributes> _;
+            var userClaim = GetSamlUserClaimAndAttributesForProduct("os-userinfo", "UserId", persona.PersonaId,
+                ProductEnum.OneSite, out _); // the _ on out just means unused out variable
+            if (userClaim != null)
+                claims.Add(userClaim);
 
             var roles = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.UnifiedAmenities);
             if (roles != null)
@@ -62,6 +67,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             return claims;
         }
 
+        private IEnumerable<Claim> GetClaimsFromOnsite(Persona persona)
+        {
+            var claimsToReturn = new List<Claim>();
+            IList<SamlAttributes> samlAttributes;
+            var userClaim = GetSamlUserClaimAndAttributesForProduct("user_id", "UserId", persona.PersonaId, ProductEnum.OnSite, out samlAttributes);
+
+            if (userClaim != null)
+            {
+                claimsToReturn.Add(userClaim);
+
+                var companyId = (from saml in samlAttributes where saml.Name == "PMCID" select saml.Value).FirstOrDefault();
+                claimsToReturn.Add(new Claim("company_id", companyId));
+            }
+
+            return claimsToReturn;
+        }
+
         private Claim GetSamlUserClaimAndAttributesForProduct(string claimType, string samlAttrName, long personaId, ProductEnum product, out IList<SamlAttributes> samlAttributes)
         {
             var samlProductSettings = GetSamlSettingsForProduct(product);
@@ -70,26 +92,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 samlAttributes = GetSamlProductAttributesForPersona(personaId, product);
                 if (samlAttributes.Any())
                 {
-                    // check the saml attribute name to see if it needs to be parsed
-                    bool splitSamlValue = false;
-                    int splitIndex = 0;
-                    char splitChar = new char();
-
-                    if (samlAttrName.Contains("~"))
-                    {
-                        splitSamlValue = true;
-                        var parseSamlAttribute = samlAttrName.Split('~');
-                        splitChar = parseSamlAttribute[1].Substring(0, 1)[0];
-                        splitIndex = Convert.ToInt16(parseSamlAttribute[1].Substring(1, parseSamlAttribute[1].Length - 1));
-                        samlAttrName = parseSamlAttribute[0];
-                    }
-                    var samlValue = (from saml in samlAttributes where saml.Name == samlAttrName select saml.Value).FirstOrDefault();
-
-                    if (splitSamlValue && !string.IsNullOrEmpty(samlValue))
-                    {
-                        samlValue = samlValue.Split(splitChar)[splitIndex];
-                    }
-                    return new Claim(claimType, samlValue);
+                    var userId = (from saml in samlAttributes where saml.Name == samlAttrName select saml.Value).FirstOrDefault();
+                    return new Claim(claimType, userId);
                 }
             }
 

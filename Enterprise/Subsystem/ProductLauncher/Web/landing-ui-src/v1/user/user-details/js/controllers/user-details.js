@@ -7,7 +7,7 @@
         contactMethod, industryJobTitle, phoneTypeTitle, security, helpData, persona, impersonate, switchConfig, changeUserType, chgUserTypeModal, pubsub, externalUserModal, externalUserSvc, existingUserModal, chkEmailModel, existingNoEmailUserModal) {
         var vm = this,
             lang = $filter("userDetailsText"),
-            helpWidget = document.querySelector('omnibar-unified-help'),
+            helpWidget = document.querySelector('raul-unified-help'),
             existingFirstName = "",
             existingLastName = "",
             existingMiddleName = "",
@@ -18,8 +18,7 @@
         vm.init = function () {
             vm.isInit = true;
             vm.model = model;            
-            // vm.helpMode = helpWidget.helpPageId;
-            vm.helpMode = helpWidget.helpQuery ;
+            vm.helpMode = helpWidget.helpPageId;
             vm.security = security;
             vm.customFieldList = [];
             vm.assignProducts = assignProductsModel;

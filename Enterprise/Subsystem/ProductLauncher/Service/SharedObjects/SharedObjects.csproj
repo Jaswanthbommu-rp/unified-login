@@ -163,7 +163,6 @@
     <Compile Include="IdentityConfig\ClientRedirectUri.cs" />
     <Compile Include="IdentityConfig\ClientScope.cs" />
     <Compile Include="IdentityConfig\ClientSecret.cs" />
-    <Compile Include="IdentityConfig\ClientUserClaim.cs" />
     <Compile Include="IdentityConfig\Consent.cs" />
     <Compile Include="IdentityConfig\CommonAddress.cs" />
     <Compile Include="IdentityConfig\ContactMechanismBoundary.cs" />
