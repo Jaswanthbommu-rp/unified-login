@@ -178,12 +178,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var realPageEmployeeAccessIdString = rpCache.GetFromCache<string>(cacheKey, 180, () =>
             {
                 string realPageId = "";
-                var result = ListOrganizationAdmin(organizationRealPageId);
-                if (result != null)
+                using (var repository = GetRepository())
                 {
-                    foreach (var item in result)
+                    dynamic param = new
                     {
-                        realPageId = item.PersonRealPageId;
+                        RealPageId = organizationRealPageId
+                    };
+                    var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
+                    if (result != null)
+                    {
+                        foreach (var item in result)
+                        {
+                            realPageId = item.PersonRealPageId;
+                        }
                     }
                 }
 
@@ -194,28 +201,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 realPageEmployeeAccessId = new Guid(realPageEmployeeAccessIdString);
             }
-            
+
             return realPageEmployeeAccessId;
-        }
-
-        /// <summary>
-        /// Used to get or list the RealPageId of the admin user(s) of the organization
-        /// </summary>
-        /// <param name="organizationRealPageId">Optional organization enterprise Id</param>
-        /// <returns>List of admin user of the organization</returns>
-        public IList<dynamic> ListOrganizationAdmin(Guid? organizationRealPageId = null)
-        {
-            IList<dynamic> result;
-            dynamic param = new
-            {
-                RealPageId = organizationRealPageId
-            };
-            using (var repository = GetRepository())
-            {
-                result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
-            }
-
-            return result;
         }
 
         /// <summary>

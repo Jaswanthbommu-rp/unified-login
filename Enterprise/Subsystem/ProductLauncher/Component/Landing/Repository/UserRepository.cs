@@ -2239,15 +2239,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<UserOrganization> userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
             userOrganizationList.ToList().ForEach(o =>
             {
-                //dynamic organizationAdmin;
-
                 //editor persona
-                 //organizationAdmin = _organizationRepository.ListOrganizationAdmin(o.OrganizationRealPageId)[0]);
-
-                //Guid realPageEmployeeAccessId = new Guid(organizationAdmin.PersonRealPageId);
-
                 Guid realPageEmployeeAccessId = _organizationRepository.GetOrganizationAdminUserRealPageId(o.OrganizationRealPageId);
-
 
                 Persona editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
 
