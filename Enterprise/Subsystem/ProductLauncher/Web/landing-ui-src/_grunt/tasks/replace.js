@@ -17,7 +17,7 @@ module.exports = function (task, env) {
 
     task.getDefParams = function (appName) {
         var params = {
-            getSrc: task.getSrc,
+            src: task.getSrc(appName),
 
             rename: function (dest, src) {
                 return src;
@@ -65,9 +65,9 @@ module.exports = function (task, env) {
 
             files: [{
                 expand: true,
+                src: params.src,
                 filter: "isFile",
                 rename: params.rename,
-                src: params.getSrc(appName, task, env)
             }]
         };
 

@@ -11,8 +11,7 @@ module.exports = function (grunt, env) {
         ],
 
         clean: [
-            "clean",
-            "clean-cdn"
+            "clean"
         ],
 
         concat: [
@@ -22,15 +21,14 @@ module.exports = function (grunt, env) {
         copy: [
             "copy",
             "copy-cdn",
-            "copy-env",
-            "copy-json"
+            "copy-env"
         ],
 
         cssmin: [
             "mincss"
         ],
 
-        html2js: [
+        psHtml2js: [
             "html2js"
         ],
 
@@ -38,11 +36,12 @@ module.exports = function (grunt, env) {
             "minhtml"
         ],
 
-        includereplacemore: [
-            "js", "lang"
+        psBundler: [
+            "js",
+            "lang"
         ],
 
-        jshint: [
+        psJshint: [
             "lintjs"
         ],
 
@@ -54,7 +53,7 @@ module.exports = function (grunt, env) {
             "replace"
         ],
 
-        uglify: [
+        psUglify: [
             "minjs",
             "minlang"
         ],
@@ -78,8 +77,8 @@ module.exports = function (grunt, env) {
         ];
     }
 
-    if (grunt.cli.tasks.indexOf("testjs") != -1) {
-        list.includereplacemore = ["testjs"];
+    if (grunt.option("includeTests")) {
+        list.psBundler.push("testjs");
     }
 
     return list;

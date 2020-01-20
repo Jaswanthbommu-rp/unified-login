@@ -1,23 +1,23 @@
 module.exports = function (task, env) {
     "use strict";
 
-    task.getSrc = function (appName) {
-        return task.getSrcList(function (target) {
-            return [
-                appName + target + "/js-tests/*.inc"
-            ]
-        });
-    };
-
     task.getOptions = function () {
         return {
             prefix: "{{{ ",
             suffix: " }}}",
             processIncludeContents: function (fileData, local) {
-                var filePath = local.includePath.replace(env.basePath, "");
+                var filePath = local.incPath.replace(env.basePath, "");
                 return "//  Source: " + filePath + "\n" + fileData.trim() + "\n";
             }
         };
+    };
+
+    task.getSrc = function (appName) {
+        return task.getSrcList(function (target) {
+            return [
+                appName + target + "/js-tests/**/scripts.inc"
+            ];
+        });
     };
 
     task.getDefParams = function (appName) {
@@ -47,6 +47,18 @@ module.exports = function (task, env) {
                 rename: params.rename
             }]
         };
+
+        if (task.watch) {
+            config["testjs." + buFo + ".new"] = {
+                files: [{
+                    ext: ".js",
+                    expand: true,
+                    src: params.src,
+                    rename: params.rename,
+                    filter: task.filters.isNew
+                }]
+            };
+        }
 
         return config;
     };

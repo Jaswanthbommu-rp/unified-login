@@ -15,7 +15,7 @@ module.exports = function (task, env) {
             loopfunc: true,
             smarttabs: true,
 
-            reporter: require("jshint-stylish"),
+            // reporter: require("jshint-stylish"),
 
             globals: {
                 $: true,
@@ -43,22 +43,10 @@ module.exports = function (task, env) {
 
     task.getSrc = function (appName, task) {
         return task.getSrcList(function (target) {
-            if (task.testjs) {
-                return [
-                    appName + target + "/js*/*.js",
-                    appName + target + "/js*/**/*.js",
-            		"!" + appName + "/lib/**"
-        		];
-            }
-            else {
-                return [
-                    appName + target + "/js*/*.js",
-                    appName + target + "/js*/**/*.js",
-            		"!" + appName + "/lib/**",
-                    "!" + appName + target + "/js*/**/*.mock.js",
-                    "!" + appName + target + "/js*/**/*.spec.js"
-            	];
-        	}
+            return [
+                appName + target + "/js*/**/*.js",
+                "!" + appName + "/lib/**"
+            ];
         });
     };
 

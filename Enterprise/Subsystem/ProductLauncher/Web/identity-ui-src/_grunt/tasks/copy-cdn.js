@@ -10,7 +10,7 @@ module.exports = function (task, env) {
         var cdnVer = task.getCdnVer();
 
         return {
-            src: ["**", "!*.zip"],
+            src: ["lib/**"],
             cwd: env.buildPath + cdnVer + env.ds,
             dest: env.basePath + appName + env.ds
         };
