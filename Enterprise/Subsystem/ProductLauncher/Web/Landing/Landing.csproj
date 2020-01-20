@@ -45,7 +45,8 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>default</LangVersion>
     <NoWarn>1591</NoWarn>
-    <DocumentationFile>bin\RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
