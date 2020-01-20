@@ -20,5 +20,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		/// The state where the property is located
 		/// </summary>
 		public string State { get; set; }
-	}
+        /// <summary>
+		/// The Status of the property
+		/// </summary>
+		public string Active { get; set; }
+    }
 }

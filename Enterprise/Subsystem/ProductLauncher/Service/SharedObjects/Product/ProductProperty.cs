@@ -58,12 +58,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 	    /// </summary>
 	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 	    public string Alias { get; set; }
+        /// <summary>
+	    /// Alias for the property
+	    /// </summary>
+	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Active { get; set; }
 
-		#region Examples
-		/// <summary>
-		/// Used to document examples of the Property Model webapi result
-		/// </summary>
-		[ExcludeFromCodeCoverage]
+        #region Examples
+        /// <summary>
+        /// Used to document examples of the Property Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
         public class PropertyExample : IProvideExamples
         {
             /// <summary>
