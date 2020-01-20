@@ -201,7 +201,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 realPageEmployeeAccessId = new Guid(realPageEmployeeAccessIdString);
             }
-            
+
             return realPageEmployeeAccessId;
         }
 

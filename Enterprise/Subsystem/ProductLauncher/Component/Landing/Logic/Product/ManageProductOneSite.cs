@@ -53,12 +53,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private UserList _userList = new UserList();
         private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
 
-        private bool _internalUser = false;
-
 		private DefaultUserClaim _userClaims;
 
-	    //private Guid _editorRealPageId;
-	    //private Persona _editorPersona;
 	    /// <summary>
 	    /// The PMCID for the request
 	    /// </summary>
