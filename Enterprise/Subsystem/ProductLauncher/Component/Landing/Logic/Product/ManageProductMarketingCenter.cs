@@ -332,18 +332,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public string UnassignUser(long editorPersonaId, long userPersonaId)
 		{
+			string response = string.Empty;
 			ListResponse listResponse = new ListResponse();
 			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError) { return listResponse.ErrorReason; }
+			if (listResponse.IsError)
+			{
+				return listResponse.ErrorReason;
+			}
 
-			bool status = SetMarketingCenterUserStatus(false, editorPersonaId, _productUserId);
-			WriteToDiagnosticLog($"UnassignUser userPersonaId:{userPersonaId}");
-			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+			if (!IsUserIdValid(Convert.ToInt64(_editorProductUserId)))
+			{
+				response = $"ManageMarketingCenterUser.UnassignUser - Invalid admin userId: {_editorProductUserId}";
+				WriteToDiagnosticLog(response);
+			}
+			else
+			{
+				bool status = SetMarketingCenterUserStatus(false, _productUserId);
+				if (status)
+				{
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.UnassignUser - userPersonaId: {userPersonaId}");
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+					// Activity Logging
+					WriteUnassignActivityLog(editorPersonaId, userPersonaId);
+				}
+				else
+				{
+					response = $"ManageMarketingCenterUser.UnassignUser errored- userPersonaId: {userPersonaId}";
+				}
+			}
 
-			// Activity Logging
-			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
-
-			return "";
+			return response;
 		}
 
 		/// <summary>
@@ -831,7 +849,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
 						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user success. Saved user id");
 						WriteUpdateUserActivityLog(editorPersonaId, (Person)person, (UserLoginOnly)userLogin);
-						bool status = SetMarketingCenterUserStatus(true, editorPersonaId, newid.ToString());
+
+						if (!IsUserIdValid(Convert.ToInt64(_editorProductUserId)))
+						{
+							string message = $"ManageMarketingCenterUser.ManageMarketingCenterUser - Invalid admin userId: {_editorProductUserId}";
+							WriteToDiagnosticLog(message);
+						}
+						bool status = SetMarketingCenterUserStatus(true, newid.ToString());
 					}
 					else
 					{
@@ -841,7 +865,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				catch (Exception ex)
 				{
 					// write an error
-					//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
 					WriteToDiagnosticLog($"ManageMarketingCenterUser - Update user errored. {ex.Message}");
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
 					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user errored. Set product status to Error");
@@ -876,7 +899,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			try
 			{
-				return SetMarketingCenterUserStatus(isActive, editorPersonaId, _productUserId);
+				return SetMarketingCenterUserStatus(isActive, _productUserId);
 			}
 			catch (Exception ex)
 			{
@@ -903,46 +926,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Sets Product user status
 		/// </summary>
 		/// <param name="isActive"></param>
-		/// <param name="editorPersonaId"></param>
 		/// <param name="mcUserId"></param>
 		/// <returns></returns>
-		private bool SetMarketingCenterUserStatus(bool isActive, long editorPersonaId, string mcUserId)
+		private bool SetMarketingCenterUserStatus(bool isActive, string mcUserId)
 		{
 			try
 			{
 				Dictionary<string, object> logData = new Dictionary<string, object>();
 				if (string.IsNullOrEmpty(_editorProductUserId))
 				{
-					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status. Editor Product User Id cannot be null or empty.");
+					WriteToDiagnosticLog("ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update user status. Editor Product User Id cannot be null or empty.");
 					return false;
 				}
 				if (mcUserId?.Length > 0 && mcUserId != "0")
 				{
-					var url = _productUrl + $"/v2/contact/{ mcUserId }/status";
-
-					var mcUser = new MC.MarketingCenterUserStatus
+					string url = _productUrl + $"/v2/contact/{ mcUserId }/status";
+					MC.MarketingCenterUserStatus mcUser = new MC.MarketingCenterUserStatus()
 					{
 						isActive = isActive,
 						isActiveUnifiedUser = isActive,
 						auditUserId = Convert.ToInt64(_editorProductUserId)
 					};
 
-					logData = new Dictionary<string, object>();
-					logData.Add("url", url);
-					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status.", logData);
-					var response = _client.PutAsJsonAsync(url, mcUser).Result;
+					string mcUserJson = JsonConvert.SerializeObject(mcUser);
 
-					var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-					logData = new Dictionary<string, object>();
-					logData.Add("userResult", userResult);
+					logData = new Dictionary<string, object>
+					{
+						{ "url", url }
+					};
+					WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} url and user status request object: {mcUserJson}", logData);
+
+					var response = _client.PutAsJsonAsync(url, mcUser).Result;
+					dynamic userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+					logData = new Dictionary<string, object>
+					{
+						{ "userResult", userResult }
+					};
 					if (response.IsSuccessStatusCode)
 					{
-						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status. Got result from marketing center.", logData);
+						WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status. Got result from marketing center.", logData);
 						return true;
 					}
 					else
 					{
-						WriteToDiagnosticLog("ManageMarketingCenterUser - Update user status.", logData);
+						WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update userId {mcUserId} status errored.", logData);
 						return false;
 					}
 				}
@@ -950,7 +977,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToDiagnosticLog($"ManageMarketingCenterUser - Update user status errored. {ex.Message}");
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.SetMarketingCenterUserStatus - Update user status errored. {ex.Message}");
 				return false;
 			}
 		}
@@ -1047,6 +1074,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 			return mDetails;
+		}
+
+		/// <summary>
+		/// Check if the userId exists in the Marketing Center
+		/// </summary>
+		/// <param name="userId">Product UserID</param>
+		/// <returns>boolean</returns>
+		private bool IsUserIdValid(long userId)
+		{
+			string url = _productUrl + $"/v2/contact/{ userId }/status";
+			var responsex = _client.GetAsync(url).Result;
+
+			return responsex.IsSuccessStatusCode;
 		}
 		#endregion
 
