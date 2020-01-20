@@ -13,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -20,7 +21,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -31,9 +31,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     public class UserRepository : BaseRepository, IUserRepository
     {
         private DefaultUserClaim _userClaim;
-        //private IManageUserLogin _userLoginLogic;
         private IUserLoginRepository _userLoginRepository;
-        private IManagePersona _managePersona; 
+        private IManagePersona _managePersona;
+        private IOrganizationRepository _organizationRepository;
 
         #region Ctor
 
@@ -44,6 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             //_userLoginLogic = new ManageUserLogin();
             _userLoginRepository = new UserLoginRepository();
+            _organizationRepository = new OrganizationRepository();
             _managePersona = new ManagePersona();
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
         }
@@ -53,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             _userLoginRepository = new UserLoginRepository(repository);
             _managePersona = new ManagePersona(repository);
+            _organizationRepository = new OrganizationRepository(repository);
         }
 
         /// <summary>
@@ -68,6 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _userClaim = userClaim;
             _userLoginRepository = new UserLoginRepository();
             _managePersona = new ManagePersona(_userClaim);
+            _organizationRepository = new OrganizationRepository();
         }
 
         #endregion
@@ -184,19 +187,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             Guid organizationRealPageId = new Guid();
             Guid personRealPageId = Guid.Empty;
             long userEmailContactMechanismId = 0;
-            bool removedExternalCompany = false;
-			bool profileChanged = false;
+            bool profileChanged = false;
 
-			IUserLoginRepository userLoginRepository = new UserLoginRepository();
+            IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
-			if (userLoginOnly != null)
+            if (userLoginOnly != null)
             {
-				//Get User Details before save
-				UserDetails userDetails = GetUserDetails(personaId: null, userRealPageId: userLoginOnly.RealPageId.ToString());
-				//Check if ONLY user profile changed without any product changes
-				profileChanged = IsUserProfileChanged(newProfile, userDetails);
+                //Get User Details before save
+                UserDetails userDetails = GetUserDetails(personaId: null, userRealPageId: userLoginOnly.RealPageId.ToString());
+                //Check if ONLY user profile changed without any product changes
+                profileChanged = IsUserProfileChanged(newProfile, userDetails);
 
-				userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(newProfile.userLogin.LoginName);
+                userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(newProfile.userLogin.LoginName);
                 if (userPersonaOrganizationList.ToList().Any(i => i.OrganizationPartyId.Equals(newProfile.organization[0].PartyId)))
                 {
                     errorStatus.Success = false;
@@ -213,7 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //BlueBook MasterId for External Users
             IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
 
-			IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
+            IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             IList<ContactMechanismUsageType> emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
             if (newProfile.organization != null && newProfile.organization.Count > 0)
@@ -288,9 +290,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 repository.UnitOfWork.BeginTransaction();
                 try
                 {
-					#region Status
+                    #region Status
 
-					fromDate = newProfile.userLogin.FromDate.HasValue ? newProfile.userLogin.FromDate.Value : fromDate;
+                    fromDate = newProfile.userLogin.FromDate.HasValue ? newProfile.userLogin.FromDate.Value : fromDate;
                     if (newProfile.userLogin.ThruDate.HasValue)
                     {
                         thruDate = newProfile.userLogin.ThruDate.Value;
@@ -374,9 +376,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         processTracker = "Create UserLogin";
                         param = new
                         {
-							newProfile.RealPageId,
-							newProfile.userLogin.LoginName,
-							CreateUserSourceType = sourceType
+                            newProfile.RealPageId,
+                            newProfile.userLogin.LoginName,
+                            CreateUserSourceType = sourceType
                         };
 
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, param);
@@ -405,38 +407,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         userId = repositoryResponse.Id;
                         personRealPageId = newProfile.RealPageId;
 
-						#endregion
+                        #endregion
 
-						#region Update UserLogin (Password)
+                        #region Update UserLogin (Password)
 
-						processTracker = "Update UserLogin";
+                        processTracker = "Update UserLogin";
 
-						//Set Password
-						if (!string.IsNullOrEmpty(newProfile.Password))
-						{
-							var pwd = newProfile.Password.PasswordHash();
-							newProfile.userLogin.PasswordHash = pwd.PasswordHash;
-							newProfile.userLogin.PasswordSalt = pwd.PasswordSalt;
-						}
+                        //Set Password
+                        if (!string.IsNullOrEmpty(newProfile.Password))
+                        {
+                            var pwd = newProfile.Password.PasswordHash();
+                            newProfile.userLogin.PasswordHash = pwd.PasswordHash;
+                            newProfile.userLogin.PasswordSalt = pwd.PasswordSalt;
+                        }
 
-						//Update UserLogin
-						param = new
-						{
-							newProfile.RealPageId,
-							newProfile.userLogin.LoginName,
-							newProfile.userLogin.PasswordHash,
-							newProfile.userLogin.PasswordSalt,
-							FromDate = fromDate,
-							newProfile.userLogin.ThruDate,
-							PartyId = organizationPartyId
-						};
-						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, param);
+                        //Update UserLogin
+                        param = new
+                        {
+                            newProfile.RealPageId,
+                            newProfile.userLogin.LoginName,
+                            newProfile.userLogin.PasswordHash,
+                            newProfile.userLogin.PasswordSalt,
+                            FromDate = fromDate,
+                            newProfile.userLogin.ThruDate,
+                            PartyId = organizationPartyId
+                        };
+                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, param);
 
-						#endregion
+                        #endregion
 
-						#region Preferred Contact Method and Tele-Communication
+                        #region Preferred Contact Method and Tele-Communication
 
-						if ((newProfile.TelecommunicationNumber.Count > 0) && (newProfile.PreferredContactMethodId > 0))
+                        if ((newProfile.TelecommunicationNumber.Count > 0) && (newProfile.PreferredContactMethodId > 0))
                         {
                             var response = UpdateProfile(repository, newProfile.RealPageId, newProfile);
 
@@ -641,8 +643,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //else, Delete from External Users and Add user to this organizatiom as Primary (Switch Primary Organization from External Users to this organization)
                         else if (newProfile.UserTypeId != (int)UserRoleType.ExternalUser && userPersonaOrganizationList.ToList().Any(x => ((x.PrimaryOrganization.Equals(true) && x.OrganizationPartyId.Equals(organizationExternalUser.PartyId)))))
                         {
-							//Unlink the user from External Users (Enterprise.PartyRelationship)
-							param = new
+                            //Unlink the user from External Users (Enterprise.PartyRelationship)
+                            param = new
                             {
                                 PersonRealPageId = userLoginOnly.RealPageId,
                                 OrganizationRealPageId = organizationExternalUser.RealPageId
@@ -659,7 +661,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
                             }
-                            removedExternalCompany = true;
                             orgnanizationList = new List<OrganizationPrimary>()
                             {
                                 new OrganizationPrimary()
@@ -687,31 +688,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             };
                         }
 
-						if ((profileChanged) && (newProfile.UserTypeId != (int)UserRoleType.ExternalUser))
-						{
-							param = new
-							{
-								RealPageId = newProfile.RealPageId,
-								FirstName = newProfile.FirstName,
-								MiddleName = newProfile.MiddleName,
-								LastName = newProfile.LastName
-							};
-							//Update the person's info
-							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
-							if (repositoryResponse.Id == 0)
-							{
-								repository.UnitOfWork.Rollback();
-								errorStatus.Success = false;
-								errorStatus.ErrorCode = "User.CreateUser.26";
-								errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
-								createUserResponse.Status = errorStatus;
-								createUserResponse.UserStatus = errorStatus.ErrorMsg;
-								return createUserResponse;
-							}
-						}
-					}
+                        if ((profileChanged) && (newProfile.UserTypeId != (int)UserRoleType.ExternalUser))
+                        {
+                            param = new
+                            {
+                                RealPageId = newProfile.RealPageId,
+                                FirstName = newProfile.FirstName,
+                                MiddleName = newProfile.MiddleName,
+                                LastName = newProfile.LastName
+                            };
+                            //Update the person's info
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repository.UnitOfWork.Rollback();
+                                errorStatus.Success = false;
+                                errorStatus.ErrorCode = "User.CreateUser.26";
+                                errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
+                                createUserResponse.Status = errorStatus;
+                                createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                return createUserResponse;
+                            }
+                        }
+                    }
 
-					processTracker = "Pending email notification";
+                    processTracker = "Pending email notification";
                     if (identityProviderType.IsLocal)
                     {
                         IList<CommonAddress> orgMechanismList = ListContactMechanismForPerson(repository, organizationRealPageId, emailUsageType);
@@ -1191,28 +1192,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                     }
 
-					if (primaryOrgId.Equals(organizationPartyId))
-					{
-						//Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
-						param = new
-						{
-							UserId = userId,
-							ContactMechanismID = identityProviderType.ContactMechanismId
-						};
-						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
-						if (repositoryResponse.Id == 0)
-						{
-							repository.UnitOfWork.Rollback();
-							errorStatus.Success = false;
-							errorStatus.ErrorCode = "User.CreateUser.23";
-							errorStatus.ErrorMsg = "Create User Error: Link Identity Provider to UserLogin failed.";
-							createUserResponse.Status = errorStatus;
-							createUserResponse.UserStatus = errorStatus.ErrorMsg;
-							return createUserResponse;
-						}
-					}
+                    if (primaryOrgId.Equals(organizationPartyId))
+                    {
+                        //Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
+                        param = new
+                        {
+                            UserId = userId,
+                            ContactMechanismID = identityProviderType.ContactMechanismId
+                        };
+                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
+                        if (repositoryResponse.Id == 0)
+                        {
+                            repository.UnitOfWork.Rollback();
+                            errorStatus.Success = false;
+                            errorStatus.ErrorCode = "User.CreateUser.23";
+                            errorStatus.ErrorMsg = "Create User Error: Link Identity Provider to UserLogin failed.";
+                            createUserResponse.Status = errorStatus;
+                            createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                            return createUserResponse;
+                        }
+                    }
 
-					int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, aoProductsAvailableForUser, newProfile.MigratedUser, true);
 
                     #endregion
 
@@ -1421,7 +1422,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PartyId = orgPartyId
                     };
 
-					response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, paramUpdateUserLogin);
+                    response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, paramUpdateUserLogin);
 
                     processTracker = "Update UserLogin Statuses";
 
@@ -1985,7 +1986,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     var userLogin = _userLoginRepository.GetUserLoginOnly(ul.RealPageId);
                     Persona editorPersona = _managePersona.GetPersona(createUserPersonaId);
-                    
+
                     //Persona persona = managePersona.GetActivePersona(ul.RealPageId);
                     var personaList = _managePersona.ListPersona(ul.RealPageId);
                     Persona persona = personaList.FirstOrDefault(p => p.OrganizationPartyId == editorPersona.OrganizationPartyId);
@@ -2233,6 +2234,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             isCurrentOrgThePrimaryOrg = primaryOrg.PartyId.Equals(_userClaim.OrganizationPartyId);
 
+            //Update profile (First, Last names, ...) required data per Organization
+            IList<EditorAssignedPersona> editorAssignedPersonaList = new List<EditorAssignedPersona>();
+            IList<UserOrganization> userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
+            userOrganizationList.ToList().ForEach(o =>
+            {
+                //editor persona
+                Guid realPageEmployeeAccessId = _organizationRepository.GetOrganizationAdminUserRealPageId(o.OrganizationRealPageId);
+
+                Persona editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
+
+                //asigned persona
+                Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(profile.RealPageId, o.OrganizationPartyId);
+
+                editorAssignedPersonaList.Add(
+                    new EditorAssignedPersona()
+                    {
+                        AssignedPersonaId = assignedPersona.PersonaId,
+                        AssignedUserTypeId = assignedPersona.UserTypeId.Value,
+                        EditorPersonaId = editorPersona.PersonaId,
+                        EditorPersonaRealPageId = editorPersona.RealPageId,
+                        OrganizationRealPageId = o.OrganizationRealPageId
+                    }
+                );
+            });
+
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -2269,25 +2295,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             idpt = identityProviderTypeList[0];
                         }
 
-						if (isCurrentOrgThePrimaryOrg || userTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))
-						{
-							//Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
-							param = new
-							{
-								UserId = profile.userLogin.UserId,
-								ContactMechanismID = idpt.ContactMechanismId
-							};
-							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
-							if (repositoryResponse.Id == 0)
-							{
-								repositoryResponse.ErrorMessage = "Update User Error: Link Identity Provider to UserLogin failed.";
-								throw new Exception(repositoryResponse.ErrorMessage);
-							}
-						}
+                        if (isCurrentOrgThePrimaryOrg || userTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))
+                        {
+                            //Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
+                            param = new
+                            {
+                                UserId = profile.userLogin.UserId,
+                                ContactMechanismID = idpt.ContactMechanismId
+                            };
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, param);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repositoryResponse.ErrorMessage = "Update User Error: Link Identity Provider to UserLogin failed.";
+                                throw new Exception(repositoryResponse.ErrorMessage);
+                            }
+                        }
 
-						#region Update UserLogin
+                        #region Update UserLogin
 
-						if (profile.userLogin != null)
+                        if (profile.userLogin != null)
                         {
                             //check to see if user from date changed to feature date
                             isFeatureUser = profile.userLogin.FromDate.Value.Date > DateTime.Now.Date ? true : false;
@@ -2323,19 +2349,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //update User custom fields
                             if (profile.CustomFields?.Count > 0)
                             {
-								if (profile.CustomFields.ToList().Any(c => c.UserLoginPersonaId.Equals(0)))
-								{
-									param = new
-									{
-										UserLoginId = profile.userLogin.UserId,
-										OrganizationPartyId = currentOrgPartyId
-									};
-									IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
+                                if (profile.CustomFields.ToList().Any(c => c.UserLoginPersonaId.Equals(0)))
+                                {
+                                    param = new
+                                    {
+                                        UserLoginId = profile.userLogin.UserId,
+                                        OrganizationPartyId = currentOrgPartyId
+                                    };
+                                    IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
 
-									profile.CustomFields.ToList().ForEach(c => c.UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId);
-								}
+                                    profile.CustomFields.ToList().ForEach(c => c.UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId);
+                                }
 
-								string customFieldsValuesJson = JsonConvert.SerializeObject(profile.CustomFields);
+                                string customFieldsValuesJson = JsonConvert.SerializeObject(profile.CustomFields);
                                 bool IsValidJson = ValidateJson.IsValidJson<IList<CustomFieldValue>>(customFieldsValuesJson);
                                 if (IsValidJson)
                                 {
@@ -2751,7 +2777,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if ((profile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || (!priorNotificationEmail.Equals(profile.NotificationEmail, StringComparison.OrdinalIgnoreCase))))
                         {
-                            SaveUserProductBatchData(repository, null, createUserPersonaId, assignUserPersonaId, loggedInUserRealPageId, persona.Organization.RealPageId, null, (Int32)BatchProcessType.ProfileUpdate, productBatchData, null, profile.UserTypeId);
+                            editorAssignedPersonaList.ToList().ForEach(p =>
+                            {
+                                SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, productBatchData, null, p.AssignedUserTypeId);
+                            });
                         }
 
                         if (userIsActive && userTypeChanged)
@@ -2864,14 +2893,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (isUserTypeChangedFromNoEmailToRegular)
                     {
                         //Log Activity
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User,
-                            "{0} {1} user type changed from regular (No Email) to regular user by {2} {3}.", "UpdateUser", profile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2} {3}.", "UpdateUser", profile);
                     }
                     else
                     {
                         //Log Activity
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User,
-                            "User {0} {1} successfully updated by user {2} {3}.", "UpdateUser", profile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {0} {1} successfully updated by user {2} {3}.", "UpdateUser", profile);
                     }
                 }
 
@@ -2891,91 +2918,91 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-		/// <summary>
-		/// Used to disable products for the given list of users which is called from windows service
-		/// </summary>		
-		/// <param name="userLogins"></param>
-		public void ProcessDisabledUsers(IList<ProcessUserLogin> userLogins)
-		{
-			//IManageUserLogin userLoginLogic = new ManageUserLogin();
-			IManagePersona managePersona = new ManagePersona();
-			Dictionary<Guid, Persona> companyAdminList = new Dictionary<Guid, Persona>();
+        /// <summary>
+        /// Used to disable products for the given list of users which is called from windows service
+        /// </summary>		
+        /// <param name="userLogins"></param>
+        public void ProcessDisabledUsers(IList<ProcessUserLogin> userLogins)
+        {
+            //IManageUserLogin userLoginLogic = new ManageUserLogin();
+            IManagePersona managePersona = new ManagePersona();
+            Dictionary<Guid, Persona> companyAdminList = new Dictionary<Guid, Persona>();
 
-			using (var repository = GetRepository())
-			{
-				foreach (ProcessUserLogin ul in userLogins)
-				{
-					var userLoginRepository = new UserLoginRepository();
-					IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId);
-					var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
-					Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
-					List<Guid> organizationsToProcess = new List<Guid>();
+            using (var repository = GetRepository())
+            {
+                foreach (ProcessUserLogin ul in userLogins)
+                {
+                    var userLoginRepository = new UserLoginRepository();
+                    IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId);
+                    var userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
+                    Guid primaryCompanyGuid = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationRealPageId;
+                    List<Guid> organizationsToProcess = new List<Guid>();
 
-					foreach (var org in userOrganizationList)
-					{
-						Persona editorPersona = null;
-						if (!companyAdminList.ContainsKey(org.OrganizationRealPageId))
-						{
-							//since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona and save it for later calls
-							dynamic param = new
-							{
-								RealPageId = org.OrganizationRealPageId
-							};
-							var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
+                    foreach (var org in userOrganizationList)
+                    {
+                        Persona editorPersona = null;
+                        if (!companyAdminList.ContainsKey(org.OrganizationRealPageId))
+                        {
+                            //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona and save it for later calls
+                            dynamic param = new
+                            {
+                                RealPageId = org.OrganizationRealPageId
+                            };
+                            var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
 
-							if (result != null)
-							{
-								foreach (var item in result)
-								{
-									Guid realPageEmployeeAccessId = new Guid(item.PersonRealPageId);
-									long orgPartyId = item.PartyId;
-									editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, orgPartyId);
-								}
+                            if (result != null)
+                            {
+                                foreach (var item in result)
+                                {
+                                    Guid realPageEmployeeAccessId = new Guid(item.PersonRealPageId);
+                                    long orgPartyId = item.PartyId;
+                                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, orgPartyId);
+                                }
 
-								companyAdminList.Add(org.OrganizationRealPageId, editorPersona);
-							}
-						}
-						else
-						{
-							editorPersona = companyAdminList[org.OrganizationRealPageId];
-						}
+                                companyAdminList.Add(org.OrganizationRealPageId, editorPersona);
+                            }
+                        }
+                        else
+                        {
+                            editorPersona = companyAdminList[org.OrganizationRealPageId];
+                        }
 
-						// eventually this will be a list of personas when we start doing multi persona
-						var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, org.OrganizationPartyId);
+                        // eventually this will be a list of personas when we start doing multi persona
+                        var persona = managePersona.GetFirstAvailablePersonaByCompany(ul.UserRealPageId, org.OrganizationPartyId);
 
-						//update user status to disabled
-						if (org.PrimaryOrganization)
-						{
-							var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
-							{
-								RealPageId = ul.UserRealPageId,
-								OrganizationPartyId = org.OrganizationPartyId,
-								StatusTypeId = UserUiStatusType.Disabled,
-								FromDate = ul.FromDate
-							});
-						}
-						//remove products
-						if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
-						{
-							ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
-						}
-					}
-				}
-			}
-		}
+                        //update user status to disabled
+                        if (org.PrimaryOrganization)
+                        {
+                            var updateUserStatusResponse = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, new
+                            {
+                                RealPageId = ul.UserRealPageId,
+                                OrganizationPartyId = org.OrganizationPartyId,
+                                StatusTypeId = UserUiStatusType.Disabled,
+                                FromDate = ul.FromDate
+                            });
+                        }
+                        //remove products
+                        if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
+                        {
+                            ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
+                        }
+                    }
+                }
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Private methods
+        #region Private methods
 
-		/// <summary>
-		/// List ContactMechanism For Person
-		/// </summary>
-		/// <param name="repository"></param>
-		/// <param name="realPageId"></param>
-		/// <param name="contactMechanismUsageTypeList"></param>
-		/// <returns>list of CommonAddress</returns>
-		private IList<CommonAddress> ListContactMechanismForPerson(IRepository repository, Guid realPageId, IList<ContactMechanismUsageType> contactMechanismUsageTypeList)
+        /// <summary>
+        /// List ContactMechanism For Person
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="realPageId"></param>
+        /// <param name="contactMechanismUsageTypeList"></param>
+        /// <returns>list of CommonAddress</returns>
+        private IList<CommonAddress> ListContactMechanismForPerson(IRepository repository, Guid realPageId, IList<ContactMechanismUsageType> contactMechanismUsageTypeList)
         {
             IList<CommonAddress> result = repository.GetMany<CommonAddress>(StoredProcNameConstants.SP_ListContactMechanismsForPerson, new { realPageId }).ToList();
             if (result != null)
@@ -4637,8 +4664,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             dynamic param;
             long? personaId = null;
             int greenBookRole = 0;
-            long? contactMechanismId = null;
-            long partyContactMechanismIdTo = 0;
             long userEmailContactMechanismId = 0;
             DateTime utcNow = DateTime.UtcNow;
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
@@ -4868,181 +4893,179 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return string.Empty;
         }
 
-		private void DisableAllCompanyProducts(Guid loggedInUserRealPageId, IProfileDetail profile, Organization currentOrg, IRepository repository, long assignUserPersonaId, long createUserPersonaId, IList<Persona> personaList)
-		{
-			long editorPersonaId = 0;
-			var editorRealPageId = Guid.Empty;
+        private void DisableAllCompanyProducts(Guid loggedInUserRealPageId, IProfileDetail profile, Organization currentOrg, IRepository repository, long assignUserPersonaId, long createUserPersonaId, IList<Persona> personaList)
+        {
+            long editorPersonaId = 0;
+            var editorRealPageId = Guid.Empty;
 
-			foreach (var companyPersona in personaList)
-			{
-				if (companyPersona.OrganizationPartyId != currentOrg.PartyId)
-				{
-					dynamic paramOrg = new
-					{
-						RealPageId = currentOrg.RealPageId
-					};
+            foreach (var companyPersona in personaList)
+            {
+                if (companyPersona.OrganizationPartyId != currentOrg.PartyId)
+                {
+                    dynamic paramOrg = new
+                    {
+                        RealPageId = currentOrg.RealPageId
+                    };
 
-					var resultDynamic = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, paramOrg);
-					long orgPartyId = 0;
-					if (resultDynamic != null)
-					{
-						foreach (var item in resultDynamic)
-						{
-							editorRealPageId = new Guid(item.PersonRealPageId);
-							orgPartyId = item.PartyId;
-							//var editorPersona = managePersona.GetFirstAvailablePersonaByCompany(editorRealPageId, orgPartyId);
-						}
-					}
-				}
-				else
-				{
-					editorPersonaId = createUserPersonaId;
-					editorRealPageId = loggedInUserRealPageId;
-				}
+                    var resultDynamic = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, paramOrg);
+                    long orgPartyId = 0;
+                    if (resultDynamic != null)
+                    {
+                        foreach (var item in resultDynamic)
+                        {
+                            editorRealPageId = new Guid(item.PersonRealPageId);
+                            orgPartyId = item.PartyId;
+                            //var editorPersona = managePersona.GetFirstAvailablePersonaByCompany(editorRealPageId, orgPartyId);
+                        }
+                    }
+                }
+                else
+                {
+                    editorPersonaId = createUserPersonaId;
+                    editorRealPageId = loggedInUserRealPageId;
+                }
 
-				ProcessDisableUserProductData(repository, companyPersona.PersonaId, editorRealPageId, editorPersonaId, profile.UserTypeId);
-			}
-		}
+                ProcessDisableUserProductData(repository, companyPersona.PersonaId, editorRealPageId, editorPersonaId, profile.UserTypeId);
+            }
+        }
 
-		private void FindAndAddExistingProductPersona(IRepository repository, IList<ProductBatch> productList, long userPersonaId, Guid userRealPageId)
-		{
-			var productsToAdd = new List<int>();
-			bool foundExistingAOUser = false;
-			var samlAttributes = new List<SamlAttributes>();
+        private void FindAndAddExistingProductPersona(IRepository repository, IList<ProductBatch> productList, long userPersonaId, Guid userRealPageId)
+        {
+            var productsToAdd = new List<int>();
+            bool foundExistingAOUser = false;
+            var samlAttributes = new List<SamlAttributes>();
 
-			foreach (ProductBatch pb in productList)
-			{
-				if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)pb.ProductId))
-				{
-					productsToAdd.Add(pb.ProductId);
-					foundExistingAOUser = true;
-				}
-			}
+            foreach (ProductBatch pb in productList)
+            {
+                if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)pb.ProductId))
+                {
+                    productsToAdd.Add(pb.ProductId);
+                    foundExistingAOUser = true;
+                }
+            }
 
-			if (productsToAdd.Count == 0)
-			{
-				return;
-			}
+            if (productsToAdd.Count == 0)
+            {
+                return;
+            }
 
-			dynamic param = new
-			{
-				RealPageId = userRealPageId
-			};
-			IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, param);
+            dynamic param = new
+            {
+                RealPageId = userRealPageId
+            };
+            IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, param);
 
-			if (foundExistingAOUser)
-			{
-				productsToAdd.Add((int)ProductEnum.AssetOptimizer);
-				// get any existing AO user details and add it to the new products being added so it will append to the existing AO user
-				foreach (int productId in ProductEnumHelper.GetAoProductList())
-				{
-					if (samlAttributes.Count > 0)
-					{
-						break;
-					}
+            if (foundExistingAOUser)
+            {
+                productsToAdd.Add((int)ProductEnum.AssetOptimizer);
+                // get any existing AO user details and add it to the new products being added so it will append to the existing AO user
+                foreach (int productId in ProductEnumHelper.GetAoProductList())
+                {
+                    if (samlAttributes.Count > 0)
+                    {
+                        break;
+                    }
 
-					foreach (var persona in personaList)
-					{
-						var productAttributes = repository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { persona.PersonaId, productId }).ToList();
-						if (productAttributes.Count > 0)
-						{
-							foreach (var attribute in productAttributes)
-							{
-								if (!samlAttributes.Any(p => p.SamlAttributeId == attribute.SamlAttributeId && p.Value == attribute.Value))
-								{
-									samlAttributes.Add(attribute);
-								}
-							}
-						}
+                    foreach (var persona in personaList)
+                    {
+                        var productAttributes = repository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { persona.PersonaId, productId }).ToList();
+                        if (productAttributes.Count > 0)
+                        {
+                            foreach (var attribute in productAttributes)
+                            {
+                                if (!samlAttributes.Any(p => p.SamlAttributeId == attribute.SamlAttributeId && p.Value == attribute.Value))
+                                {
+                                    samlAttributes.Add(attribute);
+                                }
+                            }
+                        }
 
-						if (samlAttributes.Count > 0)
-						{
-							break;
-						}
-					}
-				}
+                        if (samlAttributes.Count > 0)
+                        {
+                            break;
+                        }
+                    }
+                }
 
-				foreach (var productId in productsToAdd)
-				{
-					foreach (var samlAttribute in samlAttributes)
-					{
-						param = new
-						{
-							PersonaId = userPersonaId,
-							ProductId = productId,
-							SamlAttributeId = samlAttribute.SamlAttributeId,
-							Value = samlAttribute.Value
-						};
-						var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateSamlUserAttribute, param);
-					}
-				}
-			}
-		}
+                foreach (var productId in productsToAdd)
+                {
+                    foreach (var samlAttribute in samlAttributes)
+                    {
+                        param = new
+                        {
+                            PersonaId = userPersonaId,
+                            ProductId = productId,
+                            SamlAttributeId = samlAttribute.SamlAttributeId,
+                            Value = samlAttribute.Value
+                        };
+                        var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateSamlUserAttribute, param);
+                    }
+                }
+            }
+        }
 
-		private void ProcessActivatedUserProductBatchData(long personaId, Guid createUserRealPageId, long createUserPersonaId)
-		{
-			DateTime utcNow = DateTime.UtcNow;
-			DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
-			DateTime? fromDate = utcNow;
-			DateTime? thruDate = utcMaxValue;
-			CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
-			IList<ProductBatch> productBatch = new List<ProductBatch>();
-			DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
-			string saveProductBatchError = "Save Product(s) Error: ";
+        private void ProcessActivatedUserProductBatchData(long personaId, Guid createUserRealPageId, long createUserPersonaId)
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
+            DateTime? fromDate = utcNow;
+            DateTime? thruDate = utcMaxValue;
+            CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
+            IList<ProductBatch> productBatch = new List<ProductBatch>();
+            DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+            string saveProductBatchError = "Save Product(s) Error: ";
 
-			Guid organizationRealPageId = new Guid();
+            //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
+            using (var pbRepository = GetRepository())
+            {
+                List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = ((Int32)UserUiStatusType.Deactivated).ToString() }).ToList();
+                if (userProducts.Count > 0)
+                {
+                    //Then Get Product Batch Data
+                    productBatch = GetActivatedUserProductBatchData(personaId, productBatch);
 
-			//Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
-			using (var pbRepository = GetRepository())
-			{
-				List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = ((Int32)UserUiStatusType.Deactivated).ToString() }).ToList();
-				if (userProducts.Count > 0)
-				{
-					//Then Get Product Batch Data
-					productBatch = GetActivatedUserProductBatchData(personaId, productBatch);
+                    // If any AO product
+                    string aoInputJsonString = string.Empty;
+                    var aoProductList = userProducts.Where(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
+                    if (aoProductList.Any())
+                    {
+                        // Bundle AO products
+                        aoInputJsonString = BundleAoProducts(productBatch);
+                    }
 
-					// If any AO product
-					string aoInputJsonString = string.Empty;
-					var aoProductList = userProducts.Where(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
-					if (aoProductList.Any())
-					{
-						// Bundle AO products
-						aoInputJsonString = BundleAoProducts(productBatch);
-					}
+                    //Loop through the rest of the products list and create the Batch records
+                    foreach (IProductBatch product in productBatch)
+                    {
+                        if (product.ProductId == (int)ProductEnum.UnifiedLogin)
+                        {
+                            continue;
+                        }
 
-					//Loop through the rest of the products list and create the Batch records
-					foreach (IProductBatch product in productBatch)
-					{
-						if (product.ProductId == (int)ProductEnum.UnifiedLogin)
-						{
-							continue;
-						}
+                        if (product.ProductId == (int)ProductEnum.AssetOptimizer)
+                        {
+                            // special treatment for bundled AO products by passing json string
+                            SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
+                                createUserPersonaId, personaId, createUserRealPageId, errorStatus,
+                                aoInputJsonString);
+                        }
+                        else
+                        {
+                            SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
+                                createUserPersonaId, personaId, createUserRealPageId, errorStatus,
+                                JsonConvert.SerializeObject(product.InputJson));
+                        }
+                    }
+                }
+            }
+        }
 
-						if (product.ProductId == (int)ProductEnum.AssetOptimizer)
-						{
-							// special treatment for bundled AO products by passing json string
-							SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
-								createUserPersonaId, personaId, createUserRealPageId, errorStatus,
-								aoInputJsonString);
-						}
-						else
-						{
-							SaveProductBatch(pbRepository, product, createUserResponse, saveProductBatchError,
-								createUserPersonaId, personaId, createUserRealPageId, errorStatus,
-								JsonConvert.SerializeObject(product.InputJson));
-						}
-					}
-				}
-			}
-		}
+        #endregion
 
-		#endregion
+        #region Create UserLoginPersona and Persona
 
-		#region Create UserLoginPersona and Persona
-
-		public class OrganizationPrimary
+        public class OrganizationPrimary
         {
             public Guid OrganizationRealPageId { get; set; }
 
@@ -5053,6 +5076,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             public DateTime OrganizationFromDate { get; set; }
 
             public DateTime? OrganizationThruDate { get; set; }
+        }
+
+        #endregion
+
+        #region Edit Profile - Product Batch
+
+        public class EditorAssignedPersona
+        {
+            public long AssignedPersonaId { get; set; }
+
+            public int AssignedUserTypeId { get; set; }
+
+            public long EditorPersonaId { get; set; }
+
+            public Guid EditorPersonaRealPageId { get; set; }
+
+            public Guid OrganizationRealPageId { get; set; }
         }
 
         #endregion
