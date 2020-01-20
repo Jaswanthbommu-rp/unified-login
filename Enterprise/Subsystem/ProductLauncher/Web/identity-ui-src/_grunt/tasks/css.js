@@ -1,3 +1,5 @@
+const sass = require('node-sass');
+
 module.exports = function (task, env) {
     "use strict";
 
@@ -15,6 +17,7 @@ module.exports = function (task, env) {
             noCache: true,
             sourceMap: true,
             style: "expanded",
+            implementation: sass,
             require: "sass-css-importer"
         };
     };

@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private string _password;
 		private string _marketingCenterApiSourceID;
 		private DefaultUserClaim _userClaims;
+		HttpMessageHandler _httpGetMessageHandler = new HttpClientHandler();
 
 		#region Ctor
 		/// <summary>
@@ -259,7 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (userPersonaId != 0)
 					{
 						// merge the given user details with the list
-						MC.MarketingCenterUserDetails mUser = GetUserDetails();
+						MarketingCenterUserDetails mUser = GetUserDetails();
 						if (mUser == null)
 						{
 							WriteToDiagnosticLog($"GetProperties - Error looking for user. userPersonaId={userPersonaId.ToString()}");
@@ -441,7 +443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productLoginName = _productUsername;
 				}
 
-				MC.MarketingCenterUserDetails mUser = GetUserDetails();
+				MarketingCenterUserDetails mUser = GetUserDetails();
 				if (mUser == null)
 				{
 					WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Error looking for user. userPersonaId={userPersonaId.ToString()}");

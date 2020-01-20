@@ -6,7 +6,7 @@ module.exports = function (task, env) {
             return [
                 appName + target + "/js/**/*.js",
                 "!" + appName + "/lib/**"
-            ]
+            ];
         });
     };
 
@@ -14,7 +14,7 @@ module.exports = function (task, env) {
         return task.getSrcList(function (target) {
             return [
                 appName + target + "/js/scripts.inc"
-            ]
+            ];
         });
     };
 
@@ -33,14 +33,14 @@ module.exports = function (task, env) {
             src: task.getSrc(appName),
 
             tasks: [
-                "jshint:lintjs." + buFo + ".new",
-                "includereplacemore:js." + buFo
+                "psJshint:lintjs." + buFo + ".new",
+                "psBundler:js." + buFo
             ],
 
             bundleSrc: task.getBundleSrc(appName),
 
             bundleTasks: [
-                "includereplacemore:js." + buFo + ".new"
+                "psBundler:js." + buFo + ".new"
             ]
         };
     };

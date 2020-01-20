@@ -6,7 +6,7 @@ module.exports = function (task, env) {
             return [
                 appName + target + "/fonts/*.*",
                 appName + target + "/images/*.*",
-                appName + target + "/mocks/*.*",
+                appName + target + "/mocks/**/*.*",
                 "!" + appName + "/lib/**"
             ];
         });

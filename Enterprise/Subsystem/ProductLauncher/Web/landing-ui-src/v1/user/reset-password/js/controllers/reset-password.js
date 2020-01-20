@@ -98,8 +98,8 @@
         };
 
         vm.onTabActive = function() {
-            var helpWidget = document.querySelector('raul-unified-help');
-            helpWidget.helpPageId = "password";
+            var helpWidget = document.querySelector('omnibar-unified-help');            
+            helpWidget.helpQuery = 'pg=ul-password&vr=40&scrver=350';
             vm.active = true;
             model.setActive();
             return vm;
