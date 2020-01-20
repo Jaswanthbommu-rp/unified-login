@@ -112,7 +112,7 @@
             var s = this;
             pubsub.publish("productsData.reload");
             pubsub.publish("prodSolnFav.change");
-            var omnibar = document.querySelector('raul-shell');
+            var omnibar = document.querySelector('omnibar-shell');
             omnibar.reload();
             return s;
         };
