@@ -176,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				var response =
 					client.GetAsync(
-						$"{baseUri}/reportrestservice/ReportParameter/Property?companyId={companyInstanceSourceId}").Result;
+						$"{baseUri}/reportrestservice/ReportParameter/Property?companyId={companyInstanceSourceId}&mode=All").Result;
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -1052,7 +1052,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					ID = property.PropertyId,
 					Name = property.PropertyName,
-					State = property.State
+					State = property.State,
+                    Active = property.Active
 				});
 			}
 			return results;
