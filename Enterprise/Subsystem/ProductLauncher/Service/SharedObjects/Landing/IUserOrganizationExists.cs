@@ -13,10 +13,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		bool UserExists { get; set; }
 
-		/// <summary>
-		/// User with this LoginName exists in the Organization with this RealPageId
+        /// <summary>
+		/// True if User only exists as External User in all the Organizations
 		/// </summary>
-		bool UserExistsInThisOrganization { get; set; }
+		bool IsOnlyExternalUserInAllOrganizations { get; set; }
+
+        /// <summary>
+        /// User with this LoginName exists in the Organization with this RealPageId
+        /// </summary>
+        bool UserExistsInThisOrganization { get; set; }
 
         /// <summary>
         /// Used to indicate if the user login already used is a user type of Regular User (No Email)

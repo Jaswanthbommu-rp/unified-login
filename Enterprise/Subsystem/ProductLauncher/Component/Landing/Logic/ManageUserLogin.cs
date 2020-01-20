@@ -1222,6 +1222,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (userPersonaOrganizationList.Count > 0)
             {
+                int countOfExternalUser = userPersonaOrganizationList.Where(a => a.PartyRoleTypeId == (int)UserRoleType.ExternalUser && a.BooksMasterId != -2).ToList().Count();
+                userOrganizationExists.IsOnlyExternalUserInAllOrganizations = userPersonaOrganizationList.Where(a => a.BooksMasterId != -2).ToList().Count() == countOfExternalUser ? true : false;
+
                 var thisOrgStatus = userPersonaOrganizationList.FirstOrDefault(p => p.OrganizationRealPageId == organizationRealPageId);
                 if (thisOrgStatus != null && !thisOrgStatus.PrimaryOrganization)
                 {
