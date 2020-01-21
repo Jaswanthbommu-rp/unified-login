@@ -588,7 +588,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var realPageId = persona.RealPageId;
                 var person = _managePerson.GetPerson(realPageId);
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-                string rumUserID = "";
                 string userAccessType = "";
                 List<int> propertiesList = new List<int> { };
 

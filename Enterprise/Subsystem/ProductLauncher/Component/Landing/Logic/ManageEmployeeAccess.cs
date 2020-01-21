@@ -62,7 +62,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 WriteToDiagnosticLog(
                    $"EmployeeAccess - Getting all GB companies from GB DB - pr.ListCompanies with filter- {filter}");
 
-                int productId = (int)ProductEnum.SupportTool;
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
                 List<UnifiedLoginCompany> gbAllCompanies = umr.ListCompanies();

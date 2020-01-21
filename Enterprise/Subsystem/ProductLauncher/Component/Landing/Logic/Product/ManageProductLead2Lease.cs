@@ -38,8 +38,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
         private const int MAXRETRYCOUNT = 5;
 
-        private string lead2leasecompanyoverride = "236";
-
         private DefaultUserClaim _userClaims;
 
         /// <summary>
