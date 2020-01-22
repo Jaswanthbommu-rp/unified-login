@@ -104,13 +104,14 @@
         };
 
         vm.setAllProperties = function (val) {
-            var allPropertiesArray = [];
-            allPropertiesArray.push("all");
-            OSDataModel.setProperties(allPropertiesArray);
             if(val){
+                var allPropertiesArray = [];
+                allPropertiesArray.push("all");
+                OSDataModel.setProperties(allPropertiesArray);
                 vm.grid.updateSelected();
             }
             else{
+                OSDataModel.setProperties(vm.dataReq.records);
                 vm.grid.selectAll(false);
                 vm.grid.updateSelected();
             }
