@@ -16,10 +16,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public bool UserExists { get; set; }
 
         /// <summary>
-        /// True if User only exists as External User in all the Organizations
+        /// True if User is External every where
         /// </summary>
-        [JsonProperty(PropertyName = "IsOnlyExternalUserInAllOrganizations")]
-        public bool IsOnlyExternalUserInAllOrganizations { get; set; } = true;
+        [JsonProperty(PropertyName = "UserIsExternalEverywhere")]
+        public bool UserIsExternalEverywhere { get; set; } = true;
 
         /// <summary>
 		/// User with this LoginName exists in the Organization with this RealPageId
