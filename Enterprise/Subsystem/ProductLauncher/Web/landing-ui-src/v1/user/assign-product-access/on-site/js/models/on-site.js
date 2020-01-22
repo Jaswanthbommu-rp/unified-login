@@ -79,8 +79,6 @@
              propertiesData.forEach(function (item) {
                item["isAssigned"] = val;
             });
-
-            s.properties = propertiesData;
         };
 
         p.setAllPropertyGroupData = function (propertyGroupData,val) {
@@ -89,7 +87,6 @@
                item["isAssigned"] = val;
             });
 
-            s.propertyGroups = propertyGroupData;
         };
 
         p.getData = function () {

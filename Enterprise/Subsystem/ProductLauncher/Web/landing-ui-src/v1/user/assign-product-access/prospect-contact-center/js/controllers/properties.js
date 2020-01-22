@@ -9,12 +9,13 @@
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            activeProperties = [],
+            inactiveProperties = [];
 
         vm.init = function () {
-            vm.propertySelect = "property";
+            vm.propertySelect = "active";
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
-            // vm.hasViewUserAccess = security.isAllowed("viewUser") || vm.isUserHasManageProductAccess();
             vm.grid = grid;
             gridTransform.watch(grid);
             grid.setConfig(gridConfig);
@@ -27,6 +28,9 @@
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
+            
+            vm.activeProperties = activeProperties;
+            vm.inactiveProperties = inactiveProperties;
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -36,6 +40,21 @@
             }
 
             vm.updateWatch = pubsub.subscribe("pcc.properties-radio", vm.updateRecords);
+
+            vm.filterData = vm.grid.subscribe("filterBy", vm.filter.bind(vm));
+        };
+
+        vm.filter = function(filterBy){            
+            if(vm.propertySelect === 'active') {
+                vm.filteredPropertiesArray = $filter("filter")(vm.activeProperties, filterBy);
+            }
+            else if(vm.propertySelect === 'inactive') {
+                vm.filteredPropertiesArray = $filter("filter")(vm.inactiveProperties, filterBy);
+            }
+
+            gridPagination.setData(vm.filteredPropertiesArray).goToPage({
+                number: 0
+            });
         };
 
         vm.hasViewOnlyAccess = function () {
@@ -72,12 +91,7 @@
         };
 
         vm.resetDataModel = function () {
-            if (vm.propertySelect === "all") {
-                vm.setAllProperties(true);
-            }
-            else {
-                vm.setAllProperties(false);
-            }
+            vm.setAllProperties(vm.propertySelect);
         };
 
         vm.setData = function (resp) {
@@ -89,16 +103,27 @@
                     });
                 }
 
-                gridPagination.setData(resp.records).goToPage({
-                    number: 0
+                resp.records.forEach(function (property) {
+                    if (property.active == 'true') {
+                        vm.activeProperties.push(property);
+                        if(property.isAssigned) {
+                            vm.propertySelect = "active";
+                        }
+                    }
+                    else if (property.active == 'false') {
+                        vm.inactiveProperties.push(property);
+                        if(property.isAssigned) {
+                            vm.propertySelect = "inactive";
+                        }
+                    }
                 });
 
                 if (resp.additional && resp.additional.allProperties) {
                     vm.propertySelect = "all";
-                    vm.setAllProperties(true);
+                     vm.setAllProperties(vm.propertySelect);
                 }
                 else {
-                    prospectContactCenterDataModel.setProperties(resp.records);
+                    vm.setAllProperties(vm.propertySelect);
                 }
             }
             if (resp.isError) {
@@ -113,7 +138,21 @@
         };
 
         vm.setAllProperties = function (val) {
-            if (val) {
+            if(val == "active") {
+                prospectContactCenterDataModel.setProperties(vm.activeProperties);
+                gridPagination.setData(vm.activeProperties).goToPage({
+                    number: 0
+                });
+                vm.grid.filtersModel.reset();
+            }
+            else if(val == "inactive") {
+                prospectContactCenterDataModel.setProperties(vm.inactiveProperties);
+                gridPagination.setData(vm.inactiveProperties).goToPage({
+                    number: 0
+                });
+                vm.grid.filtersModel.reset();
+            }
+            else{
                 var allPropertiesArray = [];
                 allPropertiesArray.push("all");
                 prospectContactCenterDataModel.setProperties(allPropertiesArray);
@@ -124,9 +163,6 @@
                         property.isAssigned = false;
                     }
                 });
-            }
-            else {
-                prospectContactCenterDataModel.setProperties(vm.dataReq.records);
             }
         };
 
@@ -144,6 +180,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
+            vm.filteredPropertiesArray = [];
         };
 
         vm.init();

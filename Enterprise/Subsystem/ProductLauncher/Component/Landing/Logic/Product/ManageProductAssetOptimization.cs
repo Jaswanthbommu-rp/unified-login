@@ -604,9 +604,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								if (string.IsNullOrEmpty(createBIResult))
 								{
 									// Create GB Product association - for new user insert record
-									var productList = (from x in aoUser.Model select x.Product).Distinct().ToList();
-
-									CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
+									var productList = (from x in biAOUser.Model select x.Product).Distinct().ToList();
+									CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, biLoginName.ToLower());
 								}
 
 								WriteToDiagnosticLog(

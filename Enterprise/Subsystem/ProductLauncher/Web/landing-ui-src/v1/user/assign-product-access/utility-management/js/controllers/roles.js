@@ -5,6 +5,7 @@
 
     function UtilityManagementRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, UtilManDataModel, userDetailsModel, pubsub, security) {
         var vm = this,
+            filteredRecords,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -33,10 +34,15 @@
             }
 
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
+            vm.filterData = rolesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
             return UtilManDataModel.isActive();
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
         vm.loadData = function () {
@@ -90,7 +96,12 @@
         };
 
         vm.selectAllRoles = function(val){
-            UtilManDataModel.setAllRoles(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                UtilManDataModel.setAllRoles(vm.filteredRecords, val);
+            }
+            else{
+                UtilManDataModel.setAllRoles(vm.dataReq.records, val);
+            }
         };
 
         vm.destroy = function () {

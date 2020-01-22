@@ -34,8 +34,7 @@ module.exports = function (task, env) {
     };
 
     task.getTaskConfig = function (appName) {
-        var src = [],
-            keys = [],
+        var keys = [],
             config = {},
             buFo = task.buildFolder(appName),
             htmlFiles = task.getHtmlFiles(appName);
@@ -52,8 +51,8 @@ module.exports = function (task, env) {
                 config["watch-template." + key] = {
                     files: src,
                     tasks: [
-                        "html2js:html2js." + key,
-                        "includereplacemore:js." + buFo
+                        "psHtml2js:html2js." + key,
+                        "psBundler:js." + buFo
                     ]
                 };
             }

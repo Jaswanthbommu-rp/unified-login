@@ -21,6 +21,8 @@
         public const string SP_UpdateTokenExpiry = "Auth.UpdateTokenExpiry";
         public const string SP_GetAllPortfolioProductUserClaims = "Auth.GetAllPortfolioProductUserClaims";
         public const string SP_GetClientDetails = "Auth.GetClientDetails";
+        public const string SP_GetUserClaimTypesRequiredForClient = "Auth.GetUserClaimTypesRequiredForClient";
+
         //public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
 
         #endregion
@@ -350,5 +352,7 @@
     {
         public const string SP_ListUserInformation = "Person.GetUserInformation_Ver02";
         public const string SP_CreateUnityUser = "Ident.CreateUser_Ver01";
+        public const string SP_ListUsersWithCompanyId = "Person.ListUsersWithCompanyId";
+
     }
 }

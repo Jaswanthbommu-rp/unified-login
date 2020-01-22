@@ -3,6 +3,8 @@ using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -47,14 +49,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
+        #region Unified notifications endpoint
         /// <summary>
-		/// Used to write to the log
-		/// </summary>
-		/// <param name="logType">Log Type</param>
-		/// <param name="message">Message to log</param>
-		/// <param name="logData">Data to log</param>
-		/// <param name="exception">Exception details</param>
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+	    /// Get list of users by companyid or productids
+	    /// </summary>
+	    /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company and products", Type = typeof(ProductUsers))]
+        [Route("usersbycompanyproducts")]
+        [AuthorizeScope("userinfoapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUsersByCompanyorProducts([FromUri]PageRequest datafilter, string companyId = null, [FromUri] IList<int?> products = null)
+        {
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
+            if(string.IsNullOrEmpty(companyId) && products == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
+            }
+            int compId;
+            if(!int.TryParse(companyId,out compId))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
+            }
+            IProductRepository productRepository = new ProductRepository();
+            var result = productRepository.GetUsersByCompanyorProducts(datafilter, companyId, products);
+            var logData = new Dictionary<string, object>();
+            logData.Add("result", result);
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
+
+        #endregion
+
+        #region Private methods
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message to log</param>
+        /// <param name="logData">Data to log</param>
+        /// <param name="exception">Exception details</param>
+        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             try
             {
@@ -74,5 +113,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 /*ignored*/
             }
         }
+        #endregion
     }
 }

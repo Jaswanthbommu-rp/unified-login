@@ -1282,7 +1282,7 @@ BEGIN
 				@RoleID = @RoleId,
 				@PartyId = @OrganizationId,
 				@ProductId = 3,
-				@RightName = 'Access to Property Photos',
+				@RightName = 'Access to Property Photos (requires Marketing Center access)',
 				@RightCategoryId = @Status_Right,
 				@RightID = @RightID OUTPUT,
 				@Description = '',

@@ -60,8 +60,8 @@
         };
 
         vm.onTabActive = function () {
-            var helpWidget = document.querySelector('raul-unified-help');
-            helpWidget.helpPageId = "activity";
+            var helpWidget = document.querySelector('omnibar-unified-help');            
+            helpWidget.helpQuery = 'pg=ul-activity&vr=40&scrver=350';
             vm.active = true;
             return vm;
         };
@@ -164,8 +164,7 @@
 
         vm.setActivityDate = function (activityDate) {
             if (activityDate) {
-                var offset=moment().utcOffset(); 
-                activityDate = moment(activityDate).subtract(offset,'m').toDate();
+                activityDate = moment(activityDate).toDate();
             }
             else {
                 activityDate = "";

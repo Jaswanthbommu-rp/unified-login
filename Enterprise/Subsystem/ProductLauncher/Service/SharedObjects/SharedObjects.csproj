@@ -29,6 +29,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.XML</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -109,6 +110,7 @@
     <Compile Include="DapperMappingGuides\IProductSettingList.cs" />
     <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
     <Compile Include="Enterprise\ProductDetail.cs" />
+    <Compile Include="Enterprise\ProductUsers.cs" />
     <Compile Include="Enterprise\UserData.cs" />
     <Compile Include="Enterprise\UserDataCommon.cs" />
     <Compile Include="Enterprise\UserProductDetails.cs" />
@@ -162,6 +164,7 @@
     <Compile Include="IdentityConfig\ClientRedirectUri.cs" />
     <Compile Include="IdentityConfig\ClientScope.cs" />
     <Compile Include="IdentityConfig\ClientSecret.cs" />
+    <Compile Include="IdentityConfig\ClientUserClaim.cs" />
     <Compile Include="IdentityConfig\Consent.cs" />
     <Compile Include="IdentityConfig\CommonAddress.cs" />
     <Compile Include="IdentityConfig\ContactMechanismBoundary.cs" />
@@ -336,6 +339,7 @@
     <Compile Include="Product\EmployeeAccess\UserDetail.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplacePropertyRole.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplaceUser.cs" />
+    <Compile Include="Product\MarketingCenter\IMarketingCenterUserStatus.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterRoleAndPropertyList.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterUserStatus.cs" />
     <Compile Include="Product\Migration\AOMigrateResponse.cs" />

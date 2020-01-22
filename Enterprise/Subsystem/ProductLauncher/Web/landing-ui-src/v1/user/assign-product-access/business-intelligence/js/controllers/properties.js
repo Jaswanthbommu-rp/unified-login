@@ -5,6 +5,7 @@
 
     function BusinessIntelligencePropertiesCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, BIDataModel, userDetailsModel, sync, pubsub, switchConfig, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -35,13 +36,16 @@
             }
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
             vm.updateGridWatch = pubsub.subscribe("businessIntelligence.updateGrids", vm.updateGrid);
-            
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.updateGrid = function () {
             vm.grid.updateSelected();
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records[0].properties, filterBy);
+        };
 
         vm.isActive = function () {
             return BIDataModel.isActive();
@@ -132,7 +136,12 @@
         };
 
         vm.selectAllProperties = function (val) {
-            BIDataModel.setAllPropertiesData(vm.dataReq.records[0].properties, val);
+            if(vm.filteredRecords !== undefined){
+                BIDataModel.setAllPropertiesData(vm.filteredRecords, val);
+            }
+            else{
+                BIDataModel.setAllPropertiesData(vm.dataReq.records[0].properties, val);
+            } 
         };
 
         vm.destroy = function () {

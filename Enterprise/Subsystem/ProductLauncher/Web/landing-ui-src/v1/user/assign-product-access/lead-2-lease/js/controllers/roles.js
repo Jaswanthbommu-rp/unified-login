@@ -5,6 +5,7 @@
 
     function Lead2LeaseRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, lead2LeaseDataModel, userDetailsModel, menuConfig, presetModel, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -41,12 +42,15 @@
             }
 
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllRoles);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
             return lead2LeaseDataModel.isActive();
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
         vm.loadData = function () {
             if (persona.isReady() && vm.isActive()) {
                 grid.busy(true);
@@ -112,7 +116,12 @@
         };
 
         vm.selectAllRoles = function(val){
-            lead2LeaseDataModel.setAllRoles(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                lead2LeaseDataModel.setAllRoles(vm.filteredRecords, val);
+            }
+            else{
+                lead2LeaseDataModel.setAllRoles(vm.dataReq.records, val);
+            } 
         };
 
         vm.setPresetRoles = function (roles) {
@@ -142,6 +151,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
+            filteredRecords=undefined;
         };
 
         vm.init();

@@ -1,13 +1,14 @@
-module.exports = function (grunt, env) {
-    "use strict";
+"use strict";
 
+var extend = require("extend");
+
+module.exports = function (grunt, env) {
     var svc = {},
         config = {},
-        extend = require("extend"),
         tasksList = env.prov.getData("tasksList");
 
     svc.hasTargets = function (taskName) {
-        return Object.keys(config[taskName]).length !== 0;
+        return config[taskName] && Object.keys(config[taskName]).length !== 0;
     };
 
     svc.setTarget = function (name, value) {
@@ -29,6 +30,9 @@ module.exports = function (grunt, env) {
             tasksList[listName].forEach(function (taskName) {
                 if (svc.hasTargets(taskName)) {
                     list.push(taskName);
+                }
+                else {
+                    grunt.verbose.write('No targets found for ' + taskName + '\n');
                 }
             });
 

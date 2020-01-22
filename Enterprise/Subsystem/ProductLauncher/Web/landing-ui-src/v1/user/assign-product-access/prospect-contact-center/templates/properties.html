@@ -2,9 +2,14 @@
 	<div class="prospect-contact-center-body" ng-if="!pccg.isDataError">
 		<div class="access-type-options">
 			<label class="md-check dark-bluebox access-type-option">
-			    <input type="radio" value="property" ng-disabled="pccg.hasViewUserAccess" ng-change="pccg.resetDataModel()" ng-model="pccg.propertySelect" class="has-value">
+			    <input type="radio" value="active" ng-disabled="pccg.hasViewUserAccess" ng-change="pccg.resetDataModel()" ng-model="pccg.propertySelect" class="has-value">
 			    <i class="primary"></i>
-			    Specific Property
+			    Active Properties
+			</label>
+			<label class="md-check dark-bluebox access-type-option">
+			    <input type="radio" value="inactive" ng-disabled="pccg.hasViewUserAccess" ng-change="pccg.resetDataModel()" ng-model="pccg.propertySelect" class="has-value">
+			    <i class="primary"></i>
+			    Not Active Properties
 			</label>
 			<label class="md-check dark-bluebox access-type-option">
 			    <input type="radio" value="all" ng-disabled="pccg.hasViewUserAccess" ng-change="pccg.resetDataModel()" ng-model="pccg.propertySelect" class="has-value">
@@ -15,7 +20,7 @@
 		<div class="prospect-contact-center-all-properties" ng-if="pccg.propertySelect === 'all'">
 		    This user will be provided access to all current and future properties.
 		</div>
-	    <div ng-if="pccg.propertySelect === 'property'">
+	    <div ng-if="(pccg.propertySelect === 'active' || pccg.propertySelect === 'inactive')">
 		    <div class="grid-controls">
 		        <div class="grid-control-item">
 		            <rp-toggle model="pccg.grid.filtersModel.state.active" options="{
