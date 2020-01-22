@@ -847,7 +847,7 @@
                         existingNoEmailUserModal.show();
                    }
                    
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && resp.data.isOnlyExternalUserInAllOrganizations === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && resp.data.userIsExternalEverywhere === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
                         isModalOpen = true;
                         externalUserModal.show();
                    }
