@@ -343,10 +343,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (string.IsNullOrEmpty(_productUsername)) // NEW USER
 				{
 					productLoginName = GetUniqueProductLoginName(productLoginName);
+					prospectContactCenterUser.User.LoginName = productLoginName;
 
 					WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
-					string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, productLoginName, prospectContactCenterUser);
-					// for new user insert record in green book
+					string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, productLoginName, );
+					// for new user insert record in green prospectContactCenterUserbook
 					CreateProductUserInGreenBook(userPersonaId, newProductUserId, productLoginName);
 
 					// add activity log 
