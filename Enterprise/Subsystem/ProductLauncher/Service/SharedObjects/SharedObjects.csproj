@@ -211,6 +211,7 @@
     <Compile Include="IdentityConfig\IUserLoginCommon.cs" />
     <Compile Include="IdentityConfig\IUserLoginOnly.cs" />
     <Compile Include="IdentityConfig\IUserLoginPersona.cs" />
+    <Compile Include="IdentityConfig\ULClaim.cs" />
     <Compile Include="IdentityConfig\UserLoginOnly.cs" />
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />

@@ -965,5 +965,104 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.C
 		
 
 		#endregion
+
+		#region Claim
+        /// <summary>
+        /// Used to get a list of claims
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<ULClaim> GetClaims()
+        {
+            IEnumerable<ULClaim> claimList = null;
+            using (var repository = GetRepository())
+            {
+                claimList = repository.GetMany<ULClaim>(StoredProcNameConstants.SP_ClaimSelect, null);
+            }
+
+            return claimList;
+        }
+
+        /// <summary>
+        /// Get a claim by id
+        /// </summary>
+        /// <param name="claimId"></param>
+        /// <returns></returns>
+        public ULClaim GetClaimById(int claimId)
+        {
+            return GetClaims().First(p => p.ClaimId == claimId);
+        }
+
+        /// <summary>
+        /// Used to insert a new claim
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        public ULClaim InsertClaim(ULClaim claim)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    ClaimName = claim.ClaimName,
+                    SAMLAttributeName = claim.SAMLAttributeName,
+					ProductId = claim.ProductId
+                };
+                return repository.GetOne<ULClaim>(StoredProcNameConstants.SP_ClaimInsert, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to update a claim
+        /// </summary>
+        /// <param name="orgClaim"></param>
+        /// <param name="newClaim"></param>
+        /// <returns></returns>
+        public ULClaim UpdateClaim(ULClaim orgClaim, ULClaim newClaim)
+        {
+            using (var repository = GetRepository())
+            {
+               int isSAMLAttributeNameIsNull = orgClaim.SAMLAttributeName == null ? 1 : 0;
+
+               dynamic param = new
+               {
+                   ClaimName = newClaim.ClaimName,
+                   SAMLAttributeName = newClaim.SAMLAttributeName,
+                   ProductId = newClaim.ProductId,
+                   Original_ClaimId = newClaim.ClaimId,
+                   Original_ClaimName = orgClaim.ClaimName,
+                   IsNull_SAMLAttributeName = isSAMLAttributeNameIsNull,
+                   Original_SAMLAttributeName = orgClaim.SAMLAttributeName,
+                   Original_ProductId = orgClaim.ProductId,
+                   ClaimId = orgClaim.ClaimId
+               };
+
+                return repository.GetOne<ULClaim>(StoredProcNameConstants.SP_ClaimUpdate, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to delete a claim
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        public int DeleteClaim(ULClaim claim)
+        {
+            int isSAMLAttributeNameIsNull = claim.SAMLAttributeName == null ? 1 : 0;
+
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    Original_ClaimId = claim.ClaimId, 
+                    Original_ClaimName = claim.ClaimName,
+                    IsNull_SAMLAttributeName = isSAMLAttributeNameIsNull,
+                    Original_SAMLAttributeName = claim.SAMLAttributeName,
+                    Original_ProductId = claim.ProductId
+                };
+
+                return repository.ExecuteNonQuery(StoredProcNameConstants.SP_ClaimDelete, param);
+            }
+        }
+		#endregion
 	}
 }

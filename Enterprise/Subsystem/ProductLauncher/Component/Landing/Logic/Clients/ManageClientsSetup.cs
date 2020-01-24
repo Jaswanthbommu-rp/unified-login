@@ -324,5 +324,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Client
 			return _clientsSetupRepository.DeleteScopeClaim(scopeClaim);
 		}
 		#endregion
+
+		#region Claim
+        public IEnumerable<ULClaim> GetClaims()
+        {
+            return _clientsSetupRepository.GetClaims();
+        }
+
+        public ULClaim GetClaimById(int claimId)
+        {
+            return _clientsSetupRepository.GetClaimById(claimId);
+        }
+
+        public ULClaim InsertClaim(ULClaim claim)
+        {
+            return _clientsSetupRepository.InsertClaim(claim);
+        }
+
+        public ULClaim UpdateClaim(ULClaim orgClaim, ULClaim newClaim)
+        {
+            return _clientsSetupRepository.UpdateClaim(orgClaim, newClaim);
+        }
+
+        public int DeleteClaim(ULClaim claim)
+        {
+            return _clientsSetupRepository.DeleteClaim(claim);
+        }
+		#endregion
 	}
 }
