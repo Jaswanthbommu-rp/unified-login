@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Clients
 {
@@ -1061,6 +1060,71 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.C
                 };
 
                 return repository.ExecuteNonQuery(StoredProcNameConstants.SP_ClaimDelete, param);
+            }
+        }
+		#endregion
+
+		#region ClaimClientMapping
+        /// <summary>
+        /// Used to get a list of claim to client mappings
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<ClientClaimMapping> GetClaimClientMapping()
+        {
+            IEnumerable<ClientClaimMapping> clientClaimMappingList = null;
+            using (var repository = GetRepository())
+            {
+                clientClaimMappingList = repository.GetMany<ClientClaimMapping>(StoredProcNameConstants.SP_ClientUserClaimSelect, null);
+            }
+
+            return clientClaimMappingList;
+        }
+
+        /// <summary>
+        /// Get claims by client id
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
+        public IEnumerable<ClientClaimMapping> GetClientClaimMappingByClientId(int clientId)
+        {
+            return GetClaimClientMapping().Where(p => p.ClientId == clientId);
+        }
+
+        /// <summary>
+        /// Used to insert a new claim for the given client
+        /// </summary>
+        /// <param name="claimMapping"></param>
+        /// <returns></returns>
+        public ClientClaimMapping InsertClientClaimMapping(ClientClaimMapping claimMapping)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    ClientId = claimMapping.ClientId,
+                    ClaimId = claimMapping.ClaimId
+                };
+                return repository.GetOne<ClientClaimMapping>(StoredProcNameConstants.SP_ClientUserClaimInsert, param);
+            }
+        }
+
+        /// <summary>
+        /// Used to delete a claim to client mapping
+        /// </summary>
+        /// <param name="claimMapping"></param>
+        /// <returns></returns>
+        public int DeleteClientClaimMapping(ClientClaimMapping claimMapping)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    Original_ClientUserClaimId = claimMapping.ClientUserClaimId,
+                    Original_ClientId = claimMapping.ClientId,
+                    Original_ClaimId = claimMapping.ClaimId
+                };
+
+                return repository.ExecuteNonQuery(StoredProcNameConstants.SP_ClientUserClaimDelete, param);
             }
         }
 		#endregion

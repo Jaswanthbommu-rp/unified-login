@@ -13,7 +13,7 @@
         public string ClaimName { get; set; }
 
         /// <summary>
-        /// the data the claim should return if coming from a products SAML attributes
+        /// The data the claim should return if coming from a products SAML attributes
         /// </summary>
         public string SAMLAttributeName { get; set; }
 

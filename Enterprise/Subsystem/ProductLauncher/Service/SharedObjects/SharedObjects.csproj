@@ -160,6 +160,7 @@
     <Compile Include="Helper\ValidateJson.cs" />
     <Compile Include="IdentityConfig\Client.cs" />
     <Compile Include="IdentityConfig\ClientClaim.cs" />
+    <Compile Include="IdentityConfig\ClientClaimMapping.cs" />
     <Compile Include="IdentityConfig\ClientPostLogoutRedirectUri.cs" />
     <Compile Include="IdentityConfig\ClientRedirectUri.cs" />
     <Compile Include="IdentityConfig\ClientScope.cs" />

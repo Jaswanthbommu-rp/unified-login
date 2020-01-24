@@ -351,5 +351,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Client
             return _clientsSetupRepository.DeleteClaim(claim);
         }
 		#endregion
+
+        #region ClientClaimMapping
+        public IEnumerable<ClientClaimMapping> GetClientClaimMapping()
+        {
+            return _clientsSetupRepository.GetClaimClientMapping();
+        }
+
+        public IEnumerable<ClientClaimMapping> GetClientClaimMappingByClientId(int clientId)
+        {
+            return _clientsSetupRepository.GetClientClaimMappingByClientId(clientId);
+        }
+
+        public ClientClaimMapping InsertClientClaimMapping(ClientClaimMapping claimMapping)
+        {
+            return _clientsSetupRepository.InsertClientClaimMapping(claimMapping);
+        }
+
+        public int DeleteClientClaimMapping(ClientClaimMapping claimMapping)
+        {
+            return _clientsSetupRepository.DeleteClientClaimMapping(claimMapping);
+        }
+        #endregion
 	}
 }
