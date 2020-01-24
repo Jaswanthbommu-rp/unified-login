@@ -2372,10 +2372,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 DateTime? statusThruDate = null;
                                 UserUiStatusType statusTypeId = UserUiStatusType.UnDefined;
+                                bool isUserExpired = false;
+                                bool newUserwithActiveStatus = false;
+
+                                if (currentOrgStatus.ThruDate != null)
+                                {
+                                    if (DateTime.UtcNow > currentOrgStatus.ThruDate)
+                                    {
+                                        isUserExpired = true;
+                                    }
+                                }
+                                if (currentOrgStatus.StatusThruDate != null)
+                                {
+                                    if (DateTime.UtcNow > currentOrgStatus.StatusThruDate)
+                                    {
+                                        isUserExpired = true;
+                                    }
+                                }
+
+                                if (profile.userLogin.LastLogin == null && profile.userLogin.PasswordModifiedDate != null && !isUserExpired)
+                                    newUserwithActiveStatus = true;
 
                                 //current state user login is disabled and user activated through update process and
                                 //user never logedin before then set user status to pending
-                                if (currentOrgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && profile.userLogin.IsActive == true && userLoginOnly.LastLogin == null && idpt.IsLocal)
+                                if (currentOrgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && profile.userLogin.IsActive == true && userLoginOnly.LastLogin == null && idpt.IsLocal && !newUserwithActiveStatus)
                                 {
                                     statusTypeId = UserUiStatusType.Pending;
                                 }
