@@ -58,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                     AuthenticationType = ConfigReader.Environment + "-IDCookie",
                 });
 
-                // try to catch any operation was cancelled errors and 
+                // try to catch any operation was cancelled errors and ignore them so they aren't logged in kibana
                 app.Use(async (ctx, next) =>
                 {
                     try
