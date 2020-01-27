@@ -445,8 +445,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			//Assert
 			Assert.True(
 				userOrganizationExists.UserExists == true
-				&& userOrganizationExists.UserExistsInThisOrganization == true
-			);
+                && userOrganizationExists.UserExistsAsNoEmail == false
+                && userOrganizationExists.UserExistsInThisOrganization == true
+                && userOrganizationExists.UserExistsNotAvailable == false
+                && userOrganizationExists.UserIsDisabledInPrimaryCompany == false
+                && userOrganizationExists.UserIsExternalEverywhere == false
+            );
 
             RPObjectCache rpCache = new RPObjectCache();
             rpCache.BustCache();
@@ -465,11 +469,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
             Assert.True(
                 userOrganizationExists.UserExists == true
+                && userOrganizationExists.UserExistsAsNoEmail == false
+                && userOrganizationExists.UserExistsInThisOrganization == true
                 && userOrganizationExists.UserExistsNotAvailable == true
+                && userOrganizationExists.UserIsDisabledInPrimaryCompany == false
+                && userOrganizationExists.UserIsExternalEverywhere == false
             );
         }
 
-        //
         [Fact]
         public void LinkIdentityProviderToUserLogin_ValidAndErrors()
         {
