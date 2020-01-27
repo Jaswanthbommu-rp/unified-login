@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(csr);
-			return mcs.GetClients();
+			return mcs.GetClientsWithDetails();
 		}
 
 		/// <summary>
@@ -1323,7 +1323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ManageClientsSetup mcs = new ManageClientsSetup(csr);
 
 			// verify the client and claim exist
-            IEnumerable<Client> clientList = mcs.GetClients();
+            IEnumerable<Client> clientList = mcs.GetClientsNoDetails();
 
             if (clientList.All(p => p.ClientId != claimMapping.ClientId))
             {
@@ -1397,7 +1397,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(csr);
-			IEnumerable<Client> clientList = mcs.GetClients();
+			IEnumerable<Client> clientList = mcs.GetClientsWithDetails();
 			// verify the client id exists
 			if (!clientList.Any(p => p.ClientId == clientId))
 			{

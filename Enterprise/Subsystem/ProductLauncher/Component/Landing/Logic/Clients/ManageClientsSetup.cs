@@ -27,10 +27,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Client
 		}
 
 		#region Client
-		public IEnumerable<Client> GetClients()
+		public IEnumerable<Client> GetClientsWithDetails()
 		{
-			return _clientsSetupRepository.GetClients();
+			return _clientsSetupRepository.GetClientsWithDetails();
 		}
+		public IEnumerable<Client> GetClientsNoDetails()
+        {
+            return _clientsSetupRepository.GetClientsNoDetails();
+        }
 
 		public Client GetClientDetails(int clientId)
 		{

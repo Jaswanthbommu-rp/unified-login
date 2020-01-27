@@ -19,10 +19,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.C
 
 		#region Client
 		/// <summary>
-		/// Get a list of clients
+		/// Get a list of clients and their details
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<Client> GetClients()
+		public IEnumerable<Client> GetClientsWithDetails()
 		{
 			IEnumerable<Client> clientList = null;
 			IEnumerable<ClientRedirectUri> clientRedirectUris = GetClientRedirectUri();
@@ -47,14 +47,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.C
 			return clientList;
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Get a list of clients without details
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Client> GetClientsNoDetails()
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<Client>(StoredProcNameConstants.SP_ClientsSelect, null);
+            }
+        }
+
+        /// <summary>
 		/// Used to get a client and its details
 		/// </summary>
 		/// <param name="clientId"></param>
 		/// <returns></returns>
 		public Client GetClientDetailsById(int clientId)
 		{
-			Client client = GetClients().First(p => p.ClientId == clientId);
+			Client client = GetClientsWithDetails().First(p => p.ClientId == clientId);
 
 			if (client != null)
 			{
