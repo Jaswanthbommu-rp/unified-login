@@ -1,0 +1,1 @@
+System.register(["./p-dbace0dc.system.js"],(function(t){"use strict";var e,n;return{setters:[function(t){e=t.r;n=t.h}],execute:function(){var r=t("raul_tab_pane",function(){function t(t){e(this,t)}t.prototype.render=function(){return n("div",{class:"tabs",role:"tabpanel",id:this.name,"aria-labelledby":this.name+"-tab"},n("slot",null))};return t}())}}}));

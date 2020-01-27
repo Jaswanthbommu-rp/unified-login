@@ -1,0 +1,33 @@
+raul-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+raul-icon svg {
+  display: block;
+  height: 1em;
+  width: 1em;
+}
+
+raul-icon svg g[fill=none] circle,
+raul-icon svg g[fill=none] ellipse,
+raul-icon svg g[fill=none] path,
+raul-icon svg g[fill=none] polygon,
+raul-icon svg g[fill=none] polyline,
+raul-icon svg g[fill=none] rect, raul-icon svg g[style*="fill:none"] circle,
+raul-icon svg g[style*="fill:none"] ellipse,
+raul-icon svg g[style*="fill:none"] path,
+raul-icon svg g[style*="fill:none"] polygon,
+raul-icon svg g[style*="fill:none"] polyline,
+raul-icon svg g[style*="fill:none"] rect {
+  fill: inherit !important;
+}
+
+raul-icon svg circle:not([fill=none]):not([style*="fill:none"]),
+raul-icon svg ellipse:not([fill=none]):not([style*="fill:none"]),
+raul-icon svg path:not([fill=none]):not([style*="fill:none"]),
+raul-icon svg polygon:not([fill=none]):not([style*="fill:none"]),
+raul-icon svg polyline:not([fill=none]):not([style*="fill:none"]),
+raul-icon svg rect:not([fill=none]):not([style*="fill:none"]) {
+  fill: currentColor !important;
+}

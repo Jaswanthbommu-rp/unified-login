@@ -1,0 +1,1 @@
+import{r as t,h as r}from"./p-8c19800d.js";const s=class{constructor(r){t(this,r)}render(){return r("slot",null)}static get style(){return"raul-list-title{display:block;font-size:1rem;font-weight:600;line-height:1.25;margin-bottom:.5rem;margin-bottom:0}"}};export{s as raul_list_title};

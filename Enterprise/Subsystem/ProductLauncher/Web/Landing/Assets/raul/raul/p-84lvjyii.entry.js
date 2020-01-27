@@ -1,0 +1,1 @@
+import{r as a,h as s}from"./p-8c19800d.js";const t=class{constructor(s){a(this,s)}render(){return s("div",{class:"tabs",role:"tabpanel",id:this.name,"aria-labelledby":`${this.name}-tab`},s("slot",null))}};export{t as raul_tab_pane};

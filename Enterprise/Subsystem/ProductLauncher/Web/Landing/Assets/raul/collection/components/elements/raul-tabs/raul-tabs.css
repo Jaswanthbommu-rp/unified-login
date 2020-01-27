@@ -1,0 +1,45 @@
+raul-tabs {
+  display: block;
+}
+
+raul-tabs .tabs {
+  border-bottom-width: 1px;
+  border-color: #EBEDEE;
+  height: 2.5rem;
+  overflow: hidden;
+}
+
+raul-tabs .tabs__list {
+  display: flex;
+  overflow-x: auto;
+  height: 4rem;
+}
+
+raul-tabs .tabs__item {
+  flex: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-bottom-width: 2px;
+  border-color: transparent;
+  height: 2.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-top: -1px;
+}
+
+raul-tabs .tabs__item:focus {
+  outline: 0;
+}
+
+raul-tabs .tabs__item:hover, raul-tabs .tabs__item:focus {
+  border-color: #C6CCD0;
+}
+
+raul-tabs .tabs__item.tabs__item--active {
+  border-color: #0076CC;
+}
+
+raul-tabs .tabs__item.tabs__item--disabled {
+  color: #9BA3A7;
+  pointer-events: none;
+}

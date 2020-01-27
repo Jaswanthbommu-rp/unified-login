@@ -1,0 +1,27 @@
+.docs-home {
+  background-color: #ffffff;
+}
+
+.docs-home .docs-page-header {
+  background: url("/assets/illustrations/bg-blob.svg") -20vw -20vw no-repeat;
+  background-size: cover;
+  min-height: calc(100vh - 0.75rem);
+}
+
+.docs-home .docs-page-header h1 {
+  white-space: nowrap;
+  font-size: 9vw;
+}
+
+.docs-home .docs-page-header .home-illustration {
+  background-image: url("/assets/illustrations/coding_pages.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  min-height: 20vh;
+}
+
+@media (min-width: 1024px) {
+  .docs-home .docs-page-header .home-illustration {
+    min-height: 100vh;
+  }
+}

@@ -1,0 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+const core = require('./core-40bc5f02.js');
+
+const DocsRaulTabs = class {
+    constructor(hostRef) {
+        core.registerInstance(this, hostRef);
+        this.tabs = [
+            { label: 'Tab 1', name: 'one' },
+            { label: 'Tab 2', name: 'two' },
+            { label: 'Tab 3', name: 'three' },
+            { label: 'Tab 4', name: 'four' },
+        ];
+        this.activeTab = 'one';
+        this.scrollableActiveTab = 'one';
+    }
+    handleRaulTabChange(e, activeTabName) {
+        this[activeTabName] = e.detail;
+    }
+    render() {
+        return (core.h("docs-element", { title: "Tabs" }, core.h("div", { slot: "overview" }, core.h("raul-content", null, core.h("div", { class: "text-md mb-6" }, "Tabs are a top level navigation component providing multiple views into related content. Raul tabs are created by linking two components: ", core.h("code", null, "<raul-tabs>"), " containing the tabs, and ", core.h("code", null, "<raul-tabs-panel>"), " containing the corresponding content."), core.h("raul-tabs", { tabs: this.tabs, "active-tab": this.activeTab, onRaulTabChange: (e) => this.handleRaulTabChange(e, 'activeTab') }), core.h("div", { class: "bg-gray-lightest p-4" }, this.tabs.map(item => core.h("raul-tab-pane", { name: item.name, style: { display: item.name === this.activeTab ? 'block' : 'none' } }, item.name === this.activeTab && `${item.label} content`))), core.h("div", { class: "text-lg font-semibold mt-8 mb-0" }, "Responsive"), core.h("p", null, "When tabs are wider than their container, they scroll horizontally."), core.h("docs-device", null, core.h("raul-tabs", { tabs: this.tabs, "active-tab": this.scrollableActiveTab, onRaulTabChange: (e) => this.handleRaulTabChange(e, 'scrollableActiveTab') }), core.h("div", { class: "py-4" }, this.tabs.map(item => core.h("raul-tab-pane", { name: item.name, style: { display: item.name === this.scrollableActiveTab ? 'block' : 'none' } }, item.name === this.scrollableActiveTab && `${item.label} content`)))), core.h("div", { class: "text-lg font-semibold mt-8 mb-0" }, "Keyboard Accessibility"), core.h("ul", { class: "list-disc list-inside" }, core.h("li", { class: "pt-1" }, core.h("raul-status", null, "Tab"), " to focus the next tab or ", core.h("raul-status", null, "Shift"), " + ", core.h("raul-status", null, "Tab"), " to focus the previous tab."), core.h("li", { class: "pt-1" }, core.h("raul-status", null, "Space Bar"), " or ", core.h("raul-status", null, "Enter"), " to activate a tab.")))), core.h("div", { slot: "design" }, core.h("raul-content", null, core.h("h3", null, "Use When"), core.h("ul", { class: "list-disc list-inside mb-8" }, core.h("li", null, "Organizing related content in a single container"), core.h("li", null, "Flipping between multiple panes or sections"), core.h("li", null, "Grouping content to display horizontally"), core.h("li", null, "Content is lengthy and can be broken into discrete parts")), core.h("h3", null, "Don't Use When"), core.h("ul", { class: "list-disc list-inside mb-8" }, core.h("li", null, "Grouping content to display vertically. Instead, use Accordion"), core.h("li", null, "Creating primary navigation that links to other pages"), core.h("li", null, "Organizing a stepped process. Instead, use Step Tracker")), core.h("h3", null, "The Basics"), core.h("ul", { class: "list-disc list-inside mb-8" }, core.h("li", null, "Never display disabled tab labels"), core.h("li", null, "Remove tab button if there is no content"), core.h("li", null, "Keep to no more than 6 tab buttons"), core.h("li", null, "Never display fewer than 2 tab buttons")), core.h("h3", null, "Content"), core.h("ul", { class: "list-disc list-inside mb-8" }, core.h("li", null, "Order the tab buttons by priority or importance from left to right"), core.h("li", null, "Keep tab labels short and meaningful. Between 1-2 words is best and written in plain language"), core.h("li", null, "Ensure that each tab label is unique"), core.h("li", null, "Never truncate tab labels"), core.h("li", null, "Use title caps for tab labels")), core.h("h3", null, "Behavior"), core.h("ul", { class: "list-disc list-inside mb-8" }, core.h("li", null, "The first tab section is selected by default"), core.h("li", null, "Only one tab can be selected at a time"), core.h("li", null, "Currently selected tab is always highlighted"), core.h("li", null, "Tabs are scrollable by default and do not wrap to a second line"), core.h("li", null, "Tabs become scrollable when the length of the labels exceed the width of the container"), core.h("li", null, "Inactive tab panels are rendered for SEO purposes")), core.h("h3", null, "Do/Don't"), core.h("ul", { class: "list-disc list-inside mb-8" }, core.h("li", null, "Do display an active tab pane on load."), core.h("li", { class: "mb-4" }, "Don't display tabs without an active pane."), core.h("li", null, "Do use raul-tabs with at least 2 tabs."), core.h("li", { class: "mb-4" }, "Don't use raul-tabs with only 1 tab."), core.h("li", null, "Do use title case for tab labels."), core.h("li", { class: "mb-4" }, "Don't use all caps for tab labels."), core.h("li", null, "Do write short and meaningful tab labels. Between 1-2 words is best."), core.h("li", null, "Don't truncate tab labels. If a label overruns the container, find a shorter alternative.")))), core.h("div", { slot: "api" }, core.h("docs-interface", { component: "raul-tabs" }))));
+    }
+};
+
+exports.docs_raul_tabs = DocsRaulTabs;

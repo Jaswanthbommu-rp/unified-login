@@ -1,0 +1,5 @@
+raul-grid-header {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}

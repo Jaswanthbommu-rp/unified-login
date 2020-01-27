@@ -1,0 +1,1 @@
+import{r as i,h as s}from"./p-8c19800d.js";import{i as e}from"./p-6e65cf36.js";const o=class{constructor(s){i(this,s)}componentDidLoad(){e("Spacing",!1)}render(){return s("docs-element",{title:"Spacing"},s("div",{slot:"overview"},"Overview"),s("div",{slot:"design"},"Design Guidelines Stuff"),s("div",{slot:"api"},"API Stuff"))}};export{o as docs_spacing};

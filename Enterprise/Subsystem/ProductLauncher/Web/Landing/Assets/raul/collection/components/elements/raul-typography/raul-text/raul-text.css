@@ -1,0 +1,103 @@
+raul-text .r-text {
+  font-family: Roboto, sans-serif;
+  color: #37474f !important;
+  margin: 0px !important;
+  border: none !important;
+}
+
+raul-text .r-text--small {
+  font-size: 0.75rem;
+  line-height: 18px !important;
+  color: rgba(55, 71, 79, 0.8) !important;
+}
+
+raul-text .r-text--medium {
+  font-size: 0.875rem;
+  line-height: 20px !important;
+  color: rgba(55, 71, 79, 0.8) !important;
+}
+
+raul-text .r-text--large {
+  font-size: 1rem;
+  font-weight: 700 !important;
+  line-height: 20px !important;
+}
+
+raul-text .r-text--extra-large {
+  font-size: 1.25rem;
+  font-weight: 700 !important;
+  line-height: 26px !important;
+}
+
+raul-text .r-text--hero {
+  font-size: 2.25rem;
+  font-weight: 700 !important;
+  line-height: 40px !important;
+}
+
+raul-text .r-text--strong {
+  opacity: 1 !important;
+  font-weight: 600 !important;
+}
+
+raul-text .r-text--primary {
+  color: #0076cc !important;
+}
+
+raul-text .r-text--danger {
+  color: #d31612 !important;
+}
+
+raul-text .r-text--success {
+  color: #1cb94e !important;
+}
+
+raul-text .r-text--white {
+  color: #ffffff !important;
+}
+
+raul-text .r-text--align-left {
+  text-align: left !important;
+}
+
+raul-text .r-text--align-center {
+  text-align: center !important;
+}
+
+raul-text .r-text--align-right {
+  text-align: right !important;
+}
+
+raul-text .r-text--align-justify {
+  text-align: justify !important;
+}
+
+raul-text .r-text--emphasis {
+  font-style: italic;
+}
+
+raul-text .r-text--underline {
+  text-decoration: underline;
+}
+
+raul-text .r-text--line-through {
+  text-decoration: line-through;
+}
+
+raul-text .r-text--ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+raul-text .r-text--capitalize {
+  text-transform: capitalize;
+}
+
+raul-text .r-text--uppercase {
+  text-transform: uppercase;
+}
+
+raul-text .r-text--paragraph {
+  margin-bottom: 24px !important;
+}

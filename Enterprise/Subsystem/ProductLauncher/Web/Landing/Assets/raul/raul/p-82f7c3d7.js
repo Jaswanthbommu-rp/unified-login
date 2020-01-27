@@ -1,0 +1,1 @@
+const a=["ArrowUp","Up"],s=["ArrowDown","Down"],e=[...a,...s],o=["Escape","Esc"],c=["Delete","Backspace"];export{c as D,o as E,e as N,a as U,s as a};

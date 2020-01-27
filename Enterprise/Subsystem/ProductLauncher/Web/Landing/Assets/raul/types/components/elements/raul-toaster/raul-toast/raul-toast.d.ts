@@ -1,0 +1,31 @@
+import { EventEmitter } from '../../../../stencil.core';
+export declare class RaulToast {
+    toastEl: HTMLDivElement;
+    timeoutTimer: number;
+    refreshTimer: number;
+    timeoutLeft: number;
+    timeoutStartedAt: number;
+    el: HTMLElement;
+    timeout: number;
+    avatar: string;
+    origin: string;
+    heading: string;
+    body: string;
+    meta: string;
+    read: boolean;
+    severity: string;
+    actions: Array<any>;
+    createdAt: Date;
+    refreshKey: number;
+    hidden: boolean;
+    timedOut: EventEmitter;
+    toastAction: EventEmitter;
+    componentWillLoad(): void;
+    disconnectedCallback(): void;
+    handleMouseenter(): void;
+    handleMouseleave(): void;
+    dismiss(): Promise<void>;
+    createdAtTimeAgo(): any;
+    emitToastAction(e: any, label: any): void;
+    render(): any;
+}

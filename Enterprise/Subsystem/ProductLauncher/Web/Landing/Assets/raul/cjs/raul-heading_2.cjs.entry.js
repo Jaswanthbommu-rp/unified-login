@@ -1,0 +1,63 @@
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+const core = require('./core-40bc5f02.js');
+const index = require('./index-3ac840fc.js');
+
+const RaulHeading = class {
+    constructor(hostRef) {
+        core.registerInstance(this, hostRef);
+    }
+    render() {
+        const size = this.variant === 'page' ? 'hero' :
+            this.variant === 'section' ? 'extra-large' :
+                this.variant === 'content' ? 'large'
+                    : 'large';
+        return (core.h("raul-text", { paragraph: true, size: size, key: index.randomUID() }, core.h("slot", null)));
+    }
+};
+
+const RaulText = class {
+    constructor(hostRef) {
+        core.registerInstance(this, hostRef);
+        this.align = 'left';
+        this.inline = false;
+        this.strong = false;
+        this.emphasis = false;
+        this.underline = false;
+        this.lineThrough = false;
+        this.ellipsis = false;
+        this.capitalize = false;
+        this.uppercase = false;
+        this.paragraph = false;
+    }
+    render() {
+        const Tag = this.inline ? 'span' :
+            this.size === 'small' ? 'p' :
+                this.size === 'medium' ? 'p' :
+                    this.size === 'large' ? 'h3' :
+                        this.size === 'extra-large' ? 'h2' :
+                            this.size === 'hero' ? 'h1'
+                                : 'span';
+        return (core.h(Tag, { class: {
+                ['r-text']: true,
+                [`r-text--${this.size}`]: !!this.size,
+                [`r-text--${this.color}`]: !!this.color,
+                [`r-text--align-${this.align}`]: true,
+                ['r-text--inline']: this.inline,
+                ['r-text--strong']: this.strong,
+                ['r-text--underline']: this.underline,
+                ['r-text--line-through']: this.lineThrough,
+                ['r-text--emphasis']: this.emphasis,
+                ['r-text--ellipsis']: this.ellipsis,
+                ['r-text--capitalize']: this.capitalize,
+                ['r-text--uppercase']: this.uppercase,
+                ['r-text--paragraph']: this.paragraph
+            }, key: index.randomUID() }, core.h("slot", null)));
+    }
+    static get style() { return "raul-text .r-text{font-family:Roboto,sans-serif;color:#37474f!important;margin:0!important;border:none!important}raul-text .r-text--small{font-size:.75rem;line-height:18px!important;color:rgba(55,71,79,.8)!important}raul-text .r-text--medium{font-size:.875rem;line-height:20px!important;color:rgba(55,71,79,.8)!important}raul-text .r-text--large{font-size:1rem;font-weight:700!important;line-height:20px!important}raul-text .r-text--extra-large{font-size:1.25rem;font-weight:700!important;line-height:26px!important}raul-text .r-text--hero{font-size:2.25rem;font-weight:700!important;line-height:40px!important}raul-text .r-text--strong{opacity:1!important;font-weight:600!important}raul-text .r-text--primary{color:#0076cc!important}raul-text .r-text--danger{color:#d31612!important}raul-text .r-text--success{color:#1cb94e!important}raul-text .r-text--white{color:#fff!important}raul-text .r-text--align-left{text-align:left!important}raul-text .r-text--align-center{text-align:center!important}raul-text .r-text--align-right{text-align:right!important}raul-text .r-text--align-justify{text-align:justify!important}raul-text .r-text--emphasis{font-style:italic}raul-text .r-text--underline{text-decoration:underline}raul-text .r-text--line-through{text-decoration:line-through}raul-text .r-text--ellipsis{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}raul-text .r-text--capitalize{text-transform:capitalize}raul-text .r-text--uppercase{text-transform:uppercase}raul-text .r-text--paragraph{margin-bottom:24px!important}"; }
+};
+
+exports.raul_heading = RaulHeading;
+exports.raul_text = RaulText;

@@ -1,0 +1,220 @@
+import { h } from "@stencil/core";
+export class DocsRaulSelect {
+    constructor() {
+        this.singleSelectionOptions = [
+            {
+                text: 'Red',
+                value: 'red'
+            },
+            {
+                text: 'Green',
+                value: 'green'
+            },
+            {
+                text: 'Blue',
+                value: 'blue'
+            }
+        ];
+        this.singleSelectionOptionsValidation = [
+            {
+                text: 'Red',
+                value: 'red'
+            },
+            {
+                text: 'Green',
+                value: 'green'
+            },
+            {
+                text: 'Blue',
+                value: 'blue'
+            }
+        ];
+        this.multipleSelectionsOptions = [
+            {
+                text: 'Cat',
+                value: 'cat'
+            },
+            {
+                text: 'Dog',
+                value: 'dog'
+            },
+            {
+                text: 'Elephant',
+                value: 'elephant'
+            }
+        ];
+        this.groupedOptions = [
+            {
+                text: 'Colors',
+                options: [
+                    {
+                        text: 'Red',
+                        value: 'red'
+                    },
+                    {
+                        text: 'Green',
+                        value: 'green'
+                    },
+                    {
+                        text: 'Blue',
+                        value: 'blue'
+                    }
+                ]
+            },
+            {
+                text: 'Animals',
+                options: [
+                    {
+                        text: 'Cat',
+                        value: 'cat'
+                    },
+                    {
+                        text: 'Dog',
+                        value: 'dog'
+                    },
+                    {
+                        text: 'Elephant',
+                        value: 'elephant'
+                    }
+                ]
+            }
+        ];
+        this.disabledOptions = [
+            {
+                text: 'Red',
+                value: 'red',
+                disabled: true
+            },
+            {
+                text: 'Green',
+                value: 'green'
+            },
+            {
+                text: 'Blue',
+                value: 'blue'
+            }
+        ];
+        this.disabledGroupedOptions = [
+            {
+                text: 'Colors',
+                options: [
+                    {
+                        text: 'Red',
+                        value: 'red'
+                    },
+                    {
+                        text: 'Green',
+                        value: 'green',
+                        disabled: true
+                    },
+                    {
+                        text: 'Blue',
+                        value: 'blue'
+                    }
+                ]
+            },
+            {
+                text: 'Animals',
+                disabled: true,
+                options: [
+                    {
+                        text: 'Cat',
+                        value: 'cat'
+                    },
+                    {
+                        text: 'Dog',
+                        value: 'dog'
+                    },
+                    {
+                        text: 'Elephant',
+                        value: 'elephant'
+                    }
+                ]
+            }
+        ];
+        this.descriptionAndImageOptions = [
+            {
+                text: 'Red',
+                value: 'red',
+                description: 'Red color description',
+                icon: 'interface-alert-diamond'
+            },
+            {
+                text: 'Green',
+                value: 'green',
+                description: 'Green color description',
+                icon: 'check-mark-success'
+            },
+            {
+                text: 'Blue',
+                value: 'blue',
+                description: 'Blue color description',
+                icon: 'night-clear-sky'
+            }
+        ];
+        this.singleSelectValue = '';
+        this.singleSelectValueValidation = '';
+        this.multipleSelectValue = [];
+        this.searchableValue = '';
+        this.borderlessValue = '';
+        this.groupedSingleValue = '';
+        this.groupedMultipleValue = [];
+        this.disabledSingleValue = '';
+        this.disabledMultipleValue = [];
+        this.disabledGroupedSingleValue = '';
+        this.disabledGroupedMultipleValue = [];
+        this.descriptionAndImageValue = '';
+    }
+    handleRaulChange(e, value) {
+        this[value] = e.detail.value;
+    }
+    render() {
+        return (h("docs-element", { title: "Select" },
+            h("div", { slot: "overview" },
+                h("docs-showcase", null,
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Single Select", placeholder: "Pick a color", options: this.singleSelectionOptions, value: this.singleSelectValue, onRaulChange: e => this.handleRaulChange(e, 'singleSelectValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Single Select with Validation", placeholder: "Pick a color", options: this.singleSelectionOptionsValidation, value: this.singleSelectValueValidation, onRaulChange: e => this.handleRaulChange(e, 'singleSelectValueValidation'), error: "This flied is required." })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Multiple Select", multiple: true, placeholder: "Pick some colors", onRaulChange: e => this.handleRaulChange(e, 'multipleSelectValue'), value: this.multipleSelectValue, options: this.multipleSelectionsOptions })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Searchable", searchable: true, options: this.singleSelectionOptions, value: this.searchableValue, onRaulChange: e => this.handleRaulChange(e, 'searchableValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Disabled", disabled: true, options: this.singleSelectionOptions })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Borderless", borderless: true, options: this.singleSelectionOptions, value: this.borderlessValue, onRaulChange: e => this.handleRaulChange(e, 'borderlessValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Grouped Single", searchable: true, options: this.groupedOptions, value: this.groupedSingleValue, onRaulChange: e => this.handleRaulChange(e, 'groupedSingleValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Grouped Multi", searchable: true, multiple: true, options: this.groupedOptions, value: this.groupedMultipleValue, onRaulChange: e => this.handleRaulChange(e, 'groupedMultipleValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Disabled Single", options: this.disabledOptions, value: this.disabledSingleValue, onRaulChange: e => this.handleRaulChange(e, 'disabledSingleValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Disabled Multi", multiple: true, options: this.disabledOptions, value: this.disabledMultipleValue, onRaulChange: e => this.handleRaulChange(e, 'disabledMultipleValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Disabled Group", options: this.disabledGroupedOptions, value: this.disabledGroupedSingleValue, onRaulChange: e => this.handleRaulChange(e, 'disabledGroupedSingleValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Disabled Multi Group", multiple: true, options: this.disabledGroupedOptions, value: this.disabledGroupedMultipleValue, onRaulChange: e => this.handleRaulChange(e, 'disabledGroupedMultipleValue') })),
+                    h("div", { class: "mb-md" },
+                        h("raul-select", { label: "Description and Image", options: this.descriptionAndImageOptions, value: this.descriptionAndImageValue, onRaulChange: e => this.handleRaulChange(e, 'descriptionAndImageValue') })))),
+            h("div", { slot: "design" }, "Design Guidelines"),
+            h("div", { slot: "api" },
+                h("docs-interface", { component: "raul-select" }))));
+    }
+    static get is() { return "docs-raul-select"; }
+    static get states() { return {
+        "singleSelectValue": {},
+        "singleSelectValueValidation": {},
+        "multipleSelectValue": {},
+        "searchableValue": {},
+        "borderlessValue": {},
+        "groupedSingleValue": {},
+        "groupedMultipleValue": {},
+        "disabledSingleValue": {},
+        "disabledMultipleValue": {},
+        "disabledGroupedSingleValue": {},
+        "disabledGroupedMultipleValue": {},
+        "descriptionAndImageValue": {}
+    }; }
+}

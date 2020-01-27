@@ -1,0 +1,1 @@
+import{r as t,h as r,H as s}from"./p-8c19800d.js";const e=class{constructor(r){t(this,r)}render(){return r(s,{role:"listitem"},r("slot",null))}static get style(){return"raul-list-item{display:block;border-bottom-width:1px;border-color:#ebedee;padding-top:1rem;padding-bottom:1rem;font-size:.875rem}"}};export{e as raul_list_item};

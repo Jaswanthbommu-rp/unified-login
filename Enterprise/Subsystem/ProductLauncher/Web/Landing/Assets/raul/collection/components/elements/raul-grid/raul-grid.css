@@ -1,0 +1,29 @@
+raul-grid {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  font-size: 0.875rem;
+  color: #37474F;
+}
+
+raul-grid raul-grid-header raul-grid-cell {
+  background-color: #F7F8F9;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+raul-grid raul-grid-body raul-grid-row[active] {
+  background-color: #E5F4FF;
+}
+
+raul-grid[small] raul-grid-body raul-grid-cell {
+  font-size: 0.75rem;
+}
+
+raul-grid[striped] raul-grid-body raul-grid-row:nth-child(even) {
+  background-color: #F7F8F9;
+}
+
+raul-grid[hoverable] raul-grid-body raul-grid-row:hover {
+  background-color: #E5F4FF;
+}

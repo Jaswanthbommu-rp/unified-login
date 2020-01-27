@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="170px" height="49px" viewBox="0 0 170 49" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>Group 27</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Dev-Portal" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Portal---Components-Overview" transform="translate(-592.000000, -1150.000000)">
+            <g id="Group-21" transform="translate(542.000000, 1096.000000)">
+                <g id="Master-Components/Card">
+                    <g id="Group-27" transform="translate(50.000000, 54.000000)">
+                        <g id="Group-23">
+                            <rect id="Rectangle-Copy-4" stroke="#C6C8C9" x="0.5" y="0.5" width="76" height="19" rx="2"></rect>
+                            <rect id="Rectangle" fill="#C6CCD0" x="9" y="8" width="60" height="4" rx="2"></rect>
+                        </g>
+                        <g id="Group-23" transform="translate(93.000000, 0.000000)">
+                            <rect id="Rectangle-Copy-4" stroke="#C6C8C9" x="0.5" y="0.5" width="76" height="19" rx="2"></rect>
+                            <rect id="Rectangle" fill="#C6CCD0" x="9" y="8" width="60" height="4" rx="2"></rect>
+                        </g>
+                        <g id="Group-23" transform="translate(0.000000, 29.000000)">
+                            <rect id="Rectangle-Copy-4" stroke="#C6C8C9" x="0.5" y="0.5" width="76" height="19" rx="2"></rect>
+                            <rect id="Rectangle" fill="#C6CCD0" x="9" y="8" width="60" height="4" rx="2"></rect>
+                        </g>
+                        <g id="Group-23" transform="translate(93.000000, 29.000000)">
+                            <rect id="Rectangle-Copy-4" stroke="#C6C8C9" x="0.5" y="0.5" width="76" height="19" rx="2"></rect>
+                            <rect id="Rectangle" fill="#C6CCD0" x="9" y="8" width="60" height="4" rx="2"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

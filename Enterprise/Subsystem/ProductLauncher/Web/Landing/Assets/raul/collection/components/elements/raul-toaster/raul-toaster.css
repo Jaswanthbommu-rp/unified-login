@@ -1,0 +1,17 @@
+raul-toaster {
+  display: block;
+  position: fixed;
+  margin-right: 1rem;
+  right: 0;
+  top: 56px;
+  z-index: 1030;
+}
+
+@media (max-width: 640px) {
+  raul-toaster {
+    right: 0;
+    left: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}

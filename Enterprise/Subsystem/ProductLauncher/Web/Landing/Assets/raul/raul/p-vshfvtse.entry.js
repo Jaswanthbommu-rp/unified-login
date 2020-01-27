@@ -1,0 +1,1 @@
+import{r,h as o}from"./p-8c19800d.js";const s=class{constructor(o){r(this,o)}render(){return o("slot",null)}};export{s as raul_footer_navigation_links};

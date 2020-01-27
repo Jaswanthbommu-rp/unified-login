@@ -1,0 +1,1 @@
+import{r as t,h as r}from"./p-8c19800d.js";const s=class{constructor(r){t(this,r)}render(){return r("slot",null)}static get style(){return"raul-card-subtitle{display:block;font-size:.875rem;line-height:1.25;margin-bottom:.5rem;color:rgba(55,71,79,.8);margin-bottom:0}"}};export{s as raul_card_subtitle};

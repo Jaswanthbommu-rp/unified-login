@@ -1,0 +1,14 @@
+.r-raul-video {
+  display: block;
+}
+
+.r-raul-video video {
+  display: block;
+  width: 100%;
+}
+
+.r-raul-video video::-webkit-media-controls-panel {
+  background-image: linear-gradient(transparent, transparent) !important;
+  -webkit-filter: brightness(0.4);
+  filter: brightness(0.4);
+}

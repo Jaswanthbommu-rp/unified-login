@@ -1,0 +1,22 @@
+raul-card {
+  display: block;
+  background-color: #ffffff;
+  box-shadow: 0 2px 1px 0px rgba(55, 71, 79, 0.08);
+  border-radius: 0.25rem;
+  padding: 1.5rem;
+  position: relative;
+}
+
+raul-card[hoverable] {
+  transition: all .2s ease-in-out;
+}
+
+raul-card[hoverable]:hover {
+  box-shadow: 0 16px 27px 0 rgba(82, 97, 115, 0.22);
+}
+
+@media (min-width: 768px) {
+  raul-card {
+    padding: 2rem;
+  }
+}

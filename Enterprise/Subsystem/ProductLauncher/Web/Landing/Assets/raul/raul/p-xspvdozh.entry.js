@@ -1,0 +1,1 @@
+import{r,h as t}from"./p-8c19800d.js";const o=class{constructor(t){r(this,t)}render(){return t("slot",null)}};export{o as raul_footer_contact};

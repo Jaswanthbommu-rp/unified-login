@@ -1,0 +1,186 @@
+main {
+  padding-top: 3rem;
+}
+
+docs-menu {
+  position: fixed;
+  height: 3rem;
+  display: block;
+  min-width: 100vw;
+  overflow-y: hidden;
+  z-index: 50;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e4e6e7;
+}
+
+docs-menu.open {
+  min-height: 100vh;
+}
+
+docs-menu.open .r-docs-menu {
+  overflow: auto;
+}
+
+.docs-menu-toggle {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  margin: 0;
+  transform: rotate(0deg);
+  transition: 0.5s ease-in-out;
+  cursor: pointer;
+  top: 16px;
+  right: 16px;
+}
+
+.docs-menu-toggle span {
+  background-color: #9BA3A7;
+  display: block;
+  position: absolute;
+  height: 3px;
+  width: 100%;
+  border-radius: 9px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: 0.25s ease-in-out;
+}
+
+.docs-menu-toggle span:nth-child(1) {
+  top: 0;
+}
+
+.docs-menu-toggle span:nth-child(2), .docs-menu-toggle span:nth-child(3) {
+  top: 30%;
+}
+
+.docs-menu-toggle span:nth-child(4) {
+  top: 60%;
+}
+
+.open .docs-menu-toggle span:nth-child(1), .open .docs-menu-toggle span:nth-child(4) {
+  opacity: 0;
+}
+
+.open .docs-menu-toggle span:nth-child(2) {
+  transform: rotate(45deg);
+}
+
+.open .docs-menu-toggle span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+.r-docs-menu {
+  font-size: 0.875rem;
+  width: 100%;
+  overflow: hidden;
+  padding: 16px;
+  padding-top: 72px;
+  padding-right: 24px;
+  list-style-type: none;
+  overflow: auto;
+  height: 100vh;
+}
+
+.r-docs-menu:before {
+  background: white url(https://cdn.realpage.com/images/rp-logo.svg) 15px center no-repeat;
+  background-size: 50%;
+  content: "";
+  position: fixed;
+  width: 199px;
+  height: 47px;
+  z-index: 1;
+  top: 0;
+  left: 0;
+}
+
+@media (min-width: 1024px) {
+  main {
+    padding-top: 0;
+  }
+
+  docs-menu {
+    height: auto;
+    position: relative;
+    border-right: 1px solid #e4e6e7;
+    border-bottom: 0;
+    min-width: 200px;
+  }
+
+  .docs-menu-toggle {
+    display: none;
+  }
+
+  .r-docs-menu {
+    position: fixed;
+    overflow: auto;
+    width: 200px;
+  }
+
+  .r-docs-menu:after {
+    background: transparent;
+    content: "";
+    position: fixed;
+    width: 199px;
+    height: 20px;
+    background: linear-gradient(180deg, white 0%, rgba(255, 255, 255, 0) 100%);
+    z-index: 1;
+    top: 60px;
+    left: 0;
+    pointer-events: none;
+  }
+
+  .r-docs-menu:before {
+    height: 60px;
+    top: 0;
+  }
+}
+
+.r-docs-menu__section__name {
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0;
+  color: #37474F;
+  height: 48px;
+}
+
+.r-docs-menu__section__name .link-active {
+  color: #F06000;
+}
+
+.r-docs-menu__section__name raul-icon {
+  float: right;
+  transition: all 0.3s ease;
+}
+
+.r-docs-menu__section__content {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+}
+
+.r-docs-menu__page {
+  display: block;
+  margin-left: 16px;
+}
+
+.r-docs-menu__page__link {
+  display: block;
+  font-weight: 400;
+  color: #303436;
+  text-decoration: none;
+  height: 48px;
+}
+
+.r-docs-menu__page__link:hover, .r-docs-menu__page__link.link-active {
+  color: #F06000;
+}
+
+.r-docs-menu__page__link.link-active {
+  font-weight: 500;
+}
+
+.r-docs-menu docs-menu-section.open raul-icon {
+  transform: rotate(180deg);
+  transition: all 0.3s ease;
+}

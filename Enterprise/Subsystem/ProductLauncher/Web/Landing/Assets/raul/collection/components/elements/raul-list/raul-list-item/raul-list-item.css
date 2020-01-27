@@ -1,0 +1,8 @@
+raul-list-item {
+  display: block;
+  border-bottom-width: 1px;
+  border-color: #EBEDEE;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.875rem;
+}

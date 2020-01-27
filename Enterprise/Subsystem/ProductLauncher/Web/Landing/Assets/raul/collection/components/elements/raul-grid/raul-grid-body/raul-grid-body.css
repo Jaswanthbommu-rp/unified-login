@@ -1,0 +1,5 @@
+raul-grid-body {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}

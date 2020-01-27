@@ -1,0 +1,23 @@
+raul-status-indicator {
+  display: inline-block;
+}
+
+raul-status-indicator .status-indicator {
+  display: inline-block;
+  border-radius: 9999px;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #EBEDEE;
+}
+
+raul-status-indicator .status-indicator--destructive {
+  background-color: #D01A1F;
+}
+
+raul-status-indicator .status-indicator--success {
+  background-color: #139C3E;
+}
+
+raul-status-indicator .status-indicator--warning {
+  background-color: #FEC12D;
+}

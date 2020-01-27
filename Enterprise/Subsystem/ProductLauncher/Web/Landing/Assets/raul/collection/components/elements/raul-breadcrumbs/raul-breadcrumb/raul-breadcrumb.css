@@ -1,0 +1,31 @@
+raul-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #37474F;
+}
+
+raul-breadcrumb .r-breadcrumb__separator-icon {
+  color: #37474F;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+raul-breadcrumb:last-of-type {
+  font-weight: 600;
+}
+
+raul-breadcrumb:last-of-type .r-breadcrumb__separator-icon {
+  display: none;
+}
+
+raul-breadcrumb a {
+  display: flex;
+  align-items: center;
+  color: #37474F;
+}
+
+raul-breadcrumb a:hover {
+  color: #0076CC;
+  text-decoration: none;
+}

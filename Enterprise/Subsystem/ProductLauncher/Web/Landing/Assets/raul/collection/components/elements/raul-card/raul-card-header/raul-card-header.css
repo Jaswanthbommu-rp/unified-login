@@ -1,0 +1,9 @@
+raul-card-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+raul-card-header .r-card__header__content {
+  flex: 1 1 0%;
+}

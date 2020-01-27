@@ -1,0 +1,36 @@
+raul-status {
+  display: inline-block;
+  max-width: 100%;
+}
+
+raul-status .status {
+  position: relative;
+  display: flex;
+  background-color: #EBEDEE;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #37474F;
+  text-align: left;
+  line-height: 1.25;
+  border-radius: 0.125rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  max-width: 100%;
+}
+
+raul-status .status--destructive {
+  background-color: #FAE8E9;
+  color: #D01A1F;
+}
+
+raul-status .status--success {
+  background-color: #E7F3EB;
+  color: #139C3E;
+}
+
+raul-status .status--warning {
+  background-color: #FEF8EA;
+  color: #BC8701;
+}

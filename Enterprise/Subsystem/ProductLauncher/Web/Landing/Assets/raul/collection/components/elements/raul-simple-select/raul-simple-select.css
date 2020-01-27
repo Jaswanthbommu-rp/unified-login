@@ -1,0 +1,107 @@
+raul-simple-select {
+  display: block;
+}
+
+raul-simple-select .r-form-element__control {
+  position: relative;
+}
+
+raul-simple-select .r-form-element__control select {
+  border-width: 1px;
+  border-color: #C6CCD0;
+  display: block;
+  font-size: 0.875rem;
+  height: 2.5rem;
+  padding-left: 0.75rem;
+  padding-right: 2rem;
+  width: 100%;
+  appearance: none;
+  background-color: var(--raul-input-bg, #ffffff);
+  border-radius: var(--raul-input-border-radius, 0.125rem);
+  color: var(--raul-input-color, #37474F);
+}
+
+raul-simple-select .r-form-element__control select::-webkit-input-placeholder {
+  color: #9BA3A7;
+  opacity: 1;
+}
+
+raul-simple-select .r-form-element__control select::-moz-placeholder {
+  color: #9BA3A7;
+  opacity: 1;
+}
+
+raul-simple-select .r-form-element__control select:-ms-input-placeholder {
+  color: #9BA3A7;
+  opacity: 1;
+}
+
+raul-simple-select .r-form-element__control select::-ms-input-placeholder {
+  color: #9BA3A7;
+  opacity: 1;
+}
+
+raul-simple-select .r-form-element__control select::placeholder {
+  color: #9BA3A7;
+  opacity: 1;
+}
+
+raul-simple-select .r-form-element__control select[disabled] {
+  background-color: #EBEDEE;
+  border-color: #EBEDEE;
+  color: #9BA3A7;
+  cursor: not-allowed;
+}
+
+raul-simple-select .r-form-element__control select:focus {
+  border-color: #0076CC;
+  outline: 0;
+}
+
+raul-simple-select .r-form-element__control select:invalid {
+  border-color: #D01A1F;
+}
+
+raul-simple-select .r-form-element__control select::-ms-expand {
+  display: none;
+}
+
+raul-simple-select .r-form-element__control__arrow {
+  position: absolute;
+  font-size: 1rem;
+  color: #9BA3A7;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+raul-simple-select .r-form-element__label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+raul-simple-select .r-form-element__hint {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+raul-simple-select .r-form-element__error {
+  display: flex;
+  font-size: 0.75rem;
+  align-items: center;
+  color: #D01A1F;
+  margin-top: 0.5rem;
+}
+
+raul-simple-select .r-form-element__error__icon {
+  font-size: 1rem;
+  margin-right: 0.25rem;
+}
+
+raul-simple-select .r-form-element--invalid select {
+  border-color: #D01A1F;
+}

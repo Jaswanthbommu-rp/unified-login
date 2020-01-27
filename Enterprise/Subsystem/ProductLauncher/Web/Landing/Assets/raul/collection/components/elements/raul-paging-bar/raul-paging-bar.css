@@ -1,0 +1,180 @@
+raul-paging-bar {
+  display: block;
+}
+
+raul-paging-bar .r-paging-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  font-size: 0.75rem;
+  border-bottom: 1px solid #EBEDEE;
+}
+
+raul-paging-bar .r-paging-bar__col {
+  max-width: 100%;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-right: 0.75rem;
+  flex: 0 0 100%;
+}
+
+@media (min-width: 768px) {
+  raul-paging-bar .r-paging-bar__col {
+    flex: 0 0 33.3333333333%;
+    max-width: 33.3333333333%;
+  }
+}
+
+raul-paging-bar .r-paging-bar__col--entries {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  raul-paging-bar .r-paging-bar__col--entries {
+    display: block;
+    flex: 0 0 33.3333333333%;
+    max-width: 33.3333333333%;
+  }
+}
+
+raul-paging-bar .r-paging-bar__col--count {
+  display: none;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  raul-paging-bar .r-paging-bar__col--count {
+    display: block;
+    flex: 0 0 33.3333333333%;
+    max-width: 33.3333333333%;
+  }
+}
+
+raul-paging-bar .r-paging-bar__col--nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  raul-paging-bar .r-paging-bar__col--nav {
+    justify-content: flex-end;
+    padding-right: 0;
+    text-align: right;
+    flex: 0 0 33.3333333333%;
+    max-width: 33.3333333333%;
+  }
+}
+
+raul-paging-bar .r-paging-bar__col--nav button {
+  line-height: 1;
+  position: relative;
+  vertical-align: middle;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+raul-paging-bar .r-paging-bar__col--nav button[disabled] {
+  opacity: 0.3;
+}
+
+body[modality=keyboard] raul-paging-bar .r-paging-bar__col--nav button:focus {
+  outline: 0;
+}
+
+body[modality=keyboard] raul-paging-bar .r-paging-bar__col--nav button:focus:before {
+  display: none;
+  position: absolute;
+  border: 1px solid #0076CC;
+  border-radius: 3px;
+  right: 8px;
+  content: "";
+  height: 24px;
+  top: -3px;
+  width: 24px;
+}
+
+raul-paging-bar .r-paging-bar__entry-select {
+  display: inline-block;
+  background-color: transparent;
+  position: relative;
+  vertical-align: baseline;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+raul-paging-bar .r-paging-bar__entry-select .r-select__arrow {
+  position: absolute;
+  color: #0076CC;
+  right: 2px;
+  top: 0.5rem;
+}
+
+raul-paging-bar .r-paging-bar__entry-select select {
+  appearance: none;
+  background-color: transparent;
+  position: relative;
+  border-radius: 0.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.75rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  z-index: 10;
+  border-width: 1px;
+  border-color: transparent;
+  color: #0076CC;
+  width: 42px;
+}
+
+raul-paging-bar .r-paging-bar__entry-select select::-ms-expand {
+  display: none;
+}
+
+body[modality=keyboard] raul-paging-bar .r-paging-bar__entry-select select:focus {
+  outline: 0;
+  border-radius: 0.25rem;
+  border-color: #0076CC;
+  border-radius: 3px;
+}
+
+raul-paging-bar .r-paging-bar select:focus ~ .r-paging-bar__entry-select {
+  border-color: #0076CC;
+}
+
+raul-paging-bar .r-paging-bar__nav {
+  display: inline-block;
+}
+
+raul-paging-bar .r-paging-bar__input {
+  display: inline-block;
+  margin: 0 4px;
+  width: 40px;
+}
+
+raul-paging-bar .r-paging-bar__input input[type=number] {
+  text-align: center;
+  width: 100%;
+  border: 1px solid #C6CCD0;
+  border-radius: 2px;
+  color: #0076CC;
+  padding: 2px 6px;
+  transition: all 0.35s;
+}
+
+raul-paging-bar .r-paging-bar__input input[type=number]:focus {
+  outline: 0;
+  border-color: #0076CC;
+}
+
+raul-paging-bar .r-paging-bar__input input[type=number]::-webkit-inner-spin-button, raul-paging-bar .r-paging-bar__input input[type=number]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}

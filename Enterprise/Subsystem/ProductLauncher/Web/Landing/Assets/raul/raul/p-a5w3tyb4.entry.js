@@ -1,0 +1,1 @@
+import{r,h as t}from"./p-8c19800d.js";const e=class{constructor(t){r(this,t)}render(){return t("slot",null)}static get style(){return"raul-grid-header{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap;width:100%}"}};export{e as raul_grid_header};

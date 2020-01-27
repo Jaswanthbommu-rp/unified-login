@@ -1,0 +1,251 @@
+raul-button {
+  display: inline-block;
+}
+
+raul-button[type=button], raul-button[type=reset], raul-button[type=submit] {
+  appearance: none;
+}
+
+raul-button .r-button {
+  position: relative;
+}
+
+raul-button .r-button__content {
+  position: relative;
+  border-width: 1px;
+  border-color: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  width: 100%;
+  border-radius: 9999px;
+  white-space: nowrap;
+  min-width: 5rem;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+raul-button .r-button__content raul-icon {
+  margin-right: 0.5rem;
+  margin-top: -1px;
+  font-size: 1.25rem;
+}
+
+raul-button .r-button__content--icon-only {
+  padding: 0;
+  min-width: 40px;
+}
+
+raul-button .r-button__content--icon-only raul-icon {
+  margin-right: 0;
+}
+
+raul-button .r-button__element {
+  appearance: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  cursor: pointer;
+  opacity: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+  border-radius: 9999px;
+}
+
+raul-button .r-button__element[disabled], raul-button .r-button__element[aria-disabled] {
+  pointer-events: none;
+}
+
+body[modality=keyboard] raul-button .r-button__element:focus ~ .r-button__content::before {
+  position: absolute;
+  border-width: 1px;
+  border-color: transparent;
+  border-radius: 9999px;
+  content: "";
+  bottom: -4px;
+  left: -4px;
+  right: -4px;
+  top: -4px;
+}
+
+raul-button .r-button__focus-ring {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+  border-radius: 9999px;
+}
+
+raul-button .r-button--small .r-button__content {
+  font-size: 0.75rem;
+  height: 2rem;
+}
+
+raul-button .r-button--small .r-button__content--icon-only {
+  min-width: 2rem;
+}
+
+raul-button .r-button--small .r-button__content raul-icon {
+  font-size: 1rem;
+}
+
+raul-button .r-button--control .r-button__content,
+raul-button .r-button--control .r-button__element,
+raul-button .r-button--control .r-button__focus-ring {
+  border-radius: 0.125rem;
+}
+
+body[modality=keyboard] raul-button .r-button--control .r-button__element:focus ~ .r-button__content::before {
+  border-radius: 0.125rem;
+}
+
+raul-button .r-button--primary .r-button__content {
+  color: #ffffff;
+  background-color: #0076CC;
+  border-color: #0076CC;
+}
+
+raul-button .r-button--primary .r-button__focus-ring {
+  color: #ffffff;
+}
+
+raul-button .r-button--primary .r-button__element:hover ~ .r-button__content {
+  background-color: #0069B7;
+  border-color: #0069B7;
+}
+
+raul-button .r-button--primary .r-button__element[disabled] ~ .r-button__content, raul-button .r-button--primary .r-button__element[aria-disabled] ~ .r-button__content {
+  background-color: #EBEDEE;
+  border-color: #EBEDEE;
+  color: #9BA3A7;
+}
+
+body[modality=keyboard] raul-button .r-button--primary .r-button__element:focus ~ .r-button__content::before {
+  border-color: #0076CC;
+}
+
+raul-button .r-button--secondary .r-button__content {
+  color: #0076CC;
+  background-color: #ffffff;
+  border-color: #0076CC;
+}
+
+raul-button .r-button--secondary .r-button__focus-ring {
+  color: #0076CC;
+}
+
+raul-button .r-button--secondary .r-button__element:hover ~ .r-button__content {
+  border-color: #0069B7;
+  color: #0069B7;
+}
+
+raul-button .r-button--secondary .r-button__element[disabled] ~ .r-button__content, raul-button .r-button--secondary .r-button__element[aria-disabled] ~ .r-button__content {
+  border-color: #C6CCD0;
+  color: #9BA3A7;
+}
+
+body[modality=keyboard] raul-button .r-button--secondary .r-button__element:focus ~ .r-button__content::before {
+  border-color: #0076CC;
+}
+
+raul-button .r-button--danger .r-button__content {
+  color: #ffffff;
+  background-color: #D01A1F;
+  border-color: #D01A1F;
+}
+
+raul-button .r-button--danger .r-button__focus-ring {
+  color: #ffffff;
+}
+
+raul-button .r-button--danger .r-button__element:hover ~ .r-button__content {
+  background-color: #BA171B;
+  border-color: #BA171B;
+}
+
+raul-button .r-button--danger .r-button__element[disabled] ~ .r-button__content, raul-button .r-button--danger .r-button__element[aria-disabled] ~ .r-button__content {
+  background-color: #EBEDEE;
+  border-color: #EBEDEE;
+  color: #9BA3A7;
+}
+
+body[modality=keyboard] raul-button .r-button--danger .r-button__element:focus ~ .r-button__content::before {
+  border-color: #D01A1F;
+}
+
+raul-button .r-button--text .r-button__content {
+  color: #0076CC;
+}
+
+raul-button .r-button--text .r-button__focus-ring {
+  color: #0076CC;
+}
+
+raul-button .r-button--text .r-button__element:hover ~ .r-button__content {
+  background-color: #E5F4FF;
+}
+
+raul-button .r-button--text .r-button__element[disabled] ~ .r-button__content, raul-button .r-button--text .r-button__element[aria-disabled] ~ .r-button__content {
+  color: #9BA3A7;
+}
+
+body[modality=keyboard] raul-button .r-button--text .r-button__element:focus ~ .r-button__content::before {
+  border-color: #0076CC;
+}
+
+raul-button .r-button--reverse .r-button__content {
+  color: #ffffff;
+  background-color: rgba(55, 71, 79, 0.2);
+}
+
+raul-button .r-button--reverse .r-button__focus-ring {
+  color: #ffffff;
+}
+
+raul-button .r-button--reverse .r-button__element:hover ~ .r-button__content {
+  background-color: rgba(55, 71, 79, 0.4);
+}
+
+raul-button .r-button--reverse .r-button__element[disabled] ~ .r-button__content, raul-button .r-button--reverse .r-button__element[aria-disabled] ~ .r-button__content {
+  color: #9BA3A7;
+}
+
+body[modality=keyboard] raul-button .r-button--reverse .r-button__element:focus ~ .r-button__content::before {
+  border-color: #ffffff;
+}
+
+raul-button .r-button--control .r-button__content {
+  color: #202737;
+  background-color: #ffffff;
+  border-color: #C6CCD0;
+}
+
+raul-button .r-button--control .r-button__focus-ring {
+  color: #202737;
+}
+
+raul-button .r-button--control .r-button__element:hover ~ .r-button__content {
+  border-color: #C6CCD0;
+  color: #0076CC;
+}
+
+raul-button .r-button--control .r-button__element[disabled] ~ .r-button__content, raul-button .r-button--control .r-button__element[aria-disabled] ~ .r-button__content {
+  border-color: #C6CCD0;
+  color: #9BA3A7;
+}
+
+body[modality=keyboard] raul-button .r-button--control .r-button__element:focus ~ .r-button__content::before {
+  border-color: #0076CC;
+}

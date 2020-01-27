@@ -1,0 +1,33 @@
+raul-chip {
+  display: inline-block;
+  max-width: 100%;
+}
+
+raul-chip .r-chip {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  background-color: #E5F4FF;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #37474F;
+  text-align: left;
+  line-height: 1.25;
+  border-radius: 0.125rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  max-width: 100%;
+}
+
+raul-chip .r-chip__remove-button {
+  margin-left: 0.5rem;
+  margin-top: 1px;
+  font-size: 0.625rem;
+}
+
+raul-chip .r-chip__remove-icon {
+  margin: -0.25rem;
+  padding: 0.25rem;
+}

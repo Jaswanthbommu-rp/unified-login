@@ -1,0 +1,15 @@
+raul-list-item-action {
+  display: inline-flex;
+}
+
+raul-list-item-action .r-list__item__action {
+  display: inline-flex;
+  font-size: 0.875rem;
+  color: #0076CC;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
+raul-list-item-action .r-list__item__action raul-icon {
+  font-size: 1rem;
+}

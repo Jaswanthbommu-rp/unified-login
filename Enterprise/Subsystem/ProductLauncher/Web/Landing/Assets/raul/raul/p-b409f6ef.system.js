@@ -1,0 +1,1 @@
+System.register([],(function(x){"use strict";return{execute:function(){x({r:n,s:t});function n(){return"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,(function(x){var n=Math.random()*16|0,t=x=="x"?n:n&3|8;return t.toString(16)}))}function t(x){var n=/^[^\r\n]*?(?=\S)/m.exec(x)[0].length,t=new RegExp("^\\s{"+n+"}","gm");return x.split(t).join("\n").trim()}}}}));
