@@ -1239,7 +1239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
-            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int) UserRoleType.UserNoEmail || p.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee));
+            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int) UserRoleType.UserNoEmail));
 
             if (userPersonaOrganizationList.Count > 0)
             {
@@ -1273,22 +1273,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 var ulo = GetUserLoginOnly(loginName);
                 userOrganizationExists.Person = new Person() { RealPageId = ulo.RealPageId };
-
-                if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(up => up.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee))
-                {
-                    userOrganizationExists.UserExistsNotAvailable = true;
-                    return userOrganizationExists;
-                }
-
-                // get the companies current roles and make sure External user type exists
-                ManageRoleType roleTypes = new ManageRoleType();
-                // use the organization id of the person creating the user
-                IList<RoleType> userRoles = _roleTypeRepository.GetRoleType("User Role", _defaultUserClaim.OrganizationPartyId);
-                if (userRoles.All(c => c.PartyRoleTypeId != (int) UserRoleType.ExternalUser))
-                {
-                    userOrganizationExists.UserExistsNotAvailable = true;
-                    return userOrganizationExists;
-                }
 
                 var p = _personRepository.GetPerson(ulo.RealPageId);
                 if (p != null)

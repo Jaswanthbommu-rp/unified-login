@@ -431,9 +431,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new RoleType() {PartyRoleTypeId = 405, Name = "External User", ParentPartyRoleTypeId = 400}
             };
 
+            Person p = new Person() {FirstName = "First", LastName = "Last", PartyId = 1234, RealPageId = _userRealPageId};
+
             //Arrange
-            _mockRepository.Setup(m => m.GetOne(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
-                .Returns(new Person());
+            _mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
+                .Returns(p);
 
             _mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
                 .Returns(roleTypes);
@@ -465,7 +467,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
             Assert.True(
                 userOrganizationExists.UserExists == true
-                && userOrganizationExists.UserExistsNotAvailable == true
+                && userOrganizationExists.UserExistsNotAvailable == false
             );
         }
 

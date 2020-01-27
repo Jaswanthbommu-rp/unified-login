@@ -430,7 +430,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IUserLoginOnly userLoginOnly = manageUserLogin.GetUserLoginOnly(profile.RealPageId);
 
 			IManageRoleType manageRoleType = new ManageRoleType();
-			IList<RoleType> userRoles = manageRoleType.GetRoleTypeDependency(roleTypeId: profile.UserTypeId, partyId: _userClaims.OrganizationPartyId, loginName: userLoginOnly.LoginName);
+			IList<RoleType> userRoles = manageRoleType.GetRoleTypeDependency(roleTypeId: profile.UserTypeId, partyId: _userClaims.OrganizationPartyId, orgMasterId: _userClaims.OrganizationMasterId, loginName: userLoginOnly.LoginName);
             if (userRoles == null)
 			{
 				errorStatus.Success = false;
@@ -722,7 +722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ManageRoleType roleTypes = new ManageRoleType();
 			// use the organization id of the person creating the user
-            IList<RoleType> userRoles = roleTypes.GetRoleType("User Role", base._orgPartyId, loginName: null);
+            IList<RoleType> userRoles = roleTypes.GetRoleType("User Role", _userClaims.OrganizationPartyId, _userClaims.OrganizationMasterId, loginName: null);
             if (userRoles == null)
 			{
 				errorStatus.Success = false;
