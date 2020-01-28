@@ -167,7 +167,7 @@
                             url: "../notifications/platform",                           
                         };
 
-             if ( ( compId !== -1) && (persona.hasnotificationsAccess()  ) ) {
+             if (  (persona.hasnotificationsAccess()  ) ) {
 
                     if (navModel.data !== undefined && (navModel.data.length > 0) ) {
                         
