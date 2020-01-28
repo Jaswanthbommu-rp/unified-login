@@ -1,1 +1,0 @@
-function x(){return"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,(function(x){const n=16*Math.random()|0;return("x"==x?n:3&n|8).toString(16)}))}function n(x){const n=/^[^\r\n]*?(?=\S)/m.exec(x)[0].length,t=new RegExp(`^\\s{${n}}`,"gm");return x.split(t).join("\n").trim()}export{x as r,n as s};

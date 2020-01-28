@@ -1,1 +1,0 @@
-import{r as o,h as s}from"./p-8c19800d.js";import{i as e}from"./p-6e65cf36.js";const r=class{constructor(s){o(this,s)}componentDidLoad(){e("Colors",!1)}render(){return s("docs-element",{title:"Colors"},s("div",{slot:"overview"},"Overview"),s("div",{slot:"design"},"Design Guidelines Stuff"),s("div",{slot:"api"},"API Stuff"))}};export{r as docs_colors};
