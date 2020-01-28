@@ -1,1 +1,0 @@
-import{r,h as s,H as t}from"./p-8c19800d.js";const e=class{constructor(s){r(this,s),this.overflow=!1}render(){return s(t,{role:"list"},s("slot",null))}static get style(){return"raul-breadcrumbs{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}"}};export{e as raul_breadcrumbs};

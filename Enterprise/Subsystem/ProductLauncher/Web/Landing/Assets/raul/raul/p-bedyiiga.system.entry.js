@@ -1,1 +1,0 @@
-System.register(["./p-dbace0dc.system.js"],(function(t){"use strict";var n,e;return{setters:[function(t){n=t.r;e=t.h}],execute:function(){var r=t("raul_footer_navigation_links",function(){function t(t){n(this,t)}t.prototype.render=function(){return e("slot",null)};return t}())}}}));

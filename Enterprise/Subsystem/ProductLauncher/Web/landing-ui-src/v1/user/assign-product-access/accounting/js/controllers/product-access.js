@@ -84,8 +84,8 @@
 
             if (val) {
                 
-                // switchModel.setHasAccessToCurrentFutureProp(val);
-                // vm.allProperties = true;        
+                switchModel.setHasAccessToCurrentFutureProp(val);
+                vm.allProperties = true;        
 
                 switchModel.setHasAccessToSiteSpendMgmtOnly(false);
                 vm.acessSiteSpndMgmtOnly = false;        

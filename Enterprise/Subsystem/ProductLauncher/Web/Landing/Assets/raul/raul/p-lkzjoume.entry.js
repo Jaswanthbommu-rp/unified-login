@@ -1,1 +1,0 @@
-import{r,h as o}from"./p-8c19800d.js";const t=class{constructor(o){r(this,o)}render(){return o("slot",null)}};export{t as raul_footer_copyright};

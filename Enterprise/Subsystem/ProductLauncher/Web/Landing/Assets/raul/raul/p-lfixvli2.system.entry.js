@@ -1,1 +1,0 @@
-System.register(["./p-dbace0dc.system.js"],(function(t){"use strict";var r,e;return{setters:[function(t){r=t.r;e=t.h}],execute:function(){var n=t("raul_footer_copyright",function(){function t(t){r(this,t)}t.prototype.render=function(){return e("slot",null)};return t}())}}}));

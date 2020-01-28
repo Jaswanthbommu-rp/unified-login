@@ -1,1 +1,0 @@
-import{r,h as c}from"./p-8c19800d.js";const t=class{constructor(c){r(this,c)}render(){return c("raul-icon",{icon:"arrow-left-1"})}static get style(){return"raul-breadcrumb-back-icon{display:-ms-inline-flexbox;display:inline-flex;font-size:1.25rem;padding-right:.5rem}"}};export{t as raul_breadcrumb_back_icon};

@@ -1,1 +1,0 @@
-function o(o,n=!0){console.log(o,n)}export{o as i};
