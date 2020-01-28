@@ -1,1 +1,0 @@
-import{r as t,h as s}from"./p-8c19800d.js";const r=class{constructor(s){t(this,s)}render(){return s("slot",null)}static get style(){return"raul-list-item-subtitle{display:block}"}};export{r as raul_list_item_subtitle};

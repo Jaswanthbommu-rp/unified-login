@@ -1,1 +1,0 @@
-import{r as t,h as r}from"./p-8c19800d.js";const s=class{constructor(r){t(this,r)}render(){return r("slot",null)}static get style(){return"raul-list{display:block;background-color:#fff}"}};export{s as raul_list};

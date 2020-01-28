@@ -1,1 +1,0 @@
-import{r,h as t}from"./p-8c19800d.js";const s=class{constructor(t){r(this,t)}render(){return t("slot",null)}static get style(){return"raul-grid-body{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap;width:100%}"}};export{s as raul_grid_body};
