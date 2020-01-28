@@ -1280,6 +1280,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return userOrganizationExists;
                 }
 
+                //Find the Primary Organization
+                UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+                if (userOrganization != null)
+                {
+                    //Get user details (includes the status)
+                    UserLogin userLogin = GetUserLogin(realPageId: ulo.RealPageId, orgPartyId: userOrganization.OrganizationPartyId, userLogin: null, userStatuses: null);
+                    if (userLogin != null)
+                    {
+                        userOrganizationExists.UserIsDisabledInPrimaryCompany = userLogin.StatusId.Equals((int)UserUiStatusType.Disabled);
+                    }
+                }
+
                 // get the companies current roles and make sure External user type exists
                 ManageRoleType roleTypes = new ManageRoleType();
                 // use the organization id of the person creating the user
