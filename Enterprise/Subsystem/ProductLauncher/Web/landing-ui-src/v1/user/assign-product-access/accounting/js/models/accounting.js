@@ -168,8 +168,12 @@
             }
 
             if (s.data.inputJson.isAccountingAdmin) {
-                s.roles = [];
-                s.roles.push("all");
+                // s.roles = [];
+                // s.roles.push("all");
+                
+                // Set the Entities to ALL
+                s.properties = [];
+                s.properties.push("all");
             }
 
             if (s.roles && s.roles.length) {

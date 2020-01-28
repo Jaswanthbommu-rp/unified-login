@@ -14,6 +14,7 @@
             vm.tabsList = navData.getList();
            
             vm.allProperties = false;
+                        
             vm.acessSiteSpndMgmtOnly = false;
             vm.accountingAdmin = false;
             vm.siteSpendManagementAssignedToCompany = switchModel.siteSpendManagementAssignedToCompany;
@@ -86,6 +87,15 @@
                 
                 // switchModel.setHasAccessToCurrentFutureProp(val);
                 // vm.allProperties = true;        
+                
+                // Set companies tab view to true
+                pubsub.publish("Acct.showCompanies", true);
+
+                // Set entities tab view to false
+                pubsub.publish("Acct.showEntities", false);
+
+                // Set Roles tab view to false
+                pubsub.publish("Acct.showRoles", true);
 
                 switchModel.setHasAccessToSiteSpendMgmtOnly(false);
                 vm.acessSiteSpndMgmtOnly = false;        

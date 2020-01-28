@@ -1,6 +1,7 @@
 <div class="accounting-companies-wrapper" ng-controller="ACompaniesGridCtrl as acp">
 	<div class="accounting-companies-wrapper-body" ng-if="!acp.isDataError" >		
-	    <div ng-if="!acp.isAllProperties()">
+	    <div ng-if=" acp.isShowCompanies">
+	    	<!-- !acp.isAllProperties() || -->
 		    <div class="grid-controls">
 		        <div class="grid-control-item">
 		            <rp-toggle model="acp.companiesGrid.filtersModel.state.active" options="{
@@ -18,10 +19,11 @@
 			<rp-grid-pagination ng-if="acp.isActive()" model="gridPagination">
 			</rp-grid-pagination>
 		</div>
-		<div class="accounting-companies-wrapper-error" ng-if="acp.isAllProperties()">
+		<div class="accounting-companies-wrapper-error" ng-if="acp.isAllProperties() || !acp.isShowCompanies">
 		This user will be provided access to all current and future companies.
 		</div>
 	</div>
+	<!-- acp.isAllProperties() || -->
 	<div class="accounting-companies-wrapper-error" ng-if="acp.isDataError">
 		{{::aep.isCompaniesError}}
 	<div>

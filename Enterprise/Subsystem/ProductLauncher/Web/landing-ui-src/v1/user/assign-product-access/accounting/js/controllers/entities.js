@@ -13,6 +13,7 @@
 
         vm.init = function() {
             vm.allProperties = true;
+            vm.isShowEntities = true;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             vm.entitiesGrid = entitiesGrid;
             entitiesGridTransform.watch(entitiesGrid);
@@ -28,6 +29,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allEntWatch = pubsub.subscribe("Acct.allEntChange", vm.clearGridSelections);
+            vm.showEntWatch = pubsub.subscribe("Acct.showEntities", vm.showEntities);
+            
             // vm.cmpChangeWatch = pubsub.subscribe("Acct.compChange", vm.setPropertiesByCompany);
             vm.gridSelectionWatch = vm.entitiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.gridSelectAllWatch = vm.entitiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
@@ -40,6 +43,11 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
+        };
+
+        vm.showEntities = function (val) {
+            vm.isShowEntities = val;
+            logc("isAllProperties", vm.isAllProperties());
         };
 
         vm.clearGridSelections = function() {
@@ -208,6 +216,7 @@
             vm.destWatch();
             vm.allEntWatch();
             vm.gridAllWatch();
+            vm.showEntWatch();
             // vm.cmpChangeWatch();
             vm.gridSelectionWatch();
             vm.gridSelectAllWatch();

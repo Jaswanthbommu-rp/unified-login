@@ -13,6 +13,7 @@
         vm.init = function() {
 
             vm.allProperties = switchModel.allowAccessToCurrentFutureProp;
+            vm.isShowCompanies = true;
             vm.companiesError = $filter("productPanelText")("panelError.generic");
             vm.companiesGrid = companiesGrid;
             companiesGridTransform.watch(companiesGrid);
@@ -28,6 +29,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allCompWatch = pubsub.subscribe("Acct.allCompChange", vm.clearGridSelections);
+            vm.showCompWatch = pubsub.subscribe("Acct.showCompanies", vm.showCompanies);
+            
             vm.setAllCompaniesGrid = pubsub.subscribe("Acct.setAllCompaniesGridValue",vm.setGridSelections);
             vm.gridSelectionWatch = vm.companiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.propChangeWatch = pubsub.subscribe("Acct.propChange", vm.changeCompSelection);
@@ -40,6 +43,10 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
             vm.gridAllWatch = companiesGrid.subscribe("selectAll", vm.selectAllCompanies);
+        };
+
+        vm.showCompanies = function (val) {
+            vm.isShowCompanies = val;
         };
 
         vm.gridRowSelectionChange = function(val) {
@@ -234,6 +241,7 @@
             vm.destWatch();
             vm.allCompWatch();
             vm.gridAllWatch();
+            vm.showCompWatch();
             // vm.gridSelectionWatch();
             // vm.gridSelectAllWatch();
             vm.propChangeWatch();
