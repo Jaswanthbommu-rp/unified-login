@@ -423,8 +423,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-                    aUser.HasAccessToAllCurrentFutureProperties = ComputeFlagBasedOnCompanyAndPropertySelected(editorPersonaId, userPersonaId, datafilter);
+                    aUser.HasAccessToAllCurrentFutureProperties = ComputeFlagBasedOnCompanyAndPropertySelected(editorPersonaId, userPersonaId, datafilter);                    
                 }
+
+                ListResponse propertyList = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
+                aUser.IsMConsolePMC = (propertyList.Records.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
+
                 if (userResp == null) { userResp = new NameValuePair[1]; }
                 
                 response = new ListResponse()
