@@ -49,8 +49,13 @@
             vm.isShowCompanies = val;
         };
 
-        vm.gridRowSelectionChange = function(val) {
-            pubsub.publish("Acct.compChange", val);
+        vm.gridRowSelectionChange = function(val) {            
+            var comps = [];
+            switchModel.getCompanies().forEach(function (comp) {
+                comps.push(comp);
+            });
+            ADataModel.setCompanies(comps);
+            // pubsub.publish("Acct.compChange", val);
         };
 
         vm.isAllProperties = function() {
@@ -109,14 +114,31 @@
                 if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
                     vm.setViewUserState(resp);
                 } else {
-                    if (resp.additional && resp.additional.allProperties) {
-                        vm.allProperties = resp.additional.allProperties;
-                        vm.setAllCompanies(true);
+                    if (resp.additional ) {
+                        // vm.allProperties = resp.additional.allProperties;
+                        // vm.setAllCompanies(true);
                         
                         // if isMConsolePMC is false , hide companies
                         if(!resp.additional.isMConsolePMC){
-                            vm.isShowCompanies = false; 
+                            vm.showCompanies(false); 
+                            logc("vm.isShowCompanies", vm.isShowCompanies);
                         }
+
+                        if(resp.additional.isAccountingAdmin && !resp.additional.hasAccessToAllCurrentFutureProperties){
+                             pubsub.publish("Acct.showEntities", false);
+                        }
+
+                        if(resp.additional.hasAccessToAllCurrentFutureProperties && !resp.additional.isAccountingAdmin){
+                             pubsub.publish("Acct.showEntities", false);
+                             pubsub.publish("Acct.showCompanies", false);
+                        }
+
+                        if(resp.additional.hasAccessToAllCurrentFutureProperties && resp.additional.isAccountingAdmin){
+                             pubsub.publish("Acct.showEntities", false);
+                             pubsub.publish("Acct.showCompanies", false);
+                             pubsub.publish("Acct.showRoles", false);
+                        }
+
                     } else {
                         vm.allProperties = false;
                         ADataModel.setCompanies(resp.records);
