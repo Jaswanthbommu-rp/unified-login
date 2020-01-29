@@ -2240,9 +2240,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             userOrganizationList.ToList().ForEach(o =>
             {
                 //editor persona
-                Guid realPageEmployeeAccessId = _organizationRepository.GetOrganizationAdminUserRealPageId(o.OrganizationRealPageId);
-
-                Persona editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
+                Persona editorPersona = new Persona();
+                //Is the company RealPage Employee?
+                if (o.BooksCustomerMasterId.Equals(-1) && o.BooksMasterId.Equals(-1))
+                {
+                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(loggedInUserRealPageId, o.OrganizationPartyId);
+                }
+                else
+                {
+                    Guid realPageEmployeeAccessId = _organizationRepository.GetOrganizationAdminUserRealPageId(o.OrganizationRealPageId);
+                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
+                }
 
                 //asigned persona
                 Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(profile.RealPageId, o.OrganizationPartyId);
