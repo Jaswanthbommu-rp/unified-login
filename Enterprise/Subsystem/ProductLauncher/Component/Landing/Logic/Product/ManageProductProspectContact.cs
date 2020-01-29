@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -342,7 +343,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(_productUsername)) // NEW USER
 				{
-					productLoginName = GetUniqueProductLoginName(productLoginName);
+					string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
+					productLoginName = GetUniqueProductLoginName(productLoginName, newproductUsername);
 					prospectContactCenterUser.User.LoginName = productLoginName;
 
 					WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
@@ -663,14 +665,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		#region Private Methods
 
-		private string GetUniqueProductLoginName(string productLoginName)
+		private string GetUniqueProductLoginName(string productLoginName, string newproductUsername)
 		{
 			string userName = productLoginName;
 			string domainName = null;
 
 			if (productLoginName.Contains('@'))
 			{
-				userName = productLoginName.Split('@')[0];
+				userName = productLoginName.Split('@')[0];				
 				domainName = "@" + productLoginName.Split('@')[1];
 			}
 
@@ -681,7 +683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (IsUsernameAvailable(productLoginName))
 				{
 					incrementor++;
-					productLoginName = $"{userName}{incrementor}{domainName}";
+					productLoginName = $"{newproductUsername}{incrementor}{domainName}";
 				}
 				else
 				{
@@ -876,9 +878,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			// change exsting user name
 			var newProductLoginName = prospectContactCenterUser.User.LoginName; //IncrementCurrentProductLoginName(prospectContactCenterUser.User.LoginName);
-
+			string newproductUsername = $"{prospectContactCenterUser.User.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{prospectContactCenterUser.User.LastName.TrimWhiteSpace()}".ToLower();
 			// Now check if user name exists in product
-			newProductLoginName = GetUniqueProductLoginName(newProductLoginName);
+			newProductLoginName = GetUniqueProductLoginName(newProductLoginName, newproductUsername);
 
 			prospectContactCenterUser.User.LoginName = newProductLoginName;
 			prospectContactCenterUser.User.SystemIdentifier = null;
