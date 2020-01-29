@@ -83,6 +83,23 @@ AS
 						INNER JOIN Ident.UserLogin UL ON UL.UserId = ULi.UserId
 						INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId AND ULP.OrganizationPartyId = @PartyId
 					WHERE
+						UL.LastLoginDate IS NULL
+						AND UL.IdentityProviderTypeId = @NonIDPTypeID -- NON IDP
+						AND ULI.PStatus = 24 -- current user status is disabled
+						AND UL.PasswordModifiedDate IS NOT NULL
+						AND ( ULP.StatusThruDate > GETUTCDATE() OR  ULP.StatusThruDate IS NULL)
+						AND (ULP.ThruDate > GETUTCDATE() OR ULP.ThruDate IS NULL)
+
+					UPDATE ULP
+				      SET
+				           ULP.StatusTypeId = 1, --Active
+				           ULP.StatusThruDate = null,
+						   ULP.FromDate = @FromDate,
+						   ULP.ThruDate = null
+					 FROM #UserList ULi
+						INNER JOIN Ident.UserLogin UL ON UL.UserId = ULi.UserId
+						INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId AND ULP.OrganizationPartyId = @PartyId
+					WHERE
 						UL.IdentityProviderTypeId <> @NonIDPTypeID -- 3rd party IDP
 						AND ULI.PStatus = 24 -- current user status is disabled
 
