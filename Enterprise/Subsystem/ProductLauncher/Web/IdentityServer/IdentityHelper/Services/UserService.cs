@@ -161,21 +161,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var userPerson = _personManager.GetPerson(user.RealPageId);
             var userPersonaId = _personaManager.GetActivePersonaId(user.RealPageId);
             user.PersonaId = userPersonaId;
-            var userPersona = _personaManager.GetPersona(user.PersonaId);
-            var activePersonaList = _personaManager.ListActivePersona(user.RealPageId, false);
 
             if (!newPersonaIdString.Equals("0") && newPersonaIdString != userPersonaId.ToString())
                 //if (userMatchesNewUserContext && !newPersonaId.Equals("0") && newPersonaId != userPersona.PersonaId.ToString())
             {
+                var activePersonaList = _personaManager.ListActivePersona(user.RealPageId, false);
                 long newPersonaId = Convert.ToInt64(newPersonaIdString);
                 if (activePersonaList.Any(p => p.PersonaId == newPersonaId))
                 {
                     _personaManager.UpdateActivePersona(user.RealPageId, newPersonaId);
                     user.PersonaId = newPersonaId;
-                    userPersona = _personaManager.GetPersona(user.PersonaId);
                 }
             }
-            
+            var userPersona = _personaManager.GetPersona(user.PersonaId);
+
             WriteToLog(LogType.Diagnostic, $"PreAuthenticateAsync: loggedInUserRPID:{loggedInUserRPID} newUser:{newUserRealPageId} impersonatorPersona.Organization.BooksMasterId:{impersonatorPersona.Organization.BooksMasterId} ConfigReader.OrgMasterId:{ConfigReader.OrgMasterId}", new Guid(correlationId));
 
             var claims = GetClaimsForUser(user, userPersona.OrganizationPartyId, context.SignInMessage.ClientId);
