@@ -83,8 +83,9 @@
         svc.updateSettings = function (data) {
             if (personaReady && navListReady)
             {
-                svc.updateSettingsLink();
                 svc.updateNotificationsLink();
+                svc.updateSettingsLink();
+                
                 var leftNav = document.querySelector('omnibar-navigation');
                 leftNav.items = navModel.data;
             }
