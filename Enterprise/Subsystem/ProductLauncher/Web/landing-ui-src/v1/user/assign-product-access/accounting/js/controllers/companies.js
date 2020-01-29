@@ -112,6 +112,10 @@
                     if (resp.additional && resp.additional.allProperties) {
                         vm.allProperties = resp.additional.allProperties;
                         vm.setAllCompanies(true);
+                        
+                        if(resp.additional.isMConsolePMC){
+                            vm.isShowCompanies = false; 
+                        }
                     } else {
                         vm.allProperties = false;
                         ADataModel.setCompanies(resp.records);

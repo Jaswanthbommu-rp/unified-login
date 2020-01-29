@@ -56,15 +56,56 @@
         vm.setAllProperties = function (val) {
              switchModel.setHasAccessToCurrentFutureProp(val);
              ADataModel.clearProperties();
-             pubsub.publish("Acct.allCompChange");                                
+             if(val){
+
+                if(!vm.accountingAdmin){
+                    // Set companies tab view to true
+                    pubsub.publish("Acct.showCompanies", false);
+
+                    // Set entities tab view to false
+                    pubsub.publish("Acct.showEntities", false);
+
+                    // Set Roles tab view to true
+                    pubsub.publish("Acct.showRoles", true);
+                }else{
+                            // when both are true
+                        logc("vm.accountingAdmin", vm.accountingAdmin, "val", val);
+                }
+             
+             }else{
+                if(!vm.accountingAdmin){
+                    // Set companies tab view to true
+                    pubsub.publish("Acct.showCompanies", true);
+
+                    // Set entities tab view to true
+                    pubsub.publish("Acct.showEntities", true);
+
+                    // Set Roles tab view to true
+                    pubsub.publish("Acct.showRoles", true  );
+                }else{
+                     // Set companies tab view to true
+                    pubsub.publish("Acct.showCompanies", true);
+
+                    // Set entities tab view to false
+                    pubsub.publish("Acct.showEntities", false);
+
+                    // Set Roles tab view to true
+                    pubsub.publish("Acct.showRoles", true);
+                        logc("vm.accountingAdmin", vm.accountingAdmin, "val", val);
+                }
+
+             }
+
+             pubsub.publish("Acct.allCompChange");  
+
             if (val) {
                 //clear grid selections company/entities, if theres any
                 pubsub.publish("Acct.allEntChange");
             }
             else {
                 if(switchModel.getIsAccountingAdmin() === true){
-                    switchModel.setIsAccountingAdmin(false);
-                    vm.accountingAdmin = false;
+                    // switchModel.setIsAccountingAdmin(false);
+                    // vm.accountingAdmin = false;
                     ADataModel.clearRoles();
                 }                
             }
@@ -87,15 +128,21 @@
                 
                 // switchModel.setHasAccessToCurrentFutureProp(val);
                 // vm.allProperties = true;        
-                
-                // Set companies tab view to true
-                pubsub.publish("Acct.showCompanies", true);
 
-                // Set entities tab view to false
-                pubsub.publish("Acct.showEntities", false);
+                if(!vm.allProperties){
+                    
+                    // Set companies tab view to true
+                    pubsub.publish("Acct.showCompanies", true);
 
-                // Set Roles tab view to false
-                pubsub.publish("Acct.showRoles", true);
+                    // Set entities tab view to false
+                    pubsub.publish("Acct.showEntities", false);
+
+                    // Set Roles tab view to true
+                    pubsub.publish("Acct.showRoles", true);
+                }else{
+                    // when both are true
+                        logc("vm.allProperties", vm.allProperties, "val", val);
+                }
 
                 switchModel.setHasAccessToSiteSpendMgmtOnly(false);
                 vm.acessSiteSpndMgmtOnly = false;        
@@ -109,6 +156,32 @@
                 pubsub.publish("Acct.allRolesChange");
             }
             else {
+                // Set entities tab view to false
+                 
+
+                 if(!vm.allProperties){
+                    
+                    // Set companies tab view to true
+                    pubsub.publish("Acct.showCompanies", true);
+
+                    // Set entities tab view to true
+                    pubsub.publish("Acct.showEntities", true);
+
+                    // Set Roles tab view to true
+                    pubsub.publish("Acct.showRoles", true);
+                }else{
+                     // Set companies tab view to false
+                    pubsub.publish("Acct.showCompanies", false);
+
+                    // Set entities tab view to false
+                    pubsub.publish("Acct.showEntities", false);
+
+                    // Set Roles tab view to true
+                    pubsub.publish("Acct.showRoles", true);
+
+                        logc("vm.allProperties", vm.allProperties, "val", val);
+                }
+
                  ADataModel.clearRoles();
             }
         };
