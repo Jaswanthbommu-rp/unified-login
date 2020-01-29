@@ -2241,9 +2241,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 //editor persona
                 Persona editorPersona = new Persona();
-                //Is the company RealPage Employee?
-                if (o.BooksCustomerMasterId.Equals(-1) && o.BooksMasterId.Equals(-1))
-                {
+                //Is the company RealPage Employee? OR Persona Company
+                if ((o.BooksCustomerMasterId.Equals(-1) && o.BooksMasterId.Equals(-1)) || (o.OrganizationPartyId.Equals(currentOrgPartyId)))
+                 {
                     editorPersona = managePersona.GetFirstAvailablePersonaByCompany(loggedInUserRealPageId, o.OrganizationPartyId);
                 }
                 else
