@@ -799,7 +799,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                if (!superUser && !isAccountingAdmin && propertiesToAssign[0].ToUpper() != "ALL")
+                //if (!superUser && !isAccountingAdmin && propertiesToAssign[0].ToUpper() != "ALL")
+                if (!superUser && propertiesToAssign[0].ToUpper() != "ALL")
                 {
                     propertyIDAddList = "";
                     List<ACProperty> currentPropertyList =  GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
@@ -884,7 +885,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Array.Resize(ref newUser, newUser.Length + 1);
 			newUser[4] = new NameValuePair { Name = "replace", Value = "" };
 			user = newUser;
-            if (superUser || isAccountingAdmin)
+            //if (superUser || isAccountingAdmin)
+            if (superUser)
             {
                 if (batchProcessType != BatchProcessType.UserTypeRegularToAdmin )
                 {               
@@ -1061,8 +1063,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-
-                if (!superUser && !isAccountingAdmin)
+                //if (!superUser && !isAccountingAdmin)
+                if (!superUser)
                 {
                     // compare the current role list to what was passed to determine what is new and what was removed.
                     foreach (ProductRole role in currentRoleList.Records)
@@ -1415,8 +1417,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     PropertyList = new List<string>();
                 }
 
-                // For SuperUser/IsAccounting Admin users -  Accounting sets the Admin related roles - no need to clear prev roles
-                if ((!isSuperUser && !isAccountingAdmin) && RoleList.Count > 0)
+                // For SuperUser users -  Accounting sets the Admin related roles - no need to clear prev roles
+                if ((!isSuperUser) && RoleList.Count > 0)
                 {
                     string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, batchProcessType);
                     if (!string.IsNullOrEmpty(updateResultRoles))
@@ -1425,6 +1427,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
 
                 }
+
+                // For Accounting Admin users, assign the selected companies. GB-7188
+                if(isAccountingAdmin && CompanyList.Count > 0 && PropertyList[0].ToUpper() == "ALL")
+                {
+                    PropertyList.Clear();
+                    PropertyList = CompanyList;                   
+                }
+
                 // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
                 if ((!isSuperUser && !isUnRestrictedAccessToProp) && PropertyList.Count > 0)
                 {
