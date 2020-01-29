@@ -1684,11 +1684,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// Search by company and product ids and returns userlist
         /// </summary>
-        /// <param name="datafilter"></param>
         /// <param name="companyId"></param>
         /// <param name="products"></param>
         /// <returns>List of Users by product or company</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, string companyId, IList<int?> products)
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products)
         {
             //Ignoring filter and Sort
             IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
@@ -1697,8 +1696,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 CompanyId = companyId,
                 ProductId = products.Count > 0 ? string.Join(",", products) : null,
-                RowsPerPage = datafilter.ResultsPerPage,
-                PageNumber = (datafilter.StartRow <= 0) ? 1 : datafilter.StartRow
+                RowsPerPage = 0,
+                PageNumber = 1
             };
 
             using (var repository = GetRepository())
