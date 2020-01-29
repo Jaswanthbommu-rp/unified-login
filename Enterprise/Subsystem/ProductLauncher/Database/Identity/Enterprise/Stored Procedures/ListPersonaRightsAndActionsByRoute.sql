@@ -147,7 +147,7 @@ BEGIN
 		BEGIN
 			DELETE FROM #HoldRoutes
 			WHERE ObjectValue <> @RouteId AND 
-				  ObjectValue NOT IN( N'SideMenu', N'Dashboard', N'Products', N'People', 'Roles and rights', 'Activity Log', 'Manage Unified Settings', 'View Unified Settings',  'Settings',  'Manage Settings Templates');
+				  ObjectValue NOT IN( N'SideMenu', N'Dashboard', N'Products', N'People', 'Roles and rights', 'Activity Log', 'Manage Unified Settings', 'View Unified Settings',  'Settings',  'Manage Settings Templates', 'Manage Notifications' );
 			 IF EXISTS(SELECT 1 FROM #HoldRoutes WHERE Objectvalue IN  ('Dashboard', 'Settings') AND ObjectType = 'Route')
 			 BEGIN
 				DELETE FROM #HoldRoutes WHERE ObjectType = 'ROute' and ObjectValue IN  ('Dashboard', 'Settings') 
