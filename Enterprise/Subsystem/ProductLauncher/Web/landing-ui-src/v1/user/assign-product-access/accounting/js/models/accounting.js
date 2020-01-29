@@ -159,7 +159,7 @@
             s.data.inputJson.hasAccessToSiteSpendManagementOnly = switchModel.getIsAccessToSiteSpendMgmtOnly();
             s.data.inputJson.hasAccessToAllCurrentFutureProperties = switchModel.getAllProperties();
 
-            if (s.data.inputJson.hasAccessToAllCurrentFutureProperties) {
+            if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && !s.data.inputJson.isAccountingAdmin) {
                 s.properties = [];
                 s.properties.push("all");
 
@@ -167,13 +167,24 @@
                 s.companies.push("all");
             }
 
-            if (s.data.inputJson.isAccountingAdmin) {
+            if (s.data.inputJson.isAccountingAdmin && !s.data.inputJson.hasAccessToAllCurrentFutureProperties) {
                 // s.roles = [];
                 // s.roles.push("all");
                 
                 // Set the Entities to ALL
                 s.properties = [];
                 s.properties.push("all");
+            }
+
+            if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && s.data.inputJson.isAccountingAdmin) {
+                s.properties = [];
+                s.properties.push("all");
+
+                s.companies = [];
+                s.companies.push("all");
+
+                s.roles = [];
+                s.roles.push("all");
             }
 
             if (s.roles && s.roles.length) {
