@@ -113,7 +113,8 @@
                         vm.allProperties = resp.additional.allProperties;
                         vm.setAllCompanies(true);
                         
-                        if(resp.additional.isMConsolePMC){
+                        // if isMConsolePMC is false , hide companies
+                        if(!resp.additional.isMConsolePMC){
                             vm.isShowCompanies = false; 
                         }
                     } else {
