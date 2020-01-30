@@ -84,6 +84,7 @@
             if (personaReady && navListReady)
             {
                 svc.updateSettingsLink();
+                svc.updateNotificationsLink();
                 var leftNav = document.querySelector('omnibar-navigation');
                 leftNav.items = navModel.data;
             }
@@ -134,6 +135,8 @@
                     }
                 }
 
+                
+
                 // Cog for Employee Company ONLY
                 if ( (compId === -1 ) && (persona.hasAccessSettingsAdmin()  ) ) {
 
@@ -150,6 +153,28 @@
                     }
                 }
             }
+        };
+
+        svc.updateNotificationsLink = function () {
+
+            var compName = persona.getCompanyName();
+            var rpId = persona.getPersonaRealPageID();
+            var compId = persona.getBooksMasterId();
+            var notifications = {
+                            title: "Platform Notifications",
+                            pageId: "notifications",
+                            icon: "alarm-timeout",
+                            url: "../notifications/platform",                           
+                        };
+
+             if (  (persona.hasnotificationsAccess()  ) ) {
+
+                    if (navModel.data !== undefined && (navModel.data.length > 0) ) {
+                        
+                        navModel.data.push(notifications);                        
+                        svc.personaWatch();
+                    }
+                }
         };
 
         svc.reset = function () {

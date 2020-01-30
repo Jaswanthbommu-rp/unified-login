@@ -831,7 +831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			WriteActivityLog(fromUserLogDetail, toUserLogDetails,
 			   booksProductDetail.BooksProductCode,
-				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is Deactivated in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
 		}
 
 		/// <summary>

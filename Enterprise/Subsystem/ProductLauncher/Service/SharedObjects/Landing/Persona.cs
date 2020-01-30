@@ -185,6 +185,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 
         public bool hasAccessSettingsAdmin { get; set; }
 
+        /// <summary>
+        /// Persona Has acess Notifications right
+        /// </summary>
+
+        public bool hasnotificationsAccess { get; set; }
+
 
         #region Examples
         /// <summary>

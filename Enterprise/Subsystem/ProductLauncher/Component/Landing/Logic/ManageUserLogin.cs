@@ -1274,6 +1274,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var ulo = GetUserLoginOnly(loginName);
                 userOrganizationExists.Person = new Person() { RealPageId = ulo.RealPageId };
 
+                if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(up => up.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee))
+                {
+                    userOrganizationExists.UserExistsNotAvailable = true;
+                    return userOrganizationExists;
+                }
+
+                //Find the Primary Organization
+                UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+                if (userOrganization != null)
+                {
+                    //Get user details (includes the status)
+                    UserLogin userLogin = GetUserLogin(realPageId: ulo.RealPageId, orgPartyId: userOrganization.OrganizationPartyId, userLogin: null, userStatuses: null);
+                    if (userLogin != null)
+                    {
+                        userOrganizationExists.UserIsDisabledInPrimaryCompany = userLogin.StatusId.Equals((int)UserUiStatusType.Disabled);
+                    }
+                }
+
+                // get the companies current roles and make sure External user type exists
+                ManageRoleType roleTypes = new ManageRoleType();
+                // use the organization id of the person creating the user
+                IList<RoleType> userRoles = _roleTypeRepository.GetRoleType("User Role", _defaultUserClaim.OrganizationPartyId);
+                if (userRoles.All(c => c.PartyRoleTypeId != (int) UserRoleType.ExternalUser))
+                {
+                    userOrganizationExists.UserExistsNotAvailable = true;
+                    return userOrganizationExists;
+                }
+
                 var p = _personRepository.GetPerson(ulo.RealPageId);
                 if (p != null)
                 {

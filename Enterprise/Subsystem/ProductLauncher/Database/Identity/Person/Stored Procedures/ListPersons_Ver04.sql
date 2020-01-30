@@ -268,7 +268,8 @@ BEGIN
 		IdentityProviderTypeId,
 		StatusId,
 		StatusName,
-		StatusThruDate
+		StatusThruDate,
+		PasswordModifiedDate
 	)
 	AS
 	(
@@ -287,7 +288,8 @@ BEGIN
 						WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NOT NULL)) THEN 'Active'
 						ELSE est.Name
 					END AS 'StatusName',
-					iulp.StatusThruDate
+					iulp.StatusThruDate,
+					ul.PasswordModifiedDate
 		FROM	Person.Persona pe
 					INNER JOIN Ident.UserLoginPersona iulp ON (pe.UserLoginPersonaId = iulp.UserLoginPersonaId)
 					INNER JOIN Ident.UserLogin ul ON iulp.UserLoginId = ul.UserId
@@ -329,6 +331,7 @@ BEGIN
 		Properties,
 		UserType,
 		PartyRoleTypeId,
+		PasswordModifiedDate,
 		OffsetMinutes,
 		TotalRecords,
 		RowNumber
@@ -363,6 +366,7 @@ BEGIN
 					0 AS Properties,
 					ISNULL(rt.Name, '') AS UserType,
 					prs.RoleTypeIdFrom AS PartyRoleTypeId,
+					ulp.PasswordModifiedDate,
 					@OffsetMinutes,
 					COUNT(1) OVER () AS TotalRecords,
 					CASE @sortValue
@@ -415,6 +419,7 @@ BEGIN
 				StatusName,
 				StatusThruDate,
 				Is3rdPartyIDP,
+				PasswordModifiedDate,
 				OffsetMinutes,
 				Products,
 				Properties,

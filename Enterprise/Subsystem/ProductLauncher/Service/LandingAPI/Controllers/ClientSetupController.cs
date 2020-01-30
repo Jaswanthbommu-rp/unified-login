@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(csr);
-			return mcs.GetClients();
+			return mcs.GetClientsWithDetails();
 		}
 
 		/// <summary>
@@ -1138,6 +1138,236 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		}
 		#endregion
 
+		#region Claim
+		/// <summary>
+		/// Used to get a list of claims
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of claims", Type = typeof(ULClaim))]
+		[Route("clientsetup/claim")]
+		[HttpGet]
+		public IEnumerable<ULClaim> GetClaims()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClaims();
+		}
+
+		/// <summary>
+		/// Used to get a claim by id
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A client claim", Type = typeof(ULClaim))]
+		[Route("clientsetup/claim/{id}")]
+		[HttpGet]
+		public ULClaim GetClaimById(int id)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClaimById(id);
+		}
+
+		/// <summary>
+		/// Used to create a claim
+		/// </summary>
+		/// <param name="claim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The claim created", Type = typeof(ULClaim))]
+		[Route("clientsetup/claim")]
+		[HttpPost]
+		public ULClaim InsertClaim(ULClaim claim)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.InsertClaim(claim);
+		}
+
+		/// <summary>
+		/// Used to update a claim
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="claim"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The claim updated")]
+		[Route("clientsetup/claim/{id}")]
+		[HttpPut]
+		public HttpResponseMessage UpdateClaim(int id, ClaimUpdate claim)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			claim.claim.ClaimId = id;
+			claim.originalClaim.ClaimId = id;
+			ULClaim claimResult = mcs.UpdateClaim(claim.originalClaim, claim.claim);
+			ObjectOutput<ULClaim, IErrorData> output = new ObjectOutput<ULClaim, IErrorData>() { obj = claimResult };
+
+			if (claimResult == null
+			    || claim.claim.ClaimName != claimResult.ClaimName
+			    || claim.claim.SAMLAttributeName != claimResult.SAMLAttributeName
+				|| claim.claim.ProductId != claimResult.ProductId
+            )
+			{
+				output.Status = new Status<IErrorData>() { ErrorMsg = "Update failed", Success = false };
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
+        /// <summary>
+        /// Used to delete a claim
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "The claim deleted")]
+        [Route("clientsetup/claim/{id}")]
+        [HttpDelete]
+        public HttpResponseMessage DeleteClaim(int id, ULClaim claim)
+        {
+            ClientsSetupRepository csr = new ClientsSetupRepository();
+
+            ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			// verify it is not in use by any clients
+            IEnumerable<ClientClaimMapping> mappingList = mcs.GetClientClaimMapping();
+            if (mappingList.Any(p => p.ClaimId == id))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Claim still in use");
+            }
+
+            claim.ClaimId = id;
+            int result = mcs.DeleteClaim(claim);
+            if (result == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+		#endregion
+
+		#region ClientClaimMapping
+		/// <summary>
+		/// Used to get a list of claim to client mappings
+		/// </summary>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of claim to client mappings", Type = typeof(ClientClaimMapping))]
+		[Route("clientsetup/clientclaimmapping")]
+		[HttpGet]
+		public IEnumerable<ClientClaimMapping> GetClientClaimMapping()
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClientClaimMapping();
+		}
+
+		/// <summary>
+		/// Used to get a list of claims by client id
+		/// </summary>
+		/// <param name="clientId"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "A client claim", Type = typeof(ClientClaimMapping))]
+		[Route("clientsetup/clientclaimmapping/{clientid}")]
+		[HttpGet]
+		public IEnumerable<ClientClaimMapping> GetClientClaimMappingByClientId(int clientId)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+			return mcs.GetClientClaimMappingByClientId(clientId);
+		}
+
+		/// <summary>
+		/// Used to create a client to claim mapping
+		/// </summary>
+		/// <param name="claimMapping"></param>
+		/// <returns></returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "The mapping created", Type = typeof(ClientClaimMapping))]
+		[Route("clientsetup/clientclaimmapping")]
+		[HttpPost]
+		public HttpResponseMessage InsertClientClaimMapping(ClientClaimMapping claimMapping)
+		{
+			ClientsSetupRepository csr = new ClientsSetupRepository();
+
+			ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+			// verify the client and claim exist
+            IEnumerable<Client> clientList = mcs.GetClientsNoDetails();
+
+            if (clientList.All(p => p.ClientId != claimMapping.ClientId))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid client id given");
+            }
+
+            if (mcs.GetClaims().All(p => p.ClaimId != claimMapping.ClaimId))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid claim id given");
+            }
+
+			ClientClaimMapping result = mcs.InsertClientClaimMapping(claimMapping);
+			return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+		
+        /// <summary>
+        /// Used to delete a claim to client mapping
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="claimMapping"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "The claim mapping deleted")]
+        [Route("clientsetup/clientclaimmapping/{id}")]
+        [HttpDelete]
+        public HttpResponseMessage DeleteClientClaimMapping(int id, ClientClaimMapping claimMapping)
+        {
+            ClientsSetupRepository csr = new ClientsSetupRepository();
+
+            ManageClientsSetup mcs = new ManageClientsSetup(csr);
+
+            claimMapping.ClientUserClaimId = id;
+            int result = mcs.DeleteClientClaimMapping(claimMapping);
+            if (result == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "No records deleted");
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+		#endregion
+
 		/// <summary>
 		/// Used to get a list of cors urls
 		/// </summary>
@@ -1167,7 +1397,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ClientsSetupRepository csr = new ClientsSetupRepository();
 
 			ManageClientsSetup mcs = new ManageClientsSetup(csr);
-			IEnumerable<Client> clientList = mcs.GetClients();
+			IEnumerable<Client> clientList = mcs.GetClientsWithDetails();
 			// verify the client id exists
 			if (!clientList.Any(p => p.ClientId == clientId))
 			{
@@ -1287,6 +1517,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			public ScopeClaim scopeClaim { get; set; }
 		}
 
+        public class ClaimUpdate
+        {
+            public ULClaim originalClaim { get; set; }
+            public ULClaim claim { get; set; }
+        }
 		#endregion
 	}
 }
