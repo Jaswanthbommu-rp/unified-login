@@ -45,12 +45,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="roleTypeName">Role Type Name</param>
         /// <param name="partyId">The organization to filter the role type if used</param>
+        /// <param name="orgMasterId">The books master id of the organization if used</param>
         /// <param name="loginName">Optional User loginName</param>
         /// <returns>List of RoleType object</returns>
-        public IList<RoleType> GetRoleType(string roleTypeName, long? partyId, string loginName = null)
+        public IList<RoleType> GetRoleType(string roleTypeName, long? partyId, long? orgMasterId, string loginName = null)
         {
             _roleTypeList = _roleTypeRepository.GetRoleType(roleTypeName, partyId);
-            _roleTypeList = FilterRoleType(_roleTypeList, loginName, partyId);
+            _roleTypeList = FilterRoleType(_roleTypeList, loginName, partyId, orgMasterId);
             return _roleTypeList;
         }
 
@@ -59,12 +60,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="roleTypeId">Role Type Name</param>
         /// <param name="partyId">The organization to filter the role type if used</param>
+        /// <param name="orgMasterId">The books master id of the organization if used</param>
         /// <param name="loginName">Optional User loginName</param>
         /// <returns>List of RoleType object</returns>
-        public IList<RoleType> GetRoleTypeDependency(long? roleTypeId, long? partyId, string loginName = null)
+        public IList<RoleType> GetRoleTypeDependency(long? roleTypeId, long? partyId, long? orgMasterId, string loginName = null)
         {
             _roleTypeList = _roleTypeRepository.GetRoleTypeDependency(roleTypeId, partyId);
-            _roleTypeList = FilterRoleType(_roleTypeList, loginName, partyId);
+            _roleTypeList = FilterRoleType(_roleTypeList, loginName, partyId, orgMasterId);
 
             return _roleTypeList;
         }
@@ -77,14 +79,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="roleTypeList">List of RoleType object</param>
         /// <param name="loginName">User loginname</param>
+        /// <param name="partyId">org party id</param>
+        /// <param name="orgMasterId">The books master id of the organization if used</param>
         /// <returns>List of RoleType object</returns>
-        private IList<RoleType> FilterRoleType(IList<RoleType> roleTypeList, string loginName, long? partyId)
+        private IList<RoleType> FilterRoleType(IList<RoleType> roleTypeList, string loginName, long? partyId, long? orgMasterId)
         {
             if ((roleTypeList != null) && (!string.IsNullOrWhiteSpace(loginName)))
             {
                 IManageUserLogin manageUserLogin = new ManageUserLogin();
                 IList<UserOrganization> userPersonaOrganizationList = manageUserLogin.GetUserPersonaOrganization(loginName);
-				if (userPersonaOrganizationList != null)
+				if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
                 {
 					if (userPersonaOrganizationList.ToList().Any(i => !i.OrganizationPartyId.Equals(partyId) && !i.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)))
 					{
@@ -96,7 +100,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						roleTypeList = roleTypeList.ToList().Where(r => !r.PartyRoleTypeId.Equals((int)UserRoleType.UserNoEmail)).ToList();
 					}
 				}
-			}
+                else
+                {
+                    if (!string.IsNullOrEmpty(loginName) && loginName.Contains("realpage.com") && orgMasterId != -1)
+                    {
+                        roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)).ToList();
+                    }
+                }
+            }
             return roleTypeList;
         }
         #endregion

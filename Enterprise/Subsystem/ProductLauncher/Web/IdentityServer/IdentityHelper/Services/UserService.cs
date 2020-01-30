@@ -118,6 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var impersonatingRealPageId = Encoding.UTF8.GetString(userContext).Split('|')[1];
             var revertUser = context.SignInMessage.AcrValues.FirstOrDefault(x => x.Split(':')[0] == "Impersonated");
             var newPersonaIdString = "0";
+
             if (Encoding.UTF8.GetString(userContext).Split('|').Length == 3)
             {
                 newPersonaIdString = Encoding.UTF8.GetString(userContext).Split('|')[2];
@@ -173,7 +174,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     user.PersonaId = newPersonaId;
                 }
             }
-
             var userPersona = _personaManager.GetPersona(user.PersonaId);
 
             WriteToLog(LogType.Diagnostic, $"PreAuthenticateAsync: loggedInUserRPID:{loggedInUserRPID} newUser:{newUserRealPageId} impersonatorPersona.Organization.BooksMasterId:{impersonatorPersona.Organization.BooksMasterId} ConfigReader.OrgMasterId:{ConfigReader.OrgMasterId}", new Guid(correlationId));
@@ -385,12 +385,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     return; // user provider not configured in database
                 }
 
-                //string denyReason;
-                //if (UserAccessShouldBeDenied(userInfo, out denyReason))
-                //{
-                //    context.AuthenticateResult = new AuthenticateResult(denyReason);
-                //    return;
-                //}
+                var personaList = _personaManager.ListActivePersona(userInfo.RealPageId, false);
+                if (personaList.Any(p => p.Organization.BooksCustomerMasterId == -1)){
+                    long activePersonaId = GetActivePersonaId(userInfo, 0);
+                    
+                    if (personaList.Any(p => p.Organization.BooksCustomerMasterId == -1 && p.PersonaId != activePersonaId))
+                    {
+                        // change the user back to the employee company if they are logging back in later
+                        activePersonaId = personaList.FirstOrDefault(p => p.Organization.BooksCustomerMasterId == -1).PersonaId;    
+                        _personaManager.UpdateActivePersona(userInfo.RealPageId, activePersonaId);
+                    }
+                }
 
                 var claims = GetClaimsForUser(userInfo, 0, context.SignInMessage.ClientId);
                 if (!string.IsNullOrEmpty(externalIdToken))
