@@ -667,15 +667,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private string GetUniqueProductLoginName(string productLoginName, string newproductUsername)
 		{
-			string userName = productLoginName;
-			string domainName = null;
-
-			if (productLoginName.Contains('@'))
-			{
-				userName = productLoginName.Split('@')[0];				
-				domainName = "@" + productLoginName.Split('@')[1];
-			}
-
 			bool foundNewUserName = false;
 			int incrementor = 0;
 			while (!foundNewUserName)
@@ -683,7 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (IsUsernameAvailable(productLoginName))
 				{
 					incrementor++;
-					productLoginName = $"{newproductUsername}{incrementor}{domainName}";
+					productLoginName = $"{newproductUsername}{incrementor}";
 				}
 				else
 				{
