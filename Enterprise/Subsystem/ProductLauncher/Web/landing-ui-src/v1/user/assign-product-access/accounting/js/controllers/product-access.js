@@ -66,7 +66,7 @@
 
         vm.setAllProperties = function (val) {
              switchModel.setHasAccessToCurrentFutureProp(val);
-             ADataModel.clearProperties();
+             // ADataModel.clearProperties();
              if(val){
 
                 if(!vm.accountingAdmin){                    
@@ -85,7 +85,7 @@
 
              }
 
-             pubsub.publish("Acct.allCompChange");  
+             // pubsub.publish("Acct.allCompChange");  
 
             if (val) {
                 //clear grid selections company/entities, if theres any
@@ -95,7 +95,7 @@
                 if(switchModel.getIsAccountingAdmin() === true){
                     // switchModel.setIsAccountingAdmin(false);
                     // vm.accountingAdmin = false;
-                    ADataModel.clearRoles();
+                    // ADataModel.clearRoles();
                 }                
             }
         };
