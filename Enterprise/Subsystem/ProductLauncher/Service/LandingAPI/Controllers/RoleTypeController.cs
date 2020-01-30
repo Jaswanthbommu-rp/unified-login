@@ -14,6 +14,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -77,11 +79,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
                 }
 
-                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: base._orgPartyId, loginName: loginName);
+                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: base._orgPartyId, orgMasterId: base._userClaims.OrganizationMasterId, loginName: loginName);
             }
             else
             {
-                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: roleTypeName, partyId: null, loginName: loginName);
+                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleType(roleTypeName: roleTypeName, partyId: null, orgMasterId: null, loginName: loginName);
             }
             
 			// remove the RealPage employee role from showing for unauthenticated requests

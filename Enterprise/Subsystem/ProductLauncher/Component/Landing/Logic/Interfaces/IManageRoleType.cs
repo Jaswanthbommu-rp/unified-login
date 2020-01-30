@@ -13,17 +13,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="roleTypeName">Role Type Name</param>
         /// <param name="partyId">The organization to filter the role type if used</param>
+        /// <param name="orgMasterId">The books master id of the organization if used</param>
         /// <param name="loginName">Optional User loginName</param>
         /// <returns>List of RoleType object</returns>
-        IList<RoleType> GetRoleType(string roleTypeName, long? partyId, string loginName = null);
+        IList<RoleType> GetRoleType(string roleTypeName, long? partyId, long? orgMasterId, string loginName = null);
 
         /// <summary>
         /// Get RoleType Dependency
         /// </summary>
         /// <param name="roleTypeId">Role Type Name</param>
         /// <param name="partyId">The organization to filter the role type if used</param>
+        /// <param name="orgMasterId">The books master id of the organization if used</param>
         /// <param name="loginName">Optional User LoginName</param>
         /// <returns>List of RoleType object</returns>
-        IList<RoleType> GetRoleTypeDependency(long? roleTypeId, long? partyId, string loginName = null);
+        IList<RoleType> GetRoleTypeDependency(long? roleTypeId, long? partyId, long? orgMasterId, string loginName = null);
     }
 }
