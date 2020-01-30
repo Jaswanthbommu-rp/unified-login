@@ -13,5 +13,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Enterprise User Id
 		/// </summary>
         public UserLoginOnly UserLogin { get; set; }
+
+        public OrganizationStatus PrimaryOrganizationStatus { get; set; }
     }
 }

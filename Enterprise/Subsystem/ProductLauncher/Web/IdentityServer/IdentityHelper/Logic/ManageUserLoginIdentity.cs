@@ -228,7 +228,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
                 authenticateUserResponse.IsError = false;
                 authenticateUserResponse.ErrorReason = string.Empty;
                 authenticateUserResponse.UserLogin = user;
-
+                authenticateUserResponse.PrimaryOrganizationStatus = primaryOrgStatus;
                 return authenticateUserResponse;
             }
 
