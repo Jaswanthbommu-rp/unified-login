@@ -1274,12 +1274,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var ulo = GetUserLoginOnly(loginName);
                 userOrganizationExists.Person = new Person() { RealPageId = ulo.RealPageId };
 
-                if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(up => up.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee))
-                {
-                    userOrganizationExists.UserExistsNotAvailable = true;
-                    return userOrganizationExists;
-                }
-
                 //Find the Primary Organization
                 UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
                 if (userOrganization != null)
