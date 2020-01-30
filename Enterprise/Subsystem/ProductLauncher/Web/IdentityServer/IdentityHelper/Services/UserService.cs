@@ -566,18 +566,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 
             var persona = _personaManager.GetPersona(activePersonaId);
 
-            //if (!changedUserContext)
-            //{
-            //    var personaList = _personaManager.ListActivePersona(userInfo.RealPageId, false);
-            //    if (personaList.Any(p => p.Organization.BooksCustomerMasterId == -1) && persona.Organization.BooksCustomerMasterId != -1)
-            //    {
-            //        // change the user back to the employee company if they are logging back in later
-            //        activePersonaId = personaList.FirstOrDefault(p => p.Organization.BooksCustomerMasterId == -1).PersonaId;
-            //        _personaManager.UpdateActivePersona(userInfo.RealPageId, activePersonaId);
-            //        persona = _personaManager.GetPersona(activePersonaId);
-            //    }
-            //}
-
             claims.AddRange(GetOrganizationClaims(persona.Organization));
             claims.AddRange(GetUserClaims(person, userInfo, persona));
 
