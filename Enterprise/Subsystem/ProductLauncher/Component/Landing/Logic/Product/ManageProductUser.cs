@@ -2808,7 +2808,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>String.empty if success else error</returns>
 		public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
 		{
-			throw new NotImplementedException();
+			base.UserClaim.UserRealPageGuid = createUserRealPageId;
+			var productAo = new ManageProductAssetOptimization(base.UserClaim);
+
+			return productAo.UpdateUserProfile(createUserPersonaId, assignUserPersonaId);
 		}
 
 		/// <summary>

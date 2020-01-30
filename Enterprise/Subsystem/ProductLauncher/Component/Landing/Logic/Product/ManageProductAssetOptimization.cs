@@ -501,7 +501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					Login = productUserGbLogin.LoginName.ToLower(),
 					OldUserId = string.Empty,
-					UserId = string.Empty,
+					UserId = productUserGbLogin.LoginName.ToLower(),
 
 					FirstName = person.FirstName,
 					LastName = person.LastName,
@@ -591,7 +591,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 									Email = userEmailAddress.ToLower(),
 									Login = biLoginName.ToLower(),
 									OldUserId = string.Empty,
-									UserId = string.Empty,
+									UserId = biLoginName.ToLower(),
 									FirstName = person.FirstName,
 									LastName = person.LastName,
 								};
@@ -719,6 +719,60 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					$"with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.", exception: ex);
 
 				return ex.Message;
+			}
+		}
+
+		/// <summary>
+		/// Update User Profile
+		/// </summary>
+		public string UpdateUserProfile(long editorPersonaId, long userPersonaId)
+		{
+			string result = string.Empty;
+			WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateUserProfile - Begin Update User Profile for user with editorPersona id - {editorPersonaId}.");
+			try
+			{
+				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (listResponse.IsError)
+				{
+					WriteToErrorLog($"ManageProductAssetOptimization.UpdateUserProfile Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+					return listResponse.ErrorReason;
+				}
+
+				var persona = _managePersona.GetPersona(userPersonaId);
+				var realPageId = persona.RealPageId;
+				var person = _managePerson.GetPerson(realPageId);
+				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+				
+				var aoUser = new AOUser
+				{
+					IsInternalUser = false, // Initial release is w/o internal user
+					IsEnabled = true,
+					IsSuperUser = false,
+					Email = _productUsername.ToLower(),
+
+					Login = _productUsername.ToLower(),
+					OldUserId = _productUserId.ToLower(),
+					UserId = _productUserId.ToLower(),
+
+					FirstName = person.FirstName,
+					LastName = person.LastName,
+				};
+
+				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, _productUsername);
+				// get existing AP details
+				aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
+				aoUser.Divisions = new List<Divisions>();
+				aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
+
+				var updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);				
+
+				return updateResult;
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"ManageProductAssetOptimization.UpdateUserProfile - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+				return $"Error - {ex.Message}";
 			}
 		}
 
