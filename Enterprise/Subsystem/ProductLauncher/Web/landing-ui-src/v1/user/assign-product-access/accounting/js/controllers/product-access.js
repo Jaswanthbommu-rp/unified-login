@@ -89,7 +89,7 @@
 
             if (val) {
                 //clear grid selections company/entities, if theres any
-                pubsub.publish("Acct.allEntChange");
+                // pubsub.publish("Acct.allEntChange");
             }
             else {
                 if(switchModel.getIsAccountingAdmin() === true){
