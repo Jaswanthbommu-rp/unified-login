@@ -15,6 +15,7 @@
             var s = this;
             s.changed = false;
             s.active = false;
+            s.newPropertyState = false;
             s.data = {
                 productId: 9, //TODO: Enum api for products instead of hard coded
                 statusTypeId: 5,
@@ -46,6 +47,11 @@
             s.active = bool;
             return s;
         };
+        p.setNewPropertyState = function (bool) {
+            var s = this;
+            s.newPropertyState = bool;
+            return s;
+        };
 
         p.isActive = function () {
             var s = this;
@@ -62,9 +68,9 @@
             s.roles = rolesData;
         };
 
-        p.setAllProperties = function(propertiesData, val) {
+        p.setAllProperties = function (propertiesData, val) {
             var s = this;
-            propertiesData.forEach(function(item){
+            propertiesData.forEach(function (item) {
                 item["isAssigned"] = val;
             });
             //s.properties = propertiesData;
@@ -75,6 +81,8 @@
                 hasRoles = false,
                 hasProperties = false;
 
+            //assign new property toggle value in productbatch
+            s.data.isAssignedNewProperty = s.newPropertyState;
             if (s.roles && s.roles.length) {
                 s.data.inputJson.roleList = [];
 

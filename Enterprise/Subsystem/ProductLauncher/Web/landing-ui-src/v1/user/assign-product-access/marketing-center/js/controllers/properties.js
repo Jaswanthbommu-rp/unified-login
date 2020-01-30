@@ -15,7 +15,6 @@
             vm.propertiesGrid = propertiesGrid;
             vm.propertiesError = $filter("productPanelText")("panelError.generic");
             vm.allProperties = false;
-
             propertiesGridTransform.watch(propertiesGrid);
             propertiesGrid.setConfig(gridConfig);
             gridPagination.setGrid(propertiesGrid);
@@ -49,7 +48,8 @@
         vm.loadData = function () {
             if (persona.isReady() && MCDataModel.isActive()) {
                 vm.allPropSwitch = switchConfig({
-                    onChange: vm.setAllProperties,
+                    // onChange: vm.setAllProperties,
+                    onChange: vm.setNewPropertyState,
                     disabled: security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()
                 });
                 propertiesGrid.busy(true);
@@ -79,7 +79,6 @@
                 gridPagination.setData(resp.records).goToPage({
                     number: 0
                 });
-
                 if (resp.additional && resp.additional.allProperties) {
                     vm.allProperties = resp.additional.allProperties;
                     vm.setAllProperties(true);
@@ -116,6 +115,15 @@
             }
             else {
                 MCDataModel.setProperties(vm.dataReq.records);
+            }
+        };
+        vm.setNewPropertyState = function (val) {
+            if (val) {
+                var allPropertiesArray = [];
+                MCDataModel.setNewPropertyState(val);
+            }
+            else {
+                MCDataModel.setNewPropertyState(false);
             }
         };
 

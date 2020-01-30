@@ -3,12 +3,12 @@
         <div class="all-properties">
             <rp-switch  class="inline label-1"
                 config="mcp.allPropSwitch"
-                rp-model="mcp.allProperties"
-                rp-label-text="'Allow access to all current and future properties'">
+                rp-model="mcp.isAssignedNewProperty"
+                rp-label-text="'Assign new property by default'">
             </rp-switch>
         </div>
         <div class="marketing-center-properties-body">
-            <div class="marketing-center-properties-grid" ng-if="!mcp.allProperties">
+            <div class="marketing-center-properties-grid">
                 <div class="grid-controls">
                     <div class="grid-control-item">
                         <rp-toggle model="mcp.propertiesGrid.filtersModel.state.active" options="{
