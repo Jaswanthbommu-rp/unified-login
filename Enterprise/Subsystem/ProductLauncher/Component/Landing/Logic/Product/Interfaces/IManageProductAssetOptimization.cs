@@ -13,5 +13,14 @@
         /// <param name="isActive"></param>
         /// <returns></returns>
         bool ChangeUserStatus(long editorPersonaId, string userName, string firstName, string lastName, bool isActive = false);
-    }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		
+		/// <returns></returns>
+		string UpdateUserProfile(long editorPersonaId, long userPersonaId);
+
+	}
 }
