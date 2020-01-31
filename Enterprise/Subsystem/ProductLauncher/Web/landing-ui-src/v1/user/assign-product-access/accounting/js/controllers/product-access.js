@@ -86,19 +86,19 @@
              // ADataModel.clearProperties();
              if(val){
 
-                if(!vm.accountingAdmin){                    
-                    vm.setCompEntRoles(false, false, true);
-                }else{
+                // if(!vm.accountingAdmin){                    
+                //     vm.setCompEntRoles(false, false, true);
+                // }else{
                         // when both toggles are true                        
                     vm.setCompEntRoles(false, false, true);
-                }
+                // }
              
              }else{
-                if(!vm.accountingAdmin){                    
-                    vm.setCompEntRoles(true, true, true);
-                }else{                   
-                    vm.setCompEntRoles(true, false, true);                        
-                }
+                // if(!vm.accountingAdmin){                    
+                //     vm.setCompEntRoles(true, true, true);
+                // }else{                   
+                    vm.setCompEntRoles(true, true, true);                        
+                // }
 
              }
 

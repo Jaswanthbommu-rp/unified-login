@@ -137,7 +137,7 @@
                         if(resp.additional.hasAccessToAllCurrentFutureProperties && resp.additional.isAccountingAdmin){
                              pubsub.publish("Acct.showEntities", false);
                              pubsub.publish("Acct.showCompanies", false);
-                             pubsub.publish("Acct.showRoles", false);
+                             pubsub.publish("Acct.showRoles", true);
                         }
 
                     } else {
