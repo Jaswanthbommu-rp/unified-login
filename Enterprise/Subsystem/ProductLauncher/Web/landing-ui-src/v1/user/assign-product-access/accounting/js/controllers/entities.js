@@ -31,7 +31,7 @@
             // vm.cmpChangeWatch = pubsub.subscribe("Acct.compChange", vm.setPropertiesByCompany);
             vm.gridSelectionWatch = vm.entitiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.gridSelectAllWatch = vm.entitiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
-            vm.gridAllWatch = entitiesGrid.subscribe("selectAll", vm.selectAllEntities);
+            //vm.gridAllWatch = entitiesGrid.subscribe("selectAll", vm.selectAllEntities);
             vm.filterData = vm.entitiesGrid.subscribe("filterBy", vm.filter.bind(vm));
 
             if (persona.isReady()) {
@@ -156,14 +156,15 @@
         };
 
         vm.gridSelectAllChange = function(val) {
-
+            vm.selectAllEntities(val);
             if (ADataModel.getCompanies() != undefined) {
                 var checkAllCompanies = 0;
                 
                 ADataModel.getCompanies().forEach(function(comp) {
 
                     var propertiesByComp = $filter("filter")(ADataModel.getProperties(), {
-                        companyId: comp.id
+                        companyId: comp.id,
+                        isAssigned: val
                     }, true);
 
                     if (propertiesByComp.length > 0) {
