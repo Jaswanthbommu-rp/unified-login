@@ -26,7 +26,7 @@
                     companiesList: [],
                     hasAccessToSiteSpendManagementOnly: false,
                     hasAccessToAllCurrentFutureProperties: false,
-                    isAccountingAdmin: false
+                    isAccountingAdmin: false                    
                 }
             };
 
@@ -62,6 +62,13 @@
         p.setAccessToSiteSpendMgmtOnly = function(bool) {
             var s = this;
             s.hasAccessToSiteSpendManagementOnly = bool;
+            return s;
+        };
+
+        p.setMConsole = function(bool) {
+            var s = this;
+            s.isMConsole = bool;
+            console.log("s.isMConsole", s.isMConsole);
             return s;
         };
 
@@ -158,6 +165,7 @@
             s.data.inputJson.isAccountingAdmin = switchModel.getIsAccountingAdmin();
             s.data.inputJson.hasAccessToSiteSpendManagementOnly = switchModel.getIsAccessToSiteSpendMgmtOnly();
             s.data.inputJson.hasAccessToAllCurrentFutureProperties = switchModel.getAllProperties();
+
 
             if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && !s.data.inputJson.isAccountingAdmin) {
                 s.properties = [];
@@ -281,8 +289,8 @@
 
 
             var isCompSelwithProperties = true; // if prop is selected but comp is NOT selected then set to false
-
-              s.companies.forEach(function(comp) {
+            if(!s.data.inputJson.isMConsole){  
+                s.companies.forEach(function(comp) {
 
                     if (comp.isAssigned === false) {
 
@@ -298,10 +306,17 @@
 
                     }
                 });
-
-            if (hasCompanies && hasRoles && hasProperties && isCompSelwithProperties) { // No need to check hasCompanies - not mandatory
-                return s.data;
             }
+
+            if(!s.isMConsole){  
+                if ( hasRoles && hasProperties) { 
+                    return s.data;
+                }
+            }else{
+                if (hasCompanies && hasRoles && hasProperties && isCompSelwithProperties) { // No need to check hasCompanies - not mandatory
+                    return s.data;
+                }
+             }
 
             return null;
         };

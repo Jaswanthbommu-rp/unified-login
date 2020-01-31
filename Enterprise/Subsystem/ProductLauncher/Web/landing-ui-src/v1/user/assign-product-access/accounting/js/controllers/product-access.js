@@ -3,15 +3,23 @@
 (function (angular, undefined) {
     "use strict";
 
-    function AccountingProductAccessCtlr($scope, $filter, tabsMenuModel, navData, ADataModel, persona, switchConfig, security, switchModel, pubsub) {
+    function AccountingProductAccessCtlr($scope, $filter, 
+        // tabsMenuModel, navData, 
+        ADataModel, persona, switchConfig, security, switchModel, pubsub, tabsModel) {
         var vm = this;
 
         vm.init = function () {
             switchModel.refresh();
-            vm.tabsList = [];
+            // vm.tabsList = [];
             vm.panelName = $filter("productPanelText")("panelName.accounting");
-            vm.tabsMenu = tabsMenuModel().setData(navData.getList());
-            vm.tabsList = navData.getList();
+            // vm.tabsMenu = tabsMenuModel().setData(navData.getList());
+            // vm.tabsList = navData.getList();
+
+            var tabs = ["companies", "entities", "roles"];
+            tabsModel.setTabs(tabs);
+            tabsModel.activateTab("companies");
+            vm.tabsList = tabsModel.getTabsList();
+            vm.tabsMenu = tabsModel.getTabsMenu();
            
             vm.allProperties = false;
                         
@@ -22,7 +30,9 @@
             vm.allPropertiesSwitchWatch = pubsub.subscribe("Acct.allPropertiesSwitchWatch", vm.allPropertiesSwitchWatch);
             vm.acessSiteSpndMgmtOnlySwitchWatch = pubsub.subscribe("Acct.acessSiteSpndMgmtOnlySwitchWatch", vm.acessSiteSpndMgmtOnlySwitchWatch);
             vm.accountingAdminSwitchWatch = pubsub.subscribe("Acct.accountingAdminSwitchWatch", vm.accountingAdminSwitchWatch);
+            vm.showHideTabsAdminSwitchWatch = pubsub.subscribe("Acct.showTabs", vm.showHideTabs);
             
+
             vm.personaWatch = angular.noop;
 
             if (persona.isReady()) {
@@ -33,6 +43,13 @@
             }            
             
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
+        };
+
+        vm.showHideTabs = function (tabs) {
+            tabsModel.setTabs(tabs);
+            tabsModel.activateTab("entities");
+            vm.tabsList = tabsModel.getTabsList();
+            vm.tabsMenu = tabsModel.getTabsMenu();
         };
 
         vm.loadToggles = function () {
@@ -119,7 +136,7 @@
                 // vm.allProperties = true;        
 
                 if(!vm.allProperties){                                        
-                    vm.setCompEntRoles(true, false, true);
+                    vm.setCompEntRoles(true, true, true);
                 }else{
                     // when both toggles are true                        
                     vm.setCompEntRoles(false, false, false);
@@ -171,9 +188,9 @@
         };
         
 
-        vm.getActiveUrl = function () {
-            return navData.getActiveUrl();
-        };
+        // vm.getActiveUrl = function () {
+        //     return navData.getActiveUrl();
+        // };
 
         vm.isActive = function () {
             return ADataModel.isActive();
@@ -189,7 +206,8 @@
             vm.allPropertiesSwitchWatch();
             vm.acessSiteSpndMgmtOnlySwitchWatch();
             vm.accountingAdminSwitchWatch();
-            navData.reset();
+            vm.showHideTabsAdminSwitchWatch();
+            // navData.reset();
             vm = undefined;
             $scope = undefined;
         };
@@ -202,14 +220,15 @@
         .controller("AccountingProductAccessCtlr", [
             "$scope",
             "$filter",
-            "rpScrollingTabsMenuModel",
-            "ANavModel",
+            // "rpScrollingTabsMenuModel",
+            // "ANavModel",
             "AccountingDataModel",
             "personaDetails",
             "rpSwitchConfig",
             "routeSecurity",
             "ASwitchModel",
             "pubsub",
+            "AcctTabsModel",
             AccountingProductAccessCtlr
         ]);
 })(angular);

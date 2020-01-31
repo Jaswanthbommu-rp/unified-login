@@ -118,10 +118,11 @@
                         // vm.allProperties = resp.additional.allProperties;
                         // vm.setAllCompanies(true);
                         
+                        ADataModel.setMConsole(resp.additional.isMConsolePMC) ;
                         // if isMConsolePMC is false , hide companies
                         if(!resp.additional.isMConsolePMC){
-                            vm.showCompanies(false); 
-                            logc("vm.isShowCompanies", vm.isShowCompanies);
+                             var activeTabs = ["entities","roles"];
+                             pubsub.publish("Acct.showTabs", activeTabs);
                         }
 
                         if(resp.additional.isAccountingAdmin && !resp.additional.hasAccessToAllCurrentFutureProperties){
@@ -284,7 +285,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
-            vm.filteredRecords = undefined;
+            // vm.filteredRecords = undefined;
         };
 
         vm.init();
