@@ -126,7 +126,7 @@
                         }
 
                         if(resp.additional.isAccountingAdmin && !resp.additional.hasAccessToAllCurrentFutureProperties){
-                             pubsub.publish("Acct.showEntities", false);
+                             pubsub.publish("Acct.showEntities", true);
                         }
 
                         if(resp.additional.hasAccessToAllCurrentFutureProperties && !resp.additional.isAccountingAdmin){
