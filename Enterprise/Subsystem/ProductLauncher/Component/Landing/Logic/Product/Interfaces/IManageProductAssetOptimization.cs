@@ -18,6 +18,7 @@
 		/// </summary>
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
+		
 		/// <returns></returns>
 		string UpdateUserProfile(long editorPersonaId, long userPersonaId);
 
