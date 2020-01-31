@@ -90,7 +90,7 @@
                     vm.setCompEntRoles(false, false, true);
                 }else{
                         // when both toggles are true                        
-                    vm.setCompEntRoles(false, false, false);
+                    vm.setCompEntRoles(false, false, true);
                 }
              
              }else{
@@ -139,7 +139,7 @@
                     vm.setCompEntRoles(true, true, true);
                 }else{
                     // when both toggles are true                        
-                    vm.setCompEntRoles(false, false, false);
+                    vm.setCompEntRoles(false, false, true);
                 }
 
                 switchModel.setHasAccessToSiteSpendMgmtOnly(false);
