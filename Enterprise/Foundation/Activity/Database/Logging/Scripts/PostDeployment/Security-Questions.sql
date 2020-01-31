@@ -34,7 +34,7 @@ IF NOT EXISTS
 	SELECT 1
 	FROM [Logging].[LogType]
 	WHERE LogCategoryTypeId = @LogCategoryTypeId AND 
-		  Name = 'Change security questions failurer'
+		  Name = 'Change security questions failure'
 )
 BEGIN
 	INSERT INTO [Logging].[LogType]( LogCategoryTypeId, Name )
