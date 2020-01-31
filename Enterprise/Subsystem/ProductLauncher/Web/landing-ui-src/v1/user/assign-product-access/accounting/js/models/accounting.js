@@ -166,6 +166,9 @@
             s.data.inputJson.hasAccessToSiteSpendManagementOnly = switchModel.getIsAccessToSiteSpendMgmtOnly();
             s.data.inputJson.hasAccessToAllCurrentFutureProperties = switchModel.getAllProperties();
 
+             // if(!s.isMConsole){  
+             //    s.companies = [];
+             // }
 
             if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && !s.data.inputJson.isAccountingAdmin) {
                 s.properties = [];

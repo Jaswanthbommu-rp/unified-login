@@ -87,10 +87,10 @@
              if(val){
 
                 if(!vm.accountingAdmin){                    
-                     vm.setCompEntRoles(false, false, true);
+                    vm.setCompEntRoles(false, false, true);
                 }else{
                         // when both toggles are true                        
-                        vm.setCompEntRoles(false, false, false);
+                    vm.setCompEntRoles(false, false, false);
                 }
              
              }else{
@@ -145,13 +145,13 @@
                 switchModel.setHasAccessToSiteSpendMgmtOnly(false);
                 vm.acessSiteSpndMgmtOnly = false;        
 
-                ADataModel.clearRoles();
-                ADataModel.clearProperties();  
+                // ADataModel.clearRoles();
+                // ADataModel.clearProperties();  
 
                 //clear grid selections company/entities, if theres any
-                pubsub.publish("Acct.allCompEntChange");
+                // pubsub.publish("Acct.allCompEntChange");
                 //clear grid selections Roles, if theres any
-                pubsub.publish("Acct.allRolesChange");
+                // pubsub.publish("Acct.allRolesChange");
             }
             else {
                 // Set entities tab view to false                 
@@ -162,7 +162,7 @@
                     vm.setCompEntRoles(false, false, true);
                 }
 
-                 ADataModel.clearRoles();
+                 // ADataModel.clearRoles();
             }
         };
 
