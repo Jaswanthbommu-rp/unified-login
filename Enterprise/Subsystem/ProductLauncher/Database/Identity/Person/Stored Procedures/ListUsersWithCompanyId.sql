@@ -159,7 +159,7 @@ AS
                             INNER JOIN Person.Person AS pp ON ul.PersonPartyId = pp.partyid
                             INNER JOIN Enterprise.Party pa ON pa.partyid = pp.PartyId
                             INNER JOIN Enterprise.PersonaPrivilege ppv ON p.PersonaId = ppv.PersonaId
-                            INNER JOIN Enterprise.PersonaConfiguration pc ON p.PersonaId = pc.PersonaId
+                            --INNER JOIN Enterprise.PersonaConfiguration pc ON p.PersonaId = pc.PersonaId
                             INNER JOIN Enterprise.Role r ON R.RoleID = ppv.RoleID
                             INNER JOIN Enterprise.[Right] r2 ON r.RoleID = r2.RoleID
                             INNER JOIN Enterprise.RightValueType rvt ON r2.RightValueTypeId = rvt.RightValueTypeId
