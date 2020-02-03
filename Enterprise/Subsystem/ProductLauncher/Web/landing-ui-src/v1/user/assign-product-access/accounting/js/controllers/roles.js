@@ -11,6 +11,7 @@
             genericDataErrorReason = "";
 
         vm.init = function () {
+            vm.isShowRoles = true;
             vm.rolesGrid = rolesGrid;
             vm.rolesError = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -25,6 +26,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allRolesWatch = pubsub.subscribe("Acct.allRolesChange", vm.clearGridSelections);
+            vm.showRolesWatch = pubsub.subscribe("Acct.showRoles", vm.showRoles);
+            
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
 
             if (persona.isReady()) {
@@ -34,6 +37,11 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
         };
+
+        vm.showRoles = function (val) {
+            vm.isShowRoles = val;
+        };
+
 
         vm.isActive = function () {
             return ADataModel.isActive();
@@ -105,6 +113,8 @@
             vm.destWatch();
             vm.gridAllWatch();
             vm.allRolesWatch();
+            vm.showRolesWatch();
+
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }

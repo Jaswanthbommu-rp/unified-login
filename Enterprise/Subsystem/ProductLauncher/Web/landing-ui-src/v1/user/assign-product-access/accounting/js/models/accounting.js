@@ -26,7 +26,7 @@
                     companiesList: [],
                     hasAccessToSiteSpendManagementOnly: false,
                     hasAccessToAllCurrentFutureProperties: false,
-                    isAccountingAdmin: false
+                    isAccountingAdmin: false                    
                 }
             };
 
@@ -62,6 +62,13 @@
         p.setAccessToSiteSpendMgmtOnly = function(bool) {
             var s = this;
             s.hasAccessToSiteSpendManagementOnly = bool;
+            return s;
+        };
+
+        p.setMConsole = function(bool) {
+            var s = this;
+            s.isMConsole = bool;
+            console.log("s.isMConsole", s.isMConsole);
             return s;
         };
 
@@ -159,7 +166,8 @@
             s.data.inputJson.hasAccessToSiteSpendManagementOnly = switchModel.getIsAccessToSiteSpendMgmtOnly();
             s.data.inputJson.hasAccessToAllCurrentFutureProperties = switchModel.getAllProperties();
 
-            if (s.data.inputJson.hasAccessToAllCurrentFutureProperties) {
+             
+            if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && !s.data.inputJson.isAccountingAdmin) {
                 s.properties = [];
                 s.properties.push("all");
 
@@ -167,7 +175,22 @@
                 s.companies.push("all");
             }
 
-            if (s.data.inputJson.isAccountingAdmin) {
+            if (s.data.inputJson.isAccountingAdmin && !s.data.inputJson.hasAccessToAllCurrentFutureProperties) {
+                // s.roles = [];
+                // s.roles.push("all");
+                
+                // Set the Entities to ALL
+                s.properties = [];
+                s.properties.push("all");
+            }
+
+            if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && s.data.inputJson.isAccountingAdmin) {
+                s.properties = [];
+                s.properties.push("all");
+
+                s.companies = [];
+                s.companies.push("all");
+
                 s.roles = [];
                 s.roles.push("all");
             }
@@ -233,13 +256,7 @@
                             });
                         }
                     });
-
-
-                    // s.properties.forEach(function (prop) {
-                    //     if (prop.isAssigned) {
-                    //         s.data.inputJson.propertyList.push(prop.propertyId);
-                    //     }
-                    // });
+                   
                 } else {
                     s.data.inputJson.propertyList.push("all");
                 }
@@ -266,8 +283,8 @@
 
 
             var isCompSelwithProperties = true; // if prop is selected but comp is NOT selected then set to false
-
-              s.companies.forEach(function(comp) {
+            if(!s.data.inputJson.isMConsole){  
+                s.companies.forEach(function(comp) {
 
                     if (comp.isAssigned === false) {
 
@@ -283,10 +300,17 @@
 
                     }
                 });
-
-            if (hasCompanies && hasRoles && hasProperties && isCompSelwithProperties) { // No need to check hasCompanies - not mandatory
-                return s.data;
             }
+
+            if(!s.isMConsole){  
+                if ( hasRoles && hasProperties) { 
+                    return s.data;
+                }
+            }else{
+                if (hasCompanies && hasRoles && hasProperties && isCompSelwithProperties) { // No need to check hasCompanies - not mandatory
+                    return s.data;
+                }
+             }
 
             return null;
         };
