@@ -411,25 +411,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (addresses != null)
 			{
-				if (addresses.Any(
-					a =>
-						a.AddressType.ToUpper() == "EMAIL"))
+				if (addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
 				{
-					userEmailAddress = (from a in addresses
-										where
-											a.AddressType.ToUpper() == "EMAIL"
-										select a.AddressString).FirstOrDefault();
+					userEmailAddress = (from a in addresses where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
 				}
 			}
 
 			if (string.IsNullOrEmpty(userEmailAddress))
 			{
-				WriteToDiagnosticLog(
-					$"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
+				WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
 
 				userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
 			}
-
 
 			WriteToDiagnosticLog($"ManageProductProspectContact.UpdateUserProfile - Product User Name : {_productUsername}");
 
@@ -442,6 +435,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				productLoginName = _productUsername;
 			}
 
+			IList<UserOrganization> userPersonaOrganizationList = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+			//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
+			if ((userPersonaOrganizationList.ToList().Any(o => o.PrimaryOrganization.Equals(true) && o.OrganizationPartyId.Equals(persona.OrganizationPartyId))) && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+			{
+				productLoginName = userLogin.LoginName;
+			}
+
 			// Check for user locations
 			var prospectContactCenterUser = new ProspectContactCenterUser
 			{
@@ -449,7 +449,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				User = new ProspectContactCenterUserProfile
 				{
 					SystemIdentifier = _productUserId,
-					LoginName = userLogin.LoginName,
+					LoginName = productLoginName,
 					FirstName = person.FirstName,
 					LastName = person.LastName,
 					Email = userEmailAddress,
@@ -457,11 +457,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				},
 			};
 
-			WriteToDiagnosticLog(
-				$"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - updating user with persona id {userPersonaId}.");
+			WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - updating user with persona id {userPersonaId}.");
 
-			logData = new Dictionary<string, object>();
-			logData.Add("prospectContactCenterUser", prospectContactCenterUser);
+			logData = new Dictionary<string, object>
+			{
+				{ "prospectContactCenterUser", prospectContactCenterUser }
+			};
+
 			WriteToDiagnosticLog("ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - Update user profile data.", logData);
 
 			// lastly update user
@@ -475,8 +477,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				foreach (var attribute in productAttributes)
 				{
 					if (attribute.Name.ToUpper() == "PRODUCTUSERNAME")
-					{						
-						attribute.Value = userEmailAddress;
+					{
+						attribute.Value = productLoginName;
 						_samlRepository.UpdateSamlUserAttribute(attribute);
 					}
 				}
