@@ -13,6 +13,7 @@
         vm.init = function() {
 
             vm.allProperties = switchModel.allowAccessToCurrentFutureProp;
+            vm.isShowCompanies = true;
             vm.companiesError = $filter("productPanelText")("panelError.generic");
             vm.companiesGrid = companiesGrid;
             companiesGridTransform.watch(companiesGrid);
@@ -28,6 +29,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allCompWatch = pubsub.subscribe("Acct.allCompChange", vm.clearGridSelections);
+            vm.showCompWatch = pubsub.subscribe("Acct.showCompanies", vm.showCompanies);
+            
             vm.setAllCompaniesGrid = pubsub.subscribe("Acct.setAllCompaniesGridValue",vm.setGridSelections);
             vm.gridSelectionWatch = vm.companiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.propChangeWatch = pubsub.subscribe("Acct.propChange", vm.changeCompSelection);
@@ -42,8 +45,17 @@
             vm.gridAllWatch = companiesGrid.subscribe("selectAll", vm.selectAllCompanies);
         };
 
-        vm.gridRowSelectionChange = function(val) {
-            pubsub.publish("Acct.compChange", val);
+        vm.showCompanies = function (val) {
+            vm.isShowCompanies = val;
+        };
+
+        vm.gridRowSelectionChange = function(val) {            
+            var comps = [];
+            switchModel.getCompanies().forEach(function (comp) {
+                comps.push(comp);
+            });
+            ADataModel.setCompanies(comps);
+            // pubsub.publish("Acct.compChange", val);
         };
 
         vm.isAllProperties = function() {
@@ -102,9 +114,32 @@
                 if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
                     vm.setViewUserState(resp);
                 } else {
-                    if (resp.additional && resp.additional.allProperties) {
-                        vm.allProperties = resp.additional.allProperties;
-                        vm.setAllCompanies(true);
+                    if (resp.additional ) {
+                        // vm.allProperties = resp.additional.allProperties;
+                        // vm.setAllCompanies(true);
+                        
+                        ADataModel.setMConsole(resp.additional.isMConsolePMC) ;
+                        // if isMConsolePMC is false , hide companies
+                        if(!resp.additional.isMConsolePMC){
+                             var activeTabs = ["entities","roles"];
+                             pubsub.publish("Acct.showTabs", activeTabs);
+                        }
+
+                        if(resp.additional.isAccountingAdmin && !resp.additional.hasAccessToAllCurrentFutureProperties){
+                             pubsub.publish("Acct.showEntities", true);
+                        }
+
+                        if(resp.additional.hasAccessToAllCurrentFutureProperties && !resp.additional.isAccountingAdmin){
+                             pubsub.publish("Acct.showEntities", false);
+                             pubsub.publish("Acct.showCompanies", false);
+                        }
+
+                        if(resp.additional.hasAccessToAllCurrentFutureProperties && resp.additional.isAccountingAdmin){
+                             pubsub.publish("Acct.showEntities", false);
+                             pubsub.publish("Acct.showCompanies", false);
+                             pubsub.publish("Acct.showRoles", true);
+                        }
+
                     } else {
                         vm.allProperties = false;
                         ADataModel.setCompanies(resp.records);
@@ -234,6 +269,7 @@
             vm.destWatch();
             vm.allCompWatch();
             vm.gridAllWatch();
+            vm.showCompWatch();
             // vm.gridSelectionWatch();
             // vm.gridSelectAllWatch();
             vm.propChangeWatch();
@@ -249,7 +285,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
-            vm.filteredRecords = undefined;
+            // vm.filteredRecords = undefined;
         };
 
         vm.init();
