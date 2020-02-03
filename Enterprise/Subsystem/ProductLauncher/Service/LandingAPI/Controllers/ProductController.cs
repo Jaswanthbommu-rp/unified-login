@@ -480,7 +480,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return productLoginResponse;
                 }
             }
-            else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication))
+            else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication || productId == (int)ProductEnum.ProductUpdates))
             {
                 productLoginResponse.ErrorMessage = "ReadOnly";
                 return productLoginResponse;
