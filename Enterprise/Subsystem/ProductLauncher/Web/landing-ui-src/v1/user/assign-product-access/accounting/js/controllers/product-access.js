@@ -4,17 +4,15 @@
     "use strict";
 
     function AccountingProductAccessCtlr($scope, $filter, 
-        // tabsMenuModel, navData, 
+        
         ADataModel, persona, switchConfig, security, switchModel, pubsub, tabsModel) {
         var vm = this;
 
         vm.init = function () {
             switchModel.refresh();
-            // vm.tabsList = [];
+            
             vm.panelName = $filter("productPanelText")("panelName.accounting");
-            // vm.tabsMenu = tabsMenuModel().setData(navData.getList());
-            // vm.tabsList = navData.getList();
-
+            
             var tabs = ["companies", "entities", "roles"];
             tabsModel.setTabs(tabs);
             tabsModel.activateTab("companies");
@@ -71,50 +69,25 @@
         };
 
         vm.setCompEntRoles = function (comp, ent, role) {
-             // Set companies tab view to true
+             // Set companies tab view 
                 pubsub.publish("Acct.showCompanies", comp);
 
-                // Set entities tab view to false
+                // Set entities tab view 
                 pubsub.publish("Acct.showEntities", ent);
 
-                // Set Roles tab view to true
+                // Set Roles tab view 
                 pubsub.publish("Acct.showRoles", role);
         };
 
         vm.setAllProperties = function (val) {
              switchModel.setHasAccessToCurrentFutureProp(val);
-             // ADataModel.clearProperties();
-             if(val){
-
-                // if(!vm.accountingAdmin){                    
-                //     vm.setCompEntRoles(false, false, true);
-                // }else{
-                        // when both toggles are true                        
-                    vm.setCompEntRoles(false, false, true);
-                // }
              
-             }else{
-                // if(!vm.accountingAdmin){                    
-                //     vm.setCompEntRoles(true, true, true);
-                // }else{                   
-                    vm.setCompEntRoles(true, true, true);                        
-                // }
-
-             }
-
-             // pubsub.publish("Acct.allCompChange");  
-
-            if (val) {
-                //clear grid selections company/entities, if theres any
-                // pubsub.publish("Acct.allEntChange");
-            }
-            else {
-                if(switchModel.getIsAccountingAdmin() === true){
-                    // switchModel.setIsAccountingAdmin(false);
-                    // vm.accountingAdmin = false;
-                    // ADataModel.clearRoles();
-                }                
-            }
+             if(val){   
+                vm.setCompEntRoles(false, false, true);             
+             }else{                
+                 vm.setCompEntRoles(true, true, true);
+             }       
+            
         };
 
          vm.setSiteSpndMgmt = function (val) {
@@ -127,42 +100,29 @@
 
          vm.setAccountingAdmin = function (val) {
              switchModel.setIsAccountingAdmin(val);
-             // ADataModel.setAccountingAdmin(val);
              
-
             if (val) {
-                
-                // switchModel.setHasAccessToCurrentFutureProp(val);
-                // vm.allProperties = true;        
 
                 if(!vm.allProperties){                                        
                     vm.setCompEntRoles(true, true, true);
                 }else{
-                    // when both toggles are true                        
+                    // when both toggles                   
                     vm.setCompEntRoles(false, false, true);
                 }
 
                 switchModel.setHasAccessToSiteSpendMgmtOnly(false);
-                vm.acessSiteSpndMgmtOnly = false;        
-
-                // ADataModel.clearRoles();
-                // ADataModel.clearProperties();  
-
-                //clear grid selections company/entities, if theres any
-                // pubsub.publish("Acct.allCompEntChange");
-                //clear grid selections Roles, if theres any
-                // pubsub.publish("Acct.allRolesChange");
+                vm.acessSiteSpndMgmtOnly = false;      
+                
             }
             else {
-                // Set entities tab view to false                 
+                // Set entities tab view              
 
                 if(!vm.allProperties){                   
                     vm.setCompEntRoles(true, true, true);
                 }else{                    
                     vm.setCompEntRoles(false, false, true);
                 }
-
-                 // ADataModel.clearRoles();
+                 
             }
         };
 
@@ -186,11 +146,7 @@
         vm.allPropertiesSwitchWatch = function (val) {        
             vm.allProperties = val;
         };
-        
-
-        // vm.getActiveUrl = function () {
-        //     return navData.getActiveUrl();
-        // };
+       
 
         vm.isActive = function () {
             return ADataModel.isActive();
@@ -206,8 +162,7 @@
             vm.allPropertiesSwitchWatch();
             vm.acessSiteSpndMgmtOnlySwitchWatch();
             vm.accountingAdminSwitchWatch();
-            vm.showHideTabsAdminSwitchWatch();
-            // navData.reset();
+            vm.showHideTabsAdminSwitchWatch();            
             vm = undefined;
             $scope = undefined;
         };
@@ -219,9 +174,7 @@
         .module("settings")
         .controller("AccountingProductAccessCtlr", [
             "$scope",
-            "$filter",
-            // "rpScrollingTabsMenuModel",
-            // "ANavModel",
+            "$filter",            
             "AccountingDataModel",
             "personaDetails",
             "rpSwitchConfig",

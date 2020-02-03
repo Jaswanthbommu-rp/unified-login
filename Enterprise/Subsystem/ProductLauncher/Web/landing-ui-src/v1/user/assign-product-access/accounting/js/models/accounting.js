@@ -166,10 +166,7 @@
             s.data.inputJson.hasAccessToSiteSpendManagementOnly = switchModel.getIsAccessToSiteSpendMgmtOnly();
             s.data.inputJson.hasAccessToAllCurrentFutureProperties = switchModel.getAllProperties();
 
-             // if(!s.isMConsole){  
-             //    s.companies = [];
-             // }
-
+             
             if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && !s.data.inputJson.isAccountingAdmin) {
                 s.properties = [];
                 s.properties.push("all");
@@ -259,13 +256,7 @@
                             });
                         }
                     });
-
-
-                    // s.properties.forEach(function (prop) {
-                    //     if (prop.isAssigned) {
-                    //         s.data.inputJson.propertyList.push(prop.propertyId);
-                    //     }
-                    // });
+                   
                 } else {
                     s.data.inputJson.propertyList.push("all");
                 }
