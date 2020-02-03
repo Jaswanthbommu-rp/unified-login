@@ -888,6 +888,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //if (superUser || isAccountingAdmin)
             if (superUser)
             {
+                if ((propertiesToAssign.Count > 0) && (propertiesToAssign[0].ToUpper() != "ALL"))
+                {
+                    propertyIDAddList = string.Join(",", propertiesToAssign);
+                }
+
                 if (batchProcessType != BatchProcessType.UserTypeRegularToAdmin )
                 {               
                     // dont need to assign anything because super users get everything automatically in Acounting
@@ -1445,7 +1450,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                                 
-                if ((!isSuperUser && isUnRestrictedAccessToProp))
+                if ((isSuperUser || isUnRestrictedAccessToProp))
                 {
                     string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
                     if (!string.IsNullOrEmpty(updateResultProp))
