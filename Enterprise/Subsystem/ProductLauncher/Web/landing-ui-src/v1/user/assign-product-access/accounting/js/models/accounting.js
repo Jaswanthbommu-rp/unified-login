@@ -191,8 +191,8 @@
                 s.companies = [];
                 s.companies.push("all");
 
-                s.roles = [];
-                s.roles.push("all");
+                // s.roles = [];
+                // s.roles.push("all");
             }
 
             if (s.roles && s.roles.length) {
