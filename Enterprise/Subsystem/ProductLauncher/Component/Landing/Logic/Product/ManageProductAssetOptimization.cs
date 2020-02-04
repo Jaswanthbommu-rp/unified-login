@@ -575,7 +575,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							aoGbUserCompanyPropertyRoleDetails.Remove(biProduct);
 						}
 
-						returnResult = CreateUpdateAOBIProduct(userEmailAddress, editorPersonaId, productUserPersonaId, biProductData, persona, person, productUserGbLogin);						
+						returnResult = CreateUpdateAOBIProduct(userEmailAddress, editorPersonaId, productUserPersonaId, biProductData, persona, person, productUserGbLogin);
+
+						if (string.IsNullOrEmpty(returnResult) && aoGbUserCompanyPropertyRoleDetails.Count == 0)
+						{
+							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productUserGbLogin.LoginName.ToLower());
+							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productUserGbLogin.LoginName.ToLower());
+							UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
+						}
 					}
 				}
 				//Create/Update Non-BI AO Products
@@ -781,7 +788,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (string.IsNullOrEmpty(updateResult))
 				{
 					UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
-					
+
 					WriteToDiagnosticLog(
 						$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed BI user update process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
 					return updateResult;
@@ -813,14 +820,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-
+				string userEmailAddress = GetUserEmailAddress(realPageId, userLogin.LoginName, userPersonaId);
 
 				var aoUser = new AOUser
 				{
 					IsInternalUser = false, // Initial release is w/o internal user
 					IsEnabled = true,
 					IsSuperUser = false,
-					Email = _productUsername.ToLower(),
+					Email = userEmailAddress.ToLower(),
 
 					Login = _productUsername.ToLower(),
 					OldUserId = _productUserId.ToLower(),
@@ -2168,7 +2175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// Get products assigned to user
 			IList<string> aoProductsAvailableToAssign = GetGbSupportedAoEditorUserProductsToAssign(sourceUserPersonaId).ToList();
 
-			// remove Axiometrics product
+			// remove Axiometrics  product
 			aoProductsAvailableToAssign.Remove("AX");
 			var allGroupsResponse = GetEditorUserAssignedPropertyGroups(sourceUserPersonaId);
 
