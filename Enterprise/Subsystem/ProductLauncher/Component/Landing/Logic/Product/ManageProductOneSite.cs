@@ -375,7 +375,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //Fix for bug GB-7138
                 var onesiteUserInfo = GetOneSiteUserInfo(_systemIdentifier);
-                if (onesiteUserInfo.AllProperties && userCurrentPropertyList.Property.Count() == propertiesToAssign.Count)
+                if (onesiteUserInfo != null && onesiteUserInfo.AllProperties && userCurrentPropertyList.Property.Count() == propertiesToAssign.Count)
                 {
                     if (propertiesToAssign.Count > 0)
                     {
