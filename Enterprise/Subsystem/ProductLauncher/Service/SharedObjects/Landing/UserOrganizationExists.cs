@@ -40,6 +40,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public bool UserExistsNotAvailable { get; set; }
 
         /// <summary>
+        /// Used to indicate if the user is disabled in the Primary company
+        /// </summary>
+        [JsonProperty(PropertyName = "UserIsDisabledInPrimaryCompany")]
+        public bool UserIsDisabledInPrimaryCompany { get; set; }
+
+        /// <summary>
         /// The attributes about the person if it exists
         /// </summary>
         public IPerson Person { get; set; }

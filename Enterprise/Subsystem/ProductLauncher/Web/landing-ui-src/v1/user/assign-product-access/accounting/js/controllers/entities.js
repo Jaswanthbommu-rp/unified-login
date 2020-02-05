@@ -13,6 +13,7 @@
 
         vm.init = function() {
             vm.allProperties = true;
+            vm.isShowEntities = true;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             vm.entitiesGrid = entitiesGrid;
             entitiesGridTransform.watch(entitiesGrid);
@@ -28,10 +29,12 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allEntWatch = pubsub.subscribe("Acct.allEntChange", vm.clearGridSelections);
+            vm.showEntWatch = pubsub.subscribe("Acct.showEntities", vm.showEntities);
+            
             // vm.cmpChangeWatch = pubsub.subscribe("Acct.compChange", vm.setPropertiesByCompany);
             vm.gridSelectionWatch = vm.entitiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.gridSelectAllWatch = vm.entitiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
-            vm.gridAllWatch = entitiesGrid.subscribe("selectAll", vm.selectAllEntities);
+            // vm.gridAllWatch = entitiesGrid.subscribe("selectAll", vm.selectAllEntities);
             vm.filterData = vm.entitiesGrid.subscribe("filterBy", vm.filter.bind(vm));
 
             if (persona.isReady()) {
@@ -40,6 +43,11 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
+        };
+
+        vm.showEntities = function (val) {
+            vm.isShowEntities = val;
+            logc("isAllProperties", vm.isAllProperties());
         };
 
         vm.clearGridSelections = function() {
@@ -156,14 +164,15 @@
         };
 
         vm.gridSelectAllChange = function(val) {
-
+            vm.selectAllEntities(val);
             if (ADataModel.getCompanies() != undefined) {
                 var checkAllCompanies = 0;
                 
                 ADataModel.getCompanies().forEach(function(comp) {
 
                     var propertiesByComp = $filter("filter")(ADataModel.getProperties(), {
-                        companyId: comp.id
+                        companyId: comp.id,
+                        isAssigned: val
                     }, true);
 
                     if (propertiesByComp.length > 0) {
@@ -207,6 +216,7 @@
             vm.destWatch();
             vm.allEntWatch();
             vm.gridAllWatch();
+            vm.showEntWatch();
             // vm.cmpChangeWatch();
             vm.gridSelectionWatch();
             vm.gridSelectAllWatch();

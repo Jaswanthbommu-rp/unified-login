@@ -394,6 +394,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				UserLoginOnly userLogin = new UserLoginOnly();
 				userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
+				IList<UserOrganization> userPersonaOrganizationList = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+
 				// get the email address
 				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Begin get user email address");
 				string userEmailAddress = "";
@@ -443,6 +445,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productLoginName = _productUsername;
 				}
 
+				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
+				if ((userPersonaOrganizationList.ToList().Any(o => o.PrimaryOrganization.Equals(true) && o.OrganizationPartyId.Equals(userPersona.OrganizationPartyId))) && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+				{
+					productLoginName = userLogin.LoginName;
+				}
+
 				MarketingCenterUserDetails mUser = GetUserDetails();
 				if (mUser == null)
 				{
@@ -456,7 +464,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ContactRoleId = mUser.ContactRoleId,
 					FirstName = person.FirstName,
 					LastName = person.LastName,
-					EmailAddress = userEmailAddress,
+					EmailAddress = productLoginName,
 					LeadEmailAddress = userLeadEmailAddress,
 					WelcomeEmailSent = true
 				};
@@ -470,8 +478,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (response.IsSuccessStatusCode)
 				{
-					WriteToDiagnosticLog("ManageMarketingCenterUser - StartUpdate user SAMLAttribute User_email=" + userEmailAddress);
-					UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userEmailAddress);
+					WriteToDiagnosticLog("ManageMarketingCenterUser - StartUpdate user SAMLAttribute User_email=" + productLoginName);
+					UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, productLoginName);
 					WriteToDiagnosticLog("ManageMarketingCenterUser - Update user SAMLAttribute User_email success. Saved user id");
 
 					WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);

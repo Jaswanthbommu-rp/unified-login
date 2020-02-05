@@ -331,6 +331,17 @@
         public const string SP_ScopeClaimsInsert = "Auth.ScopeClaimsInsert";
         public const string SP_ScopeClaimsUpdate = "Auth.ScopeClaimsUpdate";
         public const string SP_ScopeClaimsDelete = "Auth.ScopeClaimsDelete";
+
+        public const string SP_ClaimSelect = "Auth.ClaimSelect";
+        public const string SP_ClaimInsert = "Auth.ClaimInsert";
+        public const string SP_ClaimUpdate = "Auth.ClaimUpdate";
+        public const string SP_ClaimDelete = "Auth.ClaimDelete";
+
+        public const string SP_ClientUserClaimSelect = "Auth.ClientUserClaimSelect";
+        public const string SP_ClientUserClaimInsert = "Auth.ClientUserClaimInsert";
+        public const string SP_ClientUserClaimUpdate = "Auth.ClientUserClaimUpdate";
+        public const string SP_ClientUserClaimDelete = "Auth.ClientUserClaimDelete";
+
         #endregion
 
         //StatusType

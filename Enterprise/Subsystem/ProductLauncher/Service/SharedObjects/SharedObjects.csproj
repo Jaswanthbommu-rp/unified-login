@@ -160,6 +160,7 @@
     <Compile Include="Helper\ValidateJson.cs" />
     <Compile Include="IdentityConfig\Client.cs" />
     <Compile Include="IdentityConfig\ClientClaim.cs" />
+    <Compile Include="IdentityConfig\ClientClaimMapping.cs" />
     <Compile Include="IdentityConfig\ClientPostLogoutRedirectUri.cs" />
     <Compile Include="IdentityConfig\ClientRedirectUri.cs" />
     <Compile Include="IdentityConfig\ClientScope.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="IdentityConfig\IUserLoginCommon.cs" />
     <Compile Include="IdentityConfig\IUserLoginOnly.cs" />
     <Compile Include="IdentityConfig\IUserLoginPersona.cs" />
+    <Compile Include="IdentityConfig\ULClaim.cs" />
     <Compile Include="IdentityConfig\UserLoginOnly.cs" />
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />

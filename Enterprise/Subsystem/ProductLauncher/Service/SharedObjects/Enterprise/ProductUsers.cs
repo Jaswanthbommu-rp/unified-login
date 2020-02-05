@@ -31,20 +31,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
         /// </summary>
         public string LastName { get; set; }
 
-        /// <summary>
-        /// For regular-user-no-email user type we don't have login name in email format
-        /// so address string contains notification email if exists
-        /// </summary>
-        public string AddressString { get; set; }
-
-        /// <summary>
-        /// RealpageId
-        /// </summary>
-        public Guid RealPageId { get; set; }
-
-        /// <summary>
-        /// Comma seperated product ids
-        /// </summary>
-        public string ProductId { get; set; }
     }
 }

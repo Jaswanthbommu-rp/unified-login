@@ -203,6 +203,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona.hasManageDepositAlternativeProductAccess = editorRights.Contains(ProductRightEnum.ManageDepositAlternativeProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasManageSettingsTemplates = editorRights.Contains(ProductRightEnum.ManageSettingsTemplates.ToString(), StringComparer.OrdinalIgnoreCase);
+
+                persona.hasnotificationsAccess = editorRights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);
+                
             }
 
             if (currentClaimPrincipal.Identity.IsAuthenticated)
@@ -214,6 +217,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona.hasManagePlatFormSecurity = userClaim.Rights.Contains("ManagePlatFormSecurity", StringComparer.OrdinalIgnoreCase);
                 persona.hasAccessSettingsAdmin = userClaim.Rights.Contains("AccessSettingsAdmin", StringComparer.OrdinalIgnoreCase);
                 persona.hasManageSettingsTemplates = userClaim.Rights.Contains("ManageSettingsTemplates", StringComparer.OrdinalIgnoreCase);
+                persona.hasnotificationsAccess = userClaim.Rights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);
+                
 
                 // For Import User Access - Support tool Employee
                 persona.hasImportUsersAccess = persona.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId && userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);

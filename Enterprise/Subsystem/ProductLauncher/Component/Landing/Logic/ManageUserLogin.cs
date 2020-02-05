@@ -1239,7 +1239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
-            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int) UserRoleType.UserNoEmail || p.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee));
+            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int) UserRoleType.UserNoEmail));
 
             if (userPersonaOrganizationList.Count > 0)
             {
@@ -1274,10 +1274,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var ulo = GetUserLoginOnly(loginName);
                 userOrganizationExists.Person = new Person() { RealPageId = ulo.RealPageId };
 
-                if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(up => up.PartyRoleTypeId == (int)UserRoleType.RealPageEmployee))
+                //Find the Primary Organization
+                UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+                if (userOrganization != null)
                 {
-                    userOrganizationExists.UserExistsNotAvailable = true;
-                    return userOrganizationExists;
+                    //Get user details (includes the status)
+                    UserLogin userLogin = GetUserLogin(realPageId: ulo.RealPageId, orgPartyId: userOrganization.OrganizationPartyId, userLogin: null, userStatuses: null);
+                    if (userLogin != null)
+                    {
+                        userOrganizationExists.UserIsDisabledInPrimaryCompany = userLogin.StatusId.Equals((int)UserUiStatusType.Disabled);
+                    }
                 }
 
                 // get the companies current roles and make sure External user type exists

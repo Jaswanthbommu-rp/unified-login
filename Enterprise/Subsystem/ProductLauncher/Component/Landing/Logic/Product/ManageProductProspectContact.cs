@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -342,11 +343,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(_productUsername)) // NEW USER
 				{
-					productLoginName = GetUniqueProductLoginName(productLoginName);
+					string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
+					productLoginName = GetUniqueProductLoginName(productLoginName, newproductUsername);
+					prospectContactCenterUser.User.LoginName = productLoginName;
 
 					WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
 					string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, productLoginName, prospectContactCenterUser);
-					// for new user insert record in green book
+					// for new user insert record in green prospectContactCenterUserbook
 					CreateProductUserInGreenBook(userPersonaId, newProductUserId, productLoginName);
 
 					// add activity log 
@@ -408,25 +411,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (addresses != null)
 			{
-				if (addresses.Any(
-					a =>
-						a.AddressType.ToUpper() == "EMAIL"))
+				if (addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
 				{
-					userEmailAddress = (from a in addresses
-										where
-											a.AddressType.ToUpper() == "EMAIL"
-										select a.AddressString).FirstOrDefault();
+					userEmailAddress = (from a in addresses where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
 				}
 			}
 
 			if (string.IsNullOrEmpty(userEmailAddress))
 			{
-				WriteToDiagnosticLog(
-					$"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
+				WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
 
 				userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
 			}
-
 
 			WriteToDiagnosticLog($"ManageProductProspectContact.UpdateUserProfile - Product User Name : {_productUsername}");
 
@@ -437,6 +433,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			else
 			{
 				productLoginName = _productUsername;
+			}
+
+			IList<UserOrganization> userPersonaOrganizationList = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+			//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
+			if ((userPersonaOrganizationList.ToList().Any(o => o.PrimaryOrganization.Equals(true) && o.OrganizationPartyId.Equals(persona.OrganizationPartyId))) && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+			{
+				productLoginName = userLogin.LoginName;
 			}
 
 			// Check for user locations
@@ -454,11 +457,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				},
 			};
 
-			WriteToDiagnosticLog(
-				$"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - updating user with persona id {userPersonaId}.");
+			WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - updating user with persona id {userPersonaId}.");
 
-			logData = new Dictionary<string, object>();
-			logData.Add("prospectContactCenterUser", prospectContactCenterUser);
+			logData = new Dictionary<string, object>
+			{
+				{ "prospectContactCenterUser", prospectContactCenterUser }
+			};
+
 			WriteToDiagnosticLog("ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - Update user profile data.", logData);
 
 			// lastly update user
@@ -472,8 +477,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				foreach (var attribute in productAttributes)
 				{
 					if (attribute.Name.ToUpper() == "PRODUCTUSERNAME")
-					{						
-						attribute.Value = userEmailAddress;
+					{
+						attribute.Value = productLoginName;
 						_samlRepository.UpdateSamlUserAttribute(attribute);
 					}
 				}
@@ -662,17 +667,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		#region Private Methods
 
-		private string GetUniqueProductLoginName(string productLoginName)
+		private string GetUniqueProductLoginName(string productLoginName, string newproductUsername)
 		{
-			string userName = productLoginName;
-			string domainName = null;
-
-			if (productLoginName.Contains('@'))
-			{
-				userName = productLoginName.Split('@')[0];
-				domainName = "@" + productLoginName.Split('@')[1];
-			}
-
 			bool foundNewUserName = false;
 			int incrementor = 0;
 			while (!foundNewUserName)
@@ -680,7 +676,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (IsUsernameAvailable(productLoginName))
 				{
 					incrementor++;
-					productLoginName = $"{userName}{incrementor}{domainName}";
+					productLoginName = $"{newproductUsername}{incrementor}";
 				}
 				else
 				{
@@ -875,9 +871,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			// change exsting user name
 			var newProductLoginName = prospectContactCenterUser.User.LoginName; //IncrementCurrentProductLoginName(prospectContactCenterUser.User.LoginName);
-
+			string newproductUsername = $"{prospectContactCenterUser.User.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{prospectContactCenterUser.User.LastName.TrimWhiteSpace()}".ToLower();
 			// Now check if user name exists in product
-			newProductLoginName = GetUniqueProductLoginName(newProductLoginName);
+			newProductLoginName = GetUniqueProductLoginName(newProductLoginName, newproductUsername);
 
 			prospectContactCenterUser.User.LoginName = newProductLoginName;
 			prospectContactCenterUser.User.SystemIdentifier = null;

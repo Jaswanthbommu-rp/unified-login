@@ -95,7 +95,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 		public IList<UsersData> ListUsers(long organizationPartyId, IList<int> productIdList, Guid? realPageId = null, string name = null, int rowsPerPage = 0, int pageNumber = 1)
 		{
 			IList<UsersData> usersDataList = new List<UsersData>();
-			IList<UserStatus> userStatusList = new List<UserStatus>();
 
 			dynamic param = new
 			{

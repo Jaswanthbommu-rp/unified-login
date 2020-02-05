@@ -163,7 +163,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(_userLogin);
         }
 
-
 		#region Unit Tests
 		[Fact]
 		public void CreateUserLogin_InvalidrealPageId_ExceptionThrown()
@@ -247,7 +246,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.Equal(userLogin.PartyId, _userLoginOnly.PartyId);
             Assert.Equal(userLogin.LoginName, _userLoginOnly.LoginName);
             Assert.Equal(userLogin.PasswordHash, _userLoginOnly.PasswordHash);
-
         }
 
         [Fact]
@@ -299,7 +297,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			//Assert
 			Assert.IsType<ArgumentNullException>(exception);
-			#endregion
 		}
 
 		[Fact]
@@ -431,9 +428,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new RoleType() {PartyRoleTypeId = 405, Name = "External User", ParentPartyRoleTypeId = 400}
             };
 
+            Person p = new Person() {FirstName = "First", LastName = "Last", PartyId = 1234, RealPageId = _userRealPageId};
+
             //Arrange
-            _mockRepository.Setup(m => m.GetOne(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
-                .Returns(new Person());
+            _mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
+                .Returns(p);
 
             _mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
                 .Returns(roleTypes);
@@ -445,8 +444,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			//Assert
 			Assert.True(
 				userOrganizationExists.UserExists == true
-				&& userOrganizationExists.UserExistsInThisOrganization == true
-			);
+                && userOrganizationExists.UserExistsAsNoEmail == false
+                && userOrganizationExists.UserExistsInThisOrganization == true
+                && userOrganizationExists.UserExistsNotAvailable == false
+                && userOrganizationExists.UserIsDisabledInPrimaryCompany == false
+                && userOrganizationExists.UserIsExternalEverywhere == false
+            );
 
             RPObjectCache rpCache = new RPObjectCache();
             rpCache.BustCache();
@@ -465,11 +468,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
             Assert.True(
                 userOrganizationExists.UserExists == true
+                && userOrganizationExists.UserExistsAsNoEmail == false
+                && userOrganizationExists.UserExistsInThisOrganization == true
                 && userOrganizationExists.UserExistsNotAvailable == true
+                && userOrganizationExists.UserIsDisabledInPrimaryCompany == false
+                && userOrganizationExists.UserIsExternalEverywhere == false
             );
         }
 
-        //
         [Fact]
         public void LinkIdentityProviderToUserLogin_ValidAndErrors()
         {
@@ -498,5 +504,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.IsType<Exception>(exception);
             Assert.Equal("Missing Contact Mechanism Id.", exception.Message);
         }
+        #endregion
     }
 }

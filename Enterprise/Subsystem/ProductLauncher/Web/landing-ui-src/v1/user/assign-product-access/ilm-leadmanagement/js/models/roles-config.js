@@ -22,7 +22,7 @@
                 [{
                     key: "isAssigned",
                     type: "select",
-                    enabled: model.isSelectAllEnabled()
+                    enabled: false
                 }, {
                     key: "name",
                     text: "Role",
