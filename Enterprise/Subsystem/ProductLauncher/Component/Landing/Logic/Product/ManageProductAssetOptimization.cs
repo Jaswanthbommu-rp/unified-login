@@ -127,6 +127,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					productUserId = userLoginName;
 				}
+
+				if (productName == "BI")
+				{
+					productUserId = GetSamlProductUserName(userPersonaId, "BI");
+				}
+
 				if (!string.IsNullOrEmpty(productUserId))
 				{
 					productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
@@ -185,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// for each company get roles
 				foreach (var company in allCompanies)
 				{
-					List<AORoles> roles = GetRoles(company.CompanyId, productName, userLoginName).ToList();
+					List<AORoles> roles = GetRoles(company.CompanyId, productName, userLoginName, userPersonaId).ToList();
 
 					if (roles?.Count > 0)
 					{
@@ -246,7 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// for each compnay get properties
 				foreach (var company in allCompanies)
 				{
-					List<AoProperty> properties = GetProperties(company.CompanyId, productName, userLoginName).ToList();
+					List<AoProperty> properties = GetProperties(company.CompanyId, productName, userLoginName, userPersonaId).ToList();
 					properties = properties.OrderBy(x => x.PropertyName).ToList();
 
 					if (properties != null)
@@ -564,7 +570,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				//Multi Company BI Product create/update logic
-				if (aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").Count() > 0)
+				if (aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").Count() > 0 &&
+					IsAOBIProductExistsInOtherOrganization(editorPersonaId, productUserGbLogin.LoginName))
 				{
 					var biProductData = aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").ToList();
 					if (biProductData.Any())
@@ -581,11 +588,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						{
 							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productUserGbLogin.LoginName.ToLower());
 							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productUserGbLogin.LoginName.ToLower());
-							UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
+							UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);							
 						}
 					}
 				}
-				//Create/Update Non-BI AO Products
+				//Create/Update single company AO Products
 				if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
 				{
 					if (string.IsNullOrEmpty(_productUsername))
@@ -622,7 +629,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
 
 					aoUser.UserId = _productUserId.ToLower();
-					aoUser.Login = _productUsername.ToLower();
+					//aoUser.Login = _productUsername.ToLower();
 					aoUser.OldUserId = _productUserId.ToLower();
 					aoUser.Email = _productUsername.ToLower();
 
@@ -701,12 +708,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			string biProductUserName = "";
 			string result = "";
-			IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUserPersonaId, (int)ProductEnum.AoBusinessIntelligence);
-
-			if (productAttributes.Any(a => a.Name.Equals("ProductUserName", StringComparison.OrdinalIgnoreCase)))
-			{
-				biProductUserName = (from a in productAttributes where a.Name.Equals("ProductUserName", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
-			}
+			
+			biProductUserName = GetSamlProductUserName(productUserPersonaId, "BI");
 
 			var biAOUser = new AOUser
 			{
@@ -727,38 +730,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (string.IsNullOrEmpty(biProductUserName))
 			{
-				if (IsAOBIProductExistsInOtherOrganization(editorPersonaId, productUserGbLogin.LoginName))
+				string biLoginName = "";
+				// get a login name that isn't in use for the new user
+				bool foundUserName = false;
+				int incrementor = 1;
+				string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
+				biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+
+				while (!foundUserName)
 				{
-					string biLoginName = "";
-					// get a login name that isn't in use for the new user
-					bool foundUserName = false;
-					int incrementor = 1;
-					string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
-					biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
-
-					while (!foundUserName)
+					if (CheckUniqueAOUserName(biLoginName))
 					{
-						if (CheckUniqueAOUserName(biLoginName))
-						{
-							incrementor++;
-							biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
-						}
-						else
-						{
-							foundUserName = true;
-						}
-
-						if (incrementor == 10)
-						{
-							// after 10 tries something might be wrong, so bail out.
-							WriteToErrorLog($"ManageProductAssetOptimization - Error checking for username in use {newproductUsername}");
-							return "An error occurred. Unable to get username.";
-						}
+						incrementor++;
+						biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+					}
+					else
+					{
+						foundUserName = true;
 					}
 
-					biAOUser.Login = biLoginName.ToLower();
-					biAOUser.UserId = biLoginName.ToLower();
+					if (incrementor == 10)
+					{
+						// after 10 tries something might be wrong, so bail out.
+						WriteToErrorLog($"ManageProductAssetOptimization - Error checking for username in use {newproductUsername}");
+						return "An error occurred. Unable to get username.";
+					}
 				}
+
+				biAOUser.Login = biLoginName.ToLower();
+				biAOUser.UserId = biLoginName.ToLower();
+
 				var createBIResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", biAOUser);
 
 				if (string.IsNullOrEmpty(createBIResult))
@@ -1289,13 +1290,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Used to get login name from SAML attribute
 		/// </summary>
 		/// <param name="userPersonaId"></param>
-		private string GetSamlProductUserName(long userPersonaId)
+		private string GetSamlProductUserName(long userPersonaId, string productName = "")
 		{
 			string userName = string.Empty;
-
+			IList<SamlAttributes> productAttributes = new List<SamlAttributes>();
 			if (userPersonaId != 0)
 			{
-				IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnum.AssetOptimizer);
+				 if (string.IsNullOrEmpty(productName))
+				 {
+					productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnum.AssetOptimizer);
+				 }
+				 else
+				 {
+					productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(productName));
+				}
 
 				if (productAttributes.Any(a => a.Name.Equals("ProductUserName", StringComparison.OrdinalIgnoreCase)))
 				{
@@ -1994,7 +2002,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return products;
 		}
 
-		private IList<AORoles> GetRoles(int companyId, string productName, string userLoginName = "")
+		private IList<AORoles> GetRoles(int companyId, string productName, string userLoginName = "", long userPersonaId = 0)
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetRoles at beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId} companyId - {companyId} productName {productName}");
@@ -2005,6 +2013,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				productUserId = userLoginName;
 			}
+			
+			if (productName == "BI" && userPersonaId > 0)
+			{
+				productUserId = GetSamlProductUserName(userPersonaId, "BI");
+			}
+			
 			if (!string.IsNullOrEmpty(productUserId))
 			{
 				// Called during updating Existing User
@@ -2034,7 +2048,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return allRoles;
 		}
 
-		private IList<AoProperty> GetProperties(long companyId, string productName, string userLoginName = "")
+		private IList<AoProperty> GetProperties(long companyId, string productName, string userLoginName = "", long userPersonaId = 0)
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetProperties - at beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
@@ -2049,6 +2063,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
 			{
 				productUserId = userLoginName;
+			}
+
+			if (productName == "BI" && userPersonaId > 0)
+			{
+				productUserId = GetSamlProductUserName(userPersonaId, "BI");
 			}
 
 			if (!string.IsNullOrEmpty(productUserId))
