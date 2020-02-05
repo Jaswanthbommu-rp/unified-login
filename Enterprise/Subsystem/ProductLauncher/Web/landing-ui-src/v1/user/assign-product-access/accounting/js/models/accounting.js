@@ -180,8 +180,8 @@
                 // s.roles.push("all");
                 
                 // Set the Entities to ALL
-                s.properties = [];
-                s.properties.push("all");
+                // s.properties = [];
+                // s.properties.push("all");
             }
 
             if (s.data.inputJson.hasAccessToAllCurrentFutureProperties && s.data.inputJson.isAccountingAdmin) {
@@ -194,6 +194,12 @@
                 // s.roles = [];
                 // s.roles.push("all");
             }
+
+             if( s.properties.length === 0){  
+                 // Set the Entities to ALL
+                s.properties = [];
+                s.properties.push("all");
+             }
 
             if (s.roles && s.roles.length) {
                 s.data.inputJson.roleList = [];
