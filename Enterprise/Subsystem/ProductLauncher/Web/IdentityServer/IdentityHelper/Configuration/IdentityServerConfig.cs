@@ -291,11 +291,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             if (n.AuthenticationTicket.Properties.Dictionary.ContainsKey("signinid"))
                             {
                                 var signinid = n.AuthenticationTicket.Properties.Dictionary["signinid"];
-                                if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null)
+                                if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null || n.OwinContext.Request.Cookies["ss-userinfo."+ signinid] != null)
                                 {
-                                    n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["userinfo."+ signinid]))));
-                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Domain = "realpage.com", Path = "/", Secure = true });
-                                    
+                                    if (n.OwinContext.Request.Cookies["userinfo." + signinid] != null)
+                                    {
+                                        n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["userinfo." + signinid]))));
+                                    }
+                                    else
+                                    {
+                                        if (n.OwinContext.Request.Cookies["ss-userinfo." + signinid] != null)
+                                        {
+                                            n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["ss-userinfo." + signinid]))));
+                                        }
+                                    }
+                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
+                                    n.OwinContext.Response.Cookies.Delete("ss-userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
                                 }
                             }
 
@@ -310,16 +320,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    var cookiePathWithSameSite = "/";
-
                                     if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
                                     {
                                         var hold = n.OwinContext.Response.Headers["Set-Cookie"];
                                         n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
-                                        cookiePathWithSameSite = "/; SameSite=None";
+                                        n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; SameSite=None", Secure = true, HttpOnly = true});
                                     }
 
-                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = cookiePathWithSameSite, Secure = true, HttpOnly = true});
+                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/", Secure = true, HttpOnly = true});
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
@@ -363,8 +371,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
         private static bool SuppressSameSiteNoneCookies(OwinContext context)
         {
-            return true;
-            //var context = new OwinContext(env);
             var userAgent = context.Request.Headers["User-Agent"].ToString();
             //return true;
             // Cover all iOS based browsers here. This includes:
