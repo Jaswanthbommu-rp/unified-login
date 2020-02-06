@@ -310,14 +310,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
+                                    var cookiePathWithSameSite = "/";
 
                                     if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
                                     {
                                         var hold = n.OwinContext.Response.Headers["Set-Cookie"];
                                         n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
+                                        cookiePathWithSameSite = "/; SameSite=None";
                                     }
 
-                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; SameSite=None", Secure = true, HttpOnly = true});
+                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = cookiePathWithSameSite, Secure = true, HttpOnly = true});
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
@@ -361,6 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
         private static bool SuppressSameSiteNoneCookies(OwinContext context)
         {
+            return true;
             //var context = new OwinContext(env);
             var userAgent = context.Request.Headers["User-Agent"].ToString();
             //return true;
