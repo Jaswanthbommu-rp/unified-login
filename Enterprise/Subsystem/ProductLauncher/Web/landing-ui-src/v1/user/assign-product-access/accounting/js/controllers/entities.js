@@ -165,34 +165,36 @@
 
         vm.gridSelectAllChange = function(val) {
             vm.selectAllEntities(val);
-            if (ADataModel.getCompanies() != undefined) {
-                var checkAllCompanies = 0;
-                
-                ADataModel.getCompanies().forEach(function(comp) {
+            if(val) {
+                if (ADataModel.getCompanies() != undefined) {
+                    var checkAllCompanies = 0;
+                    
+                    ADataModel.getCompanies().forEach(function(comp) {
 
-                    var propertiesByComp = $filter("filter")(ADataModel.getProperties(), {
-                        companyId: comp.id,
-                        isAssigned: val
-                    }, true);
-
-                    if (propertiesByComp.length > 0) {
-                        var properties = $filter("filter")(propertiesByComp, {
+                        var propertiesByComp = $filter("filter")(ADataModel.getProperties(), {
+                            companyId: comp.id,
                             isAssigned: val
                         }, true);
 
-                        comp.isAssigned = val;             
-                    }
+                        if (propertiesByComp.length > 0) {
+                            var properties = $filter("filter")(propertiesByComp, {
+                                isAssigned: val
+                            }, true);
 
-                    if(comp.isAssigned){
-                        checkAllCompanies++;
+                            comp.isAssigned = val;             
+                        }
+
+                        if(comp.isAssigned){
+                            checkAllCompanies++;
+                        }
+                    });
+                    
+                    if(ADataModel.getCompanies().length === checkAllCompanies){
+                        pubsub.publish("Acct.setAllCompaniesGridValue",true);
                     }
-                });
-                
-                if(ADataModel.getCompanies().length === checkAllCompanies){
-                    pubsub.publish("Acct.setAllCompaniesGridValue",true);
-                }
-                else if(checkAllCompanies === 0) {
-                    pubsub.publish("Acct.setAllCompaniesGridValue",false);
+                    else if(checkAllCompanies === 0) {
+                        pubsub.publish("Acct.setAllCompaniesGridValue",false);
+                    }
                 }
             }
         };
