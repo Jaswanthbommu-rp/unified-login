@@ -2,6 +2,7 @@
 using IdentityServer3.Core.Extensions;
 using IdentityServer3.Core.Services;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Google;
 using Microsoft.Owin.Security.OpenIdConnect;
@@ -55,11 +56,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                 AuthenticationOptions = new IdentityServer3.Core.Configuration.AuthenticationOptions
                 {
                     IdentityProviders = ConfigureIdentityProviders,
-                    CookieOptions = new CookieOptions
+                    CookieOptions = new IdentityServer3.Core.Configuration.CookieOptions
                     {
                         AllowRememberMe = false,
                         IsPersistent = false,
                         RememberMeDuration = TimeSpan.FromMinutes(1),
+                        SuppressSameSiteNoneCookiesCallback = env =>
+                        {
+                            var context = new OwinContext(env);
+                            var userAgent = context.Request.Headers["User-Agent"].ToString();
+                            //return true;
+                            // Cover all iOS based browsers here. This includes:
+                            // - Safari on iOS 12 for iPhone, iPod Touch, iPad
+                            // - WkWebview on iOS 12 for iPhone, iPod Touch, iPad
+                            // - Chrome on iOS 12 for iPhone, iPod Touch, iPad
+                            // All of which are broken by SameSite=None, because they use the iOS 
+                            // networking stack.
+                            if (userAgent.Contains("CPU iPhone OS 12") ||
+                                userAgent.Contains("iPad; CPU OS 12"))
+                            {
+                                return true;
+                            }
+
+                            // Cover Mac OS X based browsers that use the Mac OS networking stack. 
+                            // This includes:
+                            // - Safari on Mac OS X.
+                            // This does not include:
+                            // - Chrome on Mac OS X
+                            // Because they do not use the Mac OS networking stack.
+                            if (userAgent.Contains("Macintosh; Intel Mac OS X 10_14") &&
+                                userAgent.Contains("Version/") && userAgent.Contains("Safari"))
+                            {
+                                return true;
+                            }
+
+                            // Cover Chrome 50-69, because some versions are broken by SameSite=None, 
+                            // and none in this range require it.
+                            // Note: this covers some pre-Chromium Edge versions, 
+                            // but pre-Chromium Edge does not require SameSite=None.
+                            if (userAgent.Contains("Chrome/5") || userAgent.Contains("Chrome/6"))
+                            {
+                                return true;
+                            }
+
+                            return false;
+                        }
                     },
                     EnableSignOutPrompt = false,
                     EnablePostSignOutAutoRedirect = true,
@@ -198,7 +239,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     Caption = provider.Description,
                     Notifications = new Saml2Notifications()
                     {
-                        AuthenticationRequestCreated = (request, identity, response) => { request.ForceAuthentication = true; },
+                        AuthenticationRequestCreated = (request, identity, response) => { request.ForceAuthentication = true; }
+                        ,AcsCommandResultCreated = (cr, r) =>
+                        {
+                            string test = "";
+                        }
                     },
                     SPOptions = new SPOptions
                     {
@@ -284,7 +329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null)
                                 {
                                     n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["userinfo."+ signinid]))));
-                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/" });
+                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Domain = "realpage.com", Path = "/", Secure = true });
                                     
                                 }
                             }
@@ -300,7 +345,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/" });
+                                    //n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Domain = "realpage.com", Path = "/", Secure = true });
+                                    //string[] cookietest = new string[4];
+                                    //cookietest[0] = "Domain = \"realpage.com\"";
+                                    //cookietest[1] = "Path = \"/\"";
+                                    //cookietest[2] = "Secure = \"true\"";
+                                    //cookietest[3] = "SameSite = \"none\"";
+                                    //n.OwinContext.Response.Headers["Set-Cookie"]
+                                    //n.OwinContext.Response.Headers.Keys["Set-Cookie"], cookietest );
+                                    //string[] cookietest = n.OwinContext.Response.Headers["Set-Cookie"].Split(';');
+                                    //int newlength = cookietest.Length+1;
+                                    //string[] newcookie = new string[newlength];
+                                    n.OwinContext.Response.Headers["Set-Cookie"] = n.OwinContext.Response.Headers["Set-Cookie"]+$"; SameSite=None, userinfo.{signinId}={n.OwinContext.Request.Query.Get("info")} path=/; expires=Thu, 06-Feb-2020 15:31:32 GMT; secure; HttpOnly";
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
