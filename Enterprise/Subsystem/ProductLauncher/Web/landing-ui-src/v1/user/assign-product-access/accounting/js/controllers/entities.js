@@ -5,6 +5,7 @@
 
     function AEntitiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, ADataModel, switchConfig, userDetailsModel, security, switchModel, pubsub) {
         var vm = this,
+            filteredRecords,
             entitiesGrid = gridModel(),
             entitiesGridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -30,7 +31,8 @@
             // vm.cmpChangeWatch = pubsub.subscribe("Acct.compChange", vm.setPropertiesByCompany);
             vm.gridSelectionWatch = vm.entitiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.gridSelectAllWatch = vm.entitiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
-
+            // vm.gridAllWatch = entitiesGrid.subscribe("selectAll", vm.selectAllEntities);
+            vm.filterData = vm.entitiesGrid.subscribe("filterBy", vm.filter.bind(vm));
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -54,6 +56,9 @@
             return !persona.data.hasManageAccountingProductAccess;
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
 
         vm.isActive = function() {
             return ADataModel.isActive();
@@ -151,34 +156,36 @@
         };
 
         vm.gridSelectAllChange = function(val) {
-
+            vm.selectAllEntities(val);
             if (ADataModel.getCompanies() != undefined) {
-
+                var checkAllCompanies = 0;
+                
                 ADataModel.getCompanies().forEach(function(comp) {
 
                     var propertiesByComp = $filter("filter")(ADataModel.getProperties(), {
-                        companyId: comp.id
+                        companyId: comp.id,
+                        isAssigned: val
                     }, true);
 
                     if (propertiesByComp.length > 0) {
-
                         var properties = $filter("filter")(propertiesByComp, {
-                            isAssigned: true
+                            isAssigned: val
                         }, true);
 
-                        // if (properties.length > 0) {
-                        //     comp.isAssigned = false;
-                        // } else {
-                        //     comp.isAssigned = true;
-                        // }
-
-                        if (properties.length > 0) {
-                            comp.isAssigned = true;
-                        }
+                        comp.isAssigned = val;             
                     }
 
+                    if(comp.isAssigned){
+                        checkAllCompanies++;
+                    }
                 });
-
+                
+                if(ADataModel.getCompanies().length === checkAllCompanies){
+                    pubsub.publish("Acct.setAllCompaniesGridValue",true);
+                }
+                else if(checkAllCompanies === 0) {
+                    pubsub.publish("Acct.setAllCompaniesGridValue",false);
+                }
             }
         };
 
@@ -187,11 +194,20 @@
             vm.gridPagination.setGridData();
         };
 
-
+        vm.selectAllEntities = function (val) {
+            //ADataModel.setAllEntities(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                ADataModel.setAllEntities(vm.filteredRecords, val);
+            }
+            else{
+                ADataModel.setAllEntities(vm.dataReq.records, val);
+            }
+        };
 
         vm.destroy = function() {
             vm.destWatch();
             vm.allEntWatch();
+            vm.gridAllWatch();
             // vm.cmpChangeWatch();
             vm.gridSelectionWatch();
             vm.gridSelectAllWatch();
@@ -207,6 +223,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
+            vm.filteredRecords = undefined;
         };
 
         vm.init();

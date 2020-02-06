@@ -16,6 +16,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public int ProductId { get; set; }
 
 		/// <summary>
+		/// Product code
+		/// </summary>
+		[JsonProperty(PropertyName = "productCode")]
+		public string ProductCode { get; set; }
+		
+		/// <summary>
 		/// Solution Unique Id
 		/// </summary>
 		[JsonProperty(PropertyName = "solutionId")]

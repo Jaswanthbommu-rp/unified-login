@@ -2,7 +2,7 @@
 	"use strict";
 
 	var changePwdController = function($scope, $q, $filter, passwordModel, userPasswordState, changePasswordSvc, 
-            layoutModel, loginModel, userModel, passwordConfig, passwordData) {
+            layoutModel, loginModel, userModel, passwordConfig, passwordData,PasswordPolicySvc,userDetSvc) {
         var vm = this;
 
         vm.init = function () {
@@ -23,7 +23,7 @@
             vm.model = passwordData;
             vm.updateUser(username);
 
-            vm.formState.password = userPasswordState.init();
+            vm.getUserInfo(username);
             vm.passcheck = false;
             vm.limitedHistoryDeferred = null;
             vm.passwordData = passwordData;
@@ -38,6 +38,37 @@
 
         vm.displayErrorMsg = function() {
             return vm.changePasswordForm.$submitted; 
+        };
+
+        vm.getUserInfo = function(enterPriseUserName){
+            var params = {
+                enterpriseUserName: enterPriseUserName
+            };
+            userDetSvc.get(params, vm.onDataReady, vm.setDataErr);
+
+        };
+        
+        vm.onDataReady = function (resp) {
+            if (resp.isError === false) {
+                if (resp.records.length > 0) {
+                    vm.validatePasswordPolicy(resp.records[0].organizationPartyId);
+                }
+            }
+        };
+
+        vm.setDataErr = function (resp) {
+            alert(resp);
+        };
+
+        vm.validatePasswordPolicy = function(orgPartyId) {
+            var params = {
+                    PartyId: orgPartyId
+            };
+            PasswordPolicySvc.get(params, vm.onResponseReady, vm.setDataErr);
+        };
+        vm.onResponseReady = function (resp) {
+                var settings = resp.data;
+                vm.formState.password = userPasswordState.init(settings);
         };
 
         vm.changePassword = function() {
@@ -181,6 +212,8 @@
             "userModel",
             "userPasswordConfig",
             "changePasswordData",
+            "PasswordPolicySvc",
+            "getUserSvc",
             changePwdController
         ]);
 	

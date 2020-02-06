@@ -31,6 +31,9 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
+
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
@@ -80,6 +83,19 @@
             }
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
+        vm.selectAllProperties = function (val) {
+            if(vm.filteredRecords !== undefined){
+                UADataModel.selectAllProperties(vm.filteredRecords, val);
+            }
+            else{
+                UADataModel.selectAllProperties(vm.dataReq.records, val);
+            }             
+        };
+
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageUnifiedAmenitiesProductAccess;
         };
@@ -87,6 +103,7 @@
 
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             grid.destroy();
             gridTransform.destroy();
             gridPagination.destroy();
@@ -99,6 +116,7 @@
             $scope = undefined;
             gridTransform = undefined;
             gridPagination = undefined;
+            vm.filterData = undefined;
         };
 
         vm.init();

@@ -5,9 +5,11 @@
 
     function BusinessIntelligencePropertyGroupsCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, userDetailsModel, pubsub, statusModel, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
+            userLoginName = "",
             genericDataErrorReason = "";
 
         vm.init = function () {
@@ -24,12 +26,18 @@
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.aoStatusWatch = statusModel.subscribeBI(vm.loadData);
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllPropertyGroups);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.allPropertiesSelected = function (val) {
             vm.allProperties = val;
             vm.grid.selectAll(false);
             vm.grid.updateSelected();
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
         vm.updateGrid = function () {
@@ -47,7 +55,8 @@
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
                     selectedCompanies: [record],
-                    productName: "BI"
+                    productName: "BI",
+                    userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                 };
 
                 vm.dataReq = dataSvc.get(params, vm.setData);
@@ -86,8 +95,18 @@
             return !persona.data.hasManageAssetOptimizationProductAccess;
         };
 
+        vm.selectAllPropertyGroups = function (val) {
+            if(vm.filteredRecords !== undefined){
+                dataModel.setAllPropertyGroups(vm.filteredRecords, val);
+            }
+            else{
+                dataModel.setAllPropertyGroups(vm.dataReq.records, val);
+            } 
+        };
+
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             vm.aoStatusWatch();
             vm.personaWatch();
             if (vm.dataReq) {

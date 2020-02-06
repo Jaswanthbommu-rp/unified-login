@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using EnterpriseProductUser = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise.ProductUsers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -118,10 +120,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// </summary>
 		/// <param name="personRealPageId">Edited User enterprise Id</param>
 		/// <param name="accessFilter">Filter products</param>
+		/// <param name="loginName">User Login Name</param>
 		/// <returns>List of Product Families</returns>
 		//IList<ProductFamily> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null);
 
-        IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null);
+		IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null, string loginName = null);
         /// <summary>
         /// List of Roles by Party ID, Product List and Product ID
         /// </summary>
@@ -179,5 +182,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="settingType"></param>
 		/// <param name="value"></param>
 		void UpdateProductSettingProductStatus<T>(long userPersonaId, int productId, string settingType, T value);
-	}
+
+        /// <summary>
+	    /// Returns all the products
+	    /// </summary>
+	    IList<GbProductMap> GetAllProducts();
+
+        /// <summary>
+        /// Search by company and product ids and returns userlist
+        /// </summary>
+        /// <param name="datafilter"></param>
+        /// <param name="companyId"></param>
+        /// <param name="products"></param>
+        /// <returns>List of Users by product or company</returns>
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(PageRequest datafilter, string companyId, IList<int?> products);
+    }
 }

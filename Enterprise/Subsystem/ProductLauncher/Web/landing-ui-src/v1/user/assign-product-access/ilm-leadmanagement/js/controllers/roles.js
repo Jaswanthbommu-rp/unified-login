@@ -31,6 +31,9 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
+
+            vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
+            vm.filterData = rolesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
@@ -83,12 +86,26 @@
             }
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
+        vm.selectAllRoles = function(val){
+            if(vm.filteredRecords !== undefined){
+                ILMLMDataModel.setAllRoles(vm.filteredRecords, val);
+            }
+            else{
+                ILMLMDataModel.setAllRoles(vm.dataReq.records, val);
+            }              
+        };
+
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageILMLeadManagemementProductAccess;
         };
 
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             rolesGrid.destroy();
             //vm.accessTypeWatch();
             if (vm.dataReq) {

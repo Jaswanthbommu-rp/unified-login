@@ -11,11 +11,6 @@
 		string LoginName { get; set; }
 
 		/// <summary>
-		/// User Time Zone Offset Value
-		/// </summary>
-		string TimeZoneOffset { get; set; }
-
-		/// <summary>
 		/// UserId
 		/// </summary>
 		long UserId { get; set; }

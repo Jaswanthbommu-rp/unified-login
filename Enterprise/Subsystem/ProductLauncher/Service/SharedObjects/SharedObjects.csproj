@@ -109,6 +109,7 @@
     <Compile Include="DapperMappingGuides\IProductSettingList.cs" />
     <Compile Include="DapperMappingGuides\ProductSettingList.cs" />
     <Compile Include="Enterprise\ProductDetail.cs" />
+    <Compile Include="Enterprise\ProductUsers.cs" />
     <Compile Include="Enterprise\UserData.cs" />
     <Compile Include="Enterprise\UserDataCommon.cs" />
     <Compile Include="Enterprise\UserProductDetails.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="IdentityConfig\CommonAddress.cs" />
     <Compile Include="IdentityConfig\ContactMechanismBoundary.cs" />
     <Compile Include="IdentityConfig\ContactMechanismUsageType.cs" />
+    <Compile Include="IdentityConfig\OrgUserData.cs" />
     <Compile Include="IdentityConfig\ProcessUserLogin.cs" />
     <Compile Include="IdentityConfig\ElectronicAddress.cs" />
     <Compile Include="IdentityConfig\GeographicBoundary.cs" />
@@ -221,6 +223,7 @@
     <Compile Include="Landing\IOrganizationType.cs" />
     <Compile Include="Landing\IPagingSummary.cs" />
     <Compile Include="Landing\IPasswordPolicyCommon.cs" />
+    <Compile Include="Landing\ISendGridEmail.cs" />
     <Compile Include="Landing\ISetting.cs" />
     <Compile Include="Landing\ISecuritySettings.cs" />
     <Compile Include="Landing\ISortTableType.cs" />
@@ -250,6 +253,7 @@
     <Compile Include="IdentityConfig\ProfileDetail.cs" />
     <Compile Include="IdentityConfig\TelecommunicationNumber.cs" />
     <Compile Include="BlackBook\CompanyMap.cs" />
+    <Compile Include="Landing\SendGridEmail.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />
     <Compile Include="Landing\SortTableType.cs" />
@@ -442,6 +446,7 @@
     <Compile Include="Product\Ops\RightGroupRole.cs" />
     <Compile Include="Product\Ops\Rights.cs" />
     <Compile Include="Product\IProductEasyLMS.cs" />
+    <Compile Include="Product\OrganizationProductUser.cs" />
     <Compile Include="Product\ProductEasyLMS.cs" />
     <Compile Include="Product\Ops\SessionRequest.cs" />
     <Compile Include="Product\ProductPropertyMap.cs" />

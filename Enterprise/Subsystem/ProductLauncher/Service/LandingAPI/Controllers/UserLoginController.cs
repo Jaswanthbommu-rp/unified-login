@@ -418,8 +418,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				}
 
 				return Request.CreateResponse(HttpStatusCode.ExpectationFailed, response);
-
-
 			}
 			return Request.CreateResponse(HttpStatusCode.OK, response);
 		}
@@ -515,12 +513,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				{
 					return Request.CreateResponse(HttpStatusCode.OK, true);
 				}
-
 				return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
-
-
 			}
-			return Request.CreateResponse(HttpStatusCode.OK, response);			
+			return Request.CreateResponse(HttpStatusCode.OK, response);
 		}
 
 		/// <summary>

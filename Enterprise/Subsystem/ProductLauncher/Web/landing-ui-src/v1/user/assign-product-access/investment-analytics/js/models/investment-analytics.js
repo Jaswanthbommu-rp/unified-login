@@ -34,6 +34,7 @@
 
 
             s.roles = [];
+            s.markets = [];
             // s.roleList = [];
             s.properties = [];
             s.propertyGroup = [];
@@ -108,6 +109,13 @@
             s.roles = rolesData;
         };
 
+        p.setAllMarkets = function (marketsData,val) {
+            var s = this;
+            marketsData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+        };
+
         p.getCompanies = function () {
             var s = this;
             return s.companies;
@@ -175,6 +183,7 @@
             s.propertyGroupList = [];
             s.companies = [];
             s.roles = [];
+            s.markets = [];
             s.companyRoles = [];
             s.iadata = angular.copy(s._IAdata);
             s.data = angular.copy(s._data);

@@ -25,6 +25,7 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allRolesWatch = pubsub.subscribe("Acct.allRolesChange", vm.clearGridSelections);
+            vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -38,7 +39,7 @@
             return ADataModel.isActive();
         };
 
-        vm.clearGridSelections = function () {            
+        vm.clearGridSelections = function () {
              //clear selections, if theres any
              vm.rolesGrid.selectAll(false);
              vm.rolesGrid.updateSelected();
@@ -88,7 +89,7 @@
             }
         };
 
-        vm.isAccountingAdmin = function () {            
+        vm.isAccountingAdmin = function () {
             return switchModel.getIsAccountingAdmin();
         };
 
@@ -96,10 +97,13 @@
             return !persona.data.hasManageAccountingProductAccess;
         };
 
-        
+        vm.selectAllRoles = function (val) {
+            ADataModel.setAllRoles(vm.dataReq.records, val);
+        };
 
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             vm.allRolesWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();

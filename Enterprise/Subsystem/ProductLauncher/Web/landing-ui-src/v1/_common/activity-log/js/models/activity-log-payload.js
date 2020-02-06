@@ -18,6 +18,7 @@
             s.endDatePayload = undefined;
             s.keywordPayload = undefined;
             s.timezoneOffset = undefined;
+
             s.setDateRange("1-CM");
             s.setSortOrderPayload();
         };
@@ -109,7 +110,22 @@
             }
             s.activityPayload = activityPayload;
         };
-
+        p.setStartDate=function(startDate){
+            var s = this;
+            var startdate = moment(startDate).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+            s.startDatePayload = {
+                "name": "StartDate",
+                "value": startdate
+            };
+        };
+        p.setEndDate=function(endDate){
+            var s = this;
+            var enddate = moment(endDate).endOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+            s.endDatePayload = {
+                "name": "EndDate",
+                "value": enddate
+            };
+        };
         p.setDateRange = function (daterange) {
             var s = this;
             var startDate, endDate;

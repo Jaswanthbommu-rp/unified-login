@@ -5,6 +5,7 @@
 
     function ACompaniesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, ADataModel, switchConfig, userDetailsModel, security, switchModel, pubsub) {
         var vm = this,
+            filteredRecords,
             companiesGrid = gridModel(),
             companiesGridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel();
@@ -27,9 +28,11 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allCompWatch = pubsub.subscribe("Acct.allCompChange", vm.clearGridSelections);
-            // vm.gridSelectionWatch = vm.companiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
+            vm.setAllCompaniesGrid = pubsub.subscribe("Acct.setAllCompaniesGridValue",vm.setGridSelections);
+            vm.gridSelectionWatch = vm.companiesGrid.subscribe("selectChange", vm.gridRowSelectionChange);
             vm.propChangeWatch = pubsub.subscribe("Acct.propChange", vm.changeCompSelection);
             // vm.gridSelectAllWatch = vm.companiesGrid.subscribe("selectAll", vm.gridSelectAllChange);
+            vm.filterData = vm.companiesGrid.subscribe("filterBy", vm.filter.bind(vm));
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -53,6 +56,14 @@
             vm.companiesGrid.updateSelected();
         };
 
+        vm.setGridSelections = function(val) {
+            vm.companiesGrid.selectAll(val);
+            vm.companiesGrid.updateSelected();
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
 
         vm.isUserHasManageProductAccess = function() {
             return !persona.data.hasManageAccountingProductAccess;
@@ -111,15 +122,12 @@
                 switchModel.setHasAccessToCurrentFutureProp(resp.additional.hasAccessToAllCurrentFutureProperties);
                 switchModel.setIsAccountingAdmin(resp.additional.isAccountingAdmin);
 
-
                 pubsub.publish("Acct.allPropertiesSwitchWatch", resp.additional.hasAccessToAllCurrentFutureProperties);
                 pubsub.publish("Acct.acessSiteSpndMgmtOnlySwitchWatch", resp.additional.hasAccessToSiteSpendManagementOnly);
                 pubsub.publish("Acct.accountingAdminSwitchWatch", resp.additional.isAccountingAdmin);
 
             }
         };
-
-
 
         vm.setIsSiteSpendManagementAssignedToCompany = function(data) {
             if (data.additional) {
@@ -139,7 +147,13 @@
         };
 
         vm.selectAllCompanies = function (val) {
-            ADataModel.setAllCompanies(vm.dataReq.records, val);
+            //ADataModel.setallCompanies(vm.dataReq.records, val);
+            if(vm.filteredRecords !== undefined){
+                ADataModel.setallCompanies(vm.filteredRecords, val);
+            }
+            else{
+                ADataModel.setallCompanies(vm.dataReq.records, val);
+            } 
         };
 
         vm.setViewUserState = function(data) {
@@ -219,6 +233,7 @@
         vm.destroy = function() {
             vm.destWatch();
             vm.allCompWatch();
+            vm.gridAllWatch();
             // vm.gridSelectionWatch();
             // vm.gridSelectAllWatch();
             vm.propChangeWatch();
@@ -234,6 +249,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
+            vm.filteredRecords = undefined;
         };
 
         vm.init();

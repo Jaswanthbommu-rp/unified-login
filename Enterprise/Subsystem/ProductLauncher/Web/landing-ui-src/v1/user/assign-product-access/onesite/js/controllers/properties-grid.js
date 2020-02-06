@@ -6,6 +6,7 @@
     function OSPropertiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, OSDataModel, switchConfig, userDetailsModel, security) {
         var vm = this,
             allProperties,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -28,14 +29,16 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
 
-            if (persona.isReady()) {               
+            if (persona.isReady()) {
                 vm.loadData();
             }
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
-            
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
+
         };
 
         vm.isActive = function () {
@@ -44,6 +47,10 @@
 
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageOneSiteProductAccess;
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
         vm.loadData = function () {
@@ -97,18 +104,25 @@
         };
 
         vm.setAllProperties = function (val) {
-            if (val) {
-                var allPropertiesArray = [];
-                allPropertiesArray.push("all");
-                OSDataModel.setProperties(allPropertiesArray);
-
-                //clear selections, if theres any
+            var allPropertiesArray = [];
+            allPropertiesArray.push("all");
+            OSDataModel.setProperties(allPropertiesArray);
+            if(val){
+                vm.grid.updateSelected();
+            }
+            else{
                 vm.grid.selectAll(false);
                 vm.grid.updateSelected();
             }
-            else {
-                OSDataModel.setProperties(vm.dataReq.records);
+        };
+
+        vm.selectAllProperties = function (val) {
+            if(vm.filteredRecords !== undefined){
+                OSDataModel.setAllPropertiesData(vm.filteredRecords, val);
             }
+            else{
+                OSDataModel.setAllPropertiesData(vm.dataReq.records, val);
+            } 
         };
 
         vm.setViewUserState = function (data) {
@@ -128,6 +142,7 @@
         vm.destroy = function () {
             vm.destWatch();
             grid.destroy();
+            vm.gridAllWatch();
             gridTransform.destroy();
             gridPagination.destroy();
             if (vm.dataReq) {

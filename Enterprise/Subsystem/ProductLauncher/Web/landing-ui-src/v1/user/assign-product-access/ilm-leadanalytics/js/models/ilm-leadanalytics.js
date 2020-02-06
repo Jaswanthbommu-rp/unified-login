@@ -69,6 +69,35 @@
             s.propertyGroups = propertyGroupData;
         };
 
+        p.setAllRoles = function(rolesData, val) {
+            var s = this;
+            rolesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.roles = rolesData;
+        };
+
+        p.setAllProperties = function (propertiesData,val) {
+            var s = this;
+
+             propertiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.properties = propertiesData;
+        };
+
+        p.setAllPropertyGroups = function (propertyGroupData,val) {
+            var s = this;
+
+            propertyGroupData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.propertyGroups = propertyGroupData;
+        };
+        
         p.getData = function () {
             var s = this,
                 hasRoles = false,
@@ -126,7 +155,6 @@
 
             s.propertyGroups = [];
             s.roles = [];
-            s.properties = [];
             s.changed = false;
             s.active = false;
             s.properties = [];

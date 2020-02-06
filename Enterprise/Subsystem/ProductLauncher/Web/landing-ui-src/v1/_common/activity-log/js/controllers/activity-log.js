@@ -21,8 +21,14 @@
             vm.filter = vm.initForm();
             vm.activityLog = {};
             vm.singleUser = true;
+            vm.fromDateRequired = false;
+            vm.toDateRequired = false;
+            vm.lblFromDateText = "";
+            vm.lblToDateText = "";
             vm.register();
             vm.loadData();
+            vm.filterByStartDate(moment().startOf('month'));
+            vm.filterByEndDate(moment());
 
             vm.exportMenu = exportMenu(vm);
         };
@@ -42,7 +48,7 @@
 
         vm.initFilterDropdowns = function () {
             activityLogFormConfig.setOptions("activities", filterOptions.getActivityTypes());
-            activityLogFormConfig.setOptions("daterange", filterOptions.getDateRanges());
+            //activityLogFormConfig.setOptions("daterange", filterOptions.getDateRanges());
             activityLogFormConfig.setOptions("sortby", filterOptions.getSortFilters());
         };
 
@@ -76,12 +82,58 @@
 
         vm.filterByActivities = function (activityValue) {
             vm.payloadModel.buildActivityPayload(activityValue);
-            vm.loadData();
+            if (!vm.fromDateRequired && !vm.toDateRequired) {
+                vm.loadData();
+            }
         };
 
         vm.filterByDates = function (daterange) {
             vm.payloadModel.setDateRange(daterange);
             vm.loadData();
+        };
+        vm.filterByStartDate = function (date) {
+            var dateToday = moment();
+            var selectedDate = moment(date);
+            if (date) {
+                if (selectedDate.isSameOrBefore(dateToday, "day")) {
+                    activityLogFormConfig.endDate.minDate(selectedDate);
+                    activityLogFormConfig.endDate.maxDate(dateToday);
+                }
+                vm.fromDateRequired = false;
+                vm.lblFromDateText = "From";
+                vm.payloadModel.setStartDate(date);
+                if (!vm.toDateRequired) {
+                    vm.loadData();
+                }
+            } else {
+                vm.fromDateRequired = true;
+                vm.lblFromDateText = "From Date is required";
+            }
+
+        };
+        vm.filterByEndDate = function (date) {
+            var dateToday = moment();
+            var selectedDate = moment(date);
+            if (date) {
+                if (selectedDate.isSameOrBefore(dateToday, "day")) {
+                    activityLogFormConfig.startDate.maxDate(selectedDate);
+                    activityLogFormConfig.endDate.maxDate(dateToday);
+
+                } else {
+                    activityLogFormConfig.endDate.maxDate(dateToday);
+                    activityLogFormConfig.startDate.maxDate(dateToday);
+                }
+                vm.toDateRequired = false;
+                vm.lblToDateText = "To";
+                vm.payloadModel.setEndDate(date);
+                if (!vm.fromDateRequired) {
+                    vm.loadData();
+                }
+            } else {
+                vm.toDateRequired = true;
+                vm.lblToDateText = "To Date is required";
+            }
+
         };
 
         vm.sortByFilter = function (filterItem) {
@@ -102,7 +154,7 @@
 
         vm.setData = function (resp) {
             grid.busy(false);
-            resp.data.forEach(function(item) {
+            resp.data.forEach(function (item) {
                 item.activityDate = vm.setActivityDate(item.applicationTimestamp);
             });
             gridPagination.setData(resp.data).goToPage({
@@ -110,7 +162,7 @@
             });
         };
 
-        vm.setActivityDate = function(activityDate) {
+        vm.setActivityDate = function (activityDate) {
             if (activityDate) {
                 activityDate = moment(activityDate).toDate();
             }

@@ -5,10 +5,13 @@
 
     function InvestmentAnalyticsMarketsCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, IADataModel, userDetailsModel, pubsub, switchConfig, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            userLoginName = "",
+            userRealPageId =  "00000000-0000-0000-0000-000000000000";
 
         vm.init = function () {
             vm.grid = grid;
@@ -33,8 +36,16 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
-
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllMarkets);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("IAM.updateGrids", vm.updateGrid);
+            vm.aoUserUpdateWatch = pubsub.subscribe("settings.aoUserUpdate", vm.updateLoad);
+        };
+
+        vm.updateLoad = function (userRealPageId) {            
+            logc("Prop userRealPageId", userRealPageId);
+            userRealPageId = userRealPageId;
+            vm.loadData();
         };
 
         vm.updateGrid = function () {
@@ -44,7 +55,9 @@
         vm.isActive = function () {
             return IADataModel.isActive();
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
         vm.loadData = function () {
             if (persona.isReady() && IADataModel.isActive()) {
                 grid.busy(true);
@@ -53,7 +66,8 @@
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
                     selectedCompanies: [0],
-                    productName: "MA"
+                    productName: "MA",
+                    userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                 };
 
                 vm.activeWatch();
@@ -94,9 +108,20 @@
             return !persona.data.hasManageAssetOptimizationProductAccess;
         };
 
+        vm.selectAllMarkets = function (val) {
+            if(vm.filteredRecords !== undefined){
+                IADataModel.setAllMarkets(vm.filteredRecords, val);
+            }
+            else{
+                IADataModel.setAllMarkets(vm.dataReq.records, val);
+            } 
+        };
+
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             vm.updateGridWatch();
+            vm.aoUserUpdateWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }

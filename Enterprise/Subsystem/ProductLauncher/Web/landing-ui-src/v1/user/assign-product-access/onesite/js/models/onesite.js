@@ -1,3 +1,4 @@
+
 //  OSData Model
 
 (function (angular, undefined) {
@@ -57,9 +58,28 @@
             s.properties = propertiesData;
         };
 
+        p.setAllPropertiesData = function (filteredPropertiesData, val) {
+            var s = this;
+            filteredPropertiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+        };
+
         p.setRoles = function (rolesData) {
             var s = this;
             s.roles = rolesData;
+        };
+
+        p.setAllRoles = function (rolesData, val) {
+            var s = this;
+
+            rolesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.roles = rolesData;
+
+            return s.roles;
         };
 
         p.getData = function () {
@@ -78,7 +98,6 @@
 
                 hasRoles = s.data.inputJson.roleList.length > 0;
             }
-
             if (s.properties && s.properties.length) {
                 s.data.inputJson.propertyList = [];
 

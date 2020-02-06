@@ -5,6 +5,7 @@
 
     function Lead2LeasePropertiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, lead2LeaseDataModel, userDetailsModel, security) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -32,12 +33,17 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
+
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
             return lead2LeaseDataModel.isActive();
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
         vm.loadData = function () {
             if (persona.isReady() && lead2LeaseDataModel.isActive()) {
                 grid.busy(true);
@@ -81,12 +87,22 @@
             }
         };
 
+        vm.selectAllProperties = function(val){
+            if(vm.filteredRecords !== undefined){
+                lead2LeaseDataModel.setAllProperties(vm.filteredRecords, val);
+            }
+            else{
+                lead2LeaseDataModel.setAllProperties(vm.dataReq.records, val);
+            } 
+        };
+
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageLead2LeaseProductAccess;
         };
 
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }
@@ -98,6 +114,7 @@
             gridPagination = undefined;
             vm = undefined;
             $scope = undefined;
+            filteredRecords=undefined;
         };
 
         vm.init();

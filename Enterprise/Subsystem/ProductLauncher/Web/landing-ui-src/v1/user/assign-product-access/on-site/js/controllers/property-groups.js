@@ -5,6 +5,7 @@
 
     function OnSitePropertyGroupsCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, userDetailsModel, pubsub, security, sync) {
         var vm = this,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -34,20 +35,27 @@
             }
             sync.setGroupSelectKey("isAssigned");
             vm.gridSelectionWatch = grid.subscribe("selectChange", vm.selectionChange);
-            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectionAll);
             vm.updateGridWatch = pubsub.subscribe("onsite.updateGrids", vm.updateGrid);
             vm.updateAll = pubsub.subscribe("onsite.allProperties", vm.allPropertiesSelected);
+            vm.gridSelectAllWatch = grid.subscribe("selectAll", vm.selectAllPropertyGroup);
+            vm.filterData = grid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.allPropertiesSelected = function (val) {
             vm.allProperties = val;
+            if(!val){
             vm.grid.selectAll(false);
             vm.grid.updateSelected();
+            }
             sync.allGroupToPropertySync();
         };
 
         vm.updateGrid = function () {
             vm.grid.updateSelected();
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
         vm.selectionAll = function () {
@@ -111,11 +119,21 @@
             return !persona.data.hasManageOnSiteProductAccess;
         };
 
+        vm.selectAllPropertyGroup = function (val) {
+            if(vm.filteredRecords !== undefined){
+                dataModel.setAllPropertyGroupData(vm.filteredRecords, val);
+            }
+            else{
+                dataModel.setAllPropertyGroupData(vm.dataReq.records, val);
+            }
+            sync.allGroupToPropertySync();
+        };
+
         vm.destroy = function () {
             vm.destWatch();
             vm.gridSelectionWatch();
-            vm.gridAllWatch();
             vm.updateGridWatch();
+            vm.gridSelectAllWatch();
             vm.updateAll();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();

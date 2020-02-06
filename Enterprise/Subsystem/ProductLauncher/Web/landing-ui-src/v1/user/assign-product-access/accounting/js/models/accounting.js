@@ -33,6 +33,7 @@
             s.roles = [];
             s.properties = [];
             s.companies = [];
+            s.entities = [];
             s._data = angular.copy(s.data);
         };
 
@@ -99,6 +100,46 @@
 
         p.setRoles = function(rolesData) {
             var s = this;
+            s.roles = rolesData;
+        };
+
+        p.setallCompanies = function(companiesData, val) {
+            var s = this;
+
+            companiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            //s.companies = companiesData;
+        };
+
+        p.setAllEntities = function (EntitiesData,val) {
+            var s = this;
+
+            EntitiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            //s.entities = EntitiesData;
+        };
+
+        p.setAllProperties = function(propertiesData, val) {
+            var s = this;
+
+            propertiesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
+            s.properties = propertiesData;
+        };
+
+        p.setAllRoles = function(rolesData, val) {
+            var s = this;
+
+            rolesData.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
+
             s.roles = rolesData;
         };
 
@@ -180,7 +221,7 @@
 
                             if (comp.isAssigned) {
                                 s.data.inputJson.propertyList.push(comp.id);
-                            } 
+                            }
 
                             s.properties.forEach(function(prop) {
 
@@ -229,18 +270,18 @@
               s.companies.forEach(function(comp) {
 
                     if (comp.isAssigned === false) {
-                       
+
                             s.properties.forEach(function(prop) {
 
                                 if (prop.companyId === comp.id) {
                                     if (prop.isAssigned) {
                                         isCompSelwithProperties = false;
-                                        return;                                           
+                                        return;
                                     }
                                 }
-                            });                           
+                            });
 
-                    } 
+                    }
                 });
 
             if (hasCompanies && hasRoles && hasProperties && isCompSelwithProperties) { // No need to check hasCompanies - not mandatory
@@ -252,7 +293,7 @@
 
         p.clearProperties = function() {
             var s = this;
-            // set everything to false            
+            // set everything to false
             if (s.getProperties() != undefined) {
                 if (s.getProperties()[0] !== "all") {
                     s.getProperties().forEach(function(item) {
@@ -273,7 +314,7 @@
 
         p.clearRoles = function() {
             var s = this;
-            // set everything to false            
+            // set everything to false
             if (s.getRoles() != undefined) {
 
                 if (s.getRoles()[0] !== "all") {
@@ -296,6 +337,7 @@
             s.changed = false;
             s.properties = [];
             s.companies = [];
+            s.entities = [];
 
             s.data = angular.copy(s._data);
         };

@@ -31,6 +31,7 @@
             else {
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
+            vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectAllRoles);
         };
 
         vm.isActive = function () {
@@ -86,8 +87,13 @@
             return !persona.data.hasManageILMLeasingAnalyticsProductAccess;
         };
 
+        vm.selectAllRoles = function (val) {
+            ILMLADataModel.setAllRoles(vm.dataReq.records, val);
+        };
+
         vm.destroy = function () {
             vm.destWatch();
+            vm.gridAllWatch();
             rolesGrid.destroy();
             //vm.accessTypeWatch();
             if (vm.dataReq) {

@@ -276,8 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         IsPending = false,
                         IsExpired = false,
                         FromDate = DateTime.UtcNow,
-                        Is3rdPartyIDP = false,
-                        TimeZoneOffset = string.Empty
+                        Is3rdPartyIDP = false
                     },
                     productBatch = null
                 };

@@ -22,7 +22,6 @@
                 recordsPerPage: 25
             });
 
-
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
@@ -34,6 +33,8 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
 
+            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
@@ -90,13 +91,26 @@
             }
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
+        vm.selectAllProperties = function(val){
+            if(vm.filteredRecords !== undefined){
+                ILMLMDataModel.setAllProperties(vm.filteredRecords, val);
+            }
+            else{
+                ILMLMDataModel.setAllProperties(vm.dataReq.records, val);
+            }              
+        };
+
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageILMLeadManagemementProductAccess;
         };
 
         vm.destroy = function () {
             vm.destWatch();
-
+            vm.gridAllWatch();
             if (vm.dataReq) {
                 vm.dataReq.$cancelRequest();
             }

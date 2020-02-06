@@ -3,13 +3,14 @@
 (function (angular, undefined) {
     "use strict";
 
-    function BusinessIntelligenceProductAccessCtrl($scope, $filter, tabsMenu, tabsData, model, pubsub) {
+    function BusinessIntelligenceProductAccessCtrl($scope, $filter, tabsMenu, tabsData, model, pubsub, userDetailsModel) {
         var vm = this;
 
         vm.init = function () {
             vm.tabsList = [];
             vm.productDisabled = false;
-            vm.productAccessWatch = pubsub.subscribe("pa.regUserNoEmailNotAllowed", vm.setProductDisabled);
+            vm.userDetailsModel = userDetailsModel;
+            vm.productAccessWatch = pubsub.subscribe("ao.regUserNoEmailNotAllowed", vm.setProductDisabled);
             vm.tabsMenu = tabsMenu().setData(tabsData.getList());
             vm.tabsList = tabsData.getList();
             vm.panelName = $filter("productPanelText")("panelName.businessintelligence");
@@ -29,6 +30,7 @@
         };
 
         vm.setProductDisabled = function (value) {
+            logc("bi value",value);
             vm.productDisabled = value;
         };
 
@@ -53,6 +55,7 @@
             "BusinessIntelligenceTabsNavModel",
             "businessIntelligenceDataModel",
             "pubsub",
+            "userDetailsModel",
             BusinessIntelligenceProductAccessCtrl
         ]);
 })(angular);

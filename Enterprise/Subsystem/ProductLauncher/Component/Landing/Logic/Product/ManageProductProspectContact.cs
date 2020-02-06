@@ -539,7 +539,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return response;
 			}
 
-			var filter = "NonMigrated";
+			var filter = "GreenbookUser";
 			var startRow = 0;
 			var resultPerRow = 1000;
 			if (datafilter != null)
@@ -558,12 +558,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var url = $"{_apiEndPoint}/users/{companyInstanceSourceId}?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
 			WriteToDiagnosticLog("ManageProductProspectContact.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
 
-			var allUsers = GetResultFromApi<IList<ProspectContactCenterUserProfile>>(url);
-
+			var allUsers = GetResultFromApi<List<ProspectContactCenterUserProfile>>(url);
+			
 			if (allUsers == null)
 			{
 				WriteToErrorLog($"ManageProductProspectContact.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
 				return response;
+			}
+			else
+			{
+				//This logic will remove the users whom already migrated in to UL,since PCC not implemented filter logic.
+				ProductRepository productRepository = new ProductRepository();
+				string product = Convert.ToString((int)ProductEnum.ProspectContactCenter);
+				IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
+
+				if (productUserList?.Count > 0)
+				{
+					allUsers.RemoveAll(o => productUserList.Any(p => p.ProductUserName == o.LoginName));
+				}				
 			}
 			var migrationUsers = new List<MigrationUser>();
 			foreach (var user in allUsers)
@@ -1075,6 +1087,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public string SystemIdentifier { get; set; } = null;
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime LastLogin { get; set; }
+		public DateTime LastLogin { get; set; }		
 	}
 }

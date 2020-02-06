@@ -24,7 +24,8 @@
                 if (model.isEmpty()) {
                     var reqData = {
                         personRealPageId: realPageId,
-                        accessFilter: "UserDetails"
+                        accessFilter: "UserDetails",
+                        loginName: userStatus.getLoginName()
                     };
 
                     svc.get(reqData, vm.onGetData);
@@ -37,7 +38,7 @@
 
         vm.onGetData = function (resp) {
             var soln = model.setData(resp.data);
-            vm.setAOBenchmarkProductAccess(resp.data);
+            vm.setAOProductAccess(resp.data);
             vm.onDataReady();
         };
 
@@ -64,9 +65,9 @@
                                 if (soln.solutionId === 501 && soln.productId === 14) {
                                     soln.isAssigned = false;                                                                   
                                 }
-                                if ( (soln.solutionId === 402 && soln.productId === 29) || (soln.solutionId === 404 && soln.productId === 31) || (soln.solutionId === 403 && soln.productId === 30) || (soln.solutionId === 401 && soln.productId === 32) )  {
-                                    soln.isAssigned = false;                                                                   
-                                }
+                                // if ( (soln.solutionId === 402 && soln.productId === 29) || (soln.solutionId === 404 && soln.productId === 31) || (soln.solutionId === 403 && soln.productId === 30) || (soln.solutionId === 401 && soln.productId === 32) )  {
+                                //     soln.isAssigned = false;                                                                   
+                                // }
                                 if (soln.solutionId === 206 && soln.productId === 48) {
                                     soln.isAssigned = false;    
                                 }
@@ -91,10 +92,10 @@
                                 family.selectAll.selected = false;      
                                 model.selectSoln(soln);                              
                             }
-                            if ( (soln.data.solutionId === 402 && soln.data.productId === 29) || (soln.data.solutionId === 404 && soln.data.productId === 31) || (soln.data.solutionId === 403 && soln.data.productId === 30) || (soln.data.solutionId === 401 && soln.data.productId === 32) )  {
-                                family.selectAll.selected = false;        
-                                model.selectSoln(soln);                            
-                            }
+                            // if ( (soln.data.solutionId === 402 && soln.data.productId === 29) || (soln.data.solutionId === 404 && soln.data.productId === 31) || (soln.data.solutionId === 403 && soln.data.productId === 30) || (soln.data.solutionId === 401 && soln.data.productId === 32) )  {
+                            //     family.selectAll.selected = false;        
+                            //     model.selectSoln(soln);                            
+                            // }
                             if (soln.data.solutionId === 206 && soln.data.productId === 48) {
                                 logc("payments");   
                                 family.selectAll.selected = false;      
@@ -130,20 +131,24 @@
             return false;
         };
 
-        vm.setAOBenchmarkProductAccess = function (data) {
+        vm.setAOProductAccess = function (data) {
             if (data) {
                 data.forEach(function (family) {
                     if (family.familyId === 400) {
                         family.solutions.forEach(function (soln) {
                             if (soln.products === "Benchmarking" && soln.solutionId === 403) {
                                 aoStatus.setBenchmarkProductAccess(true);
-                            }
+                            }    
+                            if (userStatus.isRegularUserNoEmail()) {
+                                pubsub.publish("ao.regUserNoEmailNotAllowed",soln.productNotAvailableForRegularUserNoEmail);                               
+                            }                        
                         });
                     }
                 });
             }
         };
 
+        
         vm.selectSoln = function (soln) {
             panels.initState();
             model.selectSoln(soln);

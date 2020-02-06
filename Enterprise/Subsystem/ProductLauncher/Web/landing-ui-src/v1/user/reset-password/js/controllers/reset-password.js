@@ -3,14 +3,21 @@
 (function(angular, undefined) {
     "use strict";
 
-    function ResetPasswordCtrl($scope, $q, $filter, $params, model, timeout, tabs, formConfig, resetsvc, settempsvc, helpData, security, userDetModel, impersonate, session) {
+    function ResetPasswordCtrl($scope, $q, $filter, $params, model, timeout, tabs, formConfig, resetsvc, settempsvc, helpData, security, userDetModel, impersonate, session, PasswordPolicySvc) {
         var vm = this,
             lang = $filter("resetPasswordText");
 
         vm.init = function() {
+            vm.formState = {
+                password: null,
+                isSaving: false
+            };
             vm.model = model;
             vm.security = security;
             vm.formConfig = formConfig.setMethodsSrc(vm);
+         
+            vm.validatePasswordPolicy();
+
             vm.register();
             vm.setControlsState();
             vm.activeWatch = $scope.$watch(vm.isReady, vm.setControlsStateImp);
@@ -26,6 +33,23 @@
         vm.clearNewPasswordFields = function() {
             vm.model.data.newPassword = "";
             vm.model.data.newPasswordCopy = "";
+        };
+
+        vm.validatePasswordPolicy = function() {
+            var records = session.getOrganization();
+            var params = {
+                    PartyId: records[0].partyId
+            };
+            PasswordPolicySvc.get(params, vm.onResponseReady, vm.setDataErr);
+        };
+
+        vm.onResponseReady = function (resp) {
+                var settings = resp.data;
+                vm.formState.password = model.init(settings);
+        };
+
+        vm.setDataErr = function (resp) {
+            alert(resp);
         };
 
         vm.setControlsState = function() {
@@ -183,6 +207,7 @@
             "userDetailsModel",
             "userImpersonated",
             "userSessionModel",
+            "PasswordPolicySvc",
             ResetPasswordCtrl
         ]);
 })(angular);
