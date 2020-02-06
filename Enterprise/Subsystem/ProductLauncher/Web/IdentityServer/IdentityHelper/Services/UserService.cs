@@ -487,6 +487,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 return;
             }
 
+            var userInfo = authUser.UserLogin;
+            var personaList = _personaManager.ListActivePersona(userInfo.RealPageId, false);
+            if (personaList.Any(p => p.Organization.BooksCustomerMasterId == -1)){
+                long activePersonaId = GetActivePersonaId(userInfo, 0);
+                    
+                if (personaList.Any(p => p.Organization.BooksCustomerMasterId == -1 && p.PersonaId != activePersonaId))
+                {
+                    // change the user back to the employee company if they are logging back in later
+                    activePersonaId = personaList.FirstOrDefault(p => p.Organization.BooksCustomerMasterId == -1).PersonaId;    
+                    _personaManager.UpdateActivePersona(userInfo.RealPageId, activePersonaId);
+                }
+            }
+
             List<Claim> claims = new List<Claim>();
             try
             {
