@@ -353,10 +353,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                     //cookietest[3] = "SameSite = \"none\"";
                                     //n.OwinContext.Response.Headers["Set-Cookie"]
                                     //n.OwinContext.Response.Headers.Keys["Set-Cookie"], cookietest );
-                                    //string[] cookietest = n.OwinContext.Response.Headers["Set-Cookie"].Split(';');
+                                    string[] cookieCurrent = n.OwinContext.Response.Headers["Set-Cookie"].Split(';');
                                     //int newlength = cookietest.Length+1;
                                     //string[] newcookie = new string[newlength];
-                                    n.OwinContext.Response.Headers["Set-Cookie"] = n.OwinContext.Response.Headers["Set-Cookie"]+$"; SameSite=None, userinfo.{signinId}={n.OwinContext.Request.Query.Get("info")} path=/; expires=Thu, 06-Feb-2020 15:31:32 GMT; secure; HttpOnly";
+                                    n.OwinContext.Response.Headers["Set-Cookie"] = n.OwinContext.Response.Headers["Set-Cookie"]+$"; SameSite=None" + CookieAddWithSameSite("userinfo."+signinId, n.OwinContext.Request.Query.Get("info"));// path=/; expires=Thu, 06-Feb-2020 15:31:32 GMT; secure; HttpOnly";
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
@@ -396,6 +396,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
 
             return null;
+        }
+
+        private static string CookieAddWithSameSite(string key, string value)
+        {
+            DateTime cookieDateTime = DateTime.UtcNow;
+            string test = cookieDateTime.ToLongDateString();
+            string test2 = cookieDateTime.ToLongTimeString();
+
+            string newCookie = $", {key}={value} path=/; expires=Thu, 06-Feb-2020 15:31:32 GMT; secure; HttpOnly; SameSite=None";
+            return newCookie;
         }
 
         /// <summary>
