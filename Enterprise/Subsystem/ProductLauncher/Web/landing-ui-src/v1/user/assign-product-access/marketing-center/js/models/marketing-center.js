@@ -22,7 +22,8 @@
                 retryCount: 0,
                 inputJson: {
                     roleList: [],
-                    propertyList: []
+                    propertyList: [],
+                    IsAssignedNewPropertyByDefault: false
                 }
             };
 
@@ -82,7 +83,7 @@
                 hasProperties = false;
 
             //assign new property toggle value in productbatch
-            s.data.isAssignedNewProperty = s.newPropertyState;
+            s.data.inputJson.IsAssignedNewPropertyByDefault = s.newPropertyState;
             if (s.roles && s.roles.length) {
                 s.data.inputJson.roleList = [];
 
