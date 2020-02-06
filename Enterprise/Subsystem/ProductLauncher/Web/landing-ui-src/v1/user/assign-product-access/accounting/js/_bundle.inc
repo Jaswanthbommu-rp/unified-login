@@ -26,6 +26,7 @@
 {{{ include("models/tabs-menu.js") }}}
 {{{ include("models/companies-config.js") }}}
 {{{ include("models/switch-model.js") }}}
+{{{ include("models/tabs.js") }}}
 
 
 // Services

@@ -17,5 +17,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         public bool IsSiteSpendManagementAssignedToCompany { get; set; } = false;
 
+        public bool IsMConsolePMC { get; set; } = false;
+
     }
 }

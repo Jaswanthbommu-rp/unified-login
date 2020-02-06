@@ -35,8 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
 
                 var options = IdentityServerConfig.GetIdentityServerOptions();
 
-
-                //app.UseCookieAuthentication(new CookieAuthenticationOptions());
+				//app.UseCookieAuthentication(new CookieAuthenticationOptions());
                 app.SetDefaultSignInAsAuthenticationType(ConfigReader.Environment+"-IDCookie");
                 app.Map("/identity", idsrvApp =>
                 {
@@ -57,6 +56,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                 app.UseCookieAuthentication(new CookieAuthenticationOptions
                 {
                     AuthenticationType = ConfigReader.Environment + "-IDCookie",
+                });
+
+                // try to catch any operation was cancelled errors and ignore them so they aren't logged in kibana
+                app.Use(async (ctx, next) =>
+                {
+                    try
+                    {
+                        await next();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
                 });
 			}
 			catch (Exception ex)

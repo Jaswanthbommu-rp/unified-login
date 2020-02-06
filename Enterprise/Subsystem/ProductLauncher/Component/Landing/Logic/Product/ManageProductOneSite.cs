@@ -372,30 +372,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 PropertyList userCurrentPropertyList = GetOneSitePropertyListMain(args, datafilter, _systemIdentifier);
                 WriteToDiagnosticLog("UpdatePropertiesForUser - Parsing properties to determine what to add/delete");
                 // compare the current property list to what was passed to determine what is new and what was removed.
-                foreach (PropertyType prop in userCurrentPropertyList.Property)
+
+                //Fix for bug GB-7138
+                var onesiteUserInfo = GetOneSiteUserInfo(_systemIdentifier);
+                if (onesiteUserInfo != null && onesiteUserInfo.AllProperties && userCurrentPropertyList.Property.Count() == propertiesToAssign.Count)
                 {
-                    if (!(propertiesToAssign.Contains(prop.PropertyID)))
+                    if (propertiesToAssign.Count > 0)
                     {
-                        if (prop.IsAssignedToUser)
+                        propertyIDAddList = string.Join("|", propertiesToAssign);
+                    }
+                }
+                else
+                {
+                    foreach (PropertyType prop in userCurrentPropertyList.Property)
+                    {
+                        if (!(propertiesToAssign.Contains(prop.PropertyID)))
                         {
-                            // property doesn't exist, so add it to the list
-                            propertiesToRemove.Add(prop.PropertyID);
+                            if (prop.IsAssignedToUser)
+                            {
+                                // property doesn't exist, so add it to the list
+                                propertiesToRemove.Add(prop.PropertyID);
+                            }
+                        }
+                        if (propertiesToAssign.Contains(prop.PropertyID) && prop.IsAssignedToUser)
+                        {
+                            propertiesToAssign.Remove(prop.PropertyID);
                         }
                     }
-                    if (propertiesToAssign.Contains(prop.PropertyID) && prop.IsAssignedToUser)
+
+                    if (propertiesToAssign.Count > 0)
                     {
-                        propertiesToAssign.Remove(prop.PropertyID);
+                        propertyIDAddList = string.Join("|", propertiesToAssign);
+                    }
+                    if (propertiesToRemove.Count > 0)
+                    {
+                        propertyIDRemoveList = string.Join("|", propertiesToRemove);
                     }
                 }
 
-                if (propertiesToAssign.Count > 0)
-                {
-                    propertyIDAddList = string.Join("|", propertiesToAssign);
-                }
-                if (propertiesToRemove.Count > 0)
-                {
-                    propertyIDRemoveList = string.Join("|", propertiesToRemove);
-                }
                 resultCount = (propertiesToAssign.Count + propertiesToRemove.Count).ToString();
             }
             else

@@ -788,6 +788,14 @@
     <Build Include="Auth\Tables\Claim.sql" />
     <Build Include="Auth\Stored Procedures\GetUserClaimTypesRequiredForClient.sql" />
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId.sql" />
+    <Build Include="Auth\Stored Procedures\ClaimSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClaimInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClaimUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClaimDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ClientUserClaimSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClientUserClaimInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientUserClaimUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ClientUserClaimDelete.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

@@ -118,6 +118,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var impersonatingRealPageId = Encoding.UTF8.GetString(userContext).Split('|')[1];
             var revertUser = context.SignInMessage.AcrValues.FirstOrDefault(x => x.Split(':')[0] == "Impersonated");
             var newPersonaIdString = "0";
+            bool employeeChangedCompany = false;
+
             if (Encoding.UTF8.GetString(userContext).Split('|').Length == 3)
             {
                 newPersonaIdString = Encoding.UTF8.GetString(userContext).Split('|')[2];
@@ -171,9 +173,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 {
                     _personaManager.UpdateActivePersona(user.RealPageId, newPersonaId);
                     user.PersonaId = newPersonaId;
+                    if (activePersonaList.Any(ap => ap.Organization.BooksCustomerMasterId == -1))
+                    {
+                        employeeChangedCompany = (activePersonaList.FirstOrDefault(ap => ap.PersonaId == newPersonaId).Organization.BooksCustomerMasterId != -1) ? true : false;
+                    }
                 }
             }
-
             var userPersona = _personaManager.GetPersona(user.PersonaId);
 
             WriteToLog(LogType.Diagnostic, $"PreAuthenticateAsync: loggedInUserRPID:{loggedInUserRPID} newUser:{newUserRealPageId} impersonatorPersona.Organization.BooksMasterId:{impersonatorPersona.Organization.BooksMasterId} ConfigReader.OrgMasterId:{ConfigReader.OrgMasterId}", new Guid(correlationId));
@@ -215,7 +220,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             }
             else
             {
-                LogEventActivity(claims, "User {0} {1} successfully logged-in.");
+                if (employeeChangedCompany)
+                {
+                    LogActivity.WriteActivity(new ActivityDetails
+                    {
+                        LogActivityTypeName = "Change Company",
+                        LogCategoryName = LogActivityCategoryType.User.ToString(),
+                        CorrelationId = correlationId,
+                        BooksMasterOrganizationId = -1,
+                        Message = $"{impersonatorPerson.FirstName} {impersonatorPerson.LastName} accessed {userPersona.Organization.Name} with Change Company.",
+
+                        FromUserLoginName = impersonator.LoginName,
+                        FromUserLoginId = impersonator.UserId,
+                        FromUserFirstName = impersonatorPerson.FirstName,
+                        FromUserLastName = impersonatorPerson.LastName,
+                        FromUserRealpageId = impersonator.RealPageId.ToString(),
+
+                        ToUserFirstName = userPerson.FirstName,
+                        ToUserLastName = userPerson.LastName,
+                        ToUserLoginId = Convert.ToInt64(userPersona.UserId),
+                        ToUserRealpageId = userPersona.RealPageId.ToString(),
+                        ToUserLoginName = user.LoginName,
+
+                        BooksProductCode = "ST",
+                    });
+                    LogEventActivity(claims, "RealPage Employee {0} {1} successfully logged-in.");
+                }
+                else
+                {
+                    LogEventActivity(claims, "User {0} {1} successfully logged-in.");
+                }
             }
 
             WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Success ", new Guid(correlationId), new Dictionary<string, object>
@@ -385,12 +419,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     return; // user provider not configured in database
                 }
 
-                //string denyReason;
-                //if (UserAccessShouldBeDenied(userInfo, out denyReason))
-                //{
-                //    context.AuthenticateResult = new AuthenticateResult(denyReason);
-                //    return;
-                //}
+                var personaList = _personaManager.ListActivePersona(userInfo.RealPageId, false);
+                if (personaList.Any(p => p.Organization.BooksCustomerMasterId == -1)){
+                    long activePersonaId = GetActivePersonaId(userInfo, 0);
+                    
+                    if (personaList.Any(p => p.Organization.BooksCustomerMasterId == -1 && p.PersonaId != activePersonaId))
+                    {
+                        // change the user back to the employee company if they are logging back in later
+                        activePersonaId = personaList.FirstOrDefault(p => p.Organization.BooksCustomerMasterId == -1).PersonaId;    
+                        _personaManager.UpdateActivePersona(userInfo.RealPageId, activePersonaId);
+                    }
+                }
 
                 var claims = GetClaimsForUser(userInfo, 0, context.SignInMessage.ClientId);
                 if (!string.IsNullOrEmpty(externalIdToken))

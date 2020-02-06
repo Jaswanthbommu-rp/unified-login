@@ -102,6 +102,10 @@
             return model.data.hasAccessSettingsAdmin;
         };
 
+        model.hasnotificationsAccess = function () {
+            return model.data.hasnotificationsAccess;
+        };
+
         model.isReady = function () {
             return model.ready;
         };

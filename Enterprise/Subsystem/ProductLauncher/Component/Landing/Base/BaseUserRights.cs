@@ -85,6 +85,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     // check for import user right
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "ABILITYTOIMPORTUSERS");
 
+                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGENOTIFICATIONS");                    
+
                 }
             }
 
