@@ -64,42 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         SuppressSameSiteNoneCookiesCallback = env =>
                         {
                             var context = new OwinContext(env);
-                            var userAgent = context.Request.Headers["User-Agent"].ToString();
-                            //return true;
-                            // Cover all iOS based browsers here. This includes:
-                            // - Safari on iOS 12 for iPhone, iPod Touch, iPad
-                            // - WkWebview on iOS 12 for iPhone, iPod Touch, iPad
-                            // - Chrome on iOS 12 for iPhone, iPod Touch, iPad
-                            // All of which are broken by SameSite=None, because they use the iOS 
-                            // networking stack.
-                            if (userAgent.Contains("CPU iPhone OS 12") ||
-                                userAgent.Contains("iPad; CPU OS 12"))
-                            {
-                                return true;
-                            }
-
-                            // Cover Mac OS X based browsers that use the Mac OS networking stack. 
-                            // This includes:
-                            // - Safari on Mac OS X.
-                            // This does not include:
-                            // - Chrome on Mac OS X
-                            // Because they do not use the Mac OS networking stack.
-                            if (userAgent.Contains("Macintosh; Intel Mac OS X 10_14") &&
-                                userAgent.Contains("Version/") && userAgent.Contains("Safari"))
-                            {
-                                return true;
-                            }
-
-                            // Cover Chrome 50-69, because some versions are broken by SameSite=None, 
-                            // and none in this range require it.
-                            // Note: this covers some pre-Chromium Edge versions, 
-                            // but pre-Chromium Edge does not require SameSite=None.
-                            if (userAgent.Contains("Chrome/5") || userAgent.Contains("Chrome/6"))
-                            {
-                                return true;
-                            }
-
-                            return false;
+                            return SuppressSameSiteNoneCookies(context);
                         }
                     },
                     EnableSignOutPrompt = false,
@@ -345,18 +310,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    //n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Domain = "realpage.com", Path = "/", Secure = true });
-                                    //string[] cookietest = new string[4];
-                                    //cookietest[0] = "Domain = \"realpage.com\"";
-                                    //cookietest[1] = "Path = \"/\"";
-                                    //cookietest[2] = "Secure = \"true\"";
-                                    //cookietest[3] = "SameSite = \"none\"";
-                                    //n.OwinContext.Response.Headers["Set-Cookie"]
-                                    //n.OwinContext.Response.Headers.Keys["Set-Cookie"], cookietest );
-                                    string[] cookieCurrent = n.OwinContext.Response.Headers["Set-Cookie"].Split(';');
-                                    //int newlength = cookietest.Length+1;
-                                    //string[] newcookie = new string[newlength];
-                                    n.OwinContext.Response.Headers["Set-Cookie"] = n.OwinContext.Response.Headers["Set-Cookie"]+$"; SameSite=None" + CookieAddWithSameSite("userinfo."+signinId, n.OwinContext.Request.Query.Get("info"));// path=/; expires=Thu, 06-Feb-2020 15:31:32 GMT; secure; HttpOnly";
+
+                                    if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
+                                    {
+                                        var hold = n.OwinContext.Response.Headers["Set-Cookie"];
+                                        n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
+                                    }
+
+                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; SameSite=None", Secure = true, HttpOnly = true});
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
@@ -398,14 +359,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             return null;
         }
 
-        private static string CookieAddWithSameSite(string key, string value)
+        private static bool SuppressSameSiteNoneCookies(OwinContext context)
         {
-            DateTime cookieDateTime = DateTime.UtcNow;
-            string test = cookieDateTime.ToLongDateString();
-            string test2 = cookieDateTime.ToLongTimeString();
+            //var context = new OwinContext(env);
+            var userAgent = context.Request.Headers["User-Agent"].ToString();
+            //return true;
+            // Cover all iOS based browsers here. This includes:
+            // - Safari on iOS 12 for iPhone, iPod Touch, iPad
+            // - WkWebview on iOS 12 for iPhone, iPod Touch, iPad
+            // - Chrome on iOS 12 for iPhone, iPod Touch, iPad
+            // All of which are broken by SameSite=None, because they use the iOS 
+            // networking stack.
+            if (userAgent.Contains("CPU iPhone OS 12") ||
+                userAgent.Contains("iPad; CPU OS 12"))
+            {
+                return true;
+            }
 
-            string newCookie = $", {key}={value} path=/; expires=Thu, 06-Feb-2020 15:31:32 GMT; secure; HttpOnly; SameSite=None";
-            return newCookie;
+            // Cover Mac OS X based browsers that use the Mac OS networking stack. 
+            // This includes:
+            // - Safari on Mac OS X.
+            // This does not include:
+            // - Chrome on Mac OS X
+            // Because they do not use the Mac OS networking stack.
+            if (userAgent.Contains("Macintosh; Intel Mac OS X 10_14") &&
+                userAgent.Contains("Version/") && userAgent.Contains("Safari"))
+            {
+                return true;
+            }
+
+            // Cover Chrome 50-69, because some versions are broken by SameSite=None, 
+            // and none in this range require it.
+            // Note: this covers some pre-Chromium Edge versions, 
+            // but pre-Chromium Edge does not require SameSite=None.
+            if (userAgent.Contains("Chrome/5") || userAgent.Contains("Chrome/6"))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
