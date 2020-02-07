@@ -325,17 +325,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             //n.ProtocolMessage.MaxAge = "10"; // using an age of 5 didn't work with Azure so upping to 10
                             if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                             {
+                                if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
+                                {
+                                    var hold = n.OwinContext.Response.Headers["Set-Cookie"];
+                                    n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; secure; SameSite=None";
+                                }
                                 if (n.OwinContext.Request.Query.Get("info") != null)
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
-                                    {
-                                        var hold = n.OwinContext.Response.Headers["Set-Cookie"];
-                                        n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; secure; SameSite=None";
-                                        n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; secure; SameSite=None", Secure = true, HttpOnly = true});
-                                    }
-
+                                    n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; secure; SameSite=None", Secure = true, HttpOnly = true});
                                     n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/", Secure = true, HttpOnly = true});
                                 }
 
