@@ -505,15 +505,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		/// <summary>
-		/// Updated to create/update a user in Marketing Center
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="RoleList">The role id to assign the user</param>
-		/// <param name="PropertyList">The list of property id's to assign to the user</param>
-		/// <returns></returns>
-		public string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList)
+        /// <summary>
+        /// Updated to create/update a user in Marketing Center
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="RoleList">The role id to assign the user</param>
+        /// <param name="PropertyList">The list of property id's to assign to the user</param>
+        /// <param name="IsAssignedNewPropertyByDefault">For UI toggle Assign new property by default selected</param>
+        /// <returns></returns>
+        public string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList, bool IsAssignedNewPropertyByDefault)
 		{
 			ListResponse listResponse = new ListResponse();
 			Dictionary<string, object> logData = new Dictionary<string, object>();
@@ -718,17 +719,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 
 			mcUser.AssignPropertyIds = mcProperties;
-			if (PropertyList != null && PropertyList.Count > 0 && PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase) && !isSuperUser)
-			{
-				allPropertiesSelected = true;
-				mcUser.AssignPropertyIds = null;
-			}
-			else if (isSuperUser)
-			{
-				allPropertiesSelected = true;
-			}
+            //if (PropertyList != null && PropertyList.Count > 0 && PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase) && !isSuperUser)
+            //{
+            //	allPropertiesSelected = true;
+            //	mcUser.AssignPropertyIds = null;
+            //}
+            //else if (isSuperUser)
+            //{
+            //	allPropertiesSelected = true;
+            //}
+            if (isSuperUser)
+            {
+                allPropertiesSelected = true;
+            }
+            else
+            {
+                allPropertiesSelected = IsAssignedNewPropertyByDefault;
+            }
 
-			logData = new Dictionary<string, object>();
+            logData = new Dictionary<string, object>();
 			logData.Add("mcUser", mcUser);
 			WriteToDiagnosticLog("ManageMarketingCenterUser - User details.", logData);
 
@@ -804,8 +813,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					if (!isSuperUser)
 					{
-						if (!allPropertiesSelected)
-						{
+						//if (!allPropertiesSelected)
+						//{
 							// get the users current property list and get everything that is currently assigned so it can be removed before adding again
 							ListResponse currentPropertyListResponse = GetProperties(editorPersonaId, userPersonaId, null);
 							List<ProductProperty> currentPropertyList = currentPropertyListResponse.Records.Cast<ProductProperty>().ToList();
@@ -829,7 +838,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								}
 								mcUser.UnassignPropertyIds = removePropertyList;
 							}
-						}
+						//}
 						mcUser.AssignAllProperties = allPropertiesSelected;
 					}
 					var url = "";

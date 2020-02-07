@@ -91,7 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             ManageProductMarketingCenter mg = new ManageProductMarketingCenter(base._userClaims);
 
-            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList);
+            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.IsAssignedNewPropertyByDefault);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.Created);
@@ -123,7 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             ManageProductMarketingCenter mg = new ManageProductMarketingCenter(base._userClaims);
 
-            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList);
+            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.IsAssignedNewPropertyByDefault);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK);
