@@ -1,8 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using RP.Enterprise.Foundation.Audit.Core.Component;
+﻿using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using Sustainsys.Saml2;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 {
@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 				PmcName = null,
 				SiteId = null,
 				SiteName = null,
-				Environment = "local",
+				Environment = ConfigReader.Environment,
 				ProductModule = null,
 				ProductWorkflow = null,
 				ProductStep = null,
@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 				PmcName = null,
 				SiteId = null,
 				SiteName = null,
-				Environment = "DEVWWW",
+				Environment = ConfigReader.Environment,
 				ProductModule = null,
 				ProductWorkflow = null,
 				ProductStep = null,
@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 				PmcName = null,
 				SiteId = null,
 				SiteName = null,
-				Environment = "DEVWWW",
+				Environment = ConfigReader.Environment,
 				ProductModule = null,
 				ProductWorkflow = null,
 				ProductStep = null,

@@ -29,8 +29,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
-using Sustainsys.Saml2.Saml2P;
-using Sustainsys.Saml2.WebSso;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
 
@@ -211,7 +209,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         AuthenticationRequestCreated = (request, identity, response) =>
                         {
                             request.ForceAuthentication = true;
-                            string test = "";
                         }
                     },
                     SPOptions = new SPOptions
@@ -221,17 +218,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
                         PublicOrigin = new Uri(ConfigReader.GetIssuerUri),
-                        Logger = new TestLogger(), // enable to log Saml2AuthenticationOptions issues
-
                     },
                 };
-                
-                authServicesOptions.Notifications.AcsCommandResultCreated = (cr, r) =>
-                {
-                    string test = "";
-                    //cr.HandledResult = false;
-                    
-                };
+
+                // may need for samesite fix
+                //authServicesOptions.Notifications.AcsCommandResultCreated = (cr, r) =>
+                //{
+                //    string test = "";
+                //    
+                //};
+
                  // keep for debugging purposes
                 //authServicesOptions.Notifications.GetPublicOrigin = (request) =>
                 //{
@@ -241,7 +237,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                 //    return new Uri("https://asdsad");
                 //};
                 
-
+                if (!ConfigReader.Environment.Equals("prod", StringComparison.OrdinalIgnoreCase))
+                {
+                    authServicesOptions.SPOptions.Logger = new TestLogger();// enable to log Saml2AuthenticationOptions issues
+                }
+                
                 IdentityProvider idp = new IdentityProvider(new EntityId(provider.EntityId), authServicesOptions.SPOptions)
                 {
                     MetadataLocation = provider.MetadataLocation,
