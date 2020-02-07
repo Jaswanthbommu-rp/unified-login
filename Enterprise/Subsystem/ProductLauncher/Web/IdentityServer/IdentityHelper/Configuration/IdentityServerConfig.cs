@@ -332,8 +332,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                     if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
                                     {
                                         var hold = n.OwinContext.Response.Headers["Set-Cookie"];
-                                        n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
-                                        n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; SameSite=None", Secure = true, HttpOnly = true});
+                                        n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; secure; SameSite=None";
+                                        n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; secure; SameSite=None", Secure = true, HttpOnly = true});
                                     }
 
                                     n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/", Secure = true, HttpOnly = true});
