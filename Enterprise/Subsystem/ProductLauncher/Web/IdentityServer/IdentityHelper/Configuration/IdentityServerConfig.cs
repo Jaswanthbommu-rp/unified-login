@@ -64,6 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         AllowRememberMe = false,
                         IsPersistent = false,
                         RememberMeDuration = TimeSpan.FromMinutes(1),
+                        SecureMode = CookieSecureMode.Always,
                         SuppressSameSiteNoneCookiesCallback = env =>
                         {
                             var context = new OwinContext(env);
