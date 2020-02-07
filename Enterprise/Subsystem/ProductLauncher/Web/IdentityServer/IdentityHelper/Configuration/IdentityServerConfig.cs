@@ -28,6 +28,9 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
+using Sustainsys.Saml2.Saml2P;
+using Sustainsys.Saml2.WebSso;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
 
@@ -204,9 +207,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     Caption = provider.Description,
                     Notifications = new Saml2Notifications()
                     {
-                        AuthenticationRequestCreated = (request, identity, response) => { request.ForceAuthentication = true; }
-                        ,AcsCommandResultCreated = (cr, r) =>
+                        AuthenticationRequestCreated = (request, identity, response) =>
                         {
+                            request.ForceAuthentication = true;
                             string test = "";
                         }
                     },
@@ -217,21 +220,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
                         PublicOrigin = new Uri(ConfigReader.GetIssuerUri),
-                        //Logger = new TestLogger(), // enable to log Saml2AuthenticationOptions issues
+                        Logger = new TestLogger(), // enable to log Saml2AuthenticationOptions issues
 
                     },
                 };
-
-                /*
-                 // keep for debugging purposes
-                authServicesOptions.Notifications.GetPublicOrigin = (request) =>
+                
+                authServicesOptions.Notifications.AcsCommandResultCreated = (cr, r) =>
                 {
-                    Dictionary<string, object> logData = new Dictionary<string, object>();
-                    logData.Add("request", request);
-                    Log.Write(LogType.Diagnostic, new LogDetails() { Message = $"IdentityServerConfig.GetSAMLOptions", AdditionalInfo = logData });
-                    return new Uri("https://asdsad");
+                    string test = "";
+                    //cr.HandledResult = false;
+                    
                 };
-                */
+                 // keep for debugging purposes
+                //authServicesOptions.Notifications.GetPublicOrigin = (request) =>
+                //{
+                //    Dictionary<string, object> logData = new Dictionary<string, object>();
+                //    logData.Add("request", request);
+                //    Log.Write(LogType.Diagnostic, new LogDetails() { Message = $"IdentityServerConfig.GetSAMLOptions", AdditionalInfo = logData });
+                //    return new Uri("https://asdsad");
+                //};
+                
 
                 IdentityProvider idp = new IdentityProvider(new EntityId(provider.EntityId), authServicesOptions.SPOptions)
                 {

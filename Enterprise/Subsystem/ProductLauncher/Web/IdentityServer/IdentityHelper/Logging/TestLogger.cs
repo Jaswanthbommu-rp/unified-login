@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 				PmcName = null,
 				SiteId = null,
 				SiteName = null,
-				Environment = "DEVWWW",
+				Environment = "local",
 				ProductModule = null,
 				ProductWorkflow = null,
 				ProductStep = null,
