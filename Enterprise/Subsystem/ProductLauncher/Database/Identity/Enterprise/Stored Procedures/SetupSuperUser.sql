@@ -317,6 +317,17 @@ BEGIN
 				@VisibilityStatusId = @VisibilityStatusId;
 			SELECT	@RightID;
 
+			EXECUTE Enterprise.CreateRight @RoleID = @RoleId,
+				@PartyId = @OrganizationId,
+				@ProductId = 3,
+				@RightName = 'Access to Help Center',
+				@RightCategoryId = @Status_Right,
+				@RightID = @RightID OUTPUT,
+				@Description = '',
+				@TargetProductId = @TargetProductId,
+				@VisibilityStatusId = @VisibilityStatusId;
+			SELECT	@RightID;
+
 			EXECUTE Enterprise.CreateRight
 				@RoleID = @RoleId,
 				@PartyId = @OrganizationId,
@@ -426,6 +437,7 @@ BEGIN
 				@RightId = @RightID,
 				@StatusId = @Status_Right,
 				@UserActionId = @UserActionID OUTPUT;
+			
 		END;
 		SET @RoleId = NULL;
 		IF NOT EXISTS
@@ -547,6 +559,17 @@ BEGIN
 				@PartyId = @OrganizationId,
 				@ProductId = 3,
 				@RightName = 'Access to Vendor Marketplace',
+				@RightCategoryId = @Status_Right,
+				@RightID = @RightID OUTPUT,
+				@Description = '',
+				@TargetProductId = @TargetProductId,
+				@VisibilityStatusId = @VisibilityStatusId;
+			SELECT	@RightID;
+
+			EXECUTE Enterprise.CreateRight @RoleID = @RoleId,
+				@PartyId = @OrganizationId,
+				@ProductId = 3,
+				@RightName = 'Access to Help Center',
 				@RightCategoryId = @Status_Right,
 				@RightID = @RightID OUTPUT,
 				@Description = '',
@@ -826,6 +849,17 @@ BEGIN
 				@PartyId = @OrganizationId,
 				@ProductId = 3,
 				@RightName = 'Ability to view users',
+				@RightCategoryId = @Status_Right,
+				@RightID = @RightID OUTPUT,
+				@Description = '',
+				@TargetProductId = @TargetProductId,
+				@VisibilityStatusId = @VisibilityStatusId;
+			SELECT	@RightID;
+
+			EXECUTE Enterprise.CreateRight @RoleID = @RoleId,
+				@PartyId = @OrganizationId,
+				@ProductId = 3,
+				@RightName = 'Access to Help Center',
 				@RightCategoryId = @Status_Right,
 				@RightID = @RightID OUTPUT,
 				@Description = '',

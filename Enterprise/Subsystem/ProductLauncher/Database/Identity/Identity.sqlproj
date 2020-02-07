@@ -896,6 +896,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2019Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2020Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
