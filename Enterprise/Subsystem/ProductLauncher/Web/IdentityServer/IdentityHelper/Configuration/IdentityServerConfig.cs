@@ -28,6 +28,8 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
@@ -377,9 +379,84 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             return null;
         }
 
+        private static bool CompareAgent(string userAgent, string comparator, string compareValue)
+        {
+            switch (comparator)
+            {
+                case "Contains":
+                    if (userAgent.Contains(compareValue))
+                    {
+                        return true;
+                    }
+
+                    break;
+                case "StartsWith":
+                    if (userAgent.StartsWith(compareValue))
+                    {
+                        return true;
+                    }
+
+                    break;
+                case "Equals":
+                    if (userAgent.Equals(compareValue, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    break;
+                case "EndsWith":
+                    if (userAgent.EndsWith(compareValue, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    break;
+            }
+
+            return false;
+        }
+
         private static bool SuppressSameSiteNoneCookies(OwinContext context)
         {
+            List<SameSiteExclusion> excludeBrowserDetails = mockExclusions();
+
             var userAgent = context.Request.Headers["User-Agent"].ToString();
+            SameSiteExclusion current = null;
+            SameSiteExclusion next = null;
+            bool result = false;
+            //Dictionary<bool, string> resultList = new Dictionary<bool, string>();
+            for (var i = 0; i < excludeBrowserDetails.Count; i++)
+            {
+                current = excludeBrowserDetails[i];
+                if (i < excludeBrowserDetails.Count)
+                {
+                    while (excludeBrowserDetails[i + 1].LogicalOperator != null)
+                    {
+                        next = excludeBrowserDetails[i + 1];
+                        //resultList.Add(CompareAgent(userAgent, next.ComparatorLeft, next.SameSiteValueLeft));
+                        
+                        i++;
+                    }
+                    next = excludeBrowserDetails[i + 1];
+                }
+
+                if (current.LogicalOperator == null)
+                {
+                    result = CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft);
+                }
+                else
+                {
+
+                }
+
+                if (result)
+                {
+                    return true;
+                }
+            }
+                
+            return result;                
+            
             //return true;
             // Cover all iOS based browsers here. This includes:
             // - Safari on iOS 12 for iPhone, iPod Touch, iPad
@@ -415,6 +492,71 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
 
             return false;
+        }
+
+        private static List<SameSiteExclusion> mockExclusions()
+        {
+            List<SameSiteExclusion> excludeBrowserDetails = new List<SameSiteExclusion>();
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "CPU iPhone OS 12",
+                LogicalOperator = null,
+                ComperatorRight = null,
+                SameSiteValueRight = null
+            });
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "iPad; CPU OS 12",
+                LogicalOperator = null,
+                ComperatorRight = null,
+                SameSiteValueRight = null
+            });
+
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "Macintosh; Intel Mac OS X 10_14",
+                LogicalOperator = "And",
+                ComperatorRight = "Contains",
+                SameSiteValueRight = "Version/"
+            });
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "Version/",
+                LogicalOperator = "And",
+                ComperatorRight = "Contains",
+                SameSiteValueRight = "Safari"
+            });
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "Safari",
+                LogicalOperator = null,
+                ComperatorRight = null,
+                SameSiteValueRight = null
+            });
+
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "Chrome/5",
+                LogicalOperator = null,
+                ComperatorRight = null,
+                SameSiteValueRight = null,
+            });
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "Chrome/6",
+                LogicalOperator = null,
+                ComperatorRight = null,
+                SameSiteValueRight = null
+            });
+
+            return excludeBrowserDetails;
         }
 
         /// <summary>
