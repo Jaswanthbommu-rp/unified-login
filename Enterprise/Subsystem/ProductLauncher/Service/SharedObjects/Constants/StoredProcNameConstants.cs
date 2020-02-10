@@ -23,6 +23,8 @@
         public const string SP_GetClientDetails = "Auth.GetClientDetails";
         public const string SP_GetUserClaimTypesRequiredForClient = "Auth.GetUserClaimTypesRequiredForClient";
 
+        public const string SP_GetAllSameSiteValues = "samesite.Enterprise.GetAllSameSiteValues";
+
         //public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
 
         #endregion

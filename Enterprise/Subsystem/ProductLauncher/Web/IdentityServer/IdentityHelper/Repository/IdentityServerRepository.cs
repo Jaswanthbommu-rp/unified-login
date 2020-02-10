@@ -225,6 +225,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
             });
             return clientUserClaims;
         }
+
+        public IEnumerable<SameSiteExclusion> GetSameSiteExclusionList()
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<SameSiteExclusion>(StoredProcNameConstants.SP_GetAllSameSiteValues, null);
+            }
+        }
+
         #endregion
     }
 }
