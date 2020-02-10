@@ -112,14 +112,14 @@ SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
 
 SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
 
-IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlld] = 1)
-INSERT [UserManagement].[ProductPageControl] ([ProductPageControlld], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (1, 2, 3, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
-IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlld] = 2)
-INSERT [UserManagement].[ProductPageControl] ([ProductPageControlld], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (2, 2, 4, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
-IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlld] = 3)
-INSERT [UserManagement].[ProductPageControl] ([ProductPageControlld], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (3, 2, 5, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
-IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlld] = 4)
-INSERT [UserManagement].[ProductPageControl] ([ProductPageControlld], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (4, 2, 6, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
+IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlId] = 1)
+INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (1, 2, 3, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
+IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlId] = 2)
+INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (2, 2, 4, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
+IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlId] = 3)
+INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (3, 2, 5, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
+IF NOT EXISTS (SELECT 1 FROM[UserManagement].[ProductPageControl] WHERE  [ProductPageControlId] = 4)
+INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (4, 2, 6, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
 
 SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
