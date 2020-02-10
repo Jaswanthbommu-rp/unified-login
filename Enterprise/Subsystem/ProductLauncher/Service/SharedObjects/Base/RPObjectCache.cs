@@ -61,10 +61,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
 			CacheItemPolicy policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(expirationseconds) };
 
 			var newValue = new AsyncLazy<T>(valueFactory);
-			var value = cache.AddOrGetExisting(key, newValue, policy) as Lazy<T>;
+			var value = cache.AddOrGetExisting(key, newValue, policy) as AsyncLazy<T>;
 			try
 			{
-				var result = value != null ? value.Value : await newValue.Value;
+				var result = value != null ? (T) await value.Value : (T) await newValue.Value;
 				if (result == null)
 				{
 					cache.Remove(key);
@@ -108,7 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
 			base(() => Task.Factory.StartNew(valueFactory))
 		{ }
 		public AsyncLazy(Func<Task<T>> taskFactory) :
-			base(() => Task.Factory.StartNew(() => taskFactory()).Unwrap())
+			base(() => Task.Factory.StartNew(taskFactory).Unwrap())
 		{ }
 	}
 }

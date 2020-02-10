@@ -138,6 +138,7 @@
     <Compile Include="Logic\IManageProvider.cs" />
     <Compile Include="Logic\IManageUserLoginIdentity.cs" />
     <Compile Include="Logic\ManageProvider.cs" />
+    <Compile Include="Logic\ManageSameSite.cs" />
     <Compile Include="Logic\ManageUserLoginIdentity.cs" />
     <Compile Include="Logic\ManageUserRole.cs" />
     <Compile Include="Repository\BaseRepository.cs" />
