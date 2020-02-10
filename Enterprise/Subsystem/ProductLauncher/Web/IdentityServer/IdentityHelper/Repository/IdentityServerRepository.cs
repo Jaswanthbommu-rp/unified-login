@@ -1,9 +1,8 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
 using System.Collections.Generic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using DbConnectionEnum = RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Enum.DbConnectionEnum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
@@ -225,7 +224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
             });
             return clientUserClaims;
         }
-
+        
         public IEnumerable<SameSiteExclusion> GetSameSiteExclusionList()
         {
             using (var repository = GetRepository())

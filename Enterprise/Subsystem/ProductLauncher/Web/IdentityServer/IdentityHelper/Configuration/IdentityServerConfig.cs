@@ -417,8 +417,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
         private static bool SuppressSameSiteNoneCookies(OwinContext context)
         {
-            //List<SameSiteExclusion> excludeBrowserDetails = mockExclusions();
             ManageSameSite manageSameSite = new ManageSameSite();
+            var settingList = manageSameSite.GetProductInternalSettings((int)ProductEnum.UnifiedLogin);
+            if (settingList.Any(p => p.Name.Equals("SuppressSameSite", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
             List<SameSiteExclusion> excludeBrowserDetails = manageSameSite.GetSameSiteExclusionList();
 
             var userAgent = context.Request.Headers["User-Agent"].ToString();
@@ -569,7 +574,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     SignInAsAuthenticationType = signInAsType,
 
                 };
-
                 return options;
             }
             catch (Exception ex)

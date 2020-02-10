@@ -63,6 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                 {
                     try
                     {
+                        ctx.Request.Scheme = "https";
                         await next();
                     }
                     catch (OperationCanceledException)
