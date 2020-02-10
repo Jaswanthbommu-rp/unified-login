@@ -59,16 +59,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                 });
 
                 // try to catch any operation was cancelled errors and ignore them so they aren't logged in kibana
-                app.Use(async (ctx, next) =>
+                app.Use((ctx, next) =>
                 {
                     try
                     {
                         ctx.Request.Scheme = "https";
-                        await next();
                     }
                     catch (OperationCanceledException)
                     {
                     }
+                    return next();
                 });
 			}
 			catch (Exception ex)
