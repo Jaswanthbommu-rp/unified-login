@@ -419,34 +419,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
         private static bool SuppressSameSiteNoneCookies(OwinContext context)
         {
             List<SameSiteExclusion> excludeBrowserDetails = mockExclusions();
-
             var userAgent = context.Request.Headers["User-Agent"].ToString();
-            SameSiteExclusion current = null;
-            SameSiteExclusion next = null;
+            
             bool result = false;
-            //Dictionary<bool, string> resultList = new Dictionary<bool, string>();
+            List<bool> andResults = new List<bool>();
+
             for (var i = 0; i < excludeBrowserDetails.Count; i++)
             {
-                current = excludeBrowserDetails[i];
-                if (i < excludeBrowserDetails.Count)
+                SameSiteExclusion current = excludeBrowserDetails[i];
+                if (i < excludeBrowserDetails.Count && current.LogicalOperator != null)
                 {
-                    while (excludeBrowserDetails[i + 1].LogicalOperator != null)
+                    SameSiteExclusion next = null;
+                    andResults.Add(CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft));
+                    while (excludeBrowserDetails[i + 1].SameSiteValueLeft == current.SameSiteValueRight)
                     {
                         next = excludeBrowserDetails[i + 1];
-                        //resultList.Add(CompareAgent(userAgent, next.ComparatorLeft, next.SameSiteValueLeft));
-                        
+                        andResults.Add(CompareAgent(userAgent, next.ComparatorLeft, next.SameSiteValueLeft));
                         i++;
                     }
                     next = excludeBrowserDetails[i + 1];
+                    andResults.Add(CompareAgent(userAgent, next.ComparatorLeft, next.SameSiteValueLeft));
+                    i++;
+
+                    if (andResults.All(p => p == true))
+                    {
+                        return true;
+                    }
+                    andResults = new List<bool>();
                 }
 
                 if (current.LogicalOperator == null)
                 {
                     result = CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft);
-                }
-                else
-                {
-
                 }
 
                 if (result)
@@ -551,6 +555,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 ComparatorLeft = "Contains",
                 SameSiteValueLeft = "Chrome/6",
+                LogicalOperator = null,
+                ComperatorRight = null,
+                SameSiteValueRight = null
+            });
+
+            excludeBrowserDetails.Add(new SameSiteExclusion()
+            {
+                ComparatorLeft = "Contains",
+                SameSiteValueLeft = "Chrome/8",
                 LogicalOperator = null,
                 ComperatorRight = null,
                 SameSiteValueRight = null
