@@ -2902,13 +2902,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 // Activity logging
                 if (repositoryResponse.Id > 0)
                 {
-                    if (existingRoleId == 0 || greenBookRole != existingRoleId)
+                    if (greenBookRole != 0 && greenBookRole != existingRoleId && existingRoleId != 0)
                     {
-                        if (existingRoleId != 0)
-                        {
                             var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {existingUserRole} to {NewUserRole} for {{0}} {{1}}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                        }
                     }
                     if (isUserTypeChangedFromNoEmailToRegular)
                     {
