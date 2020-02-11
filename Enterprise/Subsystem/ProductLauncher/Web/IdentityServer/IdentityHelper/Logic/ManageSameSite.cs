@@ -32,22 +32,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = "getSameSiteExclusionList";
 
-            List<SameSiteExclusion> scopes = rpcache.GetFromCache<List<SameSiteExclusion>>(cacheKey, 60, () => _identityServerRepository.GetSameSiteExclusionList().ToList());
+            List<SameSiteExclusion> scopes = rpcache.GetFromCache<List<SameSiteExclusion>>(cacheKey, 30, () => _identityServerRepository.GetSameSiteExclusionList().ToList());
 
             return scopes;
         }
 
-        public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
+        public IList<ProductInternalSetting> GetProductInternalSettings(int productId, int expirationSeconds)
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = "productInternalSetting_" + productId;
-            productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
-            {
-                // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings(productId);
-            });
+            productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, expirationSeconds, () => _productInternalSettingRepository.GetProductInternalSettings(productId));
             return productInternalSettingList;
         }
     }

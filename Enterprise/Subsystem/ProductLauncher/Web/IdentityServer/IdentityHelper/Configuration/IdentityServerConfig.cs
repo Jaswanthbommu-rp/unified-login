@@ -155,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start"});
                 app.UseGoogleAuthentication(googleOptions);
-                
+                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded"});
             }
 
             // SAML
@@ -329,13 +329,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
                                 {
                                     var hold = n.OwinContext.Response.Headers["Set-Cookie"];
-                                    n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; secure; SameSite=None";
+                                    n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
                                 }
                                 if (n.OwinContext.Request.Query.Get("info") != null)
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; secure; SameSite=None", Secure = true, HttpOnly = true});
+                                    n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; SameSite=None", Secure = true, HttpOnly = true});
                                     n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/", Secure = true, HttpOnly = true});
                                 }
 
@@ -418,22 +418,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
         private static bool SuppressSameSiteNoneCookies(OwinContext context)
         {
             ManageSameSite manageSameSite = new ManageSameSite();
-            var settingList = manageSameSite.GetProductInternalSettings((int)ProductEnum.UnifiedLogin);
-            if (settingList.Any(p => p.Name.Equals("SuppressSameSite", StringComparison.OrdinalIgnoreCase)))
+            var settingList = manageSameSite.GetProductInternalSettings((int)ProductEnum.UnifiedLogin, 30);
+            if (settingList.Any(p => p.Name.Equals("IsSuppressSameSiteEnabled", StringComparison.OrdinalIgnoreCase)))
+            {
+                var IsSuppressSameSiteEnabled = settingList.FirstOrDefault(p => p.Name.Equals("IsSuppressSameSiteEnabled", StringComparison.OrdinalIgnoreCase)).Value;
+                if (IsSuppressSameSiteEnabled == "0")
+                {
+                    return true;
+                }
+            }
+            else
             {
                 return true;
             }
 
             List<SameSiteExclusion> excludeBrowserDetails = manageSameSite.GetSameSiteExclusionList();
-
             var userAgent = context.Request.Headers["User-Agent"].ToString();
-            
-            bool result = false;
             List<bool> andResults = new List<bool>();
 
             for (var i = 0; i < excludeBrowserDetails.Count; i++)
             {
-                result = false;
                 SameSiteExclusion current = excludeBrowserDetails[i];
                 if (i < excludeBrowserDetails.Count && current.LogicalOperator != null)
                 {
@@ -460,18 +464,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     andResults = new List<bool>();
                 }
 
-                if (current.LogicalOperator == null)
-                {
-                    result = CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft);
-                }
-
-                if (result)
+                if (current.LogicalOperator == null && CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft))
                 {
                     return true;
                 }
             }
                 
-            return result;                
+            return false;                
         }
 
         private static List<SameSiteExclusion> mockExclusions()

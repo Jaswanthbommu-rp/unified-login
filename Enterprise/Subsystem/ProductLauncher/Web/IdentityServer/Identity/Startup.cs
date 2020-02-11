@@ -33,22 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                 {
                     try
                     {
-                        var correlationId = Guid.NewGuid().ToString();
-                        Dictionary<string, object> info = new Dictionary<string, object>();
-                        info.Add("ctx.Request.IsSecure", ctx.Request.IsSecure);
-                        info.Add("ctx.Request.Scheme", ctx.Request.Scheme);
-                        info.Add("ctx.Request.Protocol", ctx.Request.Protocol);
-                        LogDetails ld = new LogDetails(){CorrelationId = correlationId, Message = "IdentityServer.Startup before", AdditionalInfo = info};
-
-                        Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, ld );
                         ctx.Request.Scheme = "https";
-                        
-                        info = new Dictionary<string, object>();
-                        info.Add("ctx.Request.IsSecure", ctx.Request.IsSecure);
-                        info.Add("ctx.Request.Scheme", ctx.Request.Scheme);
-                        info.Add("ctx.Request.Protocol", ctx.Request.Protocol);
-                        ld = new LogDetails(){CorrelationId = correlationId, Message = "IdentityServer.Startup after", AdditionalInfo = info};
-                        Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, ld );
                     }
                     catch (OperationCanceledException)
                     {
