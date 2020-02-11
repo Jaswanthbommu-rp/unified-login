@@ -6,12 +6,14 @@ using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
 using RP.Enterprise.Foundation.Audit.Core.Component;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Identity;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Identity.Logging;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configuration;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Net;
 
 [assembly: OwinStartup(typeof(Startup))]
@@ -63,7 +65,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                 {
                     try
                     {
+                        var correlationId = Guid.NewGuid().ToString();
+                        Dictionary<string, object> info = new Dictionary<string, object>();
+                        info.Add("IsSecure", ctx.Request.IsSecure);
+                        info.Add("Scheme", ctx.Request.Scheme);
+
+                        LogDetails ld = new LogDetails(){CorrelationId = correlationId, Message = "IdentityServer.Startup before", AdditionalInfo = info};
+
+                        Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, ld );
                         ctx.Request.Scheme = "https";
+
+                        info = new Dictionary<string, object>();
+                        info.Add("IsSecure", ctx.Request.IsSecure);
+                        info.Add("Scheme", ctx.Request.Scheme);
+                        ld = new LogDetails(){CorrelationId = correlationId, Message = "IdentityServer.Startup after", AdditionalInfo = info};
+                        Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, ld );
                     }
                     catch (OperationCanceledException)
                     {
