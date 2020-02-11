@@ -2906,7 +2906,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         if (existingRoleId != 0)
                         {
-                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role {existingUserRole} to {NewUserRole} for {{0}} {{1}}.";
+                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {existingUserRole} to {NewUserRole} for {{0}} {{1}}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
                         }
                     }
