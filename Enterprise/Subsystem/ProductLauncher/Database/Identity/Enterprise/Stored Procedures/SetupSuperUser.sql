@@ -443,36 +443,7 @@ AS
                                 @Description = '', 
                                 @TargetProductId = @TargetProductId, 
                                 @VisibilityStatusId = @VisibilityStatusId;
-                        EXECUTE Enterprise.CreateRight 
-                                @RoleID = @RoleId, 
-                                @PartyId = @OrganizationId, 
-                                @ProductId = 3, 
-                                @RightName = 'Employee Access to Design Questionnaires in CIMPL', 
-                                @RightCategoryId = @Status_Right, 
-                                @RightID = @RightID OUTPUT, 
-                                @Description = '', 
-                                @TargetProductId = @TargetProductId, 
-                                @VisibilityStatusId = @VisibilityStatusId;
-                        EXECUTE Enterprise.CreateRight 
-                                @RoleID = @RoleId, 
-                                @PartyId = @OrganizationId, 
-                                @ProductId = 3, 
-                                @RightName = 'Employee Access to CIMPL', 
-                                @RightCategoryId = @Status_Right, 
-                                @RightID = @RightID OUTPUT, 
-                                @Description = '', 
-                                @TargetProductId = @TargetProductId, 
-                                @VisibilityStatusId = @VisibilityStatusId;
-                        EXECUTE Enterprise.CreateRight 
-                                @RoleID = @RoleId, 
-                                @PartyId = @OrganizationId, 
-                                @ProductId = 3, 
-                                @RightName = 'Employee Access to add Implementation Records in CIMPL', 
-                                @RightCategoryId = @Status_Right, 
-                                @RightID = @RightID OUTPUT, 
-                                @Description = '', 
-                                @TargetProductId = @TargetProductId, 
-                                @VisibilityStatusId = @VisibilityStatusId;
+                        
                         SELECT @TargetProductId = ProductId
                         FROM Enterprise.Product
                         WHERE Name = 'Vendor Marketplace';
