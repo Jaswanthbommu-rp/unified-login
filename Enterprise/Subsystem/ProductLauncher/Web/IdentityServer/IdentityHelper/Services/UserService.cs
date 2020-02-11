@@ -227,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                         LogActivityTypeName = "Change Company",
                         LogCategoryName = LogActivityCategoryType.User.ToString(),
                         CorrelationId = correlationId,
-                        BooksMasterOrganizationId = Convert.ToInt64(impersonatorPersona.Organization.BooksMasterId),
+                        BooksMasterOrganizationId = -1,
                         Message = $"{impersonatorPerson.FirstName} {impersonatorPerson.LastName} accessed {userPersona.Organization.Name} with Change Company.",
 
                         FromUserLoginName = impersonator.LoginName,

@@ -407,6 +407,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					product = new AssetOptimizerProduct(_defaultUserClaim,_productInternalSettingRepository);
 					result = product.UpdateUserDetails(productUserAccountDetails);
 					break;
+                case ProductEnum.AoBusinessIntelligence:
+                    product = new AoBusinessIntelligenceProduct(_defaultUserClaim,_productInternalSettingRepository);
+                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    break;
 				case ProductEnum.LeadManagement:
 					product = new LeadManagementProduct(ProductEnum.LeadManagement);
 					result = product.UpdateUserDetails(productUserAccountDetails);
@@ -2834,6 +2838,67 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// create, update or UNASSIGN user
 			return productAo.ChangeAssetOptimizationProductUserType(createUserPersonaId, assignUserPersonaId, roleProp.AoUserCompanyPropertyRoleDetailList, batchProcessType);
+		}
+	}
+
+    /// <summary>
+	/// A Concrete implementation for Business Intelligence Asset Optimizer Product  
+	/// </summary>
+	public class AoBusinessIntelligenceProduct : ProductBase, IProduct
+	{
+		/// <summary>
+		/// default constructor
+		/// </summary>
+		public AoBusinessIntelligenceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.AoBusinessIntelligence, userClaim, null)
+		{
+		}
+
+		/// <summary>
+		/// Test constructor
+		/// </summary>
+		/// <param name="userClaim"></param>
+		/// <param name="productInternalSettingRepository">Internal settings for a product</param>
+		public AoBusinessIntelligenceProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.AoBusinessIntelligence, userClaim, productInternalSettingRepository)
+		{
+		}
+
+		/// <summary>
+		/// Create, Update or Unassign BI AO User
+		/// </summary> 
+		/// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+		/// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+		/// <param name="assignUserPersonaId">new user PersonaId</param>
+		/// <param name="roleProperty">AO Role And Property List</param>
+		/// <returns>String.empty if success else error</returns>
+		public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+		{
+			return "AO create user should be used instead";
+		}
+
+		/// <summary>
+		/// Update Product User Profile
+		/// </summary> 
+		/// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+		/// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+		/// <param name="assignUserPersonaId">new user PersonaId</param>		
+		/// <returns>String.empty if success else error</returns>
+		public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+		{
+            return "AO update user should be used instead";
+		}
+
+		/// <summary>
+		/// Change Product User Type from Admin to Regular or Regular to Admin
+		/// </summary>
+		/// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+		/// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+		/// <param name="assignUserPersonaId">new user PersonaId</param>
+		/// <param name="batchProcessType">Batch Process Type</param>
+		/// <param name="rolePropList">AO Role And Property List</param>
+		/// <returns>String.empty if success else error</returns>
+		public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
+		{
+            return "AO change user type should be used instead";
 		}
 	}
 	#endregion

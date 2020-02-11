@@ -22,7 +22,8 @@
                 retryCount: 0,
                 inputJson: {
                     roleList: [],
-                    propertyList: []
+                    propertyList: [],
+                    IsAssignedNewPropertyByDefault: false
                 }
             };
 
