@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             var options = new IdentityServerOptions
             {
                 IssuerUri = ConfigReader.GetIssuerUri,
-                RequireSsl = requireSsl,
+                RequireSsl = true,
                 SiteName = "RealPage Identity Server",
                 EnableWelcomePage = false,
                 PublicOrigin = ConfigReader.GetPublicOriginUri,
@@ -155,6 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start"});
                 app.UseGoogleAuthentication(googleOptions);
+                
             }
 
             // SAML
