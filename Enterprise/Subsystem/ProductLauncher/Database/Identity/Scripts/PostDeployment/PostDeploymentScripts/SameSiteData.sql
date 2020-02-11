@@ -77,3 +77,64 @@ INSERT [Enterprise].[LogicalGroup] ([LogicalGroupId], [LogicalGrouper], [SameSit
 
 SET IDENTITY_INSERT [Enterprise].[LogicalGroup] OFF
 
+GO
+
+DECLARE	@Now datetime = GETUTCDATE(),
+	@ProductId int,
+	@ProductConfigurationId int
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = 'Unified Platform'
+
+if not exists ( select top 1 1 from enterprise.ProductSettingType where name = 'IsSuppressSameSiteEnabled' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description) values ( 'IsSuppressSameSiteEnabled', 'Used to suppress samesite cookie attribute' )
+end
+
+if not exists ( select top 1 1 from enterprise.productsetting where productid = 3 and ProductSettingTypeId = ( select ProductSettingTypeId from enterprise.ProductSettingType where name = 'IsSuppressSameSiteEnabled'))
+begin
+	insert into enterprise.productsetting ( productid, ProductSettingTypeId, value, FromDate ) 
+		select @ProductId, ProductSettingTypeId, '1', GETUTCDATE() from enterprise.ProductSettingType where name = 'IsSuppressSameSiteEnabled'
+end
+
+SELECT DISTINCT TOP 1 @ProductConfigurationId = epc.ConfigurationId
+FROM	Enterprise.GlobalProductConfiguration egpc  
+			INNER JOIN Enterprise.ProductConfiguration epc ON epc.ConfigurationId = egpc.ConfigurationId  
+			INNER JOIN Enterprise.ProductSetting eps ON eps.ProductSettingId = epc.ProductSettingId  
+			INNER JOIN Enterprise.ProductSettingType epst ON epst.ProductSettingTypeId = eps.ProductSettingTypeId  
+WHERE		egpc.ProductId = @ProductId
+AND			((@NOW BETWEEN egpc.FromDate AND egpc.ThruDate) OR (@NOW >= egpc.FromDate AND egpc.ThruDate IS NULL))  
+AND			((@NOW BETWEEN epc.FromDate AND epc.ThruDate) OR (@NOW >= epc.FromDate AND epc.ThruDate IS NULL))  
+AND			((@NOW BETWEEN eps.FromDate AND eps.ThruDate) OR (@NOW >= eps.FromDate AND eps.ThruDate IS NULL))  
+ORDER BY epc.ConfigurationId DESC
+
+IF NOT EXISTS (
+	SELECT TOP 1 1 
+	FROM	Enterprise.GlobalProductConfiguration egpc  
+				INNER JOIN Enterprise.ProductConfiguration epc ON epc.ConfigurationId = egpc.ConfigurationId  
+				INNER JOIN Enterprise.ProductSetting eps ON eps.ProductSettingId = epc.ProductSettingId  
+				INNER JOIN Enterprise.ProductSettingType epst ON epst.ProductSettingTypeId = eps.ProductSettingTypeId  
+	WHERE	egpc.ProductId = @ProductId  
+	AND			((@Now BETWEEN egpc.FromDate AND egpc.ThruDate) OR (@Now >= egpc.FromDate AND egpc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN epc.FromDate AND epc.ThruDate) OR (@Now >= epc.FromDate AND epc.ThruDate IS NULL))  
+	AND			((@Now BETWEEN eps.FromDate AND eps.ThruDate) OR (@Now >= eps.FromDate AND eps.ThruDate IS NULL))  
+	AND			epst.Name = 'IsSuppressSameSiteEnabled'
+)
+BEGIN
+	IF (@ProductConfigurationId IS NOT NULL)
+	BEGIN
+		INSERT INTO Enterprise.ProductConfiguration (
+			ConfigurationId,
+			ProductSettingId,
+			FromDate,
+			ThruDate
+		)
+		SELECT		@ProductConfigurationId,
+						PS.ProductSettingId, 
+						@Now,
+						NULL
+		FROM		Enterprise.ProductSetting PS INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId
+			where ProductId = @ProductId AND PST.Name = 'IsSuppressSameSiteEnabled'
+	END
+END
