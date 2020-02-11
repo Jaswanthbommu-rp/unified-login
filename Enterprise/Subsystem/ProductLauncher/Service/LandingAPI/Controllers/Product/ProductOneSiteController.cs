@@ -389,6 +389,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             return Request.CreateResponse(HttpStatusCode.BadRequest, result);
         }
+        /// <summary>
+        /// Used to Unassign the given OneSite user
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId">The persona to use to find the OneSite login to update</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Unassign successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/onesite/unassign")]
+        [Authorize]
+        [HttpPut]
+        public HttpResponseMessage UnassignOneSiteUser(long editorPersonaId, long userPersonaId)
+        {
+            if (editorPersonaId == 0 || userPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+
+           // Unassign User
+            bool deleteSamlUserProductInfoAndStatus = true;
+            string result = _manageProductOneSite.UnassignUser(editorPersonaId, userPersonaId, deleteSamlUserProductInfoAndStatus);
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, "User Unassigned");
+            }
+            return Request.CreateResponse(HttpStatusCode.BadRequest, result);
+        }
 
         /// <summary>
         /// Used to get the PMC URL for the given user
