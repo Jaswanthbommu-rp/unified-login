@@ -155,6 +155,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start"});
                 app.UseGoogleAuthentication(googleOptions);
+                app.Use((ctx, next) =>
+                {
+                    try
+                    {
+                        Dictionary<string, object> info = new Dictionary<string, object>();
+                        info.Add("ctx.Request.IsSecure", ctx.Request.IsSecure);
+                        info.Add("ctx.Request.Scheme", ctx.Request.Scheme);
+                        info.Add("ctx.Request.Protocol", ctx.Request.Protocol);
+                        LogDetails ld = new LogDetails(){CorrelationId = correlationId, Message = "IdentityServer.googleoptions before", AdditionalInfo = info};
+
+                        Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, ld );
+                        ctx.Request.Scheme = "https";
+                        
+                        info = new Dictionary<string, object>();
+                        info.Add("ctx.Request.IsSecure", ctx.Request.IsSecure);
+                        info.Add("ctx.Request.Scheme", ctx.Request.Scheme);
+                        info.Add("ctx.Request.Protocol", ctx.Request.Protocol);
+                        ld = new LogDetails(){CorrelationId = correlationId, Message = "IdentityServer.googleoptions after", AdditionalInfo = info};
+                        Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, ld );
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    return next();
+                });
                 Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded"});
             }
 
@@ -568,12 +593,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     AuthenticationType = googleConfiguration.AuthenticationType, //"Google",
                     Caption = googleConfiguration.Caption, //"Sign-in with Google",
                     //Scope = googleConfiguration.Scope,
-                    ClientId = googleConfiguration.ProviderClientId, //"179102204650-0d0rl3u61b9bsd9vn5j2mmtve8it7ong.apps.googleusercontent.com",
-                    ClientSecret = googleConfiguration.ClientSecret, // "n61OGT18YRIP8AcvrsclVJMq",
+                    ClientId = googleConfiguration.ProviderClientId, 
+                    ClientSecret = googleConfiguration.ClientSecret, 
                     AuthenticationMode = (AuthenticationMode) googleConfiguration.AuthenticationMode, // AuthenticationMode.Active,
                     SignInAsAuthenticationType = signInAsType,
 
                 };
+
                 return options;
             }
             catch (Exception ex)
