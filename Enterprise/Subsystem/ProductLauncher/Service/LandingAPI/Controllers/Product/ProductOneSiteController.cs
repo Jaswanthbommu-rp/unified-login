@@ -402,7 +402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
         [Route("products/onesite/unassign")]
         [Authorize]
-        [HttpPut]
+        [HttpGet]
         public HttpResponseMessage UnassignOneSiteUser(long editorPersonaId, long userPersonaId)
         {
             if (editorPersonaId == 0 || userPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
