@@ -30,7 +30,6 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using Sustainsys.Saml2.WebSso;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
 
@@ -95,7 +94,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             options.Factory.Register(new Registration<AuthenticateService>());
             options.Factory.Register(new Registration<ManageUserLoginIdentity>());
             options.Factory.Register(new Registration<ManageUserLogin>());
-            options.Factory.Register(new Registration<RPCookieManager>());
 
             options.Factory.UserService = new Registration<IUserService, UserService>();
             options.Factory.ClientStore = new Registration<IClientStore, ClientService>();
@@ -156,11 +154,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             if (googleOptions != null)
             {
                 Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start"});
-                googleOptions.CookieManager = new RPCookieManager();
                 app.UseGoogleAuthentication(googleOptions);
-                Dictionary<string, object> logData = new Dictionary<string, object>();
-                logData.Add("googleOptions", googleOptions);
-                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded", AdditionalInfo = logData});
+                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded"});
             }
 
             // SAML
@@ -227,27 +222,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     },
                 };
 
-                // may need for samesite fix
-                authServicesOptions.Notifications.AcsCommandResultCreated = (cr, r) =>
+                authServicesOptions.Notifications.EmitSameSiteNone = userAgent =>
                 {
-                    string test = "";
-                    
-                };
-                authServicesOptions.Notifications.AuthenticationRequestCreated = (request, identityProvider, arg3) =>
-                {
-                    string test = "";
-                };
-
-                authServicesOptions.Notifications.SignInCommandResultCreated = (result, dictionary) =>
-                {
-                    string test = "";
-
-                };
-
-                authServicesOptions.Notifications.EmitSameSiteNone = s =>
-                {
-                    string test = "";
-                    return !SuppressSameSiteNoneCookies(null, s);
+                    return !SuppressSameSiteNoneCookies(null, userAgent);
                 };
 
 
@@ -470,7 +447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
             info.Add("userAgent", userAgent);
 
-            Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies", AdditionalInfo = info});
+            //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies", AdditionalInfo = info});
 
             List<bool> andResults = new List<bool>();
 
@@ -497,7 +474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
                     if (andResults.All(p => p == true))
                     {
-                        Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true andResults.All", AdditionalInfo = info});
+                        //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true andResults.All", AdditionalInfo = info});
                         return true;
                     }
                     andResults = new List<bool>();
@@ -505,11 +482,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
                 if (current.LogicalOperator == null && CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft))
                 {
-                    Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true CompareAgent", AdditionalInfo = info});
+                    //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true CompareAgent", AdditionalInfo = info});
                     return true;
                 }
             }
-            Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - false", AdditionalInfo = info});
+            //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - false", AdditionalInfo = info});
             return false;                
         }
         
@@ -530,7 +507,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
                 GoogleOAuth2AuthenticationOptions options = new GoogleOAuth2AuthenticationOptions
                 {
-                    CookieManager = new RPCookieManager(),
                     AuthenticationType = googleConfiguration.AuthenticationType, //"Google",
                     Caption = googleConfiguration.Caption, //"Sign-in with Google",
                     //Scope = googleConfiguration.Scope,

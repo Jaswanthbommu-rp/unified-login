@@ -143,7 +143,6 @@
     <Compile Include="Logic\ManageSameSite.cs" />
     <Compile Include="Logic\ManageUserLoginIdentity.cs" />
     <Compile Include="Logic\ManageUserRole.cs" />
-    <Compile Include="Logic\RPCookieManager.cs" />
     <Compile Include="Repository\BaseRepository.cs" />
     <Compile Include="Repository\IdentityProviderRepository.cs" />
     <Compile Include="Repository\IdentityServerRepository.cs" />
