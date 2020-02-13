@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public override ListResponse GetProductProperties(RequestParameter dataFilter, string apiQuery = null)
 		{
-			//IList<PortfolioEntity> portfolioEntityRoles = new List<PortfolioEntity>();
+			IList<PortfolioRoleEntity> entitiesList = new List<PortfolioRoleEntity>();
 
 			// get all properties
 			var allProperties = GetPortfolioProperties().ToList();
@@ -78,17 +78,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var allPropertiesRoles = GetPortfolioPropertySpecificRoles().ToList();
 
 			//build roles-entities object
-			IList<PortfolioRoleEntity> entitiesList = new List<PortfolioRoleEntity>();
 			foreach (var role in allPropertiesRoles)
 			{
 				entitiesList.Add(new PortfolioRoleEntity(role, allProperties));
 			}
-
-			//// build property-roles object
-			//foreach (var prop in allProperties)
-			//{
-			//    portfolioEntityRoles.Add(new PortfolioEntity(prop, allPropertiesRoles));
-			//}
 
 			// if user already exists in product
 			if (SubjectUserDetails != null && !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
@@ -98,7 +91,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var user = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery);
 
 				MergePropertyRoles(entitiesList, user.PropertyRoles);
-				//MergePropertyRoles(portfolioEntityRoles, user.PropertyRoles);
 			}
 
 			return new ListResponse
@@ -165,26 +157,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 		}
 
-		private void MergePropertyRoles(IList<PortfolioEntity> portfolioEntityRoles, List<PropertyRoleList> userPropertyRoles)
-		{
-			foreach (var userEntityRole in userPropertyRoles)
-			{
-				var userRoles = userEntityRole.Roles;
-				var portfolioMatchedEntity = portfolioEntityRoles.FirstOrDefault(x => x.GetPropertyId.Trim() == userEntityRole.PropertyId.ToString().Trim());
-
-				if (portfolioMatchedEntity != null)
-				{
-					foreach (var role in portfolioMatchedEntity.RoleList)
-					{
-						if (userRoles.Any(x => x.Trim().Equals(role.GetRoleId.ToString().Trim())))
-						{
-							role.IsAssigned = true;
-						}
-					}
-				}
-			}
-		}
-
 		private void MergePropertyRoles(IList<PortfolioRoleEntity> portfolioEntityRoles, List<PropertyRoleList> userPropertyRoles)
 		{
 			var selectedPropertyIds = userPropertyRoles.Select(x => x.PropertyId).ToList();
@@ -207,42 +179,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 				}
 			}
-
-			//foreach (var userEntityRole in userPropertyRoles)
-			//{
-			//var userRoles = userEntityRole.Roles;
-			//var portfolioMatchedEntity = portfolioEntityRoles.FirstOrDefault(x => x.GetPropertyId.Trim() == userEntityRole.PropertyId.ToString().Trim());
-
-			//if (portfolioMatchedEntity != null)
-			//{
-			//    foreach (var role in portfolioMatchedEntity.RoleList)
-			//    {
-			//        if (userRoles.Any(x => x.Trim().Equals(role.GetRoleId.ToString().Trim())))
-			//        {
-			//            role.IsAssigned = true;
-			//        }
-			//    }
-			//}
-			//}
 		}
 
 		#endregion
-	}
-	public class PortfolioEntity : ProductProperties
-	{
-		public PortfolioEntity(ProductProperties properties, List<ProductRole> roles)
-		{
-			SetPropertyId = properties.GetPropertyId;
-			SetName = properties.GetName;
-			PropertyType = properties.PropertyType;
-			RoleList = new List<ProductRole>();
-			RoleList.AddRange(roles.Select(a => new ProductRole
-			{
-				SetRoleId = a.GetRoleId,
-				SetName = a.GetName
-			}));
-		}
-		public List<ProductRole> RoleList { get; set; }
 	}
 
 	public class PortfolioRoleEntity : ProductRole
