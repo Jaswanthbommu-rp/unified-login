@@ -2895,9 +2895,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
 
+                var enterpriseUserRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = persona.Organization.RealPageId });
+                var existingUserRole = enterpriseUserRoles.ToList().Where(e => e.RoleId == existingRoleId).Select(e => e.Role).FirstOrDefault();
+                var newUserRole = enterpriseUserRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
+
                 // Activity logging
                 if (repositoryResponse.Id > 0)
                 {
+                    if (greenBookRole != 0 && greenBookRole != existingRoleId && existingRoleId != 0)
+                    {
+                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {existingUserRole} to {newUserRole} for {{0}} {{1}}.";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                    }
                     if (isUserTypeChangedFromNoEmailToRegular)
                     {
                         //Log Activity
