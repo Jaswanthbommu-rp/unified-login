@@ -30,6 +30,7 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Sustainsys.Saml2.WebSso;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
 
@@ -67,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         SuppressSameSiteNoneCookiesCallback = env =>
                         {
                             var context = new OwinContext(env);
-                            return SuppressSameSiteNoneCookies(context);
+                            return SuppressSameSiteNoneCookies(context, null);
                         }
                     },
                     EnableSignOutPrompt = false,
@@ -94,6 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             options.Factory.Register(new Registration<AuthenticateService>());
             options.Factory.Register(new Registration<ManageUserLoginIdentity>());
             options.Factory.Register(new Registration<ManageUserLogin>());
+            options.Factory.Register(new Registration<RPCookieManager>());
 
             options.Factory.UserService = new Registration<IUserService, UserService>();
             options.Factory.ClientStore = new Registration<IClientStore, ClientService>();
@@ -105,7 +107,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             options.Factory.ClientPermissionsService = new Registration<IClientPermissionsService, ClientPermissionsService>();
             options.Factory.CorsPolicyService = new Registration<ICorsPolicyService, CorsPolicyService>();
             options.Factory.EventService = new Registration<IEventService, AuditEventService>();
-
+            
             options.EventsOptions.RaiseSuccessEvents = true;
         }
 
@@ -154,8 +156,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             if (googleOptions != null)
             {
                 Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start"});
+                googleOptions.CookieManager = new RPCookieManager();
                 app.UseGoogleAuthentication(googleOptions);
-                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded"});
+                Dictionary<string, object> logData = new Dictionary<string, object>();
+                logData.Add("googleOptions", googleOptions);
+                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded", AdditionalInfo = logData});
             }
 
             // SAML
@@ -223,11 +228,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                 };
 
                 // may need for samesite fix
-                //authServicesOptions.Notifications.AcsCommandResultCreated = (cr, r) =>
-                //{
-                //    string test = "";
-                //    
-                //};
+                authServicesOptions.Notifications.AcsCommandResultCreated = (cr, r) =>
+                {
+                    string test = "";
+                    
+                };
+                authServicesOptions.Notifications.AuthenticationRequestCreated = (request, identityProvider, arg3) =>
+                {
+                    string test = "";
+                };
+
+                authServicesOptions.Notifications.SignInCommandResultCreated = (result, dictionary) =>
+                {
+                    string test = "";
+
+                };
+
+                authServicesOptions.Notifications.EmitSameSiteNone = s =>
+                {
+                    string test = "";
+                    return !SuppressSameSiteNoneCookies(null, s);
+                };
+
 
                  // keep for debugging purposes
                 //authServicesOptions.Notifications.GetPublicOrigin = (request) =>
@@ -326,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             //n.ProtocolMessage.MaxAge = "10"; // using an age of 5 didn't work with Azure so upping to 10
                             if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                             {
-                                if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext))
+                                if (!SuppressSameSiteNoneCookies((OwinContext)n.OwinContext,null))
                                 {
                                     var hold = n.OwinContext.Response.Headers["Set-Cookie"];
                                     n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
@@ -415,8 +437,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             return false;
         }
 
-        private static bool SuppressSameSiteNoneCookies(OwinContext context)
+        private static bool SuppressSameSiteNoneCookies(OwinContext context, string userAgentInput)
         {
+            var correlationId = Guid.NewGuid().ToString();
             ManageSameSite manageSameSite = new ManageSameSite();
             var settingList = manageSameSite.GetProductInternalSettings((int)ProductEnum.UnifiedLogin, 30);
             if (settingList.Any(p => p.Name.Equals("IsSuppressSameSiteEnabled", StringComparison.OrdinalIgnoreCase)))
@@ -433,7 +456,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
 
             List<SameSiteExclusion> excludeBrowserDetails = manageSameSite.GetSameSiteExclusionList();
-            var userAgent = context.Request.Headers["User-Agent"].ToString();
+            Dictionary<string, object> info = new Dictionary<string, object>();
+
+            string userAgent = null;
+            if (context != null)
+            {
+                userAgent = context.Request.Headers["User-Agent"].ToString();
+                info.Add("context.Request.Headers", context.Request.Headers);
+            }
+            else
+            {
+                userAgent = userAgentInput;
+            }
+            info.Add("userAgent", userAgent);
+
+            Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies", AdditionalInfo = info});
+
             List<bool> andResults = new List<bool>();
 
             for (var i = 0; i < excludeBrowserDetails.Count; i++)
@@ -459,6 +497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
                     if (andResults.All(p => p == true))
                     {
+                        Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true andResults.All", AdditionalInfo = info});
                         return true;
                     }
                     andResults = new List<bool>();
@@ -466,87 +505,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
                 if (current.LogicalOperator == null && CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft))
                 {
+                    Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true CompareAgent", AdditionalInfo = info});
                     return true;
                 }
             }
-                
+            Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - false", AdditionalInfo = info});
             return false;                
         }
-
-        private static List<SameSiteExclusion> mockExclusions()
-        {
-            List<SameSiteExclusion> excludeBrowserDetails = new List<SameSiteExclusion>();
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "CPU iPhone OS 12",
-                LogicalOperator = null,
-                ComperatorRight = null,
-                SameSiteValueRight = null
-            });
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "iPad; CPU OS 12",
-                LogicalOperator = null,
-                ComperatorRight = null,
-                SameSiteValueRight = null
-            });
-
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "Macintosh; Intel Mac OS X 10_14",
-                LogicalOperator = "And",
-                ComperatorRight = "Contains",
-                SameSiteValueRight = "Version/"
-            });
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "Version/",
-                LogicalOperator = "And",
-                ComperatorRight = "Contains",
-                SameSiteValueRight = "Safari"
-            });
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "Safari",
-                LogicalOperator = null,
-                ComperatorRight = null,
-                SameSiteValueRight = null
-            });
-
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "Chrome/5",
-                LogicalOperator = null,
-                ComperatorRight = null,
-                SameSiteValueRight = null,
-            });
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "Chrome/6",
-                LogicalOperator = null,
-                ComperatorRight = null,
-                SameSiteValueRight = null
-            });
-
-            excludeBrowserDetails.Add(new SameSiteExclusion()
-            {
-                ComparatorLeft = "Contains",
-                SameSiteValueLeft = "Chrome/8",
-                LogicalOperator = null,
-                ComperatorRight = null,
-                SameSiteValueRight = null
-            });
-
-            return excludeBrowserDetails;
-        }
-
+        
         /// <summary>
         /// Used to set up a Google IDP
         /// </summary>
@@ -564,16 +530,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
                 GoogleOAuth2AuthenticationOptions options = new GoogleOAuth2AuthenticationOptions
                 {
+                    CookieManager = new RPCookieManager(),
                     AuthenticationType = googleConfiguration.AuthenticationType, //"Google",
                     Caption = googleConfiguration.Caption, //"Sign-in with Google",
                     //Scope = googleConfiguration.Scope,
                     ClientId = googleConfiguration.ProviderClientId, 
                     ClientSecret = googleConfiguration.ClientSecret, 
                     AuthenticationMode = (AuthenticationMode) googleConfiguration.AuthenticationMode, // AuthenticationMode.Active,
-                    SignInAsAuthenticationType = signInAsType,
-
+                    SignInAsAuthenticationType = signInAsType
                 };
-
                 return options;
             }
             catch (Exception ex)
