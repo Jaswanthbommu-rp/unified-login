@@ -69,19 +69,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public override ListResponse GetProductProperties(RequestParameter dataFilter, string apiQuery = null)
 		{
-			IList<PortfolioEntity> portfolioEntityRoles = new List<PortfolioEntity>();
+			//IList<PortfolioEntity> portfolioEntityRoles = new List<PortfolioEntity>();
 
 			// get all properties
-			var allProperties = GetPortfolioProperties();
+			var allProperties = GetPortfolioProperties().ToList();
 
 			// get all non-global roles
 			var allPropertiesRoles = GetPortfolioPropertySpecificRoles().ToList();
 
-			// build property-roles object
-			foreach (var prop in allProperties)
+			//build roles-entities object
+			IList<PortfolioRoleEntity> entitiesList = new List<PortfolioRoleEntity>();
+			foreach (var role in allPropertiesRoles)
 			{
-				portfolioEntityRoles.Add(new PortfolioEntity(prop, allPropertiesRoles));
+				entitiesList.Add(new PortfolioRoleEntity(role, allProperties));
 			}
+
+			//// build property-roles object
+			//foreach (var prop in allProperties)
+			//{
+			//    portfolioEntityRoles.Add(new PortfolioEntity(prop, allPropertiesRoles));
+			//}
 
 			// if user already exists in product
 			if (SubjectUserDetails != null && !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
@@ -90,13 +97,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
 				var user = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery);
 
-				MergePropertyRoles(portfolioEntityRoles, user.PropertyRoles);
+				MergePropertyRoles(entitiesList, user.PropertyRoles);
+				//MergePropertyRoles(portfolioEntityRoles, user.PropertyRoles);
 			}
 
 			return new ListResponse
 			{
-				Records = portfolioEntityRoles.Cast<object>().ToList(),
-				TotalRows = portfolioEntityRoles.Count,
+				Records = entitiesList.Cast<object>().ToList(),
+				TotalRows = entitiesList.Count,
 				RowsPerPage = 9999,
 				ErrorReason = string.Empty,
 				TotalPages = 1
@@ -177,6 +185,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
+		private void MergePropertyRoles(IList<PortfolioRoleEntity> portfolioEntityRoles, List<PropertyRoleList> userPropertyRoles)
+		{
+			var selectedPropertyIds = userPropertyRoles.Select(x => x.PropertyId).ToList();
+			foreach (var roleentity in userPropertyRoles)
+			{
+				var userRoles = roleentity.Roles;
+				foreach (var role in portfolioEntityRoles)
+				{
+					if (userRoles.Any(x => x == role.GetRoleId))
+					{
+						role.IsAssigned = true;
+					}
+
+					foreach (var property in role.PropertiesList)
+					{
+						if (selectedPropertyIds.Contains(property.GetPropertyId))
+						{
+							property.IsAssigned = true;
+						}
+					}
+				}
+			}
+
+			//foreach (var userEntityRole in userPropertyRoles)
+			//{
+			//var userRoles = userEntityRole.Roles;
+			//var portfolioMatchedEntity = portfolioEntityRoles.FirstOrDefault(x => x.GetPropertyId.Trim() == userEntityRole.PropertyId.ToString().Trim());
+
+			//if (portfolioMatchedEntity != null)
+			//{
+			//    foreach (var role in portfolioMatchedEntity.RoleList)
+			//    {
+			//        if (userRoles.Any(x => x.Trim().Equals(role.GetRoleId.ToString().Trim())))
+			//        {
+			//            role.IsAssigned = true;
+			//        }
+			//    }
+			//}
+			//}
+		}
+
 		#endregion
 	}
 	public class PortfolioEntity : ProductProperties
@@ -194,5 +243,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}));
 		}
 		public List<ProductRole> RoleList { get; set; }
+	}
+
+	public class PortfolioRoleEntity : ProductRole
+	{
+		public PortfolioRoleEntity(ProductRole role, List<ProductProperties> properties)
+		{
+			SetName = role.GetName;
+			SetRoleId = role.GetRoleId;
+			PropertiesList = new List<ProductProperties>();
+			PropertiesList.AddRange(properties.Select(a => new ProductProperties
+			{
+				SetPropertyId = a.GetPropertyId,
+				SetName = a.GetName,
+				PropertyType = a.PropertyType
+			}));
+		}
+		public List<ProductProperties> PropertiesList { get; set; }
 	}
 }

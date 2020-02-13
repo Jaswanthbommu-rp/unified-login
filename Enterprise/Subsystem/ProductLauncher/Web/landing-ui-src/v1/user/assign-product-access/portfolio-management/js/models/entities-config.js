@@ -9,32 +9,35 @@
         model.get = function () {
             return [
                 {
+                    key: "isAssigned",
+                    type: "select",
+                    idKey: "id"
+                },
+                {
                     key: "name",
                     type: "text"
-            },
+                },
                 {
-                    key: "propertyType",
-                    type: "text"
-            },
-                {
-                    key: "role",
+                    key: "assignedProperties",
                     type: "custom",
-                    idKey: "id",
-                    templateUrl: "user/assign-product-access/portfolio-management/templates/entity-roles.html"
+                    templateUrl: "user/assign-product-access/portfolio-management/templates/entities-assigned.html"
             }];
         };
 
         model.getHeaders = function () {
             return [
                 [{
-                    key: "name",
-                    text: "Entity",
-                }, {
-                    key: "propertyType",
-                    text: "Type",
-                },{
+                    key: "isAssigned",
+                    type: "select",
+                    enabled: true
+                },
+                {
                     key: "role",
-                    text: "Role"
+                    text: "Role",
+                },
+                {
+                    key: "entities",
+                    text: "Assigned Entities"
                 }]
             ];
         };
@@ -42,9 +45,29 @@
         model.getFilters = function () {
             return [
                 {
-                    key: "name",
+                    key: "isAssigned",
+                    value: "",
+                    type: "menu",
+                    size: "small",
+                    options: [
+                        {
+                            value: "",
+                            name: "All"
+                        },
+                        {
+                            value: true,
+                            name: "Selected"
+                        },
+                        {
+                            value: false,
+                            name: "Not Selected"
+                        }
+                    ]
+                },
+                {
+                    key: "role",
                     type: "text",
-                    placeholder: "Filter by Entity Name"
+                    placeholder: "Filter by Role Name"
                 }
             ];
         };
