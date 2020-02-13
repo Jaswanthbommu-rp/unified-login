@@ -924,6 +924,8 @@
     <Build Include="UserManagement\Stored Procedures\DeleteTabDependency.sql" />
     <Build Include="UserManagement\Stored Procedures\GetTabDependency.sql" />
     <Build Include="Security\UserManagement.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetProductPageByProductIdOrGuid.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlWithTypeByTabTypeId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1026,6 +1028,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserManagementData.sql" />
+    <None Include="Enterprise\Stored Procedures\ListRolesAndRightsForCompanyProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

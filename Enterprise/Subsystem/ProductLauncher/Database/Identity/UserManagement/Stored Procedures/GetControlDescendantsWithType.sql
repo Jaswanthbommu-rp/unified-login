@@ -52,4 +52,5 @@ BEGIN
 		,ControlType
 		,Level
 	FROM SelfJoinCTE
+	ORDER BY Level, ControlId, ParentControlId
 END
