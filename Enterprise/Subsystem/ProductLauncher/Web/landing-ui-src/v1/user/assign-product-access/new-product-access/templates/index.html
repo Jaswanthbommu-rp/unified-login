@@ -1,0 +1,16 @@
+
+<div ng-controller="NewProductAccessCtrl as page">
+    <h3 class="assign-product-access-title">
+       {{page.pageTitle}}
+    </h3>
+   
+    	<rp-scrolling-tabs-menu
+            model="page.tabsMenu">
+        </rp-scrolling-tabs-menu>
+        <ng-include
+            src="tab.incUrl"
+            ng-show="tab.isActive"
+            ng-repeat="tab in page.tabsList">
+        </ng-include>
+
+</div>

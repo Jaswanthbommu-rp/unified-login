@@ -14,6 +14,12 @@
 {{{ include("models/tabs-menu.js") }}}
 {{{ include("models/client-portal.js") }}}
 
+{{{ include("models/data-json.js") }}}
+{{{ include("models/config-data-model.js") }}}
+{{{ include("models/grid-factory.js") }}}
+{{{ include("models/config-model.js") }}}
+
+
 {{{ include("services/client-portal-tabs-data.js") }}}
 {{{ include("services/properties-data.js") }}}
 {{{ include("services/roles-data.js") }}}

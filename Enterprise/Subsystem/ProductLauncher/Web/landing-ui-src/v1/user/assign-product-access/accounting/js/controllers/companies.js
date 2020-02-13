@@ -115,9 +115,7 @@
                     vm.setViewUserState(resp);
                 } else {
                     if (resp.additional ) {
-                        // vm.allProperties = resp.additional.allProperties;
-                        // vm.setAllCompanies(true);
-                        
+                                                
                         ADataModel.setMConsole(resp.additional.isMConsolePMC) ;
                         // if isMConsolePMC is false , hide companies
                         if(!resp.additional.isMConsolePMC){
@@ -232,10 +230,7 @@
                     id: prop.companyId
                 }, true);
 
-                // if (companies.length > 0 && prop.isAssigned === false) {
-                //     companies[0].isAssigned = false;
-                // }
-
+               
                 if (companies.length > 0 && prop.isAssigned === true) {
                     var propertiesByComp = $filter("filter")(ADataModel.getProperties(), {
                         companyId: prop.companyId
@@ -245,12 +240,7 @@
                         isAssigned: true  // Any prop assigned
                     }, true);
 
-                    // if (properties.length > 0) {
-                    //     companies[0].isAssigned = false;
-                    // } else {
-                    //     companies[0].isAssigned = true;
-                    // }
-
+                   
                     if (properties.length > 0) {
                         companies[0].isAssigned = true;
                     }

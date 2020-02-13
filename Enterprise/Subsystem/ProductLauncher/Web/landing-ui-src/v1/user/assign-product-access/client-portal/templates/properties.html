@@ -1,15 +1,26 @@
 <div class="client-portal-properties-wrapper" ng-controller="ClientPortalPropertiesGridCtrl as cpp">
 	<div class="client-portal-properties-body" ng-if="!cpp.isDataError">
-		<label class="md-check dark-bluebox access-type-option">
-		    <input type="radio" value="property" ng-disabled="cpp.hasViewUserAccess" ng-change="cpp.resetDataModel()" ng-model="cpp.propertySelect" class="has-value">
+
+
+		<!-- <label class="md-check dark-bluebox access-type-option" ng-repeat="rad in cpp.radioconfig">
+		    <input type="rad.type" value="rad.key"  ng-change="cpp.resetDataModel()" ng-model="cpp.propertySelect" class="has-value" name = "rad.type">
 		    <i class="primary"></i>
-		    Single Property
-		</label>
-		<label class="md-check dark-bluebox access-type-option">
+		    {{rad.text}}
+		</label> -->
+
+	<rp-form-input-radio class="inline" ng-repeat="rad in cpp.radioconfig"
+        rp-value="rad.key" 
+        rp-on-change="cpp.resetDataModel()"
+        rp-model="cpp.propertySelect" 
+        rp-disabled="cpp.hasViewUserAccess"
+        rp-label-text="rad.text">
+    </rp-form-input-radio>
+		<!-- ng-disabled="cpp.hasViewUserAccess" -->
+		<!-- <label class="md-check dark-bluebox access-type-option">
 		    <input type="radio" value="all" ng-disabled="cpp.hasViewUserAccess" ng-change="cpp.resetDataModel()" ng-model="cpp.propertySelect" class="has-value">
 		    <i class="primary"></i>
 		    All Properties
-		</label>
+		</label> -->
 
 		<div ng-if="cpp.propertySelect == 'property'" class="client-portal-properties">
 		    <div class="grid-controls">

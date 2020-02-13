@@ -123,6 +123,7 @@
 
         "soln501": {
             name: "Client Portal",
+            // templateUrl: "user/assign-product-access/new-product-access/templates/index.html"
             templateUrl: "user/assign-product-access/client-portal/templates/index.html"
         },
 
