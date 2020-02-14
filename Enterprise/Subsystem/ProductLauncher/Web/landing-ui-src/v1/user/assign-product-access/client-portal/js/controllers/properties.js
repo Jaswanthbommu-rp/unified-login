@@ -35,6 +35,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
 
+
+
             if (persona.isReady()) {
                 vm.loadData();
             }
@@ -114,6 +116,10 @@
                 else {
                     vm.dataErrorReason = genericDataErrorReason;
                 }
+            }
+
+            if(!$scope.$$phase) {
+              $scope.$digest();
             }
         };
 

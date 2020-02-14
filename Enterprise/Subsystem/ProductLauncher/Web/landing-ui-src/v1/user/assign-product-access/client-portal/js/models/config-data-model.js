@@ -30,7 +30,7 @@
                         "key" : item.Controls[0].DataSource, 
                         "type" : s.isType(item.Controls[0].Type),
                         "text": item.DisplayName,
-                        // "idKey": "id",
+                        "idKey": "id",
                         "templateUrl" : s.getTemplate( s.isControl(item.Controls[0].Type) )
                     });
                 }
@@ -151,17 +151,19 @@
         p.getTemplate = function(type){
             var html = '', url ='';
             if(type === 'radio'){
-                html = '<label class="md-check dark-bluebox" ng-controller="ClientPortalRolesRadioCtrl as cprrc">' +
-                                '<input type="radio" name="client-portal-role" ' +
-                    ' ng-disabled="record.disabled" ng-model="record.isAssigned" '+
-                    ' ng-change="cprrc.publishRoleChange(record)" ng-value="true" ' +
-                    ' id="client-portal-role-{{record.id}}" class="has-value"> ' +
-                    ' <i class="primary"></i> ' +
-                '</label>';
+                // html = '<label class="md-check dark-bluebox" ng-controller="ClientPortalRolesRadioCtrl as cprrc">' +
+                //                 '<input type="radio" name="client-portal-role" ' +
+                //     ' ng-disabled="record.disabled" ng-model="record.isAssigned" '+
+                //     ' ng-change="cprrc.publishRoleChange(record)" ng-value="true" ' +
+                //     ' id="client-portal-role-{{record.id}}" class="has-value"> ' +
+                //     ' <i class="primary"></i> ' +
+                // '</label>';
             }
             url = "user/assign-product-access/client-portal/templates/property-radio.html";
-            $templateCache.put(url , html);
-            console.log("temp", $templateCache.get());
+            // $templateCache.put(url , html);
+            // console.log("temp", $templateCache.get());
+            // return url;
+            // html = '<radiogrid></radiogrid>';
             return url;
         };
         

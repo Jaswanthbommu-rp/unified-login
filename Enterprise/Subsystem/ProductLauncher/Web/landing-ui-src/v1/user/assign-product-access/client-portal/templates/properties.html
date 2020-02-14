@@ -13,7 +13,7 @@
         rp-on-change="cpp.resetDataModel()"
         rp-model="cpp.propertySelect" 
         rp-disabled="cpp.hasViewUserAccess"
-        rp-label-text="rad.text">
+        rp-label-text="rad.text"> 
     </rp-form-input-radio>
 		<!-- ng-disabled="cpp.hasViewUserAccess" -->
 		<!-- <label class="md-check dark-bluebox access-type-option">
@@ -21,6 +21,7 @@
 		    <i class="primary"></i>
 		    All Properties
 		</label> -->
+		<radiogrid></radiogrid>
 
 		<div ng-if="cpp.propertySelect == 'property'" class="client-portal-properties">
 		    <div class="grid-controls">

@@ -18,6 +18,8 @@
 {{{ include("models/config-data-model.js") }}}
 {{{ include("models/grid-factory.js") }}}
 {{{ include("models/config-model.js") }}}
+{{{ include("models/radio-dir.js") }}}
+
 
 
 {{{ include("services/client-portal-tabs-data.js") }}}
