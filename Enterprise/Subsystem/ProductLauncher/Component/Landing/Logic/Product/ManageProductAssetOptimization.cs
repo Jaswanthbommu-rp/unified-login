@@ -481,10 +481,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
 				var productUserGbLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+				var personaOrganization = persona.Organization;
 				IList<Organization> organizationList = new List<Organization>();
 				IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
-
+				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
 				if (productUserGbLogin == null)
 				{
@@ -580,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//Multi Company BI Product create/update logic
 				if (aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").Count() > 0 &&
-					hasMultiCompany && !persona.Organization.PrimaryOrganization)
+					((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser))
 				{
 					var biProductData = aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").ToList();
 					if (biProductData.Any())
@@ -664,7 +665,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId);
 								// store existing assigned products
 								existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
-
+								UnAssignProductRolePropertyDetails(aoGbUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, persona);
 								// get existing AP details
 								aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
 								aoUser.Divisions = new List<Divisions>();
@@ -2236,6 +2237,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					copiedAoUserCompanyPropertyRoleDetails.Add(modifiedProduct);
 				}
 			}
+		}
+
+		private void UnAssignProductRolePropertyDetails(IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails, IList<AoUserCompanyPropertyRoleDetail> copiedAoUserCompanyPropertyRoleDetails, Persona persona)
+		{
+			if (aoGbUserCompanyPropertyRoleDetails == null)
+				return;
+
+			// Ge unassigned products
+			var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
+			
+			IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+
+			// remove roles			
+			if (!hasMultiCompany && persona.Organization.PrimaryOrganization)
+			{
+				foreach (var unAssignedProduct in unAssignedProducts)
+				{
+					var matches = copiedAoUserCompanyPropertyRoleDetails.Where(p => p.ProductName == unAssignedProduct.ProductName).ToList();
+					if (matches.Any())
+					{
+						//Remove Roles for the product which un assigned
+						foreach (var match in matches)
+						{
+							match.SelectedRoleValues = new List<string>();
+						}
+					}
+				}
+			}			
+			
 		}
 
 		private IList<AoUserCompanyPropertyRoleDetail> CopyEditorUserToCreateSuperUser(long sourceUserPersonaId)
