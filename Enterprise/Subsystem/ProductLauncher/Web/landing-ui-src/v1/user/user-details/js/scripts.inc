@@ -3,6 +3,8 @@
 {{{ include("controllers/external-user.js") }}}
 {{{ include("controllers/existing-user.js") }}}
 {{{ include("controllers/existing-user-noemail.js") }}}
+{{{ include("controllers/deactivated-user.js") }}}
+
 
 
 {{{ include("filters/user-details-text.js") }}}
@@ -15,6 +17,8 @@
 {{{ include("models/external-user-modal.js") }}}
 {{{ include("models/existing-user-modal.js") }}}
 {{{ include("models/existing-noemail-user-modal.js") }}}
+{{{ include("models/deactivated-user-modal.js") }}}
+
 
 
 {{{ include("services/user.js") }}}
