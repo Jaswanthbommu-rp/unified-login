@@ -828,11 +828,11 @@
            model.setExternalUserData(resp.data);
            var isModalOpen = false;
            
-           if(model.data.userTypeId === 405 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" ) && !resp.data.userExists && !resp.data.userExistsInThisOrganization){                
+           if(model.data.userTypeId === 405 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && !resp.data.userExistsInThisOrganization){                
                 chkEmailModel.setIsBusy(false);
                 return;
            }
-           
+
            // Not an Employee
            if(model.data.userTypeId !== 403){
 
