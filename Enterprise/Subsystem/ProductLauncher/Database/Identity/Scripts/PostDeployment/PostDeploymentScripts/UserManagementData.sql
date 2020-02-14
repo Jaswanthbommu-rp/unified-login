@@ -140,10 +140,6 @@ SET IDENTITY_INSERT [UserManagement].[TabTypeControl] ON
 
 IF NOT EXISTS (SELECT 1 FROM[UserManagement].[TabTypeControl] WHERE  [TabTypeControlId] = 1)
 INSERT [UserManagement].[TabTypeControl] ([TabTypeControlId], [TabTypeId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (1, 9, 2, 7, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
-IF NOT EXISTS (SELECT 1 FROM[UserManagement].[TabTypeControl] WHERE  [TabTypeControlId] = 2)
-INSERT [UserManagement].[TabTypeControl] ([TabTypeControlId], [TabTypeId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (2, 9, 2, 8, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
-IF NOT EXISTS (SELECT 1 FROM[UserManagement].[TabTypeControl] WHERE  [TabTypeControlId] = 3)
-INSERT [UserManagement].[TabTypeControl] ([TabTypeControlId], [TabTypeId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (3, 9, 2, 9, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
 IF NOT EXISTS (SELECT 1 FROM[UserManagement].[TabTypeControl] WHERE  [TabTypeControlId] = 4)
 INSERT [UserManagement].[TabTypeControl] ([TabTypeControlId], [TabTypeId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) VALUES (4, 10, 2, 10, 2198, CAST(N'2020-01-28T00:00:00.000' AS DateTime))
 IF NOT EXISTS (SELECT 1 FROM[UserManagement].[TabTypeControl] WHERE  [TabTypeControlId] = 5)
