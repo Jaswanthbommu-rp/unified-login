@@ -28,6 +28,7 @@ Post-Deployment Script Template
 --:r .\PostDeploymentScripts\October2019Release.sql
 --:r .\PostDeploymentScripts\November2019Release.sql
 --:r .\PostDeploymentScripts\December2019Release.sql
+:r .\PostDeploymentScripts\SameSiteData.sql
 
 :r .\PostDeploymentScripts\January2020Release.sql
 :r .\PostDeploymentScripts\February2020Release.sql
