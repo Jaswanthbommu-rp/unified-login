@@ -477,6 +477,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				string returnResult = "";
+				List<string> userAOProducts = new List<string>();
 				var persona = _managePersona.GetPersona(productUserPersonaId);
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
@@ -525,6 +526,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LastName = person.LastName,
 				};
 
+				userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
+
 				if (string.IsNullOrEmpty(_productUsername))
 				{
 					organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
@@ -532,10 +535,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//Check to see if user has multicompany, then get user products and assign before any updates
 					if (organizationList?.Count > 1)
 					{
-						var products = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productUserGbLogin.LoginName);
-						if (products?.Count > 0)
+						if (userAOProducts?.Count > 0)
 						{
-							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, products, productUserGbLogin.LoginName.ToLower());
+							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, userAOProducts, productUserGbLogin.LoginName.ToLower());
 							_productUsername = productUserGbLogin.LoginName.ToLower();
 						}
 					}
@@ -606,7 +608,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				//Create/Update single/multi company AO Products
 				if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
 				{					
-					if (string.IsNullOrEmpty(_productUsername))
+					if (userAOProducts?.Count == 0)
 					{
 						aoUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
 						aoUser.Divisions = new List<Divisions>();
@@ -1215,15 +1217,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				productUserProductApiUrl = $"{_apiEndPoint}user/ao-token?userId={loginName}";
 				var objProductData = GetResultFromApi<AoUserConfigAuthorities>(productUserProductApiUrl);
 
-				var aoUserProducts = objProductData.ysconfigAuthorities.Where(c => c.company.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
-
-				if (aoUserProducts.Count > 0)
+				if (objProductData != null)
 				{
-					products = aoUserProducts.Select(a => a.product).Distinct().ToList();
-				}
-				WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetAOProductsForNewMultiCompanyUser at end of method for user with " +
-				$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {products.ToString()}");
+					var aoUserProducts = objProductData.ysconfigAuthorities.Where(c => c.company.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
+
+					if (aoUserProducts.Count > 0)
+					{
+						products = aoUserProducts.Select(a => a.product).Distinct().ToList();
+					}
+					WriteToDiagnosticLog(
+					$"ManageProductAssetOptimization.GetAOProductsForNewMultiCompanyUser at end of method for user with " +
+					$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {products.ToString()}");
+				}				
 			}
 			catch (Exception ex)
 			{
