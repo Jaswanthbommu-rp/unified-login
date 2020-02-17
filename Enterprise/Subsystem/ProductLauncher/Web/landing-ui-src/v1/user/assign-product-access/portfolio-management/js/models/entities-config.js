@@ -7,8 +7,7 @@
         var model = gridConfig();
 
         model.get = function () {
-            return [
-                {
+            return [{
                     key: "isAssigned",
                     type: "select",
                     idKey: "id"
@@ -32,45 +31,45 @@
                     enabled: true
                 },
                 {
-                    key: "role",
+                    key: "name",
                     text: "Role",
                 },
                 {
-                    key: "entities",
+                    key: "assignedProperties",
                     text: "Assigned Entities"
                 }]
             ];
         };
 
-        model.getFilters = function () {
-            return [
-                {
-                    key: "isAssigned",
-                    value: "",
-                    type: "menu",
-                    size: "small",
-                    options: [
-                        {
-                            value: "",
-                            name: "All"
-                        },
-                        {
-                            value: true,
-                            name: "Selected"
-                        },
-                        {
-                            value: false,
-                            name: "Not Selected"
-                        }
-                    ]
-                },
-                {
-                    key: "role",
-                    type: "text",
-                    placeholder: "Filter by Role Name"
-                }
-            ];
-        };
+        // model.getFilters = function () {
+        //     return [
+        //         {
+        //             key: "isAssigned",
+        //             value: "",
+        //             type: "menu",
+        //             size: "small",
+        //             options: [
+        //                 {
+        //                     value: "",
+        //                     name: "All"
+        //                 },
+        //                 {
+        //                     value: true,
+        //                     name: "Selected"
+        //                 },
+        //                 {
+        //                     value: false,
+        //                     name: "Not Selected"
+        //                 }
+        //             ]
+        //         },
+        //         {
+        //             key: "role",
+        //             type: "text",
+        //             placeholder: "Filter by Role Name"
+        //         }
+        //     ];
+        // };
 
         return model;
     }

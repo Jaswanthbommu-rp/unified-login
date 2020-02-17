@@ -11,6 +11,8 @@
 {{{ include("services/tabs-menu.js") }}}
 {{{ include("templates/templates.inc.js") }}}
 
+{{{ include("directives/entities-action.js") }}}
 {{{ include("controllers/entities-list-aside.js") }}}
 {{{ include("models/entities-list-grid.js") }}}
 {{{ include("services/entities-mgnt-list-aside.js") }}}
+{{{ include("models/entities-list-aside.js") }}}

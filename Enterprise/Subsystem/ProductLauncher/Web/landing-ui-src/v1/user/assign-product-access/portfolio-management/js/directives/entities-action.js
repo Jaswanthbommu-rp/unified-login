@@ -11,6 +11,7 @@
             };
 
             dir.showEditEntities = function (record) {
+                logc('show-entities');
                 tabsContext.set({
                     type: "edit",
                     data: record
@@ -37,8 +38,8 @@
     angular
         .module("settings")
         .directive("entitiesActions", [
-            "paAssignPropertyAside",
-            "paAssignPropertyContext",
+            "entitiesRolesAside",
+            "entitiesListContext",
             entitiesActions
         ]);
 })(angular);

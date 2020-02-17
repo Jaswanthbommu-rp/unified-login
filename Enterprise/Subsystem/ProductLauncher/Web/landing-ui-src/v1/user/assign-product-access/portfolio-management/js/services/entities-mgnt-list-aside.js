@@ -15,5 +15,5 @@
 
     angular
         .module("settings")
-        .factory("EntitiesRolesAside", ["rpAsideModal", EntitiesRolesAsideSvc]);
+        .factory("entitiesRolesAside", ["rpAsideModal", EntitiesRolesAsideSvc]);
 })(angular);

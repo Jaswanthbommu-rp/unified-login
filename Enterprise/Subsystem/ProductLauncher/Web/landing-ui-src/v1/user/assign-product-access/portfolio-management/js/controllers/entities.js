@@ -40,7 +40,6 @@
             vm.grid.updateSelected();
         };
 
-
         vm.isActive = function () {
             return PMDataModel.isActive();
         };
@@ -64,8 +63,12 @@
             if (resp.records && resp.records.length > 0) {
                 sync.setRoleList(resp.records);
                 resp.records.forEach(function (role) {
-                    role.assignedProperties = "abc of 787";
+                    var assignedPropertiesCount = role.propertiesList.filter(function (item) {
+                        return item.isAssigned === true;
+                    });
+                    role.assignedProperties = assignedPropertiesCount.length+" of "+role.propertiesList.length;
                 });
+
                 gridPagination.setData(resp.records).goToPage({
                     number: 0
                 });
@@ -83,7 +86,6 @@
             }
         };
 
-
         vm.isReady = function () {
             return PMDataModel.isReady();
         };
@@ -91,7 +93,6 @@
         vm.setChanged = function () {
             PMDataModel.setChanged();
         };
-
 
         vm.destroy = function () {
             vm.destWatch();
