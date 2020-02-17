@@ -4,7 +4,7 @@
     "use strict";
 
     function UserDetailsCtrl($scope, $q, $filter, $params, timeout, moment, model, userSvc, userTypes, formConfig, passReq, popoverConfig, tabs, tabsModel, userStatus, assignProductsModel, session, userTimeZones,
-        contactMethod, industryJobTitle, phoneTypeTitle, security, helpData, persona, impersonate, switchConfig, changeUserType, chgUserTypeModal, pubsub, externalUserModal, externalUserSvc, existingUserModal, chkEmailModel, existingNoEmailUserModal) {
+        contactMethod, industryJobTitle, phoneTypeTitle, security, helpData, persona, impersonate, switchConfig, changeUserType, chgUserTypeModal, pubsub, externalUserModal, externalUserSvc, existingUserModal, chkEmailModel, existingNoEmailUserModal, deactivatedUserModal) {
         var vm = this,
             lang = $filter("userDetailsText"),
             helpWidget = document.querySelector('omnibar-unified-help'),
@@ -828,8 +828,20 @@
            model.setExternalUserData(resp.data);
            var isModalOpen = false;
            
+           
            // Not an Employee
            if(model.data.userTypeId !== 403){
+
+                if(model.data.userTypeId === 405 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && !resp.data.userExistsInThisOrganization && !resp.data.userIsDisabledInPrimaryCompany){                
+                    chkEmailModel.setIsBusy(false);
+                    return;
+                }
+
+                if((model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsDisabledInPrimaryCompany){                
+                    isModalOpen = true;
+                    deactivatedUserModal.show();
+                    return;
+                }
 
 
                if(resp.data.userExistsNotAvailable === true && resp.data.userExists === true  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){
@@ -890,6 +902,7 @@
                }
 
            }
+            
 
            if(isModalOpen === false){
                 chkEmailModel.setIsBusy(false);  
@@ -972,6 +985,7 @@
             "existingUserModal",
             "chkEmailModel",
             "existingNoEmailUserModal",
+            "deactivatedUserModal",
             UserDetailsCtrl
         ]);
 })(angular);
