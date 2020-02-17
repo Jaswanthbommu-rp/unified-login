@@ -2271,6 +2271,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 //Begin the transaction
                 repository.UnitOfWork.BeginTransaction();
+                var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = persona.Organization.RealPageId });
                 try
                 {
                     #region Update Person
@@ -2823,6 +2824,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         // GreenBook - UnifiedLogin call updating GB Role
                         greenBookRole = 0;
+                        
                         var gbProdBatch = profile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedLogin);
                         if (gbProdBatch != null)
                         {
@@ -2840,8 +2842,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 };
                                 roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, paramUserRole);
                                 var SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name == "SuperUser");
-
-                                var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = persona.Organization.RealPageId });
 
                                 if (SuperUserRole.PartyRoleTypeId == profile.UserTypeId)
                                 {
@@ -2898,6 +2898,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 // Activity logging
                 if (repositoryResponse.Id > 0)
                 {
+                    if (greenBookRole != 0 && greenBookRole != existingRoleId && existingRoleId != 0)
+                    {
+                        if (enterpriseRoles != null)
+                        {
+                            var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == existingRoleId).Select(e => e.Role).FirstOrDefault();
+                            var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
+                            var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {existingUserRole} to {newUserRole} for {{0}} {{1}}.";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                        }
+                    }
                     if (isUserTypeChangedFromNoEmailToRegular)
                     {
                         //Log Activity
