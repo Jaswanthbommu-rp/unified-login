@@ -159,10 +159,12 @@
 
             if (!s.roleList.empty()) {
                 s.roleList.forEach(function (role) {
-                    s.roleMap['entity' + role.id] = {
-                        role: role.roleList,
-                        roles: []
-                    };
+
+                     s.roleMap['entity' + role.id] = {
+                         propertiesList: role.propertiesList,
+                         role: role,
+                         assignedProperties:"abc of 787"
+                     };
                 });
             }
 

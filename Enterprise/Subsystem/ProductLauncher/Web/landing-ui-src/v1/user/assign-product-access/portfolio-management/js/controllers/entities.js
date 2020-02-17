@@ -63,6 +63,9 @@
         vm.setData = function (resp) {
             if (resp.records && resp.records.length > 0) {
                 sync.setRoleList(resp.records);
+                resp.records.forEach(function (role) {
+                    role.assignedProperties = "abc of 787";
+                });
                 gridPagination.setData(resp.records).goToPage({
                     number: 0
                 });

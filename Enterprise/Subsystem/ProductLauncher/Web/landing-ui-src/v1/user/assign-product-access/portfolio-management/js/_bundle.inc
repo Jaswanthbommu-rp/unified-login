@@ -10,3 +10,7 @@
 {{{ include("models/roles-config.js") }}}
 {{{ include("services/tabs-menu.js") }}}
 {{{ include("templates/templates.inc.js") }}}
+
+{{{ include("controllers/entities-list-aside.js") }}}
+{{{ include("models/entities-list-grid.js") }}}
+{{{ include("services/entities-mgnt-list-aside.js") }}}
