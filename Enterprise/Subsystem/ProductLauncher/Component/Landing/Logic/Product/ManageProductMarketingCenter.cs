@@ -297,7 +297,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							WriteToDiagnosticLog($"GetProperties - Adding extra property.", logData);
 						}
 						allProperties.Add("allProperties", mUser.AssignNewProperty);
-					}
+                        allProperties.Add("IsAssignedNewPropertyByDefault", mUser.AssignNewProperty);
+                    }
 
 					logData = new Dictionary<string, object>();
 					logData.Add("list", list);
@@ -616,7 +617,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// get the current properties for the company
 			ListResponse propertyListResponse = GetProperties(editorPersonaId, 0, null);
 			List<ProductProperty> propertyList = propertyListResponse.Records.Cast<ProductProperty>().ToList();
-			bool allPropertiesSelected = false;
+			bool allPropertiesSelected = false;            
 
 			int roleId = 0;
 			if (isSuperUser)
@@ -667,6 +668,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						mcProperties.Add(Convert.ToInt32(prop));
 					}
 				}
+                else if(PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+                {
+                    mcProperties.AddRange((from a in propertyList select Convert.ToInt32(a.ID)).ToArray());
+                }
 			}
 
 			WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
@@ -731,10 +736,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (isSuperUser)
             {
                 allPropertiesSelected = true;
+                mcUser.AssignNewProperty = true;
             }
             else
             {
-                allPropertiesSelected = IsAssignedNewPropertyByDefault;
+                //allPropertiesSelected = IsAssignedNewPropertyByDefault;
+                mcUser.AssignNewProperty = IsAssignedNewPropertyByDefault;
             }
 
             logData = new Dictionary<string, object>();
