@@ -37,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Gets Product Batch
 		/// </summary> 
-		public IList<ProductBatch> GetUserProductBatchData(long personaId, DefaultUserClaim userClaim, List<PersonaProductUserDetails> userProducts, long createUserPersonaId)
+		public IList<ProductBatch> GetUserProductBatchData(long personaId, DefaultUserClaim userClaim, List<PersonaProductUserDetails> userProducts, long createUserPersonaId, bool externalUser = false)
 		{
 			IList<ProductBatch> productListToCreate = new List<ProductBatch>();
 
@@ -231,7 +231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			var aoProductList = userProducts.Where(y => ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
 			if (aoProductList.Any())
 			{
-				var batches = CreateAoBatchRecords(userClaim, createUserPersonaId, personaId);
+				var batches = CreateAoBatchRecords(userClaim, createUserPersonaId, personaId, externalUser);
 				foreach (var productBatch in batches)
 				{
 					// add only if userProducts has productId else product is modified after clone
@@ -601,12 +601,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return pb;
 		}
 
-		private IList<ProductBatch> CreateAoBatchRecords(DefaultUserClaim userClaim, long editorPersonaId, long newUserPersonaId)
+		private IList<ProductBatch> CreateAoBatchRecords(DefaultUserClaim userClaim, long editorPersonaId, long newUserPersonaId, bool externalUser = false)
 		{
 			var productBatchList = new List<ProductBatch>();
-
+			IList<AoUserCompanyPropertyRoleDetail> aoBIUserCompanyPropertyRoleDetails = new List<AoUserCompanyPropertyRoleDetail>();
 			var manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim);
+			//below code block will add external user bi product to clone user batch.
+			if (externalUser)
+			{
+				ISamlRepository samlRepository = new SamlRepository();
+				string aoBIUserName = string.Empty;
+				IList<SamlAttributes> productAttributes = samlRepository.GetProductSamlDetails(newUserPersonaId, (int)ProductEnum.AoBusinessIntelligence);
+				if (productAttributes.Any(a => a.Name.Equals("ProductUserName", StringComparison.OrdinalIgnoreCase)))
+				{
+					aoBIUserName = (from a in productAttributes where a.Name.Equals("ProductUserName", StringComparison.OrdinalIgnoreCase) select a.Value).FirstOrDefault();
+				}
+				if (aoBIUserName != null)
+				{
+					aoBIUserCompanyPropertyRoleDetails = manageProductAssetOptimization.CopyRegularUser(editorPersonaId, newUserPersonaId, aoBIUserName);
+				}				
+			}
+
 			var aoUserCompanyPropertyRoleDetails = manageProductAssetOptimization.CopyRegularUser(editorPersonaId, newUserPersonaId);
+
+			foreach (var aoBIUserCompanyPropertyRoleDetail in aoBIUserCompanyPropertyRoleDetails)
+			{
+				aoUserCompanyPropertyRoleDetails.Add(aoBIUserCompanyPropertyRoleDetail);
+			}
 
 			foreach (var aoUserCompanyPropertyRoleDetail in aoUserCompanyPropertyRoleDetails)
 			{
