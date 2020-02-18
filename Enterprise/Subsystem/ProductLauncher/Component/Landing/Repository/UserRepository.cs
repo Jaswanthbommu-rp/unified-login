@@ -231,7 +231,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (newProfile.ClonedUser)
             {
                 cloneUserPersonaId = newProfile.Persona[0].PersonaId;
-                using (var pbRepository = GetRepository())
+				var cloneUserPersona = _managePersona.GetPersona(cloneUserPersonaId);
+				var personaOrganization = cloneUserPersona.Organization;
+				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+				using (var pbRepository = GetRepository())
                 {
                     //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
                     List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = newProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
@@ -252,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Then Get Product Batch Data
-                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId);
+                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, isExternalUser);
 
                         foreach (ProductBatch pb in pbData)
                         {
