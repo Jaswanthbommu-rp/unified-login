@@ -548,7 +548,7 @@ del "$(ProjectDir)runtime.*"
 del "$(ProjectDir)scripts.*"
 del "$(ProjectDir)styles.*"
 del "$(ProjectDir)summernote.*"
-robocopy /MIR /S /MT /Z \\RCDUSOWEB001.Corp.Realpage.com\BuildDrops\unity-ci-local\ "$(ProjectDir)unityui\" *.*
+robocopy /MIR /S /MT /Z \\RCDUSOWEB001.Corp.Realpage.com\BuildDrops\unity-ci-local\ "$(ProjectDir)unityui\." *.*
 xcopy "$(ProjectDir)unityui\*.*" "$(ProjectDir)" /Y /E
 
 :exit
