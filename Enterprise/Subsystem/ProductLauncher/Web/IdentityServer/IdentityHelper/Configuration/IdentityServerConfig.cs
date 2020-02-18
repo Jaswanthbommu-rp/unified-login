@@ -27,6 +27,7 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
 
@@ -46,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             var options = new IdentityServerOptions
             {
                 IssuerUri = ConfigReader.GetIssuerUri,
-                RequireSsl = requireSsl,
+                RequireSsl = true,
                 SiteName = "RealPage Identity Server",
                 EnableWelcomePage = false,
                 PublicOrigin = ConfigReader.GetPublicOriginUri,
@@ -60,6 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         AllowRememberMe = false,
                         IsPersistent = false,
                         RememberMeDuration = TimeSpan.FromMinutes(1),
+                        SecureMode = CookieSecureMode.Always,
                     },
                     EnableSignOutPrompt = false,
                     EnablePostSignOutAutoRedirect = true,
@@ -207,8 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
                         PublicOrigin = new Uri(ConfigReader.GetIssuerUri),
-                        //Logger = new TestLogger(), // enable to log Saml2AuthenticationOptions issues
-
+                        Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
 
@@ -222,6 +223,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     return new Uri("https://asdsad");
                 };
                 */
+
+                if (!ConfigReader.Environment.Equals("prod", StringComparison.OrdinalIgnoreCase))
+                {
+                    authServicesOptions.SPOptions.Logger = new TestLogger();// enable to log Saml2AuthenticationOptions issues
+                }
 
                 IdentityProvider idp = new IdentityProvider(new EntityId(provider.EntityId), authServicesOptions.SPOptions)
                 {
@@ -284,7 +290,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null)
                                 {
                                     n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["userinfo."+ signinid]))));
-                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/" });
+                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true  });
                                     
                                 }
                             }
@@ -300,7 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/" });
+                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/", HttpOnly = true, Secure = true  });
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
