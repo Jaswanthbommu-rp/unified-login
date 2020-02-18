@@ -23,7 +23,7 @@
                 inputJson: {
                     roleList: [],
                     propertyList: [],
-                    IsAssignedNewPropertyByDefault: false
+                    isAssignedNewPropertyByDefault: false
                 }
             };
 
@@ -82,8 +82,8 @@
                 hasRoles = false,
                 hasProperties = false;
 
-            //assign new property toggle value in productbatch
-            s.data.inputJson.IsAssignedNewPropertyByDefault = s.newPropertyState;
+            //assign new property toggle value in productbatch  
+            s.data.inputJson.isAssignedNewPropertyByDefault = s.newPropertyState;
             if (s.roles && s.roles.length) {
                 s.data.inputJson.roleList = [];
 
@@ -100,16 +100,22 @@
             if (s.properties && s.properties.length) {
                 s.data.inputJson.propertyList = [];
 
-                if (s.properties[0] !== "all") {
-                    s.properties.forEach(function (prop) {
-                        if (prop.isAssigned) {
-                            s.data.inputJson.propertyList.push(prop.id);
-                        }
-                    });
-                }
-                else {
-                    s.data.inputJson.propertyList.push("all");
-                }
+                s.properties.forEach(function (prop) {
+                    if (prop.isAssigned) {
+                        s.data.inputJson.propertyList.push(prop.id);
+                    }
+                });
+
+                // if (s.properties[0] !== "all") {
+                //     s.properties.forEach(function (prop) {
+                //         if (prop.isAssigned) {
+                //             s.data.inputJson.propertyList.push(prop.id);
+                //         }
+                //     });
+                // }
+                // else {
+                //     s.data.inputJson.propertyList.push("all");
+                // }
 
                 hasProperties = s.data.inputJson.propertyList.length > 0;
             }
