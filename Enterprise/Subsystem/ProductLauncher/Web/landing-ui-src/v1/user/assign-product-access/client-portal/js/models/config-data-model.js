@@ -134,14 +134,15 @@
                 if(item.type === 'text'){
                     main.push({
                         "key" : item.key,
-                        "type" : item.type,
-                        "templateUrl" :  item.template 
+                        "type" : item.type,                        
                     });
                 }
                 if(item.type === 'custom'){
                     main.push({
                         "key" : item.key,    
-                        "type" : item.type                    
+                        "type" : item.type,
+                        "templateUrl" :  item.templateUrl,
+                        "idKey" : item.idKey                    
                     });
                 }
             });

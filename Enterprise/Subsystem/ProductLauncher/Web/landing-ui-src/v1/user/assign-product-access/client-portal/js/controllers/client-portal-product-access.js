@@ -60,7 +60,7 @@
                     var f = configData.getFilters(tab);
                     fltrCnfg = f;
 
-                    var m = configData.getFilters(tab);
+                    var m = configData.getMain(tab);
                     mainCnfg = m;
 
                     var cnfg = {
@@ -68,6 +68,8 @@
                         "filters" : fltrCnfg,
                         "main"    : mainCnfg
                     };
+
+                    logc("cnfg for  main" , cnfg);
 
                     var c = configFactory(cnfg);
                     cnfgs.push(c);
