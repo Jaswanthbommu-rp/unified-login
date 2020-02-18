@@ -296,7 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}
 							WriteToDiagnosticLog($"GetProperties - Adding extra property.", logData);
 						}
-						allProperties.Add("allProperties", mUser.AssignNewProperty);
+						//allProperties.Add("allProperties", mUser.AssignNewProperty);
                         allProperties.Add("IsAssignedNewPropertyByDefault", mUser.AssignNewProperty);
                     }
 
@@ -724,23 +724,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 
 			mcUser.AssignPropertyIds = mcProperties;
-            //if (PropertyList != null && PropertyList.Count > 0 && PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase) && !isSuperUser)
-            //{
-            //	allPropertiesSelected = true;
-            //	mcUser.AssignPropertyIds = null;
-            //}
-            //else if (isSuperUser)
-            //{
-            //	allPropertiesSelected = true;
-            //}
+            
             if (isSuperUser)
             {
                 allPropertiesSelected = true;
                 mcUser.AssignNewProperty = true;
             }
             else
-            {
-                //allPropertiesSelected = IsAssignedNewPropertyByDefault;
+            {                
                 mcUser.AssignNewProperty = IsAssignedNewPropertyByDefault;
             }
 
