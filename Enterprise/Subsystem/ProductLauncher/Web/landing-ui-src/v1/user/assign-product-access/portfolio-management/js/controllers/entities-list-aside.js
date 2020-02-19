@@ -3,15 +3,15 @@
 (function(angular, undefined) {
     "use strict";
 
-    function PortofolioMgntEntitiesListAsideCtrl($scope, aside, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, rightsModel, userModel, persona) {
+    function EntitiesListAsideCtrl($scope, aside, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, rightsModel, userModel, persona) {
         var vm = this,
             asideGrid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel();
 
         vm.init = function() {
-            vm.title = "Assign Entities";
-            vm.subtitle = "Render Company Name";
+            vm.title = "Assigned Entities";
+            vm.subtitle = rightsModel.getName();
             vm.asideGrid = asideGrid;
             gridTransform.watch(asideGrid);
             asideGrid.setConfig(gridConfig);
@@ -78,17 +78,17 @@
 
     angular
         .module("settings")
-        .controller("PortofolioMgntEntitiesListAsideCtrl", [
+        .controller("EntitiesListAsideCtrl", [
             "$scope",
-            "EntitiesRolesAside",
-            "EntitiesRolesAsideSvc",
+            "userMgmtRightsListAside",
+            "userMgmtRightsListAsideSvc",
             "rpGridModel",
-            "entitiesListAsideGrigConfig",
+            "userMgmtRightsAsideGrigConfig",
             "rpGridTransform",
             "rpGridPaginationModel",
             "unfLogAsideRightsModel",
             "userSessionModel",
             "personaDetails",
-            PortofolioMgntEntitiesListAsideCtrl
+            EntitiesListAsideCtrl
         ]);
 })(angular);

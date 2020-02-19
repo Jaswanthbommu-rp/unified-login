@@ -41,35 +41,35 @@
             ];
         };
 
-        // model.getFilters = function () {
-        //     return [
-        //         {
-        //             key: "isAssigned",
-        //             value: "",
-        //             type: "menu",
-        //             size: "small",
-        //             options: [
-        //                 {
-        //                     value: "",
-        //                     name: "All"
-        //                 },
-        //                 {
-        //                     value: true,
-        //                     name: "Selected"
-        //                 },
-        //                 {
-        //                     value: false,
-        //                     name: "Not Selected"
-        //                 }
-        //             ]
-        //         },
-        //         {
-        //             key: "role",
-        //             type: "text",
-        //             placeholder: "Filter by Role Name"
-        //         }
-        //     ];
-        // };
+        model.getFilters = function () {
+            return [
+                {
+                    key: "isAssigned",
+                    value: "",
+                    type: "menu",
+                    size: "small",
+                    options: [
+                        {
+                            value: "",
+                            name: "All"
+                        },
+                        {
+                            value: true,
+                            name: "Selected"
+                        },
+                        {
+                            value: false,
+                            name: "Not Selected"
+                        }
+                    ]
+                },
+                {
+                    key: "role",
+                    type: "text",
+                    placeholder: "Filter by Role Name"
+                }
+            ];
+        };
 
         return model;
     }

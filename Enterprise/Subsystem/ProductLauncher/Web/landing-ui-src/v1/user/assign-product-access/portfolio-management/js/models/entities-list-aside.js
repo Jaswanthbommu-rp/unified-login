@@ -1,13 +1,19 @@
-//  assign properties Context Service
+//  userMgmt RIghts List Aside
 
-(function(angular) {
+(function(angular, undefined) {
     "use strict";
 
-    function factory(rpDataShareModel) {
-        return rpDataShareModel();
+    function factory(asideModal) {
+        var modalData = {
+            keyboard: false,
+            backdrop: "static",
+            templateUrl: "user/assign-product-access/unified-login/templates/rights-list-aside.html"
+        };
+
+        return asideModal().setData(modalData);
     }
 
     angular
         .module("settings")
-        .factory("entitiesListContext", ["rpDataShareModel", factory]);
+        .factory("entitiesListAside", ["rpAsideModal", factory]);
 })(angular);

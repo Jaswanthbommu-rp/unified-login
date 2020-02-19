@@ -1,12 +1,12 @@
-<div ng-controller="PortofolioMgntEntitiesListAsideCtrl as pmela" class="rp-aside-modal rp-aside-modal-right usermgmt-rights-list-aside">
+<div ng-controller="EntitiesListAsideCtrl as umrla" class="rp-aside-modal rp-aside-modal-right usermgmt-rights-list-aside">
     <div class="rp-aside-modal-header">
-        <span class="rp-aside-modal-close" ng-click="pmela.cancel()">
+        <span class="rp-aside-modal-close" ng-click="umrla.cancel()">
         </span>
         <h2 class="rp-aside-modal-header-title">
-            {{::pmela.title}}
+            {{::umrla.title}}
         </h2>
         <h3 class="rp-aside-modal-header-subtitle">
-            {{pmela.subtitle}}
+            {{umrla.subtitle}}
         </h3>
     </div>
     <div class="rp-aside-modal-content">
@@ -14,7 +14,7 @@
             <div class="usermgmt-rights-list-aside-body">
                 <div class="grid-controls">
                     <div class="grid-control-item">
-                        <rp-toggle model="pmela.asideGrid.filtersModel.state.active" options="{
+                        <rp-toggle model="umrla.asideGrid.filtersModel.state.active" options="{
                             defaultText: 'Filter',
                             activeIconClass: 'rp-icon-filter',
                             defaultIconClass: 'rp-icon-filter active'
@@ -22,7 +22,7 @@
                         </rp-toggle>
                     </div>
                 </div>
-                <rp-grid model="pmela.asideGrid" class="usermgmt-rights-list-aside-grid">
+                <rp-grid model="umrla.asideGrid" class="usermgmt-rights-list-aside-grid">
                 </rp-grid>
                 <rp-grid-pagination model="gridPagination">
                 </rp-grid-pagination>
