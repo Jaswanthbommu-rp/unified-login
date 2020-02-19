@@ -7,7 +7,7 @@
         var modalData = {
             keyboard: false,
             backdrop: "static",
-            templateUrl: "user/assign-product-access/unified-login/templates/rights-list-aside.html"
+            templateUrl: "user/assign-product-access/portfolio-management/templates/entities-list-aside.html"
         };
 
         return asideModal().setData(modalData);

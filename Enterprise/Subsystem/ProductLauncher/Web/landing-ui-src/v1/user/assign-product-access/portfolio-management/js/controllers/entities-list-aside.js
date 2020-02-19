@@ -3,7 +3,7 @@
 (function(angular, undefined) {
     "use strict";
 
-    function EntitiesListAsideCtrl($scope, aside, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, rightsModel, userModel, persona) {
+    function EntitiesListAsideCtrl($scope, aside, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel) {
         var vm = this,
             asideGrid = gridModel(),
             gridTransform = gridTransformSvc(),
@@ -11,12 +11,14 @@
 
         vm.init = function() {
             vm.title = "Assigned Entities";
-            vm.subtitle = rightsModel.getName();
+            vm.subtitle = persona.data.organization.name;
             vm.asideGrid = asideGrid;
             gridTransform.watch(asideGrid);
             asideGrid.setConfig(gridConfig);
             gridPagination.setGrid(asideGrid);
             $scope.gridPagination = gridPagination;
+
+            vm.model = dataModel;
 
             gridPagination.setConfig({
                 recordsPerPage: 10
@@ -24,32 +26,19 @@
 
             vm.personaWatch = angular.noop;
 
-            if (persona.isReady()) {
-                vm.loadData();
-            } else {
-                vm.personaWatch = persona.subscribe(vm.loadData);
-            }
-
+            vm.readyWatch = $scope.$watch(vm.isReady, vm.setData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             return vm;
         };
 
-        vm.loadData = function() {
-            asideGrid.busy(true);
-            var params = {
-                editorPersonaId: persona.getId(),
-                partyId: persona.data.organization.partyId,
-                roleId: rightsModel.getRoleID()
-            };
-
-            vm.dataReq = dataSvc.get(params, vm.setData);
-        };
-
-        vm.setData = function(resp) {
-            asideGrid.busy(false);
-            gridPagination.setData(resp.records).goToPage({
+        vm.setData = function () {
+            gridPagination.setData(dataModel.getData().propertiesList).goToPage({
                 number: 0
             });
+        };
+
+        vm.update = function(){
+            logc('update called!');
         };
 
         vm.cancel = function() {
@@ -80,15 +69,13 @@
         .module("settings")
         .controller("EntitiesListAsideCtrl", [
             "$scope",
-            "userMgmtRightsListAside",
-            "userMgmtRightsListAsideSvc",
+            "entitiesListAside",
             "rpGridModel",
-            "userMgmtRightsAsideGrigConfig",
+            "portfolioManagementEntitiesAsideGridConfig",
             "rpGridTransform",
             "rpGridPaginationModel",
-            "unfLogAsideRightsModel",
-            "userSessionModel",
             "personaDetails",
+            "pmEntitiesAssignModel",
             EntitiesListAsideCtrl
         ]);
 })(angular);

@@ -133,8 +133,6 @@
                     if (role.isAssigned) {
                         s.data.inputJson.roleList.push(role.id);
                     }
-
-                    role.assignedProperties = "abc of xyz";
                 });
 
                 hasRoles = s.data.inputJson.roleList.length > 0;

@@ -3,17 +3,16 @@
 (function(angular, undefined) {
     "use strict";
 
-    function EntitiesInfoCtrl($scope, aside) {
+    function EntitiesInfoCtrl($scope, aside, dataModel) {
         var vm = this;
 
         vm.init = function() {
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
+            vm.dataModel = dataModel;
         };
 
         vm.showAside = function(record) {
-            logc('showing aside model');
-            //rightsModel.setName(record.name);
-            //rightsModel.setRoleID(record.id);
+            dataModel.setData(record);
             aside.show();
         };
 
@@ -32,6 +31,7 @@
         .controller("EntitiesInfoCtrl", [
             "$scope",
             "entitiesListAside",
+            "pmEntitiesAssignModel",
             EntitiesInfoCtrl
         ]);
 })(angular);
