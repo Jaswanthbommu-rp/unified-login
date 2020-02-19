@@ -47,6 +47,7 @@
             pubsub.subscribe("cp.property-radio", vm.updateRecords);
         };
 
+        
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageClientPortalProductAccess;
         };
@@ -84,11 +85,18 @@
                 if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
                     resp.records.forEach(function (item) {
                         angular.extend(item, {
-                            disabled: false
+                            disabled: false,
+                            radname: "property"
                         });
                         item.disabled = true;
                     });
                 }
+
+                resp.records.forEach(function (item) {
+                        angular.extend(item, {                         
+                            radname: "property"
+                        });                        
+                });
 
                 propertiesGridPagination.setData(resp.records).goToPage({
                     number: 0
@@ -118,9 +126,7 @@
                 }
             }
 
-            if(!$scope.$$phase) {
-              $scope.$digest();
-            }
+            
         };
 
         vm.resetDataModel = function () {

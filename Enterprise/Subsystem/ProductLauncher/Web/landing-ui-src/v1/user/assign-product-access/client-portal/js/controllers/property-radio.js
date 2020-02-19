@@ -11,7 +11,13 @@
         };
 
         vm.publishPropertyChange = function (record) {
-        	pubsub.publish("cp.property-radio", record);
+            if(record.radname == "property"){
+                pubsub.publish("cp.property-radio", record);
+            }
+            else if(record.radname == "role"){
+                pubsub.publish("cp.roles-radio", record);
+            }
+        	
         };
 
         vm.destroy = function () {

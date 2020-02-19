@@ -69,11 +69,19 @@
                 if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
                     resp.records.forEach(function (item) {
                         angular.extend(item, {
-                            disabled: false
+                            disabled: false,
+                            radname: "role"
                         });
                         item.disabled = true;
                     });
                 }
+
+                resp.records.forEach(function (item) {
+                        angular.extend(item, {                            
+                            radname: "role"
+                        });                        
+                });
+
                 gridPagination.setData(resp.records).goToPage({
                     number: 0
                 });
