@@ -13,7 +13,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository;
@@ -30,7 +29,6 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
 
