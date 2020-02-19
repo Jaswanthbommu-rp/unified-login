@@ -30,6 +30,7 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
 
 
@@ -219,6 +220,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
                         PublicOrigin = new Uri(ConfigReader.GetIssuerUri),
+                        Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
 
