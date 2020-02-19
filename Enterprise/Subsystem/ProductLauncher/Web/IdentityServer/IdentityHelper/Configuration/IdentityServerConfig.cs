@@ -13,7 +13,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository;
@@ -219,6 +218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
                         PublicOrigin = new Uri(ConfigReader.GetIssuerUri),
+                        Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
 
@@ -377,119 +377,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             return null;
         }
 
-        //private static bool CompareAgent(string userAgent, string comparator, string compareValue)
-        //{
-        //    switch (comparator.ToLowerInvariant())
-        //    {
-        //        case "contains":
-        //            if (userAgent.Contains(compareValue))
-        //            {
-        //                return true;
-        //            }
-        //
-        //            break;
-        //        case "startswith":
-        //            if (userAgent.StartsWith(compareValue))
-        //            {
-        //                return true;
-        //            }
-        //
-        //            break;
-        //        case "equals":
-        //            if (userAgent.Equals(compareValue, StringComparison.OrdinalIgnoreCase))
-        //            {
-        //                return true;
-        //            }
-        //
-        //            break;
-        //        case "endswith":
-        //            if (userAgent.EndsWith(compareValue, StringComparison.OrdinalIgnoreCase))
-        //            {
-        //                return true;
-        //            }
-        //
-        //            break;
-        //    }
-        //
-        //    return false;
-        //}
-
-        //private static bool SuppressSameSiteNoneCookies(OwinContext context, string userAgentInput)
-        //{
-        //    var correlationId = Guid.NewGuid().ToString();
-        //    ManageSameSite manageSameSite = new ManageSameSite();
-        //    var settingList = manageSameSite.GetProductInternalSettings((int)ProductEnum.UnifiedLogin, 30);
-        //    if (settingList.Any(p => p.Name.Equals("IsSuppressSameSiteEnabled", StringComparison.OrdinalIgnoreCase)))
-        //    {
-        //        var IsSuppressSameSiteEnabled = settingList.FirstOrDefault(p => p.Name.Equals("IsSuppressSameSiteEnabled", StringComparison.OrdinalIgnoreCase)).Value;
-        //        if (IsSuppressSameSiteEnabled == "0")
-        //        {
-        //            return true;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        return true;
-        //    }
-        //
-        //    List<SameSiteExclusion> excludeBrowserDetails = manageSameSite.GetSameSiteExclusionList();
-        //    Dictionary<string, object> info = new Dictionary<string, object>();
-        //
-        //    string userAgent = null;
-        //    if (context != null)
-        //    {
-        //        userAgent = context.Request.Headers["User-Agent"].ToString();
-        //        info.Add("context.Request.Headers", context.Request.Headers);
-        //    }
-        //    else
-        //    {
-        //        userAgent = userAgentInput;
-        //    }
-        //    info.Add("userAgent", userAgent);
-        //
-        //    //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies", AdditionalInfo = info});
-        //
-        //    List<bool> andResults = new List<bool>();
-        //
-        //    for (var i = 0; i < excludeBrowserDetails.Count; i++)
-        //    {
-        //        SameSiteExclusion current = excludeBrowserDetails[i];
-        //        if (i < excludeBrowserDetails.Count && current.LogicalOperator != null)
-        //        {
-        //            SameSiteExclusion next = null;
-        //            andResults.Add(CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft));
-        //            while (i < (excludeBrowserDetails.Count-1) && excludeBrowserDetails[i + 1].SameSiteValueLeft == current.SameSiteValueRight)
-        //            {
-        //                next = excludeBrowserDetails[i + 1];
-        //                andResults.Add(CompareAgent(userAgent, next.ComparatorLeft, next.SameSiteValueLeft));
-        //                i++;
-        //            }
-        //
-        //            if (i < excludeBrowserDetails.Count-1)
-        //            {
-        //                next = excludeBrowserDetails[i + 1];
-        //                andResults.Add(CompareAgent(userAgent, next.ComparatorLeft, next.SameSiteValueLeft));
-        //            }
-        //            i++;
-        //
-        //            if (andResults.All(p => p == true))
-        //            {
-        //                //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true andResults.All", AdditionalInfo = info});
-        //                return true;
-        //            }
-        //            andResults = new List<bool>();
-        //        }
-        //
-        //        if (current.LogicalOperator == null && CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft))
-        //        {
-        //            //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true CompareAgent", AdditionalInfo = info});
-        //            return true;
-        //        }
-        //    }
-        //    //Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - false", AdditionalInfo = info});
-        //    return false;                
-        //}
-        
         /// <summary>
         /// Used to set up a Google IDP
         /// </summary>
