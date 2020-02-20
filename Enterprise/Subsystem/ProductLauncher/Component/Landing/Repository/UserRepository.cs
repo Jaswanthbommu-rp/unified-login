@@ -2242,32 +2242,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<UserOrganization> userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
             userOrganizationList.ToList().ForEach(o =>
             {
-                //editor persona
-                Persona editorPersona = new Persona();
-                //Is the company RealPage Employee? OR Persona Company
-                if ((o.BooksCustomerMasterId.Equals(-1) && o.BooksMasterId.Equals(-1)) || (o.OrganizationPartyId.Equals(currentOrgPartyId)))
-                 {
-                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(loggedInUserRealPageId, o.OrganizationPartyId);
-                }
-                else
+                if (!o.BooksCustomerMasterId.Equals(-1) && !o.BooksMasterId.Equals(-1))
                 {
                     Guid realPageEmployeeAccessId = _organizationRepository.GetOrganizationAdminUserRealPageId(o.OrganizationRealPageId);
-                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
+                    Persona editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
+
+                    //asigned persona
+                    Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(profile.RealPageId, o.OrganizationPartyId);
+
+                    editorAssignedPersonaList.Add(
+                        new EditorAssignedPersona()
+                        {
+                            AssignedPersonaId = assignedPersona.PersonaId,
+                            AssignedUserTypeId = assignedPersona.UserTypeId.Value,
+                            EditorPersonaId = editorPersona.PersonaId,
+                            EditorPersonaRealPageId = editorPersona.RealPageId,
+                            OrganizationRealPageId = o.OrganizationRealPageId
+                        }
+                    );
                 }
-
-                //asigned persona
-                Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(profile.RealPageId, o.OrganizationPartyId);
-
-                editorAssignedPersonaList.Add(
-                    new EditorAssignedPersona()
-                    {
-                        AssignedPersonaId = assignedPersona.PersonaId,
-                        AssignedUserTypeId = assignedPersona.UserTypeId.Value,
-                        EditorPersonaId = editorPersona.PersonaId,
-                        EditorPersonaRealPageId = editorPersona.RealPageId,
-                        OrganizationRealPageId = o.OrganizationRealPageId
-                    }
-                );
             });
 
             using (var repository = GetRepository())
