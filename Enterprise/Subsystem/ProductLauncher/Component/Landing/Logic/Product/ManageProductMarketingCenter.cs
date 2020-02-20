@@ -537,6 +537,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			IUserLoginOnly userLogin = new UserLoginOnly();
 			userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
+			var personaOrganization = userPersona.Organization;
+			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+
 			// get the email address
 			WriteToDiagnosticLog("ManageMarketingCenterUser - Begin get user email address");
 			string userEmailAddress = "";
@@ -679,27 +682,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return "Company Setup Error: Please Contact Support.";
 			}
 
+
 			// get a login name that isn't in use for the new user
-			bool foundUserName = false;
-			int incrementor = 0;
-			string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
-
-			while (!foundUserName)
+			if (string.IsNullOrEmpty(_productUsername) && isExternalUser)
 			{
-				if (CheckIfUserExistInProduct(userEmailAddress))
+				userEmailAddress = GetMCUniqueUserName(userEmailAddress, person.FirstName, person.LastName);
+				if (string.IsNullOrEmpty(userEmailAddress) )
 				{
-					incrementor++;
-					userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
-				}
-				else
-				{
-					foundUserName = true;
-				}
-
-				if (incrementor == 10)
-				{
-					// after 10 tries something might be wrong, so bail out.
-					WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {userEmailAddress}");
 					return "An error occurred. Unable to get username.";
 				}
 			}
@@ -930,6 +919,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return true;
 			}
 			return false;
+		}
+
+		private string GetMCUniqueUserName(string emailAddress, string firstName, string lastName)
+		{
+			// get a login name that isn't in use for the new user
+			bool foundUserName = false;
+			string userEmailAddress = "";
+			int incrementor = 0;
+			string newproductUsername = $"{firstName.TrimWhiteSpace().Substring(0, 1)}" + $"{lastName.TrimWhiteSpace()}".ToLower();
+
+			while (!foundUserName)
+			{
+				if (CheckIfUserExistInProduct(emailAddress))
+				{
+					incrementor++;
+					userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+				}
+				else
+				{
+					foundUserName = true;
+				}
+
+				if (incrementor == 10)
+				{
+					// after 10 tries something might be wrong, so bail out.
+					WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {emailAddress}");
+					return "";
+				}
+			}
+			return userEmailAddress;
 		}
 
 		/// <summary>
