@@ -15,7 +15,7 @@
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
             // rolesGrid.setConfig(gridConfig);
-            vm.config = configModel.getGridConfig()[1];            
+            vm.config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];            
             rolesGrid.setConfig(vm.config);
 
             gridPagination.setGrid(rolesGrid);
