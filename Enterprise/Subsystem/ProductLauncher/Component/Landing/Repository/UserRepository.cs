@@ -2896,7 +2896,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // Activity logging
-                if (repositoryResponse.Id > 0)
+                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
                 {
                     if (greenBookRole != 0 && greenBookRole != existingRoleId && existingRoleId != 0)
                     {
