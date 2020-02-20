@@ -444,6 +444,10 @@
                     }else{
                         vm.setExternalUserControl(false);
                     }
+                }else{
+                    if( model.data.realPageId === ""){
+                        vm.getDataOnBlur();
+                    }
                 }
             
             }
@@ -870,6 +874,14 @@
                     isModalOpen = true;
                     deactivatedUserModal.show();
                     return;
+                }
+
+                if(model.data.userTypeId === 401 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsExternalEverywhere){  
+                   chkEmailModel.setIsBusy(false);
+                   model.data.firstName = model.externalUserData.person.firstName;
+                   model.data.lastName =  model.externalUserData.person.lastName;
+                   model.data.middleName = model.externalUserData.person.middleName;
+                   return;
                 }
 
 
