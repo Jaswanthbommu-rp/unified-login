@@ -32,13 +32,14 @@
         };
 
         vm.setData = function () {
-            gridPagination.setData(dataModel.getData().propertiesList).goToPage({
+            gridPagination.setData(vm.model.data.propertiesList).goToPage({
                 number: 0
             });
         };
 
         vm.update = function(){
             logc('update called!');
+
         };
 
         vm.cancel = function() {

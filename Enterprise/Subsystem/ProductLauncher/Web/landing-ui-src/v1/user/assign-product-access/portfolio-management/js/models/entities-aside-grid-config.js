@@ -46,7 +46,6 @@
                     key: "isAssigned",
                     value: "",
                     type: "menu",
-                    size: "small",
                     options: [
                         {
                             value: "",

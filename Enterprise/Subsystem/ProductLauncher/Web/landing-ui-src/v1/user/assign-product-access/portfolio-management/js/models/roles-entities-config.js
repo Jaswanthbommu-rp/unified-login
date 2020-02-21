@@ -47,7 +47,6 @@
                     key: "isAssigned",
                     value: "",
                     type: "menu",
-                    size: "small",
                     options: [
                         {
                             value: "",
@@ -67,6 +66,11 @@
                     key: "role",
                     type: "text",
                     placeholder: "Filter by Role Name"
+                },
+                {
+                    key: "assignedProperties",
+                    type: "",
+                    placeholder: ""
                 }
             ];
         };

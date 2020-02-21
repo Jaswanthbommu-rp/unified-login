@@ -1,20 +1,20 @@
-<div ng-controller="EntitiesListAsideCtrl as umrla" class="rp-aside-modal rp-aside-modal-right usermgmt-rights-list-aside">
+<div ng-controller="EntitiesListAsideCtrl as elac" class="rp-aside-modal rp-aside-modal-right entities-list-aside-header">
     <div class="rp-aside-modal-header">
-        <span class="rp-aside-modal-close" ng-click="umrla.cancel()">
+        <span class="rp-aside-modal-close" ng-click="elac.cancel()">
         </span>
         <h2 class="rp-aside-modal-header-title">
-            {{::umrla.title}}
+            {{::elac.title}}
         </h2>
         <h3 class="rp-aside-modal-header-subtitle">
-            {{umrla.subtitle}}
+            {{elac.subtitle}}
         </h3>
     </div>
     <div class="rp-aside-modal-content">
-        <div class="usermgmt-rights-list-aside-wrapper">
-            <div class="usermgmt-rights-list-aside-body">
+        <div class="entities-list-aside-wrapper">
+            <div class="entities-list-aside-body">
                 <div class="grid-controls">
                     <div class="grid-control-item">
-                        <rp-toggle model="umrla.asideGrid.filtersModel.state.active" options="{
+                        <rp-toggle model="elac.asideGrid.filtersModel.state.active" options="{
                             defaultText: 'Filter',
                             activeIconClass: 'rp-icon-filter',
                             defaultIconClass: 'rp-icon-filter active'
@@ -22,7 +22,7 @@
                         </rp-toggle>
                     </div>
                 </div>
-                <rp-grid model="umrla.asideGrid" class="usermgmt-rights-list-aside-grid">
+                <rp-grid model="elac.asideGrid" class="entities-list-aside-grid">
                 </rp-grid>
                 <rp-grid-pagination model="gridPagination">
                 </rp-grid-pagination>
@@ -30,10 +30,10 @@
         </div>
     </div>
     <div class="rp-aside-modal-footer rp-aside-modal-footer-btns">
-        <button ng-click="umrla.cancel()" class="rp-btn rp-aside-modal-footer-btn outline primary">
+        <button ng-click="elac.cancel()" class="rp-btn rp-aside-modal-footer-btn outline primary">
             Cancel
         </button>
-        <button ng-click="umrla.update()" class="rp-btn rp-aside-modal-footer-btn primary">
+        <button ng-click="elac.update()" class="rp-btn rp-aside-modal-footer-btn primary">
             Update
         </button>
     </div>
