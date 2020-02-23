@@ -677,7 +677,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return "Company Setup Error: Please Contact Support.";
 			}
 
-
 			// get a login name that isn't in use for the new user
 			if (string.IsNullOrEmpty(_productUsername) && isExternalUser)
 			{
