@@ -418,7 +418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Using login name for email address.");
 				}
 
-				if (isRegularUserNoEmail)
+				if (isRegularUserNoEmail || (userPersona.UserTypeId == (int)UserTypeConstants.ExternalUser))
 				{
 					userLeadEmailAddress = userEmailAddress;
 				}
@@ -444,7 +444,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					&& (!_productUsername.Equals(userEmailAddress, StringComparison.OrdinalIgnoreCase)))
 				{
 					productLoginName = userEmailAddress;
-				}		
+				}
 				
 				MarketingCenterUserDetails mUser = GetUserDetails();
 				if (mUser == null)
