@@ -418,7 +418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Using login name for email address.");
 				}
 
-				if (isRegularUserNoEmail)
+				if (isRegularUserNoEmail || (userPersona.UserTypeId == (int)UserTypeConstants.ExternalUser))
 				{
 					userLeadEmailAddress = userEmailAddress;
 				}
@@ -444,7 +444,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					&& (!_productUsername.Equals(userEmailAddress, StringComparison.OrdinalIgnoreCase)))
 				{
 					productLoginName = userEmailAddress;
-				}		
+				}
 				
 				MarketingCenterUserDetails mUser = GetUserDetails();
 				if (mUser == null)
@@ -463,6 +463,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LeadEmailAddress = userLeadEmailAddress,
 					WelcomeEmailSent = true
 				};
+
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Product User ID: {_productUserId}");
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Editor Product User ID : {_editorProductUserId}");
 
 				var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
 				logData = new Dictionary<string, object>();
