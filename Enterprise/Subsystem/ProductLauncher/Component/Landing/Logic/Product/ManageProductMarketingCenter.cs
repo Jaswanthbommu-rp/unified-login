@@ -464,6 +464,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WelcomeEmailSent = true
 				};
 
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Product User ID: {_productUserId}");
+				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Editor Product User ID : {_editorProductUserId}");
+
 				var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
