@@ -63,7 +63,7 @@
                     ]
                 },
                 {
-                    key: "role",
+                    key: "name",
                     type: "text",
                     placeholder: "Filter by Role Name"
                 },

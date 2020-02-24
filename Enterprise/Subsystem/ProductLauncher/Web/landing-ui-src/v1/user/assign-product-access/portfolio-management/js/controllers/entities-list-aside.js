@@ -18,7 +18,7 @@
             gridPagination.setGrid(asideGrid);
             $scope.gridPagination = gridPagination;
 
-            vm.model = dataModel;
+            vm.model = Object.assign({}, dataModel);
 
             gridPagination.setConfig({
                 recordsPerPage: 10
@@ -28,6 +28,7 @@
 
             vm.readyWatch = $scope.$watch(vm.isReady, vm.setData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
+            vm.gridAllWatch = asideGrid.subscribe("selectAll", vm.selectAllProperties);
             return vm;
         };
 
@@ -38,12 +39,29 @@
         };
 
         vm.update = function(){
-            logc('update called!');
-
+            var assignedPropertiesCount = vm.model.data.propertiesList.filter(function (item) {
+                return item.isAssigned === true;
+            });
+            vm.model.data.assignedProperties = assignedPropertiesCount.length+" of "+vm.model.data.propertiesList.length;
+            aside.hide();
+            logc('vm model');
+            logc(vm.model.data);
+            logc('datamodel');
+            logc(dataModel);
         };
 
         vm.cancel = function() {
+            logc('vm model');
+            logc(vm.model.data);
+            logc('datamodel');
+            logc(dataModel);
             aside.hide();
+        };
+
+        vm.selectAllProperties = function (val) {
+            vm.model.data.propertiesList.forEach(function (item) {
+               item["isAssigned"] = val;
+            });
         };
 
         vm.destroy = function() {
