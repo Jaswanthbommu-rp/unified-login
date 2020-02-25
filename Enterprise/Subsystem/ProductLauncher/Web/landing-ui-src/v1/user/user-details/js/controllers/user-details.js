@@ -293,6 +293,23 @@
         vm.initJobTitleOptions = function (resp) {
             formConfig.setJobTitleOptions(resp.data);
         };
+
+        vm.setFirstNameDisabled = function (bool) {
+            formConfig.setFirstNameDisabled(bool);
+        };
+
+        vm.setMiddleNameDisabled = function (bool) {
+            formConfig.setMiddleNameDisabled(bool);
+        };
+
+        vm.setLastNameDisabled = function (bool) {
+            formConfig.setLastNameDisabled(bool);
+        };
+
+        vm.setLoginNameDisabled = function (bool) {
+            formConfig.setLoginNameDisabled(bool);
+        };
+
         // ToDo: Check if admin user
         vm.onEffectiveDateChange = function (data) {
             //&& (session.getRealPageId() !== $params.realPageId)
@@ -426,6 +443,10 @@
                         vm.setExternalUserControl(true);
                     }else{
                         vm.setExternalUserControl(false);
+                    }
+                }else{
+                    if( model.data.realPageId === ""){
+                        vm.getDataOnBlur();
                     }
                 }
             
@@ -834,6 +855,18 @@
 
                 if(model.data.userTypeId === 405 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && !resp.data.userExistsInThisOrganization && !resp.data.userIsDisabledInPrimaryCompany){                
                     chkEmailModel.setIsBusy(false);
+                    if(resp.data.userExists){
+                        model.setUserTypeDefConfig(405);   
+                        vm.getUserTypeOptions(); 
+                        model.data.firstName = model.externalUserData.person.firstName;
+                        model.data.lastName =  model.externalUserData.person.lastName;
+                        model.data.middleName = model.externalUserData.person.middleName;
+                        vm.setFirstNameDisabled(true);
+                        vm.setMiddleNameDisabled(true);
+                        vm.setLastNameDisabled(true);
+                        vm.setLoginNameDisabled(true);
+                        vm.set3rdPartyIDP();
+                    }
                     return;
                 }
 
@@ -841,6 +874,14 @@
                     isModalOpen = true;
                     deactivatedUserModal.show();
                     return;
+                }
+
+                if(model.data.userTypeId === 401 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsExternalEverywhere){  
+                   chkEmailModel.setIsBusy(false);
+                   model.data.firstName = model.externalUserData.person.firstName;
+                   model.data.lastName =  model.externalUserData.person.lastName;
+                   model.data.middleName = model.externalUserData.person.middleName;
+                   return;
                 }
 
 

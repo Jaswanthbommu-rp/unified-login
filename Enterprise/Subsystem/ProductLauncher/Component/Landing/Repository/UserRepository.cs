@@ -231,7 +231,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (newProfile.ClonedUser)
             {
                 cloneUserPersonaId = newProfile.Persona[0].PersonaId;
-                using (var pbRepository = GetRepository())
+				var cloneUserPersona = _managePersona.GetPersona(cloneUserPersonaId);
+				var personaOrganization = cloneUserPersona.Organization;
+				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+				using (var pbRepository = GetRepository())
                 {
                     //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
                     List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = newProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
@@ -252,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Then Get Product Batch Data
-                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId);
+                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, isExternalUser);
 
                         foreach (ProductBatch pb in pbData)
                         {
@@ -2239,32 +2242,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<UserOrganization> userOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
             userOrganizationList.ToList().ForEach(o =>
             {
-                //editor persona
-                Persona editorPersona = new Persona();
-                //Is the company RealPage Employee? OR Persona Company
-                if ((o.BooksCustomerMasterId.Equals(-1) && o.BooksMasterId.Equals(-1)) || (o.OrganizationPartyId.Equals(currentOrgPartyId)))
-                 {
-                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(loggedInUserRealPageId, o.OrganizationPartyId);
-                }
-                else
+                if (!o.BooksCustomerMasterId.Equals(-1) && !o.BooksMasterId.Equals(-1))
                 {
                     Guid realPageEmployeeAccessId = _organizationRepository.GetOrganizationAdminUserRealPageId(o.OrganizationRealPageId);
-                    editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
+                    Persona editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
+
+                    //asigned persona
+                    Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(profile.RealPageId, o.OrganizationPartyId);
+
+                    editorAssignedPersonaList.Add(
+                        new EditorAssignedPersona()
+                        {
+                            AssignedPersonaId = assignedPersona.PersonaId,
+                            AssignedUserTypeId = assignedPersona.UserTypeId.Value,
+                            EditorPersonaId = editorPersona.PersonaId,
+                            EditorPersonaRealPageId = editorPersona.RealPageId,
+                            OrganizationRealPageId = o.OrganizationRealPageId
+                        }
+                    );
                 }
-
-                //asigned persona
-                Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(profile.RealPageId, o.OrganizationPartyId);
-
-                editorAssignedPersonaList.Add(
-                    new EditorAssignedPersona()
-                    {
-                        AssignedPersonaId = assignedPersona.PersonaId,
-                        AssignedUserTypeId = assignedPersona.UserTypeId.Value,
-                        EditorPersonaId = editorPersona.PersonaId,
-                        EditorPersonaRealPageId = editorPersona.RealPageId,
-                        OrganizationRealPageId = o.OrganizationRealPageId
-                    }
-                );
             });
 
             using (var repository = GetRepository())
@@ -2896,8 +2892,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 // Activity logging
-                if (repositoryResponse.Id > 0)
-                {
+                if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
+                    {
                     if (greenBookRole != 0 && greenBookRole != existingRoleId && existingRoleId != 0)
                     {
                         if (enterpriseRoles != null)
