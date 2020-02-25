@@ -661,20 +661,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return $"Role id {RoleList[0]} not found";
 				}
 
-				if (!PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase))
-				{
-					foreach (var prop in PropertyList)
-					{
-						mcProperties.Add(Convert.ToInt32(prop));
-					}
-				}
-                else if(PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase))
-                {
-                    mcProperties.AddRange((from a in propertyList select Convert.ToInt32(a.ID)).ToArray());
-                }
-			}
 
-			WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
+                //if (!PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+                //{
+                //	foreach (var prop in PropertyList)
+                //	{
+                //		mcProperties.Add(Convert.ToInt32(prop));
+                //	}
+                //}
+                //else if(PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    mcProperties.AddRange((from a in propertyList select Convert.ToInt32(a.ID)).ToArray());
+                //}
+                foreach (var prop in PropertyList)
+                {
+                    mcProperties.Add(Convert.ToInt32(prop));
+                }
+            }
+
+            WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
 			MC.MarketingCenterUser mcUser = new MC.MarketingCenterUser();
 			CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
 
@@ -724,15 +729,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 
 			mcUser.AssignPropertyIds = mcProperties;
-            
+            mcUser.AssignNewProperty = IsAssignedNewPropertyByDefault;
+
             if (isSuperUser)
             {
                 allPropertiesSelected = true;
                 mcUser.AssignNewProperty = true;
-            }
-            else
-            {                
-                mcUser.AssignNewProperty = IsAssignedNewPropertyByDefault;
             }
 
             logData = new Dictionary<string, object>();
