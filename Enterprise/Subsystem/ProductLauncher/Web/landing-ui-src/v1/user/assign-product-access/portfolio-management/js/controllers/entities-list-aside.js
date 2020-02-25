@@ -3,7 +3,7 @@
 (function(angular, undefined) {
     "use strict";
 
-    function EntitiesListAsideCtrl($scope, aside, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel) {
+    function EntitiesListAsideCtrl($scope, aside, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, sync) {
         var vm = this,
             asideGrid = gridModel(),
             gridTransform = gridTransformSvc(),
@@ -29,9 +29,14 @@
             vm.readyWatch = $scope.$watch(vm.isReady, vm.setData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridAllWatch = asideGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.gridSelectionWatch = asideGrid.subscribe("selectChange", vm.selectionChange);
             return vm;
         };
-
+        vm.selectionChange = function (record) {
+            if (record) {
+                sync.selectedEntitySync();
+            }
+        };
         vm.setData = function () {
             gridPagination.setData(vm.model.data.propertiesList).goToPage({
                 number: 0
@@ -39,29 +44,28 @@
         };
 
         vm.update = function(){
-            var assignedPropertiesCount = vm.model.data.propertiesList.filter(function (item) {
-                return item.isAssigned === true;
-            });
-            vm.model.data.assignedProperties = assignedPropertiesCount.length+" of "+vm.model.data.propertiesList.length;
+            // var assignedPropertiesCount = vm.model.data.propertiesList.filter(function (item) {
+            //     return item.isAssigned === true;
+            // });
+            // vm.model.data.assignedProperties = assignedPropertiesCount.length+" of "+vm.model.data.propertiesList.length;
             aside.hide();
-            logc('vm model');
-            logc(vm.model.data);
-            logc('datamodel');
-            logc(dataModel);
         };
 
         vm.cancel = function() {
-            logc('vm model');
-            logc(vm.model.data);
-            logc('datamodel');
-            logc(dataModel);
+            // logc('vm model');
+            // logc(vm.model.data);
+            // logc('datamodel');
+            // logc(dataModel);
             aside.hide();
         };
 
-        vm.selectAllProperties = function (val) {
-            vm.model.data.propertiesList.forEach(function (item) {
-               item["isAssigned"] = val;
-            });
+        vm.selectAllProperties = function (record) {
+            // vm.model.data.propertiesList.forEach(function (item) {
+            //    item["isAssigned"] = val;
+            // });
+            if (record) {
+                sync.selectedEntitySync();
+            }
         };
 
         vm.destroy = function() {
@@ -95,6 +99,7 @@
             "rpGridPaginationModel",
             "personaDetails",
             "pmEntitiesAssignModel",
+            "pmSyncManager",
             EntitiesListAsideCtrl
         ]);
 })(angular);
