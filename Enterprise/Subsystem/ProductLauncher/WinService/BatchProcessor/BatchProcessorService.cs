@@ -240,8 +240,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			try
 			{
 				var processEndpoint = GetBatchConfigurationByType(batch.BatchProcessTypeId, ConfigurationType.ProcessApiEndpoint.ToString());
+                processEndpoint = "https://www-local2.realpage.com/api/batchprocessor";
 
-				additionalInfo = new Dictionary<string, object>
+                additionalInfo = new Dictionary<string, object>
 				{
 					{"CorrelationId", batch.CorrelationId},
 					{"EditorUserPersonaId", batch.EditorUserPersonaId},
