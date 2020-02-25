@@ -7,14 +7,17 @@
 		    <i class="primary"></i>
 		    {{rad.text}}
 		</label> -->
+	
+		<rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpp.radioconfig"
+	        rp-value="rad.key" 
+	        rp-on-change="cpp.resetDataModel()"
+	        rp-model="cpp.propertySelect" 
+	        rp-disabled="cpp.hasViewUserAccess"
+	        rp-label-text="rad.text"> 
+	    </rp-form-input-radio> 
+	
+	
 
-	<rp-form-input-radio class="inline" ng-repeat="rad in cpp.radioconfig"
-        rp-value="rad.key" 
-        rp-on-change="cpp.resetDataModel()"
-        rp-model="cpp.propertySelect" 
-        rp-disabled="cpp.hasViewUserAccess"
-        rp-label-text="rad.text"> 
-    </rp-form-input-radio>
 		<!-- ng-disabled="cpp.hasViewUserAccess" -->
 		<!-- <label class="md-check dark-bluebox access-type-option">
 		    <input type="radio" value="all" ng-disabled="cpp.hasViewUserAccess" ng-change="cpp.resetDataModel()" ng-model="cpp.propertySelect" class="has-value">

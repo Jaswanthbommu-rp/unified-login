@@ -29,15 +29,21 @@
         svc.getTabsData = function () {
 
             var tabs = {}, i=0;
-            if(jsonData && jsonData.Tabs){
-                jsonData.Tabs.forEach(function (data) {
-                    tabs[data.DisplayName.toLowerCase()] = {
-                        id : data.DisplayName.toLowerCase(),
-                        text : data.DisplayName,
-                        isActive :  i === 0 ? true : false,
-                        incUrl: "user/assign-product-access/client-portal/templates/" + data.DisplayName.toLowerCase() + ".html",
-                    };
-                    i++;
+           
+             if(jsonData && jsonData.Controls){
+                jsonData.Controls.forEach(function (tabGrp) {
+                            if(tabGrp.Type === 'TabGroup'){
+                                tabGrp.Controls.forEach(function (tab) {
+                                    tabs[tab.DisplayName.toLowerCase()] = {
+                                    id : tab.DisplayName.toLowerCase(),
+                                    text : tab.DisplayName,
+                                    isActive :  i === 0 ? true : false,
+                                    incUrl: "user/assign-product-access/client-portal/templates/" + tab.DisplayName.toLowerCase() + ".html",
+                            };
+                            i++;                                           
+                        });
+                        
+                    }
                 });        
             }
             

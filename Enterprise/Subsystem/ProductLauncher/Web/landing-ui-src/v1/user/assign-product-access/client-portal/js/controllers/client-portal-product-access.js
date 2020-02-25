@@ -28,16 +28,18 @@
         vm.getTabsConfigData = function (jsonData) {
 
             var cnfg = {}, tabs = [];
-
-            if(jsonData && jsonData.Tabs){
-                jsonData.Tabs.forEach(function (data) {
-                    data.Controls.forEach(function (ctrl) {
-                        if(ctrl.Type === 'Select Grid' ){
-                            cnfg = configData.getGridConfig(ctrl);
-                        }                        
-                    });
-                    // logc("cnfg for " + data.DisplayName, cnfg);
-                    tabs.push(cnfg);
+           
+            if(jsonData && jsonData.Controls){
+                jsonData.Controls.forEach(function (tabGrp) {
+                    if(tabGrp.Type === 'TabGroup'){
+                        tabGrp.Controls.forEach(function (tab) {
+                             cnfg = configData.getGridConfigTypes(tab); 
+                             tabs.push(cnfg);                                                        
+                        });
+                        
+                    }
+                    // logc("cnfg for " + tabGrp.DisplayName, cnfg);
+                    
                 });        
             }
             

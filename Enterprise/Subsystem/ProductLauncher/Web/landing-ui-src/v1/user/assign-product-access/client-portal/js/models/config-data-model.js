@@ -22,17 +22,23 @@
         };
        
 
-        p.getGridConfig = function (griddata) {
+        p.getGridConfigTypes = function (griddata) {
             var s = this, config = [];
-            griddata.Controls.forEach(function (item) {
-                if(item.Type === 'Column'){
-                    config.push({
-                        "key" : item.Controls[0].DataSource, 
-                        "type" : s.isType(item.Controls[0].Type),
-                        "text": item.DisplayName,
-                        "idKey": "id",
-                        "templateUrl" : s.getTemplate( s.isControl(item.Controls[0].Type) )
-                    });
+            griddata.Controls.forEach(function (ctrls) {
+                if(ctrls.Type === "MultiSelectGrid"){
+                    ctrls.Controls.forEach(function (item) {
+                        if(item.Type === 'GridColums'){
+                             item.Controls.forEach(function (ctr) {
+                                config.push({
+                                    "key" : ctr.DataSource, 
+                                    "type" : s.isType(ctr.Type),
+                                    "text": ctr.DisplayName,
+                                    "idKey": "id",
+                                    "templateUrl" : s.getTemplate( s.isControl(ctr.Type) )
+                                });
+                            });
+                        }
+                     });
                 }
             });
 
@@ -42,19 +48,28 @@
         p.getRadioConfig = function (jsonData) {
             var s = this, cnfg = [], cnfgs = [];
             
-             if(jsonData && jsonData.Tabs){
-                jsonData.Tabs.forEach(function (data) {
-                    data.Controls.forEach(function (item) {
-                        if(item.Type === 'Radio Button' ){
-                            cnfg.push({
-                                "key" : item.DataSource, 
-                                "type" : s.isControl(item.Type),
-                                "text": item.DisplayName                        
+             if(jsonData && jsonData.Controls){
+                jsonData.Controls.forEach(function (tabGrp) {
+                      if(tabGrp.Type === 'TabGroup'){
+                            tabGrp.Controls.forEach(function (item) {
+                                cnfg = [];
+                                item.Controls.forEach(function (ctrl) {
+                                    if(ctrl.Type === 'RadioButton' ){
+                                        cnfg.push({
+                                            "key" : ctrl.DataSource, 
+                                            "type" : s.isControl(ctrl.Type),
+                                            "text": ctrl.DisplayName                        
+                                        });
+                                    }   
+                                });    
+                                if(cnfg.length > 0){ 
+                                    cnfgs.push(cnfg);   
+                                }             
                             });
-                        }                        
-                    });
+                            
+                        }
                     
-                    cnfgs.push(cnfg);
+                    
                 });        
             }
 
@@ -67,7 +82,7 @@
             if(type === 'Label'){
                 return 'text';
             }
-            else if(type === 'Radio Button' || type === 'Check Box' || type === 'Dropdown'){
+            else if(type === 'RadioButton' || type === 'CheckBox' || type === 'Dropdown'){
                 return 'custom';
             }
 
@@ -79,10 +94,10 @@
             if(type === 'Label'){
                 return '';
             }
-            else if(type === 'Radio Button'){
+            else if(type === 'RadioButton'){
                 return 'radio';
             }
-            else if(type === 'Check Box'){
+            else if(type === 'CheckBox'){
                 return 'checkbox';
             }
         };
