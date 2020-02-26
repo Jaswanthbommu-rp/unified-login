@@ -78,6 +78,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		/// </summary>
 		[JsonProperty(PropertyName = "unassignAllProperties", NullValueHandling = NullValueHandling.Ignore)]
 		public bool? UnassignAllProperties { get; set; }
-
-	}
+        /// <summary>
+        /// A flag to unassign all properties from the contact
+        /// </summary>
+        [JsonProperty(PropertyName = "assignNewProperty", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? AssignNewProperty { get; set; }
+    }
 }
