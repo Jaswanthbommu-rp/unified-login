@@ -19,14 +19,9 @@
                 "records": []
             };
 
-            // s.propertyRoleListData = {
-            //     "PropertyId": "",
-            //     "Roles": []
-            // };
-
-            s.roleEntitiesListData = {
-                "RoleId": "",
-                "Entities": []
+            s.propertyRoleListData = {
+                "PropertyId": "",
+                "Roles": []
             };
 
             s.data = {
@@ -53,9 +48,7 @@
             s.ready = false;
             s.entities = [];
             s.entityRoles = [];
-            s.rolesEntities = [];
             s._propertyRoleListData = angular.copy(s.propertyRoleListData);
-            s._roleEntitiesListData = angular.copy(s.roleEntitiesListData);
             s._data = angular.copy(s.data);
         };
 
@@ -116,12 +109,6 @@
             s.entityRoles = data;
         };
 
-        p.setRolesEntities = function(data){
-            var s = this;
-            s.ready = true;
-            s.rolesEntities = data;
-        };
-
         p.setRoles = function (rolesData) {
             var s = this;
             s.roles = rolesData;
@@ -139,7 +126,6 @@
                 var propIds = [];
             s.data = angular.copy(s._data);
 
-            //Global Roles tab
             if (s.roles && s.roles.length) {
                 s.data.inputJson.roleList = [];
 
@@ -151,35 +137,30 @@
 
                 hasRoles = s.data.inputJson.roleList.length > 0;
             }
+           
+            s.data.inputJson.PropertyRoleList = [];
 
-            //Entity Roles tab
+            s.getEntities().forEach(function(role){
+                if(role.isAssigned){
+                    role.propertiesList.forEach(function(prop){
+                        if(prop.isAssigned){
+                            s.propertyRoleListData = angular.copy(s._propertyRoleListData);
+                            s.propertyRoleListData.Roles = [];
 
-            if (s.rolesEntities && s.rolesEntities.length) {
-                s.data.inputJson.RolesList = [];
+                            s.propertyRoleListData.PropertyId = prop.id;
+                            s.propertyRoleListData.Roles.push(role.id);
 
-                s.rolesEntities.forEach(function(role){
-                    if(role.isAssigned){
-                        s.roleEntitiesListData = angular.copy(s._roleEntitiesListData);
+                            s.data.inputJson.PropertyRoleList.push(s.propertyRoleListData);
+                        }
+                    });
+                }
+            });
 
-                        s.roleEntitiesListData.RoleId = role.id;
-                        s.roleEntitiesListData.Entities = [];
+            hasPropertyRoles = s.data.inputJson.PropertyRoleList.length > 0;
 
-                        role.propertiesList.forEach(function(property){
-                            if(property.isAssigned){
-                                s.roleEntitiesListData.Entities.push(property);
-                            }
-                        });
-                        s.data.inputJson.RolesList.push(s.roleEntitiesListData);
-                    }
-                });
+            //if (s.entityRoles && s.entityRoles.length) {
+                //s.data.inputJson.PropertyRoleList = [];
 
-
-                logc(s.data.inputJson.RolesList);
-
-
-                // s.data.inputJson.PropertyRoleList = [];
-
-                
                 // s.entityRoles.forEach(function (entity) {
                 //     s.propertyRoleListData = angular.copy(s._propertyRoleListData);
                 //     s.propertyRoleListData.Roles = [];
@@ -198,7 +179,6 @@
                 //         }
                 //     }
                 // });
-                
                 
                
                 //   s.getEntities().forEach(function (entity) {                  
@@ -221,10 +201,8 @@
                 // });
 
                  
-                 hasPropertyRoles = s.data.inputJson.PropertyRoleList.length > 0;
-            }
-            logc('Log input data');
-            logc(s.data);
+                 //hasPropertyRoles = s.data.inputJson.PropertyRoleList.length > 0;
+            //}
 
             if (hasPropertyRoles) {
                 s.data.inputJson.isAssigned = true;

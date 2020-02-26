@@ -12,7 +12,7 @@
             vm.recordData = $scope.record;
             vm.model = vm.setRoleModel(vm.recordData.id);
             vm.readyWatch = $scope.$watch(vm.isReady, vm.setData);
-            vm.changeWatch = vm.model.dropdown.subscribe("change", vm.onChange);
+            //vm.changeWatch = vm.model.dropdown.subscribe("change", vm.onChange);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
         };
 
@@ -20,20 +20,20 @@
             return pmDataModel.isReady();
         };
 
-        vm.onChange = function (data) {
-            var options = [],
-                entityData;
+        // vm.onChange = function (data) {
+        //     var options = [],
+        //         entityData;
 
-            if (data.selected.length === 0) {
-                entityData = sync.deselectAllEntityRoles(vm.recordData.id);
-            }
-            else {
-                entityData = sync.selectedRoleSync(vm.recordData.id, data.selected);
-            }
+        //     if (data.selected.length === 0) {
+        //         entityData = sync.deselectAllEntityRoles(vm.recordData.id);
+        //     }
+        //     else {
+        //         entityData = sync.selectedRoleSync(vm.recordData.id, data.selected);
+        //     }
 
-            pmDataModel.setEntityRoles(entityData.roleList);
-            pmDataModel.setChanged();
-        };
+        //     pmDataModel.setEntityRoles(entityData.roleList);
+        //     pmDataModel.setChanged();
+        // };
 
         vm.setRoleModel = function (entityId) {
             return model(sync.getTranslatedRoleList(entityId));

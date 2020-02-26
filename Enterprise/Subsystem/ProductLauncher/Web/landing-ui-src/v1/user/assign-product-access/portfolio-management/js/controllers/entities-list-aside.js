@@ -18,7 +18,7 @@
             gridPagination.setGrid(asideGrid);
             $scope.gridPagination = gridPagination;
 
-            vm.model = Object.assign({}, dataModel);
+            vm.model = dataModel;
 
             gridPagination.setConfig({
                 recordsPerPage: 10
@@ -44,10 +44,6 @@
         };
 
         vm.update = function(){
-            // var assignedPropertiesCount = vm.model.data.propertiesList.filter(function (item) {
-            //     return item.isAssigned === true;
-            // });
-            // vm.model.data.assignedProperties = assignedPropertiesCount.length+" of "+vm.model.data.propertiesList.length;
             aside.hide();
         };
 

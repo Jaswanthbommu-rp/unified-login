@@ -73,7 +73,7 @@
                     number: 0
                 });
 
-                PMDataModel.setRolesEntities(resp.records);
+                PMDataModel.setEntities(resp.records);
             }
             if (resp.isError) {
                 vm.isDataError = true;

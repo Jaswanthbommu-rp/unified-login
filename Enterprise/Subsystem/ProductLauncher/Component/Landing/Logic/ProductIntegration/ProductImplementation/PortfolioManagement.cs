@@ -160,20 +160,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private void MergePropertyRoles(IList<PortfolioRoleEntity> portfolioEntityRoles, List<PropertyRoleList> userPropertyRoles)
 		{
 			if (userPropertyRoles != null) {
-				var selectedPropertyIds = userPropertyRoles.Select(x => x.PropertyId).ToList();
-				foreach (var roleentity in userPropertyRoles)
+				foreach (var prop in userPropertyRoles)
 				{
-					var userRoles = roleentity.Roles;
-					foreach (var role in portfolioEntityRoles)
+					List<string> currentRoles = prop.Roles;
+					var filteredRoles = portfolioEntityRoles.Where(x => currentRoles.Contains(x.GetRoleId));
+					foreach (var role in filteredRoles)
 					{
-						if (userRoles.Any(x => x == role.GetRoleId))
+						if (role.PropertiesList.Any(x => x.GetPropertyId == prop.PropertyId))
 						{
 							role.IsAssigned = true;
-						}
-
-						foreach (var property in role.PropertiesList)
-						{
-							if (selectedPropertyIds.Contains(property.GetPropertyId))
+							foreach(var property in role.PropertiesList.Where(x => x.GetPropertyId == prop.PropertyId))
 							{
 								property.IsAssigned = true;
 							}
