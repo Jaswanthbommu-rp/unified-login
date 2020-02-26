@@ -102,21 +102,6 @@
                 MCDataModel.setAllProperties(vm.dataReq.records, val);
             }
         };
-
-        // vm.setAllProperties = function (val) {
-        //     if (val) {
-        //         var allPropertiesArray = [];
-        //         allPropertiesArray.push("all");
-        //         MCDataModel.setProperties(allPropertiesArray);
-
-        //         //clear selections, if theres any
-        //         // vm.propertiesGrid.selectAll(false);
-        //         vm.propertiesGrid.updateSelected();
-        //     }
-        //     else {
-        //         MCDataModel.setProperties(vm.dataReq.records);
-        //     }
-        // };
         
         vm.setNewPropertyState = function (val) {
             if (val) {
