@@ -5,7 +5,6 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
-using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Identity;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Identity.Logging;
@@ -17,7 +16,7 @@ using System.Net;
 [assembly: OwinStartup(typeof(Startup))]
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
 {
-	public partial class Startup
+    public partial class Startup
     {
         public void Configuration(IAppBuilder app)
         {
