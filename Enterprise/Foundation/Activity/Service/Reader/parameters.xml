@@ -16,6 +16,11 @@
              defaultValue="#{ElasticSearchUri}#">
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchUri']/@value" />
   </parameter>
+  <parameter name="ElasticSearchIndexTypeName"
+             description="Product name to use for elastic search indexing"
+             defaultValue="#{ElasticSearchIndexTypeName_ActivityReader}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchIndexTypeName']/@value" />
+  </parameter>  
   <parameter name="ShouldWriteInFile"
              description="Product name to use for elastic search indexing"
              defaultValue="#{ShouldWriteInFile}#">
