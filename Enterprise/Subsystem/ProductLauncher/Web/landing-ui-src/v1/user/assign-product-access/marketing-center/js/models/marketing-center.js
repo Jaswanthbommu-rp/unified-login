@@ -103,16 +103,6 @@
                     }
                 });
 
-                // if (s.properties[0] !== "all") {
-                //     s.properties.forEach(function (prop) {
-                //         if (prop.isAssigned) {
-                //             s.data.inputJson.propertyList.push(prop.id);
-                //         }
-                //     });
-                // }
-                // else {
-                //     s.data.inputJson.propertyList.push("all");
-                // }
 
                 hasProperties = s.data.inputJson.propertyList.length > 0;
             }
