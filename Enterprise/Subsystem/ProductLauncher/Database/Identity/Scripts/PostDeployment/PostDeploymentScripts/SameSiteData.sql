@@ -46,11 +46,6 @@ INSERT [Enterprise].[SameSiteValue] ([SameSiteValueId], [SameSiteName], [Compara
 IF NOT EXISTS (SELECT 1 FROM [Enterprise].[SameSiteValue] WHERE [SameSiteValueId] = 7)
 INSERT [Enterprise].[SameSiteValue] ([SameSiteValueId], [SameSiteName], [ComparatorId], [CreatedBy], [CreatedDate]) VALUES (7, N'Chrome/6', 13, 2198, CAST(N'2020-02-07T14:16:01.913' AS DateTime))
 
-IF NOT EXISTS (SELECT 1 FROM [Enterprise].[SameSiteValue] WHERE [SameSiteValueId] = 8)
-INSERT [Enterprise].[SameSiteValue] ([SameSiteValueId], [SameSiteName], [ComparatorId], [CreatedBy], [CreatedDate]) VALUES (8, N'Chrome/8', 13, 2198, CAST(N'2020-02-10T00:00:00.000' AS DateTime))
-
-IF NOT EXISTS (SELECT 1 FROM [Enterprise].[SameSiteValue] WHERE [SameSiteValueId] = 9)
-INSERT [Enterprise].[SameSiteValue] ([SameSiteValueId], [SameSiteName], [ComparatorId], [CreatedBy], [CreatedDate]) VALUES (9, N'iPad; CPU OS 12', 13, 2198, CAST(N'2020-02-10T00:00:00.000' AS DateTime))
 
 SET IDENTITY_INSERT [Enterprise].[SameSiteValue] OFF
 
