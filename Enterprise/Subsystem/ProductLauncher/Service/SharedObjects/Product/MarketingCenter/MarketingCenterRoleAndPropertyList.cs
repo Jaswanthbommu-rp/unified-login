@@ -17,9 +17,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		/// </summary>
 		public List<string> PropertyList;
 
-		/// <summary>
-		/// Is product assigned or removed
-		/// </summary>
-		public bool IsAssigned { get; set; }
+        /// <summary>
+        /// Is toggle Assign new property by default selected
+        /// </summary>
+        public bool IsAssignedNewPropertyByDefault { get; set; }
+
+        /// <summary>
+        /// Is product assigned or removed
+        /// </summary>
+        public bool IsAssigned { get; set; }
 	}
 }
