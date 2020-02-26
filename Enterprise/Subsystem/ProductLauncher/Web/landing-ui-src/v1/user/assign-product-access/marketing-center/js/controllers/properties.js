@@ -7,6 +7,7 @@
         var vm = this,
             allProperties,
             filteredRecords,
+            IsAssignedNewPropertyByDefault,
             propertiesGrid = gridModel(),
             propertiesGridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel();
@@ -15,7 +16,7 @@
             vm.propertiesGrid = propertiesGrid;
             vm.propertiesError = $filter("productPanelText")("panelError.generic");
             vm.allProperties = false;
-
+            vm.isAssignedNewPropertyByDefault = false;
             propertiesGridTransform.watch(propertiesGrid);
             propertiesGrid.setConfig(gridConfig);
             gridPagination.setGrid(propertiesGrid);
@@ -29,7 +30,7 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
 
-            if (persona.isReady()) {                
+            if (persona.isReady()) {
                 vm.loadData();
             }
             else {
@@ -43,13 +44,13 @@
         vm.isActive = function () {
             return MCDataModel.isActive();
         };
-        vm.filter = function(filterBy){
+        vm.filter = function (filterBy) {
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
         vm.loadData = function () {
             if (persona.isReady() && MCDataModel.isActive()) {
                 vm.allPropSwitch = switchConfig({
-                    onChange: vm.setAllProperties,
+                    onChange: vm.setNewPropertyState,
                     disabled: security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()
                 });
                 propertiesGrid.busy(true);
@@ -79,43 +80,35 @@
                 gridPagination.setData(resp.records).goToPage({
                     number: 0
                 });
-
-                if (resp.additional && resp.additional.allProperties) {
-                    vm.allProperties = resp.additional.allProperties;
-                    vm.setAllProperties(true);
+                
+                if (resp.additional && resp.additional.isAssignedNewPropertyByDefault) {
+                    vm.setNewPropertyState(resp.additional.isAssignedNewPropertyByDefault);
+                    vm.isAssignedNewPropertyByDefault = resp.additional.isAssignedNewPropertyByDefault;
+                } else {
+                    vm.setNewPropertyState(false);
                 }
-                else {
-                    MCDataModel.setProperties(resp.records);
-                }
-               // MCDataModel.setProperties(resp.records);
+                MCDataModel.setProperties(resp.records);
             }
             if (resp.isError) {
                 vm.isPropertiesError = true;
             }
         };
 
-        vm.selectAllProperties = function(val){
-            // MCDataModel.setAllProperties(vm.dataReq.records, val);
-            if(vm.filteredRecords !== undefined){
+        vm.selectAllProperties = function (val) {
+            if (vm.filteredRecords !== undefined) {
                 MCDataModel.setAllProperties(vm.filteredRecords, val);
             }
-            else{
+            else {
                 MCDataModel.setAllProperties(vm.dataReq.records, val);
-            } 
+            }
         };
-
-        vm.setAllProperties = function (val) {
+        
+        vm.setNewPropertyState = function (val) {
             if (val) {
-                var allPropertiesArray = [];
-                allPropertiesArray.push("all");
-                MCDataModel.setProperties(allPropertiesArray);
-
-                //clear selections, if theres any
-                // vm.propertiesGrid.selectAll(false);
-                vm.propertiesGrid.updateSelected();
+                MCDataModel.setNewPropertyState(val);
             }
             else {
-                MCDataModel.setProperties(vm.dataReq.records);
+                MCDataModel.setNewPropertyState(false);
             }
         };
 
