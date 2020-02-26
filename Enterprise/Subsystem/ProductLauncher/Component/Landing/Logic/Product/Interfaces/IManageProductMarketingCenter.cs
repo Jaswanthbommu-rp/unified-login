@@ -9,7 +9,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
-        string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList);
+        string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList, bool IsAssignedNewPropertyByDefault);
         string UnassignUser(long createUserPersonaId, long assignUserPersonaId);
 
         /// <summary>
