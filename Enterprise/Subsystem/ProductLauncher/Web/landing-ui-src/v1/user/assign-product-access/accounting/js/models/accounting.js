@@ -248,9 +248,9 @@
 
                         } else {
 
-                            if (comp.isAssigned) {
-                                s.data.inputJson.propertyList.push(comp.id);
-                            }
+                            // if (comp.isAssigned) {
+                            //     s.data.inputJson.propertyList.push(comp.id);
+                            // }
 
                             s.properties.forEach(function(prop) {
 
