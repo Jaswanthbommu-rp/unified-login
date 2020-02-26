@@ -21,9 +21,14 @@
 
             vm.productDisabled = false;
             vm.productAccessWatch = pubsub.subscribe("pa.regUserNoEmailNotAllowed", vm.setProductDisabled);
+            vm.productSelectedWatch = pubsub.subscribe("selectedProduct", vm.productSelected );
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
         };
 
+        vm.productSelected = function (obj) {
+            logc("selected Product", obj);
+            vm.panelName  = $filter("productPanelText")("panelName.clientPortal") + " , Product Selected : " + obj.productId;
+        };
 
         vm.getTabsConfigData = function (jsonData) {
 
@@ -101,6 +106,7 @@
         vm.destroy = function() {
             vm.destWatch();
             vm.productAccessWatch();
+            vm.productSelectedWatch();
             vm.productDisabled = undefined;
             tabsData.reset();
             ClientPortalProductModel.reset();

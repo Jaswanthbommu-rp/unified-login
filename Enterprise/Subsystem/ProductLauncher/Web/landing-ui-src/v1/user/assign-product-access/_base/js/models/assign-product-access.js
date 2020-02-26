@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory() {
+    function factory(pubsub) {
         function AssignProductAccessModel() {
             var s = this;
             s.init();
@@ -39,16 +39,17 @@
             var s = this,
                 found = false,
                 key = soln.getKey();
-
+                
             angular.forEach(s.products, function (item, itemKey) {
                 var active = key == itemKey;
 
                 if (active) {
-                    found = true;
+                    found = true;                    
                 }
 
                 item.setActive(active);
             });
+            pubsub.publish("selectedProduct", soln.data );
 
             s.products["default"].setActive(!found);
 
@@ -87,5 +88,5 @@
 
     angular
         .module("settings")
-        .factory("assignProductAccessModel", [factory]);
+        .factory("assignProductAccessModel", ["pubsub",factory]);
 })(angular);
