@@ -1179,7 +1179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (rpList.IsAssigned)
 			{
 				return mc.ManageMarketingCenterUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList,
-					rpList.PropertyList);
+					rpList.PropertyList, rpList.IsAssignedNewPropertyByDefault);
 			}
 
 			// Unassign User
@@ -1240,7 +1240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			changeProductUserTypeResponse = mc.UnassignUser(createUserPersonaId, assignUserPersonaId);
 			if (string.IsNullOrWhiteSpace(changeProductUserTypeResponse))
 			{
-				changeProductUserTypeResponse = mc.ManageMarketingCenterUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList);
+				changeProductUserTypeResponse = mc.ManageMarketingCenterUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, rpList.IsAssignedNewPropertyByDefault);
 			}
 			return changeProductUserTypeResponse;
 		}

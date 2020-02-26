@@ -3878,7 +3878,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             HasAccessToAllCurrentFutureProperties = batchRecord.InputJson.HasAccessToAllCurrentFutureProperties,
                                             HasAccessToSiteSpendManagementOnly = batchRecord.InputJson.HasAccessToSiteSpendManagementOnly,
                                             IsAccountingAdmin = batchRecord.InputJson.IsAccountingAdmin,
-                                            OrganizationRoleList = batchRecord.InputJson.OrganizationRoleList
+                                            OrganizationRoleList = batchRecord.InputJson.OrganizationRoleList,
+                                            IsAssignedNewPropertyByDefault = batchRecord.InputJson.IsAssignedNewPropertyByDefault
                                         }
                                     };
 
