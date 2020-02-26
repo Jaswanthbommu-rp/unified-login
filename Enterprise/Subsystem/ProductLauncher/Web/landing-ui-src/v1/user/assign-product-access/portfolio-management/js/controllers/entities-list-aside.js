@@ -52,17 +52,14 @@
         };
 
         vm.cancel = function() {
-            // logc('vm model');
-            // logc(vm.model.data);
-            // logc('datamodel');
-            // logc(dataModel);
             aside.hide();
         };
 
         vm.selectAllProperties = function (record) {
-            // vm.model.data.propertiesList.forEach(function (item) {
-            //    item["isAssigned"] = val;
-            // });
+            vm.model.data.propertiesList.forEach(function (item) {
+               item["isAssigned"] = record;
+            });
+
             if (record) {
                 sync.selectedEntitySync();
             }
