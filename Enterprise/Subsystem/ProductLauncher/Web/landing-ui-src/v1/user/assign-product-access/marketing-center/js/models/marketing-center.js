@@ -21,7 +21,8 @@
                 retryCount: 0,
                 inputJson: {
                     roleList: [],
-                    propertyList: []
+                    propertyList: [],
+                    isAssignedNewPropertyByDefault: false
                 }
             };
 
@@ -46,6 +47,11 @@
             s.active = bool;
             return s;
         };
+        p.setNewPropertyState = function (bool) {
+            var s = this;
+            s.data.inputJson.isAssignedNewPropertyByDefault = bool;
+            return s;
+        };
 
         p.isActive = function () {
             var s = this;
@@ -62,9 +68,9 @@
             s.roles = rolesData;
         };
 
-        p.setAllProperties = function(propertiesData, val) {
+        p.setAllProperties = function (propertiesData, val) {
             var s = this;
-            propertiesData.forEach(function(item){
+            propertiesData.forEach(function (item) {
                 item["isAssigned"] = val;
             });
             //s.properties = propertiesData;
@@ -91,16 +97,12 @@
             if (s.properties && s.properties.length) {
                 s.data.inputJson.propertyList = [];
 
-                if (s.properties[0] !== "all") {
-                    s.properties.forEach(function (prop) {
-                        if (prop.isAssigned) {
-                            s.data.inputJson.propertyList.push(prop.id);
-                        }
-                    });
-                }
-                else {
-                    s.data.inputJson.propertyList.push("all");
-                }
+                s.properties.forEach(function (prop) {
+                    if (prop.isAssigned) {
+                        s.data.inputJson.propertyList.push(prop.id);
+                    }
+                });
+
 
                 hasProperties = s.data.inputJson.propertyList.length > 0;
             }
