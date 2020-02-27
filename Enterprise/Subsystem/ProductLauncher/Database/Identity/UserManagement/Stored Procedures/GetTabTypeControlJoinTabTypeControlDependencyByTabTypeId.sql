@@ -4,8 +4,8 @@
 -- Create date: 
 -- Description: Searches the TabTypeControl table for the record with the indicated criteria.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetTabTypeControlJoinControlDependencyByComparatorID (
-@ComparatorId INT
+CREATE PROCEDURE [UserManagement].GetTabTypeControlJoinTabTypeControlDependencyByTabTypeId (
+@TabTypeId INT
 )
 AS
 
@@ -20,14 +20,14 @@ BEGIN
 	FROM
 		[UserManagement].[TabTypeControl]
 	INNER Join
-		[UserManagement].[ControlDependency] A
+		[UserManagement].[TabTypeControlDependency] A
 	On
-		[A].[SlaveTabTypeControlID] = [UserManagement].[TabTypeControl].[TabTypeControlId]
+		[A].[TabTypeControlId] = [UserManagement].[TabTypeControl].[TabTypeControlId]
 	INNER Join
-		[UserManagement].[Comparator] B
+		[UserManagement].[TabType] B
 	On
-		[A].[ComparatorID] = [B].[ComparatorId]
+		[A].[TabTypeId] = [B].[TabTypeId]
 	WHERE
-		[B].[ComparatorId] = @ComparatorId
+		[B].[TabTypeId] = @TabTypeId
 
 END

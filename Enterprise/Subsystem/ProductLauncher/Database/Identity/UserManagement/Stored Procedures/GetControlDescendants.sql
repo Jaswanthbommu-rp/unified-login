@@ -54,5 +54,6 @@ SELECT
 	,[CreatedDate]
 	,Level
 FROM SelfJoinCTE
+ORDER BY Level, ControlId, ParentControlId
 
 END

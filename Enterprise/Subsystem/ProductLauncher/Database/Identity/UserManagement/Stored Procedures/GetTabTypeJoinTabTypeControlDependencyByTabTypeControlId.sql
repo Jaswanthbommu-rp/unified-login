@@ -4,8 +4,8 @@
 -- Create date: 
 -- Description: Searches the TabType table for the record with the indicated criteria.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetTabTypeByTabDependencyOnTabDependencyId (
-@TabDependencyId INT
+CREATE PROCEDURE [UserManagement].GetTabTypeJoinTabTypeControlDependencyByTabTypeControlId (
+@TabTypeControlId INT
 )
 AS
 
@@ -20,10 +20,14 @@ BEGIN
 	FROM
 		[UserManagement].[TabType]
 	INNER Join
-		[UserManagement].[TabDependency]
+		[UserManagement].[TabTypeControlDependency] A
 	On
-		[UserManagement].[TabDependency].[TabDependencyId] = [UserManagement].[TabType].[TabTypeId]
+		[A].[TabTypeId] = [UserManagement].[TabType].[TabTypeId]
+	INNER Join
+		[UserManagement].[TabTypeControl] B
+	On
+		[A].[TabTypeControlId] = [B].[TabTypeControlId]
 	WHERE
-		[UserManagement].[TabDependency].[TabDependencyId] = @TabDependencyId
+		[B].[TabTypeControlId] = @TabTypeControlId
 
 END
