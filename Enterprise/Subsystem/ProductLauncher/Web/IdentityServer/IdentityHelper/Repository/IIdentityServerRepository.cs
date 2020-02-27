@@ -25,5 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
         //IEnumerable<OrganizationClientUserClaim> GetAllOrganizationClientUserClaims(int organizationId, string clientCode, long userId);
         IEnumerable<PortfolioProductUserClaims> GetAllPortfolioProductUserClaims(int portfolioId, string clientCode, long userId);
         List<ClientUserClaim> GetUserClaimTypesForClient(string clientId);
+
+        IEnumerable<SameSiteExclusion> GetSameSiteExclusionList();
     }
 }

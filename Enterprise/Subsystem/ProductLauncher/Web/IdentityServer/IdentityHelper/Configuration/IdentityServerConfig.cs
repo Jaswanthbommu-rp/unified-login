@@ -2,6 +2,7 @@
 using IdentityServer3.Core.Extensions;
 using IdentityServer3.Core.Services;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Google;
 using Microsoft.Owin.Security.OpenIdConnect;
@@ -12,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services;
@@ -46,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             var options = new IdentityServerOptions
             {
                 IssuerUri = ConfigReader.GetIssuerUri,
-                RequireSsl = requireSsl,
+                RequireSsl = true,
                 SiteName = "RealPage Identity Server",
                 EnableWelcomePage = false,
                 PublicOrigin = ConfigReader.GetPublicOriginUri,
@@ -55,11 +57,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                 AuthenticationOptions = new IdentityServer3.Core.Configuration.AuthenticationOptions
                 {
                     IdentityProviders = ConfigureIdentityProviders,
-                    CookieOptions = new CookieOptions
+                    CookieOptions = new IdentityServer3.Core.Configuration.CookieOptions
                     {
                         AllowRememberMe = false,
                         IsPersistent = false,
                         RememberMeDuration = TimeSpan.FromMinutes(1),
+                        SecureMode = CookieSecureMode.Always,
+                        SuppressSameSiteNoneCookiesCallback = env =>
+                        {
+                            var context = new OwinContext(env);
+                            return ManageSameSite.SuppressSameSiteNoneCookies(context, null);
+                        }
                     },
                     EnableSignOutPrompt = false,
                     EnablePostSignOutAutoRedirect = true,
@@ -198,7 +206,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     Caption = provider.Description,
                     Notifications = new Saml2Notifications()
                     {
-                        AuthenticationRequestCreated = (request, identity, response) => { request.ForceAuthentication = true; },
+                        AuthenticationRequestCreated = (request, identity, response) =>
+                        {
+                            request.ForceAuthentication = true;
+                        }
                     },
                     SPOptions = new SPOptions
                     {
@@ -207,21 +218,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
                         PublicOrigin = new Uri(ConfigReader.GetIssuerUri),
-                        //Logger = new TestLogger(), // enable to log Saml2AuthenticationOptions issues
-
+                        Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
 
-                /*
-                 // keep for debugging purposes
-                authServicesOptions.Notifications.GetPublicOrigin = (request) =>
+                authServicesOptions.Notifications.EmitSameSiteNone = userAgent =>
                 {
-                    Dictionary<string, object> logData = new Dictionary<string, object>();
-                    logData.Add("request", request);
-                    Log.Write(LogType.Diagnostic, new LogDetails() { Message = $"IdentityServerConfig.GetSAMLOptions", AdditionalInfo = logData });
-                    return new Uri("https://asdsad");
+                    return !ManageSameSite.SuppressSameSiteNoneCookies(null, userAgent);
                 };
-                */
+
+
+                 // keep for debugging purposes
+                //authServicesOptions.Notifications.GetPublicOrigin = (request) =>
+                //{
+                //    Dictionary<string, object> logData = new Dictionary<string, object>();
+                //    logData.Add("request", request);
+                //    Log.Write(LogType.Diagnostic, new LogDetails() { Message = $"IdentityServerConfig.GetSAMLOptions", AdditionalInfo = logData });
+                //    return new Uri("https://asdsad");
+                //};
+                
+                if (!ConfigReader.Environment.Equals("prod", StringComparison.OrdinalIgnoreCase))
+                {
+                    authServicesOptions.SPOptions.Logger = new TestLogger();// enable to log Saml2AuthenticationOptions issues
+                }
 
                 IdentityProvider idp = new IdentityProvider(new EntityId(provider.EntityId), authServicesOptions.SPOptions)
                 {
@@ -281,11 +300,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             if (n.AuthenticationTicket.Properties.Dictionary.ContainsKey("signinid"))
                             {
                                 var signinid = n.AuthenticationTicket.Properties.Dictionary["signinid"];
+                                if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null || n.OwinContext.Request.Cookies["ss-userinfo."+ signinid] != null)
+                                {
                                 if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null)
                                 {
                                     n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["userinfo."+ signinid]))));
-                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/" });
-                                    
+                                    }
+                                    else
+                                    {
+                                        if (n.OwinContext.Request.Cookies["ss-userinfo." + signinid] != null)
+                                        {
+                                            n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["ss-userinfo." + signinid]))));
+                                        }
+                                    }
+                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
+                                    n.OwinContext.Response.Cookies.Delete("ss-userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
                                 }
                             }
 
@@ -296,11 +325,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             //n.ProtocolMessage.MaxAge = "10"; // using an age of 5 didn't work with Azure so upping to 10
                             if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                             {
+                                if (!ManageSameSite.SuppressSameSiteNoneCookies((OwinContext)n.OwinContext,null))
+                                {
+                                    var hold = n.OwinContext.Response.Headers["Set-Cookie"];
+                                    n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
+                                }
                                 if (n.OwinContext.Request.Query.Get("info") != null)
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/" });
+                                    n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; SameSite=None", Secure = true, HttpOnly = true});
+                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/", Secure = true, HttpOnly = true});
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
@@ -362,11 +397,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     AuthenticationType = googleConfiguration.AuthenticationType, //"Google",
                     Caption = googleConfiguration.Caption, //"Sign-in with Google",
                     //Scope = googleConfiguration.Scope,
-                    ClientId = googleConfiguration.ProviderClientId, //"179102204650-0d0rl3u61b9bsd9vn5j2mmtve8it7ong.apps.googleusercontent.com",
-                    ClientSecret = googleConfiguration.ClientSecret, // "n61OGT18YRIP8AcvrsclVJMq",
+                    ClientId = googleConfiguration.ProviderClientId, 
+                    ClientSecret = googleConfiguration.ClientSecret, 
                     AuthenticationMode = (AuthenticationMode) googleConfiguration.AuthenticationMode, // AuthenticationMode.Active,
-                    SignInAsAuthenticationType = signInAsType,
-
+                    SignInAsAuthenticationType = signInAsType
                 };
 
                 return options;

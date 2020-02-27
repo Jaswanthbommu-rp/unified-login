@@ -796,6 +796,11 @@
     <Build Include="Auth\Stored Procedures\ClientUserClaimInsert.sql" />
     <Build Include="Auth\Stored Procedures\ClientUserClaimUpdate.sql" />
     <Build Include="Auth\Stored Procedures\ClientUserClaimDelete.sql" />
+    <Build Include="Enterprise\Tables\SameSiteValue_1.sql" />
+    <Build Include="Enterprise\Tables\LogicalOperator_1.sql" />
+    <Build Include="Enterprise\Tables\LogicalGroup_1.sql" />
+    <Build Include="Enterprise\Tables\Comparator_1.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetAllSameSiteValues_1.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -896,6 +901,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2019Release.sql" />
+	<None Include="Scripts\PostDeployment\PostDeploymentScripts\SameSiteData.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
