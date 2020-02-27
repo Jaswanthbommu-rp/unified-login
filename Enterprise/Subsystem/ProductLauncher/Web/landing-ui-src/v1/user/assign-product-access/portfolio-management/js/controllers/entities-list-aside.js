@@ -56,9 +56,7 @@
                item["isAssigned"] = record;
             });
 
-            if (record) {
-                sync.selectedEntitySync();
-            }
+            sync.selectedEntitySync();
         };
 
         vm.destroy = function() {
