@@ -46,6 +46,7 @@
 
         vm.loadData = function () {
             if (persona.isReady() && PMDataModel.isActive()) {
+                grid.busy(true);
                 var params = {
                     productType: "PortfolioManagement",
                     subjectPersonaId: userDetailsModel.getPersonaId(),
@@ -60,6 +61,7 @@
         };
 
         vm.setData = function (resp) {
+            grid.busy(false);
             if (resp.records && resp.records.length > 0) {
                 sync.setRoleList(resp.records);
                 resp.records.forEach(function (role) {
