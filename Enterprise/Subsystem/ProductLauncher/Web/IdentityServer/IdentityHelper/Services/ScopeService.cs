@@ -53,13 +53,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 			RPObjectCache rpcache = new RPObjectCache();
 			var cacheKey = "scopes";
 
-			IEnumerable<Scope> scopes = await rpcache.GetFromCacheAsync<IEnumerable<Scope>>(cacheKey, 300, () => _identityServerRepository.GetAllScopes());
+			IEnumerable<Scope> scopes = await rpcache.GetFromCacheAsync<IEnumerable<Scope>>(cacheKey, 120, () => _identityServerRepository.GetAllScopes());
 
 			cacheKey = "allScopeClaims";
-			IEnumerable<ScopeClaim> allScopeClaims = await rpcache.GetFromCacheAsync<IEnumerable<ScopeClaim>>(cacheKey, 300, () => _identityServerRepository.GetAllScopeClaims());
+			IEnumerable<ScopeClaim> allScopeClaims = await rpcache.GetFromCacheAsync<IEnumerable<ScopeClaim>>(cacheKey, 120, () => _identityServerRepository.GetAllScopeClaims());
 
 			cacheKey = "allScopeSecrets";
-			IEnumerable<ScopeSecret> allScopeSecrets = await rpcache.GetFromCacheAsync<IEnumerable<ScopeSecret>>(cacheKey, 300, () => _identityServerRepository.GetAllScopeSecrets());
+			IEnumerable<ScopeSecret> allScopeSecrets = await rpcache.GetFromCacheAsync<IEnumerable<ScopeSecret>>(cacheKey, 120, () => _identityServerRepository.GetAllScopeSecrets());
 
 			scopes.ToList().ForEach(s =>
             {
