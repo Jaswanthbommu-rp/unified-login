@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [UserManagement].[GetControlDescendantsWithType] (
-	@ParentId INT = NULL
+	@ParentId INT = 50 --= NULL
 )
 AS
 
@@ -39,18 +39,20 @@ BEGIN
 					INNER JOIN SelfJoinCTE cte ON (umc.[ParentControlId] = cte.[ControlId])
 	)
 
-	SELECT
-		 [ControlId]
+	SELECT Distinct
+		 TD.[ControlId]
 		,[ParentControlId]
 		,[ControlTypeId]
 		,[UIId]
 		,[DisplayName]
 		,[DataSource]
 		,[Sequence]
-		,[CreatedBy]
-		,[CreatedDate]
+		,SelfJoinCTE.[CreatedBy]
+		,SelfJoinCTE.[ControlType]
 		,ControlType
 		,Level
+		,CASE WHEN TD.ControlId IS NULL THEN 'False' ELSE 'True' END AS Dependency
 	FROM SelfJoinCTE
+	LEFT OUTER JOIN [UserManagement].[TabDependency] TD ON SelfJoinCTE.ControlId = TD.ControlId
 	ORDER BY Level, ControlId, ParentControlId
 END

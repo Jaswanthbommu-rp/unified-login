@@ -4,15 +4,15 @@
 -- Create date: 
 -- Description: Gets the record with the indicated ID from the ControlDependency table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetControlDependencyByMasterTabTypeControlId (
-	 @MasterTabTypeControlId INT) 
+CREATE PROCEDURE [UserManagement].GetControlDependencyByMasterControlId (
+	 @MasterControlId INT) 
 
  AS 
 
 	SELECT
 		 [ControlDependencyId]
-		,[MasterTabTypeControlId]
-		,[SlaveTabTypeControlID]
+		,[MasterControlId]
+		,[SlaveControlID]
 		,[MasterControlValue]
 		,[ComparatorID]
 		,[CreatedBy]
@@ -20,4 +20,4 @@ CREATE PROCEDURE [UserManagement].GetControlDependencyByMasterTabTypeControlId (
 	FROM
 		[UserManagement].[ControlDependency]
 	WHERE
-		[MasterTabTypeControlId] = @MasterTabTypeControlId
+		[MasterControlId] = @MasterControlId

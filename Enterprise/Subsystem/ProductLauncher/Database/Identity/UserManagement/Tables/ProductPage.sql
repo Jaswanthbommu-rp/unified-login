@@ -4,8 +4,10 @@
     [DisplayName]   NVARCHAR (255) NOT NULL,
     [CreatedBy]     BIGINT         NOT NULL,
     [CreatedDate]   DATETIME       NOT NULL,
-    CONSTRAINT [PK_TabProduct] PRIMARY KEY CLUSTERED ([ProductPageId] ASC)
+    CONSTRAINT [PK_ProductPage] PRIMARY KEY CLUSTERED ([ProductPageId] ASC)
 );
+
+
 
 
 

@@ -6,8 +6,8 @@
 -- =============================================
 CREATE PROCEDURE [UserManagement].SearchControlDependency (
 	 @ControlDependencyId INT = NULL 
-	,@MasterTabTypeControlId INT = NULL 
-	,@SlaveTabTypeControlID INT = NULL 
+	,@MasterControlId INT = NULL 
+	,@SlaveControlID INT = NULL 
 	,@MasterControlValue NVARCHAR(MAX) = NULL 
 	,@ComparatorID INT = NULL 
 	,@CreatedBy BIGINT = NULL 
@@ -20,8 +20,8 @@ BEGIN
 
 	SELECT
 		 [ControlDependencyId]
-		,[MasterTabTypeControlId]
-		,[SlaveTabTypeControlID]
+		,[MasterControlId]
+		,[SlaveControlID]
 		,[MasterControlValue]
 		,[ComparatorID]
 		,[CreatedBy]
@@ -31,9 +31,9 @@ BEGIN
 	WHERE 
 		(@ControlDependencyId IS NULL  OR  [ControlDependencyId] = @ControlDependencyId)
 	AND
-		(@MasterTabTypeControlId IS NULL  OR  [MasterTabTypeControlId] = @MasterTabTypeControlId)
+		(@MasterControlId IS NULL  OR  [MasterControlId] = @MasterControlId)
 	AND
-		(@SlaveTabTypeControlID IS NULL  OR  [SlaveTabTypeControlID] = @SlaveTabTypeControlID)
+		(@SlaveControlID IS NULL  OR  [SlaveControlID] = @SlaveControlID)
 	AND
 		(@MasterControlValue IS NULL OR [MasterControlValue] = @MasterControlValue OR CHARINDEX(@MasterControlValue,[MasterControlValue]) > 0)
 	AND

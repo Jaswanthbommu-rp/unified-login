@@ -8,7 +8,6 @@ CREATE PROCEDURE [UserManagement].AddUpdateTabType (
 	 @TabTypeId INT
 	,@UIId NVARCHAR(510)
 	,@DisplayName NVARCHAR(510)
-	,@Sequence TINYINT
 	,@CreatedBy BIGINT
 	,@CreatedDate DATETIME
 ) 
@@ -21,7 +20,6 @@ CREATE PROCEDURE [UserManagement].AddUpdateTabType (
 		UPDATE [UserManagement].[TabType] SET 
 			 [UIId] = @UIId
 			,[DisplayName] = @DisplayName
-			,[Sequence] = @Sequence
 			,[CreatedBy] = @CreatedBy
 			,[CreatedDate] = @CreatedDate
 		WHERE
@@ -31,7 +29,6 @@ CREATE PROCEDURE [UserManagement].AddUpdateTabType (
 			 [TabTypeId]
 			,[UIId]
 			,[DisplayName]
-			,[Sequence]
 			,[CreatedBy]
 			,[CreatedDate]
 		FROM
@@ -44,20 +41,17 @@ CREATE PROCEDURE [UserManagement].AddUpdateTabType (
 		INSERT INTO [UserManagement].[TabType] (
 			 [UIId]
 			,[DisplayName]
-			,[Sequence]
 			,[CreatedBy]
 			,[CreatedDate])
 		OUTPUT 
 			 inserted.[TabTypeId]
 			,inserted.[UIId]
 			,inserted.[DisplayName]
-			,inserted.[Sequence]
 			,inserted.[CreatedBy]
 			,inserted.[CreatedDate]
 		VALUES(
 			 @UIId
 			,@DisplayName
-			,@Sequence
 			,@CreatedBy
 			,@CreatedDate);
 

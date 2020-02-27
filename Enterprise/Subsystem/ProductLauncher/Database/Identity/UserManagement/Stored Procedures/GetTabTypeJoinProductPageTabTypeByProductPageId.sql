@@ -14,7 +14,6 @@ BEGIN
 		 [UserManagement].[TabType].[TabTypeId]
 		,[UserManagement].[TabType].[UIId]
 		,[UserManagement].[TabType].[DisplayName]
-		,[UserManagement].[TabType].[Sequence]
 		,[UserManagement].[TabType].[CreatedBy]
 		,[UserManagement].[TabType].[CreatedDate]
 	FROM

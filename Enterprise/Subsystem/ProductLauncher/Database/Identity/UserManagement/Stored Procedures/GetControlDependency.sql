@@ -11,8 +11,8 @@ CREATE PROCEDURE [UserManagement].GetControlDependency (
 
 	SELECT
 		 [ControlDependencyId]
-		,[MasterTabTypeControlId]
-		,[SlaveTabTypeControlID]
+		,[MasterControlId]
+		,[SlaveControlID]
 		,[MasterControlValue]
 		,[ComparatorID]
 		,[CreatedBy]

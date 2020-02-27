@@ -8,7 +8,6 @@ CREATE PROCEDURE [UserManagement].DeleteTabType (
 	 @TabTypeId INT = NULL 
 	,@UIId NVARCHAR(510) = NULL 
 	,@DisplayName NVARCHAR(510) = NULL 
-	,@Sequence TINYINT = NULL 
 	,@CreatedBy BIGINT = NULL 
 	,@CreatedDate DATETIME = NULL 
 )
@@ -27,8 +26,6 @@ BEGIN
 		(@UIId IS NULL  OR  [UIId] = @UIId)
 	AND
 		(@DisplayName IS NULL  OR  [DisplayName] = @DisplayName)
-	AND
-		(@Sequence IS NULL  OR  [Sequence] = @Sequence)
 
 	RETURN 1 --for success
 

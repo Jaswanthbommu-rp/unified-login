@@ -6,8 +6,8 @@
 -- =============================================
 CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 	 @ControlDependencyId INT
-	,@MasterTabTypeControlId INT
-	,@SlaveTabTypeControlID INT
+	,@MasterControlId INT
+	,@SlaveControlID INT
 	,@MasterControlValue NTEXT
 	,@ComparatorID INT
 	,@CreatedBy BIGINT
@@ -20,8 +20,8 @@ CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 	IF EXISTS(SELECT 1 FROM [UserManagement].[ControlDependency] WHERE [ControlDependencyId] = @ControlDependencyId) 
 	BEGIN
 		UPDATE [UserManagement].[ControlDependency] SET 
-			 [MasterTabTypeControlId] = @MasterTabTypeControlId
-			,[SlaveTabTypeControlID] = @SlaveTabTypeControlID
+			 [MasterControlId] = @MasterControlId
+			,[SlaveControlID] = @SlaveControlID
 			,[MasterControlValue] = @MasterControlValue
 			,[ComparatorID] = @ComparatorID
 			,[CreatedBy] = @CreatedBy
@@ -31,8 +31,8 @@ CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 
 		SELECT			
 			 [ControlDependencyId]
-			,[MasterTabTypeControlId]
-			,[SlaveTabTypeControlID]
+			,[MasterControlId]
+			,[SlaveControlID]
 			,[MasterControlValue]
 			,[ComparatorID]
 			,[CreatedBy]
@@ -45,23 +45,23 @@ CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 	ELSE
 	BEGIN
 		INSERT INTO [UserManagement].[ControlDependency] (
-			 [MasterTabTypeControlId]
-			,[SlaveTabTypeControlID]
+			 [MasterControlId]
+			,[SlaveControlID]
 			,[MasterControlValue]
 			,[ComparatorID]
 			,[CreatedBy]
 			,[CreatedDate])
 		OUTPUT 
 			 inserted.[ControlDependencyId]
-			,inserted.[MasterTabTypeControlId]
-			,inserted.[SlaveTabTypeControlID]
+			,inserted.[MasterControlId]
+			,inserted.[SlaveControlID]
 			,inserted.[MasterControlValue]
 			,inserted.[ComparatorID]
 			,inserted.[CreatedBy]
 			,inserted.[CreatedDate]
 		VALUES(
-			 @MasterTabTypeControlId
-			,@SlaveTabTypeControlID
+			 @MasterControlId
+			,@SlaveControlID
 			,@MasterControlValue
 			,@ComparatorID
 			,@CreatedBy

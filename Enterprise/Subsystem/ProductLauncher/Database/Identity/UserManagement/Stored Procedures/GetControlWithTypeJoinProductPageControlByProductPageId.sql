@@ -13,7 +13,7 @@ BEGIN
 				,umc.[CreatedBy]
 				,umc.[CreatedDate]
 				,umct.[Name] AS 'ControlType'
-				,CASE WHEN PUMC.ControlId IS NULL THEN 'False' ELSE 'True' END AS HasChildren
+				,CASE WHEN PUMC.ControlId IS NULL THEN 'False' ELSE 'True' END AS Children
 	FROM [UserManagement].[Control] umc
 				INNER Join [UserManagement].[ProductPageControl] umppc ON umppc.[ControlId] =umc.[ControlId]
 				INNER Join [UserManagement].[ProductPage] umpp ON umpp.[ProductPageId] = umppc.[ProductPageId]

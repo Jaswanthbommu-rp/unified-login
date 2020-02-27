@@ -850,8 +850,6 @@
     <Build Include="UserManagement\Stored Procedures\DeleteControlType.sql" />
     <Build Include="UserManagement\Stored Procedures\GetControlType.sql" />
     <Build Include="UserManagement\Stored Procedures\AddUpdateControlType.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetControlDependencyBySlaveTabTypeControlID.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetControlDependencyByMasterTabTypeControlId.sql" />
     <Build Include="UserManagement\Stored Procedures\GetControlDependencyByComparatorID.sql" />
     <Build Include="UserManagement\Stored Procedures\SearchExactControlDependency.sql" />
     <Build Include="UserManagement\Stored Procedures\SearchControlDependency.sql" />
@@ -884,7 +882,6 @@
     <Build Include="UserManagement\Stored Procedures\GetTabTypeControlByProductPageId.sql" />
     <Build Include="UserManagement\Stored Procedures\GetTabTypeControlByTabTypeId.sql" />
     <Build Include="UserManagement\Stored Procedures\GetTabTypeControlByControlId.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeControlByControlDependencyOnControlDependencyId.sql" />
     <Build Include="UserManagement\Stored Procedures\SearchExactTabTypeControl.sql" />
     <Build Include="UserManagement\Stored Procedures\SearchTabTypeControl.sql" />
     <Build Include="UserManagement\Stored Procedures\DeleteTabTypeControl.sql" />
@@ -903,20 +900,25 @@
     <Build Include="Security\UserManagement.sql" />
     <Build Include="UserManagement\Stored Procedures\GetProductPageByProductIdOrGuid.sql" />
     <Build Include="UserManagement\Stored Procedures\GetControlWithTypeByTabTypeId.sql" />
-    <Build Include="UserManagement\Tables\TabTypeControlDependency.sql" />
-    <Build Include="UserManagement\Stored Procedures\SearchTabTypeControlDependency.sql" />
-    <Build Include="UserManagement\Stored Procedures\SearchExactTabTypeControlDependency.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeJoinTabTypeControlDependencyByTabTypeControlId.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeControlJoinTabTypeControlDependencyByTabTypeId.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeControlDependencyByTabTypeId.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeControlDependencyByTabTypeControlId.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeControlDependencyByComparatorID.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeControlDependency.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeControlByTabTypeControlDependencyOnTabtypeControlDependencyId.sql" />
-    <Build Include="UserManagement\Stored Procedures\GetTabTypeByTabTypeControlDependencyOnTabtypeControlDependencyId.sql" />
-    <Build Include="UserManagement\Stored Procedures\DeleteTabTypeControlDependency.sql" />
-    <Build Include="UserManagement\Stored Procedures\AddUpdateTabTypeControlDependency.sql" />
-    <Build Include="Enterprise\Stored Procedures\GetComparatorByTabTypeControlDependencyOnTabtypeControlDependencyId.sql" />
+    <Build Include="UserManagement\Stored Procedures\SearchTabDependency.sql" />
+    <Build Include="UserManagement\Stored Procedures\SearchExactTabDependency.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetTabTypeJoinTabDependencyByControlId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetTabTypeByTabDependencyOnTabDependencyId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetTabDependencyByTabTypeId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetTabDependencyByControlValue.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetTabDependencyByControlId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetTabDependencyByComparatorID.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetTabDependency.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetProductPageByTabTypeControlOnControlId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlWithTypeJoinTabTypeControlByProductPageId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlJoinTabDependencyByTabTypeId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlDependencyBySlaveControlID.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlDependencyByMasterControlId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlDependencyByControlValue.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlByTabDependencyOnTabDependencyId.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetControlByControlDependencyOnControlDependencyId.sql" />
+    <Build Include="UserManagement\Stored Procedures\DeleteTabDependency.sql" />
+    <Build Include="UserManagement\Stored Procedures\AddUpdateTabDependency.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

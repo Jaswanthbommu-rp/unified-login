@@ -13,7 +13,6 @@ CREATE PROCEDURE [UserManagement].GetTabType (
 		 [TabTypeId]
 		,[UIId]
 		,[DisplayName]
-		,[Sequence]
 		,[CreatedBy]
 		,[CreatedDate]
 	FROM
