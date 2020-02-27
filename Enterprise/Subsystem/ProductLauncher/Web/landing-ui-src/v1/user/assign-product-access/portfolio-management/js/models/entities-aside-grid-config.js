@@ -64,7 +64,7 @@
                 {
                     key: "name",
                     type: "text",
-                    placeholder: "Filter by Entity"
+                    placeholder: "Filter by Property Name"
                 },
                 {
                     key: "propertyType",
