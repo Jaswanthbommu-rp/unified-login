@@ -11,30 +11,24 @@
                 {
                     key: "name",
                     type: "text"
-            },
+                },
                 {
-                    key: "propertyType",
-                    type: "text"
-            },
-                {
-                    key: "role",
+                    key: "assignedProperties",
                     type: "custom",
-                    idKey: "id",
-                    templateUrl: "user/assign-product-access/portfolio-management/templates/entity-roles.html"
+                    templateUrl: "user/assign-product-access/portfolio-management/templates/entities-assigned.html"
             }];
         };
 
         model.getHeaders = function () {
             return [
-                [{
+                [
+                {
                     key: "name",
-                    text: "Entity",
-                }, {
-                    key: "propertyType",
-                    text: "Type",
-                },{
-                    key: "role",
-                    text: "Role"
+                    text: "Role",
+                },
+                {
+                    key: "assignedProperties",
+                    text: "Assigned Entities"
                 }]
             ];
         };
@@ -44,7 +38,12 @@
                 {
                     key: "name",
                     type: "text",
-                    placeholder: "Filter by Entity Name"
+                    placeholder: "Filter by Role Name"
+                },
+                {
+                    key: "assignedProperties",
+                    type: "",
+                    placeholder: ""
                 }
             ];
         };
