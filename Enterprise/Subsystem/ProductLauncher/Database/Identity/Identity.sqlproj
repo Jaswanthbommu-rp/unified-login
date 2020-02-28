@@ -806,7 +806,9 @@
     <RefactorLog Include="Identity.refactorlog" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Identity.local.publish.xml" />
+    <None Include="Identity.local.publish.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Snapshots\Identity_20170419_09-40-51.dacpac" />
     <None Include="Snapshots\Identity_20170620_22-14-09.dacpac" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.0.sql" />
