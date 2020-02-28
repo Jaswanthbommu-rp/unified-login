@@ -24,6 +24,6 @@
         /// <summary>
 		/// External User
 		/// </summary>
-        public const int ExternalUser = 403;
+        public const int ExternalUser = 405;
     }
 }
