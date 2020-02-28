@@ -63,7 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 		/// <returns></returns>
 		public ActionResult Google()
 	    {
-			var returnUrl = BuildIDPRequest("Google", true);
+			var returnUrl = BuildIDPRequest("oidcgoogle", true);
 
 		    Response.Redirect(returnUrl, false);
 		    return View();
@@ -75,7 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 	    /// <returns></returns>
 	    public ActionResult GoogleDirect()
 	    {
-		    var returnUrl = BuildIDPRequest("Google", false);
+		    var returnUrl = BuildIDPRequest("oidcgoogle", false);
 
 		    Response.Redirect(returnUrl);
 		    return View();
