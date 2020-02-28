@@ -100,6 +100,12 @@
                 var assignedPropertiesCount = role.propertiesList.filter(function (item) {
                     return item.isAssigned === true;
                 });
+                if(assignedPropertiesCount.length > 0) {
+                    role.isAssigned = true;
+                }
+                else{
+                    role.isAssigned = false;
+                }
                 role.assignedProperties = assignedPropertiesCount.length+" of "+role.propertiesList.length;
             });
             return s;

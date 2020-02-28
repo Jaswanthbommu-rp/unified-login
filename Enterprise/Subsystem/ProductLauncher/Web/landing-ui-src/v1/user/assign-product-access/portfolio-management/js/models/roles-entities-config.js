@@ -7,11 +7,7 @@
         var model = gridConfig();
 
         model.get = function () {
-            return [{
-                    key: "isAssigned",
-                    type: "select",
-                    idKey: "id"
-                },
+            return [
                 {
                     key: "name",
                     type: "text"
@@ -25,11 +21,7 @@
 
         model.getHeaders = function () {
             return [
-                [{
-                    key: "isAssigned",
-                    type: "select",
-                    enabled: true
-                },
+                [
                 {
                     key: "name",
                     text: "Role",
@@ -43,25 +35,6 @@
 
         model.getFilters = function () {
             return [
-                {
-                    key: "isAssigned",
-                    value: "",
-                    type: "menu",
-                    options: [
-                        {
-                            value: "",
-                            name: "All"
-                        },
-                        {
-                            value: true,
-                            name: "Selected"
-                        },
-                        {
-                            value: false,
-                            name: "Not Selected"
-                        }
-                    ]
-                },
                 {
                     key: "name",
                     type: "text",

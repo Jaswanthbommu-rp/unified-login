@@ -3,7 +3,7 @@
 (function(angular, undefined) {
     "use strict";
 
-    function EntitiesListAsideCtrl($scope, aside, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, sync) {
+    function EntitiesListAsideCtrl($scope, aside, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, sync, pmDataModel) {
         var vm = this,
             asideGrid = gridModel(),
             gridTransform = gridTransformSvc(),
@@ -44,6 +44,7 @@
         };
 
         vm.update = function(){
+            pmDataModel.setChanged();
             aside.hide();
         };
 
@@ -91,6 +92,7 @@
             "personaDetails",
             "pmEntitiesAssignModel",
             "pmSyncManager",
+            "portfolioManagementDataModel",
             EntitiesListAsideCtrl
         ]);
 })(angular);
