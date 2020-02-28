@@ -54,5 +54,5 @@ BEGIN
 		,CASE WHEN TD.ControlId IS NULL THEN 'False' ELSE 'True' END AS Dependency
 	FROM SelfJoinCTE
 	LEFT OUTER JOIN [UserManagement].[TabDependency] TD ON SelfJoinCTE.ControlId = TD.ControlId
-	ORDER BY Level, ControlId, ParentControlId
+	ORDER BY Level, TD.ControlId, ParentControlId
 END
