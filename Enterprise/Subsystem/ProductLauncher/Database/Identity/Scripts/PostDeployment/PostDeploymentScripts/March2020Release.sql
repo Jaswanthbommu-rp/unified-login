@@ -928,3 +928,33 @@ BEGIN
 	  SET PStatus = 1
 	WHERE RowNumber = @PartyRowNum;
 END;
+
+go
+
+declare @oldgoogletypeid int
+		,@newgoogletypeid int
+		,@oldgooglecontactid int
+		,@newgooglecontactid int
+
+select @oldgoogletypeid = IdentityProviderTypeId, @oldgooglecontactid = ContactMechanismId
+from ident.IdentityProviderType where name = 'google'
+
+select @newgoogletypeid = IdentityProviderTypeId, @newgooglecontactid = ContactMechanismId
+from ident.IdentityProviderType where name = 'oidcgoogle'
+
+if exists ( select top 1 1 from ident.userlogin where IdentityProviderTypeId = @oldgoogletypeid )
+begin
+	update ident.userlogin set IdentityProviderTypeId = @newgoogletypeid where IdentityProviderTypeId = @oldgoogletypeid
+end
+
+if exists ( select top 1 1 from enterprise.Organization where IdentityProviderTypeId = @oldgoogletypeid )
+begin
+	update enterprise.Organization set IdentityProviderTypeId = @newgoogletypeid where IdentityProviderTypeId = @oldgoogletypeid
+end
+
+if exists ( select top 1 1 from enterprise.PartyContactMechanism pcm inner join enterprise.Organization o on pcm.PartyId = o.PartyId where ContactMechanismId = @oldgooglecontactid )
+begin
+	update pcm set ContactMechanismId = @newgooglecontactid
+	from enterprise.PartyContactMechanism pcm inner join enterprise.Organization o on pcm.PartyId = o.PartyId where ContactMechanismId = @oldgooglecontactid
+end
+go
