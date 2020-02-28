@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public override ListResponse GetProductProperties(RequestParameter dataFilter, string apiQuery = null)
 		{
-			IList<PortfolioRoleEntity> entitiesList = new List<PortfolioRoleEntity>();
+			IList<PortfolioRoleProperty> propertiesList = new List<PortfolioRoleProperty>();
 
 			// get all properties
 			var allProperties = GetPortfolioProperties().ToList();
@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			//build roles-entities object
 			foreach (var role in allPropertiesRoles)
 			{
-				entitiesList.Add(new PortfolioRoleEntity(role, allProperties));
+				propertiesList.Add(new PortfolioRoleProperty(role, allProperties));
 			}
 
 			// if user already exists in product
@@ -90,13 +90,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
 				var user = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery);
 
-				MergePropertyRoles(entitiesList, user.PropertyRoles);
+				MergePropertyRoles(propertiesList, user.PropertyRoles);
 			}
 
 			return new ListResponse
 			{
-				Records = entitiesList.Cast<object>().ToList(),
-				TotalRows = entitiesList.Count,
+				Records = propertiesList.Cast<object>().ToList(),
+				TotalRows = propertiesList.Count,
 				RowsPerPage = 9999,
 				ErrorReason = string.Empty,
 				TotalPages = 1
@@ -157,13 +157,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 		}
 
-		private void MergePropertyRoles(IList<PortfolioRoleEntity> portfolioEntityRoles, List<PropertyRoleList> userPropertyRoles)
+		private void MergePropertyRoles(IList<PortfolioRoleProperty> portfolioPropertyRoles, List<PropertyRoleList> userPropertyRoles)
 		{
 			if (userPropertyRoles != null) {
 				foreach (var prop in userPropertyRoles)
 				{
 					List<string> currentRoles = prop.Roles;
-					var filteredRoles = portfolioEntityRoles.Where(x => currentRoles.Contains(x.GetRoleId));
+					var filteredRoles = portfolioPropertyRoles.Where(x => currentRoles.Contains(x.GetRoleId));
 					foreach (var role in filteredRoles)
 					{
 						if (role.PropertiesList.Any(x => x.GetPropertyId == prop.PropertyId))
@@ -182,9 +182,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		#endregion
 	}
 
-	public class PortfolioRoleEntity : ProductRole
+	public class PortfolioRoleProperty : ProductRole
 	{
-		public PortfolioRoleEntity(ProductRole role, List<ProductProperties> properties)
+		public PortfolioRoleProperty(ProductRole role, List<ProductProperties> properties)
 		{
 			SetName = role.GetName;
 			SetRoleId = role.GetRoleId;
