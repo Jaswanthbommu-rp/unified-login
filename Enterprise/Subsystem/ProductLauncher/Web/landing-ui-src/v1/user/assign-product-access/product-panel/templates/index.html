@@ -1,0 +1,18 @@
+<div ng-controller="ProductCommonCtrl as cpactrl"
+     ng-show="cpactrl.isActive()"
+     detect-product-change="{onChange: cpactrl.setChanged}">
+    <h3 class="assign-product-access-title">
+        {{cpactrl.panelName}}
+    </h3>
+
+    <div ng-show="cpactrl.productDisabled" class="assign-product-access-error-msg">
+        This product cannot be assigned when User Type is Regular user (no email).
+    </div>
+
+     <rp-scrolling-tabs-menu model="cpactrl.tabsMenu">
+        </rp-scrolling-tabs-menu>
+        <ng-include
+            src="tab.incUrl"
+            ng-repeat="tab in cpactrl.tabsList">
+        </ng-include>
+</div>

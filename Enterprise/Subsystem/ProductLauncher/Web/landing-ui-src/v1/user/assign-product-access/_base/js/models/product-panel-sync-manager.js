@@ -1,0 +1,412 @@
+//  Sync Manager Model
+
+(function (angular, undefined) {
+    "use strict";
+
+    function factory(pubsub, security, persona) {
+        function ProductDataSyncManager() {
+            var s = this;
+            s.init();
+        }
+
+        var p = ProductDataSyncManager.prototype;
+
+        p.init = function () {
+            var s = this;
+
+            s.productControlsMap = {};
+            s.groupMap = {};
+            s.propertyMap = {};
+            s.roleMap = {};
+
+
+            s.productControlsList = {
+                products:[]
+            };
+            //s.productControlsList = [];
+            s.groupList = [];
+            s.propertyList =[];
+            // s.propertyList = {
+            //     properties: []
+            // };
+            s.originalPropertyList = [];
+            s.roleList = [];
+            // s.roleList = {
+            //     roles:[]
+            // };
+
+        };
+
+        // Getters
+
+        p.getSelectedCount = function (list, selectKey) {
+            var s = this,
+                count = 0;
+
+            list.forEach(function (item) {
+                if (item[selectKey]) {
+                    count++;
+                }
+            });
+
+            return count;
+        };
+
+        p.getProductControlsList = function (){
+            var s = this;
+            return s.productControlsList;
+        };
+
+        p.getPropertyList = function () {
+            var s = this;
+            return s.propertyList;
+        };
+
+        p.getOriginalPropertyList = function () {
+            var s = this;
+            return s.originalPropertyList;
+        };
+
+        p.getRoleList = function () {
+            var s = this;
+            return s.roleList;
+        };
+        // Setters
+
+
+        p.setPropertyList = function (list, key) {
+            var s = this;
+            s.propertyList = list;
+            s.renderPropertyMap(key);
+            return s;
+        };
+
+        p.setOriginalPropertyList = function (list) {
+            var s = this;
+            s.originalPropertyList = angular.copy(list);
+            return s;
+        };
+
+        p.setPropertySelectKey = function (key) {
+            var s = this;
+            s.propertySelectKey = key;
+            return s;
+        };
+
+        p.setProductDataSelectKey = function (key) {
+            var s = this;
+            s.productDataSelectKey = key;
+            return s;
+        };
+
+        p.setProductControlsList = function (list) {
+            var s = this;
+           s.productControlsList.products.push(list);
+            s.renderProductControlsMap();
+            return s;
+            //s.renderMap();
+           // s.productControlsList.products.push(list);
+        //logc("models",s);
+            // if (!angular.equals({}, s.productControlsList)) {
+            //     s.productControlsList = list;
+            // }
+            // else {
+            //     s.productControlsList.concat(list);
+            // }
+
+
+        };
+
+        p.setRoleList = function (list, key) {
+            var s = this;
+            s.roleList= list;
+            s.renderRoleMap(key);
+            logc("roles list",s);
+            return s;
+        };
+
+        p.setRoleSelectKey = function (key) {
+            var s = this;
+            s.roleSelectKey = key;
+            return s;
+        };
+
+
+        p.getPageDisplayName = function (product) {
+            var s = this,
+                pageDisplayName = "";
+          //  if (!angular.equals({}, s.productControlsMap['product' + product]))
+            if (s.productControlsMap['product' + product] !== undefined)
+            {
+                pageDisplayName = s.productControlsMap['product' + product].displayName;//productControls;
+            }
+
+
+            return pageDisplayName;
+        };
+
+        p.getProductControls = function (product) {
+            var s = this,
+                productControlList;
+//logc("s.productControlsMap",s.productControlsMap['product' + product]);
+          //  if (!angular.equals({}, s.productControlsMap['product' + product]))
+            if (s.productControlsMap['product' + product] !== undefined)
+            {
+                productControlList = s.productControlsMap['product' + product].control;//productControls;
+            }
+
+
+            return productControlList;
+        };
+
+        p.getProductRolesData = function (product) {
+            var s = this,
+                productRolesList;
+
+            if (s.roleMap['product' + product] !== undefined)
+            {
+                productRolesList = s.roleMap['product' + product].roles;
+            }
+            return productRolesList;
+        };
+
+        p.getProductPropertiesData = function (product) {
+            var s = this,
+                productPropertiesList;
+
+            if (s.propertyMap['product' + product] !== undefined)
+            {
+                productPropertiesList = s.propertyMap['product' + product].properties;
+            }
+
+            return productPropertiesList;
+        };
+
+        p.selectedPropertySync = function (property) {
+            var s = this,
+                propertyList,
+                selectState = false,
+                assignedCount = 0,
+                totalCount = 0;
+
+            propertyList = s.propertyMap['company' + property.companyId].property;
+
+            propertyList.properties.forEach(function (item) {
+                if (item.propertyId === property.propertyId) {
+                    item["isAssigned"] = property.isAssigned;
+                }
+                if (item.isAssigned) {
+                    assignedCount++;
+                }
+                totalCount++;
+            });
+
+            propertyList.assignedProperties = assignedCount + " of " + totalCount;
+            return s;
+        };
+
+        p.allPropertiesSync = function (companyId, selected) {
+            var s = this,
+                propertyList,
+                selectState = false,
+                assignedCount = 0,
+                totalCount = 0;
+
+            propertyList = s.propertyMap['company' + companyId].property;
+
+            propertyList.properties.forEach(function (item) {
+                item["isAssigned"] = selected;
+                if (item.isAssigned) {
+                    assignedCount++;
+                }
+                totalCount++;
+            });
+
+            propertyList.assignedProperties = assignedCount + " of " + totalCount;
+            return s;
+        };
+
+        p.updatePropertyList = function (property) {
+            var s = this;
+            s.propertyList.push(property);
+            return s;
+        };
+
+        p.getCompanyGroupList = function () {
+            var s = this;
+            return s.companyGroupList;
+        };
+
+
+        p.selectedRoleSync = function (key, data) {
+            var s = this,
+                roleData,
+                groupdata,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.roleMap['company' + key].role;
+
+            if (data && data.length > 0) {
+
+                roleData.forEach(function (item) {
+                    item.isAssigned = false;
+                    data.forEach(function (role) {
+                        if (item.name === role.name) {
+                            item.isAssigned = role.isAssigned;
+                        }
+                    });
+                });
+
+                roleData.forEach(function (item) {
+                    if (item["isAssigned"]) {
+                        selectState = true;
+                    }
+                });
+
+                s.roleList.forEach(function (item) {
+                    if (item.companyId === key) {
+                        item.isAssigned = selectState;
+                        selectedRole = item;
+                    }
+                });
+
+            }
+
+            return s;
+        };
+
+         p.renderProductControlsMap = function () {
+            var s = this;
+//logc("s.productControlsList",s.productControlsList);
+            if (!angular.equals({}, s.productControlsList)) {
+                s.productControlsList.products.forEach(function (product) {
+                    s.productControlsMap['product' + product.Id] = {
+                        control: product,
+                        displayName: product.DisplayName,
+                        controls: []
+                    };
+                });
+            }
+        };
+
+         p.renderPropertyMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.propertyList)) {
+                s.propertyMap['product' + key] = {
+                    properties: s.propertyList
+                };
+            }
+        };
+
+         p.renderRoleMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.roleList)) {
+                s.roleMap['product' + key] = {
+                    roles: s.roleList
+                };
+            }
+        };
+
+        // p.renderProductControlsMap = function (key) {
+        //     var s = this;
+
+        //     if (!angular.equals({}, s.productControlsList)) {
+        //         s.productControlsMap['product' + key] = {
+        //             productControls: []
+        //         };
+
+        //         var data = s.productControlsMap['product' + key];
+
+        //         s.productControlsList.products.forEach(function (product) {
+        //             data.productControls.push(product);
+        //         });
+        //     }
+        //      logc("s.productControlsList",s);
+        //     return s;
+        // };
+
+        p.renderMap = function (key) {
+            var s = this;
+// logc(s.productControlsList);
+//             if (!angular.equals({}, s.productControlsList)) {
+//                  s.productControlsList.forEach(function (product) {
+//                     s.productControlsMap['product' + product.PageId] = {
+//                         control: product,
+//                         controls: []
+//                     };
+//                 });
+//             }
+
+            if (!s.roleList.empty()) {
+                s.roleList.forEach(function (role) {
+                    s.roleMap['company' + role.companyId] = {
+                        role: role.roles,
+                        roles: []
+                    };
+                });
+            }
+
+
+            if (!s.propertyList.empty()) {
+                s.propertyList.forEach(function (property) {
+                    s.propertyMap['company' + property.companyId] = {
+                        property: property,
+                        properties: []
+                    };
+                });
+            }
+
+        };
+
+        p.updateSelectState = function (list, selectKey, bool) {
+            var s = this;
+
+            list.forEach(function (item) {
+                item[selectKey] = bool;
+            });
+
+            return s;
+        };
+
+        // Assertions
+
+        p.allSelected = function (list, selectKey) {
+            var s = this;
+            return s.getSelectedCount(list) === list.length;
+        };
+
+        p.isUserHasManageProductAccess = function () {
+            return !persona.data.hasManageAssetOptimizationProductAccess;
+        };
+
+        p.reset = function () {
+            var s = this;
+            s.groupMap = {};
+            s.companyGroupMap = {};
+            s.propertyMap = {};
+            s.roleMap = {};
+            s.bmRoleMap = {};
+            s.groupList = [];
+            s.propertyList = [];
+            s.roleList = [];
+            s.originalPropertyList = [];
+            s.bmRoleList = [];
+            s.companyGroupList = [];
+            s.productControlsList = [];
+            s.productControlsMap = {};
+        };
+
+        return new ProductDataSyncManager();
+    }
+
+    angular
+        .module("settings")
+        .factory("productDataSyncManager", [
+            "pubsub",
+            "routeSecurity",
+            "personaDetails",
+            factory
+        ]);
+})(angular);

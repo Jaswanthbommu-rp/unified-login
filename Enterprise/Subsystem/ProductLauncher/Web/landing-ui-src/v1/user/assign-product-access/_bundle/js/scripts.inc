@@ -29,3 +29,4 @@
 {{{ include("../../integration-marketplace/js/_bundle.inc") }}}
 {{{ include("../../click-pay/js/_bundle.inc") }}}
 {{{ include("../../deposit-alternative/js/_bundle.inc") }}}
+{{{ include("../../product-panel/js/_bundle.inc") }}}

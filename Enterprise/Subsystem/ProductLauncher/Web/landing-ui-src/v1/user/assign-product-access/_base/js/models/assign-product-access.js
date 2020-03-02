@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory() {
+    function factory(pubsub) {
         function AssignProductAccessModel() {
             var s = this;
             s.init();
@@ -51,6 +51,10 @@
             });
 
             s.products["default"].setActive(!found);
+            if (soln.data.productId == 14 || soln.data.productId == 10 || soln.data.productId == 3)
+            {
+                pubsub.publish("product.selectedProduct", soln.data );
+            }
 
             return s;
         };
@@ -87,5 +91,5 @@
 
     angular
         .module("settings")
-        .factory("assignProductAccessModel", [factory]);
+        .factory("assignProductAccessModel", ["pubsub",factory]);
 })(angular);

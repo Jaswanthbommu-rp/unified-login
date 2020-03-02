@@ -2,6 +2,7 @@
 {{{ include("controllers/assign-product-access.js") }}}
 
 {{{ include("models/assign-product-access.js") }}}
+{{{ include("models/product-panel-sync-manager.js") }}}
 {{{ include("services/product-access-templates.js") }}}
 {{{ include("services/ao-properties-data.js") }}}
 {{{ include("services/ao-roles-data.js") }}}

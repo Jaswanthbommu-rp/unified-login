@@ -61,10 +61,10 @@
             templateUrl: "user/assign-product-access/click-pay/templates/index.html"
         },
 
-        "soln302": {
-            name: "Prospect Contact Center",
-            templateUrl: "user/assign-product-access/prospect-contact-center/templates/index.html"
-        },
+        // "soln302": {
+        //     name: "Prospect Contact Center",
+        //     templateUrl: "user/assign-product-access/prospect-contact-center/templates/index.html"
+        // },
 
         "soln303": {
             name: "Marketing Center",
@@ -121,15 +121,20 @@
         //     templateUrl: "user/assign-product-access/axiometrics/templates/index.html"
         // },
 
-        "soln501": {
-            name: "Client Portal",
-            templateUrl: "user/assign-product-access/client-portal/templates/index.html"
-        },
+        // "soln501": {
+        //     name: "Client Portal",
+        //     templateUrl: "user/assign-product-access/client-portal/templates/index.html"
+        // },
+        //  "soln501": {
+        //     name: "Client Portal",
+        //     templateUrl: "user/assign-product-access/product-panel/templates/index.html"
+        // },
 
-        "soln503": {
-            name: "Unified Platform",
-            templateUrl: "user/assign-product-access/unified-login/templates/index.html"
-        },
+        // "soln503": {
+        //     name: "Unified Platform",
+        //     templateUrl: "user/assign-product-access/unified-login/templates/index.html"
+        //    //templateUrl: "user/assign-product-access/product-panel/templates/index.html"
+        // },
 
         "soln504": {
             name: "Self-Provisioning Portal",
@@ -152,6 +157,10 @@
             templateUrl: "user/assign-product-access/portfolio-management/templates/index.html"
         },
 
+        "soln000": {
+            name: "Unified Platform",
+           templateUrl: "user/assign-product-access/product-panel/templates/index.html"
+        },
         "default": {
             name: "Coming Soon",
             templateUrl: "user/assign-product-access/coming-soon/templates/index.html"
