@@ -813,6 +813,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						//}
 						mcUser.AssignAllProperties = allPropertiesSelected;
 					}
+                    if(isExternalUser)
+                    {
+                        mcUser.EmailAddress = _productUsername;
+                        mcUser.LeadEmailAddress = userEmailAddress;
+                    }
 					var url = "";
 					if (allPropertiesSelected)
 					{
