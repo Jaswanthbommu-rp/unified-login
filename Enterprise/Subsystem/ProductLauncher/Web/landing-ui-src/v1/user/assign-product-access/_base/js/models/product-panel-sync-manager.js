@@ -135,12 +135,10 @@
         p.getPageDisplayName = function (product) {
             var s = this,
                 pageDisplayName = "";
-          //  if (!angular.equals({}, s.productControlsMap['product' + product]))
             if (s.productControlsMap['product' + product] !== undefined)
             {
-                pageDisplayName = s.productControlsMap['product' + product].displayName;//productControls;
+                pageDisplayName = s.productControlsMap['product' + product].displayName;
             }
-
 
             return pageDisplayName;
         };
@@ -148,13 +146,11 @@
         p.getProductControls = function (product) {
             var s = this,
                 productControlList;
-//logc("s.productControlsMap",s.productControlsMap['product' + product]);
-          //  if (!angular.equals({}, s.productControlsMap['product' + product]))
+
             if (s.productControlsMap['product' + product] !== undefined)
             {
-                productControlList = s.productControlsMap['product' + product].control;//productControls;
+                productControlList = s.productControlsMap['product' + product].control;
             }
-
 
             return productControlList;
         };
@@ -278,7 +274,7 @@
 
          p.renderProductControlsMap = function () {
             var s = this;
-//logc("s.productControlsList",s.productControlsList);
+
             if (!angular.equals({}, s.productControlsList)) {
                 s.productControlsList.products.forEach(function (product) {
                     s.productControlsMap['product' + product.Id] = {
@@ -309,35 +305,8 @@
             }
         };
 
-        // p.renderProductControlsMap = function (key) {
-        //     var s = this;
-
-        //     if (!angular.equals({}, s.productControlsList)) {
-        //         s.productControlsMap['product' + key] = {
-        //             productControls: []
-        //         };
-
-        //         var data = s.productControlsMap['product' + key];
-
-        //         s.productControlsList.products.forEach(function (product) {
-        //             data.productControls.push(product);
-        //         });
-        //     }
-        //      logc("s.productControlsList",s);
-        //     return s;
-        // };
-
         p.renderMap = function (key) {
             var s = this;
-// logc(s.productControlsList);
-//             if (!angular.equals({}, s.productControlsList)) {
-//                  s.productControlsList.forEach(function (product) {
-//                     s.productControlsMap['product' + product.PageId] = {
-//                         control: product,
-//                         controls: []
-//                     };
-//                 });
-//             }
 
             if (!s.roleList.empty()) {
                 s.roleList.forEach(function (role) {

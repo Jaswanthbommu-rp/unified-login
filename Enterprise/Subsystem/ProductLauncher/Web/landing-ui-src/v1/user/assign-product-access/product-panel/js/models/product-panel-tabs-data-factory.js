@@ -12,12 +12,13 @@
         var p = ProductPanelTabsModel.prototype;
 
         p.init = function () {
-            var s = this;
+            var s = this,
+                onChange = s.onChange.bind(s);
 
             s.tabsList = [];
            // s.initActiveTab();
             s.tabsMenu = tabsMenu();
-            //s.changeWatch = s.tabsMenu.subscribe("change", onChange);
+            s.changeWatch = s.tabsMenu.subscribe("change", onChange);
         };
 
         // Getters
@@ -78,30 +79,17 @@
 
             return s;
         };
-//         p.activateTab = function (tabKey) {
-//             var tab,
-//                 s = this,
-//                 events = s.tabsMenu.getEvents();
 
-//             angular.forEach(s.tabsList, function (item, key) {
-//                 item.isActive = key == tabKey;
-// logc("tabKey",tabKey, key, item);
-//                 if (item.isActive) {
-//                     tab = item;
-//                 }
-//             });
 
-//             return s;
-//         };
-
-        p.initActiveTab = function (tabsData) {
+        p.initActiveTab = function () {
             var s = this;
 
-            angular.forEach(tabsData, function (tab) {
-                if (!s.activeTab && tab.isActive) {
+             s.tabsList.forEach(function (tab){
+               if (!s.activeTab && tab.isActive) {
                     s.activeTab = tab;
                 }
             });
+
         };
 
         p.onChange = function (tab) {

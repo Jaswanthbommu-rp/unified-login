@@ -34,10 +34,12 @@
         };
 
         vm.productSelected = function (obj) {
-           // vm.personaWatch = persona.subscribe();
-           logc("obj.productId",obj.productId);
-           vm.productId = obj.productId;
-           vm.loadProductControlsData(obj.productId);
+          if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
+               logc("obj.productId",obj.productId);
+               vm.productId = obj.productId;
+               vm.loadProductControlsData(obj.productId);
+           }
+           active = obj.productId === 14 || obj.productId === 3 || obj.productId === 10 ? true : false;
            return vm;
         };
 
@@ -75,7 +77,11 @@
         };
 
         vm.isActive = function () {
-            return true;// panelModel.isActive();
+            return active;// panelModel.isActive();
+        };
+
+        vm.getActiveUrl = function() {
+            return tabsModel.getActiveUrl();
         };
 
         vm.setChanged = function () {
@@ -87,10 +93,8 @@
             vm.tabsCnfData = vm.getTabsConfigData(data);
             vm.gridconfigs = vm.getGridConfigs(vm.tabsCnfData);
             configModel.setGridConfig(vm.gridconfigs);
-           // logc("gridconfigs",vm.gridconfigs);
-           // logc("configModel",configModel);
+
             vm.radioconfigs = configData.getRadioConfig(data);
-            //logc("cnfg for radio" ,vm.radioconfigs);
 
             if (vm.radioconfigs !== undefined){
                 configModel.setRadioConfig(radioconfigs);
@@ -99,13 +103,12 @@
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
 
-            vm.tabsList = tabs.tabsList; //tabsDataSvc.getList();
+            vm.tabsList = tabs.tabsList;
 
             tabsModel.setTabMenuData(tabs.tabsList);
-           // vm.tabsMenu = tabsModel.getTabsMenu();
-            //logc("vm.tabsList",tabsModel, vm.tabsList[0].id);
 
             tabsModel.activateTab(vm.activeTab);
+            tabsModel.initActiveTab();
             //then set grids
             vm.getTabsGridData();
         };
@@ -227,7 +230,7 @@
 
                     var c = configFactory(cnfg);
                     cnfgs.push(c);
-
+logc("cnfg for ", cnfgs);
                 });
             }
 

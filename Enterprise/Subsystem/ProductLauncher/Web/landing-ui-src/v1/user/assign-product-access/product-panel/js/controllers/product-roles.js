@@ -12,12 +12,13 @@
 
         vm.init = function () {
             vm.rolesGrid = rolesGrid;
+            vm.productId = "";
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
             // rolesGrid.setConfig(gridConfig);
             vm.config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
             rolesGrid.setConfig(vm.config);
-logc("vm.config3",vm.config);
+
             gridPagination.setGrid(rolesGrid);
             $scope.gridPagination = gridPagination;
             gridPagination.setConfig({
@@ -67,8 +68,9 @@ logc("vm.config3",vm.config);
         vm.setData = function (productId) {
             vm.rolesGrid.busy(false);
             var roleData = syncMgr.getProductRolesData(productId);
-            logc("roleData 3",roleData, productId);
+
             if (roleData && roleData.length > 0) {
+                vm.productId = productId;
                 if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
                     roleData.forEach(function (item) {
                         angular.extend(item, {

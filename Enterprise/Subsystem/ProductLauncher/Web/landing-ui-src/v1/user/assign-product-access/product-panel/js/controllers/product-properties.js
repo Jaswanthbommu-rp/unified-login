@@ -13,6 +13,7 @@
 
         vm.init = function () {
             vm.propertySelect = "property";
+            vm.productId = "";
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
 
             console.log('PROPERTY');
@@ -20,7 +21,7 @@
             propertiesGridTransform.watch(propertiesGrid);
 
             vm.config = configModel.getGridConfig()[0];
-logc("configModel.getGridConfig", vm.config);
+
             propertiesGrid.setConfig(vm.config);
             propertiesGridPagination.setGrid(propertiesGrid);
             $scope.propertiesGridPagination = propertiesGridPagination;
@@ -85,6 +86,7 @@ logc("configModel.getGridConfig", vm.config);
             var propData = syncMgr.getProductPropertiesData(productId);
             logc("propData", propData);
             if (propData && propData.length > 0) {
+                vm.productId = productId;
                 if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
                     propData.forEach(function (item) {
                         angular.extend(item, {

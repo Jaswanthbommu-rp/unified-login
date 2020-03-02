@@ -13,6 +13,7 @@
         </rp-scrolling-tabs-menu>
         <ng-include
             src="tab.incUrl"
+            ng-show="tab.isActive"
             ng-repeat="tab in cpactrl.tabsList">
         </ng-include>
 </div>
