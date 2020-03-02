@@ -919,6 +919,7 @@
     <Build Include="UserManagement\Stored Procedures\GetControlByControlDependencyOnControlDependencyId.sql" />
     <Build Include="UserManagement\Stored Procedures\DeleteTabDependency.sql" />
     <Build Include="UserManagement\Stored Procedures\AddUpdateTabDependency.sql" />
+    <Build Include="UserManagement\Stored Procedures\GetProductPageTabTypeOrderBySequenceByProductPageId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

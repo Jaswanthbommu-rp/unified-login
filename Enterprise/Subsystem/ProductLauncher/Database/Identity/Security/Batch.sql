@@ -1,5 +1,7 @@
-﻿CREATE SCHEMA Batch
+﻿CREATE SCHEMA [Batch]
     AUTHORIZATION [dbo];
+
+
 
 
 
