@@ -860,6 +860,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return listResponse.ErrorReason;
 				}
 
+				bool loginNameChanged = false;
 				var persona = _managePersona.GetPersona(userPersonaId);
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
@@ -873,6 +874,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "ManageProductAssetOptimization - Error.No Valid Notification Email Provided";
 				}
 
+				
 				var aoUser = new AOUser
 				{
 					IsInternalUser = false, // Initial release is w/o internal user
@@ -888,6 +890,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LastName = person.LastName,
 				};
 
+				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
+				if (persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+				{
+					aoUser.Login = userLogin.LoginName.ToLower();
+					aoUser.UserId = userLogin.LoginName.ToLower();
+					loginNameChanged = true;
+				}
+
 				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, _productUsername);
 				// get existing AP details
 				aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
@@ -895,6 +905,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
 
 				var updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
+				{
+					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails);
+				}
 
 				return updateResult;
 			}
