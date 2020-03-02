@@ -46,15 +46,15 @@
 
         p.getRadioConfig = function (jsonData) {
             var s = this, cnfg = [], cnfgs = [];
-logc("jsonData radio", jsonData);
+//logc("jsonData radio", jsonData);
              if(jsonData && jsonData.Controls){
                 jsonData.Controls.forEach(function (tabGrp) {
                       //if(tabGrp.Type === "TabGroup"){
                             tabGrp.Controls.forEach(function (item) {
-                                logc("radio item",item);
-                                cnfg = [];
+                               // logc("radio item",item);
+                                //cnfg = [];
                                 if(item.Type === 'RadioButton' ){
-                                    cnfg.push({
+                                    cnfgs.push({
                                         "key" : item.DataSource,
                                         "type" : s.isControl(item.Type),
                                         "text": item.DisplayName
@@ -64,9 +64,9 @@ logc("jsonData radio", jsonData);
                                 //     logc("radio ctrl", ctrl);
 
                                 // });
-                                if(cnfg.length > 0){
-                                    cnfgs.push(cnfg);
-                                }
+                                // if(cnfg.length > 0){
+                                //     cnfgs.push(cnfg);
+                                // }
                             });
                        // }
                 });

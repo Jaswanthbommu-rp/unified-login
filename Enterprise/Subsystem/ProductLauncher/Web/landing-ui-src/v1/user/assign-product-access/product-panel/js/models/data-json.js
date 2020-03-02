@@ -112,8 +112,6 @@ var data = {
   }]
 };
 
-
-
     angular
         .module("settings")
         .value("DataModel", data

@@ -95,9 +95,9 @@
             configModel.setGridConfig(vm.gridconfigs);
 
             vm.radioconfigs = configData.getRadioConfig(data);
-
+//logc("vm.radioconfigs",vm.radioconfigs);
             if (vm.radioconfigs !== undefined){
-                configModel.setRadioConfig(radioconfigs);
+                configModel.setRadioConfig(vm.radioconfigs);
             }
 
             var tabData = vm.getProductTabsData(data);

@@ -29,7 +29,7 @@
                 recordsPerPage: 25
             });
 
-            vm.radioconfig = configModel.getRadioConfig()[0];
+            vm.radioconfig = configModel.getRadioConfig();
             logc("cnfg for radio prop" ,vm.radioconfig);
 
             vm.personaWatch = angular.noop;
