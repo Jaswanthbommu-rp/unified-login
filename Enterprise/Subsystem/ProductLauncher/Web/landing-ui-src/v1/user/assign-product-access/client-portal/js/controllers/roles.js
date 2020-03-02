@@ -11,6 +11,7 @@
             genericDataErrorReason = "";
 
         vm.init = function () {
+            vm.styles = "";
             vm.rolesGrid = rolesGrid;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -35,6 +36,27 @@
                 vm.personaWatch = persona.subscribe(vm.loadData);
             }
             pubsub.subscribe("cp.roles-radio", vm.updateRoleRecords);
+            // vm.getStyles();
+        };
+
+        vm.getStyles = function () {
+           var css = "";
+
+           // css += ".is-assigned { " ;            
+           // css +=     "width: 10%; ";
+           // css +=   "}";
+
+           //  css +=  ".name {";
+           //  css +=     "width: 50%;";
+           //  css +=  "}";
+
+           //  css +=  ".roletype {";
+           //  css +=     "width: 40%;";
+           //  css +=  "}";
+            
+            css = "background-color:orange;";
+            
+            logc("css", css);
         };
 
         vm.isActive = function () {

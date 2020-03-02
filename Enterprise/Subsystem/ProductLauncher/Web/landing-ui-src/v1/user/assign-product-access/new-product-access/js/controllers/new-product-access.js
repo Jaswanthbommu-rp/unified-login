@@ -5,9 +5,10 @@
 
     function NewProductAccessCtrl($scope, model, data, tabsMenu, pubsub) {
         var vm = this;
-
+        var isActive = false;    
         vm.init = function () {
             console.log("controller init");
+            
             vm.model = model;
             vm.model.setData(data);
             console.log("tabsMenu", tabsMenu);
@@ -19,6 +20,11 @@
         vm.productSelected = function (obj) {
             logc("selected Product", obj);
             vm.pageTitle = vm.model.getPageTitle() + " , Product Selected : " + obj.productId;
+            isActive = obj.productId === 14 ? true : false;
+        };
+
+        vm.isActive = function () {
+            return isActive;
         };
 
         vm.destroy = function () {
@@ -31,6 +37,8 @@
 
         vm.init();
     }
+
+     
 
     angular
         .module("settings")

@@ -1,7 +1,7 @@
 
-<div ng-controller="NewProductAccessCtrl as page">
+<div ng-controller="NewProductAccessCtrl as page" ng-show="page.isActive()">
     <h3 class="assign-product-access-title">
-       {{page.pageTitle}}
+       {{page.pageTitle}} 
     </h3>
    
     	<rp-scrolling-tabs-menu

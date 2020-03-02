@@ -49,6 +49,7 @@
 
                 item.setActive(active);
             });
+            
             pubsub.publish("selectedProduct", soln.data );
 
             s.products["default"].setActive(!found);
