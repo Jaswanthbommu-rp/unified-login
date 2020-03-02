@@ -35,9 +35,12 @@
 
         vm.productSelected = function (obj) {
            // vm.personaWatch = persona.subscribe();
-           logc("obj.productId",obj.productId);
-           vm.productId = obj.productId;
-           vm.loadProductControlsData(obj.productId);
+           if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
+               logc("obj.productId",obj.productId);
+               vm.productId = obj.productId;
+               vm.loadProductControlsData(obj.productId);
+           }
+           active = obj.productId === 14 || obj.productId === 3 || obj.productId === 10 ? true : false;
            return vm;
         };
 
@@ -75,7 +78,7 @@
         };
 
         vm.isActive = function () {
-            return true;// panelModel.isActive();
+             return active;// panelModel.isActive();
         };
 
         vm.setChanged = function () {
