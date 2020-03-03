@@ -34,12 +34,9 @@
         };
 
         vm.productSelected = function (obj) {
-<<<<<<< HEAD
+
           if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
-=======
-           // vm.personaWatch = persona.subscribe();
-           if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
->>>>>>> 05082e5752be3eeb56786fe5001bbaf5885274c2
+
                logc("obj.productId",obj.productId);
                vm.productId = obj.productId;
                vm.loadProductControlsData(obj.productId);
@@ -82,15 +79,12 @@
         };
 
         vm.isActive = function () {
-<<<<<<< HEAD
+
             return active;// panelModel.isActive();
         };
 
         vm.getActiveUrl = function() {
-            return tabsModel.getActiveUrl();
-=======
-             return active;// panelModel.isActive();
->>>>>>> 05082e5752be3eeb56786fe5001bbaf5885274c2
+            return tabsModel.getActiveUrl();             
         };
 
         vm.setChanged = function () {

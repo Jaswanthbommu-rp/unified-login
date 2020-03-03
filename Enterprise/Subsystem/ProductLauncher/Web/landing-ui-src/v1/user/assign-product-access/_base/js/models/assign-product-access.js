@@ -52,15 +52,10 @@
 
             s.products["default"].setActive(!found);
             // if (soln.data.productId == 14 || soln.data.productId == 10 || soln.data.productId == 3)
-<<<<<<< HEAD
             // {
                  pubsub.publish("product.selectedProduct", soln.data );
             // }
-=======
-            {
-                pubsub.publish("product.selectedProduct", soln.data );
-            }
->>>>>>> 05082e5752be3eeb56786fe5001bbaf5885274c2
+
 
             return s;
         };
