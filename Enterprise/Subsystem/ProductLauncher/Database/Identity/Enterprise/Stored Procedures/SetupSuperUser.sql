@@ -1439,7 +1439,7 @@ AS
                                 @RoleID = @RoleId, 
                                 @PartyId = @OrganizationId, 
                                 @ProductId = 3, 
-                                @RightName = 'Access to Leasing & Rents Conversion Utility for OneSite users', 
+                                @RightName = 'Access to L&R Conversion Utility for OneSite users', 
                                 @RightCategoryId = @Status_Right, 
                                 @RightID = @RightID OUTPUT, 
                                 @Description = '', 
