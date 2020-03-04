@@ -697,7 +697,7 @@ WHERE ProductId = 47;
 GO
 UPDATE ps
   SET 
-      value = 'https://www.realpage.com/resident-services/depositalternatives'
+      value = 'www.realpage.com/deposit-alternatives'
 FROM  Enterprise.ProductSetting ps
 	INNER JOIN Enterprise.ProductSettingType pst
 		ON ps.ProductSettingTypeId = pst.ProductSettingTypeId
@@ -958,3 +958,260 @@ begin
 	from enterprise.PartyContactMechanism pcm inner join enterprise.Organization o on pcm.PartyId = o.PartyId where ContactMechanismId = @oldgooglecontactid
 end
 go
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'Help Center', 
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@ServerName SYSNAME = @@SERVERNAME;
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Administration'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE Name = 'Help Center'
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 507, 
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = 'Unified Help Product KnowledgeBase', 
+             @ProductTypeGUID = '72306C85-7BDC-460B-B96E-C0F0AD95F64A';
+END;
+SET @ProductId = 49;
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = 'C8B1B954-F868-4132-9ECF-0CD3D8B7F09B', 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeId = 507;
+        UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'HLP'
+        WHERE ProductId = @ProductId;
+END;
+
+
+IF @ServerName IN('RCDUSODBSQL001')
+    BEGIN
+        SET @ProductUrl = 'https://helpcenterdev.realpage.com';
+END;
+IF @ServerName = 'RCTUSODBSQL001'
+    BEGIN
+        SET @ProductUrl = 'https://helpcenterqa.realpage.com';
+END;
+IF @ServerName IN('RCQUSODBSQL001', 'RCVEUSODBSQL001', 'RCDUSODBSQL001A', 'RCIUSODBSQL002', 'RCTUSODBSQL001A') -- Need to chnage
+    BEGIN
+        SET @ProductUrl = 'https://helpcenterqa.realpage.com';
+END;
+IF @ServerName IN('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') -- Need to change
+    BEGIN
+        SET @ProductUrl = 'https://helpcenterqa.realpage.com';
+END;
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+('ClassName',  '',  'helpcenter'),
+('ProductUrl',  '',  @ProductUrl),
+('TitleId',  '',  'Help Center'),
+('TitleUniqueId',  '',  '60C1DDA5-6DA2-40B7-A5BA-AD2412853336'),
+('IsNewTab',  '', '1'),
+('MetatagUniqueId',  '',  'Help Center'),
+('IsResource',  '',  '1'),
+('IsFavorite',  '',  '0'),
+('LearnMore',  '',  'https://www.realpage.com/'),
+('ProductStatus',  'Show if the external application was configured for the dashboard user.',  '8'),
+('ShowInUserDetails',  'Should the product show in the New/Edit user pages',  '0'),
+('ShowInRolesAndRights',  'Should the product show in the Role/Rights page',  '1'),
+('ShowInAppSwitcher',  'Should the product show in the application switcher',  '0'),
+('ShowInUserListFilter',  'Should the product show in the user list product pick list',  '0'),
+('ProductAPIRequiresUser',  'Does the product require a user for api calls',  '0'),
+('LockOnProductAccess',  '',  '0'),
+('ProductNotAvailableForRegularUserNoEmail',  'Product Attribute for Product Not Available for Regular User No Email.',  '0');
+
+SELECT * FROM @ProductConfiguration
+
+IF @ServerName IN('RCDUSODBSQL001')
+    BEGIN
+        SET @LoginURL = 'https://helpcenterdev.realpage.com/';
+END;
+IF @ServerName = 'RCTUSODBSQL001'
+    BEGIN
+        SET @LoginURL = 'https://helpcenterqa.realpage.com';
+END;
+IF @ServerName IN('RCQUSODBSQL001', 'RCVEUSODBSQL001', 'RCDUSODBSQL001A', 'RCIUSODBSQL002', 'RCTUSODBSQL001A') -- Need to change
+    BEGIN
+        SET @LoginURL = 'https://helpcenterqa.realpage.com';
+END;
+IF @ServerName IN('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') -- Need to change
+    BEGIN
+        SET @LoginURL = 'https://helpcenterqa.realpage.com';
+END;
+SET @ProductID = 49;
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+EXEC Enterprise.ProductConfigurationSetup 
+     @ProductId, 
+     @LoginURI, 
+     @SigningCertificateThumbprint, 
+     @ProductConfiguration;
+GO
+DECLARE @ClientId INT;
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM [Auth].[Clients]
+    WHERE ClientCode = 'helpcenter-ui'
+)
+    BEGIN
+        INSERT INTO [Auth].[Clients]
+        ([ClientCode], 
+         [ClientName], 
+         [ClientUri], 
+         [LogoUri], 
+         [Flow], 
+         [LogoutUri], 
+         [IdentityTokenLifetime], 
+         [AccessTokenLifetime], 
+         [AuthorizationCodeLifetime], 
+         [AbsoluteRefreshTokenLifetime], 
+         [SlidingRefreshTokenLifetime], 
+         [RefreshTokenUsage], 
+         [RefreshTokenExpiration], 
+         [AccessTokenType], 
+         [UpdateAccessTokenOnRefresh], 
+         [Enabled], 
+         [LogoutSessionRequired], 
+         [RequireSignOutPrompt], 
+         [AllowAccessToAllScopes], 
+         [AllowClientCredentialsOnly], 
+         [RequireConsent], 
+         [AllowRememberConsent], 
+         [EnableLocalLogin], 
+         [IncludeJwtId], 
+         [AlwaysSendClientClaims], 
+         [PrefixClientClaims], 
+         [AllowAccessToAllGrantTypes]
+        )
+        VALUES
+        (N'helpcenter-ui', 
+         N'Unified Help Product KnowledgeBase', 
+         NULL, 
+         NULL, 
+         1, 
+         NULL, 
+         36000, 
+         36000, 
+         36000, 
+         0, 
+         0, 
+         0, 
+         0, 
+         1, 
+         0, 
+         1, 
+         1, 
+         0, 
+         1, 
+         0, 
+         0, 
+         1, 
+         1, 
+         1, 
+         1, 
+         1, 
+         1
+        );
+        SELECT @ClientId = SCOPE_IDENTITY();
+END;
+IF @ClientId IS NOT NULL
+   AND NOT EXISTS
+(
+    SELECT 1
+    FROM [Auth].[ClientScopes]
+    WHERE ClientId = @ClientId
+          AND [Scope] = 'openid'
+)
+    BEGIN
+        INSERT INTO [Auth].[ClientScopes]
+        ([ClientId], 
+         [Scope]
+        )
+        VALUES
+        (@ClientId, 
+         N'openid'
+        );
+END;
+IF @ClientId IS NOT NULL
+   AND NOT EXISTS
+(
+    SELECT 1
+    FROM [Auth].[ClientScopes]
+    WHERE ClientId = @ClientId
+          AND [Scope] = 'profile'
+)
+    BEGIN
+        INSERT INTO [Auth].[ClientScopes]
+        ([ClientId], 
+         [Scope]
+        )
+        VALUES
+        (@ClientId, 
+         N'profile'
+        );
+END;
+IF @ClientId IS NOT NULL
+   AND NOT EXISTS
+(
+    SELECT 1
+    FROM [Auth].[ClientScopes]
+    WHERE ClientId = @ClientId
+          AND [Scope] = 'userinfoapi'
+)
+    BEGIN
+        INSERT INTO [Auth].[ClientScopes]
+        ([ClientId], 
+         [Scope]
+        )
+        VALUES
+        (@ClientId, 
+         N'userinfoapi'
+        );
+END;
+IF @ClientId IS NOT NULL
+   AND NOT EXISTS
+(
+    SELECT 1
+    FROM [Auth].[ClientRedirectUris]
+    WHERE ClientId = @ClientId
+)
+    BEGIN
+        INSERT INTO [Auth].[ClientRedirectUris]
+        ([ClientId], 
+         Uri
+        )
+        VALUES
+        (@ClientId, 
+         'https://aim.realpage.com/pim-unitycallback/test'
+        );
+END;
+GO
