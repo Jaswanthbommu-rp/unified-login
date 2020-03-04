@@ -1,5 +1,5 @@
-<div class="client-portal-properties-wrapper" ng-controller="ProductPropertiesGridCtrl as cpp">
-    <div class="client-portal-properties-body" ng-if="!cpp.isDataError">
+<div class="product-panel-properties-wrapper" ng-controller="ProductPropertiesGridCtrl as cpp">
+    <div class="product-panel-properties-body" ng-if="!cpp.isDataError">
 
         <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpp.radioconfig"
             rp-value="rad.key"
@@ -10,7 +10,7 @@
         </rp-form-input-radio>
 
 
-        <div ng-if="cpp.propertySelect == 'property'" class="client-portal-properties">
+        <div ng-if="cpp.propertySelect == 'property'" class="product-panel-properties">
             <div class="grid-controls">
                 <div class="grid-control-item">
                     <rp-toggle model="cpp.propertiesGrid.filtersModel.state.active" options="{
@@ -24,18 +24,18 @@
             <rp-grid
                 ng-if="cpp.isActive()"
                 model="cpp.propertiesGrid"
-                class="client-portal-properties-grid">
+                class="product-panel-properties-grid">
             </rp-grid>
             <rp-grid-pagination ng-if="cpp.isActive()" model="propertiesGridPagination">
             </rp-grid-pagination>
         </div>
 
 
-        <div class="client-portal-all-properties" ng-if="cpp.propertySelect == 'all'">
+        <div class="product-panel-all-properties" ng-if="cpp.propertySelect == 'all'">
             This user will be provided access to all current and future properties.
         </div>
     </div>
-    <div class="client-portal-properties-error" ng-if="cpp.isDataError">
+    <div class="product-panel-properties-error" ng-if="cpp.isDataError">
         {{::cpp.dataErrorReason}}
     </div>
 </div>

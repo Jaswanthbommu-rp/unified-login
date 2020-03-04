@@ -1,5 +1,5 @@
-<div class="client-portal-roles-wrapper" ng-controller="ProductRolesGridCtrl as cpr">
-    <div class="client-portal-roles-body" ng-if="!cpr.isDataError">
+<div class="product-panel-roles-wrapper" ng-controller="ProductRolesGridCtrl as cpr">
+    <div class="product-panel-roles-body" ng-if="!cpr.isDataError">
         <div class="grid-controls">
             <div class="grid-control-item">
                 <rp-toggle model="cpr.rolesGrid.filtersModel.state.active" options="{
@@ -10,12 +10,12 @@
                 </rp-toggle>
             </div>
         </div>
-        <rp-grid  ng-if="cpr.isActive()" model="cpr.rolesGrid" class="client-portal-roles-grid">
+        <rp-grid  ng-if="cpr.isActive()" model="cpr.rolesGrid" class="product-panel-roles-grid">
         </rp-grid>
         <rp-grid-pagination ng-if="cpr.isActive()" model="gridPagination">
         </rp-grid-pagination>
     </div>
-    <div class="client-portal-roles-error" ng-if="cpr.isDataError">
+    <div class="product-panel-roles-error" ng-if="cpr.isDataError">
         {{::cpr.dataErrorReason}}
     </div>
 </div>

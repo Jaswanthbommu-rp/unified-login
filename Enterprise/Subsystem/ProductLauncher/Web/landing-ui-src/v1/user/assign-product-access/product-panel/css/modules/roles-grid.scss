@@ -1,0 +1,34 @@
+.product-panel-roles-body {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.product-panel-roles-error {
+    margin-top: 20px;
+}
+
+.product-panel-roles {
+    width: 100%;
+
+    &-grid {
+        .is-assigned {
+            min-width: 125px;
+            max-width: 125px;
+            white-space: nowrap;
+        }
+
+        .name {
+            min-width: 200px;
+        }
+
+        
+        .roletype {
+            min-width: 200px;
+        }
+
+        .info-icon {
+            min-width: 50px;            
+        }
+
+    }
+}
