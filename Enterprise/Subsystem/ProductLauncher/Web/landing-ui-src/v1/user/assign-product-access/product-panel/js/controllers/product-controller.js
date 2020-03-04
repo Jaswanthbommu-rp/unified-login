@@ -3,20 +3,32 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, jsonData ,panelModel, configData, configFactory, configModel, dataModel1, tabsModel, propertiesSvc, rolesSvc, userDetailsModel, adminJson) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, jsonData ,panelModel, configData, configFactory, configModel, dataModel1, tabsModel, propertiesSvc, rolesSvc, userDetailsModel, adminJson, gridModel, gridTransformSvc, gridPaginationModel) {
         var vm = this,
             active = false,
             panelNmae = "",
             productControls = "",
-            tabsCnfData = [], gridconfigs = [], radioconfigs = [];
+            tabsCnfData = [],
+            gridconfigs = [],
+            radioconfigs = [],
+            rolesGrid = gridModel(),
+            rolesGridTransform = gridTransformSvc(),
+            rolesgridPagination = gridPaginationModel(),
+            propertiesGrid = gridModel(),
+            propertiesGridTransform = gridTransformSvc(),
+            propertiesGridPagination = gridPaginationModel();
 
         vm.init = function () {
             vm.view = view;
             vm.security = security;
             vm.disableContent = false;
             vm.activeTab = "";
+
+            //vm.rolesGrid = rolesGrid;
+
+
            // vm.productId = $params.productId;
-            vm.productId = "";
+            vm.productId = 0;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
 
@@ -34,14 +46,12 @@
         };
 
         vm.productSelected = function (obj) {
-<<<<<<< HEAD
-          if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
-=======
            // vm.personaWatch = persona.subscribe();
            if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
->>>>>>> 05082e5752be3eeb56786fe5001bbaf5885274c2
+
                logc("obj.productId",obj.productId);
                vm.productId = obj.productId;
+               $scope.productId = obj.productId;
                vm.loadProductControlsData(obj.productId);
            }
            active = obj.productId === 14 || obj.productId === 3 || obj.productId === 10 ? true : false;
@@ -82,15 +92,11 @@
         };
 
         vm.isActive = function () {
-<<<<<<< HEAD
             return active;// panelModel.isActive();
         };
 
         vm.getActiveUrl = function() {
             return tabsModel.getActiveUrl();
-=======
-             return active;// panelModel.isActive();
->>>>>>> 05082e5752be3eeb56786fe5001bbaf5885274c2
         };
 
         vm.setChanged = function () {
@@ -99,7 +105,17 @@
         // Actions
         vm.setTabs = function (data) {
 
+            panelModel.reset();
             vm.tabsCnfData = vm.getTabsConfigData(data);
+
+            // vm.tabsCnfData.forEach(function (tab) {
+            //   logc("tabdatata", tab);
+            //   if (tab.gridName === "Roles"){
+            //      vm.getGridConfigs(tab.gridConfig);
+            //   }
+
+            // });
+
             vm.gridconfigs = vm.getGridConfigs(vm.tabsCnfData);
             configModel.setGridConfig(vm.gridconfigs);
 
@@ -136,39 +152,58 @@
         };
 
         vm.getProductPropertiesData = function () {
-              var params = {
+              var propertyData = productModel.getProductPropertiesData(vm.productId);
+              logc("propertyData",propertyData,vm.productId);
+              if (propertyData === undefined){
+                var params = {
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
                     productId: vm.productId
                 };
 
-                vm.dataReq = propertiesSvc.get(params, vm.setPropertyData);
+                vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
+              }
+              else{
+                //pubsub.publish("product.ProductPropertyData", vm.productId);
+                panelModel.setPropertyGridActive(true);
+              }
         };
 
         vm.getProductRolesData = function () {
-              var params = {
+            var roleData = productModel.getProductRolesData(vm.productId);
+            logc("roleData",roleData,vm.productId);
+            if (roleData === undefined){
+                 var params = {
                     userPersonaId: userDetailsModel.getPersonaId(),
                     editorPersonaId: persona.getId(),
                     partyId: persona.data.organization.partyId,
                     productId: vm.productId
                 };
 
-                vm.dataReq = rolesSvc.get(params, vm.setRoleData);
+                vm.dataRoleReq = rolesSvc.get(params, vm.setRoleData);
+            }
+            // pubsub.publish("product.ProductRoleData", vm.productId);
+            else{
+                panelModel.setRoleGridActive(true);
+            }
+
         };
 
         vm.setPropertyData = function (resp) {
             if (resp.records && resp.records.length > 0){
                // logc("setPropertyData",resp.records, vm.productId);
-                productModel.setPropertyList(resp.records, vm.productId);
-                pubsub.publish("product.ProductPropertyData", vm.productId);
+                var pdata = productModel.setPropertyList(resp.records, vm.productId);
+                panelModel.setPropertyGridActive(true);
+                //pubsub.publish("product.ProductPropertyData", vm.productId);
                // logc(productModel);
              }
         };
 
         vm.setRoleData = function (resp) {
             if (resp.records && resp.records.length > 0){
-                productModel.setRoleList(resp.records, vm.productId);
-                pubsub.publish("product.ProductRoleData", vm.productId);
+                var rdata = productModel.setRoleList(resp.records, vm.productId);
+                panelModel.setRoleGridActive(true);
+                //pubsub.publish("product.ProductRoleData", vm.productId);
                // logc(productModel);
              }
         };
@@ -201,25 +236,29 @@
             if(data && data.Controls){
                 if(data.Type === 'TabGroup'){
                     data.Controls.forEach(function(tabGrp){
-                        //logc("tabgroup data",tabGrp);
+                      var tabName = tabGrp.DisplayName;
                       tabGrp.Controls.forEach(function (tab) {
-                            if (tab.Type === "MultiSelectGrid"){
-                                cnfg = configData.getGridConfigTypes(tab);
+                            if (tab.Type === "MultiSelectGrid" || tab.Type === "SingleSelectGrid"){
+                                cnfg = configData.getGridConfigTypes(tab, tabName);
                                 tabs.push(cnfg);
+                                //  tabs.push({
+                                //     "gridConfig": cnfg,
+                                //     "gridName": tabName
+                                // });
                             }
                         });
                     });
                 }
             }
-           // logc("tabs getTabsConfigData ", tabs);
+            logc("tabs getTabsConfigData ", tabs);
             return tabs;
         };
 
         vm.getGridConfigs = function (tabsCfData) {
             var cnfgs = [];
+            logc("tabsCfData",tabsCfData);
             if(tabsCfData){
                 tabsCfData.forEach(function (tab) {
-
                     var hdrCnfgs = {} , fltrCnfg = {}, mainCnfg = {} ;
 
                     var h = configData.getHeaders(tab);
@@ -239,7 +278,6 @@
 
                     var c = configFactory(cnfg);
                     cnfgs.push(c);
-logc("cnfg for ", cnfgs);
                 });
             }
 
@@ -268,6 +306,15 @@ logc("cnfg for ", cnfgs);
         // };
 
         vm.destroy = function () {
+            logc("destroy called");
+            if (vm.dataPropReq) {
+                vm.dataPropReq.$cancelRequest();
+            }
+
+            if (vm.dataRoleReq) {
+                vm.dataRoleReq.$cancelRequest();
+            }
+
             vm.destWatch();
             vm.profileWatch();
             vm.productSelectedWatch();
@@ -306,6 +353,9 @@ logc("cnfg for ", cnfgs);
             "productRolesSvc",
             "userDetailsModel",
             "DataModel1",
+             "rpGridModel",
+            "rpGridTransform",
+            "rpGridPaginationModel",
             ProductCommonCtrl
         ]);
 })(angular);

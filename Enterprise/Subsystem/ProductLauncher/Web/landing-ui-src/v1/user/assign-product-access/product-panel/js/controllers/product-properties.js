@@ -13,7 +13,7 @@
 
         vm.init = function () {
             vm.propertySelect = "property";
-            vm.productId = "";
+            vm.productId = 0;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
 
             console.log('PROPERTY');
@@ -30,12 +30,11 @@
             });
 
             vm.radioconfig = configModel.getRadioConfig();
-            logc("cnfg for radio prop" ,vm.radioconfig);
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-           // vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
-           vm.productPropertyWatch = pubsub.subscribe("product.ProductPropertyData", vm.setData);
+            vm.productPropertyWatch = $scope.$watch(vm.isReady, vm.loadData);
+           //vm.productPropertyWatch = pubsub.subscribe("product.ProductPropertyData", vm.setData);
 
 
             // if (persona.isReady()) {
@@ -45,49 +44,31 @@
             //     vm.personaWatch = persona.subscribe(vm.loadData);
             // }
 
-            //pubsub.subscribe("cp.property-radio", vm.updateRecords);
+            pubsub.subscribe("ppanel.property-radio", vm.updateRecords);
         };
 
 
-        vm.isUserHasManageProductAccess = function () {
-            return !persona.data.hasManageClientPortalProductAccess;
+        // vm.isUserHasManageProductAccess = function () {
+        //     return !persona.data.hasManageClientPortalProductAccess;
+        // };
+        vm.isReady = function () {
+            return productDataModel.isPropertyGridActive();//productDataModel.isActive();
         };
 
         vm.isActive = function () {
             return true;//productDataModel.isActive();
         };
 
-        // vm.loadData = function () {
-        //     if (persona.isReady() && vm.isActive()) {
-        //         vm.hasViewUserAccess = security.isAllowed("viewUser") || vm.isUserHasManageProductAccess();
-        //         propertiesGrid.busy(true);
-        //         var params = {
-        //             userPersonaId: userDetailsModel.getPersonaId(),
-        //             editorPersonaId: persona.getId()
-        //         };
-
-        //         vm.activeWatch();
-        //         vm.personaWatch();
-        //         vm.dataReq = dataSvc.get(params, vm.setData);
-        //     }
-        // };
-
-        vm.updateRecords = function (record) {
-            var propertiesData = productDataModel.getProperties();
-
-            propertiesData.forEach(function (item) {
-                item.isAssigned = item.id == record.id;
-            });
-        };
-
-        vm.setData = function (productId) {
-            logc(vm.propertiesGrid);
+        vm.loadData = function () {
+           // vm.productId = productId;
+            //logc("$scope.propertiesGridPagination",$scope.propertiesGridPagination);
+            var productId = $scope.$parent.productId;
+            logc("$scope", productId);
             vm.propertiesGrid.busy(false);
             var propData = syncMgr.getProductPropertiesData(productId);
-            logc("propData", propData);
+
             if (propData && propData.length > 0) {
-                vm.productId = productId;
-                if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
+                if (security.isAllowed("viewUser")) {
                     propData.forEach(function (item) {
                         angular.extend(item, {
                             disabled: false,
@@ -99,11 +80,51 @@
 
                 propData.forEach(function (item) {
                         angular.extend(item, {
-                            radname: "property"
+                            radname: "property",
+                            productId: productId
                         });
                 });
 
+               // propertiesGridPagination.setGrid(propertiesGrid);
+                propertiesGridPagination.setData(propData).goToPage({
+                    number: 0
+                });
 
+
+            }
+
+             return vm;
+        };
+
+        vm.updateRecords = function (record) {
+            var propertiesData = syncMgr.selectedPropertySync(record.productId, record);
+        };
+
+        vm.setData = function (productId) {
+           // vm.productId = productId;
+            logc("$scope.propertiesGridPagination",$scope.propertiesGridPagination);
+            vm.propertiesGrid.busy(false);
+            var propData = syncMgr.getProductPropertiesData(productId);
+
+            if (propData && propData.length > 0) {
+                if (security.isAllowed("viewUser")) {
+                    propData.forEach(function (item) {
+                        angular.extend(item, {
+                            disabled: false,
+                            radname: "property"
+                        });
+                        item.disabled = true;
+                    });
+                }
+
+                propData.forEach(function (item) {
+                        angular.extend(item, {
+                            radname: "property",
+                            productId: productId
+                        });
+                });
+
+               // propertiesGridPagination.setGrid(propertiesGrid);
                 propertiesGridPagination.setData(propData).goToPage({
                     number: 0
                 });
@@ -120,8 +141,9 @@
                 //         productDataModel.setAllProperty(false);
                 //     }
                 // }
-                logc("vm.propertiesGrid",vm.propertiesGrid);
-                productDataModel.setProperties(propData);
+
+                //productDataModel.setProperties(propData);
+
             }
             // if (resp.isError) {
             //     vm.isDataError = true;
@@ -133,7 +155,7 @@
             //     }
             // }
 
-
+             return vm;
         };
 
         vm.resetDataModel = function () {

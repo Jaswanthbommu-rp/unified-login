@@ -22,7 +22,7 @@
         };
 
 
-        p.getGridConfigTypes = function (gridData) {
+        p.getGridConfigTypes = function (gridData, tabName) {
             var s = this, config = [];
            // logc("griddata--", gridData,gridData.Type);
 
@@ -35,7 +35,7 @@
                                 "type" : s.isType(item.Type),
                                 "text": item.DisplayName,
                                 "idKey": "id",
-                                "templateUrl" : s.getTemplate( s.isControl(item.Type) )
+                                "templateUrl" : s.getTemplate( s.isControl(item.Type), tabName)
                         });
                     });
                   }
@@ -60,18 +60,10 @@
                                         "text": item.DisplayName
                                     });
                                 }
-                                // item.Controls.forEach(function (ctrl) {
-                                //     logc("radio ctrl", ctrl);
-
-                                // });
-                                // if(cnfg.length > 0){
-                                //     cnfgs.push(cnfg);
-                                // }
                             });
                        // }
                 });
             }
-logc("jsonData radio", cnfgs);
             return cnfgs;
         };
 
@@ -163,23 +155,12 @@ logc("jsonData radio", cnfgs);
            return main;
         };
 
-        p.getTemplate = function(type){
+        p.getTemplate = function(type, tabName){
             var html = '', url ='';
             if(type === 'radio'){
-                // html = '<label class="md-check dark-bluebox" ng-controller="ClientPortalRolesRadioCtrl as cprrc">' +
-                //                 '<input type="radio" name="client-portal-role" ' +
-                //     ' ng-disabled="record.disabled" ng-model="record.isAssigned" '+
-                //     ' ng-change="cprrc.publishRoleChange(record)" ng-value="true" ' +
-                //     ' id="client-portal-role-{{record.id}}" class="has-value"> ' +
-                //     ' <i class="primary"></i> ' +
-                // '</label>';
-                url = "user/assign-product-access/product-panel/templates/property-radio.html";
+                url = "user/assign-product-access/product-panel/templates/" + tabName.toLowerCase() +"-radio.html";
             }
 
-            // $templateCache.put(url , html);
-            // console.log("temp", $templateCache.get());
-            // return url;
-            // html = '<radiogrid></radiogrid>';
             return url;
         };
 

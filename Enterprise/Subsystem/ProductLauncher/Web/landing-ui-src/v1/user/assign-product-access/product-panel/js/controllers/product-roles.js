@@ -7,71 +7,63 @@
         var vm = this,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
-            gridPagination = gridPaginationModel(),
+            roleGridPagination = gridPaginationModel(),
             genericDataErrorReason = "";
 
         vm.init = function () {
+            //$scope.rolesGrid = gridModel();
             vm.rolesGrid = rolesGrid;
-            vm.productId = "";
+           // vm.productId = 0;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
             // rolesGrid.setConfig(gridConfig);
             vm.config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
             rolesGrid.setConfig(vm.config);
 
-            gridPagination.setGrid(rolesGrid);
-            $scope.gridPagination = gridPagination;
-            gridPagination.setConfig({
+            roleGridPagination.setGrid(rolesGrid);
+            $scope.roleGridPagination = roleGridPagination;
+            roleGridPagination.setConfig({
                 recordsPerPage: 25
             });
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            //vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
+            vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
 
-            vm.productRoleSelectedWatch = pubsub.subscribe("product.ProductRoleData", vm.setData);
+           // pubsub.subscribe("product.ProductRoleData", vm.setData);
             // if (persona.isReady()) {
             //     vm.loadData();
             // }
             // else {
             //     vm.personaWatch = persona.subscribe(vm.loadData);
             // }
-            //pubsub.subscribe("cp.roles-radio", vm.updateRoleRecords);
+            pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
         };
 
         vm.isActive = function () {
             return true;//productDataModel.isActive();
         };
 
-        // vm.loadData = function (productId) {
-        //     rolesGrid.busy(true);
-        //     if (persona.isReady() && vm.isActive()) {
-        //         var params = {
-        //             userPersonaId: userDetailsModel.getPersonaId(),
-        //             editorPersonaId: persona.getId()
-        //         };
-
-        //         vm.activeWatch();
-        //         vm.personaWatch();
-        //         vm.dataReq = dataSvc.get(params, vm.setData);
-        //     }
-        // };
-
-        vm.updateRoleRecords = function (record) {
-            var rolesData = productDataModel.getRoles();
-
-            rolesData.forEach(function (item) {
-                item.isAssigned = item.id == record.id;
-            });
+        vm.isReady = function () {
+            return productDataModel.isRoleGridActive();//productDataModel.isActive();
         };
 
-        vm.setData = function (productId) {
-            vm.rolesGrid.busy(false);
-            var roleData = syncMgr.getProductRolesData(productId);
+        vm.updateRoleRecords = function (record) {
+            var rolesData = syncMgr.selectedRoleSync(record.productId, record);
+        };
 
+
+        vm.loadData = function () {
+            var productId = $scope.$parent.productId;
+            logc("$scope.rolesGrid", $scope.rolesGrid,productId);
+            //vm.rolesGrid = $scope.rolesGrid;
+            vm.rolesGrid.busy(true);
+            var roleData = syncMgr.getProductRolesData(productId);
+            //gridPagination = $scope.gridPagination;
+logc("roleData",roleData);
             if (roleData && roleData.length > 0) {
-                vm.productId = productId;
-                if (security.isAllowed("viewUser") || vm.isUserHasManageProductAccess()) {
+               // vm.productId = productId;
+                if (security.isAllowed("viewUser") ) {
                     roleData.forEach(function (item) {
                         angular.extend(item, {
                             disabled: false,
@@ -83,13 +75,31 @@
 
                 roleData.forEach(function (item) {
                         angular.extend(item, {
-                            radname: "role"
+                            radname: "role",
+                            productId: productId
                         });
                 });
+                logc("gridPagination.grid",roleGridPagination);
+                // if (gridPagination === undefined){
+                //      // rolesGrid.setConfig(vm.config);
+                //      // gridPagination.setGrid(rolesGrid);
+                //      gridPagination = $scope.gridPagination;
+                //      logc("pubsub roleData", rolesGrid, gridPagination, vm.config);
+                // }
+            //     rolesGridTransform.watch(rolesGrid);
+            // // rolesGrid.setConfig(gridConfig);
+            //     var config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
+            //     rolesGrid.setConfig(config);
 
-                gridPagination.setData(roleData).goToPage({
+            //     roleGridPagination.setGrid(rolesGrid);
+            //     $scope.roleGridPagination = roleGridPagination;
+            //     roleGridPagination.setConfig({
+            //         recordsPerPage: 25
+            //     });
+                roleGridPagination.setData(roleData).goToPage({
                     number: 0
                 });
+
                 //productDataModel.setRoles(resp.records);
             }
             // if (resp.isError) {
@@ -101,22 +111,85 @@
             //         vm.dataErrorReason = genericDataErrorReason;
             //     }
             // }
+            vm.rolesGrid.busy(false);
+            return vm;
         };
 
-        vm.isUserHasManageProductAccess = function () {
-            return !persona.data.hasManageClientPortalProductAccess;
+        vm.setData = function (productId) {
+            logc("$scope.rolesGrid", $scope.rolesGrid);
+            vm.rolesGrid = $scope.rolesGrid;
+            vm.rolesGrid.busy(true);
+            var roleData = syncMgr.getProductRolesData(productId);
+            //gridPagination = $scope.gridPagination;
+
+            if (roleData && roleData.length > 0) {
+               // vm.productId = productId;
+                if (security.isAllowed("viewUser") ) {
+                    roleData.forEach(function (item) {
+                        angular.extend(item, {
+                            disabled: false,
+                            radname: "role"
+                        });
+                        item.disabled = true;
+                    });
+                }
+
+                roleData.forEach(function (item) {
+                        angular.extend(item, {
+                            radname: "role",
+                            productId: productId
+                        });
+                });
+                logc("gridPagination.grid",roleGridPagination);
+                // if (gridPagination === undefined){
+                //      // rolesGrid.setConfig(vm.config);
+                //      // gridPagination.setGrid(rolesGrid);
+                //      gridPagination = $scope.gridPagination;
+                //      logc("pubsub roleData", rolesGrid, gridPagination, vm.config);
+                // }
+                rolesGridTransform.watch(rolesGrid);
+            // rolesGrid.setConfig(gridConfig);
+                var config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
+                rolesGrid.setConfig(config);
+
+                roleGridPagination.setGrid(rolesGrid);
+                $scope.roleGridPagination = roleGridPagination;
+                roleGridPagination.setConfig({
+                    recordsPerPage: 25
+                });
+                roleGridPagination.setData(roleData).goToPage({
+                    number: 0
+                });
+
+                //productDataModel.setRoles(resp.records);
+            }
+            // if (resp.isError) {
+            //     vm.isDataError = true;
+            //     if (resp.errorReason !== "") {
+            //         vm.dataErrorReason = resp.errorReason;
+            //     }
+            //     else {
+            //         vm.dataErrorReason = genericDataErrorReason;
+            //     }
+            // }
+            vm.rolesGrid.busy(false);
+            return vm;
         };
+
+        // vm.isUserHasManageProductAccess = function () {
+        //     return !persona.data.hasManageClientPortalProductAccess;
+        // };
 
         vm.destroy = function () {
             vm.destWatch();
             vm.personaWatch();
             rolesGrid.destroy();
             rolesGridTransform.destroy();
-            gridPagination.destroy();
+            roleGridPagination.destroy();
             rolesGrid = undefined;
             rolesGridTransform = undefined;
-            gridPagination = undefined;
-            vm.productRoleSelectedWatch();
+            roleGridPagination = undefined;
+           // vm.productRoleSelectedWatch();
             vm = undefined;
             $scope = undefined;
         };

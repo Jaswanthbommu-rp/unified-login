@@ -121,7 +121,7 @@
             var s = this;
             s.roleList= list;
             s.renderRoleMap(key);
-            logc("roles list",s);
+            //logc("roles list",s);
             return s;
         };
 
@@ -178,7 +178,37 @@
             return productPropertiesList;
         };
 
-        p.selectedPropertySync = function (property) {
+        p.selectedRoleSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.roleMap['product' + key].roles;
+
+             roleData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+             });
+
+            return s;
+        };
+
+        p.selectedPropertySync = function (key, record) {
+            var s = this,
+               propertyData;
+
+            propertyData = s.propertyMap['product' + key].properties;
+
+            propertyData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            return s;
+        };
+
+        p.selectedPropertiesSync = function (property) {
             var s = this,
                 propertyList,
                 selectState = false,
@@ -234,43 +264,43 @@
         };
 
 
-        p.selectedRoleSync = function (key, data) {
-            var s = this,
-                roleData,
-                groupdata,
-                selectedRole,
-                selectState = false;
+        // p.selectedRoleSync = function (key, data) {
+        //     var s = this,
+        //         roleData,
+        //         groupdata,
+        //         selectedRole,
+        //         selectState = false;
 
-            roleData = s.roleMap['company' + key].role;
+        //     roleData = s.roleMap['company' + key].role;
 
-            if (data && data.length > 0) {
+        //     if (data && data.length > 0) {
 
-                roleData.forEach(function (item) {
-                    item.isAssigned = false;
-                    data.forEach(function (role) {
-                        if (item.name === role.name) {
-                            item.isAssigned = role.isAssigned;
-                        }
-                    });
-                });
+        //         roleData.forEach(function (item) {
+        //             item.isAssigned = false;
+        //             data.forEach(function (role) {
+        //                 if (item.name === role.name) {
+        //                     item.isAssigned = role.isAssigned;
+        //                 }
+        //             });
+        //         });
 
-                roleData.forEach(function (item) {
-                    if (item["isAssigned"]) {
-                        selectState = true;
-                    }
-                });
+        //         roleData.forEach(function (item) {
+        //             if (item["isAssigned"]) {
+        //                 selectState = true;
+        //             }
+        //         });
 
-                s.roleList.forEach(function (item) {
-                    if (item.companyId === key) {
-                        item.isAssigned = selectState;
-                        selectedRole = item;
-                    }
-                });
+        //         s.roleList.forEach(function (item) {
+        //             if (item.companyId === key) {
+        //                 item.isAssigned = selectState;
+        //                 selectedRole = item;
+        //             }
+        //         });
 
-            }
+        //     }
 
-            return s;
-        };
+        //     return s;
+        // };
 
          p.renderProductControlsMap = function () {
             var s = this;
