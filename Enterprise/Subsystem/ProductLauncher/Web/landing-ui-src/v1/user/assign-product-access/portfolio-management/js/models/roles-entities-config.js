@@ -9,6 +9,11 @@
         model.get = function () {
             return [
                 {
+                    key: "isAssigned",
+                    type: "select",
+                    idKey: "id"
+                },
+                {
                     key: "name",
                     type: "text"
                 },
@@ -16,13 +21,16 @@
                     key: "assignedProperties",
                     type: "custom",
                     templateUrl: "user/assign-product-access/portfolio-management/templates/entities-assigned.html"
-            }];
+                }];
         };
 
         model.getHeaders = function () {
             return [
-                [
-                {
+                [{
+                    key: "isAssigned",
+                    type: "select",
+                    enabled: false
+                },{
                     key: "name",
                     text: "Role",
                 },
@@ -35,6 +43,25 @@
 
         model.getFilters = function () {
             return [
+                {
+                    key: "isAssigned",
+                    value: "",
+                    type: "menu",
+                    options: [
+                        {
+                            value: "",
+                            name: "All"
+                        },
+                        {
+                            value: true,
+                            name: "Selected"
+                        },
+                        {
+                            value: false,
+                            name: "Not Selected"
+                        }
+                    ]
+                },
                 {
                     key: "name",
                     type: "text",
