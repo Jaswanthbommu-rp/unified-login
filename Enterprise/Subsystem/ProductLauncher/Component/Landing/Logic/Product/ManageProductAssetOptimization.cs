@@ -861,12 +861,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				bool loginNameChanged = false;
+				bool extUserLoginNameChanged = false;
 				var persona = _managePersona.GetPersona(userPersonaId);
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				string userEmailAddress = GetUserEmailAddress(realPageId, userLogin.LoginName, userPersonaId);
-
+				string productUserName = "";
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
 					WriteToDiagnosticLog("ManageProductAssetOptimization - Error.No Valid Notification Email Provided.");
@@ -890,6 +891,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					LastName = person.LastName,
 				};
 
+				productUserName = _productUsername;
 				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
 				if (persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
 				{
@@ -897,8 +899,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.UserId = userLogin.LoginName.ToLower();
 					loginNameChanged = true;
 				}
+				if (!persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+				{
+					extUserLoginNameChanged = true;
+					productUserName = GetSamlProductUserName(userPersonaId, "BI");
+					aoUser.Login = userLogin.LoginName.ToLower();
+					aoUser.UserId = productUserName.ToLower();
+					aoUser.OldUserId = productUserName.ToLower();
+				}
 
-				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, _productUsername);
+				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, productUserName);
 				// get existing AP details
 				aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
 				aoUser.Divisions = new List<Divisions>();
@@ -908,6 +918,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 				{
 					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails);
+				}
+				else if (string.IsNullOrEmpty(updateResult) && extUserLoginNameChanged)
+				{
+					_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, userLogin.LoginName.ToLower());
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
 				}
 
 				return updateResult;
