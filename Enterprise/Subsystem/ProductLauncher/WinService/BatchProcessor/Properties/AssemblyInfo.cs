@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor")]
+[assembly: AssemblyTitle("UnityBatchProcessor")]
 [assembly: AssemblyDescription("Windows Service to process batches in the Unified Platform")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("RealPage LLC")]
 [assembly: AssemblyProduct("UnityBatchProcessor")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
