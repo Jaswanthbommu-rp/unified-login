@@ -697,7 +697,7 @@ WHERE ProductId = 47;
 GO
 UPDATE ps
   SET 
-      value = 'www.realpage.com/deposit-alternatives'
+      value = 'https://www.realpage.com/deposit-alternatives'
 FROM  Enterprise.ProductSetting ps
 	INNER JOIN Enterprise.ProductSettingType pst
 		ON ps.ProductSettingTypeId = pst.ProductSettingTypeId
