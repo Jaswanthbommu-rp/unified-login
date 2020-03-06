@@ -476,6 +476,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     );
                 }
+                else if (!productResources.Any(p => p.ProductId == (int)ProductEnum.HelpCenter))
+                {
+                    productResources.Add(
+                        new ProductUI
+                        {
+                            ProductId = (int)ProductEnum.HelpCenter,
+                            ProductName = "Help Center",
+                            TitleId = "Help Center",
+                            ProductUrl = "product/helpcenter",
+                            HasAccess = false,
+                            IsResource = true,
+                            IsNewTab = true
+                        }
+                );
+                }
 
                 // need to follow up later when conversions is ready to be tested
                 /*if (!productResources.Any(p => p.ProductName == "OneSite Conversions"))
