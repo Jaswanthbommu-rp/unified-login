@@ -8,8 +8,15 @@
             rp-disabled="cpp.hasViewUserAccess"
             rp-label-text="rad.text">
         </rp-form-input-radio>
-
-
+        
+        <div  class="switch" >
+            <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpp.switchconfigs"
+                config="sw.configData"
+                rp-model="sw.key"
+                rp-label-text="sw.text">
+            </rp-switch>
+        </div>
+        <br>
         <div ng-if="cpp.propertySelect == 'property'" class="product-panel-properties">
             <div class="grid-controls">
                 <div class="grid-control-item">

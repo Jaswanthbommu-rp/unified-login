@@ -59,7 +59,8 @@
                                         "type" : s.isControl(item.Type),
                                         "text": item.DisplayName
                                     });
-                                }
+                                }                               
+                                
                             });
                        // }
                 });
@@ -73,8 +74,11 @@
             if(type === 'Label'){
                 return 'text';
             }
-            else if(type === 'RadioButton' || type === 'CheckBox' || type === 'Dropdown'){
+            else if(type === 'RadioButton'  || type === 'Dropdown'){
                 return 'custom';
+            }
+            else if(type === 'CheckBox' ){
+                return 'select';
             }
 
             return '';
@@ -89,7 +93,7 @@
                 return 'radio';
             }
             else if(type === 'CheckBox'){
-                return 'checkbox';
+                return 'check';
             }
         };
 
@@ -106,6 +110,13 @@
                 if(item.type === 'custom'){
                     hdr.push({
                         "key" : item.key,
+                    });
+                }
+                else if(item.type === 'select'){
+                    hdr.push({
+                        "key" : item.key,
+                        "type": item.type,
+                        "enabled": true
                     });
                 }
             });
@@ -129,6 +140,27 @@
                         "key" : item.key,
                     });
                 }
+                else if(item.type === 'select'){
+                    fltr.push({
+                        "key" : item.key,
+                         "type": "menu",
+                         "value": "",
+                         "options": [
+                            {
+                                value: "",
+                                name: "All"
+                            },
+                            {
+                                value: true,
+                                name: "Selected"
+                            },
+                            {
+                                value: false,
+                                name: "Not Selected"
+                            }
+                        ]
+                    });
+                }
             });
            return fltr;
         };
@@ -148,6 +180,13 @@
                         "key" : item.key,
                         "type" : item.type,
                         "templateUrl" :  item.templateUrl,
+                        "idKey" : item.idKey
+                    });
+                }
+                else if(item.type === 'select'){
+                    main.push({
+                        "key" : item.key,
+                        "type" : item.type,
                         "idKey" : item.idKey
                     });
                 }

@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, jsonData ,panelModel, configData, configFactory, configModel, dataModel1, tabsModel, propertiesSvc, rolesSvc, userDetailsModel, adminJson, gridModel, gridTransformSvc, gridPaginationModel) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, jsonData ,panelModel, configData, configFactory, configModel, dataModel1, tabsModel, propertiesSvc, rolesSvc, userDetailsModel, adminJson, gridModel, gridTransformSvc, gridPaginationModel, switchConfig, jsonDataMc) {
         var vm = this,
             active = false,
             panelNmae = "",
@@ -11,6 +11,7 @@
             tabsCnfData = [],
             gridconfigs = [],
             radioconfigs = [],
+            switchconfigs = [],
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
             rolesgridPagination = gridPaginationModel(),
@@ -47,14 +48,14 @@
 
         vm.productSelected = function (obj) {
            // vm.personaWatch = persona.subscribe();
-           if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
+           if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3 || obj.productId == 9){
 
                logc("obj.productId",obj.productId);
                vm.productId = obj.productId;
                $scope.productId = obj.productId;
                vm.loadProductControlsData(obj.productId);
            }
-           active = obj.productId === 14 || obj.productId === 3 || obj.productId === 10 ? true : false;
+           active = obj.productId === 14 || obj.productId === 3 || obj.productId === 10 || obj.productId === 9 ? true : false;
            return vm;
         };
 
@@ -77,6 +78,9 @@
                 else if (productId == 3){
                     jData = adminJson;
                 }
+                else if (productId == 9){
+                    jData = jsonDataMc;
+                }
             if (cdata === undefined)
             {
 
@@ -89,6 +93,8 @@
            // logc("cdata panel name",vm.panelName);
             vm.setTabs(cdata.Controls[0]);
             //if no data in model,CALLSERVICE to get controls data
+
+
         };
 
         vm.isActive = function () {
@@ -115,6 +121,10 @@
             //   }
 
             // });
+
+            vm.switchconfigs = vm.getSwitchConfigs(data);
+            configModel.setSwitchConfig(vm.switchconfigs);
+            console.log("vm.switchconfigs", vm.switchconfigs);
 
             vm.gridconfigs = vm.getGridConfigs(vm.tabsCnfData);
             configModel.setGridConfig(vm.gridconfigs);
@@ -285,6 +295,32 @@
             return cnfgs;
         };
 
+        vm.getSwitchConfigs = function (data) {
+            var  aSwitch = [];
+            if(data && data.Controls){
+                if(data.Type === 'TabGroup'){
+                    data.Controls.forEach(function(tabGrp){
+                       tabGrp.Controls.forEach(function (ctrl) {
+                           if(ctrl.Type === 'Switch'){
+                               var c = {
+                                    id : ctrl.Id,
+                                    text : ctrl.DisplayName,
+                                    key : ctrl.DataSource, 
+                                    configData : switchConfig({
+                                       onChange : vm.noop,
+                                       disabled : false 
+                                    })                           
+                                };
+                                aSwitch.push(c);
+                            }
+                       });                       
+                       
+                    });
+                }
+            }
+            return aSwitch;
+        };
+
         vm.setState = function (value) {
             vm.disableContent = value;
         };
@@ -356,6 +392,8 @@
              "rpGridModel",
             "rpGridTransform",
             "rpGridPaginationModel",
+            "rpSwitchConfig",
+            "DataModelMc",
             ProductCommonCtrl
         ]);
 })(angular);

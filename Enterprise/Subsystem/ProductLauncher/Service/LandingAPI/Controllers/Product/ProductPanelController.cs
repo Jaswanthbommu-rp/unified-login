@@ -40,12 +40,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		private Guid emptyGuid = Guid.Empty;
 		private IManageProductClientPortal _manageProductClientPortal;
 		private IManageUnifiedLogin _manageUnifiedLogin;
-		#endregion
-		#region Constructor
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public ProductPanelController() : base()
+        private IManageProductMarketingCenter _manageProductMarketingCenter;
+        #endregion
+        #region Constructor
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ProductPanelController() : base()
 		{
 		}
 
@@ -68,7 +69,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			base.Initialize(controllerContext);
 			_manageProductClientPortal = new ManageProductClientPortal(base._userClaims);
-		}
+            _manageProductMarketingCenter = new ManageProductMarketingCenter(_userClaims);
+        }
 		#endregion
 		#region Public methods
 		/// <summary>
@@ -103,12 +105,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				_manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 				result = _manageUnifiedLogin.GetUserRoles(editorPersonaId, userPersonaId, partyId);
 			}
-			
+            else if (productId == 9)
+            {
+                _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+                result = _manageProductMarketingCenter.GetRoles(editorPersonaId, userPersonaId, datafilter);
+            }
 
-			//if(result.IsError)
-			//    Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
-			return Request.CreateResponse(HttpStatusCode.OK, result);
+            //if(result.IsError)
+            //    Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 
 		/// <summary>
@@ -143,11 +150,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_realpageUserId);
 				result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
 			}
+            else if (productId == 9)
+            {                
+                result = _manageProductMarketingCenter.GetProperties(editorPersonaId, userPersonaId, datafilter);
+            }
 
-			//if(result.IsError)
-			//    Request.CreateResponse(HttpStatusCode.Forbidden, result);
+            //if(result.IsError)
+            //    Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
-			return Request.CreateResponse(HttpStatusCode.OK, result);
+            return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 		#endregion
 	}

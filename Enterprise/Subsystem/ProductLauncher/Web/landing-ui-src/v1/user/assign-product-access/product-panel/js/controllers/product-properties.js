@@ -31,6 +31,8 @@
 
             vm.radioconfig = configModel.getRadioConfig();
 
+            vm.switchconfigs = configModel.getSwitchConfig();
+
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productPropertyWatch = $scope.$watch(vm.isReady, vm.loadData);
