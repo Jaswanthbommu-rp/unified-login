@@ -1,13 +1,15 @@
 <div class="product-panel-properties-wrapper" ng-controller="ProductPropertiesGridCtrl as cpp">
     <div class="product-panel-properties-body" ng-if="!cpp.isDataError">
 
-        <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpp.radioconfig"
-            rp-value="rad.key"
-            rp-on-change="cpp.resetDataModel()"
-            rp-model="cpp.propertySelect"
-            rp-disabled="cpp.hasViewUserAccess"
-            rp-label-text="rad.text">
-        </rp-form-input-radio>
+         <div  class="radio" >
+            <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpp.radioconfig"
+                rp-value="rad.key"
+                rp-on-change="cpp.resetDataModel()"
+                rp-model="cpp.propertySelect"
+                rp-disabled="cpp.hasViewUserAccess"
+                rp-label-text="rad.text">
+            </rp-form-input-radio>
+        </div>
         
         <div  class="switch" >
             <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpp.switchconfigs"
@@ -16,7 +18,8 @@
                 rp-label-text="sw.text">
             </rp-switch>
         </div>
-        <br>
+        
+
         <div ng-if="cpp.propertySelect == 'property'" class="product-panel-properties">
             <div class="grid-controls">
                 <div class="grid-control-item">
