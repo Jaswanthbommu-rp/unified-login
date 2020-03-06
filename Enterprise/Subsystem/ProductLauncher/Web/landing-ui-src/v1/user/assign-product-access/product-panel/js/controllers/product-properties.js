@@ -9,11 +9,16 @@
             propertiesGrid = gridModel(),
             propertiesGridTransform = gridTransformSvc(),
             propertiesGridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            activeProperties = [],
+            inactiveProperties = [];
 
         vm.init = function () {
             vm.propertySelect = "property";
             vm.productId = 0;
+            vm.activeProperties = activeProperties;
+            vm.inactiveProperties = inactiveProperties;
+
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
 
             console.log('PROPERTY');
@@ -33,7 +38,7 @@
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            vm.productPropertyWatch = $scope.$watch(vm.isReady, vm.loadData);
+            vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
            //vm.productPropertyWatch = pubsub.subscribe("product.ProductPropertyData", vm.setData);
 
 
@@ -44,31 +49,43 @@
             //     vm.personaWatch = persona.subscribe(vm.loadData);
             // }
 
-            pubsub.subscribe("ppanel.property-radio", vm.updateRecords);
+            pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
         };
 
+        vm.hasViewOnlyAccess = function () {
+            return security.isAllowed("viewUser") || vm.isUserHasManageProductAccess();
+        };
 
-        // vm.isUserHasManageProductAccess = function () {
-        //     return !persona.data.hasManageClientPortalProductAccess;
-        // };
+        vm.isUserHasManageProductAccess = function () {
+            var productId = $scope.$parent.productId;
+            switch (productId) {
+                case "10" :
+                    return !persona.data.hasProspectContactCenterProductAccess;
+                    break;
+                case "10" :
+                    return !persona.data.hasManageClientPortalProductAccess;
+                    break;
+                default:
+                    return false;
+
+            }
+        };
+
         vm.isReady = function () {
-            return productDataModel.isPropertyGridActive();//productDataModel.isActive();
+            return productDataModel.isPropertyGridActive();
         };
 
         vm.isActive = function () {
-            return true;//productDataModel.isActive();
+            return productDataModel.isPropertyGridActive();
         };
 
         vm.loadData = function () {
-           // vm.productId = productId;
-            //logc("$scope.propertiesGridPagination",$scope.propertiesGridPagination);
             var productId = $scope.$parent.productId;
-            logc("$scope", productId);
-            vm.propertiesGrid.busy(false);
+            propertiesGrid.busy(false);
             var propData = syncMgr.getProductPropertiesData(productId);
 
             if (propData && propData.length > 0) {
-                if (security.isAllowed("viewUser")) {
+                if (vm.hasViewOnlyAccess) {
                     propData.forEach(function (item) {
                         angular.extend(item, {
                             disabled: false,
@@ -85,78 +102,76 @@
                         });
                 });
 
-               // propertiesGridPagination.setGrid(propertiesGrid);
                 propertiesGridPagination.setData(propData).goToPage({
                     number: 0
                 });
-
-
             }
 
              return vm;
         };
 
-        vm.updateRecords = function (record) {
+        vm.updatePropertyRecords = function (record) {
             var propertiesData = syncMgr.selectedPropertySync(record.productId, record);
+            logc("propertiesData",propertiesData);
         };
 
-        vm.setData = function (productId) {
-           // vm.productId = productId;
-            logc("$scope.propertiesGridPagination",$scope.propertiesGridPagination);
-            vm.propertiesGrid.busy(false);
-            var propData = syncMgr.getProductPropertiesData(productId);
+        // vm.setData = function (productId) {
+        //    // vm.productId = productId;
+        //     //logc("$scope.propertiesGridPagination",$scope.propertiesGridPagination);
+        //     vm.propertiesGrid.busy(false);
+        //     var propData = syncMgr.getProductPropertiesData(productId);
 
-            if (propData && propData.length > 0) {
-                if (security.isAllowed("viewUser")) {
-                    propData.forEach(function (item) {
-                        angular.extend(item, {
-                            disabled: false,
-                            radname: "property"
-                        });
-                        item.disabled = true;
-                    });
-                }
+        //     if (propData && propData.length > 0) {
+        //         if (security.isAllowed("viewUser")) {
+        //             propData.forEach(function (item) {
+        //                 angular.extend(item, {
+        //                     disabled: false,
+        //                     radname: "property"
+        //                 });
+        //                 item.disabled = true;
+        //             });
+        //         }
 
-                propData.forEach(function (item) {
-                        angular.extend(item, {
-                            radname: "property",
-                            productId: productId
-                        });
-                });
+        //         propData.forEach(function (item) {
+        //                 angular.extend(item, {
+        //                     radname: "property",
+        //                     productId: productId
+        //                 });
+        //         });
 
-               // propertiesGridPagination.setGrid(propertiesGrid);
-                propertiesGridPagination.setData(propData).goToPage({
-                    number: 0
-                });
+        //        // propertiesGridPagination.setGrid(propertiesGrid);
+        //         propertiesGridPagination.setData(propData).goToPage({
+        //             number: 0
+        //         });
 
-                // if (resp.additional) {
-                //     var allProperties = resp.additional.allProperties;
+        //         // if (resp.additional) {
+        //         //     var allProperties = resp.additional.allProperties;
 
-                //     if (allProperties) {
-                //         vm.propertySelect = "all";
-                //         productDataModel.setAllProperty(true);
-                //     }
-                //     else {
-                //         vm.propertySelect = "property";
-                //         productDataModel.setAllProperty(false);
-                //     }
-                // }
+        //         //     if (allProperties) {
+        //         //         vm.propertySelect = "all";
+        //         //         productDataModel.setAllProperty(true);
+        //         //     }
+        //         //     else {
+        //         //         vm.propertySelect = "property";
+        //         //         productDataModel.setAllProperty(false);
+        //         //     }
+        //         // }
 
-                //productDataModel.setProperties(propData);
+        //         //productDataModel.setProperties(propData);
 
-            }
-            // if (resp.isError) {
-            //     vm.isDataError = true;
-            //     if (resp.errorReason !== "") {
-            //         vm.dataErrorReason = resp.errorReason;
-            //     }
-            //     else {
-            //         vm.dataErrorReason = genericDataErrorReason;
-            //     }
-            // }
+        //     }
+        //     // if (resp.isError) {
+        //     //     vm.isDataError = true;
+        //     //     if (resp.errorReason !== "") {
+        //     //         vm.dataErrorReason = resp.errorReason;
+        //     //     }
+        //     //     else {
+        //     //         vm.dataErrorReason = genericDataErrorReason;
+        //     //     }
+        //     // }
 
-             return vm;
-        };
+        //      return vm;
+        // };
 
         vm.resetDataModel = function () {
             vm.clearProperties();

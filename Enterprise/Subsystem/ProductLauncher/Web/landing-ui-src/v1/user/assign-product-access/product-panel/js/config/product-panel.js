@@ -7,9 +7,17 @@
 
         productAccess.register({
             model: model,
-            key: "soln000"
+            key: "soln302",
+            product: "10"
         });
-        logc("productAccess",productAccess);
+
+        productAccess.register({
+            model: model,
+            key: "soln501",
+            product: "14"
+        });
+
+        logc("productAccess", productAccess);
     }
 
     angular

@@ -18,12 +18,18 @@
 
         // Getters
 
-        p.getAccessData = function (key) {
+        p.getAccessData = function (key, productId) {
             var s = this;
-
+            logc("key101", s.products[key], productId);
             if (s.products[key]) {
-                return s.products[key].getData();
+                if (key === "soln302" || key === "soln501") {
+                    return s.products[key].getData(productId);
+                }
+                else  {
+                    return s.products[key].getData();
+                }
             }
+
             return undefined;
         };
 
@@ -31,6 +37,7 @@
 
         p.register = function (data) {
             var s = this;
+            logc("register data",data);
             s.products[data.key] = data.model;
             return s;
         };
@@ -50,6 +57,7 @@
                 item.setActive(active);
             });
 
+            logc("s.products",s.products);
             s.products["default"].setActive(!found);
             // if (soln.data.productId == 14 || soln.data.productId == 10 || soln.data.productId == 3)
             // {

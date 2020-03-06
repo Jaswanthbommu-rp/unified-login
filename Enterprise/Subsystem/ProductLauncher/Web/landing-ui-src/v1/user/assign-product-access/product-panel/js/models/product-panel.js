@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory() {
+    function factory(dataSyncManager) {
         function ProductPanelData() {
             var s = this;
             s.init();
@@ -17,8 +17,13 @@
             s.roleGridActive = false;
             s.propertyGridActive = false;
             s.changed = false;
-            s.data = {
-                productId: 14,
+
+             s.data = {
+                "records": []
+            };
+
+            s.batchData = {
+                productId: 0,
                 statusTypeId: 5,
                 retryCount: 0,
                 inputJson: {
@@ -104,44 +109,110 @@
             return s.properties;
         };
 
-        p.getData = function () {
+         p.getData = function (productId) {
             var s = this,
                 hasRoleSelected = false,
                 hasPropertySelected = false;
+//ogc("getdata",productId);
+          var roles = dataSyncManager.getProductRolesData(productId);
+          var properties = dataSyncManager.getProductPropertiesData(productId);
+logc("getData", roles, properties);
+           s.batchData.productId = productId;
 
-            if (s.roles && s.roles.length) {
-                s.data.inputJson.roleList = [];
-                s.roles.forEach(function (role) {
+           if (roles && roles.length) {
+                s.batchData.inputJson.roleList = [];
+                roles.forEach(function (role) {
+                    logc("ppl role", role);
                     if (role.isAssigned) {
-                        s.data.inputJson.roleList.push(role.id);
+                        s.batchData.inputJson.roleList.push(role.id);
                     }
                 });
 
-                hasRoleSelected = s.data.inputJson.roleList.length > 0;
+                hasRoleSelected = s.batchData.inputJson.roleList.length > 0;
             }
 
-            if (s.properties && s.properties.length) {
-                s.data.inputJson.propertyList = [];
+            if (properties && properties.length) {
+                s.batchData.inputJson.propertyList = [];
 
                 if (s.isAllProperties) {
-                    s.data.inputJson.propertyList.push("-1");
+                    s.batchData.inputJson.propertyList.push("-1");
                 }
                 else {
-                    s.properties.forEach(function (prop) {
+                    properties.forEach(function (prop) {
                         if (prop.isAssigned) {
-                            s.data.inputJson.propertyList.push(prop.id);
+                            s.batchData.inputJson.propertyList.push(prop.id);
                         }
                     });
                 }
 
-                hasPropertySelected = s.data.inputJson.propertyList.length > 0;
+                hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;
             }
+            //s.data.records.push(s.padata);
+logc("cpl productbatch data", s.batchData);
 
             if (hasRoleSelected && hasPropertySelected) {
-                return s.data;
+                return s.batchData;
             }
 
             return null;
+        };
+
+        // p.getData = function () {
+        //     var s = this,
+        //         hasRoleSelected = false,
+        //         hasPropertySelected = false;
+
+        //     var products = dataSyncManager.getProductsTouched();
+        //     if (products && products.length) {
+        //         products.forEach(function (product) {
+        //           var roles = dataSyncManager.getProductRolesData(product);
+        //           var properties = dataSyncManager.getProductPropertiesData(product);
+
+        //            s.batchData.productId = product;
+        //            if (roles && roles.length) {
+        //                 s.batchData.inputJson.roleList = [];
+        //                 s.roles.forEach(function (role) {
+        //                     if (role.isAssigned) {
+        //                         s.batchData.inputJson.roleList.push(role.id);
+        //                     }
+        //                 });
+
+        //                 hasRoleSelected = s.batchData.inputJson.roleList.length > 0;
+        //             }
+
+        //             if (properties && properties.length) {
+        //                 s.batchData.inputJson.propertyList = [];
+
+        //                 if (s.isAllProperties) {
+        //                     s.batchData.inputJson.propertyList.push("-1");
+        //                 }
+        //                 else {
+        //                     s.properties.forEach(function (prop) {
+        //                         if (prop.isAssigned) {
+        //                             s.batchData.inputJson.propertyList.push(prop.id);
+        //                         }
+        //                     });
+        //                 }
+
+        //                 hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;
+        //             }
+        //             s.data.records.push(s.padata);
+        //         });
+        //     }
+
+
+        //     if (hasRoleSelected && hasPropertySelected) {
+        //         return s.data;
+        //     }
+
+        //     return null;
+        // };
+
+         p.gridReset = function () {
+            var s = this;
+            s.isAllProperties = false;
+            s.roleGridActive = false;
+            s.propertyGridActive = false;
         };
 
         p.reset = function () {
@@ -162,5 +233,5 @@
 
     angular
         .module("settings")
-        .factory("productPanelDataModel", [factory]);
+        .factory("productPanelDataModel", ["productDataSyncManager", factory]);
 })(angular);

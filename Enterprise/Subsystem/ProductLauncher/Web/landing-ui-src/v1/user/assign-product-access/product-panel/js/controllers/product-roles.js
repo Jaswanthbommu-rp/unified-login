@@ -55,12 +55,8 @@
 
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
-            logc("$scope.rolesGrid", $scope.rolesGrid,productId);
-            //vm.rolesGrid = $scope.rolesGrid;
-            vm.rolesGrid.busy(true);
+            rolesGrid.busy(true);
             var roleData = syncMgr.getProductRolesData(productId);
-            //gridPagination = $scope.gridPagination;
-logc("roleData",roleData);
             if (roleData && roleData.length > 0) {
                // vm.productId = productId;
                 if (security.isAllowed("viewUser") ) {
@@ -79,23 +75,7 @@ logc("roleData",roleData);
                             productId: productId
                         });
                 });
-                logc("gridPagination.grid",roleGridPagination);
-                // if (gridPagination === undefined){
-                //      // rolesGrid.setConfig(vm.config);
-                //      // gridPagination.setGrid(rolesGrid);
-                //      gridPagination = $scope.gridPagination;
-                //      logc("pubsub roleData", rolesGrid, gridPagination, vm.config);
-                // }
-            //     rolesGridTransform.watch(rolesGrid);
-            // // rolesGrid.setConfig(gridConfig);
-            //     var config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
-            //     rolesGrid.setConfig(config);
 
-            //     roleGridPagination.setGrid(rolesGrid);
-            //     $scope.roleGridPagination = roleGridPagination;
-            //     roleGridPagination.setConfig({
-            //         recordsPerPage: 25
-            //     });
                 roleGridPagination.setData(roleData).goToPage({
                     number: 0
                 });
@@ -183,6 +163,7 @@ logc("roleData",roleData);
         vm.destroy = function () {
             vm.destWatch();
             vm.personaWatch();
+            vm.activeWatch();
             rolesGrid.destroy();
             rolesGridTransform.destroy();
             roleGridPagination.destroy();

@@ -31,11 +31,12 @@
                 solns = products.getAssignedSolns();
 
             data.productBatch = [];
-
+logc("assigned soln",solns);
             solns.forEach(function (soln) {
                 var key = soln.getKey(),
+                    productId = soln.data.productId,
                     isDisabled = soln.isProductDisabled(),
-                    prodData = productAccess.getAccessData(key);
+                    prodData = productAccess.getAccessData(key, productId);
 
                 if (prodData && !isDisabled) {
                     if (angular.isArray(prodData) && prodData.length > 0) {
@@ -183,8 +184,9 @@
 
             solns.forEach(function (soln) {
                 var key = soln.getKey(),
-                    data = productAccess.getAccessData(key);
-
+                    productId = soln.data.productId,
+                    data = productAccess.getAccessData(key, productId);
+logc("soln data", data);
                 if (data === null) {
                     s.incompleteSolutionsList.push(soln);
                 }

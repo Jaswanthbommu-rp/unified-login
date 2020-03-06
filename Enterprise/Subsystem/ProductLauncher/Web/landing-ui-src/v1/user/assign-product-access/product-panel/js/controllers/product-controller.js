@@ -47,7 +47,8 @@
 
         vm.productSelected = function (obj) {
            // vm.personaWatch = persona.subscribe();
-           if (obj.productId == 14 || obj.productId == 10 || obj.productId == 3){
+           if (obj.productId == 14 || obj.productId == 10 ){
+           //|| obj.productId == 3){
 
                logc("obj.productId",obj.productId);
                vm.productId = obj.productId;
