@@ -23,6 +23,14 @@
             return model.radioconfig ;
         };
 
+        model.setSwitchConfig = function (config) {            
+             model.switchconfig = config ;
+        };
+
+        model.getSwitchConfig = function (config) {            
+            return model.switchconfig ;
+        };
+
         model.reset = function () {
         	model = {};
         };

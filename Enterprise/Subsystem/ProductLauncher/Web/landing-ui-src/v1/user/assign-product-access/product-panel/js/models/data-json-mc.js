@@ -5,9 +5,9 @@
 
 
 var data = {
-  "Id": 14,
+  "Id": 9,
   "Type": "Page",
-  "DisplayName": "Client Portal Product Access",
+  "DisplayName": "Marketing Center Product Access",
   "Controls": [{
     "Id": 1,
     "Type": "TabGroup",
@@ -18,21 +18,14 @@ var data = {
       "ParentId": null,
       "ActiveTab": true,
       "Sequence": 1,
-      "Controls": [{
-        "Id": 8,
-        "ParentId": 7,
-        "Type": "RadioButton",
-        "DisplayName": "Single Property",
-        "DataSource": "property",
-        "Sequence": 1
-      },
+      "Controls": [      
       {
-        "Id": 9,
+        "Id": 19,
         "ParentId": 7,
-        "Type": "RadioButton",
-        "DisplayName": "All Property",
-        "DataSource": "all",
-        "Sequence": 2
+        "Type": "Switch",
+        "DisplayName": "Assign new property by default",
+        "DataSource": "assignedP",
+        "Sequence": 3
       },      
       {
         "Id": 7,
@@ -50,7 +43,7 @@ var data = {
           "Controls": [{
             "Id": 11,
             "ParentId": 10,
-            "Type": "RadioButton",
+            "Type": "CheckBox",
             "DisplayName": "",
             "DataSource": "isAssigned",
             "Sequence": 1
@@ -59,7 +52,7 @@ var data = {
             "Id": 12,
             "ParentId": 10,
             "Type": "Label",
-            "DisplayName": "Name",
+            "DisplayName": "Property",
             "DataSource": "name",
             "Sequence": 2
           },
@@ -114,6 +107,6 @@ var data = {
 
     angular
         .module("settings")
-        .value("DataModel", data
+        .value("DataModelMc", data
         );
 })(angular);

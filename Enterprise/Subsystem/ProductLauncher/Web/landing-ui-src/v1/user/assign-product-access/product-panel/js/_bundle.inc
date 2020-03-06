@@ -15,6 +15,8 @@
 {{{ include("models/grid-factory.js") }}}
 {{{ include("models/config-model.js") }}}
 {{{ include("models/product-panel-tabs-data-factory.js") }}}
+{{{ include("models/data-json-mc.js") }}}
+
 
 {{{ include("services/roles-data.js") }}}
 {{{ include("services/properties-data.js") }}}
