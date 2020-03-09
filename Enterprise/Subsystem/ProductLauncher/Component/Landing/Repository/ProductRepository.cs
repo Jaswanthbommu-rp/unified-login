@@ -477,7 +477,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     );
                 }
-                else if (!productResources.Any(p => p.ProductId == (int)ProductEnum.HelpCenter))
+                
+                if (!productResources.Any(p => p.ProductId == (int)ProductEnum.HelpCenter))
                 {
                     productResources.Add(
                         new ProductUI
