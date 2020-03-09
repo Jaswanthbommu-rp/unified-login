@@ -250,6 +250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.SettingsManagement
                             || r.ProductId == (int)ProductEnum.CIMPL
                             || r.ProductId == (int)ProductEnum.VendorMarketplace
+                            || r.ProductId == (int)ProductEnum.HelpCenter
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
