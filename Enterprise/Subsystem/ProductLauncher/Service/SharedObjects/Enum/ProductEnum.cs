@@ -41,6 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.ResidentPortal: return "resident-portals";
 				case ProductEnum.UtilityManagement: return "utility-management";
 				case ProductEnum.ProductLearningPortal: return "learning-portal";
+				case ProductEnum.HelpCenter: return "help-center";
 				case ProductEnum.RPDocumentManagement: return "realpage-document-management";
 				case ProductEnum.OneSiteConversions: return "leasing-and-rent-conversion-tool";
 				case ProductEnum.OmniChannel: return "rentjoy";
@@ -281,6 +282,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("LP")]
 		ProductLearningPortal = 19,
+
+		/// <summary>
+		/// Help Center
+		/// </summary>
+		[Description("HC")]
+		HelpCenter = 49,
 
 		/// <summary>
 		/// RPDocumentManagement
