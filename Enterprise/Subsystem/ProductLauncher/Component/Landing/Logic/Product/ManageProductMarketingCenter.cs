@@ -454,15 +454,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "User not found in product";
 				}
 
-				var mcUser = new MC.MarketingCenterUser()
-				{
-					CompanyId = mUser.CompanyId,
-					ContactRoleId = mUser.ContactRoleId,
-					FirstName = person.FirstName,
-					LastName = person.LastName,
-					EmailAddress = productLoginName,
-					LeadEmailAddress = userLeadEmailAddress,
-					WelcomeEmailSent = true
+                var mcUser = new MC.MarketingCenterUser()
+                {
+                    CompanyId = mUser.CompanyId,
+                    ContactRoleId = mUser.ContactRoleId,
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    EmailAddress = productLoginName,
+                    LeadEmailAddress = userLeadEmailAddress,
+                    WelcomeEmailSent = true,
+                    AssignNewProperty = mUser.AssignNewProperty
 				};
 
 				var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
