@@ -223,5 +223,10 @@
 		/// Click Pay
 		/// </summary>
 		public const string ClickPay = "CPAY";
+
+		/// <summary>
+		/// Click Pay
+		/// </summary>
+		public const string HelpCenter = "HLP";
 	}
 }
