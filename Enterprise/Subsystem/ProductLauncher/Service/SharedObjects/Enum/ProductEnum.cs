@@ -286,7 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Help Center
 		/// </summary>
-		[Description("HC")]
+		[Description("HLP")]
 		HelpCenter = 49,
 
 		/// <summary>
