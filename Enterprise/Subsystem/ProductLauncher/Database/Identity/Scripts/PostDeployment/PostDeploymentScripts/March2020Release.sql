@@ -1074,6 +1074,33 @@ EXEC Enterprise.ProductConfigurationSetup
      @LoginURI, 
      @SigningCertificateThumbprint, 
      @ProductConfiguration;
+
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
 GO
 DECLARE @ClientId INT;
 IF NOT EXISTS
