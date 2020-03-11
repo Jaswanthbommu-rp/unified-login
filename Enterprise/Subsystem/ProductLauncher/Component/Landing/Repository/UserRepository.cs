@@ -2289,6 +2289,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
                             throw new Exception(repositoryResponse.ErrorMessage);
                         }
+                        else
+                        {
+                            //Log Activity
+                            //var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {OldValue} to {NewValue} for {{0}} {{1}}.";
+                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {2} {3} updated the First name from OldValue to NewValue on the user profile for {0} {1}.", "UpdateUser", profile);
+                        }
                     }
                     #endregion
 
