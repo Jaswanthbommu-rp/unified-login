@@ -917,7 +917,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails);
+					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged = true);
 				}
 				else if (string.IsNullOrEmpty(updateResult) && extUserLoginNameChanged)
 				{
@@ -1738,7 +1738,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			long userPersonaId,
 			string productLoginName,
 			IList<AoUserCompanyPropertyRoleDetail> existingAssignedProducts,
-			IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails)
+			IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails,
+			bool loginNameChanged = false)
 		{
 			var productAssigned = new List<string>();
 			var productUnAssigned = new List<string>();
@@ -1817,8 +1818,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						// add activity log
 						WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
 					}
+					else if (loginNameChanged)
+					{
+						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
+						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
 
-					//if product is assigned
+						WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
+					}
+
+						//if product is assigned
 					foreach (var product in productAssigned)
 					{
 						WriteToDiagnosticLog(
@@ -1838,6 +1846,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 							// add activity log
 							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} assigned for product {2} by user {3} {4}.");
+						}
+						else if(loginNameChanged)
+						{
+							WriteToDiagnosticLog("ManageProductAssetOptimization.UpdateProductUserInGreenBook - StartUpdate user SAMLAttribute User_email=" + productLoginName);
+							foreach(var samlAttribute in samlUserDetails)
+							{
+								_samlRepository.UpdateSamlUserAttribute(new SamlAttributes() { SamlAttributeId = samlAttribute.SamlAttributeId, Value = productLoginName, SamlUserAttributeId = samlAttribute.SamlUserAttributeId });
+							}							
+							WriteToDiagnosticLog("ManageProductAssetOptimization.UpdateProductUserInGreenBook - Update user SAMLAttribute User_email success. Saved user id");
 						}
 
 						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Success);
