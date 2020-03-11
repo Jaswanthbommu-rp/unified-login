@@ -853,7 +853,7 @@
            // Not an Employee
            if(model.data.userTypeId !== 403){
 
-                if(model.data.userTypeId === 405 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && !resp.data.userExistsInThisOrganization && !resp.data.userIsDisabledInPrimaryCompany){                
+                if(model.data.userTypeId === 405 && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && !resp.data.userExistsInThisOrganization && !resp.data.userIsDisabledInPrimaryCompany){                
                     chkEmailModel.setIsBusy(false);
                     if(resp.data.userExists){
                         model.setUserTypeDefConfig(405);   
@@ -870,13 +870,13 @@
                     return;
                 }
 
-                if((model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsDisabledInPrimaryCompany){                
+                if((model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" ) && resp.data.userExistsAsNoEmail === false  && resp.data.userExists && resp.data.userIsDisabledInPrimaryCompany){                
                     isModalOpen = true;
                     deactivatedUserModal.show();
                     return;
                 }
 
-                if(model.data.userTypeId === 401 && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsExternalEverywhere){  
+                if(model.data.userTypeId === 401 && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsExternalEverywhere){  
                    chkEmailModel.setIsBusy(false);
                    model.data.firstName = model.externalUserData.person.firstName;
                    model.data.lastName =  model.externalUserData.person.lastName;
@@ -885,7 +885,7 @@
                 }
 
 
-               if(resp.data.userExistsNotAvailable === true && resp.data.userExists === true  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){
+               if(resp.data.userExistsNotAvailable === true && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){
                     vm.showExistingUserModal(true, resp.data.person.realPageId);
                }else{
 
