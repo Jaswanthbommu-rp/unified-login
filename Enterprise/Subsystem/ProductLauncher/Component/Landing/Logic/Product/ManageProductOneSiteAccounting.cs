@@ -918,8 +918,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog($"UpdatePropertiesToUser - RemovePropertiesFromUser. userPersonaId={userPersonaId}", logData);
                     string json = JsonConvert.SerializeObject(user);
 					result = _service.RemovePropertiesFromUser(user);
-					if (result != null && !result.ToUpper().Contains("PROVIDED USER PROPERTIES REMOVED SUCCESSFULLY") || !result.ToUpper().Contains("PROVIDED USER PROPERTIES DELETED SUCCESSFULLY"))
-					{
+                    if (result != null && (!result.ToUpper().Contains("PROVIDED USER PROPERTIES REMOVED SUCCESSFULLY") && !result.ToUpper().Contains("PROVIDED USER PROPERTIES DELETED SUCCESSFULLY")))
+                    {
 						return assignSuccessful += "Failed to remove. " + result;
 					}
                     else
