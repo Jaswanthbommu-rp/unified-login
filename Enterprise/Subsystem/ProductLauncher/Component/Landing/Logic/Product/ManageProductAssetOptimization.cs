@@ -859,7 +859,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToErrorLog($"ManageProductAssetOptimization.UpdateUserProfile Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
 					return listResponse.ErrorReason;
 				}
-
+				
 				bool loginNameChanged = false;
 				bool extUserLoginNameChanged = false;
 				var persona = _managePersona.GetPersona(userPersonaId);
@@ -867,14 +867,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				string userEmailAddress = GetUserEmailAddress(realPageId, userLogin.LoginName, userPersonaId);
+				IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				string productUserName = "";
+				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+				bool isExternalUser = persona.Organization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && persona.Organization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+				long primaryCompanyPersonaId = personaList.Where(x => x.PersonaId != persona.PersonaId).Select(y => y.PersonaId).FirstOrDefault();
+
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
 					WriteToDiagnosticLog("ManageProductAssetOptimization - Error.No Valid Notification Email Provided.");
 					// write an error
 					return "ManageProductAssetOptimization - Error.No Valid Notification Email Provided";
 				}
-
 				
 				var aoUser = new AOUser
 				{
@@ -890,25 +894,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					FirstName = person.FirstName,
 					LastName = person.LastName,
 				};
-
-				productUserName = _productUsername;
+				if ((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser)
+				{
+					productUserName = GetSamlProductUserName(primaryCompanyPersonaId);
+				}
+				else
+				{
+					productUserName = _productUsername;
+				}
 				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
-				if (persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+				if (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase))
 				{
 					aoUser.Login = userLogin.LoginName.ToLower();
 					aoUser.UserId = userLogin.LoginName.ToLower();
 					loginNameChanged = true;
 				}
-				if (!persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
-				{
-					extUserLoginNameChanged = true;
-					productUserName = GetSamlProductUserName(userPersonaId, "BI");
-					aoUser.Login = userLogin.LoginName.ToLower();
-					aoUser.UserId = productUserName.ToLower();
-					aoUser.OldUserId = productUserName.ToLower();
-				}
+				//if (!persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+				//{
+				//	extUserLoginNameChanged = true;
+				//	productUserName = GetSamlProductUserName(userPersonaId, "BI");
+				//	aoUser.Login = userLogin.LoginName.ToLower();
+				//	aoUser.UserId = productUserName.ToLower();
+				//	aoUser.OldUserId = productUserName.ToLower();
+				//}
 
 				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, productUserName);
+
+				//Multi Company BI Product create/update logic
+				if (copiedAoUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").Count() > 0 && ((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser))
+				{
+					var biProductData = copiedAoUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").ToList();
+					if (biProductData.Any())
+					{
+						//Seperate BI product from all other products
+						foreach (var biProduct in biProductData)
+						{
+							copiedAoUserCompanyPropertyRoleDetails.Remove(biProduct);
+						}
+
+						string returnResult = CreateUpdateAOBIProduct(userEmailAddress, editorPersonaId, userPersonaId, biProductData, persona, person, userLogin);
+					}
+				}
+
+				
 				// get existing AP details
 				aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
 				aoUser.Divisions = new List<Divisions>();
@@ -919,11 +947,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged = true);
 				}
-				else if (string.IsNullOrEmpty(updateResult) && extUserLoginNameChanged)
-				{
-					_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, userLogin.LoginName.ToLower());
-					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
-				}
+				//else if (string.IsNullOrEmpty(updateResult) && extUserLoginNameChanged)
+				//{
+				//	//_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, userLogin.LoginName.ToLower());					
+				//	UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
+				//}
 
 				return updateResult;
 			}
@@ -931,6 +959,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				WriteToErrorLog($"ManageProductAssetOptimization.UpdateUserProfile - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
 				return $"Error - {ex.Message}";
+			}
+		}
+
+		private void UpdateSamlForExternalUserLoginNameChanged(long editorPersonaId, long userPersonaId, string productLoginName, 
+															IList<AoUserCompanyPropertyRoleDetail> existingAssignedProducts, 
+															IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails)
+		{
+			var productAssigned = new List<string>();
+			var productUnAssigned = new List<string>();
+
+			foreach (var aoUserCompanyPropertyRoleDetail in aoUserCompanyPropertyRoleDetails)
+			{
+				if (aoUserCompanyPropertyRoleDetail.IsAssigned)
+				{
+					productAssigned.Add(aoUserCompanyPropertyRoleDetail.ProductName);
+				}
+				else
+				{
+					productUnAssigned.Add(aoUserCompanyPropertyRoleDetail.ProductName);
+				}
+			}
+
+			// select distinct products for multiple companies
+			productAssigned = productAssigned.Distinct<string>().ToList();
+			productUnAssigned = productUnAssigned.Distinct<string>().ToList();
+
+			var bmProduct = existingAssignedProducts.Where(p => p.ProductName.Equals("BM")).ToList();
+			if (productUnAssigned.Contains("BM") && !bmProduct.Any())
+			{
+				productUnAssigned.Remove("BM");
+			}
+
+			if (productAssigned.Any())
+			{
+				// First check default AO record exists 
+				var samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnum.AssetOptimizer);
+				if (samlUserDetails.Any())
+				{
+					UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
+					UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
+				}
+
+				foreach (var product in productAssigned)
+				{
+					samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
+					if (samlUserDetails.Any())
+					{
+						foreach (var samlAttribute in samlUserDetails)
+						{
+							_samlRepository.UpdateSamlUserAttribute(new SamlAttributes() { SamlAttributeId = samlAttribute.SamlAttributeId, Value = productLoginName, SamlUserAttributeId = samlAttribute.SamlUserAttributeId });
+						}
+					}
+				}
 			}
 		}
 
