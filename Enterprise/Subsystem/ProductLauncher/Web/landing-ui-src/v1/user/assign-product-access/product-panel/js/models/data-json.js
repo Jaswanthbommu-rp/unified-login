@@ -7,7 +7,7 @@
 var data = {
   "Id": 14,
   "Type": "Page",
-  "DisplayName": "Client Portal Product Access",
+  "DisplayName": "Client Portal test Product Access",
   "Controls": [{
     "Id": 1,
     "Type": "TabGroup",
@@ -22,9 +22,9 @@ var data = {
         "Id": 8,
         "ParentId": 7,
         "Type": "RadioButton",
-        "DisplayName": "Single Property",
+        "DisplayName": "Single test property",
         "DataSource": "property",
-        "Sequence": 1
+        "Sequence": 2
       },
       {
         "Id": 9,
@@ -32,8 +32,8 @@ var data = {
         "Type": "RadioButton",
         "DisplayName": "All Property",
         "DataSource": "all",
-        "Sequence": 2
-      },      
+        "Sequence": 1
+      },
       {
         "Id": 7,
         "ParentId": null,
@@ -59,7 +59,7 @@ var data = {
             "Id": 12,
             "ParentId": 10,
             "Type": "Label",
-            "DisplayName": "Name",
+            "DisplayName": "Property Name",
             "DataSource": "name",
             "Sequence": 2
           },

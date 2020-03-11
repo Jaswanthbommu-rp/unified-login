@@ -35,7 +35,7 @@
             s.roles = [];
             s.properties = [];
             s.isAllProperties = false;
-            s._data = angular.copy(s.data);
+            s._batchData = angular.copy(s.batchData);
         };
 
         p.setChanged = function () {
@@ -82,47 +82,49 @@
             return s.propertyGridActive;
         };
 
-        p.setProperties = function (propertiesData) {
-            var s = this;
-            s.properties = propertiesData;
-        };
+        // p.setProperties = function (propertiesData) {
+        //     var s = this;
+        //     s.properties = propertiesData;
+        // };
 
-        p.setRoles = function (rolesData) {
-            var s = this;
-            s.roles = rolesData;
-        };
+        // p.setRoles = function (rolesData) {
+        //     var s = this;
+        //     s.roles = rolesData;
+        // };
 
 
-        p.setAllProperty = function (val) {
-            var s = this;
-            s.isAllProperties = val;
+        // p.setAllProperty = function (val) {
+        //     var s = this;
+        //     s.isAllProperties = val;
 
-        };
+        // };
 
-        p.getRoles = function () {
-            var s = this;
-            return s.roles;
-        };
+        // p.getRoles = function () {
+        //     var s = this;
+        //     return s.roles;
+        // };
 
-        p.getProperties = function () {
-            var s = this;
-            return s.properties;
-        };
+        // p.getProperties = function () {
+        //     var s = this;
+        //     return s.properties;
+        // };
 
          p.getData = function (productId) {
             var s = this,
                 hasRoleSelected = false,
                 hasPropertySelected = false;
-//ogc("getdata",productId);
+                s.batchData = angular.copy(s._batchData);
+
+logc("getdata",productId,dataSyncManager, s.batchData);
+
           var roles = dataSyncManager.getProductRolesData(productId);
           var properties = dataSyncManager.getProductPropertiesData(productId);
-logc("getData", roles, properties);
+
            s.batchData.productId = productId;
 
            if (roles && roles.length) {
                 s.batchData.inputJson.roleList = [];
                 roles.forEach(function (role) {
-                    logc("ppl role", role);
                     if (role.isAssigned) {
                         s.batchData.inputJson.roleList.push(role.id);
                     }
@@ -134,8 +136,11 @@ logc("getData", roles, properties);
             if (properties && properties.length) {
                 s.batchData.inputJson.propertyList = [];
 
-                if (s.isAllProperties) {
-                    s.batchData.inputJson.propertyList.push("-1");
+                if (dataSyncManager.isProductAllProperties(productId)) {
+                    if (productId == "14") {
+                        s.batchData.inputJson.propertyList.push("-1");
+                    }
+                    s.batchData.inputJson.propertyList.push("all");
                 }
                 else {
                     properties.forEach(function (prop) {
@@ -148,7 +153,10 @@ logc("getData", roles, properties);
                 hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;
             }
             //s.data.records.push(s.padata);
-logc("cpl productbatch data", s.batchData);
+
+            if (productId == "10") {
+                hasRoleSelected = true;
+            }
 
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;

@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, configModel, syncMgr) {
+    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, configModel, syncMgr, roleSvc) {
         var vm = this,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
@@ -52,10 +52,43 @@
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
         };
 
-
-        vm.loadData = function () {
+         vm.loadData = function () {
             var productId = $scope.$parent.productId;
-            rolesGrid.busy(true);
+             rolesGrid.busy(true);
+            if (persona.isReady() && vm.isActive()) {
+                  var roleData = syncMgr.getProductRolesData(productId);
+                 // logc("propertyData",propertyData,productId);
+                  if (roleData === undefined){
+
+                    var params = {
+                         userPersonaId: userDetailsModel.getPersonaId(),
+                         editorPersonaId: persona.getId(),
+                         partyId: persona.data.organization.partyId,
+                         productId: productId
+                    };
+
+                    vm.dataRoleReq = roleSvc.get(params, vm.setRolesData);
+                  }
+                  else {
+                    //syncMgr.setPropertyGridActive(true);
+                    vm.loadGridData(productId);
+                  }
+            }
+        };
+
+        vm.setRolesData = function (resp) {
+           // var productId = $scope.$parent.productId;
+            if (resp.records && resp.records.length > 0){
+               // logc("setPropertyData",resp.records, vm.productId);
+                var rdata = syncMgr.setRoleList(resp.records, $scope.$parent.productId);
+                //syncMgr.setPropertyGridActive(true);
+                vm.loadGridData($scope.$parent.productId);
+             }
+        };
+
+
+        vm.loadGridData = function (productId) {
+            //var productId = $scope.$parent.productId;
             var roleData = syncMgr.getProductRolesData(productId);
             if (roleData && roleData.length > 0) {
                // vm.productId = productId;
@@ -164,6 +197,9 @@
             vm.destWatch();
             vm.personaWatch();
             vm.activeWatch();
+            if (vm.dataRoleReq) {
+                vm.dataRoleReq.$cancelRequest();
+            }
             rolesGrid.destroy();
             rolesGridTransform.destroy();
             roleGridPagination.destroy();
@@ -193,6 +229,7 @@
             "routeSecurity",
             "ConfigModel",
             "productDataSyncManager",
+            "productRolesSvc",
             ProductRolesGridCtrl
         ]);
 })(angular);

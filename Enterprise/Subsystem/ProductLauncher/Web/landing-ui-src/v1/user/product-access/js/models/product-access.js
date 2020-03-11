@@ -31,13 +31,13 @@
                 solns = products.getAssignedSolns();
 
             data.productBatch = [];
-logc("assigned soln",solns);
+
             solns.forEach(function (soln) {
                 var key = soln.getKey(),
                     productId = soln.data.productId,
                     isDisabled = soln.isProductDisabled(),
                     prodData = productAccess.getAccessData(key, productId);
-
+//logc("getAccessData", prodData, key. productId);
                 if (prodData && !isDisabled) {
                     if (angular.isArray(prodData) && prodData.length > 0) {
                         //For AO Prduct family loop through the company data
@@ -66,12 +66,16 @@ logc("assigned soln",solns);
                     key = soln.getKey(),
                     isAssigned = soln.isAssigned(),
                     isDisabled = soln.isProductDisabled(),
+                    productId = soln.data.productId,
+                    touched = soln.wasTouched(),
                     assignmentChanged = soln.assignmentChanged(),
                     accessChanged = productAccess.accessChanged(key);
 
+logc("getExistingUserData", assignmentChanged, isAssigned, accessChanged, touched, productId);
+
                 if (assignmentChanged && !isDisabled) {
                     if (isAssigned) {
-                        prodData = productAccess.getAccessData(key);
+                        prodData = productAccess.getAccessData(key, productId);
 
                         if (angular.isArray(prodData) && prodData.length > 0) {
                             prodData.forEach(function (data) {
@@ -106,8 +110,15 @@ logc("assigned soln",solns);
                         }
                     }
                 }
+                else if (productId === 10 || productId === 14) {
+                    if (isAssigned && touched && !isDisabled) {
+                         prodData = productAccess.getAccessData(key, productId);
+                         prodData.inputJson.isAssigned = isAssigned;
+                         data.productBatch.push(prodData);
+                    }
+                }
                 else if (isAssigned && accessChanged && !isDisabled) {
-                    prodData = productAccess.getAccessData(key);
+                    prodData = productAccess.getAccessData(key, productId);
                     if (angular.isArray(prodData) && prodData.length > 0) {
                         //For AO Prduct family loop through the company data
                         prodData.forEach(function (batch) {
@@ -164,8 +175,9 @@ logc("assigned soln",solns);
                     var key = soln.getKey(),
                         touched = soln.wasTouched(),
                         isAssigned = soln.isAssigned(),
+                        productId = soln.data.productId,
                         assignmentChanged = soln.assignmentChanged(),
-                        missingData = productAccess.getAccessData(key) === null;
+                        missingData = productAccess.getAccessData(key, productId) === null;
 
                     if (missingData && isAssigned && (touched || assignmentChanged)) {
                         s.incompleteSolutionsList.push(soln);
@@ -186,7 +198,7 @@ logc("assigned soln",solns);
                 var key = soln.getKey(),
                     productId = soln.data.productId,
                     data = productAccess.getAccessData(key, productId);
-logc("soln data", data);
+
                 if (data === null) {
                     s.incompleteSolutionsList.push(soln);
                 }

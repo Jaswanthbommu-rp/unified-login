@@ -15,24 +15,33 @@ var data = {
     "Controls": [{
       "Id": 9,
       "DisplayName": "Properties",
+      "ActiveTab": true,
       "ParentId": null,
       "Sequence": 1,
       "Controls": [
-      {
-        "Id": 8,
-        "ParentId": 7,
-        "Type": "RadioButton",
-        "DisplayName": "Active Properties",
-        "DataSource": "property",
-        "Sequence": 1
+        {
+          "Id": 8,
+          "ParentId": 7,
+          "Type": "RadioButton",
+          "DisplayName": "Active Properties",
+          "DataSource": "active",
+          "Sequence": 1
         },
         {
-        "Id": 9,
-        "ParentId": 7,
-        "Type": "RadioButton",
-        "DisplayName": "All Properties",
-        "DataSource": "all",
-        "Sequence": 2
+          "Id": 8,
+          "ParentId": 7,
+          "Type": "RadioButton",
+          "DisplayName": "Inactive Properties",
+          "DataSource": "inactive",
+          "Sequence": 1
+        },
+        {
+          "Id": 9,
+          "ParentId": 7,
+          "Type": "RadioButton",
+          "DisplayName": "All Properties",
+          "DataSource": "all",
+          "Sequence": 2
         },
       {
         "Id": 7,

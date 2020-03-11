@@ -105,7 +105,7 @@
         // Actions
         vm.setTabs = function (data) {
 
-            panelModel.reset();
+            panelModel.gridReset();
             vm.tabsCnfData = vm.getTabsConfigData(data);
 
             // vm.tabsCnfData.forEach(function (tab) {
@@ -139,7 +139,9 @@
             tabsModel.activateTab(vm.activeTab);
             tabsModel.initActiveTab();
             //then set grids
-            vm.getTabsGridData();
+            //vm.getTabsGridData();
+            panelModel.setPropertyGridActive(true);
+            panelModel.setRoleGridActive(true);
         };
 
         vm.getTabsGridData = function () {
@@ -148,14 +150,14 @@
                     if (tab.id === "roles") {
                         vm.getProductRolesData();
                     }
-                    if (tab.id === "properties") {
-                        vm.getProductPropertiesData();
-                    }
+                    // if (tab.id === "properties") {
+                    //     vm.getPropertiesData();
+                    // }
                 });
             }
         };
 
-        vm.getProductPropertiesData = function () {
+        vm.getPropertiesData = function () {
               var propertyData = productModel.getProductPropertiesData(vm.productId);
               logc("propertyData",propertyData,vm.productId);
               if (propertyData === undefined){
@@ -167,10 +169,11 @@
 
                 vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
               }
-              else{
-                //pubsub.publish("product.ProductPropertyData", vm.productId);
-                panelModel.setPropertyGridActive(true);
-              }
+              panelModel.setPropertyGridActive(true);
+              // else{
+              //   //pubsub.publish("product.ProductPropertyData", vm.productId);
+
+              // }
         };
 
         vm.getProductRolesData = function () {
@@ -187,9 +190,7 @@
                 vm.dataRoleReq = rolesSvc.get(params, vm.setRoleData);
             }
             // pubsub.publish("product.ProductRoleData", vm.productId);
-            else{
-                panelModel.setRoleGridActive(true);
-            }
+           panelModel.setRoleGridActive(true);
 
         };
 
@@ -318,6 +319,7 @@
         vm.setState = function (value) {
             vm.disableContent = value;
         };
+
         // Assertions
 
         vm.hasAccess = function () {

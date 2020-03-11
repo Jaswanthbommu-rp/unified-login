@@ -105,26 +105,14 @@
         p.setProductControlsList = function (list) {
             var s = this;
            s.productControlsList.products.push(list);
-            s.renderProductControlsMap();
-            return s;
-            //s.renderMap();
-           // s.productControlsList.products.push(list);
-        //logc("models",s);
-            // if (!angular.equals({}, s.productControlsList)) {
-            //     s.productControlsList = list;
-            // }
-            // else {
-            //     s.productControlsList.concat(list);
-            // }
-
-
+           s.renderProductControlsMap();
+           return s;
         };
 
         p.setRoleList = function (list, key) {
             var s = this;
             s.roleList= list;
             s.renderRoleMap(key);
-            //logc("roles list",s);
             return s;
         };
 
@@ -166,19 +154,44 @@
             {
                 productRolesList = s.roleMap['product' + product].roles;
             }
+           // logc("master data",product,s.roleMap, productRolesList);
             return productRolesList;
         };
 
         p.getProductPropertiesData = function (product) {
             var s = this,
                 productPropertiesList;
+//logc(s.propertyMap['product' + product]);
+            if (s.propertyMap['product' + product] !== undefined)
+            {
+                //logc(s.propertyMap['product' + product]);
+                productPropertiesList = s.propertyMap['product' + product].properties;
+            }
+//logc("master data",product,s.propertyMap, productPropertiesList);
+            return productPropertiesList;
+        };
+
+         p.updateProductAllProperties = function (product, value) {
+            var s = this,
+                productPropertiesList;
 
             if (s.propertyMap['product' + product] !== undefined)
             {
-                productPropertiesList = s.propertyMap['product' + product].properties;
+               s.propertyMap['product' + product].allProperties = value;
             }
 
-            return productPropertiesList;
+           // return productPropertiesList;
+        };
+
+         p.isProductAllProperties = function (product) {
+            var s = this;
+
+            if (s.propertyMap['product' + product] !== undefined)
+            {
+               return s.propertyMap['product' + product].allProperties ;
+            }
+
+            return false;
         };
 
         p.selectedRoleSync = function (key, record) {
@@ -334,6 +347,7 @@
                     allProperties: false
                 };
             }
+            logc("renderPropertyMap",s);
         };
 
          p.renderRoleMap = function (key) {
@@ -387,9 +401,9 @@
             return s.getSelectedCount(list) === list.length;
         };
 
-        p.isUserHasManageProductAccess = function () {
-            return !persona.data.hasManageAssetOptimizationProductAccess;
-        };
+        // p.isUserHasManageProductAccess = function () {
+        //     return !persona.data.hasManageAssetOptimizationProductAccess;
+        // };
 
         p.reset = function () {
             var s = this;

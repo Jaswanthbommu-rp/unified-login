@@ -105,26 +105,14 @@
         p.setProductControlsList = function (list) {
             var s = this;
            s.productControlsList.products.push(list);
-            s.renderProductControlsMap();
-            return s;
-            //s.renderMap();
-           // s.productControlsList.products.push(list);
-        //logc("models",s);
-            // if (!angular.equals({}, s.productControlsList)) {
-            //     s.productControlsList = list;
-            // }
-            // else {
-            //     s.productControlsList.concat(list);
-            // }
-
-
+           s.renderProductControlsMap();
+           return s;
         };
 
         p.setRoleList = function (list, key) {
             var s = this;
             s.roleList= list;
             s.renderRoleMap(key);
-            //logc("roles list",s);
             return s;
         };
 
@@ -181,6 +169,29 @@
             return productPropertiesList;
         };
 
+         p.updateProductAllProperties = function (product, value) {
+            var s = this,
+                productPropertiesList;
+
+            if (s.propertyMap['product' + product] !== undefined)
+            {
+               s.propertyMap['product' + product].allProperties = value;
+            }
+
+           // return productPropertiesList;
+        };
+
+         p.isProductAllProperties = function (product) {
+            var s = this;
+
+            if (s.propertyMap['product' + product] !== undefined)
+            {
+               return s.propertyMap['product' + product].allProperties ;
+            }
+
+            return false;
+        };
+
         p.selectedRoleSync = function (key, record) {
             var s = this,
                 roleData,
@@ -194,9 +205,9 @@
                 item.isAssigned = item.id == record.id;
              });
 
-            if (s.productsTouched.indexOf(key) !== -1){
-                s.productsTouched.push(key);
-            }
+            // if (s.productsTouched.indexOf(key) !== -1){
+            //     s.productsTouched.push(key);
+            // }
             return s;
         };
 
@@ -211,9 +222,9 @@
                 item.isAssigned = item.id == record.id;
             });
 
-            if (s.productsTouched.indexOf(key) !== -1){
-                s.productsTouched.push(key);
-            }
+            // if (s.productsTouched.indexOf(key) !== -1){
+            //     s.productsTouched.push(key);
+            // }
 
             return s;
         };
