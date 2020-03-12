@@ -4,7 +4,7 @@
     "use strict";
 
     function UserDetailsCtrl($scope, $q, $filter, $params, timeout, moment, model, userSvc, userTypes, formConfig, passReq, popoverConfig, tabs, tabsModel, userStatus, assignProductsModel, session, userTimeZones,
-        contactMethod, industryJobTitle, phoneTypeTitle, security, helpData, persona, impersonate, switchConfig, changeUserType, chgUserTypeModal, pubsub, externalUserModal, externalUserSvc, existingUserModal, chkEmailModel, existingNoEmailUserModal, deactivatedUserModal) {
+        contactMethod, industryJobTitle, phoneTypeTitle, security, helpData, persona, impersonate, switchConfig, changeUserType, chgUserTypeModal, pubsub, externalUserModal, externalUserSvc, existingUserModal, chkEmailModel, existingNoEmailUserModal, deactivatedUserModal,existingNoEmailUserOthCompModal) {
         var vm = this,
             lang = $filter("userDetailsText"),
             helpWidget = document.querySelector('omnibar-unified-help'),
@@ -876,12 +876,20 @@
                     return;
                 }
 
-                if(model.data.userTypeId === 401 && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsExternalEverywhere){  
+                if(model.data.userTypeId === 401 && !resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsExternalEverywhere){  
                    chkEmailModel.setIsBusy(false);
                    model.data.firstName = model.externalUserData.person.firstName;
                    model.data.lastName =  model.externalUserData.person.lastName;
                    model.data.middleName = model.externalUserData.person.middleName;
                    return;
+                }
+
+                if(  resp.data.userExists === true && model.data.userTypeId === 404 && !resp.data.userExistsInThisOrganization && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
+                    model.data.firstName = "";
+                    model.data.lastName =  "";
+                    model.data.middleName = "";
+                    existingNoEmailUserOthCompModal.show();
+                    return;
                 }
 
 
@@ -901,7 +909,7 @@
                         existingNoEmailUserModal.show();
                    }
                    
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && resp.data.userIsExternalEverywhere === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
                         isModalOpen = true;
                         externalUserModal.show();
                    }
@@ -914,8 +922,12 @@
                         vm.showExistingUserModal(false, "");
                    }
 
-                   if(  resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
+                   if(  resp.data.userExists === true && !resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
                         existingNoEmailUserModal.show();
+                   }
+
+                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === true && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                  
+                        vm.showExistingUserModal(true, resp.data.person.realPageId);
                    }
 
                }                          
@@ -1027,6 +1039,7 @@
             "chkEmailModel",
             "existingNoEmailUserModal",
             "deactivatedUserModal",
+            "existingNoEmailUserOthCompModal",
             UserDetailsCtrl
         ]);
 })(angular);
