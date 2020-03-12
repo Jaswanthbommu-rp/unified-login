@@ -956,7 +956,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 						if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 						{
-							UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, biLoginName.ToLower(), biAoUserCompanyPropertyRoleDetails, biAoUserCompanyPropertyRoleDetails, loginNameChanged = true);
+							UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, biLoginName.ToLower(), biAoUserCompanyPropertyRoleDetails, biAoUserCompanyPropertyRoleDetails);
 						}
 					}
 				}
@@ -973,7 +973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged = true);
+					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails);
 				}
 
 				return updateResult;
