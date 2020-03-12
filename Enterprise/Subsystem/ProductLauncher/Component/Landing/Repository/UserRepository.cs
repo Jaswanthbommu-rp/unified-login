@@ -2291,9 +2291,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            //Log Activity
-                            //var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {OldValue} to {NewValue} for {{0}} {{1}}.";
-                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "User {2} {3} updated the First name from OldValue to NewValue on the user profile for {0} {1}.", "UpdateUser", profile);
+                            if (!userDetails.FirstName.Equals(profile.FirstName))
+                            {
+                                //Log Activity
+                                var auditMessage = $"User {{2}} {{3}} updated the First name from {userDetails.FirstName} to {profile.FirstName} on the user profile for {{0}} {{1}}.";
+                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            }
+                            if (!userDetails.MiddleName.Equals(profile.MiddleName))
+                            {
+                                //Log Activity
+                                string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank" : userDetails.MiddleName;
+                                string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank" : profile.MiddleName;
+                                var auditMessage = $"User {{2}} {{3}} updated the Middle name from {oldMiddleName} to {newMiddleName} on the user profile for {{0}} {{1}}.";
+                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            }
+                            if (!userDetails.LastName.Equals(profile.LastName))
+                            {
+                                //Log Activity
+                                var auditMessage = $"User {{2}} {{3}} updated the Last name from {userDetails.LastName} to {profile.LastName} on the user profile for {{0}} {{1}}.";
+                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            }
                         }
                     }
                     #endregion
@@ -4581,7 +4598,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isChanged = (
                 (!profile.FirstName.Equals(userDetails.FirstName))
                 ||
-                (!string.IsNullOrEmpty(profile.MiddleName) && !profile.MiddleName.Equals(userDetails.MiddleName))
+                (!profile.MiddleName.Equals(userDetails.MiddleName))
                 ||
                 (!profile.LastName.Equals(userDetails.LastName))
             );
