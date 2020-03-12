@@ -10,28 +10,21 @@
 .entity-roles {
     width: 100%;
 
-    &-wrapper {
-        margin-top: 10px;
-    }
-
     &-grid {
-        .rp-grid-headers-1,
-        .rp-grid-filters-1,
-        .rp-grid-body-1 {
-            table-layout: auto;
+
+        .is-assigned {
+            min-width: 125px;
+            max-width: 125px;
+            white-space: nowrap;
         }
 
         .name {
-            width: 50%;
+            width: 90%;
         }
 
-        .property-type {
-            width: 20%;
-        }
-
-        .role {
-            min-width: 30%;
-            max-width: 30%;
+        .assigned-properties {
+            min-width: 200px;
+            max-width: 200px;
         }
     }
 }

@@ -137,52 +137,72 @@
 
                 hasRoles = s.data.inputJson.roleList.length > 0;
             }
+           
+            s.data.inputJson.PropertyRoleList = [];
 
-            if (s.entityRoles && s.entityRoles.length) {
-                s.data.inputJson.PropertyRoleList = [];
-
-                s.entityRoles.forEach(function (entity) {
-                    s.propertyRoleListData = angular.copy(s._propertyRoleListData);
-                    s.propertyRoleListData.Roles = [];
-
-                    if (entity.isAssigned) {
-                        entity.roleList.forEach(function (role) {
-                            if (role.isAssigned) {
-                                s.propertyRoleListData.Roles.push(role.id);
-                            }
-                        });
-
-                        if (s.propertyRoleListData.Roles && s.propertyRoleListData.Roles.length) {
-                            s.propertyRoleListData.PropertyId = entity.id;
-                            s.data.inputJson.PropertyRoleList.push(s.propertyRoleListData);
-                            propIds.push(entity.id);
-                        }
-                    }
-                });
-                
-               
-                  s.getEntities().forEach(function (entity) {                  
-                        if(propIds.indexOf(entity.id, 0) === -1 ){
-                            var bAssigned = false;
+            s.getEntities().forEach(function(role){
+                if(role.isAssigned){
+                    role.propertiesList.forEach(function(prop){
+                        if(prop.isAssigned){
                             s.propertyRoleListData = angular.copy(s._propertyRoleListData);
                             s.propertyRoleListData.Roles = [];
-                            entity.roleList.forEach(function (role) {
-                                if(role.isAssigned === true){                                   
-                                    s.propertyRoleListData.Roles.push(role.id);  
-                                    bAssigned = true;                                    
-                                }
-                            });
-                             if(bAssigned){
-                                s.propertyRoleListData.PropertyId = entity.id;                                
-                                s.data.inputJson.PropertyRoleList.push(s.propertyRoleListData);
-                            }
-                         }
+
+                            s.propertyRoleListData.PropertyId = prop.id;
+                            s.propertyRoleListData.Roles.push(role.id);
+
+                            s.data.inputJson.PropertyRoleList.push(s.propertyRoleListData);
+                        }
+                    });
+                }
+            });
+
+            hasPropertyRoles = s.data.inputJson.PropertyRoleList.length > 0;
+
+            //if (s.entityRoles && s.entityRoles.length) {
+                //s.data.inputJson.PropertyRoleList = [];
+
+                // s.entityRoles.forEach(function (entity) {
+                //     s.propertyRoleListData = angular.copy(s._propertyRoleListData);
+                //     s.propertyRoleListData.Roles = [];
+
+                //     if (entity.isAssigned) {
+                //         entity.roleList.forEach(function (role) {
+                //             if (role.isAssigned) {
+                //                 s.propertyRoleListData.Roles.push(role.id);
+                //             }
+                //         });
+
+                //         if (s.propertyRoleListData.Roles && s.propertyRoleListData.Roles.length) {
+                //             s.propertyRoleListData.PropertyId = entity.id;
+                //             s.data.inputJson.PropertyRoleList.push(s.propertyRoleListData);
+                //             propIds.push(entity.id);
+                //         }
+                //     }
+                // });
+                
+               
+                //   s.getEntities().forEach(function (entity) {                  
+                //         if(propIds.indexOf(entity.id, 0) === -1 ){
+                //             var bAssigned = false;
+                //             s.propertyRoleListData = angular.copy(s._propertyRoleListData);
+                //             s.propertyRoleListData.Roles = [];
+                //             entity.roleList.forEach(function (role) {
+                //                 if(role.isAssigned === true){                                   
+                //                     s.propertyRoleListData.Roles.push(role.id);  
+                //                     bAssigned = true;                                    
+                //                 }
+                //             });
+                //              if(bAssigned){
+                //                 s.propertyRoleListData.PropertyId = entity.id;                                
+                //                 s.data.inputJson.PropertyRoleList.push(s.propertyRoleListData);
+                //             }
+                //          }
                       
-                });
+                // });
 
                  
-                 hasPropertyRoles = s.data.inputJson.PropertyRoleList.length > 0;
-            }
+                 //hasPropertyRoles = s.data.inputJson.PropertyRoleList.length > 0;
+            //}
 
             if (hasPropertyRoles) {
                 s.data.inputJson.isAssigned = true;
