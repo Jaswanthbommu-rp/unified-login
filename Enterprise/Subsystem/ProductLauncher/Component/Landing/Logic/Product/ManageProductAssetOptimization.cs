@@ -861,13 +861,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				bool loginNameChanged = false;
-				bool extUserLoginNameChanged = false;
 				var persona = _managePersona.GetPersona(userPersonaId);
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				string userEmailAddress = GetUserEmailAddress(realPageId, userLogin.LoginName, userPersonaId);
+				IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				string productUserName = "";
+				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+				bool isExternalUser = persona.Organization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && persona.Organization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+				
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
 					WriteToDiagnosticLog("ManageProductAssetOptimization - Error.No Valid Notification Email Provided.");
@@ -875,7 +878,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "ManageProductAssetOptimization - Error.No Valid Notification Email Provided";
 				}
 
-				
 				var aoUser = new AOUser
 				{
 					IsInternalUser = false, // Initial release is w/o internal user
@@ -890,39 +892,88 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					FirstName = person.FirstName,
 					LastName = person.LastName,
 				};
-
-				productUserName = _productUsername;
+				if ((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser)
+				{
+					long primaryCompanyPersonaId = personaList.Where(x => x.OrganizationPartyId != persona.OrganizationPartyId).Select(y => y.PersonaId).FirstOrDefault();
+					productUserName = GetSamlProductUserName(primaryCompanyPersonaId);
+				}
+				else
+				{
+					productUserName = _productUsername;
+				}
 				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
-				if (persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+				if (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase))
 				{
 					aoUser.Login = userLogin.LoginName.ToLower();
 					aoUser.UserId = userLogin.LoginName.ToLower();
 					loginNameChanged = true;
 				}
-				if (!persona.Organization.PrimaryOrganization && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
+				var updateResult = "";
+				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, productUserName);
+
+				//Multi Company BI Product create/update logic
+				if ((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser)
 				{
-					extUserLoginNameChanged = true;
-					productUserName = GetSamlProductUserName(userPersonaId, "BI");
-					aoUser.Login = userLogin.LoginName.ToLower();
-					aoUser.UserId = productUserName.ToLower();
-					aoUser.OldUserId = productUserName.ToLower();
+					string biProductUserName = GetSamlProductUserName(userPersonaId, "BI");
+					if (!string.IsNullOrEmpty(biProductUserName))
+					{
+						var biAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, biProductUserName);
+
+						string biLoginName = "";
+						// get a login name that isn't in use for the new user
+						bool foundUserName = false;
+						int incrementor = 1;
+						string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
+						biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+
+						while (!foundUserName)
+						{
+							if (CheckUniqueAOUserName(biLoginName))
+							{
+								incrementor++;
+								biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+							}
+							else
+							{
+								foundUserName = true;
+							}
+
+							if (incrementor == 10)
+							{
+								// after 10 tries something might be wrong, so bail out.
+								WriteToErrorLog($"ManageProductAssetOptimization - Error checking for username in use {newproductUsername}");
+								return "An error occurred. Unable to get username.";
+							}
+						}
+
+						aoUser.Login = biLoginName.ToLower();
+						aoUser.UserId = biLoginName.ToLower();
+						aoUser.OldUserId = biProductUserName.ToLower();
+						aoUser.GroupsModel = GetBundledGroups(biAoUserCompanyPropertyRoleDetails);
+						aoUser.Divisions = new List<Divisions>();
+						aoUser.Model = GetModel(biAoUserCompanyPropertyRoleDetails);
+
+						updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+						if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
+						{
+							UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, biLoginName.ToLower(), biAoUserCompanyPropertyRoleDetails, biAoUserCompanyPropertyRoleDetails, loginNameChanged = true);
+						}
+					}
+				}
+				if (!isExternalUser)
+				{
+					aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
+					aoUser.Divisions = new List<Divisions>();
+					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
+
+					updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 				}
 
-				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, productUserName);
 				// get existing AP details
-				aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
-				aoUser.Divisions = new List<Divisions>();
-				aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
 
-				var updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails);
-				}
-				else if (string.IsNullOrEmpty(updateResult) && extUserLoginNameChanged)
-				{
-					_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, userLogin.LoginName.ToLower());
-					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
+					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged = true);
 				}
 
 				return updateResult;
