@@ -678,9 +678,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			// get a login name that isn't in use for the new user
-			if (string.IsNullOrEmpty(_productUsername) && isExternalUser)
+			if (string.IsNullOrEmpty(_productUsername) && (isExternalUser || IsRegularUserNoEmail(userPersonaId)))
 			{
-				userLeadEmailAddress = userLogin.LoginName;
+                if(!IsRegularUserNoEmail(userPersonaId))
+                    userLeadEmailAddress = userLogin.LoginName;
+
 				userEmailAddress = GetMCUniqueUserName(person.FirstName, person.LastName);
 				if (string.IsNullOrEmpty(userEmailAddress) )
 				{
