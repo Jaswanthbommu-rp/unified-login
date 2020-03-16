@@ -3,113 +3,155 @@
 (function(angular, undefined) {
     "use strict";
 
-
 var data = {
-  "Id": 14,
-  "Type": "Page",
-  "DisplayName": "Client Portal test Product Access",
-  "Controls": [{
-    "Id": 1,
-    "Type": "TabGroup",
-    "DisplayName": "",
-    "Controls": [{
-      "Id": 9,
-      "DisplayName": "Properties",
-      "ParentId": null,
-      "ActiveTab": true,
-      "Sequence": 1,
-      "Controls": [{
-        "Id": 8,
-        "ParentId": 7,
-        "Type": "RadioButton",
-        "DisplayName": "Single test property",
-        "DataSource": "property",
-        "Sequence": 2
-      },
-      {
-        "Id": 9,
-        "ParentId": 7,
-        "Type": "RadioButton",
-        "DisplayName": "All Property",
-        "DataSource": "all",
-        "Sequence": 1
-      },
-      {
-        "Id": 7,
-        "ParentId": null,
-        "Type": "MultiSelectGrid",
-        "DisplayName": null,
-        "Sequence": 1,
-        "Controls": [{
-          "Id": 10,
-          "ParentId": 7,
-          "Type": "GridColums",
-          "DisplayName": "",
-          "DataSource": "",
-          "Sequence": 3,
-          "Controls": [{
-            "Id": 11,
-            "ParentId": 10,
-            "Type": "RadioButton",
-            "DisplayName": "",
-            "DataSource": "isAssigned",
-            "Sequence": 1
-          },
-          {
-            "Id": 12,
-            "ParentId": 10,
-            "Type": "Label",
-            "DisplayName": "Property Name",
-            "DataSource": "name",
-            "Sequence": 2
-          },
-          {
-            "Id": 13,
-            "ParentId": 10,
-            "Type": "Label",
-            "DisplayName": "State",
-            "DataSource": "state",
-            "Sequence": 3
-          }]
-        }]
-      }]
-    },
+  "pageId": 4,
+  "pageDisplayName": "Client Portal Product Access",
+  "productId": 14,
+  "productName": "Client Portal",
+  "controls": [
     {
-      "id": 15,
-      "DisplayName": "Roles",
-      "ActiveTab": false,
-      "Sequence": 2,
-      "Controls": [{
-        "Id": 16,
-        "ParentId": null,
-        "Type": "MultiSelectGrid",
-        "Sequence": 1,
-        "Controls": [{
-          "Id": 17,
-          "ParentId": 16,
-          "Type": "GridColums",
-          "DisplayName": "Role",
-          "Sequence": 1,
-          "Controls": [{
-            "Id": 18,
-            "ParentId": 16,
-            "Type": "RadioButton",
-            "DisplayName": "",
-            "DataSource": "isAssigned",
-            "Sequence": 1
-          },
-          {
-            "Id": 19,
-            "ParentId": 16,
-            "Type": "Label",
-            "DisplayName": "Role",
-            "DataSource": "name",
-            "Sequence": 2
-          }]
-        }]
-      }]
-    }]
-  }]
+      "id": 66,
+      "name": "ClientPortalProductAccessTabGroupUIId",
+      "dataSource": null,
+      "displayName": null,
+      "sequence": 1,
+      "type": "Tab Group",
+      "dependency": false,
+      "attributes": null,
+      "controls": [
+        {
+          "id": 67,
+          "name": "clientProtalPropertiesTabUIid",
+          "dataSource": null,
+          "displayName": "Properties",
+          "sequence": 1,
+          "type": "Tab",
+          "dependency": false,
+          "attributes": [
+            {
+              "key": "Default",
+              "value": "True"
+            }
+          ],
+          "controls": [
+            {
+              "id": 35,
+              "name": "RadioControId",
+              "dataSource": "property",
+              "displayName": "Single Property",
+              "sequence": 1,
+              "type": "Radio",
+              "dependency": false,
+              "attributes": null,
+              "controls": null
+            },
+            {
+              "id": 36,
+              "name": "RadioControlId",
+              "dataSource": "all",
+              "displayName": "All Properties",
+              "sequence": 2,
+              "type": "Radio",
+              "dependency": false,
+              "attributes": null,
+              "controls": null
+            },
+            {
+              "id": 73,
+              "name": "PropertiesTabSelectGridUIId",
+              "dataSource": null,
+              "displayName": null,
+              "sequence": 3,
+              "type": "Select Grid",
+              "dependency": false,
+              "attributes": null,
+              "controls": [
+                {
+                  "id": 40,
+                  "name": "PropertySelectColumnUIId",
+                  "dataSource": "isAssigned",
+                  "displayName": null,
+                  "sequence": 1,
+                  "type": "Radio",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                },
+                {
+                  "id": 38,
+                  "name": "PropertyNameColumnUIId",
+                  "dataSource": "name",
+                  "displayName": "Property",
+                  "sequence": 2,
+                  "type": "Label",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                },
+                {
+                  "id": 39,
+                  "name": "StateColumnUIId",
+                  "dataSource": "state",
+                  "displayName": "State",
+                  "sequence": 3,
+                  "type": "Label",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 68,
+          "name": "ClientPortalRolesTabUIId",
+          "dataSource": null,
+          "displayName": "Roles",
+          "sequence": 2,
+          "type": "Tab",
+          "dependency": false,
+          "attributes": null,
+          "controls": [
+            {
+              "id": 85,
+              "name": "RoleTabSelectGridUIId",
+              "dataSource": null,
+              "displayName": null,
+              "sequence": 2,
+              "type": "Select Grid",
+              "dependency": false,
+              "attributes": null,
+              "controls": [
+                {
+                  "id": 41,
+                  "name": "RoleSelectColumnUIId",
+                  "dataSource": "isAssigned",
+                  "displayName": null,
+                  "sequence": 1,
+                  "type": "Radio",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                },
+                {
+                  "id": 80,
+                  "name": "RoleNameColumnUIId",
+                  "dataSource": "name",
+                  "displayName": "Role",
+                  "sequence": 2,
+                  "type": "Label",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 };
 
     angular

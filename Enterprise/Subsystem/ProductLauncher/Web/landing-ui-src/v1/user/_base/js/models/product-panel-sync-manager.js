@@ -330,9 +330,9 @@
 
             if (!angular.equals({}, s.productControlsList)) {
                 s.productControlsList.products.forEach(function (product) {
-                    s.productControlsMap['product' + product.Id] = {
+                    s.productControlsMap['product' + product.productId] = {
                         control: product,
-                        displayName: product.DisplayName,
+                        displayName: product.pageDisplayName,
                         controls: []
                     };
                 });

@@ -19,9 +19,6 @@
             vm.disableContent = false;
             vm.activeTab = "";
 
-            //vm.rolesGrid = rolesGrid;
-
-
            // vm.productId = $params.productId;
             vm.productId = 0;
             vm.tabsList = [];
@@ -30,12 +27,6 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             //vm.profileWatch = pubsub.subscribe("up.user-details-disable", vm.setState);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected );
-            // if (persona.isReady()) {
-            //     vm.loadProductControlsData(vm.productId);
-            // }
-            // else {
-                 //vm.personaWatch = persona.subscribe(vm.loadProductControlsData(vm.productId));
-            // }
 
             //vm.updateGridWatch = pubsub.subscribe("PA.updateGrids", vm.updateGrid);
         };
@@ -82,10 +73,10 @@
                 cdata = productModel.getProductControls(productId);
                 //logc("cdata",cdata,cdata[0].DisplayName);
             }
-            //logc("cdata",cdata);
+            logc("cdata",cdata, cdata.controls[0]);
             vm.panelName = productModel.getPageDisplayName(productId);// cdata[0].DisplayName;
            // logc("cdata panel name",vm.panelName);
-            vm.setTabs(cdata.Controls[0]);
+            vm.setTabs(cdata);
             //if no data in model,CALLSERVICE to get controls data
 
 
@@ -157,24 +148,24 @@
             }
         };
 
-        vm.getPropertiesData = function () {
-              var propertyData = productModel.getProductPropertiesData(vm.productId);
-              logc("propertyData",propertyData,vm.productId);
-              if (propertyData === undefined){
-                var params = {
-                    userPersonaId: userDetailsModel.getPersonaId(),
-                    editorPersonaId: persona.getId(),
-                    productId: vm.productId
-                };
+        // vm.getPropertiesData = function () {
+        //       var propertyData = productModel.getProductPropertiesData(vm.productId);
+        //       logc("propertyData",propertyData,vm.productId);
+        //       if (propertyData === undefined){
+        //         var params = {
+        //             userPersonaId: userDetailsModel.getPersonaId(),
+        //             editorPersonaId: persona.getId(),
+        //             productId: vm.productId
+        //         };
 
-                vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
-              }
-              panelModel.setPropertyGridActive(true);
-              // else{
-              //   //pubsub.publish("product.ProductPropertyData", vm.productId);
+        //         vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
+        //       }
+        //       panelModel.setPropertyGridActive(true);
+        //       // else{
+        //       //   //pubsub.publish("product.ProductPropertyData", vm.productId);
 
-              // }
-        };
+        //       // }
+        // };
 
         vm.getProductRolesData = function () {
             var roleData = productModel.getProductRolesData(vm.productId);
@@ -194,15 +185,15 @@
 
         };
 
-        vm.setPropertyData = function (resp) {
-            if (resp.records && resp.records.length > 0){
-               // logc("setPropertyData",resp.records, vm.productId);
-                var pdata = productModel.setPropertyList(resp.records, vm.productId);
-                panelModel.setPropertyGridActive(true);
-                //pubsub.publish("product.ProductPropertyData", vm.productId);
-               // logc(productModel);
-             }
-        };
+        // vm.setPropertyData = function (resp) {
+        //     if (resp.records && resp.records.length > 0){
+        //        // logc("setPropertyData",resp.records, vm.productId);
+        //         var pdata = productModel.setPropertyList(resp.records, vm.productId);
+        //         panelModel.setPropertyGridActive(true);
+        //         //pubsub.publish("product.ProductPropertyData", vm.productId);
+        //        // logc(productModel);
+        //      }
+        // };
 
         vm.setRoleData = function (resp) {
             if (resp.records && resp.records.length > 0){
@@ -215,47 +206,53 @@
 
         vm.getProductTabsData = function (data) {
             var  tabs = [], i = 0;
-            if(data && data.Controls){
-                if(data.Type === 'TabGroup'){
-                    data.Controls.forEach(function(tabGrp){
-                       // logc("tabgroup", tabGrp, tabGrp.ActiveTab);
-                        if (tabGrp.ActiveTab) {
-                            vm.activeTab = tabGrp.DisplayName.toLowerCase();
-                        }
-                       var tab = {
-                            id : tabGrp.DisplayName.toLowerCase(),
-                            text : tabGrp.DisplayName,
-                            isActive : tabGrp.ActiveTab,
-                            incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.DisplayName.toLowerCase() + ".html"};
+            if(data && data.controls){
+                data.controls.forEach(function(tabControl) {
+                    if(tabControl.type === 'Tab Group'){
+                        tabControl.controls.forEach(function(tabGrp){
+                           var activeTab = false;
+                           if ( tabGrp.attributes !== null){
+                                 tabGrp.attributes.forEach(function (item)  {
+                                    logc("attributes", item);
+                                   if (item.key === "Default" && item.value === "True"){
+                                        vm.activeTab = tabGrp.displayName.toLowerCase();
+                                        activeTab = true;
+                                   }
+                                 });
+                           }
+                           var tab = {
+                                id : tabGrp.displayName.toLowerCase(),
+                                text : tabGrp.displayName,
+                                isActive : activeTab,
+                                incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.toLowerCase() + ".html"};
 
-                      tabs.push(tab);
-                    });
-                }
+                          tabs.push(tab);
+                        });
+                    }
+                });
             }
             return tabs;
         };
 
         vm.getTabsConfigData = function (data) {
             var cnfg = {}, tabs = [];
-            //logc("tab data",data);
-            if(data && data.Controls){
-                if(data.Type === 'TabGroup'){
-                    data.Controls.forEach(function(tabGrp){
-                      var tabName = tabGrp.DisplayName;
-                      tabGrp.Controls.forEach(function (tab) {
-                            if (tab.Type === "MultiSelectGrid" || tab.Type === "SingleSelectGrid"){
-                                cnfg = configData.getGridConfigTypes(tab, tabName);
-                                tabs.push(cnfg);
-                                //  tabs.push({
-                                //     "gridConfig": cnfg,
-                                //     "gridName": tabName
-                                // });
-                            }
+
+            if(data && data.controls){
+                data.controls.forEach(function (tabControl) {
+                  if(tabControl.type === 'Tab Group'){
+                        tabControl.controls.forEach(function(tabGrp){
+                          var tabName = tabGrp.displayName;
+
+                          tabGrp.controls.forEach(function (tab) {
+                                if (tab.type === "MultiSelectGrid" || tab.type === "Select Grid"){
+                                    cnfg = configData.getGridConfigTypes(tab, tabName);
+                                    tabs.push(cnfg);
+                                }
+                            });
                         });
-                    });
-                }
+                    }
+                });
             }
-            logc("tabs getTabsConfigData ", tabs);
             return tabs;
         };
 
@@ -292,15 +289,15 @@
 
         vm.getSwitchConfigs = function (data) {
             var  aSwitch = [];
-            if(data && data.Controls){
-                if(data.Type === 'TabGroup'){
-                    data.Controls.forEach(function(tabGrp){
-                       tabGrp.Controls.forEach(function (ctrl) {
-                           if(ctrl.Type === 'Switch'){
+            if(data && data.controls){
+                if(data.type === 'Tab Group'){
+                    data.controls.forEach(function(tabGrp){
+                       tabGrp.controls.forEach(function (ctrl) {
+                           if(ctrl.type === 'Switch'){
                                var c = {
-                                    id : ctrl.Id,
-                                    text : ctrl.DisplayName,
-                                    key : ctrl.DataSource,
+                                    id : ctrl.id,
+                                    text : ctrl.displayName,
+                                    key : ctrl.dataSource,
                                     configData : switchConfig({
                                        onChange : vm.noop,
                                        disabled : false

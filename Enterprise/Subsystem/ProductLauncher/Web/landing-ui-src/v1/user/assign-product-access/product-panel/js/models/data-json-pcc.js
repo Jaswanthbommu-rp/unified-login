@@ -3,87 +3,119 @@
 (function(angular, undefined) {
     "use strict";
 
-
 var data = {
-  "Id": 10,
-  "Type": "Page",
-  "DisplayName": "Prospect Contact Center Product Access",
-  "Controls": [{
-    "Id": 1,
-    "Type": "TabGroup",
-    "DisplayName": "",
-    "Controls": [{
-      "Id": 9,
-      "DisplayName": "Properties",
-      "ActiveTab": true,
-      "ParentId": null,
-      "Sequence": 1,
-      "Controls": [
-        {
-          "Id": 8,
-          "ParentId": 7,
-          "Type": "RadioButton",
-          "DisplayName": "Active Properties",
-          "DataSource": "active",
-          "Sequence": 1
-        },
-        {
-          "Id": 8,
-          "ParentId": 7,
-          "Type": "RadioButton",
-          "DisplayName": "Inactive Properties",
-          "DataSource": "inactive",
-          "Sequence": 1
-        },
-        {
-          "Id": 9,
-          "ParentId": 7,
-          "Type": "RadioButton",
-          "DisplayName": "All Properties",
-          "DataSource": "all",
-          "Sequence": 2
-        },
-      {
-        "Id": 7,
-        "ParentId": null,
-        "Type": "MultiSelectGrid",
-        "DisplayName": null,
-        "Sequence": 1,
-        "Controls": [{
-          "Id": 10,
-          "ParentId": 7,
-          "Type": "GridColums",
-          "DisplayName": "",
-          "DataSource": "",
-          "Sequence": 3,
-          "Controls": [{
-            "Id": 11,
-            "ParentId": 10,
-            "Type": "RadioButton",
-            "DisplayName": "",
-            "DataSource": "isAssigned",
-            "Sequence": 1
-          },
+  "pageId": 3,
+  "pageDisplayName": "Prospect Contact Center Product Access",
+  "productId": 10,
+  "productName": "Prospect Contact Center",
+  "controls":
+  [
+    {
+      "id": 66,
+      "name": "ClientPortalProductAccessTabGroupUIId",
+      "dataSource": null,
+      "displayName": null,
+      "sequence": 1,
+      "type": "Tab Group",
+      "dependency": false,
+      "attributes": null,
+      "controls":
+      [
           {
-            "Id": 12,
-            "ParentId": 10,
-            "Type": "Label",
-            "DisplayName": "Name",
-            "DataSource": "name",
-            "Sequence": 2
-          },
-          {
-            "Id": 13,
-            "ParentId": 10,
-            "Type": "Label",
-            "DisplayName": "State",
-            "DataSource": "state",
-            "Sequence": 3
-          }]
-        }]
-      }]
-    }]
-  }]
+            "id": 67,
+            "name": "clientProtalPropertiesTabUIid",
+            "dataSource": null,
+            "displayName": "Properties",
+            "sequence": 1,
+            "type": "Tab",
+            "dependency": false,
+            "attributes": [{"key": "Default","value": "True" }],
+            "controls":
+            [
+              {
+                "id": 25,
+                "name": "RadioButtonId",
+                "dataSource": "active",
+                "displayName": "Active Properties",
+                "sequence": 1,
+                "type": "Radio",
+                "dependency": false,
+                "attributes": null,
+                "controls": null
+              },
+              {
+                "id": 26,
+                "name": "RadioButtonId",
+                "dataSource": "inactive",
+                "displayName": "Inactive Properties",
+                "sequence": 2,
+                "type": "Radio",
+                "dependency": false,
+                "attributes": null,
+                "controls": null
+              },
+              {
+                "id": 27,
+                "name": "RadioButtonId",
+                "dataSource": "all",
+                "displayName": "All Properties",
+                "sequence": 3,
+                "type": "Radio",
+                "dependency": false,
+                "attributes": null,
+                "controls": null
+              },
+              {
+                "id": 73,
+                "name": "PropertiesTabSelectGridUIId",
+                "dataSource": null,
+                "displayName": null,
+                "sequence": 3,
+                "type": "Select Grid",
+                "dependency": false,
+                "attributes": null,
+                "controls":
+                [
+                  {
+                    "id": 40,
+                    "name": "PropertySelectColumnUIId",
+                    "dataSource": "isAssigned",
+                    "displayName": null,
+                    "sequence": 1,
+                    "type": "Radio",
+                    "dependency": false,
+                    "attributes": null,
+                    "controls": null
+                  },
+                  {
+                    "id": 38,
+                    "name": "PropertyNameColumnUIId",
+                    "dataSource": "name",
+                    "displayName": "Property",
+                    "sequence": 2,
+                    "type": "Label",
+                    "dependency": false,
+                    "attributes": null,
+                    "controls": null
+                  },
+                  {
+                    "id": 39,
+                    "name": "StateColumnUIId",
+                    "dataSource": "state",
+                    "displayName": "State",
+                    "sequence": 3,
+                    "type": "Label",
+                    "dependency": false,
+                    "attributes": null,
+                    "controls": null
+                  }
+                ]
+              }
+            ]
+          }
+      ]
+    }
+  ]
 };
     angular
         .module("settings")
