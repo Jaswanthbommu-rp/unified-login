@@ -154,18 +154,20 @@
             {
                 productRolesList = s.roleMap['product' + product].roles;
             }
+           // logc("master data",product,s.roleMap, productRolesList);
             return productRolesList;
         };
 
         p.getProductPropertiesData = function (product) {
             var s = this,
                 productPropertiesList;
-
+//logc(s.propertyMap['product' + product]);
             if (s.propertyMap['product' + product] !== undefined)
             {
+                //logc(s.propertyMap['product' + product]);
                 productPropertiesList = s.propertyMap['product' + product].properties;
             }
-
+//logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
         };
 
@@ -205,9 +207,9 @@
                 item.isAssigned = item.id == record.id;
              });
 
-            // if (s.productsTouched.indexOf(key) !== -1){
-            //     s.productsTouched.push(key);
-            // }
+            if (s.productsTouched.indexOf(key) !== -1){
+                s.productsTouched.push(key);
+            }
             return s;
         };
 
@@ -222,9 +224,9 @@
                 item.isAssigned = item.id == record.id;
             });
 
-            // if (s.productsTouched.indexOf(key) !== -1){
-            //     s.productsTouched.push(key);
-            // }
+            if (s.productsTouched.indexOf(key) !== -1){
+                s.productsTouched.push(key);
+            }
 
             return s;
         };
@@ -328,9 +330,9 @@
 
             if (!angular.equals({}, s.productControlsList)) {
                 s.productControlsList.products.forEach(function (product) {
-                    s.productControlsMap['product' + product.Id] = {
+                    s.productControlsMap['product' + product.productId] = {
                         control: product,
-                        displayName: product.DisplayName,
+                        displayName: product.pageDisplayName,
                         controls: []
                     };
                 });
@@ -345,6 +347,7 @@
                     allProperties: false
                 };
             }
+            logc("renderPropertyMap",s);
         };
 
          p.renderRoleMap = function (key) {
@@ -398,9 +401,9 @@
             return s.getSelectedCount(list) === list.length;
         };
 
-        p.isUserHasManageProductAccess = function () {
-            return !persona.data.hasManageAssetOptimizationProductAccess;
-        };
+        // p.isUserHasManageProductAccess = function () {
+        //     return !persona.data.hasManageAssetOptimizationProductAccess;
+        // };
 
         p.reset = function () {
             var s = this;

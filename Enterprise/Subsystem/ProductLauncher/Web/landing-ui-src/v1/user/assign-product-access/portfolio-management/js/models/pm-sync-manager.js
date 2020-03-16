@@ -94,7 +94,16 @@
 
             return s.data;
         };
-
+        p.selectedEntitySync = function () {
+            var s = this;
+               s.roleList.forEach(function (role) {
+                var assignedPropertiesCount = role.propertiesList.filter(function (item) {
+                    return item.isAssigned === true;
+                });
+                role.assignedProperties = assignedPropertiesCount.length+" of "+role.propertiesList.length;
+            });
+            return s;
+        };
         p.selectedRoleSync = function (key, data) {
             var s = this,
                 roleData,

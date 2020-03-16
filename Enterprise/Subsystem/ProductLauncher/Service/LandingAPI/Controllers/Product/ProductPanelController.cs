@@ -37,10 +37,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		#region Private variables
 
 		private readonly IProductRepository _productRepository;
-		private Guid emptyGuid = Guid.Empty;
-		private IManageProductClientPortal _manageProductClientPortal;
-		private IManageUnifiedLogin _manageUnifiedLogin;
-        private IManageProductMarketingCenter _manageProductMarketingCenter;
+		private Guid emptyGuid = Guid.Empty;		
+		private IManageProductPanel _manageProductPanel;
         #endregion
         #region Constructor
         /// <summary>
@@ -67,10 +65,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="controllerContext"></param>
 		protected override void Initialize(HttpControllerContext controllerContext)
 		{
-			base.Initialize(controllerContext);
-			_manageProductClientPortal = new ManageProductClientPortal(base._userClaims);
-            _manageProductMarketingCenter = new ManageProductMarketingCenter(_userClaims);
-        }
+			base.Initialize(controllerContext);		
+			_manageProductPanel = new ManageProductPanel(_userClaims);
+
+		}
 		#endregion
 		#region Public methods
 		/// <summary>
@@ -96,26 +94,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 			ListResponse result = new ListResponse();
 
-			if (productId == 14)
-			{				
-				result = _manageProductClientPortal.GetRoles(editorPersonaId, userPersonaId, datafilter);
-			}
-			else if (productId == 3)
-			{
-				_manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-				result = _manageUnifiedLogin.GetUserRoles(editorPersonaId, userPersonaId, partyId);
-			}
-            else if (productId == 9)
-            {
-                _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                result = _manageProductMarketingCenter.GetRoles(editorPersonaId, userPersonaId, datafilter);
-            }
+			result = _manageProductPanel.GetProductRoles(editorPersonaId, userPersonaId, partyId, productId, datafilter);		
 
 
-            //if(result.IsError)
-            //    Request.CreateResponse(HttpStatusCode.Forbidden, result);
+			if (result.IsError)
+				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
-            return Request.CreateResponse(HttpStatusCode.OK, result);
+			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 
 		/// <summary>
@@ -133,6 +118,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri]RequestParameter datafilter)
 		{
+			var completeRoute = this.ControllerContext.RouteData.Route;
+			string method = completeRoute.RouteTemplate.Substring(completeRoute.RouteTemplate.IndexOf("/"));
+
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 
@@ -141,24 +129,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			ListResponse result = new ListResponse();
 
-			if (productId == 14)
-			{
-				result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);
-			}
-			else if (productId == 10)
-			{
-				IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_realpageUserId);
-				result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
-			}
-            else if (productId == 9)
-            {                
-                result = _manageProductMarketingCenter.GetProperties(editorPersonaId, userPersonaId, datafilter);
-            }
+			result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
 
-            //if(result.IsError)
-            //    Request.CreateResponse(HttpStatusCode.Forbidden, result);
+			if (result.IsError)
+				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
-            return Request.CreateResponse(HttpStatusCode.OK, result);
+			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 		#endregion
 	}

@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function AssignProductAccessCtrl($scope, model, templates, productDataSync) {
+    function AssignProductAccessCtrl($scope, model, templates) {
         var vm = this;
 
         vm.init = function () {
@@ -14,7 +14,6 @@
 
         vm.destroy = function () {
             vm.destWatch();
-            productDataSync.reset();
             vm = undefined;
             $scope = undefined;
         };
@@ -28,7 +27,6 @@
             "$scope",
             "assignProductAccessModel",
             "productAccessTemplates",
-            "productDataSyncManager",
             AssignProductAccessCtrl
         ]);
 })(angular);

@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, configModel, syncMgr) {
+    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, configModel, syncMgr, roleSvc) {
         var vm = this,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
@@ -52,15 +52,44 @@
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
         };
 
-
-        vm.loadData = function () {
+         vm.loadData = function () {
             var productId = $scope.$parent.productId;
-            logc("$scope.rolesGrid", $scope.rolesGrid,productId);
-            //vm.rolesGrid = $scope.rolesGrid;
-            vm.rolesGrid.busy(true);
+             rolesGrid.busy(true);
+            if (persona.isReady() && vm.isActive()) {
+                  var roleData = syncMgr.getProductRolesData(productId);
+                 // logc("propertyData",propertyData,productId);
+                  if (roleData === undefined){
+
+                    var params = {
+                         userPersonaId: userDetailsModel.getPersonaId(),
+                         editorPersonaId: persona.getId(),
+                         partyId: persona.data.organization.partyId,
+                         productId: productId
+                    };
+
+                    vm.dataRoleReq = roleSvc.get(params, vm.setRolesData);
+                  }
+                  else {
+                    //syncMgr.setPropertyGridActive(true);
+                    vm.loadGridData(productId);
+                  }
+            }
+        };
+
+        vm.setRolesData = function (resp) {
+           // var productId = $scope.$parent.productId;
+            if (resp.records && resp.records.length > 0){
+               // logc("setPropertyData",resp.records, vm.productId);
+                var rdata = syncMgr.setRoleList(resp.records, $scope.$parent.productId);
+                //syncMgr.setPropertyGridActive(true);
+                vm.loadGridData($scope.$parent.productId);
+             }
+        };
+
+
+        vm.loadGridData = function (productId) {
+            //var productId = $scope.$parent.productId;
             var roleData = syncMgr.getProductRolesData(productId);
-            //gridPagination = $scope.gridPagination;
-logc("roleData",roleData);
             if (roleData && roleData.length > 0) {
                // vm.productId = productId;
                 if (security.isAllowed("viewUser") ) {
@@ -79,23 +108,7 @@ logc("roleData",roleData);
                             productId: productId
                         });
                 });
-                logc("gridPagination.grid",roleGridPagination);
-                // if (gridPagination === undefined){
-                //      // rolesGrid.setConfig(vm.config);
-                //      // gridPagination.setGrid(rolesGrid);
-                //      gridPagination = $scope.gridPagination;
-                //      logc("pubsub roleData", rolesGrid, gridPagination, vm.config);
-                // }
-            //     rolesGridTransform.watch(rolesGrid);
-            // // rolesGrid.setConfig(gridConfig);
-            //     var config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
-            //     rolesGrid.setConfig(config);
 
-            //     roleGridPagination.setGrid(rolesGrid);
-            //     $scope.roleGridPagination = roleGridPagination;
-            //     roleGridPagination.setConfig({
-            //         recordsPerPage: 25
-            //     });
                 roleGridPagination.setData(roleData).goToPage({
                     number: 0
                 });
@@ -183,6 +196,10 @@ logc("roleData",roleData);
         vm.destroy = function () {
             vm.destWatch();
             vm.personaWatch();
+            vm.activeWatch();
+            if (vm.dataRoleReq) {
+                vm.dataRoleReq.$cancelRequest();
+            }
             rolesGrid.destroy();
             rolesGridTransform.destroy();
             roleGridPagination.destroy();
@@ -212,6 +229,7 @@ logc("roleData",roleData);
             "routeSecurity",
             "ConfigModel",
             "productDataSyncManager",
+            "productRolesSvc",
             ProductRolesGridCtrl
         ]);
 })(angular);

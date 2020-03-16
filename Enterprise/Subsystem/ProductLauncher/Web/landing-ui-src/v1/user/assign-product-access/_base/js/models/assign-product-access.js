@@ -18,12 +18,18 @@
 
         // Getters
 
-        p.getAccessData = function (key) {
+        p.getAccessData = function (key, productId) {
             var s = this;
 
             if (s.products[key]) {
-                return s.products[key].getData();
+                if (key === "soln302" || key === "soln501") {
+                    return s.products[key].getData(productId);
+                }
+                else  {
+                    return s.products[key].getData();
+                }
             }
+
             return undefined;
         };
 
@@ -49,6 +55,7 @@
 
                 item.setActive(active);
             });
+
 
             s.products["default"].setActive(!found);
             // if (soln.data.productId == 14 || soln.data.productId == 10 || soln.data.productId == 3)

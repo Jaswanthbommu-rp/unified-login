@@ -11,9 +11,8 @@
     <BlockOnPossibleDataLoss>False</BlockOnPossibleDataLoss>
     <IgnoreExtendedProperties>True</IgnoreExtendedProperties>
     <ExcludeUsers>True</ExcludeUsers>
-    <DropObjectsNotInSource>True</DropObjectsNotInSource>
+    <DropObjectsNotInSource>False</DropObjectsNotInSource>
     <GenerateSmartDefaults>True</GenerateSmartDefaults>
-    <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
     <DoNotDropPermissions>True</DoNotDropPermissions>
     <DoNotDropLogins>True</DoNotDropLogins>
     <DoNotDropUsers>True</DoNotDropUsers>

@@ -155,7 +155,7 @@
 
             svc.resp = [];
             svc.resetCounts();
-
+logc("svc.tabs",svc.tabs);
             angular.forEach(svc.tabs, function (tab) {
                 if (tab.ctrl.hasSaveFn()) {
                     svc.tabCount++;

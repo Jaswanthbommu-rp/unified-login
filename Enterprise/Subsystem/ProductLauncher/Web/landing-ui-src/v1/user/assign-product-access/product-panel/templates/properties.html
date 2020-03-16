@@ -1,16 +1,14 @@
 <div class="product-panel-properties-wrapper" ng-controller="ProductPropertiesGridCtrl as cpp">
     <div class="product-panel-properties-body" ng-if="!cpp.isDataError">
 
-         <div  class="radio" >
-            <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpp.radioconfig"
-                rp-value="rad.key"
-                rp-on-change="cpp.resetDataModel()"
-                rp-model="cpp.propertySelect"
-                rp-disabled="cpp.hasViewUserAccess"
-                rp-label-text="rad.text">
-            </rp-form-input-radio>
-        </div>
-        
+        <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpp.radioconfig"
+            rp-value="rad.key"
+            rp-on-change="cpp.resetDataModel()"
+            rp-model="cpp.propertySelect"
+            rp-disabled="cpp.hasViewUserAccess"
+            rp-label-text="rad.text">
+        </rp-form-input-radio>
+ <!-- rp-model="cpp.propertySelect" -->
         <div  class="switch" >
             <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpp.switchconfigs"
                 config="sw.configData"
@@ -18,9 +16,11 @@
                 rp-label-text="sw.text">
             </rp-switch>
         </div>
-        
-
-        <div ng-if="cpp.propertySelect == 'property'" class="product-panel-properties">
+        <br>
+       <!--  class="product-panel-properties" -->
+        <div ng-if="(cpp.propertySelect == 'property' ||
+                     cpp.propertySelect === 'active' ||
+                     cpp.propertySelect === 'inactive')" >
             <div class="grid-controls">
                 <div class="grid-control-item">
                     <rp-toggle model="cpp.propertiesGrid.filtersModel.state.active" options="{

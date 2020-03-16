@@ -16,53 +16,63 @@
 
         };
 
-        p.setProperties = function (propertiesData) {
-            var s = this;
-            s.properties = propertiesData;
-        };
+        // p.setProperties = function (propertiesData) {
+        //     var s = this;
+        //     s.properties = propertiesData;
+        // };
 
 
         p.getGridConfigTypes = function (gridData, tabName) {
             var s = this, config = [];
            // logc("griddata--", gridData,gridData.Type);
-
-            if(gridData.Type === "MultiSelectGrid"){
-                gridData.Controls.forEach(function (ctrl){
-                  if (ctrl.Type === "GridColums") {
-                    ctrl.Controls.forEach(function (item) {
-                      config.push({
-                                "key" : item.DataSource,
-                                "type" : s.isType(item.Type),
-                                "text": item.DisplayName,
+            if(gridData.type === "MultiSelectGrid" || gridData.type === "Select Grid"){
+                gridData.controls.forEach(function (item){
+                    config.push({
+                                "key" : item.dataSource,
+                                "type" : s.isType(item.type),
+                                "text": item.displayName,
                                 "idKey": "id",
-                                "templateUrl" : s.getTemplate( s.isControl(item.Type), tabName)
+                                "templateUrl" : s.getTemplate( s.isControl(item.type), tabName)
                         });
-                    });
-                  }
                 });
             }
+            // if(gridData.type === "MultiSelectGrid" || gridData.type === "Select Grid"){
+            //     gridData.controls.forEach(function (ctrl){
+            //       if (ctrl.Type === "GridColums") {
+            //         ctrl.Controls.forEach(function (item) {
+            //           config.push({
+            //                     "key" : item.DataSource,
+            //                     "type" : s.isType(item.Type),
+            //                     "text": item.DisplayName,
+            //                     "idKey": "id",
+            //                     "templateUrl" : s.getTemplate( s.isControl(item.Type), tabName)
+            //             });
+            //         });
+            //       }
+            //     });
+            // }
             return config;
         };
 
-        p.getRadioConfig = function (jsonData) {
+        p.getRadioConfig = function (radioData) {
             var s = this, cnfg = [], cnfgs = [];
-//logc("jsonData radio", jsonData);
-             if(jsonData && jsonData.Controls){
-                jsonData.Controls.forEach(function (tabGrp) {
-                      //if(tabGrp.Type === "TabGroup"){
-                            tabGrp.Controls.forEach(function (item) {
-                               // logc("radio item",item);
-                                //cnfg = [];
-                                if(item.Type === 'RadioButton' ){
-                                    cnfgs.push({
-                                        "key" : item.DataSource,
-                                        "type" : s.isControl(item.Type),
-                                        "text": item.DisplayName
-                                    });
-                                }                               
-                                
-                            });
-                       // }
+logc("radioData radio", radioData);
+             if(radioData && radioData.controls){
+                radioData.controls.forEach(function (tabGrp) {
+                    tabGrp.controls.forEach(function (tab) {
+                      tab.controls.forEach(function (item) {
+                                logc("radio item",item);
+                            if(item.type === 'Radio' ){
+                                cnfgs.push({
+                                    "key" : item.dataSource,
+                                    "type" : s.isControl(item.type),
+                                    "text": item.displayName
+                                });
+                            }
+
+                        });
+                    });
+
                 });
             }
             return cnfgs;
@@ -74,7 +84,7 @@
             if(type === 'Label'){
                 return 'text';
             }
-            else if(type === 'RadioButton'  || type === 'Dropdown'){
+            else if(type === 'Radio'  || type === 'Dropdown'){
                 return 'custom';
             }
             else if(type === 'CheckBox' ){
@@ -89,7 +99,7 @@
             if(type === 'Label'){
                 return '';
             }
-            else if(type === 'RadioButton'){
+            else if(type === 'Radio'){
                 return 'radio';
             }
             else if(type === 'CheckBox'){
