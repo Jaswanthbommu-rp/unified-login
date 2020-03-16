@@ -2471,6 +2471,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         repositoryResponse.ErrorMessage = "Update User Error: Update user status failed.";
                                         throw new Exception(repositoryResponse.ErrorMessage);
                                     }
+                                    else
+                                    {
+                                        if (profile.userLogin.IsActive == true && currentOrgStatus.IsActive == false)
+                                        {
+                                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{2} {3} activated access for user {0} {1}.", "UpdateUser", profile);
+                                        }
+                                    }
                                 }
                             }
                         }
