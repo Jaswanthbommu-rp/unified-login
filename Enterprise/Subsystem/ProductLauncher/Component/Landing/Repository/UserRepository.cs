@@ -4598,7 +4598,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isChanged = (
                 (!profile.FirstName.Equals(userDetails.FirstName))
                 ||
-                (!profile.MiddleName.Equals(userDetails.MiddleName))
+                (!string.IsNullOrEmpty(profile.MiddleName) && !profile.MiddleName.Equals(userDetails.MiddleName))
                 ||
                 (!profile.LastName.Equals(userDetails.LastName))
             );
