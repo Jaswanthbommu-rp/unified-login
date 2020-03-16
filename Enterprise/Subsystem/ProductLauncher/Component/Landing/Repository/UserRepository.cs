@@ -2300,8 +2300,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (!userDetails.MiddleName.Equals(profile.MiddleName))
                             {
                                 //Log Activity
-                                string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank" : userDetails.MiddleName;
-                                string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank" : profile.MiddleName;
+                                string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank value" : userDetails.MiddleName;
+                                string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank value" : profile.MiddleName;
                                 var auditMessage = $"User {{2}} {{3}} updated the Middle name from {oldMiddleName} to {newMiddleName} on the user profile for {{0}} {{1}}.";
                                 LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
                             }
