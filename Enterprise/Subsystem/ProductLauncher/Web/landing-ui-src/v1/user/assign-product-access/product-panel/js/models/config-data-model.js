@@ -84,7 +84,7 @@ logc("radioData radio", radioData);
             if(type === 'Label'){
                 return 'text';
             }
-            else if(type === 'Radio'  || type === 'Dropdown'){
+            else if(type === 'Radio'  || type === 'Dropdown' || type === 'Custom'){
                 return 'custom';
             }
             else if(type === 'CheckBox' ){
@@ -104,6 +104,9 @@ logc("radioData radio", radioData);
             }
             else if(type === 'CheckBox'){
                 return 'check';
+            }
+            else if(type === 'Custom'){
+                return 'info';
             }
         };
 
@@ -206,8 +209,13 @@ logc("radioData radio", radioData);
 
         p.getTemplate = function(type, tabName){
             var html = '', url ='';
+
             if(type === 'radio'){
                 url = "user/assign-product-access/product-panel/templates/" + tabName.toLowerCase() +"-radio.html";
+            }
+            
+            if(type === 'info'){
+                url = "user/assign-product-access/product-panel/templates/info-icon.html";
             }
 
             return url;

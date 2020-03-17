@@ -130,9 +130,9 @@
         },
 
         "soln503": {
-            name: "Unified Platform",
-            templateUrl: "user/assign-product-access/unified-login/templates/index.html"
-           //templateUrl: "user/assign-product-access/product-panel/templates/index.html"
+            name: "Unified Platform"
+            // templateUrl: "user/assign-product-access/unified-login/templates/index.html"
+           // templateUrl: "user/assign-product-access/product-panel/templates/index.html"
         },
 
         "soln504": {

@@ -33,14 +33,14 @@
 
         vm.productSelected = function (obj) {
            // vm.personaWatch = persona.subscribe();
-           if (obj.productId == 14 || obj.productId == 10 ||  obj.productId == 9){
+           if (obj.productId == 14 || obj.productId == 10 ||  obj.productId == 9 ||  obj.productId == 3){
 
                logc("obj.productId",obj.productId);
                vm.productId = obj.productId;
                $scope.productId = obj.productId;
                vm.loadProductControlsData(obj.productId);
            }
-           active = obj.productId === 14 || obj.productId === 10 || obj.productId === 9 ? true : false;
+           active = obj.productId === 14 || obj.productId === 10 || obj.productId === 9 || obj.productId === 3 ? true : false;
            return vm;
         };
 
