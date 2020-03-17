@@ -114,11 +114,15 @@
         };
 
         model.getFilteredData = function(val) {
+            if(val == 'All'){
+                val = undefined;
+            }
             var filObj = $filter("filter")(model.getRoles(), {
                 centerName: val
             },true);
             return filObj;
         };
+
 
         model.setDataErr = function(data) {
             logc("Error: ", data);
