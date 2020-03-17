@@ -318,7 +318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if (newProfile.userLogin.ThruDate == null)
                     {
-                        newProfile.userLogin.ThruDate = Convert.ToDateTime("12/31/9999");
+                        newProfile.userLogin.ThruDate = new DateTime(9999,12,31);
                     }
 
                     identityProviderType = (from a in identityProviderTypeList where a.IsLocal == (newProfile.userLogin.Is3rdPartyIDP ? false : true) select a).FirstOrDefault();
@@ -2348,7 +2348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             if (profile.userLogin.ThruDate == null)
                             {
-                                profile.userLogin.ThruDate = Convert.ToDateTime("12/31/9999");
+                                profile.userLogin.ThruDate = new DateTime(9999, 12, 31);
                             }
 
                             param = new
