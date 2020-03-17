@@ -114,7 +114,7 @@
         };
 
         model.getFilteredData = function(val) {
-            if(val == 'ALL'){
+            if(val == 'All'){
                 val = undefined;
             }
             var filObj = $filter("filter")(model.getRoles(), {

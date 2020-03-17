@@ -55,8 +55,8 @@
             var dataOptions = [];
 
             var defaultvalue = {
-                productName: "ALL",
-                productVal: "ALL"
+                productName: "All",
+                productVal: "All"
             };
 
             dataOptions.push(defaultvalue);
