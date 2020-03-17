@@ -1,4 +1,4 @@
-﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common
 {
     /// <summary>
     /// Class for auditing properties

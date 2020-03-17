@@ -88,7 +88,7 @@
     <Compile Include="Attribute\AuditLogAttribute.cs" />
     <Compile Include="Attribute\SwaggerResponseExamplesAttribute.cs" />
     <Compile Include="Attribute\VersionedRouteAttribute.cs" />
-    <Compile Include="Audit\AuditRecord.cs" />
+    <Compile Include="Audit\Common\AuditRecord.cs" />
     <Compile Include="Base\BaseType.cs" />
     <Compile Include="Base\IRequestParameter.cs" />
     <Compile Include="Base\RPObjectCache.cs" />
@@ -557,6 +557,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="All\" />
+    <Folder Include="Audit\Dto\" />
     <Folder Include="Product\ActiveBuilding\" />
     <Folder Include="Product\LeaseStar\" />
     <Folder Include="Product\LevelOne\" />
