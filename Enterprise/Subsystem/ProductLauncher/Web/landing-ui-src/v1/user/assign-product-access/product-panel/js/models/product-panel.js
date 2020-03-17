@@ -140,7 +140,9 @@ logc("getdata",productId,dataSyncManager, s.batchData);
                     if (productId == "14") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
-                    s.batchData.inputJson.propertyList.push("all");
+                    else {
+                        s.batchData.inputJson.propertyList.push("all");
+                    }
                 }
                 else {
                     properties.forEach(function (prop) {

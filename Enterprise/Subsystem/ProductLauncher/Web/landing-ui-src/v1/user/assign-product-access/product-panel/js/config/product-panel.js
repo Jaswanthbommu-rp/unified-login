@@ -7,6 +7,12 @@
 
         productAccess.register({
             model: model,
+            key: "soln101",
+            product: "1"
+        });
+
+        productAccess.register({
+            model: model,
             key: "soln302",
             product: "10"
         });

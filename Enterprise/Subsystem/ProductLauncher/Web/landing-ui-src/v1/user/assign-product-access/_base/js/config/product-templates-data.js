@@ -12,8 +12,8 @@
         },
 
         "soln101": {
-            name: "OneSite",
-            templateUrl: "user/assign-product-access/onesite/templates/index.html"
+            name: "OneSite"
+            //templateUrl: "user/assign-product-access/onesite/templates/index.html"
         },
 
         "soln104": {

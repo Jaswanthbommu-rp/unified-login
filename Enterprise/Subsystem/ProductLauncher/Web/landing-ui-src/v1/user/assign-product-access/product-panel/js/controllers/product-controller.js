@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, jsonData ,panelModel, configData, configFactory, configModel, dataModel1, tabsModel, propertiesSvc, rolesSvc, userDetailsModel, adminJson, gridModel, gridTransformSvc, gridPaginationModel, switchConfig, jsonDataMc) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, configModel, tabsModel, userDetailsModel, switchConfig, jsonDataCP, jsonDataPCC, jsonDataMc, jsonDataOS) {
         var vm = this,
             active = false,
             panelNmae = "",
@@ -19,63 +19,63 @@
             vm.disableContent = false;
             vm.activeTab = "";
 
-           // vm.productId = $params.productId;
+            // vm.productId = $params.productId;
             vm.productId = 0;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
 
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             //vm.profileWatch = pubsub.subscribe("up.user-details-disable", vm.setState);
-            vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected );
+            vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
 
             //vm.updateGridWatch = pubsub.subscribe("PA.updateGrids", vm.updateGrid);
         };
 
         vm.productSelected = function (obj) {
-           // vm.personaWatch = persona.subscribe();
-           if (obj.productId == 14 || obj.productId == 10 ||  obj.productId == 9){
+            // vm.personaWatch = persona.subscribe();
+            if (obj.productId == 14 || obj.productId == 10 || obj.productId == 9 || obj.productId == 1) {
 
-               logc("obj.productId",obj.productId);
-               vm.productId = obj.productId;
-               $scope.productId = obj.productId;
-               vm.loadProductControlsData(obj.productId);
-           }
-           active = obj.productId === 14 || obj.productId === 10 || obj.productId === 9 ? true : false;
-           return vm;
+                logc("obj.productId", obj.productId);
+                vm.productId = obj.productId;
+                $scope.productId = obj.productId;
+                vm.loadProductControlsData(obj.productId);
+            }
+            active = obj.productId === 14 ||
+                obj.productId === 10 ||
+                obj.productId === 1 ||
+                obj.productId === 9 ? true : false;
+            return vm;
         };
 
-        vm.loadProductControlsData = function (productId)
-        {
-           // logc("tabsModel",tabsModel);
-             tabsModel.reset();
+        vm.loadProductControlsData = function (productId) {
+            // logc("tabsModel",tabsModel);
+            tabsModel.reset();
             //productModel.setProductDataSelectKey(productId);
-             //Check data in model for product
+            //Check data in model for product
             var cdata = productModel.getProductControls(productId);
-           // logc("cdata",cdata);
-             var jData = "";
-                if (productId == 10)
-                {
-                    jData = dataModel1;
-                }
-                else if (productId == 14){
-                    jData = jsonData;
-                }
-                else if (productId == 3){
-                    jData = adminJson;
-                }
-                else if (productId == 9){
-                    jData = jsonDataMc;
-                }
-            if (cdata === undefined)
-            {
+            // logc("cdata",cdata);
+            var jData = "";
+            if (productId == 10) {
+                jData = jsonDataPCC;
+            }
+            else if (productId == 1) {
+                jData = jsonDataOS;
+            }
+            else if (productId == 14) {
+                jData = jsonDataCP;
+            }
+            else if (productId == 9) {
+                jData = jsonDataMc;
+            }
+            if (cdata === undefined) {
 
                 var s = productModel.setProductControlsList(jData);
                 cdata = productModel.getProductControls(productId);
                 //logc("cdata",cdata,cdata[0].DisplayName);
             }
-            logc("cdata",cdata, cdata.controls[0]);
-            vm.panelName = productModel.getPageDisplayName(productId);// cdata[0].DisplayName;
-           // logc("cdata panel name",vm.panelName);
+            //logc("cdata", cdata, cdata.controls[0]);
+            vm.panelName = productModel.getPageDisplayName(productId); // cdata[0].DisplayName;
+            // logc("cdata panel name",vm.panelName);
             vm.setTabs(cdata);
             //if no data in model,CALLSERVICE to get controls data
 
@@ -83,10 +83,10 @@
         };
 
         vm.isActive = function () {
-            return active;// panelModel.isActive();
+            return active; // panelModel.isActive();
         };
 
-        vm.getActiveUrl = function() {
+        vm.getActiveUrl = function () {
             return tabsModel.getActiveUrl();
         };
 
@@ -115,8 +115,8 @@
             configModel.setGridConfig(vm.gridconfigs);
 
             vm.radioconfigs = configData.getRadioConfig(data);
-//logc("vm.radioconfigs",vm.radioconfigs);
-            if (vm.radioconfigs !== undefined){
+            //logc("vm.radioconfigs",vm.radioconfigs);
+            if (vm.radioconfigs !== undefined) {
                 configModel.setRadioConfig(vm.radioconfigs);
             }
 
@@ -135,18 +135,18 @@
             panelModel.setRoleGridActive(true);
         };
 
-        vm.getTabsGridData = function () {
-            if (vm.tabsList){
-                vm.tabsList.forEach(function (tab){
-                    if (tab.id === "roles") {
-                        vm.getProductRolesData();
-                    }
-                    // if (tab.id === "properties") {
-                    //     vm.getPropertiesData();
-                    // }
-                });
-            }
-        };
+        // vm.getTabsGridData = function () {
+        //     if (vm.tabsList){
+        //         vm.tabsList.forEach(function (tab){
+        //             if (tab.id === "roles") {
+        //                 vm.getProductRolesData();
+        //             }
+        //             // if (tab.id === "properties") {
+        //             //     vm.getPropertiesData();
+        //             // }
+        //         });
+        //     }
+        // };
 
         // vm.getPropertiesData = function () {
         //       var propertyData = productModel.getProductPropertiesData(vm.productId);
@@ -167,23 +167,23 @@
         //       // }
         // };
 
-        vm.getProductRolesData = function () {
-            var roleData = productModel.getProductRolesData(vm.productId);
-            logc("roleData",roleData,vm.productId);
-            if (roleData === undefined){
-                 var params = {
-                    userPersonaId: userDetailsModel.getPersonaId(),
-                    editorPersonaId: persona.getId(),
-                    partyId: persona.data.organization.partyId,
-                    productId: vm.productId
-                };
+        // vm.getProductRolesData = function () {
+        //     var roleData = productModel.getProductRolesData(vm.productId);
+        //     logc("roleData", roleData, vm.productId);
+        //     if (roleData === undefined) {
+        //         var params = {
+        //             userPersonaId: userDetailsModel.getPersonaId(),
+        //             editorPersonaId: persona.getId(),
+        //             partyId: persona.data.organization.partyId,
+        //             productId: vm.productId
+        //         };
 
-                vm.dataRoleReq = rolesSvc.get(params, vm.setRoleData);
-            }
-            // pubsub.publish("product.ProductRoleData", vm.productId);
-           panelModel.setRoleGridActive(true);
+        //         vm.dataRoleReq = rolesSvc.get(params, vm.setRoleData);
+        //     }
+        //     // pubsub.publish("product.ProductRoleData", vm.productId);
+        //     panelModel.setRoleGridActive(true);
 
-        };
+        // };
 
         // vm.setPropertyData = function (resp) {
         //     if (resp.records && resp.records.length > 0){
@@ -195,38 +195,40 @@
         //      }
         // };
 
-        vm.setRoleData = function (resp) {
-            if (resp.records && resp.records.length > 0){
-                var rdata = productModel.setRoleList(resp.records, vm.productId);
-                panelModel.setRoleGridActive(true);
-                //pubsub.publish("product.ProductRoleData", vm.productId);
-               // logc(productModel);
-             }
-        };
+        // vm.setRoleData = function (resp) {
+        //     if (resp.records && resp.records.length > 0) {
+        //         var rdata = productModel.setRoleList(resp.records, vm.productId);
+        //         panelModel.setRoleGridActive(true);
+        //         //pubsub.publish("product.ProductRoleData", vm.productId);
+        //         // logc(productModel);
+        //     }
+        // };
 
         vm.getProductTabsData = function (data) {
-            var  tabs = [], i = 0;
-            if(data && data.controls){
-                data.controls.forEach(function(tabControl) {
-                    if(tabControl.type === 'Tab Group'){
-                        tabControl.controls.forEach(function(tabGrp){
-                           var activeTab = false;
-                           if ( tabGrp.attributes !== null){
-                                 tabGrp.attributes.forEach(function (item)  {
+            var tabs = [],
+                i = 0;
+            if (data && data.controls) {
+                data.controls.forEach(function (tabControl) {
+                    if (tabControl.type === 'Tab Group') {
+                        tabControl.controls.forEach(function (tabGrp) {
+                            var activeTab = false;
+                            if (tabGrp.attributes !== null) {
+                                tabGrp.attributes.forEach(function (item) {
                                     logc("attributes", item);
-                                   if (item.key === "Default" && item.value === "True"){
+                                    if (item.key === "Default" && item.value === "True") {
                                         vm.activeTab = tabGrp.displayName.toLowerCase();
                                         activeTab = true;
-                                   }
-                                 });
-                           }
-                           var tab = {
-                                id : tabGrp.displayName.toLowerCase(),
-                                text : tabGrp.displayName,
-                                isActive : activeTab,
-                                incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.toLowerCase() + ".html"};
+                                    }
+                                });
+                            }
+                            var tab = {
+                                id: tabGrp.displayName.toLowerCase(),
+                                text: tabGrp.displayName,
+                                isActive: activeTab,
+                                incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.toLowerCase() + ".html"
+                            };
 
-                          tabs.push(tab);
+                            tabs.push(tab);
                         });
                     }
                 });
@@ -235,16 +237,17 @@
         };
 
         vm.getTabsConfigData = function (data) {
-            var cnfg = {}, tabs = [];
+            var cnfg = {},
+                tabs = [];
 
-            if(data && data.controls){
+            if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
-                  if(tabControl.type === 'Tab Group'){
-                        tabControl.controls.forEach(function(tabGrp){
-                          var tabName = tabGrp.displayName;
+                    if (tabControl.type === 'Tab Group') {
+                        tabControl.controls.forEach(function (tabGrp) {
+                            var tabName = tabGrp.displayName;
 
-                          tabGrp.controls.forEach(function (tab) {
-                                if (tab.type === "MultiSelectGrid" || tab.type === "Select Grid"){
+                            tabGrp.controls.forEach(function (tab) {
+                                if (tab.type === "MultiSelectGrid" || tab.type === "Select Grid") {
                                     cnfg = configData.getGridConfigTypes(tab, tabName);
                                     tabs.push(cnfg);
                                 }
@@ -258,10 +261,12 @@
 
         vm.getGridConfigs = function (tabsCfData) {
             var cnfgs = [];
-            logc("tabsCfData",tabsCfData);
-            if(tabsCfData){
+            //logc("tabsCfData", tabsCfData);
+            if (tabsCfData) {
                 tabsCfData.forEach(function (tab) {
-                    var hdrCnfgs = {} , fltrCnfg = {}, mainCnfg = {} ;
+                    var hdrCnfgs = {},
+                        fltrCnfg = {},
+                        mainCnfg = {};
 
                     var h = configData.getHeaders(tab);
                     hdrCnfgs = h;
@@ -273,9 +278,9 @@
                     mainCnfg = m;
 
                     var cnfg = {
-                        "headers" : hdrCnfgs,
-                        "filters" : fltrCnfg,
-                        "main"    : mainCnfg
+                        "headers": hdrCnfgs,
+                        "filters": fltrCnfg,
+                        "main": mainCnfg
                     };
 
                     var c = configFactory(cnfg);
@@ -283,32 +288,33 @@
                 });
             }
 
-           // logc("cnfg for ", cnfgs);
+            // logc("cnfg for ", cnfgs);
             return cnfgs;
         };
 
         vm.getSwitchConfigs = function (data) {
-            var  aSwitch = [];
-            if(data && data.controls){
-                if(data.type === 'Tab Group'){
-                    data.controls.forEach(function(tabGrp){
-                       tabGrp.controls.forEach(function (ctrl) {
-                           if(ctrl.type === 'Switch'){
-                               var c = {
-                                    id : ctrl.id,
-                                    text : ctrl.displayName,
-                                    key : ctrl.dataSource,
-                                    configData : switchConfig({
-                                       onChange : vm.noop,
-                                       disabled : false
-                                    })
-                                };
-                                aSwitch.push(c);
-                            }
-                       });
-
-                    });
-                }
+            var aSwitch = [];
+            if (data && data.controls) {
+                data.controls.forEach(function (tabControl) {
+                    if (tabControl.type === 'Tab Group') {
+                        tabControl.controls.forEach(function (tabGrp) {
+                            tabGrp.controls.forEach(function (ctrl) {
+                                if (ctrl.type === 'Switch') {
+                                    var c = {
+                                        id: ctrl.id,
+                                        text: ctrl.displayName,
+                                        key: ctrl.dataSource,
+                                        configData: switchConfig({
+                                            onChange: vm.noop,
+                                            disabled: false
+                                        })
+                                    };
+                                    aSwitch.push(c);
+                                }
+                            });
+                        });
+                    }
+                });
             }
             return aSwitch;
         };
@@ -323,7 +329,7 @@
             var allowed = true,
                 calledFrom = $params.link;
 
-            if (persona.hasViewOnlySupportToolAccess()){
+            if (persona.hasViewOnlySupportToolAccess()) {
                 allowed = false;
             }
 
@@ -336,13 +342,13 @@
 
         vm.destroy = function () {
             logc("destroy called");
-            if (vm.dataPropReq) {
-                vm.dataPropReq.$cancelRequest();
-            }
+            // if (vm.dataPropReq) {
+            //     vm.dataPropReq.$cancelRequest();
+            // }
 
-            if (vm.dataRoleReq) {
-                vm.dataRoleReq.$cancelRequest();
-            }
+            // if (vm.dataRoleReq) {
+            //     vm.dataRoleReq.$cancelRequest();
+            // }
 
             vm.destWatch();
             vm.profileWatch();
@@ -362,28 +368,22 @@
             "$location",
             "$stateParams",
             "userViewModel",
-            // "userTabsModel",
-            // "userTabsManager",
             "userSessionModel",
             "pubsub",
             "routeSecurity",
             "personaDetails",
             "productDataSyncManager",
-            "DataModel",
             "productPanelDataModel",
             "configDataModel",
             "gridConfigFactory",
             "ConfigModel",
-           // "productPanelTabsMenu",
-           // "productPanelTabsData",
-            "DataModelpcc",
             "productPanelTabsModel",
-            "productPropertiesSvc",
-            "productRolesSvc",
             "userDetailsModel",
-            "DataModel1",
             "rpSwitchConfig",
+            "DataModel",
+            "DataModelpcc",
             "DataModelMc",
+            "DataModelOneSite",
             ProductCommonCtrl
         ]);
 })(angular);

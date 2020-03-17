@@ -150,7 +150,6 @@
 
 
         vm.selectSoln = function (soln) {
-            logc("selected soln", soln);
             panels.initState();
             model.selectSoln(soln);
             productAccess.selectSoln(soln);

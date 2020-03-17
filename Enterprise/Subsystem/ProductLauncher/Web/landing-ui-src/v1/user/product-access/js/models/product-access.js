@@ -110,7 +110,7 @@ logc("getExistingUserData", assignmentChanged, isAssigned, accessChanged, touche
                         }
                     }
                 }
-                else if (productId === 10 || productId === 14) {
+                else if (productId === 1 || productId === 10 || productId === 14) {
                     if (isAssigned && touched && !isDisabled) {
                          prodData = productAccess.getAccessData(key, productId);
                          prodData.inputJson.isAssigned = isAssigned;
