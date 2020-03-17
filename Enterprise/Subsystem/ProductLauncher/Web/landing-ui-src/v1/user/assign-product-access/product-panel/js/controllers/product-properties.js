@@ -96,10 +96,11 @@ logc("vm.filteredPropertiesArray", vm.filteredPropertiesArray);
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
             if (persona.isReady() && vm.isActive()) {
+                propertiesGrid.busy(true);
                   var propertyData = syncMgr.getProductPropertiesData(productId);
                  // logc("propertyData",propertyData,productId);
                   if (propertyData === undefined){
-                    propertiesGrid.busy(false);
+                    // propertiesGrid.busy(false);
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
@@ -116,6 +117,7 @@ logc("vm.filteredPropertiesArray", vm.filteredPropertiesArray);
         };
 
         vm.setPropertyData = function (resp) {
+
             //var productId = $scope.$parent.productId;
             if (resp.records && resp.records.length > 0){
                // logc("setPropertyData",resp.records, vm.productId);
@@ -126,6 +128,7 @@ logc("vm.filteredPropertiesArray", vm.filteredPropertiesArray);
                 }
                 vm.loadGridData($scope.$parent.productId);
              }
+             propertiesGrid.busy(false);
         };
 
         vm.loadGridData = function (productId) {
