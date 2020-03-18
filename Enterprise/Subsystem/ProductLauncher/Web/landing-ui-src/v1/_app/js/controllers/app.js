@@ -107,7 +107,10 @@
               docs: ENV.helpUrl
             };
 
-            omnibar.auth = identityToken;
+            let rootPath = `${window.location.protocol}//${window.location.host}/`;
+
+            omnibar.isUnifiedLogin = true;
+            omnibar.silentRefreshUri = `${rootPath}omnibar-silent-refresh.html`;
 
             var helpWidget = document.querySelector('omnibar-unified-help');
             $rootScope.$on("$stateChangeSuccess", function (_, toState) {
