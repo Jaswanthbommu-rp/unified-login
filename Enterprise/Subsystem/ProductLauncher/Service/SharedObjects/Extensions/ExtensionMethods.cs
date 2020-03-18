@@ -64,8 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.AuditMessage = string.Concat("User {2} {3} updated the ",
                                                                    internalAttribute.ColumnName,
-                                                                   " from ", auditRecord.OldValue == null ? internalAttribute.NullValue : auditRecord.OldValue,
-                                                                   " to ", auditRecord.NewValue == null ? internalAttribute.NullValue : auditRecord.NewValue,
+                                                                   " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue: auditRecord.OldValue,
+                                                                   " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
                                                                    " on ", entityName,
                                                                    " for {0} {1}");
 

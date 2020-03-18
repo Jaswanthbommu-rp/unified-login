@@ -13,9 +13,9 @@
         public string ColumnName { get; private set; }
 
         /// <summary>
-        /// Value for nulls
+        /// Value for nulls or empty
         /// </summary>
-        public string NullValue { get; private set; }
+        public string NullBlankValue { get; private set; }
 
         #endregion
 
@@ -25,11 +25,11 @@
         /// Class constructor
         /// </summary>
         /// <param name="columName">Column name</param>
-        /// <param name="nullValue">Value for nulls</param>
-        public AuditLogAttribute(string columName, string nullValue = "a blank value")
+        /// <param name="nullBlankValue">Value for nulls or empty</param>
+        public AuditLogAttribute(string columName, string nullBlankValue = "a blank value")
         {
             ColumnName = columName;
-            NullValue = nullValue;
+            NullBlankValue = nullBlankValue;
         }
 
         #endregion 
