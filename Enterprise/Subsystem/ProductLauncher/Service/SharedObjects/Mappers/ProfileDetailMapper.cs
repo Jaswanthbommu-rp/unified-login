@@ -1,4 +1,4 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dto;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers
@@ -12,10 +12,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
         /// <typeparam name="TR">UserAuditDto object</typeparam>
         /// <param name="origin">ProfileDetail object</param>
         /// <returns>A UserAuditDto object</returns>
-        public static TR UserDetailToUserAuditDto<TR>(this ProfileDetail origin)
+        public static TR ProfileDetailToUserAuditDto<TR>(this ProfileDetail origin)
         where TR : UserAuditDto, new()
         {
-            return origin.UserDetailToUserAuditDto(new TR());
+            return origin.ProfileDetailToUserAuditDto(new TR());
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
         /// <param name="origin">ProfileDetail object</param>
         /// <param name="result">UserAuditDto object</param>
         /// <returns>A UserAuditDto object</returns>
-        public static TR UserDetailToUserAuditDto<TR>(this ProfileDetail origin, TR result)
+        public static TR ProfileDetailToUserAuditDto<TR>(this ProfileDetail origin, TR result)
         where TR : UserAuditDto, new()
         {
             if (origin == null)
@@ -44,6 +44,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
                 result.MiddleInitial = origin.MiddleName;
                 result.NotificationEmail = origin.NotificationEmail;
                 result.UserName = origin.userLogin.LoginName;
+                result.UserExpire = origin.userLogin.ThruDate;
+                result.UserEffective = origin.userLogin.FromDate;
+                result.Access = origin.userLogin.IsActive;
             }
 
             return result;
