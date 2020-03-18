@@ -1,31 +1,31 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers
 {
-    public static class ProfileDetailMapper
+    public static class UserDetailsMapper
     {
-        #region From ProfileDetail to UserAuditDto
+        #region From UserDetails to UserAuditDto
         /// <summary>
-        /// ProfileDetail becomes a UserAuditDto object
+        /// UserDetails becomes a UserAuditDto object
         /// </summary>
         /// <typeparam name="TR">UserAuditDto object</typeparam>
-        /// <param name="origin">ProfileDetail object</param>
+        /// <param name="origin">UserDetails object</param>
         /// <returns>A UserAuditDto object</returns>
-        public static TR ProfileDetailToUserAuditDto<TR>(this ProfileDetail origin)
+        public static TR UserDetailsToUserAuditDto<TR>(this UserDetails origin)
         where TR : UserAuditDto, new()
         {
-            return origin.ProfileDetailToUserAuditDto(new TR());
+            return origin.UserDetailsToUserAuditDto(new TR());
         }
 
         /// <summary>
-        /// ProfileDetail becomes a UserAuditDto object
+        /// UserDetails becomes a UserAuditDto object
         /// </summary>
         /// <typeparam name="TR">UserAuditDto object</typeparam>
-        /// <param name="origin">ProfileDetail object</param>
+        /// <param name="origin">UserDetails object</param>
         /// <param name="result">UserAuditDto object</param>
         /// <returns>A UserAuditDto object</returns>
-        public static TR ProfileDetailToUserAuditDto<TR>(this ProfileDetail origin, TR result)
+        public static TR UserDetailsToUserAuditDto<TR>(this UserDetails origin, TR result)
         where TR : UserAuditDto, new()
         {
             if (origin == null)
@@ -42,11 +42,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
                 result.FirstName = origin.FirstName;
                 result.LastName = origin.LastName;
                 result.MiddleInitial = origin.MiddleName;
-                result.NotificationEmail = origin.NotificationEmail;
-                result.UserName = origin.userLogin.LoginName;
-                result.UserExpire = origin.userLogin.ThruDate;
-                result.UserEffective = origin.userLogin.FromDate;
-                result.Access = origin.userLogin.IsActive;
+                result.NotificationEmail = origin.Email;
+                result.UserName = origin.LoginName;
+                result.UserExpire = origin.ThruDate;
+                result.UserEffective = origin.FromDate;
+                //result.Access = origin.userLogin.IsActive;
             }
 
             return result;

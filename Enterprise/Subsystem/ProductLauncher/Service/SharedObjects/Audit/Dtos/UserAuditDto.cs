@@ -50,6 +50,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         /// <summary>
         /// User Enable Access
         /// </summary>
-        public bool? Access { get; set; }
+        ///public bool? Access { get; set; }
     }
 }

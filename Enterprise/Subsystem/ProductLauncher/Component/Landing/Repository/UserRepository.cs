@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -13,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
@@ -231,10 +233,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (newProfile.ClonedUser)
             {
                 cloneUserPersonaId = newProfile.Persona[0].PersonaId;
-				var cloneUserPersona = _managePersona.GetPersona(cloneUserPersonaId);
-				var personaOrganization = cloneUserPersona.Organization;
-				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
-				using (var pbRepository = GetRepository())
+                var cloneUserPersona = _managePersona.GetPersona(cloneUserPersonaId);
+                var personaOrganization = cloneUserPersona.Organization;
+                bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+                using (var pbRepository = GetRepository())
                 {
                     //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
                     List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = newProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
@@ -318,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if (newProfile.userLogin.ThruDate == null)
                     {
-                        newProfile.userLogin.ThruDate = new DateTime(9999,12,31);
+                        newProfile.userLogin.ThruDate = new DateTime(9999, 12, 31);
                     }
 
                     identityProviderType = (from a in identityProviderTypeList where a.IsLocal == (newProfile.userLogin.Is3rdPartyIDP ? false : true) select a).FirstOrDefault();
@@ -2075,6 +2077,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductBatch> productBatchData = new List<ProductBatch>();
             IList<ContactMechanismUsageType> emailUsageType = new List<ContactMechanismUsageType>();
 
+            //Notification Email
+            IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
+
             //BlueBook MasterId for External Users
             IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
 
@@ -2263,6 +2268,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
+            //Get Current Notification Email before update
+            IList<CommonAddress> commonAddressList = contactMechanismRepository.ListContactMechanismForPerson(profile.userLogin.RealPageId, "Email Notification");
+            CommonAddress ca = (from a in commonAddressList
+                                where a.contactMechanismUsageType != null
+                                select a).FirstOrDefault();
+            userDetails.Email = ca?.AddressString;
+
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -2291,26 +2303,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            if (!userDetails.FirstName.Equals(profile.FirstName))
-                            {
-                                //Log Activity
-                                var auditMessage = $"User {{2}} {{3}} updated the First name from {userDetails.FirstName} to {profile.FirstName} on the user profile for {{0}} {{1}}.";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            }
-                            if (!userDetails.MiddleName.Equals(profile.MiddleName))
-                            {
-                                //Log Activity
-                                string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank value" : userDetails.MiddleName;
-                                string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank value" : profile.MiddleName;
-                                var auditMessage = $"User {{2}} {{3}} updated the Middle name from {oldMiddleName} to {newMiddleName} on the user profile for {{0}} {{1}}.";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            }
-                            if (!userDetails.LastName.Equals(profile.LastName))
-                            {
-                                //Log Activity
-                                var auditMessage = $"User {{2}} {{3}} updated the Last name from {userDetails.LastName} to {profile.LastName} on the user profile for {{0}} {{1}}.";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            }
+
+                            AuditUserUpdate(userDetails , profile);
+                            //if (!userDetails.FirstName.Equals(profile.FirstName))
+                            //{
+                            //    //Log Activity
+                            //    var auditMessage = $"User {{2}} {{3}} updated the First name from {userDetails.FirstName} to {profile.FirstName} on the user profile for {{0}} {{1}}.";
+                            //    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            //}
+                            //if (!userDetails.MiddleName.Equals(profile.MiddleName))
+                            //{
+                            //    //Log Activity
+                            //    string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank value" : userDetails.MiddleName;
+                            //    string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank value" : profile.MiddleName;
+                            //    var auditMessage = $"User {{2}} {{3}} updated the Middle name from {oldMiddleName} to {newMiddleName} on the user profile for {{0}} {{1}}.";
+                            //    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            //}
+                            //if (!userDetails.LastName.Equals(profile.LastName))
+                            //{
+                            //    //Log Activity
+                            //    var auditMessage = $"User {{2}} {{3}} updated the Last name from {userDetails.LastName} to {profile.LastName} on the user profile for {{0}} {{1}}.";
+                            //    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            //}
                         }
                     }
                     #endregion
@@ -2850,7 +2864,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         // GreenBook - UnifiedLogin call updating GB Role
                         greenBookRole = 0;
-                        
+
                         var gbProdBatch = profile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedLogin);
                         if (gbProdBatch != null)
                         {
@@ -2923,7 +2937,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 // Activity logging
                 if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
-                    {
+                {
                     if (greenBookRole != 0 && greenBookRole != existingRoleId && existingRoleId != 0)
                     {
                         if (enterpriseRoles != null)
@@ -5140,6 +5154,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             public Guid OrganizationRealPageId { get; set; }
         }
 
+        #endregion
+
+        #region Audit
+        private void AuditUserUpdate(UserDetails userDetail, IProfileDetail profile)
+        {
+            UserAuditDto userUpdated = profile.IProfileDetailToUserAuditDto<UserAuditDto>();
+            UserAuditDto currentUser = userDetail.UserDetailsToUserAuditDto<UserAuditDto>();
+
+            var auditResult = ExtensionMethods.GenerateUpdateAudit<UserAuditDto, UserAuditDto>(currentUser , userUpdated , "User");
+        }
         #endregion
     }
 }
