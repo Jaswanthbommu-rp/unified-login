@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
         {
             if (origin == null)
             {
-                result = default;
+                result = new TR(); ;
             }
             else
             {
