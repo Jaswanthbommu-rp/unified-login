@@ -28,7 +28,9 @@
         <omnibar-scope
               slot="scope"
               product="RealPage Unified Platform"
-              base="{{ app.orgName }}" ng-cloak
+              logout-url="logout"
+              follow-logout-href="false"
+              ng-cloak
         ></omnibar-scope>
 
         <omnibar-navigation slot="navigation">
@@ -74,12 +76,6 @@
                     </span>
                 </omnibar-user-menu-item>
             </div>
-           
-
-            <omnibar-user-menu-item slot="user-logout"
-                                 menu-name="Log Out">
-                <a href="/home/signout">Log Out</a>
-            </omnibar-user-menu-item>
 
         </omnibar-unified-menu>
 
