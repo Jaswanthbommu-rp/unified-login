@@ -2289,6 +2289,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
                             throw new Exception(repositoryResponse.ErrorMessage);
                         }
+                        else
+                        {
+                            if (!userDetails.FirstName.Equals(profile.FirstName))
+                            {
+                                //Log Activity
+                                var auditMessage = $"User {{2}} {{3}} updated the First name from {userDetails.FirstName} to {profile.FirstName} on the user profile for {{0}} {{1}}.";
+                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            }
+                            if (!userDetails.MiddleName.Equals(profile.MiddleName))
+                            {
+                                //Log Activity
+                                string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank value" : userDetails.MiddleName;
+                                string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank value" : profile.MiddleName;
+                                var auditMessage = $"User {{2}} {{3}} updated the Middle name from {oldMiddleName} to {newMiddleName} on the user profile for {{0}} {{1}}.";
+                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            }
+                            if (!userDetails.LastName.Equals(profile.LastName))
+                            {
+                                //Log Activity
+                                var auditMessage = $"User {{2}} {{3}} updated the Last name from {userDetails.LastName} to {profile.LastName} on the user profile for {{0}} {{1}}.";
+                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
+                            }
+                        }
                     }
                     #endregion
 
@@ -2470,6 +2493,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     {
                                         repositoryResponse.ErrorMessage = "Update User Error: Update user status failed.";
                                         throw new Exception(repositoryResponse.ErrorMessage);
+                                    }
+                                    else
+                                    {
+                                        if (profile.userLogin.IsActive == true && currentOrgStatus.IsActive == false)
+                                        {
+                                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{2} {3} activated access for user {0} {1}.", "UpdateUser", profile);
+                                        }
                                     }
                                 }
                             }

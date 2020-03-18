@@ -54,6 +54,12 @@
             var data = model.getAllProducts();
             var dataOptions = [];
 
+            var defaultvalue = {
+                productName: "All",
+                productVal: "All"
+            };
+
+            dataOptions.push(defaultvalue);
             if (data.records !== undefined) {
                 data.records.forEach(function(item) {
                     var o = {
