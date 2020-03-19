@@ -2304,7 +2304,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         else
                         {
 
-                            AuditUserUpdate(userDetails , profile);
                             //if (!userDetails.FirstName.Equals(profile.FirstName))
                             //{
                             //    //Log Activity
@@ -2907,6 +2906,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.Id = 0;
                             repositoryResponse.ErrorMessage = saveProductBatchError;
                         }
+
+                        AuditUserUpdate(userDetails, profile);
+
                     }
                 }
                 catch (Exception exception)
@@ -5162,7 +5164,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             UserAuditDto userUpdated = profile.IProfileDetailToUserAuditDto<UserAuditDto>();
             UserAuditDto currentUser = userDetail.UserDetailsToUserAuditDto<UserAuditDto>();
 
-            var auditResult = ExtensionMethods.GenerateUpdateAudit<UserAuditDto, UserAuditDto>(currentUser , userUpdated , "User");
+            var auditResult = ExtensionMethods.GenerateUpdateAudit(currentUser , userUpdated , "User");
+
+            auditResult.ForEach(x => LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, x.AuditMessage, "UpdateUser", profile));
+
         }
         #endregion
     }
