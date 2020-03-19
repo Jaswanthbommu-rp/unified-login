@@ -40,13 +40,13 @@
             vm.grid.updateSelected();
         };
 
-
         vm.isActive = function () {
             return PMDataModel.isActive();
         };
 
         vm.loadData = function () {
             if (persona.isReady() && PMDataModel.isActive()) {
+                grid.busy(true);
                 var params = {
                     productType: "PortfolioManagement",
                     subjectPersonaId: userDetailsModel.getPersonaId(),
@@ -61,8 +61,16 @@
         };
 
         vm.setData = function (resp) {
+            grid.busy(false);
             if (resp.records && resp.records.length > 0) {
                 sync.setRoleList(resp.records);
+                resp.records.forEach(function (role) {
+                    var assignedPropertiesCount = role.propertiesList.filter(function (item) {
+                        return item.isAssigned === true;
+                    });
+                    role.assignedProperties = assignedPropertiesCount.length+" of "+role.propertiesList.length;
+                });
+
                 gridPagination.setData(resp.records).goToPage({
                     number: 0
                 });
@@ -80,7 +88,6 @@
             }
         };
 
-
         vm.isReady = function () {
             return PMDataModel.isReady();
         };
@@ -88,7 +95,6 @@
         vm.setChanged = function () {
             PMDataModel.setChanged();
         };
-
 
         vm.destroy = function () {
             vm.destWatch();

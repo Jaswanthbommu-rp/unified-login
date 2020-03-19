@@ -296,8 +296,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}
 							WriteToDiagnosticLog($"GetProperties - Adding extra property.", logData);
 						}
-						allProperties.Add("allProperties", mUser.AssignNewProperty);
-					}
+						//allProperties.Add("allProperties", mUser.AssignNewProperty);
+                        allProperties.Add("IsAssignedNewPropertyByDefault", mUser.AssignNewProperty);
+                    }
 
 					logData = new Dictionary<string, object>();
 					logData.Add("list", list);
@@ -395,6 +396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
 				IList<UserOrganization> userPersonaOrganizationList = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+				bool isRegularUserNoEmail  = IsRegularUserNoEmail(userPersonaId);
 
 				// get the email address
 				WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Begin get user email address");
@@ -417,7 +419,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Using login name for email address.");
 				}
 
-				if (IsRegularUserNoEmail(userPersonaId))
+				if (isRegularUserNoEmail)
 				{
 					userLeadEmailAddress = userEmailAddress;
 				}
@@ -436,21 +438,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Validated email address. Email: {userEmailAddress}");
 				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Product User Name : {_productUsername}");
 
-				if (string.IsNullOrEmpty(_productUsername))
+				productLoginName = _productUsername;
+				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
+				if ((userPersonaOrganizationList.ToList().Any(o => o.PrimaryOrganization.Equals(true)
+					&& o.OrganizationPartyId.Equals(userPersona.OrganizationPartyId))) 
+					&& (!_productUsername.Equals(userEmailAddress, StringComparison.OrdinalIgnoreCase)))
 				{
 					productLoginName = userEmailAddress;
-				}
-				else
-				{
-					productLoginName = _productUsername;
-				}
-
-				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
-				if ((userPersonaOrganizationList.ToList().Any(o => o.PrimaryOrganization.Equals(true) && o.OrganizationPartyId.Equals(userPersona.OrganizationPartyId))) && (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase)))
-				{
-					productLoginName = userLogin.LoginName;
-				}
-
+				}		
+				
 				MarketingCenterUserDetails mUser = GetUserDetails();
 				if (mUser == null)
 				{
@@ -458,15 +454,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "User not found in product";
 				}
 
-				var mcUser = new MC.MarketingCenterUser()
-				{
-					CompanyId = mUser.CompanyId,
-					ContactRoleId = mUser.ContactRoleId,
-					FirstName = person.FirstName,
-					LastName = person.LastName,
-					EmailAddress = productLoginName,
-					LeadEmailAddress = userLeadEmailAddress,
-					WelcomeEmailSent = true
+                var mcUser = new MC.MarketingCenterUser()
+                {
+                    CompanyId = mUser.CompanyId,
+                    ContactRoleId = mUser.ContactRoleId,
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    EmailAddress = productLoginName,
+                    LeadEmailAddress = userLeadEmailAddress,
+                    WelcomeEmailSent = true,
+                    AssignNewProperty = mUser.AssignNewProperty
 				};
 
 				var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
@@ -505,15 +502,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		/// <summary>
-		/// Updated to create/update a user in Marketing Center
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="RoleList">The role id to assign the user</param>
-		/// <param name="PropertyList">The list of property id's to assign to the user</param>
-		/// <returns></returns>
-		public string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList)
+        /// <summary>
+        /// Updated to create/update a user in Marketing Center
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="RoleList">The role id to assign the user</param>
+        /// <param name="PropertyList">The list of property id's to assign to the user</param>
+        /// <param name="IsAssignedNewPropertyByDefault">For UI toggle Assign new property by default selected</param>
+        /// <returns></returns>
+        public string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList, bool IsAssignedNewPropertyByDefault)
 		{
 			ListResponse listResponse = new ListResponse();
 			Dictionary<string, object> logData = new Dictionary<string, object>();
@@ -536,6 +534,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			IUserLoginOnly userLogin = new UserLoginOnly();
 			userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+			var personaOrganization = userPersona.Organization;
+			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
 			// get the email address
 			WriteToDiagnosticLog("ManageMarketingCenterUser - Begin get user email address");
@@ -615,7 +616,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// get the current properties for the company
 			ListResponse propertyListResponse = GetProperties(editorPersonaId, 0, null);
 			List<ProductProperty> propertyList = propertyListResponse.Records.Cast<ProductProperty>().ToList();
-			bool allPropertiesSelected = false;
+			bool allPropertiesSelected = false;            
 
 			int roleId = 0;
 			if (isSuperUser)
@@ -659,16 +660,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return $"Role id {RoleList[0]} not found";
 				}
 
-				if (!PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase))
-				{
-					foreach (var prop in PropertyList)
-					{
-						mcProperties.Add(Convert.ToInt32(prop));
-					}
-				}
-			}
+                foreach (var prop in PropertyList)
+                {
+                    mcProperties.Add(Convert.ToInt32(prop));
+                }
+            }
 
-			WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
+            WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
 			MC.MarketingCenterUser mcUser = new MC.MarketingCenterUser();
 			CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
 
@@ -680,26 +678,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			// get a login name that isn't in use for the new user
-			bool foundUserName = false;
-			int incrementor = 0;
-			string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
-
-			while (!foundUserName)
+			if (string.IsNullOrEmpty(_productUsername) && (isExternalUser || IsRegularUserNoEmail(userPersonaId)))
 			{
-				if (CheckIfUserExistInProduct(userEmailAddress))
-				{
-					incrementor++;
-					userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
-				}
-				else
-				{
-					foundUserName = true;
-				}
+                if(!IsRegularUserNoEmail(userPersonaId))
+                    userLeadEmailAddress = userLogin.LoginName;
 
-				if (incrementor == 10)
+				userEmailAddress = GetMCUniqueUserName(person.FirstName, person.LastName);
+				if (string.IsNullOrEmpty(userEmailAddress) )
 				{
-					// after 10 tries something might be wrong, so bail out.
-					WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {userEmailAddress}");
 					return "An error occurred. Unable to get username.";
 				}
 			}
@@ -718,17 +704,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 
 			mcUser.AssignPropertyIds = mcProperties;
-			if (PropertyList != null && PropertyList.Count > 0 && PropertyList[0].ToString().Equals("ALL", StringComparison.OrdinalIgnoreCase) && !isSuperUser)
-			{
-				allPropertiesSelected = true;
-				mcUser.AssignPropertyIds = null;
-			}
-			else if (isSuperUser)
-			{
-				allPropertiesSelected = true;
-			}
+            mcUser.AssignNewProperty = IsAssignedNewPropertyByDefault;
 
-			logData = new Dictionary<string, object>();
+            if (isSuperUser)
+            {
+                allPropertiesSelected = true;
+                mcUser.AssignNewProperty = true;
+            }
+
+            logData = new Dictionary<string, object>();
 			logData.Add("mcUser", mcUser);
 			WriteToDiagnosticLog("ManageMarketingCenterUser - User details.", logData);
 
@@ -804,8 +788,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					if (!isSuperUser)
 					{
-						if (!allPropertiesSelected)
-						{
+						//if (!allPropertiesSelected)
+						//{
 							// get the users current property list and get everything that is currently assigned so it can be removed before adding again
 							ListResponse currentPropertyListResponse = GetProperties(editorPersonaId, userPersonaId, null);
 							List<ProductProperty> currentPropertyList = currentPropertyListResponse.Records.Cast<ProductProperty>().ToList();
@@ -829,9 +813,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								}
 								mcUser.UnassignPropertyIds = removePropertyList;
 							}
-						}
+						//}
 						mcUser.AssignAllProperties = allPropertiesSelected;
 					}
+                    if(isExternalUser)
+                    {
+                        mcUser.EmailAddress = _productUsername;
+                        mcUser.LeadEmailAddress = userEmailAddress;
+                    }
 					var url = "";
 					if (allPropertiesSelected)
 					{
@@ -930,6 +919,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return true;
 			}
 			return false;
+		}
+
+		private string GetMCUniqueUserName(string firstName, string lastName)
+		{
+			// get a login name that isn't in use for the new user
+			bool foundUserName = false;
+			string userEmailAddress = "";
+			int incrementor = 1;
+			string newproductUsername = $"{firstName.TrimWhiteSpace().Substring(0, 1)}" + $"{lastName.TrimWhiteSpace()}".ToLower();
+			userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+
+			while (!foundUserName)
+			{
+				if (CheckIfUserExistInProduct(userEmailAddress))
+				{
+					incrementor++;
+					userEmailAddress = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
+				}
+				else
+				{
+					foundUserName = true;
+				}
+
+				if (incrementor == 10)
+				{
+					// after 10 tries something might be wrong, so bail out.
+					WriteToErrorLog($"ManageMarketingCenterUser - Error checking for username in use {userEmailAddress}");
+					return "";
+				}
+			}
+			return userEmailAddress;
 		}
 
 		/// <summary>

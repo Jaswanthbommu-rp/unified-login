@@ -178,6 +178,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasAccessToAllCurrentFutureProperties { get; set; } = null;
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsAssignedNewPropertyByDefault { get; set; } = null;
+
         #endregion
 
         #region Resident Portal

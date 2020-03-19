@@ -28,6 +28,41 @@ BEGIN
 
     BEGIN TRANSACTION; -- HAve to lock the tables so that another process can't come in and scoop up our waiting processes
 
+	;with batchtoprocess as (
+		SELECT
+			   [BatchProcessorId],
+			   [CorrelationId],
+			   [RealPageId] AS EditorUserRealPageId,
+			   EditorUserPartyId,
+			   [EditorUserPersonaId],
+			   [SubjectUserPersonaId],
+			   [ProductId],
+			   [StatusTypeId],
+			   [RetryCount],
+			   [BatchProcessTypeId],
+			   [InputJson],
+			   [CreatedDateTime],
+			   [LastRunDateTime],
+			   row_number() over (partition by subjectuserpersonaid, productid order by batchprocessorid asc ) as rn,
+			   row_number() over (partition by editoruserpersonaid order by batchprocessorid asc ) as rn2
+
+		FROM Batch.[BatchProcessor] BP
+			JOIN Enterprise.Party P
+				ON BP.EditorUserPartyId = P.PartyId
+		WHERE (
+				  @IncludeErrorRecord = 'True'
+				  AND
+				  (
+					  BP.StatusTypeId = 7
+					  AND BP.RetryCount < @RetryCount
+				  )
+			  )
+			  OR
+			  (
+				  @IncludeErrorRecord = 'False'
+				  AND BP.StatusTypeID = 5
+			  )
+	)
     INSERT INTO @PBFiltered
     (
         [BatchProcessorId],
@@ -44,37 +79,25 @@ BEGIN
         [CreatedDateTime],
         [LastRunDateTime]
     )
-    SELECT TOP (@BatchSize)
-           [BatchProcessorId],
-           [CorrelationId],
-           [RealPageId] AS EditorUserRealPageId,
-           EditorUserPartyId,
-           [EditorUserPersonaId],
-           [SubjectUserPersonaId],
-           [ProductId],
-           [StatusTypeId],
-           [RetryCount],
-           [BatchProcessTypeId],
-           [InputJson],
-           [CreatedDateTime],
-           [LastRunDateTime]
-    FROM Batch.[BatchProcessor] BP
-        JOIN Enterprise.Party P
-            ON BP.EditorUserPartyId = P.PartyId
-    WHERE (
-              @IncludeErrorRecord = 'True'
-              AND
-              (
-                  BP.StatusTypeId = 7
-                  AND BP.RetryCount < @RetryCount
-              )
-          )
-          OR
-          (
-              @IncludeErrorRecord = 'False'
-              AND BP.StatusTypeID = 5
-          );
-
+	SELECT TOP (@BatchSize)
+		[BatchProcessorId],
+        [CorrelationId],
+        [EditorUserRealPageId],
+        [EditorUserPartyId],
+        [EditorUserPersonaId],
+        [SubjectUserPersonaId],
+        [ProductId],
+        [StatusTypeId],
+        [RetryCount],
+        [BatchProcessTypeId],
+        [InputJson],
+        [CreatedDateTime],
+        [LastRunDateTime]
+		From batchtoprocess 
+		WHERE 
+			rn = 1 
+			and 
+			rn2 <= 7
 
     UPDATE Batch.BatchProcessor
     SET StatusTypeId = 6 --Running

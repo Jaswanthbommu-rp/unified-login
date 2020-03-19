@@ -241,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			{
 				var processEndpoint = GetBatchConfigurationByType(batch.BatchProcessTypeId, ConfigurationType.ProcessApiEndpoint.ToString());
 
-				additionalInfo = new Dictionary<string, object>
+                additionalInfo = new Dictionary<string, object>
 				{
 					{"CorrelationId", batch.CorrelationId},
 					{"EditorUserPersonaId", batch.EditorUserPersonaId},

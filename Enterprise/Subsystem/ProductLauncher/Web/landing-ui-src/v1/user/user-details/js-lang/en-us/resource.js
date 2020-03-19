@@ -41,7 +41,7 @@
             "label.notificationEmail": notificationLabel,
             "label.fromDate": "User Effective",
             "label.thruDate": "User Expires (optional)",
-            "label.isActive": "Enable access for this user?",
+            "label.isActive": "Activate access for this user?",
             "label.is3rdPartyIDP": "Use third party identity service provider?",
             "label.timeZoneOffset": "Time Zone",
 

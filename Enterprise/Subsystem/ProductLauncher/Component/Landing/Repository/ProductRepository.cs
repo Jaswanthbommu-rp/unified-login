@@ -250,6 +250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.SettingsManagement
                             || r.ProductId == (int)ProductEnum.CIMPL
                             || r.ProductId == (int)ProductEnum.VendorMarketplace
+                            || r.ProductId == (int)ProductEnum.HelpCenter
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
@@ -278,7 +279,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.ProductLearningPortal));
                     }
                 }
-
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessHelpCenter", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.HelpCenter))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.HelpCenter));
+                    }
+                }
                 if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.MigrationTool))
@@ -475,6 +482,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             IsNewTab = true
                         }
                     );
+                }
+                
+                if (!productResources.Any(p => p.ProductId == (int)ProductEnum.HelpCenter))
+                {
+                    productResources.Add(
+                        new ProductUI
+                        {
+                            ProductId = (int)ProductEnum.HelpCenter,
+                            ProductName = "Help Center",
+                            TitleId = "Help Center",
+                            ProductUrl = "product/helpcenter",
+                            HasAccess = false,
+                            IsResource = true,
+                            IsNewTab = true
+                        }
+                );
                 }
 
                 // need to follow up later when conversions is ready to be tested
