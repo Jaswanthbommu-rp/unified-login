@@ -129,11 +129,31 @@ var data = {
           "name": "RoleNameColumnUIId",
           "dataSource": "roletype",
           "displayName": "Role Type",
-          "sequence": 2,
+          "sequence": 3,
           "type": "Label",
           "dependency": false,
           "attributes": null,
           "controls": null
+        },
+        {
+          "id": 80,
+          "name": "RoleNameColumnUIId",
+          "dataSource": "InfoIcon",
+          "displayName": "",
+          "sequence": 4,
+          "type": "slide",
+          "dependency": false,
+          "attributes": null,
+           "attributes": [{
+            "key": "Icon",
+            "value": "Info"
+          },
+          "controls": {
+            displayName:"Role Details",
+            "controls": {
+
+            }
+          },
         }]
       }]
     }]

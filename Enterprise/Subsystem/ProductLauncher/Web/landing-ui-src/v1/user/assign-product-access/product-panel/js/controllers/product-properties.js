@@ -59,19 +59,6 @@
             return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
         };
 
-        // vm.isUserHasManageProductAccess = function () {
-        //     var productId = $scope.$parent.productId;
-        //     logc("test", persona.data.hasProspectContactCenterProductAccess);
-        //     switch (productId) {
-        //     case "10":
-        //         return persona.data.hasProspectContactCenterProductAccess;
-        //     case "14":
-        //         return persona.data.hasManageClientPortalProductAccess;
-        //     default:
-        //         return false;
-        //     }
-        // };
-
         vm.filter = function (filterBy) {
             if (vm.propertySelect === 'active') {
                 vm.filteredPropertiesArray = $filter("filter")(vm.activeProperties, filterBy);
@@ -102,7 +89,7 @@
 
                 if (vm.switchconfigs !== undefined && vm.switchconfigs.length > 0) {
                     vm.switchconfigs[0].configData = switchConfig({
-                        onChange: vm.selectionAll,
+                        onChange: productId == 9 ? vm.updateNewPropertyByDefault : vm.selectionAll,
                         disabled: vm.hasViewOnlyAccess()
                     });
                 }
@@ -130,6 +117,10 @@
 
                 if (resp.additional && resp.additional.allProperties) {
                     syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                }
+
+                if (resp.additional && resp.additional.isAssignedNewPropertyByDefault) {
+                    syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, true);
                 }
                 vm.loadGridData($scope.$parent.productId);
             }
@@ -188,6 +179,10 @@
                     propertySelect = "all";
                 }
 
+                if (syncMgr.isProductNewPropertyByDefault(productId)) {
+                    propertySelect = "newProperty";
+                }
+
                 vm.propertySelect = propertySelect;
                 //propertiesGridPagination.setData(propData).goToPage({number: 0});
                 if (productId == "10") {
@@ -228,6 +223,10 @@
             if (record){
                 var propertiesData = syncMgr.selectedPropertySync(record.productId, record);
             }
+        };
+
+        vm.updateNewPropertyByDefault = function (bool) {
+           var propertiesData = syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, bool);
         };
 
         vm.updateMultiSelectPropertyRecords = function (record) {

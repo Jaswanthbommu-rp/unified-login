@@ -2,3 +2,12 @@
     @include body-3($rp-danger);
     padding-bottom: 8px;
 }
+
+.all-feature-properties {
+    text-align: right;
+    margin-bottom: 20px;
+
+    .rp-switch {
+        text-align: left;
+    }
+}

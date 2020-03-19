@@ -29,13 +29,6 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
 
-            // pubsub.subscribe("product.ProductRoleData", vm.setData);
-            // if (persona.isReady()) {
-            //     vm.loadData();
-            // }
-            // else {
-            //     vm.personaWatch = persona.subscribe(vm.loadData);
-            // }
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
@@ -133,67 +126,6 @@
                 //productDataModel.setRoles(resp.records);
             }
 
-            return vm;
-        };
-
-        vm.setData = function (productId) {
-            logc("$scope.rolesGrid", $scope.rolesGrid);
-            vm.rolesGrid = $scope.rolesGrid;
-            vm.rolesGrid.busy(true);
-            var roleData = syncMgr.getProductRolesData(productId);
-            //gridPagination = $scope.gridPagination;
-
-            if (roleData && roleData.length > 0) {
-                // vm.productId = productId;
-                if (security.isAllowed("viewUser")) {
-                    roleData.forEach(function (item) {
-                        angular.extend(item, {
-                            disabled: false,
-                            radname: "role"
-                        });
-                        item.disabled = true;
-                    });
-                }
-
-                roleData.forEach(function (item) {
-                    angular.extend(item, {
-                        radname: "role",
-                        productId: productId
-                    });
-                });
-                logc("gridPagination.grid", roleGridPagination);
-                // if (gridPagination === undefined){
-                //      // rolesGrid.setConfig(vm.config);
-                //      // gridPagination.setGrid(rolesGrid);
-                //      gridPagination = $scope.gridPagination;
-                //      logc("pubsub roleData", rolesGrid, gridPagination, vm.config);
-                // }
-                rolesGridTransform.watch(rolesGrid);
-                // rolesGrid.setConfig(gridConfig);
-                var config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
-                rolesGrid.setConfig(config);
-
-                roleGridPagination.setGrid(rolesGrid);
-                $scope.roleGridPagination = roleGridPagination;
-                roleGridPagination.setConfig({
-                    recordsPerPage: 25
-                });
-                roleGridPagination.setData(roleData).goToPage({
-                    number: 0
-                });
-
-                //productDataModel.setRoles(resp.records);
-            }
-            // if (resp.isError) {
-            //     vm.isDataError = true;
-            //     if (resp.errorReason !== "") {
-            //         vm.dataErrorReason = resp.errorReason;
-            //     }
-            //     else {
-            //         vm.dataErrorReason = genericDataErrorReason;
-            //     }
-            // }
-            vm.rolesGrid.busy(false);
             return vm;
         };
 

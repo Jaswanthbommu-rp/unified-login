@@ -16,12 +16,6 @@
 
         };
 
-        // p.setProperties = function (propertiesData) {
-        //     var s = this;
-        //     s.properties = propertiesData;
-        // };
-
-
         p.getGridConfigTypes = function (gridData, tabName) {
             var s = this, config = [];
            // logc("griddata--", gridData,gridData.Type);
@@ -36,32 +30,17 @@
                         });
                 });
             }
-            // if(gridData.type === "MultiSelectGrid" || gridData.type === "Select Grid"){
-            //     gridData.controls.forEach(function (ctrl){
-            //       if (ctrl.Type === "GridColums") {
-            //         ctrl.Controls.forEach(function (item) {
-            //           config.push({
-            //                     "key" : item.DataSource,
-            //                     "type" : s.isType(item.Type),
-            //                     "text": item.DisplayName,
-            //                     "idKey": "id",
-            //                     "templateUrl" : s.getTemplate( s.isControl(item.Type), tabName)
-            //             });
-            //         });
-            //       }
-            //     });
-            // }
+
             return config;
         };
 
         p.getRadioConfig = function (radioData) {
             var s = this, cnfg = [], cnfgs = [];
-logc("radioData radio", radioData);
+
              if(radioData && radioData.controls){
                 radioData.controls.forEach(function (tabGrp) {
                     tabGrp.controls.forEach(function (tab) {
                       tab.controls.forEach(function (item) {
-                                logc("radio item",item);
                             if(item.type === 'Radio' ){
                                 cnfgs.push({
                                     "key" : item.dataSource,
@@ -84,7 +63,7 @@ logc("radioData radio", radioData);
             if(type === 'Label'){
                 return 'text';
             }
-            else if(type === 'Radio'  || type === 'Dropdown'){
+            else if(type === 'Radio'  || type === 'Dropdown' || type === 'InfoIcon'){
                 return 'custom';
             }
             else if(type === 'CheckBox' ){

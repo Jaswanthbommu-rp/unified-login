@@ -174,8 +174,15 @@
             if (s.propertyMap['product' + product] !== undefined) {
                 s.propertyMap['product' + product].allProperties = value;
             }
+        };
 
-            // return productPropertiesList;
+        p.updateProductNewPropertyByDefault = function (product, value) {
+            var s = this,
+                productPropertiesList;
+
+            if (s.propertyMap['product' + product] !== undefined) {
+                s.propertyMap['product' + product].newPropertyByDefault = value;
+            }
         };
 
         p.isProductAllProperties = function (product) {
@@ -183,6 +190,16 @@
 
             if (s.propertyMap['product' + product] !== undefined) {
                 return s.propertyMap['product' + product].allProperties;
+            }
+
+            return false;
+        };
+
+        p.isProductNewPropertyByDefault = function (product) {
+            var s = this;
+
+            if (s.propertyMap['product' + product] !== undefined) {
+                return s.propertyMap['product' + product].newPropertyByDefault;
             }
 
             return false;
@@ -392,7 +409,8 @@ logc("allRolesSync",roleList, selected);
             if (!angular.equals({}, s.propertyList)) {
                 s.propertyMap['product' + key] = {
                     properties: s.propertyList,
-                    allProperties: false
+                    allProperties: false,
+                    newPropertyByDefault:false
                 };
             }
         };

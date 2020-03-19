@@ -28,7 +28,8 @@
                 retryCount: 0,
                 inputJson: {
                     roleList: [],
-                    propertyList: []
+                    propertyList: [],
+                    isAssignedNewPropertyByDefault: false
                 }
             };
 
@@ -150,6 +151,10 @@ logc("getdata",productId,dataSyncManager, s.batchData);
                             s.batchData.inputJson.propertyList.push(prop.id);
                         }
                     });
+
+                    if (productId == "9"){
+                        s.batchData.inputJson.isAssignedNewPropertyByDefault = dataSyncManager.isProductNewPropertyByDefault(productId);
+                    }
                 }
 
                 hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;

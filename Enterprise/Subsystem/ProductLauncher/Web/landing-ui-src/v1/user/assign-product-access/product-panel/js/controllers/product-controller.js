@@ -135,75 +135,6 @@
             panelModel.setRoleGridActive(true);
         };
 
-        // vm.getTabsGridData = function () {
-        //     if (vm.tabsList){
-        //         vm.tabsList.forEach(function (tab){
-        //             if (tab.id === "roles") {
-        //                 vm.getProductRolesData();
-        //             }
-        //             // if (tab.id === "properties") {
-        //             //     vm.getPropertiesData();
-        //             // }
-        //         });
-        //     }
-        // };
-
-        // vm.getPropertiesData = function () {
-        //       var propertyData = productModel.getProductPropertiesData(vm.productId);
-        //       logc("propertyData",propertyData,vm.productId);
-        //       if (propertyData === undefined){
-        //         var params = {
-        //             userPersonaId: userDetailsModel.getPersonaId(),
-        //             editorPersonaId: persona.getId(),
-        //             productId: vm.productId
-        //         };
-
-        //         vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
-        //       }
-        //       panelModel.setPropertyGridActive(true);
-        //       // else{
-        //       //   //pubsub.publish("product.ProductPropertyData", vm.productId);
-
-        //       // }
-        // };
-
-        // vm.getProductRolesData = function () {
-        //     var roleData = productModel.getProductRolesData(vm.productId);
-        //     logc("roleData", roleData, vm.productId);
-        //     if (roleData === undefined) {
-        //         var params = {
-        //             userPersonaId: userDetailsModel.getPersonaId(),
-        //             editorPersonaId: persona.getId(),
-        //             partyId: persona.data.organization.partyId,
-        //             productId: vm.productId
-        //         };
-
-        //         vm.dataRoleReq = rolesSvc.get(params, vm.setRoleData);
-        //     }
-        //     // pubsub.publish("product.ProductRoleData", vm.productId);
-        //     panelModel.setRoleGridActive(true);
-
-        // };
-
-        // vm.setPropertyData = function (resp) {
-        //     if (resp.records && resp.records.length > 0){
-        //        // logc("setPropertyData",resp.records, vm.productId);
-        //         var pdata = productModel.setPropertyList(resp.records, vm.productId);
-        //         panelModel.setPropertyGridActive(true);
-        //         //pubsub.publish("product.ProductPropertyData", vm.productId);
-        //        // logc(productModel);
-        //      }
-        // };
-
-        // vm.setRoleData = function (resp) {
-        //     if (resp.records && resp.records.length > 0) {
-        //         var rdata = productModel.setRoleList(resp.records, vm.productId);
-        //         panelModel.setRoleGridActive(true);
-        //         //pubsub.publish("product.ProductRoleData", vm.productId);
-        //         // logc(productModel);
-        //     }
-        // };
-
         vm.getProductTabsData = function (data) {
             var tabs = [],
                 i = 0;
@@ -341,15 +272,6 @@
         // };
 
         vm.destroy = function () {
-            logc("destroy called");
-            // if (vm.dataPropReq) {
-            //     vm.dataPropReq.$cancelRequest();
-            // }
-
-            // if (vm.dataRoleReq) {
-            //     vm.dataRoleReq.$cancelRequest();
-            // }
-
             vm.destWatch();
             vm.profileWatch();
             vm.productSelectedWatch();
