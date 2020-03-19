@@ -1,8 +1,9 @@
-﻿using System;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+﻿using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
+using System;
+using System.Text;
 
 namespace RP.Enterprise.Foundation.Audit.Core.Component
 {
@@ -159,6 +160,8 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
         private static LoggerConfiguration GetLoggerConfigurationWithFile(string logType, string jsonFormatter)
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
+            var authLogin = Convert.ToBase64String(Encoding.UTF8.GetBytes("devgold:k1b@na"));
+
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
@@ -170,7 +173,9 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                 AutoRegisterTemplate = true,
                 CustomFormatter = new JsonFormatter(jsonFormatter),
                 TypeName = $"{elasticSearchIndexTypeName}-{logType}",
-                IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}"
+                IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
+                //ModifyConnectionSettings = (c) => c.GlobalHeaders(new NameValueCollection{ { "Authorization", authLogin } })
+                ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
             });
             }
             return null;
@@ -180,6 +185,8 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
+            var authLogin = Convert.ToBase64String(Encoding.UTF8.GetBytes("devgold:k1b@na"));
+
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
                 return new LoggerConfiguration()
@@ -188,7 +195,9 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                             AutoRegisterTemplate = true,
                             CustomFormatter = new JsonFormatter(jsonFormatter),
                             TypeName = $"{elasticSearchIndexTypeName}-{logType}",
-                            IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}"
+                            IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
+                            //ModifyConnectionSettings = (c) => c.GlobalHeaders(new NameValueCollection{ { "Authorization", authLogin } })
+                            ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
                         });
             }
             return null;
