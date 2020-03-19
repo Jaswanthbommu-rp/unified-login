@@ -31,6 +31,12 @@
             width: 90%;
         }
 
+        .city {
+            min-width: 270px;
+            max-width: 270px;
+            white-space: nowrap;
+        }
+
         .state {
             min-width: 105px;
             max-width: 105px;
