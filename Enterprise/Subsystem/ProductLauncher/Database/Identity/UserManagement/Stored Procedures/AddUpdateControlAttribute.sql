@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Adds new/Updates the ControlAttribute table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].AddUpdateControlAttribute (
+CREATE PROCEDURE [UserManagement].[AddUpdateControlAttribute] (
 	 @ControlAttributeId INT
 	,@ControlId INT
 	,@Key NVARCHAR(100)

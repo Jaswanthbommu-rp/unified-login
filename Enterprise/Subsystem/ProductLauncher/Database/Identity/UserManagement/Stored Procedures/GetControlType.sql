@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Gets the record with the indicated ID from the ControlType table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetControlType (
+CREATE PROCEDURE [UserManagement].[GetControlType] (
 	 @ControlTypeId INT) 
 
  AS 

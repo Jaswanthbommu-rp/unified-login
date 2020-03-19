@@ -4,8 +4,8 @@
 -- Create date: 
 -- Description: Gets the record with the indicated ID from the ControlDependency table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetControlDependencyByComparatorID (
-	 @ComparatorID INT) 
+CREATE PROCEDURE [UserManagement].[GetControlDependencyByComparatorId] (
+	 @ComparatorId TINYINT) 
 
  AS 
 
@@ -14,10 +14,10 @@ CREATE PROCEDURE [UserManagement].GetControlDependencyByComparatorID (
 		,[MasterControlId]
 		,[SlaveControlID]
 		,[MasterControlValue]
-		,[ComparatorID]
+		,[ComparatorId]
 		,[CreatedBy]
 		,[CreatedDate]
 	FROM
 		[UserManagement].[ControlDependency]
 	WHERE
-		[ComparatorID] = @ComparatorID
+		[ComparatorId] = @ComparatorId

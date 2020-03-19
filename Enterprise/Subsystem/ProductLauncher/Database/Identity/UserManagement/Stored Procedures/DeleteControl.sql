@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Deletes the record with the indicated ID from the Control table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].DeleteControl (
+CREATE PROCEDURE [UserManagement].[DeleteControl] (
 	 @ControlId INT = NULL 
 	,@ParentControlId INT = NULL 
 	,@ControlTypeId INT = NULL 

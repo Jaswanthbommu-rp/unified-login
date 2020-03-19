@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Gets the record with the indicated ID from the ProductPageControl table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetProductPageControl (
+CREATE PROCEDURE [UserManagement].[GetProductPageControl] (
 	 @ProductPageControlId INT) 
 
  AS 

@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Searches the ProductPage table for the record with the indicated criteria.
 -- =============================================
-CREATE PROCEDURE [UserManagement].SearchExactProductPage (
+CREATE PROCEDURE [UserManagement].[SearchExactProductPage] (
 	 @ProductPageId INT = NULL 
 	,@ProductId INT = NULL 
 	,@DisplayName NVARCHAR(510) = NULL 

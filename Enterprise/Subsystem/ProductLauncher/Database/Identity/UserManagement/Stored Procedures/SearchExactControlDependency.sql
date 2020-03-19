@@ -4,12 +4,12 @@
 -- Create date: 
 -- Description: Searches the ControlDependency table for the record with the indicated criteria.
 -- =============================================
-CREATE PROCEDURE [UserManagement].SearchExactControlDependency (
+CREATE PROCEDURE [UserManagement].[SearchExactControlDependency] (
 	 @ControlDependencyId INT = NULL 
 	,@MasterControlId INT = NULL 
 	,@SlaveControlID INT = NULL 
 	,@MasterControlValue NVARCHAR(MAX) = NULL 
-	,@ComparatorID INT = NULL 
+	,@ComparatorId TINYINT = NULL 
 	,@CreatedBy BIGINT = NULL 
 	,@CreatedDate DATETIME = NULL 
 )
@@ -23,7 +23,7 @@ BEGIN
 		,[MasterControlId]
 		,[SlaveControlID]
 		,[MasterControlValue]
-		,[ComparatorID]
+		,[ComparatorId]
 		,[CreatedBy]
 		,[CreatedDate]
 	FROM
@@ -37,7 +37,7 @@ BEGIN
 	AND
 		(@MasterControlValue IS NULL  OR  [MasterControlValue] = @MasterControlValue)
 	AND
-		(@ComparatorID IS NULL  OR  [ComparatorID] = @ComparatorID)
+		(@ComparatorId IS NULL  OR  [ComparatorId] = @ComparatorId)
 	AND
 		(@CreatedBy IS NULL  OR  [CreatedBy] = @CreatedBy)
 	AND

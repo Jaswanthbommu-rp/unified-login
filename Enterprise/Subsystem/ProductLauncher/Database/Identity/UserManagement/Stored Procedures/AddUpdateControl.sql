@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Adds new/Updates the Control table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].AddUpdateControl (
+CREATE PROCEDURE [UserManagement].[AddUpdateControl] (
 	 @ControlId INT
 	,@ParentControlId INT
 	,@ControlTypeId INT

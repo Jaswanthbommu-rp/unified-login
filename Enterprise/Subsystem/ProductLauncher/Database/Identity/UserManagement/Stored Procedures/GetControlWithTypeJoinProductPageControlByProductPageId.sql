@@ -1,23 +1,37 @@
-﻿CREATE PROCEDURE [UserManagement].[GetControlWithTypeJoinProductPageControlByProductPageId] (
-	@ProductPageId INT
-)
-AS
-BEGIN
-	SELECT umc.[ControlId]
-				,umc.[ParentControlId]
-				,umc.[ControlTypeId]
-				,umc.[UIId]
-				,umc.[DisplayName]
-				,umc.[DataSource]
-				,umc.[Sequence]
-				,umc.[CreatedBy]
-				,umc.[CreatedDate]
-				,umct.[Name] AS 'ControlType'
-				,CASE WHEN PUMC.ControlId IS NULL THEN 'False' ELSE 'True' END AS Children
-	FROM [UserManagement].[Control] umc
-				INNER Join [UserManagement].[ProductPageControl] umppc ON umppc.[ControlId] =umc.[ControlId]
-				INNER Join [UserManagement].[ProductPage] umpp ON umpp.[ProductPageId] = umppc.[ProductPageId]
-				INNER JOIN [UserManagement].[ControlType] umct ON umct.ControlTypeId = umc.ControlTypeId
-				LEFT OUTER JOIN [UserManagement].[Control] PUMC ON PUMC.ControlId = UMC.ParentControlId
-	WHERE umpp.[ProductPageId] = @ProductPageId
+﻿  
+-- =============================================  
+-- Author:  Monte Jennings  
+-- Create date:   
+-- Description: Searches the Control table for the record with the indicated criteria.  
+-- =============================================  
+CREATE PROCEDURE [UserManagement].[GetControlWithTypeJoinProductPageControlByProductPageId] (  
+@ProductPageId INT  
+)  
+AS  
+  
+BEGIN  
+ SELECT DISTINCT   
+  [UserManagement].[Control].[ControlId]  
+ ,[UserManagement].[Control].[ParentControlId]  
+ ,[UserManagement].[Control].[ControlTypeId]  
+ ,[UserManagement].[Control].[UIId]  
+ ,[UserManagement].[Control].[DisplayName]  
+ ,[UserManagement].[Control].[DataSource]  
+ ,[UserManagement].[Control].[Sequence]  
+ ,[UserManagement].[ControlType].[Name] AS 'ControlType' 
+ ,[UserManagement].[Control].[CreatedBy]  
+ ,[UserManagement].[Control].[CreatedDate]  
+ ,CASE WHEN Children.ControlId IS NULL THEN 'False' ELSE 'True' END AS Children   
+ ,CASE WHEN ControlDependency.SlaveControlId IS NULL THEN 'False' Else 'True' END as Dependency   
+ ,CASE WHEN ControlAttribute.ControlId IS NULL THEN 'False' Else 'True' END as Attribute 
+FROM [UserManagement].[Control]  
+INNER JOIN [UserManagement].[ControlType] ON [Control].[ControlTypeId] = [ControlType].[ControlTypeId]  
+INNER JOIN [UserManagement].[ProductPageControl] A ON [A].[ControlId] = [UserManagement].[Control].[ControlId]  
+INNER JOIN [UserManagement].[ProductPage] B ON [A].[ProductPageId] = [B].[ProductPageId]  
+LEFT OUTER JOIN [UserManagement].[Control] Children ON Children.[ParentControlId] = [Control].[ControlId]    
+LEFT OUTER JOIN [UserManagement].[ControlDependency] ON ControlDependency.SlaveControlId = [Control].ControlId  
+LEFT OUTER JOIN [UserManagement].[ControlAttribute] ON ControlAttribute.ControlId = [Control].ControlId  
+WHERE [B].[ProductPageId] = @ProductPageId  
+  
+  
 END

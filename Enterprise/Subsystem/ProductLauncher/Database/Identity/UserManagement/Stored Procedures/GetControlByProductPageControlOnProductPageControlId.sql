@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Searches the Control table for the record with the indicated criteria.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetControlByProductPageControlOnProductPageControlId (
+CREATE PROCEDURE [UserManagement].[GetControlByProductPageControlOnProductPageControlId] (
 @ProductPageControlId INT
 )
 AS

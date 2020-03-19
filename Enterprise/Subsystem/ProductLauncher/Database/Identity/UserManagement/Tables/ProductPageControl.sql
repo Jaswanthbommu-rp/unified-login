@@ -9,7 +9,3 @@
     CONSTRAINT [FK_ProductPageControl_ProductPage] FOREIGN KEY ([ProductPageId]) REFERENCES [UserManagement].[ProductPage] ([ProductPageId])
 );
 
-
-
-
-

@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Gets the record with the indicated ID from the ControlDependency table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetControlDependencyBySlaveControlID (
+CREATE PROCEDURE [UserManagement].[GetControlDependencyBySlaveControlID] (
 	 @SlaveControlID INT) 
 
  AS 
@@ -14,7 +14,7 @@ CREATE PROCEDURE [UserManagement].GetControlDependencyBySlaveControlID (
 		,[MasterControlId]
 		,[SlaveControlID]
 		,[MasterControlValue]
-		,[ComparatorID]
+		,[ComparatorId]
 		,[CreatedBy]
 		,[CreatedDate]
 	FROM

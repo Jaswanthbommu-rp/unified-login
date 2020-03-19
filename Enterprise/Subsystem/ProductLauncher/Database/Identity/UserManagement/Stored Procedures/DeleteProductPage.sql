@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Deletes the record with the indicated ID from the ProductPage table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].DeleteProductPage (
+CREATE PROCEDURE [UserManagement].[DeleteProductPage] (
 	 @ProductPageId INT = NULL 
 	,@ProductId INT = NULL 
 	,@DisplayName NVARCHAR(510) = NULL 

@@ -4,12 +4,12 @@
 -- Create date: 
 -- Description: Deletes the record with the indicated ID from the ControlDependency table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].DeleteControlDependency (
+CREATE PROCEDURE [UserManagement].[DeleteControlDependency] (
 	 @ControlDependencyId INT = NULL 
 	,@MasterControlId INT = NULL 
 	,@SlaveControlID INT = NULL 
 	,@MasterControlValue NVARCHAR(MAX) = NULL 
-	,@ComparatorID INT = NULL 
+	,@ComparatorId TINYINT = NULL 
 	,@CreatedBy BIGINT = NULL 
 	,@CreatedDate DATETIME = NULL 
 )
@@ -31,7 +31,7 @@ BEGIN
 	AND
 		(@MasterControlValue IS NULL  OR  [MasterControlValue] = @MasterControlValue)
 	AND
-		(@ComparatorID IS NULL  OR  [ComparatorID] = @ComparatorID)
+		(@ComparatorId IS NULL  OR  [ComparatorId] = @ComparatorId)
 
 	RETURN 1 --for success
 

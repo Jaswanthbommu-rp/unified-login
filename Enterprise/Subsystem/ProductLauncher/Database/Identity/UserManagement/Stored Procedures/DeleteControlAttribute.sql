@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Deletes the record with the indicated ID from the ControlAttribute table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].DeleteControlAttribute (
+CREATE PROCEDURE [UserManagement].[DeleteControlAttribute] (
 	 @ControlAttributeId INT = NULL 
 	,@ControlId INT = NULL 
 	,@Key NVARCHAR(100) = NULL 

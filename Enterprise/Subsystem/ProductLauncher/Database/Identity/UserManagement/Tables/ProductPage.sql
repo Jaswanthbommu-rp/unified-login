@@ -7,7 +7,3 @@
     CONSTRAINT [PK_ProductPage] PRIMARY KEY CLUSTERED ([ProductPageId] ASC)
 );
 
-
-
-
-

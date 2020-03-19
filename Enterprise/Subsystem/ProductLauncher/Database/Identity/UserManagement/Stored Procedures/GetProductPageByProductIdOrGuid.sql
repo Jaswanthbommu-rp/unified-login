@@ -1,26 +1,32 @@
 ﻿
 -- =============================================
--- Author:  Monte Jennings
--- Create date:
--- Description: Gets the record with the indicated ID from the ProductPage table.
+-- Author:		Monte Jennings
+-- Create date: 
+-- Description: Searches the ProductPage table for the record with the indicated criteria.
 -- =============================================
-Create PROCEDURE [UserManagement].[GetProductPageByProductIdOrGUID] (
-	@ProductId INT = NULL
-	,@ProductGuid uniqueidentifier = NULL
+CREATE PROCEDURE [UserManagement].[GetProductPageByProductIdOrGuid] (
+	 @ProductId INT = NULL
+	,@ProductGUID uniqueidentifier
 )
 AS
+
 BEGIN
 	SELECT
-				[ProductPage].[ProductPageId]
-				,[ProductPage].[ProductId]
-				,[ProductPage].[DisplayName]
-				,[ProductPage].[CreatedBy]
-				,[ProductPage].[CreatedDate]
+		 [UserManagement].[ProductPage].[ProductPageId]
+		,[UserManagement].[ProductPage].[ProductId]
+		,[UserManagement].[ProductPage].[DisplayName]
+		,[UserManagement].[ProductPage].[CreatedBy]
+		,[UserManagement].[ProductPage].[CreatedDate]
 	FROM
-				[UserManagement].[ProductPage]
-				INNER JOIN Enterprise.Product ON ProductPage.ProductID = Product.ProductId
-  	WHERE
-				(Product.ProductId = @ProductId OR @ProductId IS NULL)
-				AND
-				(Product.ProductGUID = @ProductGuid OR @ProductGUID IS NULL)
+		[UserManagement].[ProductPage]
+	INNER JOIN
+		[Enterprise].[Product]
+	On
+		[Enterprise].[Product].[ProductId] = [UserManagement].[ProductPage].[ProductId]
+	WHERE
+		([Product].[ProductId] IS NULL OR [Product].[ProductId] = @ProductId)
+		OR
+		([Product].[ProductGUID] IS NULL OR [Product].[ProductGUID] = @ProductGUID)
+
+
 END

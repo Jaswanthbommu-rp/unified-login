@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Searches the ProductPage table for the record with the indicated criteria.
 -- =============================================
-CREATE PROCEDURE [UserManagement].GetProductPageByProductPageControlOnProductPageControlId (
+CREATE PROCEDURE [UserManagement].[GetProductPageByProductPageControlOnProductPageControlId] (
 @ProductPageControlId INT
 )
 AS

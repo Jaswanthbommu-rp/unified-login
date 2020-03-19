@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Adds new/Updates the ProductPage table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].AddUpdateProductPage (
+CREATE PROCEDURE [UserManagement].[AddUpdateProductPage] (
 	 @ProductPageId INT
 	,@ProductId INT
 	,@DisplayName NVARCHAR(510)

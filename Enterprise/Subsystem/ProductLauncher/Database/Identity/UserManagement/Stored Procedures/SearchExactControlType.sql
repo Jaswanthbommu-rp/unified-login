@@ -4,7 +4,7 @@
 -- Create date: 
 -- Description: Searches the ControlType table for the record with the indicated criteria.
 -- =============================================
-CREATE PROCEDURE [UserManagement].SearchExactControlType (
+CREATE PROCEDURE [UserManagement].[SearchExactControlType] (
 	 @ControlTypeId INT = NULL 
 	,@Name NVARCHAR(100) = NULL 
 	,@Description NVARCHAR(510) = NULL 

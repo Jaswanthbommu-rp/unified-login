@@ -4,12 +4,12 @@
 -- Create date: 
 -- Description: Adds new/Updates the ControlDependency table.
 -- =============================================
-CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
+CREATE PROCEDURE [UserManagement].[AddUpdateControlDependency] (
 	 @ControlDependencyId INT
 	,@MasterControlId INT
 	,@SlaveControlID INT
 	,@MasterControlValue NTEXT
-	,@ComparatorID INT
+	,@ComparatorId TINYINT
 	,@CreatedBy BIGINT
 	,@CreatedDate DATETIME
 ) 
@@ -23,7 +23,7 @@ CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 			 [MasterControlId] = @MasterControlId
 			,[SlaveControlID] = @SlaveControlID
 			,[MasterControlValue] = @MasterControlValue
-			,[ComparatorID] = @ComparatorID
+			,[ComparatorId] = @ComparatorId
 			,[CreatedBy] = @CreatedBy
 			,[CreatedDate] = @CreatedDate
 		WHERE
@@ -34,7 +34,7 @@ CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 			,[MasterControlId]
 			,[SlaveControlID]
 			,[MasterControlValue]
-			,[ComparatorID]
+			,[ComparatorId]
 			,[CreatedBy]
 			,[CreatedDate]
 		FROM
@@ -48,7 +48,7 @@ CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 			 [MasterControlId]
 			,[SlaveControlID]
 			,[MasterControlValue]
-			,[ComparatorID]
+			,[ComparatorId]
 			,[CreatedBy]
 			,[CreatedDate])
 		OUTPUT 
@@ -56,14 +56,14 @@ CREATE PROCEDURE [UserManagement].AddUpdateControlDependency (
 			,inserted.[MasterControlId]
 			,inserted.[SlaveControlID]
 			,inserted.[MasterControlValue]
-			,inserted.[ComparatorID]
+			,inserted.[ComparatorId]
 			,inserted.[CreatedBy]
 			,inserted.[CreatedDate]
 		VALUES(
 			 @MasterControlId
 			,@SlaveControlID
 			,@MasterControlValue
-			,@ComparatorID
+			,@ComparatorId
 			,@CreatedBy
 			,@CreatedDate);
 
