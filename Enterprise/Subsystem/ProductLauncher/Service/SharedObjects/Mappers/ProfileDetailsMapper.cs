@@ -46,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
                 result.UserName = origin.userLogin.LoginName;
                 result.UserExpire = origin.userLogin.ThruDate;
                 result.UserEffective = origin.userLogin.FromDate;
-                //result.Access = origin.userLogin.IsActive;
+                result.IsActive = origin.userLogin.IsActive;
             }
 
             return result;

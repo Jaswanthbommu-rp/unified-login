@@ -59,6 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         /// <summary>
         /// User Enable Access
         /// </summary>
-        ///public bool? Access { get; set; }
+        [AuditLog("Active Access")]
+        public bool? IsActive { get; set; }
     }
 }
