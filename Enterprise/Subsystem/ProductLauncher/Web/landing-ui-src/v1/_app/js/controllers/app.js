@@ -90,8 +90,8 @@
 
         vm.onSessionReady = function () {
             var username = sessionModel.getUsername(),
-                token = sessionModel.getVerificationToken(),
-                identityToken = cookie.read("access_token");
+                token = sessionModel.getVerificationToken();
+                // identityToken = cookie.read("access_token");
                 
                 var org = sessionModel.getOrganization();
                 if(org){
@@ -102,15 +102,15 @@
                 
             var omnibar = document.querySelector('omnibar-shell');
             omnibar.environment = ENV.currentEnv;
-            omnibar.servers = {
-              unity: ENV.landingAPI,
-              docs: ENV.helpUrl
-            };
+            // omnibar.servers = {
+            //    unity: ENV.landingAPI,
+            //    docs: ENV.helpUrl
+            // };
 
             var rootPath = window.location.protocol + '//' + window.location.host + '/';
 
             omnibar.isUnifiedLogin = true;
-            omnibar.silentRefreshUri = rootPath + 'omnibar-silent-refresh.html';
+            omnibar.silentRefreshUri = rootPath + 'home/omnibar-silent-refresh.html';
 
             var helpWidget = document.querySelector('omnibar-unified-help');
             $rootScope.$on("$stateChangeSuccess", function (_, toState) {
