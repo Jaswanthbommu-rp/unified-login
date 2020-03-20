@@ -74,7 +74,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     EnableAutoCallbackForFederatedSignout = true,
                     InvalidSignInRedirectUrl = ConfigReader.GetReturnUri,
                     PostSignOutAutoRedirectDelay = 5,
-                }
+                },
+                LoggingOptions = new LoggingOptions(){ EnableHttpLogging = false, EnableKatanaLogging = true, EnableWebApiDiagnostics = false, WebApiDiagnosticsIsVerbose = false}
             };
 
             //factory.ViewService = new Registration<IViewService>(typeof(NwpViewService));

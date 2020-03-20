@@ -160,9 +160,9 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
         private static LoggerConfiguration GetLoggerConfigurationWithFile(string logType, string jsonFormatter)
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
-            var authLogin = Convert.ToBase64String(Encoding.UTF8.GetBytes("devgold:k1b@na"));
-
+            //var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails.Split(':');
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
+
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
                 return new LoggerConfiguration()
@@ -174,8 +174,16 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                 CustomFormatter = new JsonFormatter(jsonFormatter),
                 TypeName = $"{elasticSearchIndexTypeName}-{logType}",
                 IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
-                //ModifyConnectionSettings = (c) => c.GlobalHeaders(new NameValueCollection{ { "Authorization", authLogin } })
-                ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
+                //ModifyConnectionSettings = (c) => c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1])
+                ModifyConnectionSettings = (c) =>
+                {
+                    var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
+                    if (elasticSearchAuth?.Length == 2)
+                    {
+                        return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
+                    }
+                    return c;
+                }
             });
             }
             return null;
@@ -184,21 +192,30 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
         private static LoggerConfiguration GetLoggerConfiguration(string logType, string jsonFormatter)
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
+            
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
-            var authLogin = Convert.ToBase64String(Encoding.UTF8.GetBytes("devgold:k1b@na"));
 
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
-                return new LoggerConfiguration()
+                var test = new LoggerConfiguration()
                         .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
                         {
                             AutoRegisterTemplate = true,
                             CustomFormatter = new JsonFormatter(jsonFormatter),
                             TypeName = $"{elasticSearchIndexTypeName}-{logType}",
                             IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
-                            //ModifyConnectionSettings = (c) => c.GlobalHeaders(new NameValueCollection{ { "Authorization", authLogin } })
-                            ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
+                            //ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
+                            ModifyConnectionSettings = (c) =>
+                            {
+                                var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
+                                if (elasticSearchAuth?.Length == 2)
+                                {
+                                    return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
+                                }
+                                return c;
+                            }
                         });
+
             }
             return null;
         }
