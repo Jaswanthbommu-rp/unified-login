@@ -1,0 +1,47 @@
+﻿
+-- =============================================
+-- Author:		Monte Jennings
+-- Create date: 
+-- Description: Searches the ControlDependency table for the record with the indicated criteria.
+-- =============================================
+CREATE PROCEDURE [UserManagement].[SearchExactControlDependency] (
+	 @ControlDependencyId INT = NULL 
+	,@MasterControlId INT = NULL 
+	,@SlaveControlID INT = NULL 
+	,@MasterControlValue NVARCHAR(MAX) = NULL 
+	,@ComparatorId TINYINT = NULL 
+	,@CreatedBy BIGINT = NULL 
+	,@CreatedDate DATETIME = NULL 
+)
+
+AS
+
+BEGIN
+
+	SELECT
+		 [ControlDependencyId]
+		,[MasterControlId]
+		,[SlaveControlID]
+		,[MasterControlValue]
+		,[ComparatorId]
+		,[CreatedBy]
+		,[CreatedDate]
+	FROM
+		[UserManagement].[ControlDependency]
+	WHERE 
+		(@ControlDependencyId IS NULL  OR  [ControlDependencyId] = @ControlDependencyId)
+	AND
+		(@MasterControlId IS NULL  OR  [MasterControlId] = @MasterControlId)
+	AND
+		(@SlaveControlID IS NULL  OR  [SlaveControlID] = @SlaveControlID)
+	AND
+		(@MasterControlValue IS NULL  OR  [MasterControlValue] = @MasterControlValue)
+	AND
+		(@ComparatorId IS NULL  OR  [ComparatorId] = @ComparatorId)
+	AND
+		(@CreatedBy IS NULL  OR  [CreatedBy] = @CreatedBy)
+	AND
+		(@CreatedDate IS NULL  OR  [CreatedDate] = @CreatedDate)
+OPTION(RECOMPILE);
+
+END
