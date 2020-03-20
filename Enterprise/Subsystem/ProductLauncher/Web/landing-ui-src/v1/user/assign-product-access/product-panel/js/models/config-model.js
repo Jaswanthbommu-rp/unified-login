@@ -6,12 +6,26 @@
     function factory() {
         var model = {};
 
-                      
+        
+        model.setConfig = function (config) {            
+             model.config = config ;
+        };
+
+        model.getConfig = function (name) {     
+            var retObj;       
+            model.config.forEach(function (item) {
+                if(item[name]){
+                    retObj = item[name] ;
+                }
+            });
+            return retObj;
+        };
+
         model.setGridConfig = function (config) {            
              model.gridconfig = config ;
         };
 
-        model.getGridConfig = function (config) {            
+        model.getGridConfig = function () {            
             return model.gridconfig ;
         };
 
@@ -19,7 +33,7 @@
              model.radioconfig = config ;
         };
 
-        model.getRadioConfig = function (config) {            
+        model.getRadioConfig = function () {            
             return model.radioconfig ;
         };
 
@@ -27,7 +41,7 @@
              model.switchconfig = config ;
         };
 
-        model.getSwitchConfig = function (config) {            
+        model.getSwitchConfig = function () {            
             return model.switchconfig ;
         };
 

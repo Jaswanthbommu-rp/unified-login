@@ -25,18 +25,20 @@
             vm.propertiesGrid = propertiesGrid;
             propertiesGridTransform.watch(propertiesGrid);
 
-            vm.config = configModel.getGridConfig()[0];
+            console.log("configModel.getConfig()", configModel.getConfig("Properties"));
+            // vm.config = configModel.getGridConfig()[0];
+            vm.config = configModel.getConfig("Properties");
             //logc("configModel.getGridConfig()[0]", configModel.getGridConfig());
 
-            propertiesGrid.setConfig(vm.config);
+            propertiesGrid.setConfig(vm.config.gridConfig);
             propertiesGridPagination.setGrid(propertiesGrid);
             $scope.propertiesGridPagination = propertiesGridPagination;
             propertiesGridPagination.setConfig({
                 recordsPerPage: 25
             });
 
-            vm.radioconfig = configModel.getRadioConfig();
-            vm.switchconfigs = configModel.getSwitchConfig();
+            vm.radioconfig = vm.config.radioConfig;//configModel.getRadioConfig();
+            vm.switchconfigs = vm.config.switchConfig; //configModel.getSwitchConfig();
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);

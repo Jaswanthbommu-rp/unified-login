@@ -96,8 +96,14 @@
         // Actions
         vm.setTabs = function (data) {
 
+            var tNames = [];
+            var names = [];
             panelModel.gridReset();
-            vm.tabsCnfData = vm.getTabsConfigData(data);
+            vm.tabsCnfData = vm.getTabsConfigData(data,tNames, names );
+
+            console.log("tNames", tNames);
+
+            // vm.getAllConfigData(data);
 
             // vm.tabsCnfData.forEach(function (tab) {
             //   logc("tabdatata", tab);
@@ -133,7 +139,50 @@
             //vm.getTabsGridData();
             panelModel.setPropertyGridActive(true);
             panelModel.setRoleGridActive(true);
+
+            var i = 0;
+
+            tNames.forEach(function (t) {
+                var j=0,k=0,l=0;
+                names.forEach(function (name) {
+                   if(t[name]){
+                         vm.gridconfigs.forEach(function (g) {
+                            if(i == j){
+                                t[name].gridConfig = g;
+                                // return;
+                            }
+                            j++;
+                        });
+
+                        vm.radioconfigs.forEach(function (r) {
+                            if(i == k){
+                                t[name].radioConfig = r;
+                                // return;
+                            }
+                            k++;
+                        });
+
+                        vm.switchconfigs.forEach(function (s) {
+                            if(i == l){
+                                t[name].switchConfig = s;
+                                // return;
+                            }
+                            l++;
+                        });
+
+                   }
+                });
+               
+                i++;
+            });
+
+            configModel.setConfig(tNames);
+            console.log("tNames with config", tNames);
         };
+
+        // vm.getAllConfigData = function (data) {
+            
+        // };
 
         vm.getTabsGridData = function () {
             if (vm.tabsList){
@@ -234,7 +283,7 @@
             return tabs;
         };
 
-        vm.getTabsConfigData = function (data) {
+        vm.getTabsConfigData = function (data, tNames, names) {
             var cnfg = {}, tabs = [];
 
             if(data && data.controls){
@@ -242,6 +291,15 @@
                   if(tabControl.type === 'Tab Group'){
                         tabControl.controls.forEach(function(tabGrp){
                           var tabName = tabGrp.displayName;
+                          names.push(tabName);
+                          var a = [];
+                          var o ={                          
+                                gridConfig : [],
+                                radioConfig: [],
+                                switchConfig: []                            
+                          };
+                          a[tabName] = o;
+                          tNames.push(a);
 
                           tabGrp.controls.forEach(function (tab) {
                                 if (tab.type === "MultiSelectGrid" || tab.type === "Select Grid"){
@@ -288,10 +346,11 @@
         };
 
         vm.getSwitchConfigs = function (data) {
-            var  aSwitch = [];
+            var  aSwitch = []; 
             if(data && data.controls){
                 if(data.type === 'Tab Group'){
                     data.controls.forEach(function(tabGrp){
+                        var s = []; 
                        tabGrp.controls.forEach(function (ctrl) {
                            if(ctrl.type === 'Switch'){
                                var c = {
@@ -303,9 +362,10 @@
                                        disabled : false
                                     })
                                 };
-                                aSwitch.push(c);
+                                s.push(c);
                             }
                        });
+                       aSwitch.push(s);
 
                     });
                 }

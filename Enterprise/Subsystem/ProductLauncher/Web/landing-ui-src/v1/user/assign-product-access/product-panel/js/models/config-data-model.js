@@ -55,11 +55,12 @@
         };
 
         p.getRadioConfig = function (radioData) {
-            var s = this, cnfg = [], cnfgs = [];
-logc("radioData radio", radioData);
+            var s = this, cnfg = [];
+            logc("radioData radio", radioData);
              if(radioData && radioData.controls){
                 radioData.controls.forEach(function (tabGrp) {
                     tabGrp.controls.forEach(function (tab) {
+                      var cnfgs = [];  
                       tab.controls.forEach(function (item) {
                                 logc("radio item",item);
                             if(item.type === 'Radio' ){
@@ -71,11 +72,12 @@ logc("radioData radio", radioData);
                             }
 
                         });
+                      cnfg.push(cnfgs);
                     });
 
                 });
             }
-            return cnfgs;
+            return cnfg;
         };
 
 

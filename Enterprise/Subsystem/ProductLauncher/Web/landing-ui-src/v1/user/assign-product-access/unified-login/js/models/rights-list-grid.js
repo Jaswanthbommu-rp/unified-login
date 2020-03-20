@@ -1,4 +1,4 @@
-//  Rights Aside Grid Config Model
+//  Aside Grid Config Model
 
 (function(angular, undefined) {
     "use strict";
