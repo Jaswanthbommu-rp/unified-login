@@ -51,6 +51,7 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/runtime.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/scripts.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/styles.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/summernote.*
+Enterprise/Subsystem/ProductLauncher/Web/landing/omnibar-silent-refresh.html
 
 Enterprise/Subsystem/ProductLauncher/Web/landing/silent-refresh.html
 Enterprise/Subsystem/ProductLauncher/Web/landing/product-redirect.html
