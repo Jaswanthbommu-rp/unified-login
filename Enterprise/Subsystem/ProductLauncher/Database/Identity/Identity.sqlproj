@@ -805,13 +805,9 @@
     <Build Include="Enterprise\Tables\LogicalGroup_1.sql" />
     <Build Include="Enterprise\Tables\Comparator_1.sql" />
     <Build Include="Enterprise\Stored Procedures\GetAllSameSiteValues_1.sql" />
-    <Build Include="UserManagement\Tables\TabTypeControl.sql" />
     <Build Include="UserManagement\Tables\ProductPage.sql" />
-    <Build Include="UserManagement\Tables\TabType.sql" />
     <Build Include="UserManagement\Tables\ProductPageControl.sql" />
-    <Build Include="UserManagement\Tables\TabDependency.sql" />
     <Build Include="UserManagement\Tables\ControlType.sql" />
-    <Build Include="UserManagement\Tables\ProductPageTabType.sql" />
     <Build Include="UserManagement\Tables\ControlDependency.sql" />
     <Build Include="UserManagement\Tables\ControlAttribute.sql" />
     <Build Include="UserManagement\Tables\Control.sql" />
