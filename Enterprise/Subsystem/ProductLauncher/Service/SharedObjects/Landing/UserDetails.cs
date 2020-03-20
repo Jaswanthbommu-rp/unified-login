@@ -23,6 +23,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public int OrganizationPartyId { get; set; }
 		public DateTime? FromDate { get; set; }
 		public DateTime? ThruDate { get; set; }
-		public bool? IsActive { get; set; }
+		public bool? IsActive { get; set; } = false;
 	}
 }

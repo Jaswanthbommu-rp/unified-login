@@ -2065,6 +2065,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isFeatureUser = false;
             bool isCurrentOrgThePrimaryOrg = false;
 
+            LogActivityCategoryType logActivityCategoryType ;
+
+            logActivityCategoryType = LogActivityCategoryType.Email;
+            
+
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository();
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
@@ -2111,7 +2116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             OrganizationStatus currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, 0, true);
             OrganizationStatus currentOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, currentOrgPartyId, false);
-
+                        
             //Get the logged-in user Current Persona Id
             createUserPersonaId = personaRespository.GetActivePersonaId(realPageId: loggedInUserRealPageId);
 
@@ -2301,30 +2306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
                             throw new Exception(repositoryResponse.ErrorMessage);
                         }
-                        else
-                        {
-
-                            //if (!userDetails.FirstName.Equals(profile.FirstName))
-                            //{
-                            //    //Log Activity
-                            //    var auditMessage = $"User {{2}} {{3}} updated the First name from {userDetails.FirstName} to {profile.FirstName} on the user profile for {{0}} {{1}}.";
-                            //    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            //}
-                            //if (!userDetails.MiddleName.Equals(profile.MiddleName))
-                            //{
-                            //    //Log Activity
-                            //    string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank value" : userDetails.MiddleName;
-                            //    string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank value" : profile.MiddleName;
-                            //    var auditMessage = $"User {{2}} {{3}} updated the Middle name from {oldMiddleName} to {newMiddleName} on the user profile for {{0}} {{1}}.";
-                            //    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            //}
-                            //if (!userDetails.LastName.Equals(profile.LastName))
-                            //{
-                            //    //Log Activity
-                            //    var auditMessage = $"User {{2}} {{3}} updated the Last name from {userDetails.LastName} to {profile.LastName} on the user profile for {{0}} {{1}}.";
-                            //    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            //}
-                        }
+                        
                     }
                     #endregion
 
@@ -2437,6 +2419,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //user update then process for new status
                             if ((profile.userLogin.IsActive != currentOrgStatus.IsActive) || isUserAccessLevelChanged || isUserEffectiveDateChanged)
                             {
+                                userDetails.IsActive = currentOrgStatus.IsActive;
+
                                 DateTime? statusThruDate = null;
                                 UserUiStatusType statusTypeId = UserUiStatusType.UnDefined;
 
@@ -2507,13 +2491,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         repositoryResponse.ErrorMessage = "Update User Error: Update user status failed.";
                                         throw new Exception(repositoryResponse.ErrorMessage);
                                     }
-                                    else
-                                    {
-                                        if (profile.userLogin.IsActive == true && currentOrgStatus.IsActive == false)
-                                        {
-                                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{2} {3} activated access for user {0} {1}.", "UpdateUser", profile);
-                                        }
-                                    }
+                                    //else
+                                    //{
+                                    //    if (profile.userLogin.IsActive == true && currentOrgStatus.IsActive == false)
+                                    //    {
+                                    //        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{2} {3} activated access for user {0} {1}.", "UpdateUser", profile);
+                                    //    }
+                                    //}
                                 }
                             }
                         }
@@ -5164,9 +5148,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             UserAuditDto userUpdated = profile.IProfileDetailToUserAuditDto<UserAuditDto>();
             UserAuditDto currentUser = userDetail.UserDetailsToUserAuditDto<UserAuditDto>();
 
+            userUpdated.UserType = UserRoleType.ExternalUser.ToEnumDescription();
+            currentUser.UserType = UserRoleType.ExternalUser.ToEnumDescription();
+
             var auditResult = ExtensionMethods.GenerateUpdateAudit(currentUser , userUpdated , "User");
 
-            auditResult.ForEach(x => LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, x.AuditMessage, "UpdateUser", profile));
+            //auditResult.ForEach(x => LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, x.AuditMessage, "UpdateUser", profile));
+
+            foreach (var item in auditResult)
+            {
+                if (item.PropertyName.Contains("USER TYPE"))
+                {
+
+                }
+            }
 
         }
         #endregion
