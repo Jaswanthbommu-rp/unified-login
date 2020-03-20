@@ -22,6 +22,11 @@
         /// </summary>
         public string AuditMessage { get; set; }
 
+        /// <summary>
+        /// Log activity type
+        /// </summary>
+        public string LogActivityType { get; set; }
+
         #endregion 
     }
 }

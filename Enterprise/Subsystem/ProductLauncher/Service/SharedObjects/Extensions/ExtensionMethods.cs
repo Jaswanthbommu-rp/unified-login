@@ -7,22 +7,22 @@ using System.Reflection;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 {
-	/// <summary>
-	/// Extension Methods
-	/// </summary>
-	public static class ExtensionMethods
-	{
-		/// <summary>
-		/// Remove leading, middle, and trailing spaces from a string
-		/// </summary>
-		/// <param name="str"></param>
-		/// <returns></returns>
-		public static string TrimWhiteSpace(this String str)
-		{
-			return new string(str.ToCharArray()
-				.Where(c => !Char.IsWhiteSpace(c))
-				.ToArray());
-		}
+    /// <summary>
+    /// Extension Methods
+    /// </summary>
+    public static class ExtensionMethods
+    {
+        /// <summary>
+        /// Remove leading, middle, and trailing spaces from a string
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string TrimWhiteSpace(this String str)
+        {
+            return new string(str.ToCharArray()
+                .Where(c => !Char.IsWhiteSpace(c))
+                .ToArray());
+        }
 
         /// <summary>
         /// Generate the necessary information for the audit log when update an entity
@@ -60,14 +60,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.OldValue = formatedOldValue;
                                 auditRecord.NewValue = formatedNewValue;
+
                                 AuditLogAttribute internalAttribute = ((AuditLogAttribute)attribute);
 
+                                auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
+
                                 auditRecord.AuditMessage = string.Concat("User {2} {3} updated the ",
-                                                                   internalAttribute.ColumnName,
-                                                                   " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue: auditRecord.OldValue,
-                                                                   " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                                                   " on ", entityName,
-                                                                   " for {0} {1}");
+                                                                       internalAttribute.ColumnName,
+                                                                       " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
+                                                                       " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
+                                                                       " on ", entityName,
+                                                                       " for {0} {1}");
 
                                 result.Add(auditRecord);
                             }
