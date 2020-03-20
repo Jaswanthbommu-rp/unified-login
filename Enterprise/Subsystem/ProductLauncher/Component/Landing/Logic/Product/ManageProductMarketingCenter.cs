@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -367,6 +368,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
+        private string GetProductUserNameFromSaml(long personaId)
+        {
+            IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(personaId, _productId);
+
+            return (from pa in productAttributes where pa.Name.Equals("productUserName", StringComparison.OrdinalIgnoreCase) select pa.Value).FirstOrDefault();
+        }
+
 		/// <summary>
 		/// Update User Profile
 		/// </summary>
@@ -428,8 +436,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Validating email address. Email: {userLogin.LoginName}");
 				if (userPersona.UserTypeId == (int)UserTypeConstants.RegularUserNoEmail)
 				{
-					userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
-				}
+                    userEmailAddress = GetProductUserNameFromSaml(userPersona.PersonaId);
+                }
 				else
 				{
 					userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
@@ -563,8 +571,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "ManageMarketingCenterUser - Error.No Valid Notification Email Provided";
 				}
 
-				userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
-			}
+                userEmailAddress = GetProductUserNameFromSaml(userPersona.PersonaId);
+                if(string.IsNullOrEmpty(userEmailAddress))
+                    userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
+
+            }
 			else
 			{
 				if (string.IsNullOrEmpty(userEmailAddress))
