@@ -3,7 +3,6 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 using System;
-using System.Text;
 
 namespace RP.Enterprise.Foundation.Audit.Core.Component
 {
@@ -13,7 +12,9 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
 
         private static readonly ILogger _perfLogger;
         private static readonly ILogger _errorLogger;
+
         private static readonly ILogger _diagnosticLogger;
+
         //private static readonly ILogger _utilizationLogger;
         private static readonly ILogger _informationLogger;
 
@@ -23,7 +24,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
 
         static Log()
         {
-            
+
             if (ConfigReader.ShouldWriteInFile)
             {
                 _errorLogger = GetLoggerConfigurationWithFile("error", "LogDetails")?
@@ -74,6 +75,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                         {
                             logDetails.Message = GetMessageFromException(logDetails.Exception);
                         }
+
                         _errorLogger?.Write(LogEventLevel.Error, "{@LogDetails}", logDetails);
                         break;
                     case LogType.Performance:
@@ -103,6 +105,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
 
                             _perfLogger?.Write(LogEventLevel.Information, "{@PerformanceLogDetails}", perfDetails);
                         }
+
                         break;
                     case LogType.Diagnostic:
                         if (ConfigReader.ShouldLogDiagnostic)
@@ -111,8 +114,10 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                             {
                                 logDetails.Message = GetMessageFromException(logDetails.Exception);
                             }
+
                             _diagnosticLogger?.Write(LogEventLevel.Information, "{@LogDetails}", logDetails);
                         }
+
                         break;
                     case LogType.Information:
                         // map logDetails to info details  
@@ -154,13 +159,13 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
             {
                 return GetMessageFromException(ex.InnerException);
             }
+
             return ex.Message;
         }
 
         private static LoggerConfiguration GetLoggerConfigurationWithFile(string logType, string jsonFormatter)
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
-            //var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails.Split(':');
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
 
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
@@ -168,55 +173,56 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                 return new LoggerConfiguration()
                     .WriteTo.File(formatter: new JsonFormatter(jsonFormatter),
                         path: $"{ConfigReader.LogPath}\\{ConfigReader.LogProductName}-{logType}.json")
-            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
-            {
-                AutoRegisterTemplate = true,
-                CustomFormatter = new JsonFormatter(jsonFormatter),
-                TypeName = $"{elasticSearchIndexTypeName}-{logType}",
-                IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
-                //ModifyConnectionSettings = (c) => c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1])
-                ModifyConnectionSettings = (c) =>
-                {
-                    var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
-                    if (elasticSearchAuth?.Length == 2)
+                    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
                     {
-                        return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
-                    }
-                    return c;
-                }
-            });
+                        AutoRegisterTemplate = true,
+                        CustomFormatter = new JsonFormatter(jsonFormatter),
+                        TypeName = $"{elasticSearchIndexTypeName}-{logType}",
+                        IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
+                        ModifyConnectionSettings = (c) =>
+                        {
+                            var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
+                            if (elasticSearchAuth?.Length == 2)
+                            {
+                                return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
+                            }
+
+                            return c;
+                        }
+                    });
             }
+
             return null;
         }
 
         private static LoggerConfiguration GetLoggerConfiguration(string logType, string jsonFormatter)
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
-            
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
 
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
                 var test = new LoggerConfiguration()
-                        .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
+                    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
+                    {
+                        AutoRegisterTemplate = true,
+                        CustomFormatter = new JsonFormatter(jsonFormatter),
+                        TypeName = $"{elasticSearchIndexTypeName}-{logType}",
+                        IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
+                        //ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
+                        ModifyConnectionSettings = (c) =>
                         {
-                            AutoRegisterTemplate = true,
-                            CustomFormatter = new JsonFormatter(jsonFormatter),
-                            TypeName = $"{elasticSearchIndexTypeName}-{logType}",
-                            IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
-                            //ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
-                            ModifyConnectionSettings = (c) =>
+                            var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
+                            if (elasticSearchAuth?.Length == 2)
                             {
-                                var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
-                                if (elasticSearchAuth?.Length == 2)
-                                {
-                                    return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
-                                }
-                                return c;
+                                return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
                             }
-                        });
 
+                            return c;
+                        }
+                    });
             }
+
             return null;
         }
 
