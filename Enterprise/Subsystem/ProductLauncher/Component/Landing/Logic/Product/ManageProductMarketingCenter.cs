@@ -366,7 +366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return response;
 		}
-
+                
 		/// <summary>
 		/// Update User Profile
 		/// </summary>
@@ -428,8 +428,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"ManageMarketingCenterUser.UpdateUserProfile - Validating email address. Email: {userLogin.LoginName}");
 				if (userPersona.UserTypeId == (int)UserTypeConstants.RegularUserNoEmail)
 				{
-					userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
-				}
+                    userEmailAddress = _productUsername;
+                }
 				else
 				{
 					userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
@@ -563,8 +563,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "ManageMarketingCenterUser - Error.No Valid Notification Email Provided";
 				}
 
-				userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
-			}
+                userEmailAddress = _productUsername;
+                if(string.IsNullOrEmpty(userEmailAddress))
+                    userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ? string.Concat(userLogin.LoginName, "@NoReply.com") : userLogin.LoginName;
+
+            }
 			else
 			{
 				if (string.IsNullOrEmpty(userEmailAddress))
