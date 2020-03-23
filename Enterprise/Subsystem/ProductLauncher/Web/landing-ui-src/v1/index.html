@@ -14,9 +14,9 @@
 
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
 
-    <!-- <link rel="stylesheet" href="../assets/omnibar/raul.css" /> -->
-    <script type="module" src="../assets/omnibar/omnibar/omnibar.esm.js"></script>
-    <script nomodule="" src="../assets/omnibar/omnibar/omnibar.js"></script>
+    <script type="module" src="https://cs-cdn.realpage.com/RAUL/omnibar/v1/omnibar/omnibar.esm.js"></script>
+    <script nomodule src="https://cs-cdn.realpage.com/RAUL/omnibar/v1/omnibar/omnibar.js"></script>
+    <link rel="stylesheet" href="https://cs-cdn.realpage.com/RAUL/omnibar/v1/omnibar/omnibar.css" />
 
     <!-- <script src="../assets/omnibar/raul.js"></script> -->
 </head>
@@ -28,7 +28,9 @@
         <omnibar-scope
               slot="scope"
               product="RealPage Unified Platform"
-              base="{{ app.orgName }}" ng-cloak
+              logout-url="logout"
+              follow-logout-href="false"
+              ng-cloak
         ></omnibar-scope>
 
         <omnibar-navigation slot="navigation">
@@ -74,12 +76,6 @@
                     </span>
                 </omnibar-user-menu-item>
             </div>
-           
-
-            <omnibar-user-menu-item slot="user-logout"
-                                 menu-name="Log Out">
-                <a href="/home/signout">Log Out</a>
-            </omnibar-user-menu-item>
 
         </omnibar-unified-menu>
 
