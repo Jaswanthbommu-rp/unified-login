@@ -63,7 +63,7 @@
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='OrgMasterId']/@value" />
   </parameter>
 
-  <!-- appSettings -->  
+  <!-- appSettings -->
   <parameter name="Environment"
              description="Unity environment"
              defaultValue="#{Environment}#">

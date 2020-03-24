@@ -12,6 +12,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configuration;
 using Serilog;
 using System;
 using System.Net;
+using Serilog.Core;
+using Serilog.Events;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -40,8 +42,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                     return next();
                 });
 
+                var levelSwitch = new LoggingLevelSwitch {MinimumLevel = (LogEventLevel) IdentityServerConfig.GetIdentityServerLogEventLevel()};
+
                 Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Debug()
+                    .MinimumLevel.ControlledBy(levelSwitch)
                     //.Enrich.WithProperty("UserName", System.Security.Principal.WindowsIdentity.GetCurrent().Name)
                     .Enrich.WithProperty("MachineName", Environment.MachineName)
                     .WriteTo.RpEntLibQueue()

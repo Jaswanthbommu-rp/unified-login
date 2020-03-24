@@ -186,7 +186,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                             {
                                 return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
                             }
-
+                        
                             return c;
                         }
                     });
@@ -202,7 +202,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
 
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
-                var test = new LoggerConfiguration()
+                return new LoggerConfiguration()
                     .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
                     {
                         AutoRegisterTemplate = true,
@@ -217,7 +217,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                             {
                                 return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
                             }
-
+                        
                             return c;
                         }
                     });
