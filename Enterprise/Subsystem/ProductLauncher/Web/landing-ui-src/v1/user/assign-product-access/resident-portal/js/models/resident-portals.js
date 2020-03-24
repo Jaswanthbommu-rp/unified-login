@@ -71,6 +71,12 @@
             var s = this;
             s.properties = propertiesData;
         };
+        p.setAllProperties = function (propertiesData, val) {
+            var s = this;
+            propertiesData.forEach(function (item) {
+                item["isAssigned"] = val;
+            });
+        };
 
         p.setRoles = function(rolesData) {
             var s = this;
