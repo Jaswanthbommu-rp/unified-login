@@ -209,7 +209,6 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                         CustomFormatter = new JsonFormatter(jsonFormatter),
                         TypeName = $"{elasticSearchIndexTypeName}-{logType}",
                         IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
-                        //ModifyConnectionSettings = (c) => c.BasicAuthentication("devgold", "k1b@na")
                         ModifyConnectionSettings = (c) =>
                         {
                             var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
