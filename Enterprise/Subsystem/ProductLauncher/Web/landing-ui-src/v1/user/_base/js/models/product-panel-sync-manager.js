@@ -18,7 +18,7 @@
             s.groupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
-
+            s.sidePanelDataMap = {};
 
             s.productControlsList = {
                 products: []
@@ -29,6 +29,7 @@
             s.productsTouched = [];
             s.originalPropertyList = [];
             s.roleList = [];
+            s.sidePanelDataList = [];
             // s.roleList = {
             //     roles:[]
             // };

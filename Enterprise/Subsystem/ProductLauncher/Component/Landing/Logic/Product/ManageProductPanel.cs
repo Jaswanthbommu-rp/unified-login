@@ -233,6 +233,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return result;
 		}
-		#endregion
+
+		public ListResponse GetProductRightsForRole(long editorPersonaId, int roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false)
+		{
+			ListResponse result = new ListResponse();
+
+			switch (productId)
+			{
+				case (int)ProductEnum.OneSite:
+					IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
+					result = manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
+					break;
+				default:
+					break;
+			}
+			return result;
+		}
+			#endregion
 	}
 }

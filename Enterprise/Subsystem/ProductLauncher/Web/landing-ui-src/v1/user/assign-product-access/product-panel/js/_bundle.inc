@@ -6,6 +6,8 @@
 {{{ include("controllers/product-roles.js") }}}
 {{{ include("controllers/product-roles-radio.js") }}}
 {{{ include("controllers/product-properties-radio.js") }}}
+{{{ include("controllers/product-info-icon.js") }}}
+{{{ include("controllers/product-list-aside.js") }}}
 
 {{{ include("models/product-panel.js") }}}
 {{{ include("models/config-data-model.js") }}}
@@ -16,6 +18,10 @@
 {{{ include("models/data-json-pcc.js") }}}
 {{{ include("models/data-json-mc.js") }}}
 {{{ include("models/data-json-os.js") }}}
+{{{ include("models/product-panel-list-aside-model.js") }}}
+{{{ include("models/product-panel-list-aside.js") }}}
 
 {{{ include("services/roles-data.js") }}}
 {{{ include("services/properties-data.js") }}}
+{{{ include("services/rights-data.js") }}}
+{{{ include("services/controls-data.js") }}}

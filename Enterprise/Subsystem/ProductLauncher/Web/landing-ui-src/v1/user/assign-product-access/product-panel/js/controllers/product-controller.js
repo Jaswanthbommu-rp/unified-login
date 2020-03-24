@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, configModel, tabsModel, userDetailsModel, switchConfig, jsonDataCP, jsonDataPCC, jsonDataMc, jsonDataOS) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, configModel, tabsModel, userDetailsModel, switchConfig, jsonDataCP, jsonDataPCC, jsonDataMc, jsonDataOS, cntrlSvc) {
         var vm = this,
             active = false,
             panelNmae = "",
@@ -34,8 +34,6 @@
         vm.productSelected = function (obj) {
             // vm.personaWatch = persona.subscribe();
             if (obj.productId == 14 || obj.productId == 10 || obj.productId == 9 || obj.productId == 1) {
-
-                logc("obj.productId", obj.productId);
                 vm.productId = obj.productId;
                 $scope.productId = obj.productId;
                 vm.loadProductControlsData(obj.productId);
@@ -69,6 +67,12 @@
             }
             if (cdata === undefined) {
 
+                var params = {
+                    productId: productId
+                };
+
+                vm.dataCntrlsReq = cntrlSvc.get(params, vm.setControlsData);
+
                 var s = productModel.setProductControlsList(jData);
                 cdata = productModel.getProductControls(productId);
                 //logc("cdata",cdata,cdata[0].DisplayName);
@@ -94,6 +98,10 @@
             panelModel.setChanged();
         };
         // Actions
+        vm.setControlsData = function (resp) {
+            logc("controls data", resp);
+        };
+
         vm.setTabs = function (data) {
 
             panelModel.gridReset();
@@ -178,9 +186,18 @@
                             var tabName = tabGrp.displayName;
 
                             tabGrp.controls.forEach(function (tab) {
-                                if (tab.type === "MultiSelectGrid" || tab.type === "Select Grid") {
+                                if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
                                     cnfg = configData.getGridConfigTypes(tab, tabName);
                                     tabs.push(cnfg);
+                                    var listAsideconfigs = configData.getListAsideConfig(tab);
+
+                                    if (listAsideconfigs !== undefined &&
+                                        listAsideconfigs.config.length > 0) {
+                                        var asideGridConfig = vm.getAsideGridConfigs(listAsideconfigs.config);
+                                        configModel.setListAsideDisplayName(listAsideconfigs.displayName);
+                                        configModel.setListAsideConfig(asideGridConfig);
+                                    }
+                                    logc("vm.listAsideconfigs", configModel.getListAsideConfig());
                                 }
                             });
                         });
@@ -192,7 +209,7 @@
 
         vm.getGridConfigs = function (tabsCfData) {
             var cnfgs = [];
-            //logc("tabsCfData", tabsCfData);
+
             if (tabsCfData) {
                 tabsCfData.forEach(function (tab) {
                     var hdrCnfgs = {},
@@ -218,8 +235,36 @@
                     cnfgs.push(c);
                 });
             }
+            return cnfgs;
+        };
 
-            // logc("cnfg for ", cnfgs);
+        vm.getAsideGridConfigs = function (data) {
+            var cnfgs = [];
+
+            if (data) {
+                var hdrCnfgs = {},
+                    fltrCnfg = {},
+                    mainCnfg = {};
+
+                var h = configData.getHeaders(data);
+                hdrCnfgs = h;
+
+                var f = configData.getFilters(data);
+                fltrCnfg = f;
+
+                var m = configData.getMain(data);
+                mainCnfg = m;
+
+                var cnfg = {
+                    "headers": hdrCnfgs,
+                    "filters": fltrCnfg,
+                    "main": mainCnfg
+                };
+
+                var c = configFactory(cnfg);
+                cnfgs.push(c);
+            }
+
             return cnfgs;
         };
 
@@ -275,6 +320,9 @@
             vm.destWatch();
             vm.profileWatch();
             vm.productSelectedWatch();
+            if (vm.dataCntrlsReq) {
+                vm.dataCntrlsReq.$cancelRequest();
+            }
             tabsModel.reset();
             vm = undefined;
             $scope = undefined;
@@ -306,6 +354,7 @@
             "DataModelpcc",
             "DataModelMc",
             "DataModelOneSite",
+            "productControlsSvc",
             ProductCommonCtrl
         ]);
 })(angular);

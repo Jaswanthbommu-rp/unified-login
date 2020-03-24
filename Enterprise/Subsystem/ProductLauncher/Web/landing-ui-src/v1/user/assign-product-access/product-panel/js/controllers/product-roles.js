@@ -17,6 +17,7 @@
             rolesGridTransform.watch(rolesGrid);
 
             vm.config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
+            logc("role vm.config", vm.config);
             rolesGrid.setConfig(vm.config);
 
             roleGridPagination.setGrid(rolesGrid);
