@@ -2112,6 +2112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             OrganizationStatus currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, 0, true);
             OrganizationStatus currentOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, currentOrgPartyId, false);
 
+
             //Get the logged-in user Current Persona Id
             createUserPersonaId = personaRespository.GetActivePersonaId(realPageId: loggedInUserRealPageId);
 
@@ -2143,6 +2144,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isUserTypeChangedFromNoEmailToRegular = false;
             bool isUserTypeChangedFromNoEmailToExternal = false;
             string userTypeChangedToFromExternal = string.Empty;
+
+            userDetails.IsActive = currentOrgStatus.IsActive;
 
             if (userDetails.UserRoleTypeId != profile.UserTypeId)
             {
@@ -2414,7 +2417,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //user update then process for new status
                             if ((profile.userLogin.IsActive != currentOrgStatus.IsActive) || isUserAccessLevelChanged || isUserEffectiveDateChanged)
                             {
-                                userDetails.IsActive = currentOrgStatus.IsActive;
+                                
 
                                 DateTime? statusThruDate = null;
                                 UserUiStatusType statusTypeId = UserUiStatusType.UnDefined;
