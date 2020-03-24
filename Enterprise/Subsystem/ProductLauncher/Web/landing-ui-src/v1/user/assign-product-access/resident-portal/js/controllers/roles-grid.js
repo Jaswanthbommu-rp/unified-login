@@ -5,7 +5,7 @@
 
     function RPRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, ResPortDataModel, userDetailsModel, tabsModel, roleModel, security, switchConfig) {
         var vm = this,
-            isAssignedCurrentNewPropAutomatically=false,
+            isAssignedCurrentNewPropAutomatically,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -170,7 +170,6 @@
                 tabsModel.setTabs(tabsDataEnterpriseAdmin);
             } else {
                 tabsModel.setTabs(tabsDataEnterprise);
-                pubsub.publish("resPortGrid.hidePropertiesGrid", false);
             }
         };
         vm.setNewPropAutoToggle = function (val) {

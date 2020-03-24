@@ -32,7 +32,6 @@
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allPropWatch = pubsub.subscribe("resPort.allProperties", vm.setAllProperties);
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
-            vm.hideGridPropWatch=pubsub.subscribe("resPortGrid.hidePropertiesGrid", vm.hidePropertiesGrid);
 
             if (persona.isReady()) {               
                 vm.loadData();
@@ -49,9 +48,6 @@
         };
         vm.filter = function(filterBy){
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
-        };
-        vm.hidePropertiesGrid=function(val){
-            vm.allProperties = val;
         };
         vm.loadData = function () {
             if (persona.isReady() && vm.isActive()) {
