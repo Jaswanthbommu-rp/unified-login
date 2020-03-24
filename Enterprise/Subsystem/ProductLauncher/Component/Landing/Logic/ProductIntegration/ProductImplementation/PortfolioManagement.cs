@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.PortofolioManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -90,7 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
 				var user = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery);
 
-				MergePropertyRoles(propertiesList, user.PropertyRoles);
+				MergePropertyRoles(propertiesList, user.PropertyRoleList);
 			}
 
 			return new ListResponse
@@ -157,19 +158,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 		}
 
-		private void MergePropertyRoles(IList<PortfolioRoleProperty> portfolioPropertyRoles, List<PropertyRoleList> userPropertyRoles)
+		private void MergePropertyRoles(IList<PortfolioRoleProperty> portfolioPropertyRoles, List<PAMRolePropertyList> userPropertyRoles)
 		{
-			if (userPropertyRoles != null) {
-				foreach (var prop in userPropertyRoles)
+			if (userPropertyRoles != null) 
+			{
+				foreach (var role in userPropertyRoles)
 				{
-					List<string> currentRoles = prop.Roles;
-					var filteredRoles = portfolioPropertyRoles.Where(x => currentRoles.Contains(x.GetRoleId));
-					foreach (var role in filteredRoles)
+					foreach (var propRolesList in portfolioPropertyRoles.Where(x => x.GetRoleId == role.RoleId))
 					{
-						if (role.PropertiesList.Any(x => x.GetPropertyId == prop.PropertyId))
+						if (propRolesList.PropertiesList.Any(y => role.PropertyIds.Contains(y.GetPropertyId)))
 						{
-							role.IsAssigned = true;
-							foreach(var property in role.PropertiesList.Where(x => x.GetPropertyId == prop.PropertyId))
+							propRolesList.IsAssigned = true;
+							foreach(var property in propRolesList.PropertiesList.Where(z => role.PropertyIds.Contains(z.GetPropertyId)))
 							{
 								property.IsAssigned = true;
 							}
