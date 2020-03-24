@@ -1,10 +1,11 @@
 //  Roles Grid Tab Controller
 
-(function(angular, undefined) {
+(function (angular, undefined) {
     "use strict";
 
-    function RPRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, ResPortDataModel, userDetailsModel, tabsModel, roleModel, security) {
+    function RPRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, ResPortDataModel, userDetailsModel, tabsModel, roleModel, security, switchConfig) {
         var vm = this,
+            isAssignedCurrentNewPropAutomatically=false,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -14,8 +15,9 @@
             tabsDataInit = ["roles"],
             genericDataErrorReason = "";
 
-        vm.init = function() {
+        vm.init = function () {
             vm.grid = grid;
+            vm.isSelectedEnterpriseStdRole = false;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             gridTransform.watch(grid);
             grid.setConfig(gridConfig);
@@ -29,6 +31,7 @@
             vm.propertiesReadyWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
+            vm.newPropSwitchWatch = pubsub.subscribe("roles.setPropSwitch", vm.setPropSwitch);
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -39,13 +42,16 @@
             vm.updateWatch = pubsub.subscribe("rp.roles-radio", vm.updateRecords);
         };
 
-        vm.isActive = function() {
+        vm.isActive = function () {
             return ResPortDataModel.isActive();
         };
 
-        vm.loadData = function() {
+        vm.loadData = function () {
             if (persona.isReady() && vm.isActive()) {
                 grid.busy(true);
+                vm.assignPropSwitch = switchConfig({
+                    onChange: vm.setNewPropAutoToggle,
+                });
                 var userPersonaId = userDetailsModel.getPersonaId();
 
                 if (persona.hasResidentPortalUserAccess() && !userDetailsModel.userExists()) {
@@ -63,14 +69,18 @@
             }
         };
 
-        vm.updateRecords = function(record) {
-            vm.records.forEach(function(item) {
+        vm.updateRecords = function (record) {
+            vm.isSelectedEnterpriseStdRole = false;
+            vm.records.forEach(function (item) {
                 item.setAssigned(item.hasId(record.getId()));
             });
 
             if (record.isEnterpriseAdmin()) {
+                vm.isAssignedCurrentNewPropAutomatically = false;
                 tabsModel.setTabs(tabsDataEnterpriseAdmin);
             } else if (record.isEnterprise()) {
+                vm.isSelectedEnterpriseStdRole = true;
+                vm.isAssignedCurrentNewPropAutomatically = false;
                 tabsModel.setTabs(tabsDataEnterprise);
             } else {
                 tabsModel.setTabs(tabsDataAll);
@@ -79,13 +89,14 @@
             if (record.isEnterpriseAdmin()) {
                 pubsub.publish("resPort.allProperties", true);
                 ResPortDataModel.currentAdmin = true;
-            } else if (!record.isEnterpriseAdmin() && ResPortDataModel.currentAdmin) {
+            } else if ((!record.isEnterpriseAdmin() && ResPortDataModel.currentAdmin) || (!record.isEnterprise() && vm.isAssignedCurrentNewPropAutomatically)) {
+                vm.isAssignedCurrentNewPropAutomatically = false;
                 ResPortDataModel.currentAdmin = false;
                 pubsub.publish("resPort.allProperties", false);
             }
         };
 
-        vm.setData = function(resp) {
+        vm.setData = function (resp) {
             var found = false;
             if (ResPortDataModel.propertiesReady) {
                 grid.busy(false);
@@ -95,7 +106,7 @@
             vm.records = [];
             if (resp.data && resp.data.length > 0) {
                 if (security.isAllowed("viewUser") || !persona.data.hasResidentPortalUserAccess) {
-                    resp.data.forEach(function(item) {
+                    resp.data.forEach(function (item) {
                         angular.extend(item, {
                             disabled: false
                         });
@@ -103,7 +114,7 @@
                     });
                 }
 
-                vm.records = resp.data.map(function(role) {
+                vm.records = resp.data.map(function (role) {
                     return roleModel(role);
                 });
 
@@ -111,18 +122,22 @@
                     number: 0
                 });
 
-                vm.records.forEach(function(role) {
+                vm.records.forEach(function (role) {
                     if (role.isAssigned() && role.isEnterpriseAdmin()) {
                         tabsModel.setTabs(tabsDataEnterpriseAdmin);
                         ResPortDataModel.currentAdmin = true;
+                        ResPortDataModel.currentEnterpriseStd = false;
                         found = true;
                     } else if (role.isAssigned() && role.isEnterprise()) {
+                        vm.isSelectedEnterpriseStdRole = true;
                         tabsModel.setTabs(tabsDataEnterprise);
                         ResPortDataModel.currentAdmin = false;
+                        ResPortDataModel.currentEnterpriseStd = true;
                         found = true;
                     } else if (role.isAssigned()) {
                         tabsModel.setTabs(tabsDataAll);
                         ResPortDataModel.currentAdmin = false;
+                        ResPortDataModel.currentEnterpriseStd = false;
                         found = true;
                     }
                 });
@@ -143,14 +158,32 @@
             ResPortDataModel.setTabsReady(true);
         };
 
-        vm.propertiesReady = function(val) {
+        vm.propertiesReady = function (val) {
             if (val) {
                 vm.propertiesReadyWatch();
                 grid.busy(false);
             }
         };
-
-        vm.destroy = function() {
+        vm.setPropSwitch = function (val) {
+            vm.isAssignedCurrentNewPropAutomatically = val;
+            if (val) {
+                tabsModel.setTabs(tabsDataEnterpriseAdmin);
+            } else {
+                tabsModel.setTabs(tabsDataEnterprise);
+                pubsub.publish("resPortGrid.hidePropertiesGrid", false);
+            }
+        };
+        vm.setNewPropAutoToggle = function (val) {
+            if (val) {
+                tabsModel.setTabs(tabsDataEnterpriseAdmin);
+                pubsub.publish("resPort.allProperties", true);
+            }
+            else {
+                tabsModel.setTabs(tabsDataEnterprise);
+                pubsub.publish("resPort.allProperties", false);
+            }
+        };
+        vm.destroy = function () {
             vm.destWatch();
             vm.propertiesReadyWatch();
             grid.destroy();
@@ -187,6 +220,7 @@
             "ResPortTabsModel",
             "roleModel",
             "routeSecurity",
+            "rpSwitchConfig",
             RPRolesGridCtrl
         ]);
 })(angular);
