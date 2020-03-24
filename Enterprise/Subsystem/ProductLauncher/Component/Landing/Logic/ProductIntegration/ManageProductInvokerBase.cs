@@ -964,7 +964,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			foreach (var role in roleList)
 			{
-				if (userRoles.Contains(role.GetRoleId))
+				if (userRoles != null && userRoles.Contains(role.GetRoleId))
 				{
 					role.IsAssigned = true;
 				}
