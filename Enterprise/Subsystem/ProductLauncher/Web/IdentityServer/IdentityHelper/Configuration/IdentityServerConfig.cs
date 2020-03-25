@@ -38,6 +38,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
     {
         #region Public Methods
 
+        public static int GetIdentityServerLogEventLevel()
+        {
+            return ManageLoggingOptions.GetIdentityServerLogEventLevel();
+        }
+
         public static IdentityServerOptions GetIdentityServerOptions()
         {
             var requireSsl = false; // internally all calls are non-ssl but F5 redirects them to ssl
@@ -74,7 +79,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     EnableAutoCallbackForFederatedSignout = true,
                     InvalidSignInRedirectUrl = ConfigReader.GetReturnUri,
                     PostSignOutAutoRedirectDelay = 5,
-                }
+                },
+                LoggingOptions = ManageLoggingOptions.GetLoggingOptions()
             };
 
             //factory.ViewService = new Registration<IViewService>(typeof(NwpViewService));
