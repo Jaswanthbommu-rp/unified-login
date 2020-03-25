@@ -24,18 +24,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 							{
 								var clientDetails = evt.Details as LocalLoginDetails;
 								logDetails.Add("clientid", clientDetails?.SignInMessage.ClientId);
+                                logDetails.Add("loginUserName", clientDetails?.LoginUserName);
 								logDetails.Add("clienttype", "LocalLoginDetails");
 							}
 							if (evt.Details.GetType() == typeof(ExternalLoginDetails))
 							{
 								var clientDetails = evt.Details as ExternalLoginDetails;
 								logDetails.Add("clientid", clientDetails?.SignInMessage.ClientId);
+								logDetails.Add("provider", clientDetails?.Provider);
+                                logDetails.Add("subjectId", clientDetails?.SubjectId);
+                                logDetails.Add("loginUserName", clientDetails?.Name);
 								logDetails.Add("clienttype", "ExternalLoginDetails");
 							}
 							if (evt.Details.GetType() == typeof(LoginDetails))
 							{
 								var clientDetails = evt.Details as LoginDetails;
 								logDetails.Add("clientid", clientDetails?.SignInMessage.ClientId);
+                                logDetails.Add("loginUserName", clientDetails?.Name);
 								logDetails.Add("clienttype", "ExternalLoginDetails");
 							}
 							WriteToLog(LogType.Diagnostic, "Client authenticated", evt.Context.ActivityId, logDetails);
