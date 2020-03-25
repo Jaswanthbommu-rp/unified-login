@@ -106,5 +106,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productBatch"> Product Batch</param>		
         /// <returns></returns>
         bool CheckProductRight(ProductBatch productBatch);
-    }
+
+		/// <summary>
+		/// Get the user profile
+		/// </summary>
+		/// <param name="realPageId">Real page identifier</param>
+		/// <param name="realpageUserId">Real page user identifier</param>
+		/// <param name="orgPartyId">Organization party identifier</param>
+		/// <returns>A detail of profile</returns>
+		ObjectOutput<IProfileDetail, IErrorData> GetUserProfile(Guid realPageId, Guid realpageUserId, long orgPartyId);
+	}
 }

@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -602,6 +603,119 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			return hasAccess;
 		}
+
+		/// <summary>
+		/// Get the user profile
+		/// </summary>
+		/// <param name="realPageId">Real page identifier</param>
+		/// <param name="realpageUserId">Real page user identifier</param>
+		/// <param name="orgPartyId">Organization party identifier</param>
+		/// <returns>A detail of profile</returns>
+		public ObjectOutput<IProfileDetail, IErrorData> GetUserProfile(Guid realPageId, Guid realpageUserId, long orgPartyId) 
+		{
+			ObjectOutput<IProfileDetail, IErrorData> output = new ObjectOutput<IProfileDetail, IErrorData>();
+			Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+			ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaim);
+
+			realPageId = (realPageId == Guid.Empty) ? realpageUserId : realPageId;
+			if (realPageId == Guid.Empty)
+			{
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "User.GetProfile.1";
+				errorStatus.ErrorMsg = "Get User Profile: Invalid parameter realPageId";
+				output.Status = errorStatus;
+				return output;
+			}
+
+			IManagePerson personLogic = new ManagePerson();
+			IPerson person = personLogic.GetPerson(realPageId);
+
+
+			if (person != null)
+			{
+				//Include the UserLogin details.  IsActive and Is3rdPartyIDP are used by the Edit User
+				IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaim);
+				//ManageUserLoginIdentity userLoginIdentity = new ManageUserLoginIdentity();
+
+				var userLogin = userLoginLogic.GetUserLogin(realPageId, orgPartyId); // keep for now, used by ui, need to investigate how
+				IManageContactMechanism contactMechanism = new ManageContactMechanism();
+
+				IList<CommonAddress> commonAddressList = contactMechanism.ListContactMechanismForPerson(userLogin.RealPageId, "Email Notification");
+				string notificationEmail = null;
+				CommonAddress ca = (from a in commonAddressList
+									where a.contactMechanismUsageType != null
+									select a).FirstOrDefault();
+				if (ca != null)
+				{
+					notificationEmail = ca.AddressString;
+				}
+
+				IProfileDetail profileDetail = new ProfileDetail()
+				{
+					PartyId = person.PartyId,
+					RealPageId = person.RealPageId,
+					Title = person.Title,
+					FirstName = person.FirstName,
+					MiddleName = person.MiddleName,
+					LastName = person.LastName,
+					Suffix = person.Suffix,
+					contactMechanism = null,
+					SummaryCount = null,
+					AssignedProducts = null,
+					TelecommunicationNumber = null,
+					PartyRole = null,
+					InactivePersona = null,
+					userLogin = userLogin,
+					NotificationEmail = notificationEmail
+				};
+
+				IManagePersona managePersona = new ManagePersona(_userClaim);
+				var personaList = managePersona.ListPersona(userLogin.RealPageId);
+				if (personaList.Any(p => p.OrganizationPartyId == _userClaim.OrganizationPartyId))
+				{
+					var persona = managePersona.GetPersona(personaList.FirstOrDefault(p => p.OrganizationPartyId == _userClaim.OrganizationPartyId).PersonaId);
+					if (persona != null)
+					{
+						profileDetail.Persona.Add(persona);
+						profileDetail.organization.Add(persona.Organization);
+					}
+				}
+				else
+				{
+					errorStatus.Success = false;
+					errorStatus.ErrorCode = "User.GetProfile.3";
+					errorStatus.ErrorMsg = "Get User Profile: User exists in a different organization.";
+					output.Status = errorStatus;
+					return output;
+				}
+
+				IManageUserLoginPersona manageUserLoginPersona = new ManageUserLoginPersona(_userClaim);
+				IList<UserLoginPersona> userLoginPersonaList = manageUserLoginPersona.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: profileDetail.userLogin.UserId, organizationPartyId: _userClaim.OrganizationPartyId);
+
+				IList<CustomFieldValue> customFieldValueList = manageCustomFields.GetCustomFieldsValues(organizationPartyId: _userClaim.OrganizationPartyId, userLoginPersonaId: userLoginPersonaList[0].UserLoginPersonaId, enabled: true);
+				profileDetail.CustomFields = customFieldValueList;
+
+				IManagePartyRelationship managePartyRelationship = new ManagePartyRelationship();
+				PartyRelationship partyRelationship = managePartyRelationship.GetPartyRelationship(realPageId, _userClaim.OrganizationRealPageGuid, "", "", "User Type");
+				if (partyRelationship != null)
+				{
+					profileDetail.UserTypeId = partyRelationship.RoleTypeIdFrom;
+				}
+
+				output.obj = profileDetail;
+				output.Status = errorStatus;
+				return output;
+			}
+
+			errorStatus.Success = false;
+			errorStatus.ErrorCode = "User.GetProfile.2";
+			errorStatus.ErrorMsg = "Get User Profile: No data.";
+			output.Status = errorStatus;
+
+			return output;
+		}
+
 		#endregion
 
 		#region Private Methods
