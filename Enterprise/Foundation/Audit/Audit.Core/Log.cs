@@ -186,7 +186,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                             {
                                 return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
                             }
-                        
+
                             return c;
                         }
                     });
@@ -216,7 +216,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                             {
                                 return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
                             }
-                        
+
                             return c;
                         }
                     });
