@@ -5148,8 +5148,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (profile.userLogin.IsActive.HasValue && profile.userLogin.IsActive == true)
             {
-                userUpdated.UserType = GetUserTypeDescription(profile.UserTypeId);
-                currentUser.UserType = GetUserTypeDescription(userDetail.UserRoleTypeId);
+                userUpdated.UserType = ((UserRoleType)profile.UserTypeId).ToEnumDescription();
+                currentUser.UserType = ((UserRoleType)userDetail.UserRoleTypeId).ToEnumDescription();
             }
 
             var auditResult = ExtensionMethods.GenerateUpdateAudit(currentUser, userUpdated, "User");
@@ -5161,32 +5161,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                                       profile));
         }
 
-        private string GetUserTypeDescription(int UserTypeId)
-        {
-            switch (UserTypeId)
-            {
-                case (int)UserRoleType.ExternalUser:
-                    return UserRoleType.ExternalUser.ToEnumDescription();
-
-                case (int)UserRoleType.RealPageEmployee:
-                    return UserRoleType.RealPageEmployee.ToEnumDescription();
-
-                case (int)UserRoleType.SDE:
-                    return UserRoleType.SDE.ToEnumDescription();
-
-                case (int)UserRoleType.SuperUser:
-                    return UserRoleType.SuperUser.ToEnumDescription();
-
-                case (int)UserRoleType.User:
-                    return UserRoleType.User.ToEnumDescription();
-
-                case (int)UserRoleType.UserNoEmail:
-                    return UserRoleType.UserNoEmail.ToEnumDescription();
-
-                default:
-                    return string.Empty;
-            }
-        }
         #endregion
     }
 }
