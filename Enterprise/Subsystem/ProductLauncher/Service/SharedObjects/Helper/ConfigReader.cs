@@ -167,6 +167,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 		/// </summary>
 	    public static string OrgMasterId => ConfigSection["OrgMasterId"];
 
-	    #endregion
+        #endregion
     }
 }
