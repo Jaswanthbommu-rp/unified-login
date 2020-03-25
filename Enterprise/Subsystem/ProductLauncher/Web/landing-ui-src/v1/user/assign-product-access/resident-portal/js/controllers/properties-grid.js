@@ -7,6 +7,7 @@
         var vm = this,
             allProperties,
             displayAllProperties,
+            filteredRecords,
             grid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel(),
@@ -30,6 +31,7 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allPropWatch = pubsub.subscribe("resPort.allProperties", vm.setAllProperties);
+            vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
 
             if (persona.isReady()) {               
                 vm.loadData();
@@ -44,7 +46,9 @@
         vm.isActive = function () {
             return RPDataModel.isActive();
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
         vm.loadData = function () {
             if (persona.isReady() && vm.isActive()) {
                  vm.allPropSwitch = switchConfig({
@@ -82,9 +86,11 @@
                     if (resp.additional && resp.additional.allProperties) {
                         vm.allProperties = resp.additional.allProperties;
                         vm.setAllProperties(true);
+                        pubsub.publish("roles.setPropSwitch", true);
                     }
                     else {
                         RPDataModel.setProperties(resp.records);
+                        pubsub.publish("roles.setPropSwitch", false);
                     }
 
                     if (resp.additional && angular.isDefined(resp.additional.displayAllProperties)) {
@@ -119,7 +125,14 @@
             RPDataModel.propertiesReady = true;
             pubsub.publish("rp.properties-ready", true);
         };
-
+        vm.selectAllProperties = function (val) {
+            if (vm.filteredRecords !== undefined) {
+                RPDataModel.setAllProperties(vm.filteredRecords, val);
+            }
+            else {
+                RPDataModel.setAllProperties(vm.dataReq.records, val);
+            }
+        };
         vm.setAllProperties = function (val) {
             vm.allProperties = val;
             if (val) {
