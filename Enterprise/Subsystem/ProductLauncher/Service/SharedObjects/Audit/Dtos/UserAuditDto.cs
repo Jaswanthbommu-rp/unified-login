@@ -54,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         /// <summary>
         /// User Effective Date
         /// </summary>
-        [AuditLog("User Effective", LogActivityTypeConstants.UPDATE_USER, "{0:MM/DD/YYYY}")]
+        [AuditLog("User Effective", LogActivityTypeConstants.UPDATE_USER, "{0:MM/dd/yyyy}")]
         public DateTime? UserEffective { get; set; }
 
         /// <summary>

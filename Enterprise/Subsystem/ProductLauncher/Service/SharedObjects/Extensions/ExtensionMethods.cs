@@ -54,6 +54,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                             var formatedOldValue = oldValue != null ? oldValue.ToString() : null;
                             var formatedNewValue = newValue != null ? newValue.ToString() : null;
 
+                            bool oldValueIsDate = oldValue != null && oldValue.GetType() == Type.GetType("System.DateTime") ? true : false;
+                            bool newValueIsDate = newValue != null && newValue.GetType() == Type.GetType("System.DateTime") ? true : false;
+
                             if (formatedOldValue != formatedNewValue)
                             {
                                 AuditRecord auditRecord = new AuditRecord();
@@ -61,12 +64,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.OldValue = internalAttribute.Format != string.Empty 
                                                        ? (formatedOldValue != string.Empty 
-                                                            ? String.Format(internalAttribute.Format, formatedOldValue) 
+                                                            ? String.Format(internalAttribute.Format, (oldValueIsDate ? oldValue : formatedOldValue)) 
                                                             : formatedOldValue)
                                                        : formatedOldValue;
+
                                 auditRecord.NewValue = internalAttribute.Format != string.Empty
                                                        ? (formatedNewValue != string.Empty
-                                                            ? String.Format(internalAttribute.Format, formatedNewValue)
+                                                            ? String.Format(internalAttribute.Format, (newValueIsDate ? newValue : formatedNewValue))
                                                             : formatedNewValue)
                                                        : formatedNewValue;
 
