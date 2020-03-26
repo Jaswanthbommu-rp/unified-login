@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.PortofolioManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
 {
@@ -22,6 +23,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public List<OrganizationRole> OrganizationRoles { get; set; }
 		[JsonProperty(PropertyName = "receiveMonthlyUsageReport", NullValueHandling = NullValueHandling.Ignore)]
 		public bool CanReceiveMonthlyReport { get; set; } // used in DIQ
+		[JsonProperty(PropertyName = "PropertyRoleList", NullValueHandling = NullValueHandling.Ignore)]
+		public List<PAMRolePropertyList> PropertyRoleList { get; set; } // used in PAM
+		[JsonProperty(PropertyName = "RoleList", NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> RoleList { get; set; } // used in PAM
 	}
 
 	public class BaseIntegrationProductUser

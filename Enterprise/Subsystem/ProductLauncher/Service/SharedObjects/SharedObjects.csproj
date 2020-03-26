@@ -453,6 +453,7 @@
     <Compile Include="Product\Ops\Rights.cs" />
     <Compile Include="Product\IProductEasyLMS.cs" />
     <Compile Include="Product\OrganizationProductUser.cs" />
+    <Compile Include="Product\PortofolioManagement\PortofolioManagementRoleProperties.cs" />
     <Compile Include="Product\ProductEasyLMS.cs" />
     <Compile Include="Product\Ops\SessionRequest.cs" />
     <Compile Include="Product\ProductPropertyMap.cs" />
