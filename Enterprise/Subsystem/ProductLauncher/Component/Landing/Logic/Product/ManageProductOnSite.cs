@@ -140,7 +140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //Sort the properties by name in ascending order
-                allProperties = allProperties.ToList().OrderBy(p => p.GetName).ToList();
+                allProperties = allProperties.ToList().Where(a => a.IsActive).OrderBy(p => p.GetName).ToList();
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
@@ -1602,7 +1602,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "region_id")]
         public string RegionId { get; set; }
 
-        [JsonIgnore]
+        //[JsonIgnore]
         [JsonProperty(PropertyName = "active")]
         public bool IsActive { get; set; }
 
