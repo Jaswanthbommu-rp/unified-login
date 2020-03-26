@@ -57,11 +57,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                             if (formatedOldValue != formatedNewValue)
                             {
                                 AuditRecord auditRecord = new AuditRecord();
-
-                                auditRecord.OldValue = formatedOldValue;
-                                auditRecord.NewValue = formatedNewValue;
-
                                 AuditLogAttribute internalAttribute = ((AuditLogAttribute)attribute);
+
+                                auditRecord.OldValue = internalAttribute.Format != string.Empty 
+                                                       ? (formatedOldValue != string.Empty 
+                                                            ? String.Format(internalAttribute.Format, formatedOldValue) 
+                                                            : formatedOldValue)
+                                                       : formatedOldValue;
+                                auditRecord.NewValue = internalAttribute.Format != string.Empty
+                                                       ? (formatedNewValue != string.Empty
+                                                            ? String.Format(internalAttribute.Format, formatedNewValue)
+                                                            : formatedNewValue)
+                                                       : formatedNewValue;
 
                                 auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
 

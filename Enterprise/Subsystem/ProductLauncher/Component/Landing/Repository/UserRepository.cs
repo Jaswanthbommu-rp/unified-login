@@ -2049,9 +2049,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Update User Detail and Products
         /// </summary>
         /// <param name="loggedInUserRealPageId">Logged-In User unique identifier</param>
-        /// <param name="profile">Edited User detail and Products</param>
+		/// <param name="profile">Edited User detail and Products</param>
+		/// <param name="oldProfile">Old detail profile from database</param>
         /// <returns>Repository response object</returns>
-        public RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile)
+        public RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile, IProfileDetail oldProfile)
         {
             dynamic param;
             DateTime utcNow = DateTime.UtcNow;
@@ -2889,7 +2890,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.ErrorMessage = saveProductBatchError;
                         }
 
-                        AuditUserUpdate(userDetails, profile);
+             
 
                     }
                 }
@@ -2910,6 +2911,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         //Commit and end transaction.
                         repository.UnitOfWork.Commit();
+
+                        AuditUserUpdate(oldProfile, profile);
                     }
                     else
                     {
@@ -5141,24 +5144,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #endregion
 
         #region Audit
-        private void AuditUserUpdate(UserDetails userDetail, IProfileDetail profile)
+        private void AuditUserUpdate(IProfileDetail oldProfile, IProfileDetail newProfile)
         {
-            UserAuditDto userUpdated = profile.IProfileDetailToUserAuditDto<UserAuditDto>();
-            UserAuditDto currentUser = userDetail.UserDetailsToUserAuditDto<UserAuditDto>();
+            UserAuditDto oldUser = oldProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
+            UserAuditDto newUser = newProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
 
-            if (profile.userLogin.IsActive.HasValue && profile.userLogin.IsActive == true)
+            if (newProfile.userLogin.IsActive.HasValue && newProfile.userLogin.IsActive == true)
             {
-                userUpdated.UserType = ((UserRoleType)profile.UserTypeId).ToEnumDescription();
-                currentUser.UserType = ((UserRoleType)userDetail.UserRoleTypeId).ToEnumDescription();
+                newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
+                oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
             }
 
-            var auditResult = ExtensionMethods.GenerateUpdateAudit(currentUser, userUpdated, "User");
+            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "User");
 
             auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
                                                       x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
                                                       x.AuditMessage,
                                                       "UpdateUser",
-                                                      profile));
+                                                      newProfile));
         }
 
         #endregion

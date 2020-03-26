@@ -405,7 +405,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				profile.userLogin.FromDate = DateTime.UtcNow;
 				sendNotification = true;
 			}
-			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile);
+
+			IProfileDetail oldProfile = this.GetUserProfile(profile.RealPageId, loggedInUserRealPageId, profile.Persona.First().OrganizationPartyId).obj;
+
+			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
 			if (repositoryResponse.Id > 0)
 			{
 				if (sendNotification && !profile.userLogin.Is3rdPartyIDP)

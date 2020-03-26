@@ -48,13 +48,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         /// <summary>
         /// User Expire Date
         /// </summary>
-        [AuditLog("User Expires", LogActivityTypeConstants.UPDATE_USER)]
+        [AuditLog("User Expires", LogActivityTypeConstants.UPDATE_USER, "{0:MM/dd/yyyy}")]
         public DateTime? UserExpire { get; set; }
 
         /// <summary>
         /// User Effective Date
         /// </summary>
-        [AuditLog("User Effective", LogActivityTypeConstants.UPDATE_USER)]
+        [AuditLog("User Effective", LogActivityTypeConstants.UPDATE_USER, "{0:MM/DD/YYYY}")]
         public DateTime? UserEffective { get; set; }
 
         /// <summary>
