@@ -1602,7 +1602,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "region_id")]
         public string RegionId { get; set; }
 
-        //[JsonIgnore]
+        //[JsonIgnore] //Commented for ticket TFS-123011/PME-148190
         [JsonProperty(PropertyName = "active")]
         public bool IsActive { get; set; }
 
