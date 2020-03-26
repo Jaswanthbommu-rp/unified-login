@@ -16,9 +16,9 @@
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
 
-            vm.config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
-            logc("role vm.config", vm.config);
-            rolesGrid.setConfig(vm.config);
+            //vm.config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
+            //logc("role vm.config", vm.config);
+            rolesGrid.setConfig(syncMgr.getProductGridConfig($scope.$parent.productId, "Roles"));
 
             roleGridPagination.setGrid(rolesGrid);
             $scope.roleGridPagination = roleGridPagination;

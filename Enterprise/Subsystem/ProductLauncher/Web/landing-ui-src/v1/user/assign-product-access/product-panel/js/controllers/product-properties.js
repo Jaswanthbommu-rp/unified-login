@@ -25,7 +25,7 @@
             vm.propertiesGrid = propertiesGrid;
             propertiesGridTransform.watch(propertiesGrid);
 
-            vm.config = configModel.getGridConfig()[0];
+            vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "Properties"); //configModel.getGridConfig()[0];
 
             propertiesGrid.setConfig(vm.config);
             propertiesGridPagination.setGrid(propertiesGrid);
@@ -34,13 +34,18 @@
                 recordsPerPage: 25
             });
 
-            vm.radioconfig = configModel.getRadioConfig();
-            vm.switchconfigs = configModel.getSwitchConfig();
+
+            var radioconfig = syncMgr.getProductRadioConfig($scope.$parent.productId, "Properties");
+
+            if (radioconfig !== undefined) {
+                vm.radioconfig = syncMgr.getProductRadioConfig($scope.$parent.productId, "Properties");
+            }
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             // vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected );
             vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
+            vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             //vm.productPropertyWatch = pubsub.subscribe("product.ProductPropertyData", vm.setData);
 
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
@@ -80,19 +85,32 @@
             return productDataModel.isPropertyGridActive();
         };
 
+        vm.isSwitchConfigLoaded = function () {
+            return syncMgr.isSwitchConfigLoaded();
+        };
+
+        vm.setSwitchConfig = function () {
+            var productId = $scope.$parent.productId;
+            vm.switchconfigs = syncMgr.getProductSwitchConfig(productId, "Properties");
+
+            if (vm.switchconfigs.length > 0) {
+                vm.switchconfigs.forEach(function (item) {
+                    item.configData = switchConfig({
+                        onChange: vm.selectionAll,
+                        //productId == 9 ? vm.updateNewPropertyByDefault :
+                        disabled: vm.hasViewOnlyAccess()
+                    });
+                });
+
+            }
+        };
+
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
 
             propertiesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var propertyData = syncMgr.getProductPropertiesData(productId);
-
-                if (vm.switchconfigs !== undefined && vm.switchconfigs.length > 0) {
-                    vm.switchconfigs[0].configData = switchConfig({
-                        onChange: productId == 9 ? vm.updateNewPropertyByDefault : vm.selectionAll,
-                        disabled: vm.hasViewOnlyAccess()
-                    });
-                }
 
                 if (propertyData === undefined) {
                     propertiesGrid.busy(false);
@@ -211,6 +229,7 @@
         };
 
         vm.selectionAll = function (bool) {
+            logc("selectAll", bool);
             vm.propertySelect = "property";
             if (bool) {
                 vm.propertySelect = 'all';
@@ -220,17 +239,17 @@
         };
 
         vm.updatePropertyRecords = function (record) {
-            if (record){
+            if (record) {
                 var propertiesData = syncMgr.selectedPropertySync(record.productId, record);
             }
         };
 
         vm.updateNewPropertyByDefault = function (bool) {
-           var propertiesData = syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, bool);
+            var propertiesData = syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, bool);
         };
 
         vm.updateMultiSelectPropertyRecords = function (record) {
-            if (record){
+            if (record) {
                 var propertiesData = syncMgr.multiSelectedPropertySync(record.productId, record);
             }
         };
@@ -269,6 +288,7 @@
             vm.productPropertyWatch();
             vm.gridAllWatch();
             vm.gridSelectionWatch();
+            vm.productPropertySwitchWatch();
             //  vm.productSelectedWatch();
             if (vm.dataPropReq) {
                 vm.dataPropReq.$cancelRequest();

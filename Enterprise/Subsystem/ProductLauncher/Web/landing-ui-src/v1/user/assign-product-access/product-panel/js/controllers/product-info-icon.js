@@ -13,6 +13,7 @@
         vm.showAside = function (record) {
             logc("info icon", record);
             listModel.setName(record.name);
+            listModel.setTabName(record.radname);
             listModel.setListID(record.id);
             listModel.setProductID(record.productId);
             aside.show();

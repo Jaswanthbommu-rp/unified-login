@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPanelListAsideCtrl($scope, aside, dataSvc, gridConfig, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
+    function ProductPanelListAsideCtrl($scope, aside, dataSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
         var vm = this,
             asideGrid = gridModel(),
             asidegridTransform = gridTransformSvc(),
@@ -11,11 +11,23 @@
 
         vm.init = function () {
             vm.subtitle = listAsideModel.getName();
+            vm.tabName = listAsideModel.getTabName();
+            vm.productId = listAsideModel.getProductID();
             vm.asideGrid = asideGrid;
             asidegridTransform.watch(asideGrid);
 
-            vm.asideConfig = gridConfig.getListAsideConfig()[0];
-            vm.title = gridConfig.getListAsideDisplayName();
+            var configTab = "";
+            if (vm.tabName == "property"){
+                configTab = "Properties";
+            }
+            else  if (vm.tabName == "role"){
+                configTab = "Roles";
+            }
+
+            vm.asideConfig = syncMgr.getProductAsideGridConfig(vm.productId, configTab);
+            //gridConfig.getListAsideConfig()[0];
+            vm.title = syncMgr.getProductAsideGridName(vm.productId, configTab);
+            //gridConfig.getListAsideDisplayName();
 
             asideGrid.setConfig(vm.asideConfig);
             asidegridPagination.setGrid(asideGrid);
@@ -92,7 +104,8 @@
             "$scope",
             "productPanelListAside",
             "productRightsSvc",
-            "ConfigModel",
+            //"ConfigModel",
+            "productDataSyncManager",
             "rpGridModel",
             "rpGridTransform",
             "rpGridPaginationModel",

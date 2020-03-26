@@ -168,7 +168,7 @@ var data = {
             {
               "id": 104,
               "name": "OneSiteProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId",
-              "dataSource": null,
+              "dataSource": "all",
               "displayName": "Allow access to all current and future properties",
               "sequence": 1,
               "type": "Switch",

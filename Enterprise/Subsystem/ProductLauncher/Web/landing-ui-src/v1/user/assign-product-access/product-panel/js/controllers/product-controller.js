@@ -25,10 +25,7 @@
             vm.tabsMenu = tabsModel.getTabsMenu();
 
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            //vm.profileWatch = pubsub.subscribe("up.user-details-disable", vm.setState);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
-
-            //vm.updateGridWatch = pubsub.subscribe("PA.updateGrids", vm.updateGrid);
         };
 
         vm.productSelected = function (obj) {
@@ -105,28 +102,24 @@
         vm.setTabs = function (data) {
 
             panelModel.gridReset();
-            vm.tabsCnfData = vm.getTabsConfigData(data);
+            // vm.tabsCnfData = vm.getTabsConfigData(data);
+            // logc("vm.tabsCnfData", vm.tabsCnfData);
 
-            // vm.tabsCnfData.forEach(function (tab) {
-            //   logc("tabdatata", tab);
-            //   if (tab.gridName === "Roles"){
-            //      vm.getGridConfigs(tab.gridConfig);
-            //   }
+            // vm.switchconfigs = vm.getSwitchConfigs(data);
+            // // configModel.setSwitchConfig(vm.switchconfigs);
+            // console.log("vm.switchconfigsold", vm.switchconfigs);
 
-            // });
+            // vm.gridconfigs = vm.getGridConfigs(vm.tabsCnfData);
+            // configModel.setGridConfig(vm.gridconfigs);
 
-            vm.switchconfigs = vm.getSwitchConfigs(data);
-            configModel.setSwitchConfig(vm.switchconfigs);
-            console.log("vm.switchconfigs", vm.switchconfigs);
+            // vm.radioconfigs = configData.getRadioConfig(data);
+            // //logc("vm.radioconfigs",vm.radioconfigs);
+            // if (vm.radioconfigs !== undefined) {
+            //     configModel.setRadioConfig(vm.radioconfigs);
+            // }
 
-            vm.gridconfigs = vm.getGridConfigs(vm.tabsCnfData);
-            configModel.setGridConfig(vm.gridconfigs);
-
-            vm.radioconfigs = configData.getRadioConfig(data);
-            //logc("vm.radioconfigs",vm.radioconfigs);
-            if (vm.radioconfigs !== undefined) {
-                configModel.setRadioConfig(vm.radioconfigs);
-            }
+            vm.setTabsConfigData(data);
+            vm.setSwitchConfigs(data);
 
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
@@ -175,10 +168,43 @@
             return tabs;
         };
 
-        vm.getTabsConfigData = function (data) {
-            var cnfg = {},
-                tabs = [];
+        // vm.getTabsConfigData = function (data) {
+        //     var cnfg = {},
+        //         tabs = [];
 
+        //     if (data && data.controls) {
+        //         data.controls.forEach(function (tabControl) {
+        //             if (tabControl.type === 'Tab Group') {
+        //                 tabControl.controls.forEach(function (tabGrp) {
+        //                     var tabName = tabGrp.displayName;
+
+        //                     tabGrp.controls.forEach(function (tab) {
+        //                         if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
+        //                             cnfg = configData.getGridConfigTypes(tab, tabName);
+        //                             tabs.push(cnfg);
+        //                             var gridConfig = vm.getGridConfig(cnfg);
+        //                             productModel.renderProductGridConfigMap($scope.productId, tabName, gridConfig);
+
+        //                             var listAsideconfigs = configData.getListAsideConfig(tab);
+
+        //                             if (listAsideconfigs !== undefined &&
+        //                                 listAsideconfigs.config.length > 0) {
+        //                                 var asideGridConfig = vm.getGridConfig(listAsideconfigs.config);
+        //                                 configModel.setListAsideDisplayName(listAsideconfigs.displayName);
+        //                                 configModel.setListAsideConfig(asideGridConfig);
+        //                             }
+        //                             logc("vm.listAsideconfigs", configModel.getListAsideConfig());
+        //                         }
+        //                     });
+        //                 });
+        //             }
+        //         });
+        //     }
+        //     return tabs;
+        // };
+
+        vm.setTabsConfigData = function (data) {
+            var productId = $scope.productId;
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
@@ -187,58 +213,73 @@
 
                             tabGrp.controls.forEach(function (tab) {
                                 if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
-                                    cnfg = configData.getGridConfigTypes(tab, tabName);
-                                    tabs.push(cnfg);
-                                    var listAsideconfigs = configData.getListAsideConfig(tab);
-
-                                    if (listAsideconfigs !== undefined &&
-                                        listAsideconfigs.config.length > 0) {
-                                        var asideGridConfig = vm.getAsideGridConfigs(listAsideconfigs.config);
-                                        configModel.setListAsideDisplayName(listAsideconfigs.displayName);
-                                        configModel.setListAsideConfig(asideGridConfig);
+                                    //Check and Set Grid Config Types
+                                    logc("test", productModel.getProductGridConfig(productId, tabName));
+                                    if (productModel.getProductGridConfig(productId, tabName) === undefined) {
+                                        var cnfg = configData.getGridConfigTypes(tab, tabName);
+                                        var gridConfig = vm.getGridConfig(cnfg);
+                                        productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
                                     }
-                                    logc("vm.listAsideconfigs", configModel.getListAsideConfig());
+
+                                    //Check and Set any Aside List Grid
+                                    if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
+                                        var listAsideconfigs = configData.getListAsideConfig(tab);
+
+                                        if (listAsideconfigs !== undefined &&
+                                            listAsideconfigs.config.length > 0) {
+                                            var asideGridConfig = vm.getGridConfig(listAsideconfigs.config);
+                                            productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
+                                            //configModel.setListAsideDisplayName(listAsideconfigs.displayName);
+                                            //configModel.setListAsideConfig(asideGridConfig);
+                                        }
+                                    }
+
+                                    //Check and Set any radio data
+                                    if (productModel.getProductRadioConfig(productId, tabName) === undefined) {
+                                        var radioCnfg = configData.getRadioConfig(tab);
+                                        productModel.renderProductRadioConfigMap(productId, tabName, radioCnfg);
+                                    }
                                 }
                             });
                         });
                     }
                 });
             }
-            return tabs;
+
         };
 
-        vm.getGridConfigs = function (tabsCfData) {
-            var cnfgs = [];
+        // vm.getGridConfigs = function (tabsCfData) {
+        //     var cnfgs = [];
 
-            if (tabsCfData) {
-                tabsCfData.forEach(function (tab) {
-                    var hdrCnfgs = {},
-                        fltrCnfg = {},
-                        mainCnfg = {};
+        //     if (tabsCfData) {
+        //         tabsCfData.forEach(function (tab) {
+        //             var hdrCnfgs = {},
+        //                 fltrCnfg = {},
+        //                 mainCnfg = {};
 
-                    var h = configData.getHeaders(tab);
-                    hdrCnfgs = h;
+        //             var h = configData.getHeaders(tab);
+        //             hdrCnfgs = h;
 
-                    var f = configData.getFilters(tab);
-                    fltrCnfg = f;
+        //             var f = configData.getFilters(tab);
+        //             fltrCnfg = f;
 
-                    var m = configData.getMain(tab);
-                    mainCnfg = m;
+        //             var m = configData.getMain(tab);
+        //             mainCnfg = m;
 
-                    var cnfg = {
-                        "headers": hdrCnfgs,
-                        "filters": fltrCnfg,
-                        "main": mainCnfg
-                    };
+        //             var cnfg = {
+        //                 "headers": hdrCnfgs,
+        //                 "filters": fltrCnfg,
+        //                 "main": mainCnfg
+        //             };
 
-                    var c = configFactory(cnfg);
-                    cnfgs.push(c);
-                });
-            }
-            return cnfgs;
-        };
+        //             var c = configFactory(cnfg);
+        //             cnfgs.push(c);
+        //         });
+        //     }
+        //     return cnfgs;
+        // };
 
-        vm.getAsideGridConfigs = function (data) {
+        vm.getGridConfig = function (data) {
             var cnfgs = [];
 
             if (data) {
@@ -268,31 +309,42 @@
             return cnfgs;
         };
 
-        vm.getSwitchConfigs = function (data) {
+        vm.setSwitchConfigs = function (data) {
             var aSwitch = [];
+            //Check and Set any Switch
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
-                            tabGrp.controls.forEach(function (ctrl) {
-                                if (ctrl.type === 'Switch') {
-                                    var c = {
-                                        id: ctrl.id,
-                                        text: ctrl.displayName,
-                                        key: ctrl.dataSource,
-                                        configData: switchConfig({
-                                            onChange: vm.noop,
-                                            disabled: false
-                                        })
-                                    };
-                                    aSwitch.push(c);
+                            aSwitch = [];
+                            var tabName = tabGrp.displayName;
+                            if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
+                                tabGrp.controls.forEach(function (ctrl) {
+                                    if (ctrl.type === 'Switch') {
+                                        logc("switch control", ctrl);
+                                        var c = {
+                                            id: ctrl.id,
+                                            text: ctrl.displayName,
+                                            key: ctrl.dataSource,
+                                            configData: switchConfig({
+                                                onChange: vm.noop,
+                                                disabled: false
+                                            })
+                                        };
+                                        aSwitch.push(c);
+                                    }
+                                });
+                                //logc("aSwitch", aSwitch);
+                                if (aSwitch.length > 0) {
+                                    logc("aSwitch", aSwitch);
+                                    productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
                                 }
-                            });
+                            }
                         });
                     }
                 });
             }
-            return aSwitch;
+            // return aSwitch;
         };
 
         vm.setState = function (value) {

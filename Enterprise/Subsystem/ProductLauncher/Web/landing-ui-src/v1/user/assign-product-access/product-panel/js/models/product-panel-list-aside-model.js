@@ -18,6 +18,10 @@
             return model.ProductId;
         };
 
+        model.getTabName = function () {
+            return model.tabName;
+        };
+
         model.setName = function (name) {
             model.Name = name;
         };
@@ -28,6 +32,10 @@
 
         model.setProductID = function (productId) {
             model.ProductId = productId;
+        };
+
+        model.setTabName = function (name) {
+            model.tabName = name;
         };
 
         model.reset = function () {

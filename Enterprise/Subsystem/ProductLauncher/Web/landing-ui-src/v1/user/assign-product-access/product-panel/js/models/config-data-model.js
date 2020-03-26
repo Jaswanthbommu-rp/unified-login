@@ -35,25 +35,45 @@
             return config;
         };
 
+        // p.getRadioConfig = function (radioData) {
+        //     var s = this,
+        //         cnfg = [],
+        //         cnfgs = [];
+
+        //     if (radioData && radioData.controls) {
+        //         radioData.controls.forEach(function (tabGrp) {
+        //             tabGrp.controls.forEach(function (tab) {
+        //                 tab.controls.forEach(function (item) {
+        //                     if (item.type === 'Radio') {
+        //                         cnfgs.push({
+        //                             "key": item.dataSource,
+        //                             "type": s.isControl(item.type),
+        //                             "text": item.displayName
+        //                         });
+        //                     }
+
+        //                 });
+        //             });
+
+        //         });
+        //     }
+        //     return cnfgs;
+        // };
+
         p.getRadioConfig = function (radioData) {
             var s = this,
                 cnfg = [],
                 cnfgs = [];
 
             if (radioData && radioData.controls) {
-                radioData.controls.forEach(function (tabGrp) {
-                    tabGrp.controls.forEach(function (tab) {
-                        tab.controls.forEach(function (item) {
-                            if (item.type === 'Radio') {
-                                cnfgs.push({
-                                    "key": item.dataSource,
-                                    "type": s.isControl(item.type),
-                                    "text": item.displayName
-                                });
-                            }
-
+                radioData.controls.forEach(function (item) {
+                    if (item.type === 'Radio') {
+                        cnfgs.push({
+                            "key": item.dataSource,
+                            "type": s.isControl(item.type),
+                            "text": item.displayName
                         });
-                    });
+                    }
 
                 });
             }
@@ -72,37 +92,37 @@
                 cnfgs = [];
 
             if (data && data.controls) {
-                  data.controls.forEach(function (ctrl) {
-                        if (ctrl.type === "Icon") {
-                            if (ctrl.attributes !== null) {
-                                ctrl.attributes.forEach(function (item) {
-                                    logc("attributes", item);
-                                    if (item.key === "InfoIcon" && item.value === "Slide") {
-                                        isSlideScreen = true;
-                                    }
-                                });
-                            }
-                            if (isSlideScreen) {
-                                ctrl.controls.forEach(function (subCtrls) {
-                                    if (subCtrls.type === "Grid") {
-                                        listasideConfig.displayName = subCtrls.displayName;
-                                        subCtrls.controls.forEach(function (gridCtrl) {
-                                            listasideConfig.config.push({
-                                                "key": gridCtrl.dataSource,
-                                                "type": s.isType(gridCtrl.type),
-                                                "text": gridCtrl.displayName,
-                                                "idKey": "id"
-                                            });
-
-                                        });
-                                    }
-                                });
-                            }
+                data.controls.forEach(function (ctrl) {
+                    if (ctrl.type === "Icon") {
+                        if (ctrl.attributes !== null) {
+                            ctrl.attributes.forEach(function (item) {
+                                logc("attributes", item);
+                                if (item.key === "InfoIcon" && item.value === "Slide") {
+                                    isSlideScreen = true;
+                                }
+                            });
                         }
-                    });
+                        if (isSlideScreen) {
+                            ctrl.controls.forEach(function (subCtrls) {
+                                if (subCtrls.type === "Grid") {
+                                    listasideConfig.displayName = subCtrls.displayName;
+                                    subCtrls.controls.forEach(function (gridCtrl) {
+                                        listasideConfig.config.push({
+                                            "key": gridCtrl.dataSource,
+                                            "type": s.isType(gridCtrl.type),
+                                            "text": gridCtrl.displayName,
+                                            "idKey": "id"
+                                        });
+
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
             }
 
-            logc("listaside", listasideConfig);
+            //logc("listaside", listasideConfig);
             return listasideConfig;
         };
         // p.getListAsideConfig = function (data) {
