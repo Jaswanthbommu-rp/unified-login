@@ -30,10 +30,12 @@ Post-Deployment Script Template
 --:r .\PostDeploymentScripts\December2019Release.sql
 --:r .\PostDeploymentScripts\January2020Release.sql
 
-:r .\PostDeploymentScripts\SameSiteData.sql
+--:r .\PostDeploymentScripts\SameSiteData.sql
 
-:r .\PostDeploymentScripts\February2020Release.sql
-:r .\PostDeploymentScripts\March2020Release.sql
+--:r .\PostDeploymentScripts\February2020Release.sql
+--:r .\PostDeploymentScripts\March2020Release.sql
+
+:r .\PostDeploymentScripts\April2020Release.sql
 
 :r .\PostDeploymentScripts\UserManagementData.sql
 

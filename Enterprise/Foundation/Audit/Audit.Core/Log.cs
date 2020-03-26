@@ -1,8 +1,8 @@
-﻿using System;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+﻿using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
+using System;
 
 namespace RP.Enterprise.Foundation.Audit.Core.Component
 {
@@ -12,7 +12,9 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
 
         private static readonly ILogger _perfLogger;
         private static readonly ILogger _errorLogger;
+
         private static readonly ILogger _diagnosticLogger;
+
         //private static readonly ILogger _utilizationLogger;
         private static readonly ILogger _informationLogger;
 
@@ -22,7 +24,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
 
         static Log()
         {
-            
+
             if (ConfigReader.ShouldWriteInFile)
             {
                 _errorLogger = GetLoggerConfigurationWithFile("error", "LogDetails")?
@@ -73,6 +75,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                         {
                             logDetails.Message = GetMessageFromException(logDetails.Exception);
                         }
+
                         _errorLogger?.Write(LogEventLevel.Error, "{@LogDetails}", logDetails);
                         break;
                     case LogType.Performance:
@@ -102,6 +105,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
 
                             _perfLogger?.Write(LogEventLevel.Information, "{@PerformanceLogDetails}", perfDetails);
                         }
+
                         break;
                     case LogType.Diagnostic:
                         if (ConfigReader.ShouldLogDiagnostic)
@@ -110,8 +114,10 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
                             {
                                 logDetails.Message = GetMessageFromException(logDetails.Exception);
                             }
+
                             _diagnosticLogger?.Write(LogEventLevel.Information, "{@LogDetails}", logDetails);
                         }
+
                         break;
                     case LogType.Information:
                         // map logDetails to info details  
@@ -153,6 +159,7 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
             {
                 return GetMessageFromException(ex.InnerException);
             }
+
             return ex.Message;
         }
 
@@ -160,19 +167,31 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
+
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
                 return new LoggerConfiguration()
                     .WriteTo.File(formatter: new JsonFormatter(jsonFormatter),
                         path: $"{ConfigReader.LogPath}\\{ConfigReader.LogProductName}-{logType}.json")
-            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
-            {
-                AutoRegisterTemplate = true,
-                CustomFormatter = new JsonFormatter(jsonFormatter),
-                TypeName = $"{elasticSearchIndexTypeName}-{logType}",
-                IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}"
-            });
+                    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
+                    {
+                        AutoRegisterTemplate = true,
+                        CustomFormatter = new JsonFormatter(jsonFormatter),
+                        TypeName = $"{elasticSearchIndexTypeName}-{logType}",
+                        IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
+                        ModifyConnectionSettings = (c) =>
+                        {
+                            var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
+                            if (elasticSearchAuth?.Length == 2)
+                            {
+                                return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
+                            }
+
+                            return c;
+                        }
+                    });
             }
+
             return null;
         }
 
@@ -180,17 +199,29 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
         {
             var elasticSearchUri = ConfigReader.ElasticSearchUri;
             var elasticSearchIndexTypeName = ConfigReader.ElasticSearchIndexTypeName;
+
             if (!string.IsNullOrEmpty(elasticSearchUri) && !string.IsNullOrEmpty(elasticSearchIndexTypeName))
             {
                 return new LoggerConfiguration()
-                        .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
+                    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
+                    {
+                        AutoRegisterTemplate = true,
+                        CustomFormatter = new JsonFormatter(jsonFormatter),
+                        TypeName = $"{elasticSearchIndexTypeName}-{logType}",
+                        IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}",
+                        ModifyConnectionSettings = (c) =>
                         {
-                            AutoRegisterTemplate = true,
-                            CustomFormatter = new JsonFormatter(jsonFormatter),
-                            TypeName = $"{elasticSearchIndexTypeName}-{logType}",
-                            IndexFormat = $"{elasticSearchIndexTypeName}-{logType}-{{0:yyy.MM.dd}}"
-                        });
+                            var elasticSearchAuth = ConfigReader.ElasticSearchAuthDetails?.Split(':');
+                            if (elasticSearchAuth?.Length == 2)
+                            {
+                                return c.BasicAuthentication(elasticSearchAuth[0], elasticSearchAuth[1]);
+                            }
+
+                            return c;
+                        }
+                    });
             }
+
             return null;
         }
 

@@ -12,6 +12,8 @@ namespace RP.Enterprise.Foundation.Audit.Core.Component
         public static string ElasticSearchUri { get; } = ConfigurationManager.AppSettings["ElasticSearchUri"];
         public static string LogProductName { get; } = ConfigurationManager.AppSettings["LogProductName"];
         public static string ElasticSearchIndexTypeName { get; } = ConfigurationManager.AppSettings["ElasticSearchIndexTypeName"];
+        public static string ElasticSearchAuthDetails { get; } = ConfigurationManager.AppSettings["ElasticSearchAuthDetails"];
+
         public static string Environment { get; } = ConfigurationManager.AppSettings["Environment"];
         public static bool ShouldWriteInFile { get; } = Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldWriteInFile"]);
         public static bool ShouldLogPerformance { get; } = Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogPerformance"]);
