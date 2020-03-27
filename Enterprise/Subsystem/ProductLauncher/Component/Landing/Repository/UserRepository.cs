@@ -785,7 +785,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 // the current company the user has been added to 
                                 if (userPersonaOrganizationList.Count == 1 && !currentPrimaryOrgStatus.IsActive.Value)
                                 {
-                                    if (fromDate > DateTime.UtcNow)
+                                    if (DateTime.UtcNow.Subtract(fromDate.Value).TotalMinutes >= 15)
                                     {
                                         userStatusId = (int)UserUiStatusType.Disabled;
                                     }
@@ -813,7 +813,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //add to Logged-in (Current) Company
                         else
                         {
-                            if (fromDate > DateTime.UtcNow)
+                            if (DateTime.UtcNow.Subtract(fromDate.Value).TotalMinutes >= 15)
                             {
                                 userStatusId = (int)UserUiStatusType.Disabled;
                             }
