@@ -5,104 +5,189 @@
 
 
 var data = {
-  "Id": 9,
-  "Type": "Page",
-  "DisplayName": "Marketing Center Product Access",
-  "Controls": [{
-    "Id": 1,
-    "Type": "TabGroup",
-    "DisplayName": "",
-    "Controls": [{
-      "Id": 9,
-      "DisplayName": "Properties",
-      "ParentId": null,
-      "ActiveTab": true,
-      "Sequence": 1,
-      "Controls": [      
-      {
-        "Id": 19,
-        "ParentId": 7,
-        "Type": "Switch",
-        "DisplayName": "Assign new property by default",
-        "DataSource": "assignedP",
-        "Sequence": 3
-      },      
-      {
-        "Id": 7,
-        "ParentId": null,
-        "Type": "MultiSelectGrid",
-        "DisplayName": null,
-        "Sequence": 1,
-        "Controls": [{
-          "Id": 10,
-          "ParentId": 7,
-          "Type": "GridColums",
-          "DisplayName": "",
-          "DataSource": "",
-          "Sequence": 3,
-          "Controls": [{
-            "Id": 11,
-            "ParentId": 10,
-            "Type": "CheckBox",
-            "DisplayName": "",
-            "DataSource": "isAssigned",
-            "Sequence": 1
-          },
-          {
-            "Id": 12,
-            "ParentId": 10,
-            "Type": "Label",
-            "DisplayName": "Property",
-            "DataSource": "name",
-            "Sequence": 2
-          },
-          {
-            "Id": 13,
-            "ParentId": 10,
-            "Type": "Label",
-            "DisplayName": "State",
-            "DataSource": "state",
-            "Sequence": 3
-          }]
-        }]
-      }]
-    },
+  "pageId": 8,
+  "pageDisplayName": "Marketing Center Product Access",
+  "productId": 9,
+  "productName": "Marketing Center",
+  "controls": [
     {
-      "id": 15,
-      "DisplayName": "Roles",
-      "ActiveTab": false,
-      "Sequence": 2,
-      "Controls": [{
-        "Id": 16,
-        "ParentId": null,
-        "Type": "MultiSelectGrid",
-        "Sequence": 1,
-        "Controls": [{
-          "Id": 17,
-          "ParentId": 16,
-          "Type": "GridColums",
-          "DisplayName": "Role",
-          "Sequence": 1,
-          "Controls": [{
-            "Id": 18,
-            "ParentId": 16,
-            "Type": "RadioButton",
-            "DisplayName": "",
-            "DataSource": "isAssigned",
-            "Sequence": 1
-          },
-          {
-            "Id": 19,
-            "ParentId": 16,
-            "Type": "Label",
-            "DisplayName": "Role",
-            "DataSource": "name",
-            "Sequence": 2
-          }]
-        }]
-      }]
-    }]
-  }]
+      "id": 119,
+      "name": "MarketingCenterProductAccessTabGroupUIId",
+      "dataSource": null,
+      "displayName": null,
+      "sequence": 1,
+      "type": "Tab Group",
+      "dependency": false,
+      "attributes": null,
+      "controls": [
+        {
+          "id": 120,
+          "name": "MarketingCenterProductAccessPropertyGroupTabUIId",
+          "dataSource": null,
+          "displayName": "Property Group",
+          "sequence": 1,
+          "type": "Tab",
+          "dependency": false,
+          "attributes": null,
+          "controls": [
+            {
+              "id": 121,
+              "name": "MarketingCenterProductAccessPropertyGroupMultiSelectGridUIId",
+              "dataSource": null,
+              "displayName": null,
+              "sequence": 1,
+              "type": "Multi Select Grid",
+              "dependency": false,
+              "attributes": null,
+              "controls": [
+                {
+                  "id": 122,
+                  "name": "MarketingCenterProductAccessCheckboxUIId",
+                  "dataSource": "isAssigned",
+                  "displayName": null,
+                  "sequence": 1,
+                  "type": "Checkbox",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                },
+                {
+                  "id": 123,
+                  "name": "MarketingCenterProductAccessPropertyGroupLabelUIId",
+                  "dataSource": "name",
+                  "displayName": "Property Group",
+                  "sequence": 2,
+                  "type": "Label",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 124,
+          "name": "MarketingCenterProductAccessPropertiesTabUIId",
+          "dataSource": null,
+          "displayName": "Properties",
+          "sequence": 2,
+          "type": "Tab",
+          "dependency": false,
+          "attributes": [
+            {
+              "key": "Default",
+              "value": "True"
+            }
+          ],
+          "controls": [
+            {
+              "id": 125,
+              "name": "MarketingCenterProductAccessAssignnewpropertiesautomaticallyPropertiesSwitchUIId",
+              "dataSource": null,
+              "displayName": "Assign new properties automatically",
+              "sequence": 1,
+              "type": "Switch",
+              "dependency": false,
+              "attributes": null,
+              "controls": null
+            },
+            {
+              "id": 126,
+              "name": "MarketingCenterProductAccessPropertiesMultiSelectGridUIId",
+              "dataSource": null,
+              "displayName": null,
+              "sequence": 2,
+              "type": "Multi Select Grid",
+              "dependency": false,
+              "attributes": null,
+              "controls": [
+                {
+                  "id": 127,
+                  "name": "MarketingCenterProductAccessCheckboxUIId",
+                  "dataSource": "isAssigned",
+                  "displayName": null,
+                  "sequence": 1,
+                  "type": "Checkbox",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                },
+                {
+                  "id": 128,
+                  "name": "MarketingCenterProductAccessPropertyLabelUIId",
+                  "dataSource": "name",
+                  "displayName": "Property",
+                  "sequence": 2,
+                  "type": "Label",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                },
+                {
+                  "id": 129,
+                  "name": "MarketingCenterProductAccessStateLabelUIId",
+                  "dataSource": "state",
+                  "displayName": "State",
+                  "sequence": 3,
+                  "type": "Label",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 130,
+          "name": "MarketingCenterProductAccessRolesTabUIId",
+          "dataSource": null,
+          "displayName": "Roles",
+          "sequence": 3,
+          "type": "Tab",
+          "dependency": false,
+          "attributes": null,
+          "controls": [
+            {
+              "id": 131,
+              "name": "MarketingCenterProductAccessRolesSelectGridUIId",
+              "dataSource": null,
+              "displayName": null,
+              "sequence": 1,
+              "type": "Select Grid",
+              "dependency": false,
+              "attributes": null,
+              "controls": [
+                {
+                  "id": 132,
+                  "name": "MarketingCenterProductAccessRadioUIId",
+                  "dataSource": "isAssigned",
+                  "displayName": null,
+                  "sequence": 1,
+                  "type": "Radio",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                },
+                {
+                  "id": 133,
+                  "name": "MarketingCenterProductAccessRoleLabelUIId",
+                  "dataSource": "name",
+                  "displayName": "Role",
+                  "sequence": 2,
+                  "type": "Label",
+                  "dependency": false,
+                  "attributes": null,
+                  "controls": null
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 };
 
     angular

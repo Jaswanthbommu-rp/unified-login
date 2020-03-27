@@ -74,9 +74,9 @@
                             "text": item.displayName
                         });
                     }
-
                 });
             }
+
             return cnfgs;
         };
 

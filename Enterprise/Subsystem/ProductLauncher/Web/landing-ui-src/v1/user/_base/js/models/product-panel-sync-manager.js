@@ -118,7 +118,7 @@
              var s = this,
                 config ;
             if (s.productRadioConfigMap['product' + productId + tabName] !== undefined) {
-                config = s.productRadioConfigMap['product' + productId + tabName].radioConfig[0];
+                config = s.productRadioConfigMap['product' + productId + tabName].radioConfig;
             }
             return config;
         };

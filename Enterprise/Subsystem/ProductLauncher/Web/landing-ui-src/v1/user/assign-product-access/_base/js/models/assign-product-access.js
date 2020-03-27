@@ -22,7 +22,7 @@
             var s = this;
 
             if (s.products[key]) {
-                if (key === "soln101" || key === "soln302" || key === "soln501") {
+                if (key === "soln101" || key === "soln302" || key === "soln303" || key === "soln501") {
                     return s.products[key].getData(productId);
                 }
                 else  {

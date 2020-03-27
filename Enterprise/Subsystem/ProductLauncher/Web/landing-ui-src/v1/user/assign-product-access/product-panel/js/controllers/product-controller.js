@@ -157,7 +157,7 @@
                                 id: tabGrp.displayName.toLowerCase(),
                                 text: tabGrp.displayName,
                                 isActive: activeTab,
-                                incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.toLowerCase() + ".html"
+                                incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.replace(/ /g, "").toLowerCase() + ".html"
                             };
 
                             tabs.push(tab);
@@ -209,7 +209,7 @@
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
-                            var tabName = tabGrp.displayName;
+                            var tabName = tabGrp.displayName.replace(/ /g, "");
 
                             tabGrp.controls.forEach(function (tab) {
                                 if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
@@ -229,18 +229,16 @@
                                             listAsideconfigs.config.length > 0) {
                                             var asideGridConfig = vm.getGridConfig(listAsideconfigs.config);
                                             productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
-                                            //configModel.setListAsideDisplayName(listAsideconfigs.displayName);
-                                            //configModel.setListAsideConfig(asideGridConfig);
                                         }
-                                    }
-
-                                    //Check and Set any radio data
-                                    if (productModel.getProductRadioConfig(productId, tabName) === undefined) {
-                                        var radioCnfg = configData.getRadioConfig(tab);
-                                        productModel.renderProductRadioConfigMap(productId, tabName, radioCnfg);
                                     }
                                 }
                             });
+
+                            //Check and Set any radio data
+                            if (productModel.getProductRadioConfig(productId, tabName) === undefined) {
+                                var radioCnfg = configData.getRadioConfig(tabGrp);
+                                productModel.renderProductRadioConfigMap(productId, tabName, radioCnfg);
+                            }
                         });
                     }
                 });
@@ -317,7 +315,7 @@
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             aSwitch = [];
-                            var tabName = tabGrp.displayName;
+                            var tabName = tabGrp.displayName.replace(/ /g, "");
                             if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
                                 tabGrp.controls.forEach(function (ctrl) {
                                     if (ctrl.type === 'Switch') {

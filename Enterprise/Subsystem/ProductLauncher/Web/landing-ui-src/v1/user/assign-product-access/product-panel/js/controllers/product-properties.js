@@ -93,11 +93,11 @@
             var productId = $scope.$parent.productId;
             vm.switchconfigs = syncMgr.getProductSwitchConfig(productId, "Properties");
 
-            if (vm.switchconfigs.length > 0) {
+            if (vm.switchconfigs !== undefined && vm.switchconfigs.length > 0) {
                 vm.switchconfigs.forEach(function (item) {
                     item.configData = switchConfig({
-                        onChange: vm.selectionAll,
-                        //productId == 9 ? vm.updateNewPropertyByDefault :
+                        onChange: productId == 9 ? vm.updateNewPropertyByDefault : vm.selectionAll,
+                        //
                         disabled: vm.hasViewOnlyAccess()
                     });
                 });

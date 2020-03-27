@@ -23,6 +23,12 @@
             product: "14"
         });
 
+        productAccess.register({
+            model: model,
+            key: "soln303",
+            product: "9"
+        });
+
         logc("productAccess", productAccess);
     }
 

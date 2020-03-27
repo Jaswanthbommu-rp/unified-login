@@ -66,10 +66,10 @@
             //templateUrl: "user/assign-product-access/prospect-contact-center/templates/index.html"
         },
 
-        // "soln303": {
-        //     name: "Marketing Center",
-        //     templateUrl: "user/assign-product-access/marketing-center/templates/index.html"
-        // },
+        "soln303": {
+            name: "Marketing Center"
+            //templateUrl: "user/assign-product-access/marketing-center/templates/index.html"
+        },
 
         "soln305": {
             name: "Lead 2 Lease",
