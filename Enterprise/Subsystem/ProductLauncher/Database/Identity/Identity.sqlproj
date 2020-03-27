@@ -929,6 +929,7 @@
     <Build Include="UserManagement\Stored Procedures\AddUpdateControlDependency.sql" />
     <Build Include="UserManagement\Stored Procedures\AddUpdateControlAttribute.sql" />
     <Build Include="UserManagement\Stored Procedures\AddUpdateControl.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesAndRightsForCompanyProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1034,7 +1035,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\SameSiteData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserManagementData.sql" />
-    <None Include="Enterprise\Stored Procedures\ListRolesAndRightsForCompanyProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
