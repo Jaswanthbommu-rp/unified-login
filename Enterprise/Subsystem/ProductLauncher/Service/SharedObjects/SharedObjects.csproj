@@ -85,8 +85,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attribute\AuditLogAttribute.cs" />
     <Compile Include="Attribute\SwaggerResponseExamplesAttribute.cs" />
     <Compile Include="Attribute\VersionedRouteAttribute.cs" />
+    <Compile Include="Audit\Common\AuditRecord.cs" />
+    <Compile Include="Audit\Dtos\UserAuditDto.cs" />
     <Compile Include="Base\BaseType.cs" />
     <Compile Include="Base\IRequestParameter.cs" />
     <Compile Include="Base\RPObjectCache.cs" />
@@ -331,6 +334,8 @@
     <Compile Include="Landing\Product\Ops\Extensions\RoleExtensions.cs" />
     <Compile Include="Landing\SerializerContractResolver.cs" />
     <Compile Include="Landing\UserDetails.cs" />
+    <Compile Include="Mappers\ProfileDetailsMapper.cs" />
+    <Compile Include="Mappers\UserDetailsMapper.cs" />
     <Compile Include="Product\Accounting\AccountingRoleAndPropertyList.cs" />
     <Compile Include="Product\Accounting\Company.cs" />
     <Compile Include="Product\Accounting\AccountingUser.cs" />
