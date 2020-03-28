@@ -3127,6 +3127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
 		{
 			var rpList = rolePropList as ProductUserRolePropertiesGroups;
+
 			if (rpList == null)
 			{
 				return "Input JSON parsing issue; Null object.";
