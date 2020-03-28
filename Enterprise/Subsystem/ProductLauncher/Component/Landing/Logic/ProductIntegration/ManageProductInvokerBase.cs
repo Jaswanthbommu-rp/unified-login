@@ -144,7 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						WriteToDiagnosticLog(
 							$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-						var userRoles = user.Roles;
+						var userRoles = user.RoleList;
 						MergeUserRoles(roleList, userRoles);
 					}
 				}
@@ -862,7 +862,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Roles = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
 				PropertyRoles = userRolePropertiesRegion.PropertyRoleList,
 				OrganizationRoles = userRolePropertiesRegion.OrganizationRoleList,
-				CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport
+				CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
+				PropertyRoleList = userRolePropertiesRegion.RolePropertiesList,
+				RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString())
 			};
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
@@ -963,7 +965,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			foreach (var role in roleList)
 			{
-				if (userRoles.Contains(role.GetRoleId))
+				if (userRoles != null && userRoles.Contains(role.GetRoleId))
 				{
 					role.IsAssigned = true;
 				}
