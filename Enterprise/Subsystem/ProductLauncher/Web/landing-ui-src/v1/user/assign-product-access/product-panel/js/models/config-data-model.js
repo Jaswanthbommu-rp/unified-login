@@ -35,31 +35,6 @@
             return config;
         };
 
-        // p.getRadioConfig = function (radioData) {
-        //     var s = this,
-        //         cnfg = [],
-        //         cnfgs = [];
-
-        //     if (radioData && radioData.controls) {
-        //         radioData.controls.forEach(function (tabGrp) {
-        //             tabGrp.controls.forEach(function (tab) {
-        //                 tab.controls.forEach(function (item) {
-        //                     if (item.type === 'Radio') {
-        //                         cnfgs.push({
-        //                             "key": item.dataSource,
-        //                             "type": s.isControl(item.type),
-        //                             "text": item.displayName
-        //                         });
-        //                     }
-
-        //                 });
-        //             });
-
-        //         });
-        //     }
-        //     return cnfgs;
-        // };
-
         p.getRadioConfig = function (radioData) {
             var s = this,
                 cnfg = [],
@@ -125,57 +100,6 @@
             //logc("listaside", listasideConfig);
             return listasideConfig;
         };
-        // p.getListAsideConfig = function (data) {
-        //     var s = this,
-        //         displayName = "",
-        //         isSlideScreen = false,
-        //         cnfg = [],
-        //         cnfgs = [];
-
-        //     if (data && data.controls) {
-        //         data.controls.forEach(function (tabGrp) {
-        //             tabGrp.controls.forEach(function (tab) {
-        //                 tab.controls.forEach(function (tabData) {
-        //                     logc("tabData", tabData);
-        //                     tabData.controls.forEach(function (tabitem) {
-        //                         logc("item", tabitem);
-        //                         if (tabitem.type === 'Icon') {
-        //                             if (tabitem.attributes !== null) {
-        //                                 tabitem.attributes.forEach(function (item) {
-        //                                     logc("attributes", item);
-        //                                     if (item.key === "InfoIcon" && item.value === "Slide") {
-        //                                         isSlideScreen = true;
-        //                                     }
-        //                                 });
-        //                             }
-        //                             if (isSlideScreen) {
-        //                                 tabitem.controls.forEach(function (ctrls) {
-        //                                     if (ctrls.type === "Grid") {
-        //                                         displayName = ctrls.displayName;
-        //                                         ctrls.controls.forEach(function (ctrl) {
-        //                                             cnfgs.push({
-        //                                                 "key": ctrl.dataSource,
-        //                                                 "type": s.isType(ctrl.type),
-        //                                                 "text": ctrl.displayName,
-        //                                                 "idKey": "id",
-        //                                                 "templateUrl": ""
-        //                                             });
-        //                                         });
-        //                                     }
-        //                                 });
-        //                             }
-        //                         }
-        //                     });
-
-        //                 });
-        //             });
-
-        //         });
-        //     }
-
-        //     logc("listaside", cnfgs);
-        //     return cnfgs;
-        // };
 
         p.isType = function (type) {
             var s = this;

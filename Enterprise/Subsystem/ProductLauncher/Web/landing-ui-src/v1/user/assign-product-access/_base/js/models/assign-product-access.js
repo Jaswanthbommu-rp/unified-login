@@ -58,10 +58,7 @@
 
 
             s.products["default"].setActive(!found);
-            // if (soln.data.productId == 14 || soln.data.productId == 10 || soln.data.productId == 3)
-            // {
-                 pubsub.publish("product.selectedProduct", soln.data );
-            // }
+            pubsub.publish("product.selectedProduct", soln.data );
 
             return s;
         };

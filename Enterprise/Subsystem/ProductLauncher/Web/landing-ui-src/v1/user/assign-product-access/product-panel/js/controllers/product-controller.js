@@ -43,44 +43,44 @@
         };
 
         vm.loadProductControlsData = function (productId) {
-            // logc("tabsModel",tabsModel);
             tabsModel.reset();
-            //productModel.setProductDataSelectKey(productId);
             //Check data in model for product
-            var cdata = productModel.getProductControls(productId);
+            var controlData = productModel.getProductControls(productId);
             // logc("cdata",cdata);
-            var jData = "";
-            if (productId == 10) {
-                jData = jsonDataPCC;
-            }
-            else if (productId == 1) {
-                jData = jsonDataOS;
-            }
-            else if (productId == 14) {
-                jData = jsonDataCP;
-            }
-            else if (productId == 9) {
-                jData = jsonDataMc;
-            }
-            if (cdata === undefined) {
+            // var jData = "";
+            // if (productId == 10) {
+            //     jData = jsonDataPCC;
+            // }
+            // else if (productId == 1) {
+            //     jData = jsonDataOS;
+            // }
+            // else if (productId == 14) {
+            //     jData = jsonDataCP;
+            // }
+            // else if (productId == 9) {
+            //     jData = jsonDataMc;
+            // }
+            if (controlData === undefined) {
 
                 var params = {
                     productId: productId
                 };
 
                 vm.dataCntrlsReq = cntrlSvc.get(params, vm.setControlsData);
+                // var params = {
+                //     productId: productId
+                // };
+                //cntrlSvc.getProductControlsData(params).then(vm.setControlsData);
 
-                var s = productModel.setProductControlsList(jData);
-                cdata = productModel.getProductControls(productId);
-                //logc("cdata",cdata,cdata[0].DisplayName);
+                // var s = productModel.setProductControlsList(jData);
+                //controlData = productModel.getProductControls(productId);
             }
             //logc("cdata", cdata, cdata.controls[0]);
-            vm.panelName = productModel.getPageDisplayName(productId); // cdata[0].DisplayName;
-            // logc("cdata panel name",vm.panelName);
-            vm.setTabs(cdata);
-            //if no data in model,CALLSERVICE to get controls data
-
-
+            if (controlData !== undefined) {
+                logc("return data", controlData);
+                vm.panelName = productModel.getPageDisplayName(productId);
+                vm.setTabs(controlData);
+            }
         };
 
         vm.isActive = function () {
@@ -96,27 +96,17 @@
         };
         // Actions
         vm.setControlsData = function (resp) {
-            logc("controls data", resp);
+            if (resp && resp.controls) {
+                productModel.setProductControlsList(resp);
+                var controlData = productModel.getProductControls(vm.productId);
+                vm.panelName = productModel.getPageDisplayName(vm.productId);
+                vm.setTabs(controlData);
+            }
         };
 
         vm.setTabs = function (data) {
 
             panelModel.gridReset();
-            // vm.tabsCnfData = vm.getTabsConfigData(data);
-            // logc("vm.tabsCnfData", vm.tabsCnfData);
-
-            // vm.switchconfigs = vm.getSwitchConfigs(data);
-            // // configModel.setSwitchConfig(vm.switchconfigs);
-            // console.log("vm.switchconfigsold", vm.switchconfigs);
-
-            // vm.gridconfigs = vm.getGridConfigs(vm.tabsCnfData);
-            // configModel.setGridConfig(vm.gridconfigs);
-
-            // vm.radioconfigs = configData.getRadioConfig(data);
-            // //logc("vm.radioconfigs",vm.radioconfigs);
-            // if (vm.radioconfigs !== undefined) {
-            //     configModel.setRadioConfig(vm.radioconfigs);
-            // }
 
             vm.setTabsConfigData(data);
             vm.setSwitchConfigs(data);
@@ -131,7 +121,7 @@
             tabsModel.activateTab(vm.activeTab);
             tabsModel.initActiveTab();
             //then set grids
-            //vm.getTabsGridData();
+
             panelModel.setPropertyGridActive(true);
             panelModel.setRoleGridActive(true);
         };

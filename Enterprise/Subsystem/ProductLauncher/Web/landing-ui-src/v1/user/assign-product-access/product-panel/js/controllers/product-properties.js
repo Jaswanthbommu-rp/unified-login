@@ -89,6 +89,13 @@
             return syncMgr.isSwitchConfigLoaded();
         };
 
+        vm.hidePropertiesGrid = function () {
+            if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
+                return true;
+            }
+            return false;
+        };
+
         vm.setSwitchConfig = function () {
             var productId = $scope.$parent.productId;
             vm.switchconfigs = syncMgr.getProductSwitchConfig(productId, "Properties");
@@ -96,9 +103,9 @@
             if (vm.switchconfigs !== undefined && vm.switchconfigs.length > 0) {
                 vm.switchconfigs.forEach(function (item) {
                     item.configData = switchConfig({
-                        onChange: productId == 9 ? vm.updateNewPropertyByDefault : vm.selectionAll,
-                        //
+                        onChange: vm.selectionAll,
                         disabled: vm.hasViewOnlyAccess()
+                        //productId == 9 ? vm.updateNewPropertyByDefault :
                     });
                 });
 
@@ -194,7 +201,7 @@
                 });
 
                 if (syncMgr.isProductAllProperties(productId)) {
-                    propertySelect = "all";
+                    propertySelect = "allProperties";
                 }
 
                 if (syncMgr.isProductNewPropertyByDefault(productId)) {
@@ -232,7 +239,7 @@
             logc("selectAll", bool);
             vm.propertySelect = "property";
             if (bool) {
-                vm.propertySelect = 'all';
+                vm.propertySelect = 'allProperties';
             }
             var data = syncMgr.allPropertiesSync($scope.$parent.productId, bool);
             vm.resetProperties();
@@ -261,7 +268,7 @@
 
         vm.resetProperties = function () {
             var allProperties = false;
-            if (vm.propertySelect === 'all') {
+            if (vm.propertySelect === 'allProperties') {
                 allProperties = true;
             }
 

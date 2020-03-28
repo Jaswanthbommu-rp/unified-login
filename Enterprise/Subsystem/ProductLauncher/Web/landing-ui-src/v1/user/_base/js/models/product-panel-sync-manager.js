@@ -138,9 +138,10 @@
                 productControlList;
 
             if (s.productControlsMap['product' + product] !== undefined) {
+                logc(product, s.productControlsMap['product' + product]);
                 productControlList = s.productControlsMap['product' + product].control;
             }
-
+logc("productControlList", productControlList);
             return productControlList;
         };
 
@@ -246,7 +247,7 @@
             var s = this;
 
             if (s.propertyMap['product' + product] !== undefined) {
-                return s.propertyMap['product' + product].newPropertyByDefault;
+                return s.propertyMap['product' + product].allProperties;//newPropertyByDefault;
             }
 
             return false;
