@@ -18,7 +18,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Le
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.PortofolioManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProspectContactCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResearchApplication;
@@ -258,7 +257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					case ProductEnum.PortfolioManagement:
 						product = new PortfolioManagementProduct(productUser.ProductName);
 						productPropertiesRoles =
-							GetProductPropertiesRoles<PortofolioManagementRoleProperties>(productUser.InputJson);
+							GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
 						result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
 							productUser.AssignUserPersonaId, productPropertiesRoles);
 						break;
@@ -3127,19 +3126,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>String.empty if success else error</returns>
 		public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
 		{
-			var pamRolePropertiesList = rolePropList as PortofolioManagementRoleProperties;
+			var rpList = rolePropList as ProductUserRolePropertiesGroups;
 
-			ProductUserRolePropertiesGroups rpList = new ProductUserRolePropertiesGroups()
-			{
-				RoleList = pamRolePropertiesList.RoleList,
-				RoleListString = pamRolePropertiesList.RoleListString,
-				PropertyList = pamRolePropertiesList.PropertyList,
-				PropertyGroupList=pamRolePropertiesList.PropertyGroupList,
-				RolePropertiesList = pamRolePropertiesList.RolePropertiesList,
-				OrganizationRoleList = pamRolePropertiesList.OrganizationRoleList,
-				CanReceiveMonthlyReport = pamRolePropertiesList.CanReceiveMonthlyReport,
-				IsAssigned = pamRolePropertiesList.IsAssigned
-			};
+			//ProductUserRolePropertiesGroups rpList = new ProductUserRolePropertiesGroups()
+			//{
+			//	RoleList = pamRolePropertiesList.RoleList,
+			//	RoleListString = pamRolePropertiesList.RoleListString,
+			//	PropertyList = pamRolePropertiesList.PropertyList,
+			//	PropertyGroupList=pamRolePropertiesList.PropertyGroupList,
+			//	RolePropertiesList = pamRolePropertiesList.RolePropertiesList,
+			//	OrganizationRoleList = pamRolePropertiesList.OrganizationRoleList,
+			//	CanReceiveMonthlyReport = pamRolePropertiesList.CanReceiveMonthlyReport,
+			//	IsAssigned = pamRolePropertiesList.IsAssigned
+			//};
 
 			if (rpList == null)
 			{

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.PortofolioManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
 {

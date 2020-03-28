@@ -9,7 +9,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.PortofolioManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {

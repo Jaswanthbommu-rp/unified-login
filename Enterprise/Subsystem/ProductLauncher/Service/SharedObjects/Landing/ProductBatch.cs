@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.PortofolioManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
