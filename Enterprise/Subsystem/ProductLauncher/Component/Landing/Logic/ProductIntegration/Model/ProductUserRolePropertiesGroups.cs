@@ -27,7 +27,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 	    public List<OrganizationRole> OrganizationRoleList { get; set; }
 
-	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<PAMRolePropertyList> RolePropertiesList { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public bool CanReceiveMonthlyReport { get; set; } // used in DIQ
 
 		public bool IsAssigned { get; set; }
