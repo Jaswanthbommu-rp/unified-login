@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, configModel, tabsModel, userDetailsModel, switchConfig, jsonDataCP, jsonDataPCC, jsonDataMc, jsonDataOS, cntrlSvc) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, tabsModel, userDetailsModel, switchConfig, cntrlSvc) {
         var vm = this,
             active = false,
             panelNmae = "",
@@ -46,20 +46,7 @@
             tabsModel.reset();
             //Check data in model for product
             var controlData = productModel.getProductControls(productId);
-            // logc("cdata",cdata);
-            // var jData = "";
-            // if (productId == 10) {
-            //     jData = jsonDataPCC;
-            // }
-            // else if (productId == 1) {
-            //     jData = jsonDataOS;
-            // }
-            // else if (productId == 14) {
-            //     jData = jsonDataCP;
-            // }
-            // else if (productId == 9) {
-            //     jData = jsonDataMc;
-            // }
+
             if (controlData === undefined) {
 
                 var params = {
@@ -67,13 +54,6 @@
                 };
 
                 vm.dataCntrlsReq = cntrlSvc.get(params, vm.setControlsData);
-                // var params = {
-                //     productId: productId
-                // };
-                //cntrlSvc.getProductControlsData(params).then(vm.setControlsData);
-
-                // var s = productModel.setProductControlsList(jData);
-                //controlData = productModel.getProductControls(productId);
             }
             //logc("cdata", cdata, cdata.controls[0]);
             if (controlData !== undefined) {
@@ -158,41 +138,6 @@
             return tabs;
         };
 
-        // vm.getTabsConfigData = function (data) {
-        //     var cnfg = {},
-        //         tabs = [];
-
-        //     if (data && data.controls) {
-        //         data.controls.forEach(function (tabControl) {
-        //             if (tabControl.type === 'Tab Group') {
-        //                 tabControl.controls.forEach(function (tabGrp) {
-        //                     var tabName = tabGrp.displayName;
-
-        //                     tabGrp.controls.forEach(function (tab) {
-        //                         if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
-        //                             cnfg = configData.getGridConfigTypes(tab, tabName);
-        //                             tabs.push(cnfg);
-        //                             var gridConfig = vm.getGridConfig(cnfg);
-        //                             productModel.renderProductGridConfigMap($scope.productId, tabName, gridConfig);
-
-        //                             var listAsideconfigs = configData.getListAsideConfig(tab);
-
-        //                             if (listAsideconfigs !== undefined &&
-        //                                 listAsideconfigs.config.length > 0) {
-        //                                 var asideGridConfig = vm.getGridConfig(listAsideconfigs.config);
-        //                                 configModel.setListAsideDisplayName(listAsideconfigs.displayName);
-        //                                 configModel.setListAsideConfig(asideGridConfig);
-        //                             }
-        //                             logc("vm.listAsideconfigs", configModel.getListAsideConfig());
-        //                         }
-        //                     });
-        //                 });
-        //             }
-        //         });
-        //     }
-        //     return tabs;
-        // };
-
         vm.setTabsConfigData = function (data) {
             var productId = $scope.productId;
             if (data && data.controls) {
@@ -235,37 +180,6 @@
             }
 
         };
-
-        // vm.getGridConfigs = function (tabsCfData) {
-        //     var cnfgs = [];
-
-        //     if (tabsCfData) {
-        //         tabsCfData.forEach(function (tab) {
-        //             var hdrCnfgs = {},
-        //                 fltrCnfg = {},
-        //                 mainCnfg = {};
-
-        //             var h = configData.getHeaders(tab);
-        //             hdrCnfgs = h;
-
-        //             var f = configData.getFilters(tab);
-        //             fltrCnfg = f;
-
-        //             var m = configData.getMain(tab);
-        //             mainCnfg = m;
-
-        //             var cnfg = {
-        //                 "headers": hdrCnfgs,
-        //                 "filters": fltrCnfg,
-        //                 "main": mainCnfg
-        //             };
-
-        //             var c = configFactory(cnfg);
-        //             cnfgs.push(c);
-        //         });
-        //     }
-        //     return cnfgs;
-        // };
 
         vm.getGridConfig = function (data) {
             var cnfgs = [];
@@ -386,14 +300,9 @@
             "productPanelDataModel",
             "configDataModel",
             "gridConfigFactory",
-            "ConfigModel",
             "productPanelTabsModel",
             "userDetailsModel",
             "rpSwitchConfig",
-            "DataModel",
-            "DataModelpcc",
-            "DataModelMc",
-            "DataModelOneSite",
             "productControlsSvc",
             ProductCommonCtrl
         ]);

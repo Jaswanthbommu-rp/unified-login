@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertiesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, pubsub, persona, productDataModel, userDetailsModel, security, configModel, syncMgr, propertiesSvc, switchConfig) {
+    function ProductPropertiesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, pubsub, persona, productDataModel, userDetailsModel, security, syncMgr, propertiesSvc, switchConfig) {
         var vm = this,
             hasViewUserAccess,
             propertiesGrid = gridModel(),
@@ -43,10 +43,9 @@
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            // vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected );
-            vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
-            //vm.productPropertyWatch = pubsub.subscribe("product.ProductPropertyData", vm.setData);
+            vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
+
 
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectionAll);
@@ -327,7 +326,6 @@
             "productPanelDataModel",
             "userDetailsModel",
             "routeSecurity",
-            "ConfigModel",
             "productDataSyncManager",
             "productPropertiesSvc",
             "rpSwitchConfig",

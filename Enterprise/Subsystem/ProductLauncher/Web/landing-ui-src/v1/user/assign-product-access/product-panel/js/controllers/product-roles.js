@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, configModel, syncMgr, roleSvc) {
+    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, syncMgr, roleSvc) {
         var vm = this,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
@@ -16,8 +16,6 @@
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
 
-            //vm.config = configModel.getGridConfig().length > 1 ? configModel.getGridConfig()[1] : configModel.getGridConfig()[0];
-            //logc("role vm.config", vm.config);
             rolesGrid.setConfig(syncMgr.getProductGridConfig($scope.$parent.productId, "Roles"));
 
             roleGridPagination.setGrid(rolesGrid);
@@ -176,7 +174,6 @@
             "productPanelDataModel",
             "userDetailsModel",
             "routeSecurity",
-            "ConfigModel",
             "productDataSyncManager",
             "productRolesSvc",
             ProductRolesGridCtrl

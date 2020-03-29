@@ -13,12 +13,7 @@
 {{{ include("models/product-panel.js") }}}
 {{{ include("models/config-data-model.js") }}}
 {{{ include("models/grid-factory.js") }}}
-{{{ include("models/config-model.js") }}}
 {{{ include("models/product-panel-tabs-data-factory.js") }}}
-{{{ include("models/data-json.js") }}}
-{{{ include("models/data-json-pcc.js") }}}
-{{{ include("models/data-json-mc.js") }}}
-{{{ include("models/data-json-os.js") }}}
 {{{ include("models/product-panel-list-aside-model.js") }}}
 {{{ include("models/product-panel-list-aside.js") }}}
 
