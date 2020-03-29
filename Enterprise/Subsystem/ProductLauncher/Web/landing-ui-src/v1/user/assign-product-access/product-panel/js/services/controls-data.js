@@ -5,8 +5,8 @@
 
     function ProductControlsSvc($resource, ENV) {
         var url, params,actions;
-        url = "https://ulapi-dev.realpage.com/v2/UserMgmt/ProductAccess";
-        //url = "https://www-local2.realpage.com/apicore/v2/UserMgmt/ProductAccess";
+        //url = "https://ulapi-dev.realpage.com/v2/UserMgmt/ProductAccess";
+        url =  ENV.landingAPI +"apicore/v2/UserMgmt/ProductAccess";
 
         params = {
             productId: "@productId"
