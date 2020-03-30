@@ -1,0 +1,348 @@
+//  Properties Grid Tab Controller
+
+(function (angular, undefined) {
+    "use strict";
+
+    function ProductPropertiesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, pubsub, persona, productDataModel, userDetailsModel, security, syncMgr, propertiesSvc, switchConfig) {
+        var vm = this,
+            hasViewUserAccess,
+            propertiesGrid = gridModel(),
+            propertiesGridTransform = gridTransformSvc(),
+            propertiesGridPagination = gridPaginationModel(),
+            genericDataErrorReason = "",
+            activeProperties = [],
+            inactiveProperties = [];
+
+        vm.init = function () {
+            vm.propertySelect = "property"; //property
+            vm.productId = 0;
+            vm.activeProperties = activeProperties;
+            vm.inactiveProperties = inactiveProperties;
+
+            genericDataErrorReason = $filter("productPanelText")("panelError.generic");
+
+            // console.log('PROPERTY');
+            vm.propertiesGrid = propertiesGrid;
+            propertiesGridTransform.watch(propertiesGrid);
+
+            vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "Properties"); //configModel.getGridConfig()[0];
+
+            propertiesGrid.setConfig(vm.config);
+            propertiesGridPagination.setGrid(propertiesGrid);
+            $scope.propertiesGridPagination = propertiesGridPagination;
+            propertiesGridPagination.setConfig({
+                recordsPerPage: 25
+            });
+
+
+            var radioconfig = syncMgr.getProductRadioConfig($scope.$parent.productId, "Properties");
+
+            if (radioconfig !== undefined) {
+                vm.radioconfig = syncMgr.getProductRadioConfig($scope.$parent.productId, "Properties");
+            }
+
+            vm.personaWatch = angular.noop;
+            vm.destWatch = $scope.$on("$destroy", vm.destroy);
+            vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
+            vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
+
+
+            pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
+            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
+            vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
+        };
+
+        vm.productSelected = function (obj) {
+            vm.productId = obj.productId;
+            $scope.productId = obj.productId;
+        };
+
+
+        vm.hasViewOnlyAccess = function () {
+            return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
+        };
+
+        vm.filter = function (filterBy) {
+            if (vm.propertySelect === 'active') {
+                vm.filteredPropertiesArray = $filter("filter")(vm.activeProperties, filterBy);
+            }
+            else if (vm.propertySelect === 'inactive') {
+                vm.filteredPropertiesArray = $filter("filter")(vm.inactiveProperties, filterBy);
+            }
+            else {
+                var propertyData = syncMgr.getProductPropertiesData($scope.$parent.productId);
+                vm.filteredRecords = $filter("filter")(propertyData, filterBy);
+            }
+
+            propertiesGridPagination.setData(vm.filteredPropertiesArray).goToPage({
+                number: 0
+            });
+        };
+
+        vm.isReady = function () {
+            return productDataModel.isPropertyGridActive();
+        };
+
+        vm.isActive = function () {
+            return productDataModel.isPropertyGridActive();
+        };
+
+        vm.isSwitchConfigLoaded = function () {
+            return syncMgr.isSwitchConfigLoaded();
+        };
+
+        vm.hidePropertiesGrid = function () {
+            if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
+                return true;
+            }
+            return false;
+        };
+
+        vm.setSwitchConfig = function () {
+            var productId = $scope.$parent.productId;
+            vm.switchconfigs = syncMgr.getProductSwitchConfig(productId, "Properties");
+
+            if (vm.switchconfigs !== undefined && vm.switchconfigs.length > 0) {
+                vm.switchconfigs.forEach(function (item) {
+                    item.configData = switchConfig({
+                        onChange: vm.selectionAll,
+                        disabled: vm.hasViewOnlyAccess()
+                        //productId == 9 ? vm.updateNewPropertyByDefault :
+                    });
+                });
+
+            }
+        };
+
+        vm.loadData = function () {
+            var productId = $scope.$parent.productId;
+
+            propertiesGrid.busy(true);
+            if (persona.isReady() && vm.isActive()) {
+                var propertyData = syncMgr.getProductPropertiesData(productId);
+
+                if (propertyData === undefined) {
+                    propertiesGrid.busy(false);
+                    var params = {
+                        userPersonaId: userDetailsModel.getPersonaId(),
+                        editorPersonaId: persona.getId(),
+                        productId: productId
+                    };
+
+                    vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
+                }
+                else {
+                    vm.loadGridData(productId);
+                }
+            }
+        };
+
+        vm.setPropertyData = function (resp) {
+            propertiesGrid.busy(false);
+            if (resp.records && resp.records.length > 0) {
+                var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
+
+                if (resp.additional && resp.additional.allProperties) {
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                }
+
+                if (resp.additional && resp.additional.isAssignedNewPropertyByDefault) {
+                    syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, true);
+                }
+                vm.loadGridData($scope.$parent.productId);
+            }
+
+            if (resp.isError) {
+                vm.isDataError = true;
+                if (resp.errorReason !== "") {
+                    vm.dataErrorReason = resp.errorReason;
+                }
+                else {
+                    vm.dataErrorReason = genericDataErrorReason;
+                }
+            }
+        };
+
+        vm.loadGridData = function (productId) {
+            propertiesGrid.busy(false);
+            var propertySelect = "property";
+            var propData = syncMgr.getProductPropertiesData(productId);
+
+            if (propData && propData.length > 0) {
+                if (vm.hasViewOnlyAccess()) {
+                    propData.forEach(function (item) {
+                        angular.extend(item, {
+                            disabled: false,
+                            radname: "property"
+                        });
+                        item.disabled = true;
+                    });
+                }
+
+                propData.forEach(function (item) {
+                    angular.extend(item, {
+                        radname: "property",
+                        productId: productId
+                    });
+
+                    if (item.active !== undefined && productId === 10) {
+                        propertySelect = "active";
+                        if (item.active == 'true') {
+                            vm.activeProperties.push(item);
+                            if (item.isAssigned) {
+                                propertySelect = "active";
+                            }
+                        }
+                        else {
+                            vm.inactiveProperties.push(item);
+                            if (item.isAssigned) {
+                                propertySelect = "inactive";
+                            }
+                        }
+                    }
+                });
+
+                if (syncMgr.isProductAllProperties(productId)) {
+                    propertySelect = "allProperties";
+                }
+
+                if (syncMgr.isProductNewPropertyByDefault(productId)) {
+                    propertySelect = "newProperty";
+                }
+
+                vm.propertySelect = propertySelect;
+                //propertiesGridPagination.setData(propData).goToPage({number: 0});
+                if (productId == "10") {
+                    // vm.propertySelect = propertySelect;
+                    if (propertySelect == "active") {
+                        propertiesGridPagination.setData(vm.activeProperties).goToPage({
+                            number: 0
+                        });
+                        vm.propertiesGrid.filtersModel.reset();
+                    }
+                    else if (propertySelect == "inactive") {
+                        propertiesGridPagination.setData(vm.inactiveProperties).goToPage({
+                            number: 0
+                        });
+                        vm.propertiesGrid.filtersModel.reset();
+                    }
+                }
+                else {
+                    propertiesGridPagination.setData(propData).goToPage({
+                        number: 0
+                    });
+                }
+            }
+
+            return vm;
+        };
+
+        vm.selectionAll = function (bool) {
+            //logc("selectAll", bool);
+            vm.propertySelect = "property";
+            if (bool) {
+                vm.propertySelect = 'allProperties';
+            }
+            var data = syncMgr.allPropertiesSync($scope.$parent.productId, bool);
+            vm.resetProperties();
+        };
+
+        vm.selectAllProperties = function (val) {
+            logc("filteredRecords", vm.filteredRecords, val);
+            // if(vm.filteredRecords !== undefined){
+            //     OSDataModel.setAllPropertiesData(vm.filteredRecords, val);
+            // }
+            // else{
+            //     OSDataModel.setAllPropertiesData(vm.dataReq.records, val);
+            // }
+        };
+
+        vm.updatePropertyRecords = function (record) {
+            if (record) {
+                var propertiesData = syncMgr.selectedPropertySync(record.productId, record);
+            }
+        };
+
+        vm.updateNewPropertyByDefault = function (bool) {
+            var propertiesData = syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, bool);
+        };
+
+        vm.updateMultiSelectPropertyRecords = function (record) {
+            if (record) {
+                var propertiesData = syncMgr.multiSelectedPropertySync(record.productId, record);
+            }
+        };
+
+        vm.resetDataModel = function () {
+            //vm.clearProperties();
+            vm.resetProperties();
+        };
+
+        vm.resetProperties = function () {
+            var allProperties = false;
+            if (vm.propertySelect === 'allProperties') {
+                allProperties = true;
+            }
+
+            syncMgr.updateProductAllProperties($scope.$parent.productId, allProperties);
+
+            if (vm.propertySelect == "active") {
+                propertiesGridPagination.setData(vm.activeProperties).goToPage({
+                    number: 0
+                });
+                vm.propertiesGrid.filtersModel.reset();
+            }
+            else if (vm.propertySelect == "inactive") {
+                propertiesGridPagination.setData(vm.inactiveProperties).goToPage({
+                    number: 0
+                });
+                vm.propertiesGrid.filtersModel.reset();
+            }
+        };
+
+
+        vm.destroy = function () {
+            vm.destWatch();
+            vm.personaWatch();
+            vm.productPropertyWatch();
+            vm.gridAllWatch();
+            vm.gridSelectionWatch();
+            vm.productPropertySwitchWatch();
+            //  vm.productSelectedWatch();
+            if (vm.dataPropReq) {
+                vm.dataPropReq.$cancelRequest();
+            }
+            propertiesGrid.destroy();
+            propertiesGridTransform.destroy();
+            propertiesGridPagination.destroy();
+            propertiesGrid = undefined;
+            propertiesGridTransform = undefined;
+            propertiesGridPagination = undefined;
+            vm.filteredPropertiesArray = [];
+            vm = undefined;
+            $scope = undefined;
+        };
+
+        vm.init();
+    }
+
+    angular
+        .module("settings")
+        .controller("ProductPropertiesGridCtrl", [
+            "$scope",
+            "$filter",
+            "rpGridModel",
+            "rpGridTransform",
+            "rpGridPaginationModel",
+            "pubsub",
+            "personaDetails",
+            "productPanelDataModel",
+            "userDetailsModel",
+            "routeSecurity",
+            "productDataSyncManager",
+            "productPropertiesSvc",
+            "rpSwitchConfig",
+            ProductPropertiesGridCtrl
+        ]);
+})(angular);

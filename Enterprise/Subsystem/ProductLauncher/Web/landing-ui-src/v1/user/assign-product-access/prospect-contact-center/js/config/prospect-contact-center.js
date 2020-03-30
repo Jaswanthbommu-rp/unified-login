@@ -4,10 +4,10 @@
     "use strict";
 
     function config(model, productAccess) {
-        productAccess.register({
-            model: model,
-            key: "soln302"
-        });
+        // productAccess.register({
+        //     model: model,
+        //     key: "soln302"
+        // });
     }
 
     angular

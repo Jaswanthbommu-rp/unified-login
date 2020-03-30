@@ -237,6 +237,7 @@
     <Compile Include="Controllers\Product\ProductAssetOptimizationController.cs" />
     <Compile Include="Controllers\ProductEasyLMSController.cs" />
     <Compile Include="Controllers\Product\ProductInvokerController.cs" />
+    <Compile Include="Controllers\Product\ProductPanelController.cs" />
     <Compile Include="Controllers\Product\ProductRPDMController.cs" />
     <Compile Include="Controllers\Product\ProductOnSiteController.cs" />
     <Compile Include="Controllers\ProductRentersInsuranceController.cs" />
