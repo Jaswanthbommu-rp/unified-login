@@ -95,7 +95,7 @@ BEGIN
 	VALUES (26, 65, 7, N'RadioButtonId', N'Inactive Properties', N'inactive', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (27, 65, 7, N'RadioButtonId', N'All Properties', N'all', 3, @UserId, @Now)
+	VALUES (27, 65, 7, N'RadioButtonId', N'All Properties', N'allProperties', 3, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (66, NULL, 8, N'ClientPortalProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
@@ -104,10 +104,10 @@ BEGIN
 	VALUES (67, 66, 9, N'clientProtalPropertiesTabUIid', N'Properties', NULL, 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (35, 67, 7, N'RadioControId', N'Single Property', N'SinglePropertyDataSource', 1, @UserId, @Now)
+	VALUES (35, 67, 7, N'RadioControId', N'Single Property', N'property', 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (36, 67, 7, N'RadioControlId', N'All Properties', N'AllPropertiesDataSource', 2, @UserId, @Now)
+	VALUES (36, 67, 7, N'RadioControlId', N'All Properties', N'allProperties', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (68, 66, 9, N'ClientPortalRolesTabUIId', N'Roles', NULL, 2, @UserId, @Now)
@@ -359,6 +359,33 @@ BEGIN
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
 	VALUES (8, 124, N'Default', N'True', @UserId, @Now)
 
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (9, 105, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (10, 110, N'ShowSelectAll', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (11, 121, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (12, 126, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (13, 69, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (14, 70, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (15, 71, N'ShowSelectAll', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (16, 45, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (17, 53, N'ShowSelectAll', N'True', @UserId, @Now)
+	
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 END
 
