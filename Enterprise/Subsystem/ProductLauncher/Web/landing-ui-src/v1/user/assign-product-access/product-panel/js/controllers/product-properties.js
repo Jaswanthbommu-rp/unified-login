@@ -48,7 +48,7 @@
 
 
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
-            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectionAll);
+            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
@@ -69,6 +69,10 @@
             }
             else if (vm.propertySelect === 'inactive') {
                 vm.filteredPropertiesArray = $filter("filter")(vm.inactiveProperties, filterBy);
+            }
+            else {
+                var propertyData = syncMgr.getProductPropertiesData($scope.$parent.productId);
+                vm.filteredRecords = $filter("filter")(propertyData, filterBy);
             }
 
             propertiesGridPagination.setData(vm.filteredPropertiesArray).goToPage({
@@ -235,13 +239,23 @@
         };
 
         vm.selectionAll = function (bool) {
-            logc("selectAll", bool);
+            //logc("selectAll", bool);
             vm.propertySelect = "property";
             if (bool) {
                 vm.propertySelect = 'allProperties';
             }
             var data = syncMgr.allPropertiesSync($scope.$parent.productId, bool);
             vm.resetProperties();
+        };
+
+        vm.selectAllProperties = function (val) {
+            logc("filteredRecords", vm.filteredRecords, val);
+            // if(vm.filteredRecords !== undefined){
+            //     OSDataModel.setAllPropertiesData(vm.filteredRecords, val);
+            // }
+            // else{
+            //     OSDataModel.setAllPropertiesData(vm.dataReq.records, val);
+            // }
         };
 
         vm.updatePropertyRecords = function (record) {

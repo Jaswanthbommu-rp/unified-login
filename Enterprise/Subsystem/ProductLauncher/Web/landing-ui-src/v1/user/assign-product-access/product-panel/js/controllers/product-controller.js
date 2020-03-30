@@ -149,10 +149,19 @@
                             tabGrp.controls.forEach(function (tab) {
                                 if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
                                     //Check and Set Grid Config Types
-                                    logc("test", productModel.getProductGridConfig(productId, tabName));
+                                    var showSelectAll = false;
+                                    logc("testtabtab", tab);
+                                    if (tab.attributes !== null) {
+                                        tab.attributes.forEach(function (item) {
+                                            logc("attributes", item);
+                                            if (item.key === "ShowSelectAll" && item.value === "True") {
+                                                showSelectAll = true;
+                                            }
+                                        });
+                                    }
                                     if (productModel.getProductGridConfig(productId, tabName) === undefined) {
                                         var cnfg = configData.getGridConfigTypes(tab, tabName);
-                                        var gridConfig = vm.getGridConfig(cnfg);
+                                        var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
                                         productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
                                     }
 
@@ -162,7 +171,7 @@
 
                                         if (listAsideconfigs !== undefined &&
                                             listAsideconfigs.config.length > 0) {
-                                            var asideGridConfig = vm.getGridConfig(listAsideconfigs.config);
+                                            var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, showSelectAll);
                                             productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
                                         }
                                     }
@@ -181,7 +190,7 @@
 
         };
 
-        vm.getGridConfig = function (data) {
+        vm.getGridConfig = function (data, showSelectAll) {
             var cnfgs = [];
 
             if (data) {
@@ -189,7 +198,7 @@
                     fltrCnfg = {},
                     mainCnfg = {};
 
-                var h = configData.getHeaders(data);
+                var h = configData.getHeaders(data, showSelectAll);
                 hdrCnfgs = h;
 
                 var f = configData.getFilters(data);

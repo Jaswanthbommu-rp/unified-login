@@ -18,9 +18,7 @@
         </div>
         <br>
        <!--  class="product-panel-properties" -->
-        <div ng-if="(cpp.propertySelect == 'property' ||
-                     cpp.propertySelect === 'active' ||
-                     cpp.propertySelect === 'inactive')" >
+        <div ng-if="!cpp.hidePropertiesGrid()" >
             <div class="grid-controls">
                 <div class="grid-control-item">
                     <rp-toggle model="cpp.propertiesGrid.filtersModel.state.active" options="{

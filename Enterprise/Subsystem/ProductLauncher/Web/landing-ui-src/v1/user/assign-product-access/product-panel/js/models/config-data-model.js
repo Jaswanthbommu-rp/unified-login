@@ -132,7 +132,7 @@
             }
         };
 
-        p.getHeaders = function (tab) {
+        p.getHeaders = function (tab, val) {
             var s = this;
             var hdr = [];
             tab.forEach(function (item) {
@@ -142,7 +142,7 @@
                         "text": item.text
                     });
                 }
-                if (item.type === 'custom') {
+                else if (item.type === 'custom') {
                     hdr.push({
                         "key": item.key,
                     });
@@ -151,7 +151,7 @@
                     hdr.push({
                         "key": item.key,
                         "type": item.type,
-                        "enabled": true
+                        "enabled": val
                     });
                 }
             });
@@ -175,7 +175,7 @@
                 //         "key": item.key,
                 //     });
                 // }
-                if (item.type === 'select' || item.type === 'custom') {
+                if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon')) {
                     fltr.push({
                         "key": item.key,
                         "type": "menu",
@@ -232,7 +232,7 @@
         p.getTemplate = function (type, tabName) {
             var html = '',
                 url = '';
-            logc("type", type, tabName);
+            //logc("type", type, tabName);
             if (type === 'radio') {
                 url = "user/assign-product-access/product-panel/templates/" + tabName.toLowerCase() + "-radio.html";
             }

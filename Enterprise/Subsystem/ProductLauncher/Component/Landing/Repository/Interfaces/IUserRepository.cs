@@ -96,8 +96,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// </summary>
 		/// <param name="loggedInUserRealPageId">Logged-In User unique identifier</param>
 		/// <param name="profile">Edited User detail and Products</param>
+		/// <param name="oldProfile">Old detail profile from database</param>
 		/// <returns>Repository response object</returns>
-		RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile);
+		RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile, IProfileDetail oldProfile);
 
 		/// <summary>
 		/// Used to disable a list of users across all products the users have access to
