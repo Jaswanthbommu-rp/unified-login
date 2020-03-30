@@ -1,0 +1,49 @@
+<div class="product-panel-properties-wrapper" ng-controller="ProductPropertiesGridCtrl as cpp">
+    <div class="product-panel-properties-body" ng-if="!cpp.isDataError">
+
+        <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpp.radioconfig"
+            rp-value="rad.key"
+            rp-on-change="cpp.resetDataModel()"
+            rp-model="cpp.propertySelect"
+            rp-disabled="cpp.hasViewUserAccess"
+            rp-label-text="rad.text">
+        </rp-form-input-radio>
+ <!-- rp-model="cpp.propertySelect" -->
+        <div  class="all-feature-properties" ng-if="cpp.isSwitchConfigLoaded()">
+            <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpp.switchconfigs"
+                config="sw.configData"
+                rp-model="sw.key"
+                rp-label-text="sw.text">
+            </rp-switch>
+        </div>
+        <br>
+       <!--  class="product-panel-properties" -->
+        <div ng-if="!cpp.hidePropertiesGrid()" >
+            <div class="grid-controls">
+                <div class="grid-control-item">
+                    <rp-toggle model="cpp.propertiesGrid.filtersModel.state.active" options="{
+                        defaultText: 'Filter',
+                        activeIconClass: 'rp-icon-filter',
+                        defaultIconClass: 'rp-icon-filter active'
+                    }">
+                    </rp-toggle>
+                </div>
+            </div>
+            <rp-grid
+                ng-if="cpp.isActive()"
+                model="cpp.propertiesGrid"
+                class="product-panel-properties-grid">
+            </rp-grid>
+            <rp-grid-pagination ng-if="cpp.isActive()" model="propertiesGridPagination">
+            </rp-grid-pagination>
+        </div>
+
+
+        <div class="product-panel-all-properties" ng-if="cpp.hidePropertiesGrid()">
+            This user will be provided access to all current and future properties.
+        </div>
+    </div>
+    <div class="product-panel-properties-error" ng-if="cpp.isDataError">
+        {{::cpp.dataErrorReason}}
+    </div>
+</div>

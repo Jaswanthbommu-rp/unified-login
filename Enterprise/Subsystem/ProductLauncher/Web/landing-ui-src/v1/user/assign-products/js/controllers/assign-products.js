@@ -47,29 +47,29 @@
             vm.selectSoln(soln);
         };
 
-        vm.onUserStatusChange = function () {            
+        vm.onUserStatusChange = function () {
             if (userStatus.isSuperUser()) {
                 model.reset();
             }
 
-            // UnCheck the products which do not support  RegularUser NoEmail    
-            if(userStatus.statusId === 404){                                
+            // UnCheck the products which do not support  RegularUser NoEmail
+            if(userStatus.statusId === 404){
                  if (!angular.equals({}, model.data) ) {
 
                     model.data.forEach(function (family) {
                         if (family.familyId === 200 || family.familyId === 300 || family.familyId === 400 || family.familyId === 500) {
                             family.solutions.forEach(function (soln) {
                                 if (soln.solutionId === 310 && soln.productId === 47) {
-                                    soln.isAssigned = false;    
+                                    soln.isAssigned = false;
                                 }
                                 if (soln.solutionId === 501 && soln.productId === 14) {
-                                    soln.isAssigned = false;                                                                   
+                                    soln.isAssigned = false;
                                 }
                                 // if ( (soln.solutionId === 402 && soln.productId === 29) || (soln.solutionId === 404 && soln.productId === 31) || (soln.solutionId === 403 && soln.productId === 30) || (soln.solutionId === 401 && soln.productId === 32) )  {
-                                //     soln.isAssigned = false;                                                                   
+                                //     soln.isAssigned = false;
                                 // }
                                 if (soln.solutionId === 206 && soln.productId === 48) {
-                                    soln.isAssigned = false;    
+                                    soln.isAssigned = false;
                                 }
                             });
                         }
@@ -78,29 +78,29 @@
                 }
 
 
-                // UnCheck the selectAll        
+                // UnCheck the selectAll
                 model.families.forEach(function (family) {
                     if (family.familyId === 200 || family.data.familyId === 300 || family.data.familyId === 400 || family.data.familyId === 500) {
                         family.solutions.forEach(function (soln) {
                             if (soln.data.solutionId === 310 && soln.data.productId === 47) {
-                                family.selectAll.selected = false;   
-                                model.selectSoln(soln);      
-                                // Remove validation for notification email    
-                                pubsub.publish("settings.noEmailValidationUpdate");                           
+                                family.selectAll.selected = false;
+                                model.selectSoln(soln);
+                                // Remove validation for notification email
+                                pubsub.publish("settings.noEmailValidationUpdate");
                             }
                             if (soln.data.solutionId === 501 && soln.data.productId === 14) {
-                                family.selectAll.selected = false;      
-                                model.selectSoln(soln);                              
+                                family.selectAll.selected = false;
+                                model.selectSoln(soln);
                             }
                             // if ( (soln.data.solutionId === 402 && soln.data.productId === 29) || (soln.data.solutionId === 404 && soln.data.productId === 31) || (soln.data.solutionId === 403 && soln.data.productId === 30) || (soln.data.solutionId === 401 && soln.data.productId === 32) )  {
-                            //     family.selectAll.selected = false;        
-                            //     model.selectSoln(soln);                            
+                            //     family.selectAll.selected = false;
+                            //     model.selectSoln(soln);
                             // }
                             if (soln.data.solutionId === 206 && soln.data.productId === 48) {
-                                logc("payments");   
-                                family.selectAll.selected = false;      
-                                model.selectSoln(soln);         
-                                pubsub.publish("settings.noEmailValidationUpdate");                        
+                                logc("payments");
+                                family.selectAll.selected = false;
+                                model.selectSoln(soln);
+                                pubsub.publish("settings.noEmailValidationUpdate");
                             }
                         });
                     }
@@ -138,17 +138,17 @@
                         family.solutions.forEach(function (soln) {
                             if (soln.products === "Benchmarking" && soln.solutionId === 403) {
                                 aoStatus.setBenchmarkProductAccess(true);
-                            }    
+                            }
                             if (userStatus.isRegularUserNoEmail()) {
-                                pubsub.publish("ao.regUserNoEmailNotAllowed",soln.productNotAvailableForRegularUserNoEmail);                               
-                            }                        
+                                pubsub.publish("ao.regUserNoEmailNotAllowed",soln.productNotAvailableForRegularUserNoEmail);
+                            }
                         });
                     }
                 });
             }
         };
 
-        
+
         vm.selectSoln = function (soln) {
             panels.initState();
             model.selectSoln(soln);
