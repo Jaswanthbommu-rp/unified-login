@@ -1,0 +1,22 @@
+<div class="property-groups-wrapper" ng-controller="ProductPropertyGroupsGridCtrl as ppg">
+    <div class="property-groups-body" ng-if="!ppg.isPropertyGroupsError">
+        <div class="grid-controls">
+            <div class="grid-control-item">
+                <rp-toggle model="ppg.grid.filtersModel.state.active" options="{
+                    defaultText: 'Filter',
+                    activeIconClass: 'rp-icon-filter',
+                    defaultIconClass: 'rp-icon-filter active'
+                }">
+                </rp-toggle>
+            </div>
+        </div>
+        <rp-grid model="ppg.grid" class="marketing-center-property-groups-grid">
+        </rp-grid>
+        <rp-grid-pagination model="gridPagination">
+        </rp-grid-pagination>
+    </div>
+    <div class="property-groups-wrapper-error" ng-if="ppg.isPropertyGroupsError">
+        {{::ppg.propertyGroupsError}}
+    </div>
+
+</div>

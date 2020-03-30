@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function UserCtrl($scope, $location, $params, view, userTabs, tabsManager, session, pubsub, security, persona, chkEmailModel) {
+    function UserCtrl($scope, $location, $params, view, userTabs, tabsManager, session, pubsub, security, persona, chkEmailModel, productDataSync) {
         var vm = this;
 
         vm.init = function () {
@@ -30,7 +30,7 @@
 
         };
 
-        vm.save = function () { 
+        vm.save = function () {
             if(!chkEmailModel.getIsBusy()){
                 tabsManager.processData();
             }
@@ -68,6 +68,7 @@
             vm.destWatch();
             vm.profileWatch();
             tabsManager.reset();
+            productDataSync.reset();
             vm = undefined;
             $scope = undefined;
         };
@@ -89,6 +90,7 @@
             "routeSecurity",
             "personaDetails",
             "chkEmailModel",
+            "productDataSyncManager",
             UserCtrl
         ]);
 })(angular);

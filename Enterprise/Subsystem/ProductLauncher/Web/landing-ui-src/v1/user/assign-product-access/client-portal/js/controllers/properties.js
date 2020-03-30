@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ClientPortalPropertiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, ClientPortalDataModel, userDetailsModel, security) {
+    function ClientPortalPropertiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, ClientPortalDataModel, userDetailsModel, security, configModel) {
         var vm = this,
             hasViewUserAccess,
             propertiesGrid = gridModel(),
@@ -15,19 +15,27 @@
             vm.propertySelect = "property";
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             // vm.hasViewUserAccess = security.isAllowed("viewUser") || vm.isUserHasManageProductAccess();
+            console.log('PROPERTY');
             vm.propertiesGrid = propertiesGrid;
             propertiesGridTransform.watch(propertiesGrid);
-            propertiesGrid.setConfig(gridConfig);
+
+            vm.config = configModel.getGridConfig()[0];
+            // propertiesGrid.setConfig(gridConfig);
+            propertiesGrid.setConfig(vm.config);
             propertiesGridPagination.setGrid(propertiesGrid);
             $scope.propertiesGridPagination = propertiesGridPagination;
             propertiesGridPagination.setConfig({
                 recordsPerPage: 25
             });
 
+            vm.radioconfig = configModel.getRadioConfig()[0];
+            logc("cnfg for radio prop" ,vm.radioconfig);
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
+
+
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -109,6 +117,10 @@
                     vm.dataErrorReason = genericDataErrorReason;
                 }
             }
+
+            if(!$scope.$$phase) {
+              $scope.$digest();
+            }
         };
 
         vm.resetDataModel = function () {
@@ -180,6 +192,7 @@
             "clientPortalDataModel",
             "userDetailsModel",
             "routeSecurity",
+            "ConfigModel",
             ClientPortalPropertiesGridCtrl
         ]);
 })(angular);
