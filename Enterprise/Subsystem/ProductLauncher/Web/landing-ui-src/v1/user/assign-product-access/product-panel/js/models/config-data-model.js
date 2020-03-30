@@ -170,12 +170,12 @@
                         "placeholder": "Filter by " + item.text + " Name"
                     });
                 }
-                if (item.type === 'custom') {
-                    fltr.push({
-                        "key": item.key,
-                    });
-                }
-                else if (item.type === 'select') {
+                // if (item.type === 'custom') {
+                //     fltr.push({
+                //         "key": item.key,
+                //     });
+                // }
+                if (item.type === 'select' || item.type === 'custom') {
                     fltr.push({
                         "key": item.key,
                         "type": "menu",

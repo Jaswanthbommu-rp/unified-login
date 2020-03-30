@@ -132,10 +132,10 @@
                     vm.loadGridData(productId);
                 }
             }
-            propertiesGrid.busy(false);
         };
 
         vm.setPropertyData = function (resp) {
+            propertiesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
                 var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
 
@@ -161,7 +161,7 @@
         };
 
         vm.loadGridData = function (productId) {
-            //var productId = $scope.$parent.productId;
+            propertiesGrid.busy(false);
             var propertySelect = "property";
             var propData = syncMgr.getProductPropertiesData(productId);
 

@@ -71,15 +71,12 @@
                     vm.loadGridData(productId);
                 }
             }
-            rolesGrid.busy(false);
         };
 
         vm.setRolesData = function (resp) {
-            // var productId = $scope.$parent.productId;
+            rolesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
-                // logc("setPropertyData",resp.records, vm.productId);
                 var rdata = syncMgr.setRoleList(resp.records, $scope.$parent.productId);
-                //syncMgr.setPropertyGridActive(true);
                 vm.loadGridData($scope.$parent.productId);
             }
 
@@ -98,6 +95,7 @@
 
         vm.loadGridData = function (productId) {
             //var productId = $scope.$parent.productId;
+            rolesGrid.busy(false);
             var roleData = syncMgr.getProductRolesData(productId);
             if (roleData && roleData.length > 0) {
 
