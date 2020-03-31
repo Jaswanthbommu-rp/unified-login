@@ -264,6 +264,16 @@
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.filteredRecords);
             }
             else{
+                if(val){
+                    vm.allPropertiesData.forEach(function(item){
+                        item.isAssigned = true;
+                    });
+                }
+                else{
+                    vm.allPropertiesData.forEach(function(item){
+                        item.isAssigned = false;
+                    });
+                }
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.allPropertiesData);
             }
         };
