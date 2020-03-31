@@ -446,7 +446,7 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
 
 	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate])
-	VALUES (2, 8, N'Financial Product Suite Access', @UserId, @Now)
+	VALUES (2, 8, N'Financial Suite Product Access', @UserId, @Now)
 
 	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate])
 	VALUES (3, 10, N'Prospect Contact Center Product Access', @UserId, @Now)

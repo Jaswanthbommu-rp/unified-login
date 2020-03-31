@@ -1,5 +1,4 @@
-﻿
--- =============================================
+﻿-- =============================================
 -- Author:		Monte Jennings
 -- Create date: 
 -- Description: Searches the ProductPage table for the record with the indicated criteria.
@@ -12,21 +11,20 @@ AS
 
 BEGIN
 	SELECT
-		 [UserManagement].[ProductPage].[ProductPageId]
-		,[UserManagement].[ProductPage].[ProductId]
-		,[UserManagement].[ProductPage].[DisplayName]
-		,[UserManagement].[ProductPage].[CreatedBy]
-		,[UserManagement].[ProductPage].[CreatedDate]
+		 umpp.[ProductPageId]
+		,umpp.[ProductId]
+		,umpp.[DisplayName]
+		,umpp.IsActive
+		,umpp.[CreatedBy]
+		,umpp.[CreatedDate]
 	FROM
-		[UserManagement].[ProductPage]
+		[UserManagement].[ProductPage] umpp
 	INNER JOIN
-		[Enterprise].[Product]
+		[Enterprise].[Product] ep
 	On
-		[Enterprise].[Product].[ProductId] = [UserManagement].[ProductPage].[ProductId]
+		ep.[ProductId] = umpp.[ProductId]
 	WHERE
-		([Product].[ProductId] IS NULL OR [Product].[ProductId] = @ProductId)
+		(ep.[ProductId] IS NULL OR ep.[ProductId] = @ProductId)
 		OR
-		([Product].[ProductGUID] IS NULL OR [Product].[ProductGUID] = @ProductGUID)
-
-
+		(ep.[ProductGUID] IS NULL OR ep.[ProductGUID] = @ProductGUID)
 END
