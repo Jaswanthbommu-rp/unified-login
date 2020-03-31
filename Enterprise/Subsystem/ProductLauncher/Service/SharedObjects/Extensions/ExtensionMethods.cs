@@ -31,9 +31,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
         /// <typeparam name="N">New entity type</typeparam>
         /// <param name="oldEntity">Old entity</param>
         /// <param name="newEntity">New entity</param>
-        /// <param name="entityName">Name of the entity</param>
+        /// <param name="entityAffected">Entity Affected</param>
         /// <returns>A list of audit records</returns>
-        public static List<AuditRecord> GenerateUpdateAudit<O, N>(O oldEntity, N newEntity, string entityName) where O : N
+        public static List<AuditRecord> GenerateUpdateAudit<O, N>(O oldEntity, N newEntity, string entityAffected) where O : N
         {
             List<AuditRecord> result = new List<AuditRecord>();
 
@@ -76,12 +76,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
 
-                                auditRecord.AuditMessage = string.Concat("User {2} {3} updated the ",
+                                auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
                                                                        internalAttribute.ColumnName,
                                                                        " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
                                                                        " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                                                       " on ", entityName,
-                                                                       " for {0} {1}");
+                                                                       " on the ", entityAffected,
+                                                                       " for {0} {1}.");
 
                                 result.Add(auditRecord);
                             }
