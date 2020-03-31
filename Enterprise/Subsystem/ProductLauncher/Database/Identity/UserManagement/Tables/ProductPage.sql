@@ -4,6 +4,7 @@
     [DisplayName]   NVARCHAR (255) NOT NULL,
     [CreatedBy]     BIGINT         NOT NULL,
     [CreatedDate]   DATETIME       NOT NULL,
+    [IsActive] BIT NOT NULL DEFAULT 0, 
     CONSTRAINT [PK_ProductPage] PRIMARY KEY CLUSTERED ([ProductPageId] ASC)
 );
 
