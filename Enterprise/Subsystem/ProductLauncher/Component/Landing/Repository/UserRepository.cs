@@ -5155,7 +5155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
             }
 
-            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "User");
+            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile");
 
             auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
                                                       x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
