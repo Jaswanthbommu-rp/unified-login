@@ -79,8 +79,8 @@
         };
 
         p.getProductGridConfig = function (productId, tabName) {
-             var s = this,
-                gridConfig ;
+            var s = this,
+                gridConfig;
             if (s.productGridConfigMap['product' + productId + tabName] !== undefined) {
                 gridConfig = s.productGridConfigMap['product' + productId + tabName].gridConfig[0];
             }
@@ -88,8 +88,8 @@
         };
 
         p.getProductAsideGridConfig = function (productId, tabName) {
-             var s = this,
-                config ;
+            var s = this,
+                config;
             if (s.productAsideGridConfigMap['product' + productId + tabName] !== undefined) {
                 config = s.productAsideGridConfigMap['product' + productId + tabName].asideGridConfig[0];
             }
@@ -97,8 +97,8 @@
         };
 
         p.getProductAsideGridName = function (productId, tabName) {
-             var s = this,
-                name ;
+            var s = this,
+                name;
             if (s.productAsideGridConfigMap['product' + productId + tabName] !== undefined) {
                 name = s.productAsideGridConfigMap['product' + productId + tabName].displayName;
             }
@@ -106,8 +106,8 @@
         };
 
         p.getProductSwitchConfig = function (productId, tabName) {
-             var s = this,
-                config ;
+            var s = this,
+                config;
             if (s.productSwitchConfigMap['product' + productId + tabName] !== undefined) {
                 config = s.productSwitchConfigMap['product' + productId + tabName].switchCtrlConfig;
             }
@@ -115,15 +115,15 @@
         };
 
         p.getProductRadioConfig = function (productId, tabName) {
-             var s = this,
-                config ;
+            var s = this,
+                config;
             if (s.productRadioConfigMap['product' + productId + tabName] !== undefined) {
                 config = s.productRadioConfigMap['product' + productId + tabName].radioConfig;
             }
             return config;
         };
 
-         p.getPageDisplayName = function (product) {
+        p.getPageDisplayName = function (product) {
             var s = this,
                 pageDisplayName = "";
             if (s.productControlsMap['product' + product] !== undefined) {
@@ -141,7 +141,7 @@
                 logc(product, s.productControlsMap['product' + product]);
                 productControlList = s.productControlsMap['product' + product].control;
             }
-logc("productControlList", productControlList);
+            logc("productControlList", productControlList);
             return productControlList;
         };
 
@@ -231,13 +231,15 @@ logc("productControlList", productControlList);
             if (s.propertyMap['product' + product] !== undefined) {
                 s.propertyMap['product' + product].newPropertyByDefault = value;
             }
+            logc("sysncdata", s);
         };
 
-        p.isProductAllProperties = function (product) {
+        p.isProductAllProperties = function (productId) {
             var s = this;
 
-            if (s.propertyMap['product' + product] !== undefined) {
-                return s.propertyMap['product' + product].allProperties;
+            if (s.propertyMap['product' + productId] !== undefined &&
+                productId !== 9) {
+                return s.propertyMap['product' + productId].allProperties;
             }
 
             return false;
@@ -247,7 +249,7 @@ logc("productControlList", productControlList);
             var s = this;
 
             if (s.propertyMap['product' + product] !== undefined) {
-                return s.propertyMap['product' + product].allProperties;//newPropertyByDefault;
+                return s.propertyMap['product' + product].newPropertyByDefault;
             }
 
             return false;
@@ -328,6 +330,28 @@ logc("productControlList", productControlList);
             return s;
         };
 
+        p.updateAllProperties = function (key, records) {
+            var s = this,
+                propertyData;
+
+            propertyData = s.propertyMap['product' + key].properties;
+
+            records.forEach(function (item) {
+                //var record = records.findIndex( record => record.id == item.id);
+                var record = propertyData.filter(function (data) {
+                    return item.id === data.id;
+                })[0];
+
+                logc("updatedrecord", record);
+                if (item.id == record.id) {
+                    record.isAssigned = item.isAssigned;
+                }
+
+            });
+
+            return s;
+        };
+
         p.allPropertiesSync = function (productId, selected) {
             var s = this,
                 propertyList,
@@ -336,7 +360,6 @@ logc("productControlList", productControlList);
                 totalCount = 0;
 
             propertyList = s.propertyMap['product' + productId].properties;
-            logc("allPropertiesSync", propertyList, selected);
             propertyList.forEach(function (item) {
                 item["isAssigned"] = selected;
                 if (item.isAssigned) {
@@ -357,7 +380,7 @@ logc("productControlList", productControlList);
                 totalCount = 0;
 
             roleList = s.roleMap['product' + productId].roles;
-            logc("allRolesSync", roleList, selected);
+
             roleList.forEach(function (item) {
                 item["isAssigned"] = selected;
                 if (item.isAssigned) {
@@ -388,7 +411,7 @@ logc("productControlList", productControlList);
             };
         };
 
-         p.renderProductAsideGridConfigMap = function (productId, tabName, config, name) {
+        p.renderProductAsideGridConfigMap = function (productId, tabName, config, name) {
             var s = this;
             s.productAsideGridConfigMap['product' + productId + tabName] = {
                 asideGridConfig: config,
@@ -396,17 +419,17 @@ logc("productControlList", productControlList);
             };
         };
 
-         p.renderProductSwitchConfigMap = function (productId, tabName, config) {
+        p.renderProductSwitchConfigMap = function (productId, tabName, config) {
             var s = this;
             //logc("switchConfig", config);
             s.productSwitchConfigMap['product' + productId + tabName] = {
                 switchCtrlConfig: config
             };
             s.switchConfigLoaded = true;
-           // logc("s.productSwitchConfigMap", s.productSwitchConfigMap);
+            // logc("s.productSwitchConfigMap", s.productSwitchConfigMap);
         };
 
-         p.renderProductRadioConfigMap = function (productId, tabName, config) {
+        p.renderProductRadioConfigMap = function (productId, tabName, config) {
             var s = this;
             s.productRadioConfigMap['product' + productId + tabName] = {
                 radioConfig: config

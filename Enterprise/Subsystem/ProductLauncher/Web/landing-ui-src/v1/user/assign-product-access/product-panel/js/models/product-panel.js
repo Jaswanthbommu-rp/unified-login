@@ -83,32 +83,6 @@
             return s.propertyGridActive;
         };
 
-        // p.setProperties = function (propertiesData) {
-        //     var s = this;
-        //     s.properties = propertiesData;
-        // };
-
-        // p.setRoles = function (rolesData) {
-        //     var s = this;
-        //     s.roles = rolesData;
-        // };
-
-
-        // p.setAllProperty = function (val) {
-        //     var s = this;
-        //     s.isAllProperties = val;
-
-        // };
-
-        // p.getRoles = function () {
-        //     var s = this;
-        //     return s.roles;
-        // };
-
-        // p.getProperties = function () {
-        //     var s = this;
-        //     return s.properties;
-        // };
 
          p.getData = function (productId) {
             var s = this,
@@ -116,14 +90,12 @@
                 hasPropertySelected = false;
                 s.batchData = angular.copy(s._batchData);
 
-logc("getdata",productId,dataSyncManager, s.batchData);
-
           var roles = dataSyncManager.getProductRolesData(productId);
           var properties = dataSyncManager.getProductPropertiesData(productId);
 
            s.batchData.productId = productId;
 
-           if (roles && roles.length) {
+           if (roles !== undefined && roles.length) {
                 s.batchData.inputJson.roleList = [];
                 roles.forEach(function (role) {
                     if (role.isAssigned) {
@@ -134,7 +106,7 @@ logc("getdata",productId,dataSyncManager, s.batchData);
                 hasRoleSelected = s.batchData.inputJson.roleList.length > 0;
             }
 
-            if (properties && properties.length) {
+            if (properties !== undefined && properties.length) {
                 s.batchData.inputJson.propertyList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
