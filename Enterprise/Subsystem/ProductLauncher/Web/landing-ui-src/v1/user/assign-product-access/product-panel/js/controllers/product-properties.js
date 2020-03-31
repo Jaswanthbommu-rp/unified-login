@@ -169,6 +169,8 @@
         vm.loadGridData = function (productId) {
             propertiesGrid.busy(false);
             var propertySelect = "property";
+            var activeCount = 0;
+            var inActiveCount = 0;
             var propData = syncMgr.getProductPropertiesData(productId);
 
             if (propData && propData.length > 0) {
@@ -189,17 +191,16 @@
                     });
 
                     if (item.active !== undefined && productId === 10) {
-                        propertySelect = "active";
                         if (item.active == 'true') {
                             vm.activeProperties.push(item);
                             if (item.isAssigned) {
-                                propertySelect = "active";
+                                activeCount++;
                             }
                         }
                         else {
                             vm.inactiveProperties.push(item);
                             if (item.isAssigned) {
-                                propertySelect = "inactive";
+                                inActiveCount++;
                             }
                         }
                     }
@@ -217,16 +218,16 @@
 
                 vm.propertySelect = propertySelect;
                 vm.allPropertiesData = propData;
-                //propertiesGridPagination.setData(propData).goToPage({number: 0});
+
                 if (productId == "10") {
-                    // vm.propertySelect = propertySelect;
-                    if (propertySelect == "active") {
+                    vm.propertySelect = inActiveCount > 0 ? "inactive" : "active";
+                    if (vm.propertySelect == "active") {
                         propertiesGridPagination.setData(vm.activeProperties).goToPage({
                             number: 0
                         });
                         vm.propertiesGrid.filtersModel.reset();
                     }
-                    else if (propertySelect == "inactive") {
+                    else if (vm.propertySelect == "inactive") {
                         propertiesGridPagination.setData(vm.inactiveProperties).goToPage({
                             number: 0
                         });
