@@ -14,6 +14,8 @@
             }, {
                 key: "name"
             }, {
+                key: "city"
+            }, {
                 key: "state"
             }];
         };
@@ -27,6 +29,9 @@
                     }, {
                     key: "name",
                     text: "Property",
+                    }, {
+                        key: "city",
+                        text: "City",
                     }, {
                     key: "state",
                     text: "State",
@@ -60,6 +65,11 @@
                     key: "name",
                     type: "text",
                     placeholder: "Filter by Property Name"
+                },
+                {
+                    key: "city",
+                    type: "text",
+                    placeholder: "Filter by City"
                 },
                 {
                     key: "state",

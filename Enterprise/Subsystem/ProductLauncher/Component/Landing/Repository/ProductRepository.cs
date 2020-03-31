@@ -279,8 +279,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.ProductLearningPortal));
                     }
                 }
-
-                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)))
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessHelpCenter", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.HelpCenter))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.HelpCenter));
+                    }
+                }
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)) || _userClaim.RealPageEmployee)
                 {
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.MigrationTool))
                     {
