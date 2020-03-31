@@ -57,14 +57,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                             bool oldValueIsDate = oldValue != null && oldValue.GetType() == Type.GetType("System.DateTime") ? true : false;
                             bool newValueIsDate = newValue != null && newValue.GetType() == Type.GetType("System.DateTime") ? true : false;
 
+                            if (newValueIsDate)
+                            {
+                                if (String.Format("{0:MM/dd/yyyy}", newValue).Equals(DateTime.MaxValue.ToString("MM/dd/yyyy")))
+                                { 
+                                    formatedNewValue = null;
+                                }
+                            }
+
                             if (formatedOldValue != formatedNewValue)
                             {
                                 AuditRecord auditRecord = new AuditRecord();
                                 AuditLogAttribute internalAttribute = ((AuditLogAttribute)attribute);
 
-                                auditRecord.OldValue = internalAttribute.Format != string.Empty 
-                                                       ? (formatedOldValue != string.Empty 
-                                                            ? String.Format(internalAttribute.Format, (oldValueIsDate ? oldValue : formatedOldValue)) 
+                                auditRecord.OldValue = internalAttribute.Format != string.Empty
+                                                       ? (formatedOldValue != string.Empty
+                                                            ? String.Format(internalAttribute.Format, (oldValueIsDate ? oldValue : formatedOldValue))
                                                             : formatedOldValue)
                                                        : formatedOldValue;
 
