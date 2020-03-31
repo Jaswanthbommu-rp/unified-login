@@ -12,7 +12,7 @@
         <div  class="all-feature-properties" ng-if="cpp.isSwitchConfigLoaded()">
             <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpp.switchconfigs"
                 config="sw.configData"
-                rp-model="sw.key"
+                rp-model="cpp.allProperties"
                 rp-label-text="sw.text">
             </rp-switch>
         </div>
