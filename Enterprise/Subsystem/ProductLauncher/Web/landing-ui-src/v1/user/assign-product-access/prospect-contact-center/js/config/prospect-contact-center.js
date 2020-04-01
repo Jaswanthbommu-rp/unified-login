@@ -3,14 +3,17 @@
 (function (angular) {
     "use strict";
 
-    function config(model, productAccess) {
-        // productAccess.register({
-        //     model: model,
-        //     key: "soln302"
-        // });
+    function config(model, productAccess, templateModel) {
+        if (!templateModel.isProductExists(10)) {
+            productAccess.register({
+                model: model,
+                key: "soln302",
+                product: "10"
+            });
+        }
     }
 
     angular
         .module("settings")
-        .run(["prospectContactCenterDataModel", "assignProductAccessModel", config]);
+        .run(["prospectContactCenterDataModel", "assignProductAccessModel", "productTemplateModel", config]);
 })(angular);

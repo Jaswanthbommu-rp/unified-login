@@ -12,8 +12,8 @@
         },
 
         "soln101": {
-            name: "OneSite"
-            //templateUrl: "user/assign-product-access/onesite/templates/index.html"
+            name: "OneSite",
+            templateUrl: "user/assign-product-access/onesite/templates/index.html"
         },
 
         "soln104": {
@@ -62,13 +62,13 @@
         },
 
         "soln302": {
-            name: "Prospect Contact Center"
-            //templateUrl: "user/assign-product-access/prospect-contact-center/templates/index.html"
+            name: "Prospect Contact Center",
+            templateUrl: "user/assign-product-access/prospect-contact-center/templates/index.html"
         },
 
         "soln303": {
-            name: "Marketing Center"
-            //templateUrl: "user/assign-product-access/marketing-center/templates/index.html"
+            name: "Marketing Center",
+            templateUrl: "user/assign-product-access/marketing-center/templates/index.html"
         },
 
         "soln305": {
@@ -116,23 +116,14 @@
             templateUrl: "user/assign-product-access/investment-analytics/templates/index.html"
         },
 
-        // "soln406": {
-        //     name: "Axiometrics",
-        //     templateUrl: "user/assign-product-access/axiometrics/templates/index.html"
-        // },
-
-        // "soln501": {
-        //     name: "Client Portal",
-        //     templateUrl: "user/assign-product-access/client-portal/templates/index.html"
-        // },
-         "soln501": {
-            name: "Client Portal"
+        "soln501": {
+            name: "Client Portal",
+            templateUrl: "user/assign-product-access/client-portal/templates/index.html"
         },
 
         "soln503": {
             name: "Unified Platform",
             templateUrl: "user/assign-product-access/unified-login/templates/index.html"
-           //templateUrl: "user/assign-product-access/product-panel/templates/index.html"
         },
 
         "soln504": {
@@ -158,7 +149,7 @@
 
         "soln000": {
             name: "Unified Platform",
-           templateUrl: "user/assign-product-access/product-panel/templates/index.html"
+            templateUrl: "user/assign-product-access/product-panel/templates/index.html"
         },
 
         "default": {

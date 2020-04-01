@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ClientPortalRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, pubsub, ClientPortalDataModel, userDetailsModel, security, configModel) {
+    function ClientPortalRolesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, pubsub, ClientPortalDataModel, userDetailsModel, security) {
         var vm = this,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
@@ -14,10 +14,7 @@
             vm.rolesGrid = rolesGrid;
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
-            // rolesGrid.setConfig(gridConfig);
-            vm.config = configModel.getGridConfig()[1];            
-            rolesGrid.setConfig(vm.config);
-
+            rolesGrid.setConfig(gridConfig);
             gridPagination.setGrid(rolesGrid);
             $scope.gridPagination = gridPagination;
             gridPagination.setConfig({
@@ -125,7 +122,6 @@
             "clientPortalDataModel",
             "userDetailsModel",
             "routeSecurity",
-            "ConfigModel",
             ClientPortalRolesGridCtrl
         ]);
 })(angular);
