@@ -3,50 +3,25 @@
 (function (angular) {
     "use strict";
 
-    function ClientPortalTabsData(jsonData) {
+    function ClientPortalTabsData() {
         var data,
             svc = this;
 
-        // svc.data = {
-        //     properties: {
-        //         id: "properties",
-        //         incUrl: "user/assign-product-access/client-portal/templates/properties.html",
-        //         className: "",
-        //         isActive: true,
-        //         text: "Properties"
-        //     },
-        //     roles: {
-        //         id: "roles",
-        //         incUrl: "user/assign-product-access/client-portal/templates/roles.html",
-        //         className: "",
-        //         isActive: false,
-        //         text: "Roles"
-        //     }
-        // };
-
-
-
-        svc.getTabsData = function () {
-
-            var tabs = {}, i=0;
-            if(jsonData && jsonData.Tabs){
-                jsonData.Tabs.forEach(function (data) {
-                    tabs[data.DisplayName.toLowerCase()] = {
-                        id : data.DisplayName.toLowerCase(),
-                        text : data.DisplayName,
-                        isActive :  i === 0 ? true : false,
-                        incUrl: "user/assign-product-access/client-portal/templates/" + data.DisplayName.toLowerCase() + ".html",
-                    };
-                    i++;
-                });
+        svc.data = {
+            properties: {
+                id: "properties",
+                incUrl: "user/assign-product-access/client-portal/templates/properties.html",
+                className: "",
+                isActive: true,
+                text: "Properties"
+            },
+            roles: {
+                id: "roles",
+                incUrl: "user/assign-product-access/client-portal/templates/roles.html",
+                className: "",
+                isActive: false,
+                text: "Roles"
             }
-
-            return tabs;
-        };
-
-
-        svc.setData = function(data) {
-            svc.data = data;
         };
 
         svc.getData = function() {
@@ -59,8 +34,8 @@
 
         svc.getList = function() {
             return [
-                // svc.data.properties,
-                // svc.data.roles
+                svc.data.properties,
+                svc.data.roles
             ];
         };
 
@@ -69,14 +44,11 @@
                 tab.isActive = (key === "properties");
             });
         };
-
-        svc.data = svc.getTabsData();
     }
 
     angular
         .module("settings")
         .service("clientPortalTabsData", [
-            "DataModel",
             ClientPortalTabsData
         ]);
 })(angular);
