@@ -276,6 +276,7 @@
     <Compile Include="Controllers\UnifiedLoginController.cs" />
     <Compile Include="Controllers\UserNotificationController.cs" />
     <Compile Include="Controllers\UserPropertyController.cs" />
+    <Compile Include="Controllers\WebHookController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
