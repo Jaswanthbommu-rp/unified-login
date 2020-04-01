@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, tabsModel, userDetailsModel, switchConfig, cntrlSvc) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, tabsModel, userDetailsModel, switchConfig, cntrlSvc, templateModel) {
         var vm = this,
             active = false,
             panelNmae = "",
@@ -29,16 +29,14 @@
         };
 
         vm.productSelected = function (obj) {
-            // vm.personaWatch = persona.subscribe();
-            if (obj.productId == 14 || obj.productId == 10 || obj.productId == 9 || obj.productId == 1) {
+            var productExists = templateModel.isProductExists(obj.productId);
+            if (productExists) {
                 vm.productId = obj.productId;
                 $scope.productId = obj.productId;
                 vm.loadProductControlsData(obj.productId);
             }
-            active = obj.productId === 14 ||
-                obj.productId === 10 ||
-                obj.productId === 1 ||
-                obj.productId === 9 ? true : false;
+            logc("productExists", productExists, obj.productId);
+            active = productExists ? true : false;
             return vm;
         };
 
@@ -57,7 +55,6 @@
             }
             //logc("cdata", cdata, cdata.controls[0]);
             if (controlData !== undefined) {
-                logc("return data", controlData);
                 vm.panelName = productModel.getPageDisplayName(productId);
                 vm.setTabs(controlData);
             }
@@ -280,6 +277,8 @@
         // };
 
         vm.destroy = function () {
+            logc("vm.destroy called");
+            active = false;
             vm.destWatch();
             vm.profileWatch();
             vm.productSelectedWatch();
@@ -313,6 +312,7 @@
             "userDetailsModel",
             "rpSwitchConfig",
             "productControlsSvc",
+            "productTemplateModel",
             ProductCommonCtrl
         ]);
 })(angular);
