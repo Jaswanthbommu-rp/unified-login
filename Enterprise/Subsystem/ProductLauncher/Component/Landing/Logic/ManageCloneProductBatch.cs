@@ -172,8 +172,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
 						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, createUserPersonaId, personaId, userClaim);
 						var productUser = productLogic.GetProductUser();
-						var propertyRoles = productUser.PropertyRoles;
-						var roles = productUser.Roles.ConvertAll<string>(i => i.ToString());
+						var propertyRoles = productUser.PropertyRoleList;
+						var roles = productUser.RoleList.ConvertAll<string>(i => i.ToString());
 
 						productListToCreate.Add(CreateProductBatchRecordForPortfolioManagement(propertyRoles, roles));
 					}
@@ -313,14 +313,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return pb;
 		}
 
-		private ProductBatch CreateProductBatchRecordForPortfolioManagement(List<PropertyRoleList> propertyRoleList, List<string> roleList)
+		private ProductBatch CreateProductBatchRecordForPortfolioManagement(List<PAMRolePropertyList> rolePropertyList, List<string> roleList)
 		{
 			var pb = new ProductBatch()
 			{
 				ProductId = (int)ProductEnum.PortfolioManagement,
 				StatusTypeId = 5,
 				RetryCount = 0,
-				InputJson = new RolePropertyList() { PropertyRoleList = propertyRoleList, RoleList = roleList }
+				InputJson = new RolePropertyList() { RolePropertiesList = rolePropertyList, RoleList = roleList }
 			};
 
 			return pb;
