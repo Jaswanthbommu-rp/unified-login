@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory(pubsub) {
+    function factory(pubsub, templateModel) {
         function AssignProductAccessModel() {
             var s = this;
             s.init();
@@ -22,10 +22,10 @@
             var s = this;
 
             if (s.products[key]) {
-                if (key === "soln101" || key === "soln302" || key === "soln303" || key === "soln501") {
+                if (templateModel.isProductExists(productId)) {
                     return s.products[key].getData(productId);
                 }
-                else  {
+                else {
                     return s.products[key].getData();
                 }
             }
@@ -58,7 +58,7 @@
 
 
             s.products["default"].setActive(!found);
-            pubsub.publish("product.selectedProduct", soln.data );
+            pubsub.publish("product.selectedProduct", soln.data);
 
             return s;
         };
@@ -95,5 +95,5 @@
 
     angular
         .module("settings")
-        .factory("assignProductAccessModel", ["pubsub",factory]);
+        .factory("assignProductAccessModel", ["pubsub", "productTemplateModel", factory]);
 })(angular);

@@ -11,7 +11,7 @@
         };
 
         vm.publishPropertyChange = function (record) {
-        	pubsub.publish("cp.property-radio", record);
+            pubsub.publish("cp.property-radio", record);
         };
 
         vm.destroy = function () {
@@ -26,7 +26,7 @@
     angular
         .module("settings")
         .controller("ClientPortalPropertyRadioCtrl", [
-        	"$scope",
+            "$scope",
             "pubsub",
-        	ClientPortalPropertyRadioCtrl]);
+            ClientPortalPropertyRadioCtrl]);
 })(angular);
