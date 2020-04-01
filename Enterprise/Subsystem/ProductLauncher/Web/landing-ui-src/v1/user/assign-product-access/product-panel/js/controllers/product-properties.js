@@ -245,7 +245,6 @@
         };
 
         vm.selectionAll = function (bool) {
-            //logc("selectAll", bool);
             vm.propertySelect = "property";
             if (bool) {
                 vm.propertySelect = 'allProperties';
@@ -257,6 +256,7 @@
             else {
                 syncMgr.allPropertiesSync($scope.$parent.productId, bool);
             }
+            vm.propertiesGrid.updateSelected();
             vm.resetProperties();
         };
 
