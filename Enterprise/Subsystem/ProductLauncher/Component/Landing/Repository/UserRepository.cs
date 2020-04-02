@@ -2418,7 +2418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //user update then process for new status
                             if ((profile.userLogin.IsActive != currentOrgStatus.IsActive) || isUserAccessLevelChanged || isUserEffectiveDateChanged)
                             {
-                                
+
 
                                 DateTime? statusThruDate = null;
                                 UserUiStatusType statusTypeId = UserUiStatusType.UnDefined;
@@ -2890,7 +2890,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.ErrorMessage = saveProductBatchError;
                         }
 
-             
+
 
                     }
                 }
@@ -5162,6 +5162,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                                       x.AuditMessage,
                                                       "UpdateUser",
                                                       newProfile));
+
+            var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
+
+            auditCustomFieldsResult.ForEach(x => LogAuditActivity(x.LogActivityType,
+                                           LogActivityCategoryType.User,
+                                           x.AuditMessage,
+                                           "UpdateUser",
+                                           newProfile));
         }
 
         #endregion
