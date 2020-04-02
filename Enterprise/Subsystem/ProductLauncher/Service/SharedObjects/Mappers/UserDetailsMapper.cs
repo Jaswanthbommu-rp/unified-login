@@ -44,8 +44,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
                 result.MiddleInitial = origin.MiddleName;
                 result.NotificationEmail = origin.Email;
                 result.UserName = origin.LoginName;
-                result.UserExpire = origin.ThruDate;
-                result.UserEffective = origin.FromDate;
+                //result.UserExpire = origin.ThruDate;
+                //result.UserEffective = origin.FromDate;
                 result.IsActive = origin.IsActive;
             }
 
