@@ -787,7 +787,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 // the current company the user has been added to 
                                 if (userPersonaOrganizationList.Count == 1 && !currentPrimaryOrgStatus.IsActive.Value)
                                 {
-                                    if (fromDate > DateTime.Now)
+                                    if (fromDate > DateTime.UtcNow)
                                     {
                                         userStatusId = (int)UserUiStatusType.Disabled;
                                     }
