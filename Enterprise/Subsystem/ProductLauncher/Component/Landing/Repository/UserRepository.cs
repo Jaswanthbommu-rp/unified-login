@@ -815,7 +815,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //add to Logged-in (Current) Company
                         else
                         {
-                            if (fromDate > DateTime.Now)
+                            if (fromDate > DateTime.UtcNow)
                             {
                                 userStatusId = (int)UserUiStatusType.Disabled;
                             }
