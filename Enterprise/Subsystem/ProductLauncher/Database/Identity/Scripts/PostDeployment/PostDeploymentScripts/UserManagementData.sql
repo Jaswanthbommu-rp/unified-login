@@ -337,6 +337,20 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
 
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 134)
+BEGIN
+	UPDATE	[UserManagement].[Control]
+	SET			Sequence = 4
+	WHERE	ControlId = 108
+
+	SET IDENTITY_INSERT [UserManagement].[Control] ON
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (134, 105, 5, 'OneSiteProductAccessCityLabelUIId', 'City', 'city', 3, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+
 IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlAttribute])
 BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 

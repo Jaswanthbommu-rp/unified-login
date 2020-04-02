@@ -84,3 +84,4 @@
 {{{ include("../../_common/user/user-profile/js/_bundle.inc") }}}
 {{{ include("../../_common/video-modal/js/_bundle.inc") }}}
 {{{ include("../../_common/company-switch/js/_bundle.inc") }}}
+{{{ include("../../_common/product-template/js/_bundle.inc") }}}

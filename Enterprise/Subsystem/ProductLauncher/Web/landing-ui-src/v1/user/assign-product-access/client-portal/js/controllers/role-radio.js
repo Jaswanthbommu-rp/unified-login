@@ -11,7 +11,7 @@
         };
 
         vm.publishRoleChange = function (record) {
-        	pubsub.publish("cp.roles-radio", record);
+            pubsub.publish("cp.roles-radio", record);
         };
 
         vm.destroy = function () {
@@ -26,7 +26,7 @@
     angular
         .module("settings")
         .controller("ClientPortalRolesRadioCtrl", [
-        	"$scope",
+            "$scope",
             "pubsub",
-        	ClientPortalRolesRadioCtrl]);
+            ClientPortalRolesRadioCtrl]);
 })(angular);
