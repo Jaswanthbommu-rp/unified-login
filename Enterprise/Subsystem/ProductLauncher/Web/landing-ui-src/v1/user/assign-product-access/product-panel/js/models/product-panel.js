@@ -144,58 +144,7 @@
             return null;
         };
 
-        // p.getData = function () {
-        //     var s = this,
-        //         hasRoleSelected = false,
-        //         hasPropertySelected = false;
-
-        //     var products = dataSyncManager.getProductsTouched();
-        //     if (products && products.length) {
-        //         products.forEach(function (product) {
-        //           var roles = dataSyncManager.getProductRolesData(product);
-        //           var properties = dataSyncManager.getProductPropertiesData(product);
-
-        //            s.batchData.productId = product;
-        //            if (roles && roles.length) {
-        //                 s.batchData.inputJson.roleList = [];
-        //                 s.roles.forEach(function (role) {
-        //                     if (role.isAssigned) {
-        //                         s.batchData.inputJson.roleList.push(role.id);
-        //                     }
-        //                 });
-
-        //                 hasRoleSelected = s.batchData.inputJson.roleList.length > 0;
-        //             }
-
-        //             if (properties && properties.length) {
-        //                 s.batchData.inputJson.propertyList = [];
-
-        //                 if (s.isAllProperties) {
-        //                     s.batchData.inputJson.propertyList.push("-1");
-        //                 }
-        //                 else {
-        //                     s.properties.forEach(function (prop) {
-        //                         if (prop.isAssigned) {
-        //                             s.batchData.inputJson.propertyList.push(prop.id);
-        //                         }
-        //                     });
-        //                 }
-
-        //                 hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;
-        //             }
-        //             s.data.records.push(s.padata);
-        //         });
-        //     }
-
-
-        //     if (hasRoleSelected && hasPropertySelected) {
-        //         return s.data;
-        //     }
-
-        //     return null;
-        // };
-
-         p.gridReset = function () {
+        p.gridReset = function () {
             var s = this;
             s.isAllProperties = false;
             s.roleGridActive = false;

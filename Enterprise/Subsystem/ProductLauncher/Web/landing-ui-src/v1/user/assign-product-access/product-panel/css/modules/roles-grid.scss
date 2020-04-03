@@ -10,6 +10,10 @@
 .product-panel-roles {
     width: 100%;
 
+     &-wrapper {
+        margin-top: 10px;
+    }
+
     &-grid {
         .rp-grid-headers-1,
         .rp-grid-filters-1,
@@ -18,8 +22,8 @@
         }
 
         .is-assigned {
-            min-width: 125px;
-            max-width: 125px;
+            min-width: 120px;
+            max-width: 120px;
             white-space: nowrap;
         }
 
