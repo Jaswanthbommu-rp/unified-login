@@ -131,8 +131,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                             auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
                                                   oldCustomFieldValue.Name,
-                                                  " from ", oldCustomFieldValue.Value == string.Empty ? "blank value" : oldCustomFieldValue.Value,
-                                                  " to ", newCustomFieldValue.Value == string.Empty ? "blank value" : newCustomFieldValue.Value,
+                                                  " information from ", string.IsNullOrEmpty(oldCustomFieldValue.Value) ? "a blank value" : oldCustomFieldValue.Value,
+                                                  " to ", string.IsNullOrEmpty(newCustomFieldValue.Value) ? "a blank value" : newCustomFieldValue.Value,
                                                   " on the user profile",
                                                   " for {0} {1}.");
 
