@@ -220,7 +220,10 @@
                 vm.allPropertiesData = propData;
 
                 if (productId == "10") {
-                    vm.propertySelect = inActiveCount > 0 ? "inactive" : "active";
+                    if (vm.propertySelect !== "allProperties"){
+                        vm.propertySelect = inActiveCount > 0 ? "inactive" : "active";
+                    }
+
                     if (vm.propertySelect == "active") {
                         propertiesGridPagination.setData(vm.activeProperties).goToPage({
                             number: 0
