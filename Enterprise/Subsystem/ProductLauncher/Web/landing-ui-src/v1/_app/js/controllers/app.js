@@ -74,14 +74,6 @@
             sessionModel.subscribe(vm.onSessionReady);
             vm.readyStateTimer = $timeout(vm.setReady, 100);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-
-            // window.addEventListener('viewNotifications', function() {
-            //     window.location.href = '/home/notifications';
-            // });
-
-            window.addEventListener('omnibarLogout', function() {
-                window.location.href = '/home/logout';
-            });
         };
 
         vm.getState = function () {
