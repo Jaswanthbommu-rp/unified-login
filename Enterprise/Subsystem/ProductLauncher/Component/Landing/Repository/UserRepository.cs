@@ -2817,31 +2817,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (userIsActive && userTypeChanged)
                         {
                             SaveUserProductBatchData(repository, null, createUserPersonaId, assignUserPersonaId, loggedInUserRealPageId, persona.Organization.RealPageId, null, batchProcessUserType, productBatchData, aoProductsAvailableForUser, profile.UserTypeId);
-
-                            //var bpType = string.Empty; //batchProcessUserType == 5 ? "Regular User to RealPage System Administrator" : "RealPage System Administrator to Regular User";
-                            //switch (batchProcessUserType)
-                            //{
-                            //    case 5:
-                            //        bpType = "Regular User to RealPage System Administrator";
-                            //        break;
-                            //    case 6:
-                            //        bpType = "RealPage System Administrator to Regular User";
-                            //        break;
-                            //    case 8:
-                            //        bpType = "External User to RealPage System Administrator";
-                            //        break;
-                            //    case 9:
-                            //        bpType = "RealPage System Administrator to External User";
-                            //        break;
-                            //    default:
-                            //        break;
-                            //}
-
-                            //var auditMessage = $"The User Type of {{0}} {{1}} was changed from {bpType} by {{2}} {{3}}";
-                            //if (bpType != string.Empty)
-                            //{
-                            //    LogAuditActivity(LogActivityTypeConstants.PRODUCT_ACCESS, LogActivityCategoryType.ProductAccess, auditMessage, userTypeName, profile);
-                            //}
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
