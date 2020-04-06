@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory($params, products, productAccess, session, security) {
+    function factory($params, products, productAccess, session, security, templateModel) {
         function ProductAccessModel() {
             var s = this;
             s.init();
@@ -71,8 +71,6 @@
                     assignmentChanged = soln.assignmentChanged(),
                     accessChanged = productAccess.accessChanged(key);
 
-logc("getExistingUserData", assignmentChanged, isAssigned, accessChanged, touched, productId);
-
                 if (assignmentChanged && !isDisabled) {
                     if (isAssigned) {
                         prodData = productAccess.getAccessData(key, productId);
@@ -110,7 +108,7 @@ logc("getExistingUserData", assignmentChanged, isAssigned, accessChanged, touche
                         }
                     }
                 }
-                else if (productId === 1 || productId === 9 || productId === 10 || productId === 14) {
+                else if (templateModel.isProductExists(productId)) {
                     if (isAssigned && touched && !isDisabled) {
                          prodData = productAccess.getAccessData(key, productId);
                          prodData.inputJson.isAssigned = isAssigned;
@@ -228,6 +226,7 @@ logc("getExistingUserData", assignmentChanged, isAssigned, accessChanged, touche
             "assignProductAccessModel",
             "userSessionModel",
             "routeSecurity",
+            "productTemplateModel",
             factory
         ]);
 })(angular);

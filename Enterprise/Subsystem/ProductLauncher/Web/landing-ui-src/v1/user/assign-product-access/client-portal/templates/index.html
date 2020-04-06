@@ -7,15 +7,14 @@
     <div ng-show="cppa.productDisabled" class="client-portal-error-msg">
         This product cannot be assigned when User Type is Regular user (no email).
     </div>
-   <!--  ng-controller="ClientPortalPropertiesRolesCtrl as cpprc" -->
-    <div >
+    <div ng-controller="ClientPortalPropertiesRolesCtrl as cpprc">
         <rp-scrolling-tabs-menu
-            model="cppa.tabsMenu">
+            model="cpprc.tabsMenu">
         </rp-scrolling-tabs-menu>
         <ng-include
             src="tab.incUrl"
             ng-show="tab.isActive"
-            ng-repeat="tab in cppa.tabsList">
+            ng-repeat="tab in cpprc.tabsList">
         </ng-include>
     </div>
 </div>
