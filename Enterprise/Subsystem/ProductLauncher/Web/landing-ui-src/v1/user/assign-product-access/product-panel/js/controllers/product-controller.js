@@ -19,7 +19,6 @@
             vm.disableContent = false;
             vm.activeTab = "";
 
-            // vm.productId = $params.productId;
             vm.productId = 0;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
