@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Mail;
+using System.Runtime.Caching;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
@@ -416,6 +417,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>List of Roles</returns>
         public List<UL.Role> GetAssignedRoleForPersona(long userPersonaId, long? organizationPartyId = null)
         {
+            var cacheKey = $"sp_ListRolesForProductsByPersonaId_{_productId}_{userPersonaId}_{organizationPartyId}";
+            MemoryCache.Default.Remove(cacheKey);
             List<UL.Role> propRole = _userRoleRightRepository.ListRoleByPersona(_productId, userPersonaId, organizationPartyId);
             return propRole;
         }
