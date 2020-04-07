@@ -102,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
                 else
                 {
-                    if (!string.IsNullOrEmpty(loginName) && loginName.Contains("realpage.com") && orgMasterId != -1)
+                    if (!string.IsNullOrEmpty(loginName) && loginName.ToLower().Contains("@realpage.com") && orgMasterId != -1)
                     {
                         roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)).ToList();
                     }
