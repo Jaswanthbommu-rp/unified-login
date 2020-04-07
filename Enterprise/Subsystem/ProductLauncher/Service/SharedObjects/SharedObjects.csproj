@@ -559,6 +559,7 @@
     <Compile Include="Swagger\SwaggerUtil.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyUpdated.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyDeleted.cs" />
+    <Compile Include="WebHook\SHA.cs" />
     <Compile Include="WebHook\ThinEvent.cs" />
   </ItemGroup>
   <ItemGroup>

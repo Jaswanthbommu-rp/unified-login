@@ -2,7 +2,7 @@
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook
 {
-    public class ThinEvent
+    public class ThinEvent<T>
     {
         /// <summary>
         /// The id of the event
@@ -19,6 +19,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHoo
         /// </summary>
         public DateTime CreatedAt { get; set; }
 
-        public string Payload { get; set; }
+        public T Payload { get; set; }
     }
 }
