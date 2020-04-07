@@ -39,7 +39,7 @@ Post-Deployment Script Template
 
 --:r .\PostDeploymentScripts\UserManagementData.sql
 
-:r .\PostDeploymentScripts\ProductAccessData.sql
+:r .\PostDeploymentScripts\May2020Release.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql

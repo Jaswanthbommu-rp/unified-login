@@ -1,3 +1,5 @@
+﻿GO
+
 --Unified Platform Product Access Data
 DECLARE @UserId bigint,
 	@ProductId int = 3,
@@ -113,4 +115,5 @@ BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 END
+
 GO
