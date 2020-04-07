@@ -68,7 +68,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                             {
                                 if (String.Format("{0:MM/dd/yyyy}", newValue).Equals(DateTime.MaxValue.ToString("MM/dd/yyyy")))
                                 {
-                                    newValue = string.Empty;
+                                    newValue = null;
+                                    formatedNewValue = null;
                                 }
                             }
 
