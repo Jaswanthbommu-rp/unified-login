@@ -931,6 +931,7 @@
     <Build Include="UserManagement\Stored Procedures\AddUpdateControl.sql" />
     <Build Include="Enterprise\Stored Procedures\ListRolesAndRightsForCompanyProducts.sql" />
     <Build Include="UserManagement\Stored Procedures\ListActiveProductPage.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\May2020Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
