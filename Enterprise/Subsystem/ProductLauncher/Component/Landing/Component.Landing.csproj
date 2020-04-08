@@ -135,6 +135,7 @@
     <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
     <Compile Include="Logic\IManageUserLoginPersona.cs" />
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
+    <Compile Include="Logic\Interfaces\IManageProductPanel.cs" />
     <Compile Include="Logic\Interfaces\IManageStatusType.cs" />
     <Compile Include="Logic\Interfaces\IManageBlueBook.cs" />
     <Compile Include="Logic\Interfaces\IManageCommunicationEvents.cs" />
@@ -226,6 +227,7 @@
     <Compile Include="Logic\Product\ManageProductLead2Lease.cs" />
     <Compile Include="Logic\Product\ManageProductMarketingCenter.cs" />
     <Compile Include="Logic\Product\ManageProductOmniChannel.cs" />
+    <Compile Include="Logic\Product\ManageProductPanel.cs" />
     <Compile Include="Logic\Product\ManageProductProspectContact.cs" />
     <Compile Include="Logic\Product\ManageProductRentersInsurance.cs" />
     <Compile Include="Logic\Product\ManageProductResidentPortal.cs" />

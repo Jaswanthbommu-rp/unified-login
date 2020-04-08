@@ -3,14 +3,18 @@
 (function (angular) {
     "use strict";
 
-    function config(model, productAccess) {
-        productAccess.register({
-            model: model,
-            key: "soln303"
-        });
+    function config(model, productAccess, templateModel) {
+        if (!templateModel.isProductExists(9)) {
+            productAccess.register({
+                model: model,
+                key: "soln303",
+                product: "9"
+            });
+        }
+
     }
 
     angular
         .module("settings")
-        .run(["MarketingCenterDataModel", "assignProductAccessModel", config]);
+        .run(["MarketingCenterDataModel", "assignProductAccessModel","productTemplateModel", config]);
 })(angular);

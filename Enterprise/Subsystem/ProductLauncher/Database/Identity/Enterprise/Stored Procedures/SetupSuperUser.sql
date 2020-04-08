@@ -265,17 +265,17 @@ AS
                                 @TargetProductId = @TargetProductId, 
                                 @VisibilityStatusId = @VisibilityStatusId;
                         SELECT @RightID;
-                        EXECUTE Enterprise.CreateRight 
-                                @RoleID = @RoleId, 
-                                @PartyId = @OrganizationId, 
-                                @ProductId = 3, 
-                                @RightName = 'Access to Help Center', 
-                                @RightCategoryId = @Status_Right, 
-                                @RightID = @RightID OUTPUT, 
-                                @Description = '', 
-                                @TargetProductId = @TargetProductId, 
-                                @VisibilityStatusId = @VisibilityStatusId;
-                        SELECT @RightID;
+                        --EXECUTE Enterprise.CreateRight 
+                        --        @RoleID = @RoleId, 
+                        --        @PartyId = @OrganizationId, 
+                        --        @ProductId = 3, 
+                        --        @RightName = 'Access to Help Center', 
+                        --        @RightCategoryId = @Status_Right, 
+                        --        @RightID = @RightID OUTPUT, 
+                        --        @Description = '', 
+                        --        @TargetProductId = @TargetProductId, 
+                        --        @VisibilityStatusId = @VisibilityStatusId;
+                        --SELECT @RightID;
                         EXECUTE Enterprise.CreateRight 
                                 @RoleID = @RoleId, 
                                 @PartyId = @OrganizationId, 
@@ -679,17 +679,17 @@ AS
                                 @TargetProductId = @TargetProductId, 
                                 @VisibilityStatusId = @VisibilityStatusId;
                         SELECT @RightID;
-                        EXECUTE Enterprise.CreateRight 
-                                @RoleID = @RoleId, 
-                                @PartyId = @OrganizationId, 
-                                @ProductId = 3, 
-                                @RightName = 'Access to Help Center', 
-                                @RightCategoryId = @Status_Right, 
-                                @RightID = @RightID OUTPUT, 
-                                @Description = '', 
-                                @TargetProductId = @TargetProductId, 
-                                @VisibilityStatusId = @VisibilityStatusId;
-                        SELECT @RightID;
+                        --EXECUTE Enterprise.CreateRight 
+                        --        @RoleID = @RoleId, 
+                        --        @PartyId = @OrganizationId, 
+                        --        @ProductId = 3, 
+                        --        @RightName = 'Access to Help Center', 
+                        --        @RightCategoryId = @Status_Right, 
+                        --        @RightID = @RightID OUTPUT, 
+                        --        @Description = '', 
+                        --        @TargetProductId = @TargetProductId, 
+                        --        @VisibilityStatusId = @VisibilityStatusId;
+                        --SELECT @RightID;
                         SELECT @ActionID = ActionID
                         FROM Enterprise.ACTION
                         WHERE ObjectValue = 'SideMenu'
@@ -931,17 +931,17 @@ AS
                                 @TargetProductId = @TargetProductId, 
                                 @VisibilityStatusId = @VisibilityStatusId;
                         SELECT @RightID;
-                        EXECUTE Enterprise.CreateRight 
-                                @RoleID = @RoleId, 
-                                @PartyId = @OrganizationId, 
-                                @ProductId = 3, 
-                                @RightName = 'Access to Help Center', 
-                                @RightCategoryId = @Status_Right, 
-                                @RightID = @RightID OUTPUT, 
-                                @Description = '', 
-                                @TargetProductId = @TargetProductId, 
-                                @VisibilityStatusId = @VisibilityStatusId;
-                        SELECT @RightID;
+                        --EXECUTE Enterprise.CreateRight 
+                        --        @RoleID = @RoleId, 
+                        --        @PartyId = @OrganizationId, 
+                        --        @ProductId = 3, 
+                        --        @RightName = 'Access to Help Center', 
+                        --        @RightCategoryId = @Status_Right, 
+                        --        @RightID = @RightID OUTPUT, 
+                        --        @Description = '', 
+                        --        @TargetProductId = @TargetProductId, 
+                        --        @VisibilityStatusId = @VisibilityStatusId;
+                        --SELECT @RightID;
                         EXECUTE Enterprise.CreateRight 
                                 @RoleID = @RoleId, 
                                 @PartyId = @OrganizationId, 
@@ -1439,7 +1439,7 @@ AS
                                 @RoleID = @RoleId, 
                                 @PartyId = @OrganizationId, 
                                 @ProductId = 3, 
-                                @RightName = 'Access to L&R Conversion Utility for OneSite users', 
+                                @RightName = 'Access to Leasing & Rents Conversion Utility for OneSite users',
                                 @RightCategoryId = @Status_Right, 
                                 @RightID = @RightID OUTPUT, 
                                 @Description = '', 

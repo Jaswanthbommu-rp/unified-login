@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory() {
+    function factory(pubsub, templateModel) {
         function AssignProductAccessModel() {
             var s = this;
             s.init();
@@ -18,12 +18,18 @@
 
         // Getters
 
-        p.getAccessData = function (key) {
+        p.getAccessData = function (key, productId) {
             var s = this;
 
             if (s.products[key]) {
-                return s.products[key].getData();
+                if (templateModel.isProductExists(productId)) {
+                    return s.products[key].getData(productId);
+                }
+                else {
+                    return s.products[key].getData();
+                }
             }
+
             return undefined;
         };
 
@@ -50,7 +56,9 @@
                 item.setActive(active);
             });
 
+
             s.products["default"].setActive(!found);
+            pubsub.publish("product.selectedProduct", soln.data);
 
             return s;
         };
@@ -87,5 +95,5 @@
 
     angular
         .module("settings")
-        .factory("assignProductAccessModel", [factory]);
+        .factory("assignProductAccessModel", ["pubsub", "productTemplateModel", factory]);
 })(angular);

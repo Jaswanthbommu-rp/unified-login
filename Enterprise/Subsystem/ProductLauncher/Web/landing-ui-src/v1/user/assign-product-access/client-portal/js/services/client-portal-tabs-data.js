@@ -14,7 +14,7 @@
                 className: "",
                 isActive: true,
                 text: "Properties"
-            }, 
+            },
             roles: {
                 id: "roles",
                 incUrl: "user/assign-product-access/client-portal/templates/roles.html",

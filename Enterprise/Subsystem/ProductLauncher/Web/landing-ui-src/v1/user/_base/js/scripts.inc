@@ -15,7 +15,7 @@
 {{{ include("models/user-view.js") }}}
 {{{ include("models/user-impersonated.js") }}}
 {{{ include("models/check-email-status.js") }}}
-
+{{{ include("models/product-panel-sync-manager.js") }}}
 
 
 {{{ include("services/user-tabs-manager.js") }}}

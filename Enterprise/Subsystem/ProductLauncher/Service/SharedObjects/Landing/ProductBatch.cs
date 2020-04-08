@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
- 
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
@@ -152,6 +151,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<PropertyRoleList> PropertyRoleList { get; set; }
+
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public List<PAMRolePropertyList> RolePropertiesList { get; set; }
 
 		/// <summary>
 		/// Used for ClickPay

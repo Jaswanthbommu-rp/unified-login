@@ -24,11 +24,11 @@
         model.getHeaders = function() {
             return [
                 [
-                    { key: "isAssigned" }, 
+                    { key: "isAssigned" },
                     {
                         key: "name",
                         text: "Property",
-                    }, 
+                    },
                     {
                         key: "state",
                         text: "State"

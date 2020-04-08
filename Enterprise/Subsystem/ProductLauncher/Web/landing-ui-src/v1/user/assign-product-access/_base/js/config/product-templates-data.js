@@ -116,11 +116,6 @@
             templateUrl: "user/assign-product-access/investment-analytics/templates/index.html"
         },
 
-        // "soln406": {
-        //     name: "Axiometrics",
-        //     templateUrl: "user/assign-product-access/axiometrics/templates/index.html"
-        // },
-
         "soln501": {
             name: "Client Portal",
             templateUrl: "user/assign-product-access/client-portal/templates/index.html"
@@ -150,6 +145,11 @@
         "soln701": {
             name: "Portfolio Management",
             templateUrl: "user/assign-product-access/portfolio-management/templates/index.html"
+        },
+
+        "soln000": {
+            name: "Unified Platform",
+            templateUrl: "user/assign-product-access/product-panel/templates/index.html"
         },
 
         "default": {

@@ -63,7 +63,7 @@
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='OrgMasterId']/@value" />
   </parameter>
 
-  <!-- appSettings -->  
+  <!-- appSettings -->
   <parameter name="Environment"
              description="Unity environment"
              defaultValue="#{Environment}#">
@@ -73,6 +73,11 @@
              description="URL for Elastic Search"
              defaultValue="#{ElasticSearchUri}#">
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchUri']/@value" />
+  </parameter>
+  <parameter name="ElasticSearchAuthDetails"
+             description="Authentication details for Elastic Search"
+             defaultValue="#{ElasticSearchAuthDetails}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchAuthDetails']/@value" />
   </parameter>
   <parameter name="LogPath"
              description="Path to use for file logging"

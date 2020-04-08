@@ -929,6 +929,9 @@
     <Build Include="UserManagement\Stored Procedures\AddUpdateControlDependency.sql" />
     <Build Include="UserManagement\Stored Procedures\AddUpdateControlAttribute.sql" />
     <Build Include="UserManagement\Stored Procedures\AddUpdateControl.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListRolesAndRightsForCompanyProducts.sql" />
+    <Build Include="UserManagement\Stored Procedures\ListActiveProductPage.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\May2020Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1034,7 +1037,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\March2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\SameSiteData.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserManagementData.sql" />
-    <None Include="Enterprise\Stored Procedures\ListRolesAndRightsForCompanyProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
@@ -1048,5 +1050,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Version0.0.0.45.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\January2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\June2019Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2020Release.sql" />
   </ItemGroup>
 </Project>

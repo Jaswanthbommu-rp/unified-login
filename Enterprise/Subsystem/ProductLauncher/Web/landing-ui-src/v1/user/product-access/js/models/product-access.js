@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory($params, products, productAccess, session, security) {
+    function factory($params, products, productAccess, session, security, templateModel) {
         function ProductAccessModel() {
             var s = this;
             s.init();
@@ -34,9 +34,10 @@
 
             solns.forEach(function (soln) {
                 var key = soln.getKey(),
+                    productId = soln.data.productId,
                     isDisabled = soln.isProductDisabled(),
-                    prodData = productAccess.getAccessData(key);
-
+                    prodData = productAccess.getAccessData(key, productId);
+//logc("getAccessData", prodData, key. productId);
                 if (prodData && !isDisabled) {
                     if (angular.isArray(prodData) && prodData.length > 0) {
                         //For AO Prduct family loop through the company data
@@ -65,12 +66,14 @@
                     key = soln.getKey(),
                     isAssigned = soln.isAssigned(),
                     isDisabled = soln.isProductDisabled(),
+                    productId = soln.data.productId,
+                    touched = soln.wasTouched(),
                     assignmentChanged = soln.assignmentChanged(),
                     accessChanged = productAccess.accessChanged(key);
 
                 if (assignmentChanged && !isDisabled) {
                     if (isAssigned) {
-                        prodData = productAccess.getAccessData(key);
+                        prodData = productAccess.getAccessData(key, productId);
 
                         if (angular.isArray(prodData) && prodData.length > 0) {
                             prodData.forEach(function (data) {
@@ -105,8 +108,15 @@
                         }
                     }
                 }
+                else if (templateModel.isProductExists(productId)) {
+                    if (isAssigned && touched && !isDisabled) {
+                         prodData = productAccess.getAccessData(key, productId);
+                         prodData.inputJson.isAssigned = isAssigned;
+                         data.productBatch.push(prodData);
+                    }
+                }
                 else if (isAssigned && accessChanged && !isDisabled) {
-                    prodData = productAccess.getAccessData(key);
+                    prodData = productAccess.getAccessData(key, productId);
                     if (angular.isArray(prodData) && prodData.length > 0) {
                         //For AO Prduct family loop through the company data
                         prodData.forEach(function (batch) {
@@ -163,8 +173,9 @@
                     var key = soln.getKey(),
                         touched = soln.wasTouched(),
                         isAssigned = soln.isAssigned(),
+                        productId = soln.data.productId,
                         assignmentChanged = soln.assignmentChanged(),
-                        missingData = productAccess.getAccessData(key) === null;
+                        missingData = productAccess.getAccessData(key, productId) === null;
 
                     if (missingData && isAssigned && (touched || assignmentChanged)) {
                         s.incompleteSolutionsList.push(soln);
@@ -183,7 +194,8 @@
 
             solns.forEach(function (soln) {
                 var key = soln.getKey(),
-                    data = productAccess.getAccessData(key);
+                    productId = soln.data.productId,
+                    data = productAccess.getAccessData(key, productId);
 
                 if (data === null) {
                     s.incompleteSolutionsList.push(soln);
@@ -214,6 +226,7 @@
             "assignProductAccessModel",
             "userSessionModel",
             "routeSecurity",
+            "productTemplateModel",
             factory
         ]);
 })(angular);

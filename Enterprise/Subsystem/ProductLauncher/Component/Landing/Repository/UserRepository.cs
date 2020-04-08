@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Dtos;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -13,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
@@ -231,10 +233,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (newProfile.ClonedUser)
             {
                 cloneUserPersonaId = newProfile.Persona[0].PersonaId;
-				var cloneUserPersona = _managePersona.GetPersona(cloneUserPersonaId);
-				var personaOrganization = cloneUserPersona.Organization;
-				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
-				using (var pbRepository = GetRepository())
+                var cloneUserPersona = _managePersona.GetPersona(cloneUserPersonaId);
+                var personaOrganization = cloneUserPersona.Organization;
+                bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+                using (var pbRepository = GetRepository())
                 {
                     //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
                     List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = newProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
@@ -318,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if (newProfile.userLogin.ThruDate == null)
                     {
-                        newProfile.userLogin.ThruDate = Convert.ToDateTime("12/31/9999");
+                        newProfile.userLogin.ThruDate = new DateTime(9999, 12, 31);
                     }
 
                     identityProviderType = (from a in identityProviderTypeList where a.IsLocal == (newProfile.userLogin.Is3rdPartyIDP ? false : true) select a).FirstOrDefault();
@@ -2047,9 +2049,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Update User Detail and Products
         /// </summary>
         /// <param name="loggedInUserRealPageId">Logged-In User unique identifier</param>
-        /// <param name="profile">Edited User detail and Products</param>
+		/// <param name="profile">Edited User detail and Products</param>
+		/// <param name="oldProfile">Old detail profile from database</param>
         /// <returns>Repository response object</returns>
-        public RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile)
+        public RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile, IProfileDetail oldProfile)
         {
             dynamic param;
             DateTime utcNow = DateTime.UtcNow;
@@ -2074,6 +2077,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
             IList<ProductBatch> productBatchData = new List<ProductBatch>();
             IList<ContactMechanismUsageType> emailUsageType = new List<ContactMechanismUsageType>();
+
+            //Notification Email
+            IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
 
             //BlueBook MasterId for External Users
             IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
@@ -2107,6 +2113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             OrganizationStatus currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, 0, true);
             OrganizationStatus currentOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, currentOrgPartyId, false);
 
+
             //Get the logged-in user Current Persona Id
             createUserPersonaId = personaRespository.GetActivePersonaId(realPageId: loggedInUserRealPageId);
 
@@ -2138,6 +2145,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool isUserTypeChangedFromNoEmailToRegular = false;
             bool isUserTypeChangedFromNoEmailToExternal = false;
             string userTypeChangedToFromExternal = string.Empty;
+
+            userDetails.IsActive = currentOrgStatus.IsActive;
 
             if (userDetails.UserRoleTypeId != profile.UserTypeId)
             {
@@ -2263,6 +2272,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
+            //Get Current Notification Email before update
+            IList<CommonAddress> commonAddressList = contactMechanismRepository.ListContactMechanismForPerson(profile.userLogin.RealPageId, "Email Notification");
+            CommonAddress ca = (from a in commonAddressList
+                                where a.contactMechanismUsageType != null
+                                select a).FirstOrDefault();
+            userDetails.Email = ca?.AddressString;
+
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -2289,29 +2305,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
                             throw new Exception(repositoryResponse.ErrorMessage);
                         }
-                        else
-                        {
-                            if (!userDetails.FirstName.Equals(profile.FirstName))
-                            {
-                                //Log Activity
-                                var auditMessage = $"User {{2}} {{3}} updated the First name from {userDetails.FirstName} to {profile.FirstName} on the user profile for {{0}} {{1}}.";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            }
-                            if (!userDetails.MiddleName.Equals(profile.MiddleName))
-                            {
-                                //Log Activity
-                                string oldMiddleName = string.IsNullOrWhiteSpace(userDetails.MiddleName) ? "blank value" : userDetails.MiddleName;
-                                string newMiddleName = string.IsNullOrWhiteSpace(profile.MiddleName) ? "blank value" : profile.MiddleName;
-                                var auditMessage = $"User {{2}} {{3}} updated the Middle name from {oldMiddleName} to {newMiddleName} on the user profile for {{0}} {{1}}.";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            }
-                            if (!userDetails.LastName.Equals(profile.LastName))
-                            {
-                                //Log Activity
-                                var auditMessage = $"User {{2}} {{3}} updated the Last name from {userDetails.LastName} to {profile.LastName} on the user profile for {{0}} {{1}}.";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", profile);
-                            }
-                        }
+
                     }
                     #endregion
 
@@ -2348,7 +2342,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             if (profile.userLogin.ThruDate == null)
                             {
-                                profile.userLogin.ThruDate = Convert.ToDateTime("12/31/9999");
+                                profile.userLogin.ThruDate = new DateTime(9999, 12, 31);
                             }
 
                             param = new
@@ -2424,6 +2418,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //user update then process for new status
                             if ((profile.userLogin.IsActive != currentOrgStatus.IsActive) || isUserAccessLevelChanged || isUserEffectiveDateChanged)
                             {
+
+
                                 DateTime? statusThruDate = null;
                                 UserUiStatusType statusTypeId = UserUiStatusType.UnDefined;
 
@@ -2494,13 +2490,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         repositoryResponse.ErrorMessage = "Update User Error: Update user status failed.";
                                         throw new Exception(repositoryResponse.ErrorMessage);
                                     }
-                                    else
-                                    {
-                                        if (profile.userLogin.IsActive == true && currentOrgStatus.IsActive == false)
-                                        {
-                                            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{2} {3} activated access for user {0} {1}.", "UpdateUser", profile);
-                                        }
-                                    }
+                                    //else
+                                    //{
+                                    //    if (profile.userLogin.IsActive == true && currentOrgStatus.IsActive == false)
+                                    //    {
+                                    //        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{2} {3} activated access for user {0} {1}.", "UpdateUser", profile);
+                                    //    }
+                                    //}
                                 }
                             }
                         }
@@ -2781,28 +2777,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             int productCount = SaveProductDetails(repository, productBatchData, null, createUserPersonaId, assignUserPersonaId, loggedInUserRealPageId, persona.Organization.RealPageId, null, profile.UserTypeId, userIsActive, aoProductsAvailableForUser);
 
-                            if (userDetails.UserRoleTypeId != profile.UserTypeId)
-                            {
-                                var bpType = string.Empty;
-                                if (profile.UserTypeId == (int)UserRoleType.User && userDetails.UserRoleTypeId == (int)UserRoleType.ExternalUser)
-                                {
-                                    bpType = "External User to Regular User";
-                                }
+                            //if (userDetails.UserRoleTypeId != profile.UserTypeId)
+                            //{
+                            //    var bpType = string.Empty;
+                            //    if (profile.UserTypeId == (int)UserRoleType.User && userDetails.UserRoleTypeId == (int)UserRoleType.ExternalUser)
+                            //    {
+                            //        bpType = "External User to Regular User";
+                            //    }
 
-                                if (profile.UserTypeId == (int)UserRoleType.ExternalUser && userDetails.UserRoleTypeId == (int)UserRoleType.User)
-                                {
-                                    bpType = "Regular User to External User";
-                                }
+                            //    if (profile.UserTypeId == (int)UserRoleType.ExternalUser && userDetails.UserRoleTypeId == (int)UserRoleType.User)
+                            //    {
+                            //        bpType = "Regular User to External User";
+                            //    }
 
-                                if (isUserTypeChangedFromNoEmailToExternal)
-                                {
-                                    bpType = "Regular User (No Email) to External User";
-                                }
+                            //    if (isUserTypeChangedFromNoEmailToExternal)
+                            //    {
+                            //        bpType = "Regular User (No Email) to External User";
+                            //    }
 
-                                var auditMessage = $"The User Type of {{0}} {{1}} was changed from {bpType} by {{2}} {{3}}";
+                            //    var auditMessage = $"The User Type of {{0}} {{1}} was changed from {bpType} by {{2}} {{3}}";
 
-                                LogAuditActivity(LogActivityTypeConstants.PRODUCT_ACCESS, LogActivityCategoryType.ProductAccess, auditMessage, userTypeName, profile);
-                            }
+                            //    LogAuditActivity(LogActivityTypeConstants.PRODUCT_ACCESS, LogActivityCategoryType.ProductAccess, auditMessage, userTypeName, profile);
+                            //}
                         }
 
                         if (!userIsActive)
@@ -2822,35 +2818,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             SaveUserProductBatchData(repository, null, createUserPersonaId, assignUserPersonaId, loggedInUserRealPageId, persona.Organization.RealPageId, null, batchProcessUserType, productBatchData, aoProductsAvailableForUser, profile.UserTypeId);
 
-                            var bpType = string.Empty; //batchProcessUserType == 5 ? "Regular User to RealPage System Administrator" : "RealPage System Administrator to Regular User";
-                            switch (batchProcessUserType)
-                            {
-                                case 5:
-                                    bpType = "Regular User to RealPage System Administrator";
-                                    break;
-                                case 6:
-                                    bpType = "RealPage System Administrator to Regular User";
-                                    break;
-                                case 8:
-                                    bpType = "External User to RealPage System Administrator";
-                                    break;
-                                case 9:
-                                    bpType = "RealPage System Administrator to External User";
-                                    break;
-                                default:
-                                    break;
-                            }
+                            //var bpType = string.Empty; //batchProcessUserType == 5 ? "Regular User to RealPage System Administrator" : "RealPage System Administrator to Regular User";
+                            //switch (batchProcessUserType)
+                            //{
+                            //    case 5:
+                            //        bpType = "Regular User to RealPage System Administrator";
+                            //        break;
+                            //    case 6:
+                            //        bpType = "RealPage System Administrator to Regular User";
+                            //        break;
+                            //    case 8:
+                            //        bpType = "External User to RealPage System Administrator";
+                            //        break;
+                            //    case 9:
+                            //        bpType = "RealPage System Administrator to External User";
+                            //        break;
+                            //    default:
+                            //        break;
+                            //}
 
-                            var auditMessage = $"The User Type of {{0}} {{1}} was changed from {bpType} by {{2}} {{3}}";
-                            if (bpType != string.Empty)
-                            {
-                                LogAuditActivity(LogActivityTypeConstants.PRODUCT_ACCESS, LogActivityCategoryType.ProductAccess, auditMessage, userTypeName, profile);
-                            }
+                            //var auditMessage = $"The User Type of {{0}} {{1}} was changed from {bpType} by {{2}} {{3}}";
+                            //if (bpType != string.Empty)
+                            //{
+                            //    LogAuditActivity(LogActivityTypeConstants.PRODUCT_ACCESS, LogActivityCategoryType.ProductAccess, auditMessage, userTypeName, profile);
+                            //}
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
                         greenBookRole = 0;
-                        
+
                         var gbProdBatch = profile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedLogin);
                         if (gbProdBatch != null)
                         {
@@ -2893,6 +2889,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.Id = 0;
                             repositoryResponse.ErrorMessage = saveProductBatchError;
                         }
+
+
+
                     }
                 }
                 catch (Exception exception)
@@ -2912,6 +2911,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         //Commit and end transaction.
                         repository.UnitOfWork.Commit();
+
+                        AuditUserUpdate(oldProfile, profile);
                     }
                     else
                     {
@@ -2923,7 +2924,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 // Activity logging
                 if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
-                    {
+                {
                     if (greenBookRole != 0 && greenBookRole != existingRoleId && existingRoleId != 0)
                     {
                         if (enterpriseRoles != null)
@@ -5138,6 +5139,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             public Guid EditorPersonaRealPageId { get; set; }
 
             public Guid OrganizationRealPageId { get; set; }
+        }
+
+        #endregion
+
+        #region Audit
+        private void AuditUserUpdate(IProfileDetail oldProfile, IProfileDetail newProfile)
+        {
+            UserAuditDto oldUser = oldProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
+            UserAuditDto newUser = newProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
+
+            if (newProfile.userLogin.IsActive.HasValue && newProfile.userLogin.IsActive == true)
+            {
+                newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
+                oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
+            }
+
+            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile");
+
+            auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
+                                                      x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
+                                                      x.AuditMessage,
+                                                      "UpdateUser",
+                                                      newProfile));
+
+            var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
+
+            auditCustomFieldsResult.ForEach(x => LogAuditActivity(x.LogActivityType,
+                                           LogActivityCategoryType.User,
+                                           x.AuditMessage,
+                                           "UpdateUser",
+                                           newProfile));
         }
 
         #endregion
