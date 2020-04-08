@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
     /// </summary>
     public static class ExtensionMethods
     {
+        #region "Common"
+
         /// <summary>
         /// Remove leading, middle, and trailing spaces from a string
         /// </summary>
@@ -23,6 +26,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 .Where(c => !Char.IsWhiteSpace(c))
                 .ToArray());
         }
+
+        #endregion
+
+        #region "Audit"
 
         /// <summary>
         /// Generate the necessary information for the audit log when update an entity
@@ -101,5 +108,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
             return result;
         }
+
+        /// <summary>
+        /// Get the changes on custom fields for the audit log
+        /// </summary>
+        /// <param name="oldCustomField">Old custom fields</param>
+        /// <param name="newCustomField">New custom fields</param>
+        /// <returns>List of audit records</returns>
+        public static List<AuditRecord> GetCustomFieldsAudit(IList<CustomFieldValue> oldCustomField, IList<CustomFieldValue> newCustomField)
+        {
+            List<AuditRecord> result = new List<AuditRecord>();
+
+            foreach (CustomFieldValue oldCustomFieldValue in oldCustomField)
+            {
+                foreach (CustomFieldValue newCustomFieldValue in newCustomField)
+                {
+                    if (oldCustomFieldValue.FieldId == newCustomFieldValue.FieldId)
+                    {
+                        if (oldCustomFieldValue.Value != newCustomFieldValue.Value)
+                        {
+
+                            AuditRecord auditRecord = new AuditRecord();
+
+                            auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                                                  oldCustomFieldValue.Name,
+                                                  " information from ", string.IsNullOrEmpty(oldCustomFieldValue.Value) ? "a blank value" : oldCustomFieldValue.Value,
+                                                  " to ", string.IsNullOrEmpty(newCustomFieldValue.Value) ? "a blank value" : newCustomFieldValue.Value,
+                                                  " on the user profile",
+                                                  " for {0} {1}.");
+
+                            result.Add(auditRecord);
+                        }
+                    }
+                }
+            }
+            
+            List<CustomFieldValue> newEnabledFields = newCustomField.Where(n => !oldCustomField.Any(o => o.FieldId == n.FieldId)).ToList();
+            
+            foreach (CustomFieldValue customField in newEnabledFields)
+            {
+                if (string.IsNullOrEmpty(customField.Value) == false)
+                {
+                    AuditRecord auditRecord = new AuditRecord();
+
+                    auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                                          customField.Name,
+                                          " information from a blank value",
+                                          " to ", customField.Value,
+                                          " on the user profile",
+                                          " for {0} {1}.");
+
+                    result.Add(auditRecord);
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
+
     }
 }
+
