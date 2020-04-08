@@ -25,6 +25,8 @@
             s.productSwitchConfigMap = {};
             s.productRadioConfigMap = {};
             s.productDependencyMap = {};
+            s.productTabsMap = {};
+            s.productActiveTabMap = {};
 
             s.productControlsList = {
                 products: []
@@ -178,6 +180,39 @@
             }
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return controlId;
+        };
+
+         p.getProductAllTabs = function (product) {
+            var s = this,
+                productTabsList;
+
+            if (s.productTabsMap['product' + product] !== undefined) {
+                productTabsList = s.productTabsMap['product' + product].allTabs;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return productTabsList;
+        };
+
+        p.getProductInitialTabs = function (product) {
+            var s = this,
+                productTabsList;
+
+            if (s.productTabsMap['product' + product] !== undefined) {
+                productTabsList = s.productTabsMap['product' + product].intialTabs;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return productTabsList;
+        };
+
+        p.getProductActiveTab = function (product) {
+            var s = this,
+                activeTab;
+
+            if (s.productActiveTabMap['product' + product] !== undefined) {
+                activeTab = s.productActiveTabMap['product' + product].activeTab;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return activeTab;
         };
         // Setters
 
@@ -467,6 +502,23 @@
 
             s.productDependencyMap['product' + key + name] = {
                 controlId: controlId
+            };
+        };
+
+         p.renderProductTabsMap = function (key, allTabs, initTab) {
+            var s = this;
+
+            s.productTabsMap['product' + key] = {
+                allTabs: allTabs,
+                intialTabs: initTab
+            };
+        };
+
+        p.renderProductActiveTabMap = function (key, name) {
+            var s = this;
+
+            s.productActiveTabMap['product' + key] = {
+                activeTab: name
             };
         };
 

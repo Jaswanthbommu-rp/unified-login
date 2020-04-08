@@ -3,16 +3,19 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, syncMgr, roleSvc) {
+    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, syncMgr, roleSvc, dependencySvc, tabsModel) {
         var vm = this,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
             roleGridPagination = gridPaginationModel(),
-            genericDataErrorReason = "";
+            genericDataErrorReason = "",
+            assignedRoleId = 0,
+            roleRights;
 
         vm.init = function () {
             vm.rolesGrid = rolesGrid;
-
+            vm.assignedRoleId = 0;
+            vm.roleRights = "";
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
 
@@ -46,8 +49,19 @@
         };
 
         vm.updateRoleRecords = function (record) {
-            logc("record",record);
+            logc("record", record);
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
+
+            if (record.isAssigned) {
+                if (record.userRights !== undefined) {
+                    vm.roleRights = record.userRights;
+                }
+                var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
+                logc("dependencyControlId", dependencyControlId);
+                if (dependencyControlId > 0) {
+                    vm.loadProductControlDependencyData(dependencyControlId);
+                }
+            }
         };
 
         vm.loadData = function () {
@@ -74,6 +88,13 @@
             }
         };
 
+        vm.loadProductControlDependencyData = function (controlId) {
+            var params = {
+                controlId: controlId
+            };
+            vm.dataCntrlDependencyReq = dependencySvc.get(params, vm.setControlDependencyData);
+        };
+
         vm.setRolesData = function (resp) {
             rolesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
@@ -93,11 +114,39 @@
 
         };
 
+        vm.setControlDependencyData = function (resp) {
+            logc("setControlDependencyData", resp.data);
+            logc("vm.roleRights", vm.roleRights);
+            if (resp.data && resp.data.length > 0 && vm.roleRights.length > 0) {
+                var matchFound = false;
+                vm.roleRights.forEach(function (right) {
+                    var record = resp.data.filter(function (data) {
+                        return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
+                    })[0];
+
+                    if (record !== undefined && record) {
+                        matchFound = true;
+                    }
+                    logc("setControlDependencyData matchFound", matchFound);
+                });
+
+                var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
+                if (matchFound) {
+                    tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                }
+                logc("setControlDependencyData tabs", tabs, syncMgr);
+                var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+                tabsModel.setTabs(tabs);
+                tabsModel.setTabMenuData(tabs);
+                tabsModel.activateTab(activeTab).initActiveTab();
+            }
+        };
 
         vm.loadGridData = function (productId) {
             //var productId = $scope.$parent.productId;
             rolesGrid.busy(false);
             var roleData = syncMgr.getProductRolesData(productId);
+
             if (roleData && roleData.length > 0) {
 
                 if (vm.hasViewOnlyAccess()) {
@@ -115,7 +164,20 @@
                         radname: "role",
                         productId: productId
                     });
+
+                    if (item.isAssigned) {
+                        vm.assignedRoleId = item.roleId;
+                        if (item.userRights !== undefined) {
+                            vm.roleRights = item.userRights;
+                        }
+                    }
                 });
+
+                var dependencyControlId = syncMgr.getProductDependencyControlId(productId, 'role');
+                logc("dependencyControlId", dependencyControlId);
+                if (dependencyControlId > 0) {
+                    vm.loadProductControlDependencyData(dependencyControlId);
+                }
 
                 roleGridPagination.setData(roleData).goToPage({
                     number: 0
@@ -146,6 +208,10 @@
             if (vm.dataRoleReq) {
                 vm.dataRoleReq.$cancelRequest();
             }
+
+            if (vm.dataCntrlDependencyReq) {
+                vm.dataCntrlDependencyReq.$cancelRequest();
+            }
             rolesGrid.destroy();
             rolesGridTransform.destroy();
             roleGridPagination.destroy();
@@ -175,6 +241,8 @@
             "routeSecurity",
             "productDataSyncManager",
             "productRolesSvc",
+            "productControlDependencySvc",
+            "productPanelTabsModel",
             ProductRolesGridCtrl
         ]);
 })(angular);
