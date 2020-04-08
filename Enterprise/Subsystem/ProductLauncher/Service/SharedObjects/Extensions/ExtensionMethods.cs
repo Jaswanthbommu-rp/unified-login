@@ -27,6 +27,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 .ToArray());
         }
 
+        /// <summary>
+        /// Validate a boolean value state 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>A boolean value</returns>
+        public static bool GetBooleanValue(this bool? value)
+        {
+            if (value.HasValue && value.Value == true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region "Audit"
@@ -142,9 +157,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                     }
                 }
             }
-            
+
             List<CustomFieldValue> newEnabledFields = newCustomField.Where(n => !oldCustomField.Any(o => o.FieldId == n.FieldId)).ToList();
-            
+
             foreach (CustomFieldValue customField in newEnabledFields)
             {
                 if (string.IsNullOrEmpty(customField.Value) == false)
