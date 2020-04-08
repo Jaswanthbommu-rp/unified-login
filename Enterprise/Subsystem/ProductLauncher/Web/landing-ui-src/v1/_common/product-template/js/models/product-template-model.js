@@ -30,10 +30,10 @@
             return false;
         };
 
-         p.setTemplateProducts = function (data) {
+         p.setTemplateProducts = function (products) {
             var s = this;
 
-            data.products.forEach(function (item) {
+            products.data.forEach(function (item) {
                 logc(item);
                 s.productTemplates.push(item.productId);
             });

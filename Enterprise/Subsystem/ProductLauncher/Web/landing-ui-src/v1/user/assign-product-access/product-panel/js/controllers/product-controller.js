@@ -11,15 +11,14 @@
             tabsCnfData = [],
             gridconfigs = [],
             radioconfigs = [],
-            switchconfigs = [],
-            allTabs = [];
+            switchconfigs = [];
 
         vm.init = function () {
             vm.view = view;
             vm.security = security;
             vm.disableContent = false;
             vm.activeTab = "";
-            vm.allTabs = [];
+
             vm.productId = 0;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
@@ -94,17 +93,15 @@
             vm.tabsList = tabs.tabsList;
 logc("vm.tabsList", vm.tabsList);
             tabsModel.setTabMenuData(tabs.tabsList);
-
             tabsModel.activateTab(vm.activeTab).initActiveTab();
-            //tabsModel.initActiveTab();
-            //then set grids
 
             panelModel.setPropertyGridActive(true);
             panelModel.setRoleGridActive(true);
         };
 
         vm.getProductTabsData = function (data) {
-            var tabs = [],
+            var allTabs = [],
+                initialTabs = [],
                 i = 0;
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
@@ -129,15 +126,17 @@ logc("vm.tabsList", vm.tabsList);
                                 isActive: activeTab,
                                 incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.replace(/ /g, "").toLowerCase() + ".html"
                             };
-                            vm.allTabs.push(tab);
+                            allTabs.push(tab);
                             if (!hideTab) {
-                                tabs.push(tab);
+                                initialTabs.push(tab);
                             }
                         });
                     }
                 });
+                productModel.renderProductTabsMap($scope.productId, allTabs, initialTabs);
+                productModel.renderProductActiveTabMap($scope.productId, vm.activeTab);
             }
-            return tabs;
+            return allTabs;
         };
 
         vm.setTabsConfigData = function (data) {
@@ -164,7 +163,7 @@ logc("vm.tabsList", vm.tabsList);
                                         var cnfg = configData.getGridConfigTypes(tab, tabName);
                                         var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
                                         productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
-                                        vm.setProductDependency(tab);
+                                        vm.setProductDependency(tab, productId);
                                     }
 
                                     //Check and Set any Aside List Grid
@@ -192,7 +191,7 @@ logc("vm.tabsList", vm.tabsList);
             }
         };
 
-        vm.setProductDependency = function (gridData) {
+        vm.setProductDependency = function (gridData, productId) {
             // logc("griddata--", gridData,gridData.Type);
             if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid") {
                 gridData.controls.forEach(function (item) {

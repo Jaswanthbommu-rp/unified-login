@@ -47,7 +47,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Is the Default role assigned 
 		/// </summary>
 		public string DefaultRole { get; set; }
-
+		/// <summary>
+		/// Is the role assigned to the user in the product
+		/// </summary>
+		public bool IsAssigned { get; set; }
 		/// <summary>
 		/// Role's Rights list
 		/// </summary>

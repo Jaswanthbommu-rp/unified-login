@@ -21,3 +21,4 @@
 {{{ include("services/properties-data.js") }}}
 {{{ include("services/rights-data.js") }}}
 {{{ include("services/controls-data.js") }}}
+{{{ include("services/product-control-dependency-data.js") }}}
