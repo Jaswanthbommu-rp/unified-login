@@ -53,10 +53,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	            case ProductEnum.ClickPay:
 		            ClickPayApiSecurity(httpClient);
 		            break;
-			}
+                case ProductEnum.SeniorLeadManagement:
+                    SeniorLeadManagementApiSecurity(httpClient);
+                    break;
+            }
         }
 
-	    private void ClickPayApiSecurity(HttpClient httpClient)
+        private void SeniorLeadManagementApiSecurity(HttpClient httpClient)
+        {            
+            string apiKey = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIKEY").Value;
+
+            httpClient.DefaultRequestHeaders.Clear();
+            httpClient.DefaultRequestHeaders.Add("X-ExternalClientId", apiKey);
+        }
+
+        private void ClickPayApiSecurity(HttpClient httpClient)
 	    {
 			string apiUser = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIUSERNAME").Value;
 		    string apiPassword = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;

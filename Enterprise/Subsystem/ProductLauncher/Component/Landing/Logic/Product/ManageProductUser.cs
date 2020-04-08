@@ -282,7 +282,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
 							productUser.AssignUserPersonaId, productPropertiesRoles);
 						break;
-					default:
+                    case ProductEnum.SeniorLeadManagement:
+                        product = new SeniorLeadManagementProduct(productUser.ProductName);
+                        productPropertiesRoles =
+                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                        result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                            productUser.AssignUserPersonaId, productPropertiesRoles);
+                        break;
+                    default:
 						result = "Product code does not exist.";
 						break;
 				}
@@ -556,7 +563,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						product = new ClickPayProduct(productUser.ProductName);
 						result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
 						break;
-					default:
+                    case ProductEnum.SeniorLeadManagement:
+                        product = new SeniorLeadManagementProduct(productUser.ProductName);
+                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                        break;
+                    default:
 						result = "Product code does not exist.";
 						break;
 				}
@@ -772,7 +783,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
 						result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
 						break;
-					default:
+                    case ProductEnum.SeniorLeadManagement:
+                        product = new SeniorLeadManagementProduct(batchRecord.ProductName);
+                        productPropertiesRoles =
+                            GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
+                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                        break;
+                    default:
 						result = "Product code does not exist.";
 						break;
 				}
@@ -3438,5 +3455,89 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return productLogic.ChangeProductUserType(rpList, batchProcessType);
 		}
 	}
-	#endregion
+    #endregion
+
+    #region Senior Lead Management
+    /// <summary>
+    /// A 'Concrete implementation for Deposit Alternative
+    /// </summary>
+    public class SeniorLeadManagementProduct : ProductBase, IProduct
+    {
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        /// <param name="productType">Identify products by id</param>
+        public SeniorLeadManagementProduct(ProductEnum productType) : base((int)productType, null)
+        {
+        }
+
+        /// <summary>
+        /// Create Senior Lead Management Product user
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">Senior Lead Management Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        {
+            var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+
+            // Create-update user
+            if (rpList.IsAssigned)
+            {
+                return productLogic.CreateUpdateProductUser(rpList);
+            }
+
+            // Unassign User 
+            return productLogic.UnassignUser();
+        }
+
+        /// <summary>
+        /// Update Product User Profile
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">Senior Lead Management Product Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+        {
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+
+            return productLogic.UpdateProductUserProfile();
+        }
+
+        /// <summary>
+        /// Change Product User Type from Admin to Regular or Regular to Admin
+        /// </summary>
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="batchProcessType">Batch Process Type</param>
+        /// <param name="rolePropList">Deposit Alternative Product Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
+        {
+            var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+
+            return productLogic.ChangeProductUserType(rpList, batchProcessType);
+        }
+    }
+    #endregion
 }

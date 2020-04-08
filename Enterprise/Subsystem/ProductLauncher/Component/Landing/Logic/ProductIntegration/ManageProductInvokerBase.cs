@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			_dataCollector = new DataCollector();
 			Init(productType, editorPersonaId, subjectPersonaId, userClaims);
-		}
+        }
 		/// <summary>
 		///  Used for unit testing
 		/// </summary>
@@ -127,7 +127,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
-				var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
+                bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+                if(isCompanyIdRequiredToQuery)
+                    baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+
+                var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
 
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}");
@@ -172,10 +176,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		/// <summary>
-		/// Returns Product Properties
-		/// </summary> 
-		public virtual ListResponse GetProductProperties(RequestParameter dataFilter, string baseUrlAndQuery = null)
+        /// <summary>
+		/// Returns Product Rights for a Role
+		/// </summary>
+		public virtual ListResponse GetProductRightsForRole(RequestParameter dataFilter, long roleId, string baseUrlAndQuery = null)
+        {
+            try
+            {
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.GetProductRightsForRole - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+
+                if (string.IsNullOrEmpty(baseUrlAndQuery))
+                    baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRightEndpoint);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, roleId);
+
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.GetProductRightsForRole - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+
+                
+                var rightList = GetResultFromApi<IList<ProductRight>>(baseUrlAndQuery);
+
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.GetProductRightsForRole - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {rightList?.Count}");
+
+                if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
+                {
+                    WriteToDiagnosticLog(
+                        $"ManageProductInvokerBase.GetProductRightsForRole - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+                    var user = GetProductUser();
+
+                    // map user roles
+                    if (user != null)
+                    {
+                        WriteToDiagnosticLog(
+                            $"ManageProductInvokerBase.GetProductRightsForRole - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+
+                        var userRoles = user.Roles;
+                        MergeUserRights(rightList, userRoles);
+                    }
+                }
+
+                if (rightList == null)
+                    throw new Exception("Null Right List.");
+
+                return new ListResponse
+                {
+                    Records = rightList.Cast<object>().ToList(),
+                    TotalRows = rightList.Count,
+                    RowsPerPage = 9999,
+                    ErrorReason = string.Empty,
+                    TotalPages = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"ManageProductInvokerBase.GetProductRightsForRole - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+                return new ListResponse()
+                {
+                    ErrorReason = ex.Message,
+                    IsError = true
+                };
+            }
+        }
+
+
+        /// <summary>
+        /// Returns Product Properties
+        /// </summary> 
+        public virtual ListResponse GetProductProperties(RequestParameter dataFilter, string baseUrlAndQuery = null)
 		{
 			try
 			{
@@ -191,9 +259,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
-				var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
+				var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);                
 
-				WriteToDiagnosticLog(
+                WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {propertyList?.Count}");
 
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
@@ -529,11 +597,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping.");
 
-				// map product user in green book
-				_dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
+                // map product user in green book
+                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
 
-				// OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
-				CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
+                // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
+                CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
 
 				// activity logging
 				ProductActivityLogger.WriteCreateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
@@ -847,9 +915,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 		protected virtual IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups userRolePropertiesRegion)
 		{
-			// Map user info
-			var productUser = new IntegrationProductUser
-			{
+            // Map user info
+            var productUser = new IntegrationProductUser
+            {                
 				LoginName = string.IsNullOrEmpty(SubjectUserDetails.LoginName) ? SubjectUserDetails.LoginName : GetUniqueProductLogin(SubjectUserDetails.LoginName),
 				CompanyId = CompanyInstanceSourceId,
 				FirstName = SubjectUserDetails.FirstName,
@@ -969,7 +1037,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 		}
-		private void MergeUserProperties(IList<ProductProperties> propertyList, List<string> userProperties)
+
+        private void MergeUserRights(IList<ProductRight> rightList, List<string> userRights)
+        {
+            foreach (var right in rightList)
+            {
+                if (userRights.Contains(right.GetRightId))
+                {
+                    right.IsAssigned = true;
+                }
+            }
+        }
+        private void MergeUserProperties(IList<ProductProperties> propertyList, List<string> userProperties)
 		{
 			if (propertyList != null && userProperties != null)
 			{

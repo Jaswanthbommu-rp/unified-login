@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
 		]
 		[ProductAllowed(ProductEnum.LeadManagement, ProductEnum.LeadAnalytics, ProductEnum.PortfolioManagement,
-			ProductEnum.ClickPay, ProductEnum.DepositAlternative)]
+			ProductEnum.ClickPay, ProductEnum.DepositAlternative, ProductEnum.SeniorLeadManagement)]
 		[Route("products/roles")]
 		[HttpGet]
 		public HttpResponseMessage GetRoles(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
@@ -74,19 +74,78 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.Forbidden, result);
 		}
 
-		/// <summary>
-		/// Returns properties
+        /// <summary>
+		/// Returns Rights for given roleid and user
 		/// </summary>
 		/// <param name="editorPersonaId">Editor user persona Id</param>
 		/// <param name="subjectPersonaId">Subject user persona id</param>
 		/// <param name="productType">Product Type</param>
+        /// <param name="roleId">Role unique Id</param>
 		/// <param name="dataFilter">A dataFilter used to filter the roles.</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
+             "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
+        ]
+        [ProductAllowed(ProductEnum.LeadManagement, ProductEnum.LeadAnalytics, ProductEnum.PortfolioManagement,
+            ProductEnum.ClickPay, ProductEnum.DepositAlternative, ProductEnum.SeniorLeadManagement)]
+        [Route("products/role/rights")]
+        [HttpGet]
+        public HttpResponseMessage GetRightsForRole(ProductEnum productType, long editorPersonaId, long subjectPersonaId, long roleId,
+            [FromUri] RequestParameter dataFilter)
+        {
+            ListResponse result;
+            try
+            {
+                if (editorPersonaId == 0)
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+                if (roleId == 0)
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "roleId not supplied.");
+
+                if (_realpageUserId == Guid.Empty)
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+
+                var productLogic =
+                    ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
+                result = productLogic.GetProductRightsForRole(dataFilter, roleId);
+
+                if (result.IsError)
+                    Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException is BlueBookException)
+                {
+                    result = new ListResponse { IsError = true, ErrorReason = ex.InnerException.Message };
+                }
+                else
+                {
+                    result = new ListResponse { IsError = true, ErrorReason = "Internal server error." };
+                }
+            }
+
+            return Request.CreateResponse(HttpStatusCode.Forbidden, result);
+        }
+
+
+        /// <summary>
+        /// Returns properties
+        /// </summary>
+        /// <param name="editorPersonaId">Editor user persona Id</param>
+        /// <param name="subjectPersonaId">Subject user persona id</param>
+        /// <param name="productType">Product Type</param>
+        /// <param name="dataFilter">A dataFilter used to filter the roles.</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[ProductAllowed(ProductEnum.LeadAnalytics, ProductEnum.LeadManagement, ProductEnum.PortfolioManagement, ProductEnum.DepositAlternative)]
+		[ProductAllowed(ProductEnum.LeadAnalytics, ProductEnum.LeadManagement, ProductEnum.PortfolioManagement, ProductEnum.DepositAlternative
+            , ProductEnum.SeniorLeadManagement)]
 		[Route("products/properties")]
 		[HttpGet]
 		public HttpResponseMessage GetProperties(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
