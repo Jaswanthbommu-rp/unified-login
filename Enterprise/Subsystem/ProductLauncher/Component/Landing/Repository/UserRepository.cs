@@ -2103,6 +2103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             // get the users existing UnifiedLogin role
             long existingRoleId = userRoleRightRepository.GetRoleIdByPersona(assignUserPersonaId, (int)ProductEnum.UnifiedLogin);
+
             if (profile.userLogin.IsActive.HasValue && profile.userLogin.IsActive == true)
             {
                 userIsActive = true;
@@ -2270,48 +2271,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
             });
 
-            //Get Current Notification Email before update
-            IList<CommonAddress> commonAddressList = contactMechanismRepository.ListContactMechanismForPerson(profile.userLogin.RealPageId, "Email Notification");
-            CommonAddress ca = (from a in commonAddressList
-                                where a.contactMechanismUsageType != null
-                                select a).FirstOrDefault();
-            userDetails.Email = ca?.AddressString;
-
-            UpdateUserProfileEntity updateUserProfileEntity = new UpdateUserProfileEntity();
-
-            updateUserProfileEntity.LoggedInUserRealPageId = loggedInUserRealPageId;
-            updateUserProfileEntity.NewProfile = profile;
-            updateUserProfileEntity.OldProfile = oldProfile;
-            updateUserProfileEntity.CreateUserPersonaId = createUserPersonaId;
-            updateUserProfileEntity.GreenBookRole = greenBookRole;
-            updateUserProfileEntity.SaveProductBatchError = saveProductBatchError;
-            updateUserProfileEntity.ContactMechanismId = contactMechanismId;
-            updateUserProfileEntity.UserIsActive = userIsActive;
-            updateUserProfileEntity.IsFeatureUser = isFeatureUser;
-            updateUserProfileEntity.IsCurrentOrgThePrimaryOrg = isCurrentOrgThePrimaryOrg;
-            updateUserProfileEntity.IdentityProviderTypeList = identityProviderTypeList;
-            updateUserProfileEntity.ProductBatchData = productBatchData;
-            updateUserProfileEntity.EmailUsageType = emailUsageType;
-            updateUserProfileEntity.OrganizationExternalUser = organizationExternalUser;
-            updateUserProfileEntity.UserLoginOnly = userLoginOnly;
-            updateUserProfileEntity.UserPersonaOrganizationList = userPersonaOrganizationList;
-            updateUserProfileEntity.Persona = persona;
-            updateUserProfileEntity.CurrentOrgPartyId = currentOrgPartyId;
-            updateUserProfileEntity.AssignUserPersonaId = assignUserPersonaId;
-            updateUserProfileEntity.ExistingRoleId = existingRoleId;
-            updateUserProfileEntity.CurrentPrimaryOrgStatus = currentPrimaryOrgStatus;
-            updateUserProfileEntity.CurrentOrgStatus = currentOrgStatus;
-            updateUserProfileEntity.PersonaList = personaList;
-            updateUserProfileEntity.AoProductsAvailableForUser = aoProductsAvailableForUser;
-            updateUserProfileEntity.UserDetails = userDetails;
-            updateUserProfileEntity.ProfileChanged = profileChanged;
-            updateUserProfileEntity.LoginNamechanged = loginNamechanged;
-            updateUserProfileEntity.BatchProcessUserType = batchProcessUserType;
-            updateUserProfileEntity.UserTypeChanged = userTypeChanged;
-            updateUserProfileEntity.IsUserTypeChangedFromNoEmailToRegular = isUserTypeChangedFromNoEmailToRegular;
-            updateUserProfileEntity.UserTypeChangedToFromExternal = userTypeChangedToFromExternal;
-            updateUserProfileEntity.CurrentOrg = currentOrg;
-            updateUserProfileEntity.EditorAssignedPersonaList = editorAssignedPersonaList;
+            UpdateUserProfileEntity updateUserProfileEntity = new UpdateUserProfileEntity
+            {
+                LoggedInUserRealPageId = loggedInUserRealPageId,
+                NewProfile = profile,
+                OldProfile = oldProfile,
+                CreateUserPersonaId = createUserPersonaId,
+                GreenBookRole = greenBookRole,
+                SaveProductBatchError = saveProductBatchError,
+                ContactMechanismId = contactMechanismId,
+                UserIsActive = userIsActive, //We can create a Method to obtain the userActive boolean value
+                IsFeatureUser = isFeatureUser,
+                IsCurrentOrgThePrimaryOrg = isCurrentOrgThePrimaryOrg,
+                IdentityProviderTypeList = identityProviderTypeList,
+                ProductBatchData = productBatchData,
+                EmailUsageType = emailUsageType,
+                OrganizationExternalUser = organizationExternalUser,
+                UserLoginOnly = userLoginOnly,
+                UserPersonaOrganizationList = userPersonaOrganizationList,
+                Persona = persona, //This object we can get it from the profile object
+                CurrentOrgPartyId = currentOrgPartyId,
+                AssignUserPersonaId = assignUserPersonaId,
+                ExistingRoleId = existingRoleId,
+                CurrentPrimaryOrgStatus = currentPrimaryOrgStatus,
+                CurrentOrgStatus = currentOrgStatus,
+                PersonaList = personaList,
+                AoProductsAvailableForUser = aoProductsAvailableForUser,
+                UserDetails = userDetails,
+                ProfileChanged = profileChanged,
+                LoginNamechanged = loginNamechanged,
+                BatchProcessUserType = batchProcessUserType,
+                UserTypeChanged = userTypeChanged,
+                IsUserTypeChangedFromNoEmailToRegular = isUserTypeChangedFromNoEmailToRegular,
+                UserTypeChangedToFromExternal = userTypeChangedToFromExternal,
+                CurrentOrg = currentOrg,
+                EditorAssignedPersonaList = editorAssignedPersonaList
+            };
 
             return UpdateUserDatabase(updateUserProfileEntity);
         }
@@ -5102,6 +5097,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// Validate if the updated user is Active
+        /// </summary>
+        /// <param name="value">IProfileDetail object</param>
+        /// <returns>A Boolean</returns>
+        private bool GetIsUserActive(bool? value)
+        {
+            //if (profile.userLogin.IsActive.HasValue && profile.userLogin.IsActive == true)
+            if (value.HasValue && value.Value == true)
+            {
+                return true;
+            }
+            return false;
+        }
         #endregion
 
         #region Create UserLoginPersona and Persona
