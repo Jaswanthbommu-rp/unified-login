@@ -225,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.UnifiedLogin:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-					result = manageUnifiedLogin.GetUserRoles(editorPersonaId, userPersonaId, partyId);
+					result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
 					break;
 				default:
 					break;
@@ -243,6 +243,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.OneSite:
 					IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
 					result = manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
+					break;
+				case (int)ProductEnum.UnifiedLogin:
+					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+					result = manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
 					break;
 				default:
 					break;

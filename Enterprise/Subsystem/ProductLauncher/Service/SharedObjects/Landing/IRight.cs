@@ -24,5 +24,13 @@
 		/// Right Value TypeId
 		/// </summary>
 		int RightValueTypeId { get; set; }
+		/// <summary>
+		/// THe id of the right
+		/// </summary>
+		int ID { get; set; }
+		/// <summary>
+		/// The description of the right
+		/// </summary>
+		string Description { get; set; }
 	}
 }
