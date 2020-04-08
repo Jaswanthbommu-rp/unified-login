@@ -146,7 +146,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)
 					{
 						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(userClaim);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+                        propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
+                        rolesResponse = manageUnifiedAmenities.GetRoles(createUserPersonaId, personaId, product.OrganizationPartyId);
+
+                        productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadManagement)
 					{
