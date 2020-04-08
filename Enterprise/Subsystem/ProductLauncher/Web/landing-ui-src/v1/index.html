@@ -23,13 +23,11 @@
 
 <body class="rp-app-wrap" ng-controller="AppCtrl as app" ng-show="app.ready" ng-class="app.getState()">
 
-    <omnibar-shell product-code="UL">
+    <omnibar-shell product-code="UL" logout-url="/home/logout">
 
         <omnibar-scope
               slot="scope"
               product="RealPage Unified Platform"
-              logout-url="logout"
-              follow-logout-href="false"
               ng-cloak
         ></omnibar-scope>
 
