@@ -144,8 +144,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						WriteToDiagnosticLog(
 							$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-						var userRoles = user.RoleList;
-						MergeUserRoles(roleList, userRoles);
+                        var userRoles = (ProductType == ProductEnum.PortfolioManagement) ? user.RoleList : user.Roles;
+                        MergeUserRoles(roleList, userRoles);
 					}
 				}
 
