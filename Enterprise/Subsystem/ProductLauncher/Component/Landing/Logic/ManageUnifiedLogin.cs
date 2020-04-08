@@ -903,6 +903,77 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Returns Roles for User (User Access Groups in UserManagement)
+        /// </summary>
+        public ListResponse GetUserRolesWithRights(long editorPersonaId, long userPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UserManagement - ManageUnifiedLogin.GetUserRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UserManagement - ManageUnifiedLogin.GetUserRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UserManagement product
+                WriteToDiagnosticLog(
+                   $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+
+                ProductRepository pr = new ProductRepository();
+                UserRoleRightRepository urr = new UserRoleRightRepository();
+                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                var gbAllRoles = urr.GetAllRoleRights(partyId, productIdList, productId);
+
+                gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
+
+                WriteToDiagnosticLog(
+                    $"UserManagement - ManageUnifiedLogin.GetUserRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+
+                if (userPersonaId != 0) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog(
+                         $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    response = SetUserSelectedRole(gbAllRoles, userPersonaId);
+                    WriteToDiagnosticLog(
+                           $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+                    // For new user, set a default role - User Role (Name = BASIC END USER)
+                    if (gbAllRoles != null)
+                    {
+                        gbAllRoles.FirstOrDefault(s => s.DefaultRole == "True").IsAssigned = true;
+                    }
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRoles.Cast<object>().ToList(),
+                        TotalRows = gbAllRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetUserRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
         /// Returns all Companies in Green Book
         /// </summary>
         /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
@@ -1332,6 +1403,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     ProductRole selrole = (from a in allRoles
                                            where a.ID == role.RoleID.ToString()
+                                           select a).FirstOrDefault();
+                    if (selrole != null)
+                    {
+                        selrole.IsAssigned = true;
+                    }
+                }
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        private ListResponse SetUserSelectedRole(IList<UserRoleRights> allRoles, long userPersonaId)
+        {
+
+            // get roles from DB for UnifiedLogin product
+            WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+
+            // if a user record exists
+
+            foreach (var role in roleList)
+            {
+                if (allRoles.Any(a => a.RoleId.ToString() == role.RoleID.ToString()))
+                {
+                    UserRoleRights selrole = (from a in allRoles
+                                           where a.RoleId.ToString() == role.RoleID.ToString()
                                            select a).FirstOrDefault();
                     if (selrole != null)
                     {

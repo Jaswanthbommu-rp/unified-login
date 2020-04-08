@@ -11,14 +11,15 @@
             tabsCnfData = [],
             gridconfigs = [],
             radioconfigs = [],
-            switchconfigs = [];
+            switchconfigs = [],
+            allTabs = [];
 
         vm.init = function () {
             vm.view = view;
             vm.security = security;
             vm.disableContent = false;
             vm.activeTab = "";
-
+            vm.allTabs = [];
             vm.productId = 0;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
@@ -91,11 +92,11 @@
             var tabs = tabsModel.setTabs(tabData);
 
             vm.tabsList = tabs.tabsList;
-
+logc("vm.tabsList", vm.tabsList);
             tabsModel.setTabMenuData(tabs.tabsList);
 
-            tabsModel.activateTab(vm.activeTab);
-            tabsModel.initActiveTab();
+            tabsModel.activateTab(vm.activeTab).initActiveTab();
+            //tabsModel.initActiveTab();
             //then set grids
 
             panelModel.setPropertyGridActive(true);
@@ -110,12 +111,15 @@
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             var activeTab = false;
-                            if (tabGrp.attributes !== null) {
+                            var hideTab = false;
+                            if (tabGrp.attributes !== null && tabGrp.type === "Tab") {
                                 tabGrp.attributes.forEach(function (item) {
-                                    logc("attributes", item);
                                     if (item.key === "Default" && item.value === "True") {
                                         vm.activeTab = tabGrp.displayName.toLowerCase();
                                         activeTab = true;
+                                    }
+                                    if (item.key === "Hide" && item.value === "True") {
+                                       hideTab = true;
                                     }
                                 });
                             }
@@ -125,8 +129,10 @@
                                 isActive: activeTab,
                                 incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.replace(/ /g, "").toLowerCase() + ".html"
                             };
-
-                            tabs.push(tab);
+                            vm.allTabs.push(tab);
+                            if (!hideTab) {
+                                tabs.push(tab);
+                            }
                         });
                     }
                 });
@@ -146,7 +152,6 @@
                                 if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
                                     //Check and Set Grid Config Types
                                     var showSelectAll = false;
-                                    logc("testtabtab", tab);
                                     if (tab.attributes !== null) {
                                         tab.attributes.forEach(function (item) {
                                             logc("attributes", item);
@@ -159,6 +164,7 @@
                                         var cnfg = configData.getGridConfigTypes(tab, tabName);
                                         var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
                                         productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
+                                        vm.setProductDependency(tab);
                                     }
 
                                     //Check and Set any Aside List Grid
@@ -168,6 +174,7 @@
                                         if (listAsideconfigs !== undefined &&
                                             listAsideconfigs.config.length > 0) {
                                             var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, showSelectAll);
+                                        logc("asideGridConfig", asideGridConfig);
                                             productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
                                         }
                                     }
@@ -183,7 +190,17 @@
                     }
                 });
             }
+        };
 
+        vm.setProductDependency = function (gridData) {
+            // logc("griddata--", gridData,gridData.Type);
+            if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid") {
+                gridData.controls.forEach(function (item) {
+                    if (item.dependency !== null && item.dependency) {
+                        productModel.renderProductDependencyMap(productId, item.displayName.toLowerCase(), item.id);
+                    }
+                });
+            }
         };
 
         vm.getGridConfig = function (data, showSelectAll) {

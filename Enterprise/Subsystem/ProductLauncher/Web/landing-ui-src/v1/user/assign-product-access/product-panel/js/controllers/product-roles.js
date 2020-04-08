@@ -46,6 +46,7 @@
         };
 
         vm.updateRoleRecords = function (record) {
+            logc("record",record);
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
         };
 

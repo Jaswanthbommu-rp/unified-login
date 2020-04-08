@@ -79,5 +79,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         ListResponse CloneRightsToRole(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove);
 
+        /// <summary>
+        /// Returns Roles with assigned rights for User (User Access Groups in UserManagement)
+        /// </summary>
+        ListResponse GetUserRolesWithRights(long editorPersonaId, long userPersonaId, long partyId);
+
     }
 }

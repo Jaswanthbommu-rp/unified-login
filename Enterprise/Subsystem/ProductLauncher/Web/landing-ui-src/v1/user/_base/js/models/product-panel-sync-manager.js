@@ -24,6 +24,7 @@
             s.productAsideGridConfigMap = {};
             s.productSwitchConfigMap = {};
             s.productRadioConfigMap = {};
+            s.productDependencyMap = {};
 
             s.productControlsList = {
                 products: []
@@ -166,6 +167,17 @@
             }
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
+        };
+
+        p.getProductDependencyControlId = function (product, name) {
+            var s = this,
+                controlId = 0;
+
+            if (s.productDependencyMap['product' + product + name] !== undefined) {
+                controlId = s.productDependencyMap['product' + product + name].controlId;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return controlId;
         };
         // Setters
 
@@ -448,6 +460,14 @@
                     };
                 });
             }
+        };
+
+        p.renderProductDependencyMap = function (key, name, controlId) {
+            var s = this;
+
+            s.productDependencyMap['product' + key + name] = {
+                controlId: controlId
+            };
         };
 
         p.renderPropertyMap = function (key) {
