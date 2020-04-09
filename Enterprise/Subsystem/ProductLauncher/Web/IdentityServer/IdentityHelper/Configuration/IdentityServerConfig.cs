@@ -219,7 +219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     },
                     SPOptions = new SPOptions
                     {
-                        AuthenticateRequestSigningBehavior = SigningBehavior.Never, // or add a signing certificate
+                        AuthenticateRequestSigningBehavior = SigningBehavior.IfIdpWantAuthnRequestsSigned,
                         EntityId = new EntityId(provider.AuthorityUri),
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
@@ -227,7 +227,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
-
+                
+                authServicesOptions.SPOptions.ServiceCertificates.Add(GetSigningCertificate());
                 authServicesOptions.Notifications.EmitSameSiteNone = userAgent =>
                 {
                     return !ManageSameSite.SuppressSameSiteNoneCookies(null, userAgent);
