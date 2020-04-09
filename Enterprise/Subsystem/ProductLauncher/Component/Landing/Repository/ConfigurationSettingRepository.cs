@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Cryptography.Xml;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -110,6 +111,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateMasterConfigurationSetting, param);
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Add a new master configuration setting value
+        /// </summary>
+        /// <param name="masterSetting">Master Configuration setting object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreateMasterConfigurationSetting(MasterConfigurationSetting masterSetting)
+        {
+            dynamic param = new
+            {
+                @MasterConfigurationType = masterSetting.ConfigurationType,
+                @MasterSettingType = masterSetting.SettingType,
+                @PartyId = masterSetting.PartyId,
+                @Value = masterSetting.Value
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateMasterConfigurationSetting, param);
                 return result;
             }
         }

@@ -25,8 +25,6 @@
 
         public const string SP_GetAllSameSiteValues = "Enterprise.GetAllSameSiteValues";
 
-        //public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
-
         #endregion
 
         #region Provider / user related SPs
