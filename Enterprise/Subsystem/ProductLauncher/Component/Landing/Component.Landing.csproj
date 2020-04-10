@@ -164,6 +164,7 @@
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayRole.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayUsers.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductRight.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\SLMUserExist.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\ClickPayManagement.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\DepositAlternativeManagement.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\SeniorLeadManagement.cs" />

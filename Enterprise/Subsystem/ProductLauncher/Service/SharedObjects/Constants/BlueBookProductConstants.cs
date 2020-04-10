@@ -228,5 +228,10 @@
 		/// Click Pay
 		/// </summary>
 		public const string HelpCenter = "HLP";
-	}
+
+        /// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		public const string SeniorLeadManagement = "SLM";
+    }
 }

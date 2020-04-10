@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.SeniorLeadManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -23,6 +24,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base(productType, editorPersonaId, subjectPersonaId, userClaims, injectedDataCollector, injectedManagePersona, productInternalSettingRepository)
         { }
 
+        protected override bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+        {            
+            if (baseUrlAndQuery == null)
+                baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserExistEndpoint), loginNameToCheck);
+
+            var response = GetResultFromApi<SLMUserExist>(baseUrlAndQuery, false);
+            if (response != null && response.Message.Equals("UserName not exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups userRolePropertiesRegion)
         {
             // Map user info
@@ -34,8 +49,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = SubjectUserDetails.FirstName,
                 LastName = SubjectUserDetails.LastName,
                 Email = SubjectUserDetails.Email,
-                Phone = SubjectUserDetails.PhoneNumber,
+                Phone = SubjectUserDetails.PhoneNumber,                
                 IsActive = true,
+                IsMigratedUser = true,
                 PropertyGroups = (userRolePropertiesRegion.PropertyGroupList == null)? new List<string>(): userRolePropertiesRegion.PropertyGroupList,
                 Properties = userRolePropertiesRegion.PropertyList,
                 Roles = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
