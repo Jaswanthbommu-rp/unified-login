@@ -92,13 +92,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
 
-                                auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
-                                                                       internalAttribute.ColumnName,
-                                                                       " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
-                                                                       " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                                                       " on the ", entityAffected,
-                                                                       " for {0} {1}.");
-
+                                if (internalAttribute.ColumnName.Equals("Active Access"))
+                                {
+                                    if (auditRecord.OldValue.ToString().ToLower().Equals("false") && auditRecord.NewValue.ToString().ToLower().Equals("true"))
+                                    {
+                                        auditRecord.AuditMessage = string.Concat("{2} {3} activated access for user {0} {1}.");
+                                    }
+                                }
+                                else
+                                {
+                                    auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                                                                           internalAttribute.ColumnName,
+                                                                           " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
+                                                                           " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
+                                                                           " on the ", entityAffected,
+                                                                           " for {0} {1}.");
+                                }
                                 result.Add(auditRecord);
                             }
                         }
