@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attrib
         public string Format { get; private set; }
 
         /// <summary>
-        /// he message must be a json serialized dictionary
+        /// The message must be a json serialized dictionary
         /// </summary>
         public string Message { get; private set; }
 

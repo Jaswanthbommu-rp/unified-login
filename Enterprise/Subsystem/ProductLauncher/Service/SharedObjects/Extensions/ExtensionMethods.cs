@@ -94,15 +94,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
 
-                                if (internalAttribute.Message != string.Empty)
+                                if (!string.IsNullOrWhiteSpace(internalAttribute.Message))
                                 {
-                                    Dictionary<string, string> desarializedObject = (Dictionary<string, string>)JsonConvert.DeserializeObject<Dictionary<string, string>>(internalAttribute.Message);
+                                    Dictionary<string, string> deserializedObject = (Dictionary<string, string>)JsonConvert.DeserializeObject<Dictionary<string, string>>(internalAttribute.Message);
 
-                                    if (desarializedObject.ContainsKey(newValue.ToString()))
+                                    if (deserializedObject.ContainsKey(newValue.ToString()))
                                     {
-                                        auditRecord.AuditMessage = desarializedObject.Where(p => p.Key == newValue.ToString()).FirstOrDefault().Value;
+                                        auditRecord.AuditMessage = deserializedObject.Where(p => p.Key == newValue.ToString()).FirstOrDefault().Value;
 
-                                        if (auditRecord.AuditMessage != string.Empty)
+                                        if (!string.IsNullOrWhiteSpace(auditRecord.AuditMessage))
                                         {
                                             result.Add(auditRecord);
                                         }
