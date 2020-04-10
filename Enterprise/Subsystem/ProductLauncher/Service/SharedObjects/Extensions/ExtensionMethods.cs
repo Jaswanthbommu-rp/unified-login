@@ -126,15 +126,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 {
                     if (oldCustomFieldValue.FieldId == newCustomFieldValue.FieldId)
                     {
-                        if (oldCustomFieldValue.Value != newCustomFieldValue.Value)
+                        string oldValue = string.IsNullOrEmpty(oldCustomFieldValue.Value) ? string.Empty : oldCustomFieldValue.Value;
+                        string newValue = string.IsNullOrEmpty(newCustomFieldValue.Value) ? string.Empty : newCustomFieldValue.Value;
+
+                        if (oldValue != newValue)
                         {
 
                             AuditRecord auditRecord = new AuditRecord();
 
                             auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
                                                   oldCustomFieldValue.Name,
-                                                  " information from ", string.IsNullOrEmpty(oldCustomFieldValue.Value) ? "a blank value" : oldCustomFieldValue.Value,
-                                                  " to ", string.IsNullOrEmpty(newCustomFieldValue.Value) ? "a blank value" : newCustomFieldValue.Value,
+                                                  " information from ", string.IsNullOrEmpty(oldValue) ? "a blank value" : oldValue,
+                                                  " to ", string.IsNullOrEmpty(newValue) ? "a blank value" : newValue,
                                                   " on the user profile",
                                                   " for {0} {1}.");
 
