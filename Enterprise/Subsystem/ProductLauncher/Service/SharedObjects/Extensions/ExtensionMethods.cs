@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
@@ -137,6 +138,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                                   " on the user profile",
                                                   " for {0} {1}.");
 
+                            auditRecord.LogActivityType = LogActivityTypeConstants.UPDATE_USER;
+
                             result.Add(auditRecord);
                         }
                     }
@@ -157,6 +160,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                           " to ", customField.Value,
                                           " on the user profile",
                                           " for {0} {1}.");
+
+                    auditRecord.LogActivityType = LogActivityTypeConstants.UPDATE_USER;
 
                     result.Add(auditRecord);
                 }
