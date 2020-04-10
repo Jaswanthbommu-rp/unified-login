@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
@@ -92,22 +93,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
 
-                                if (internalAttribute.ColumnName.Equals("Active Access"))
-                                {
-                                    if (auditRecord.OldValue.ToString().ToLower().Equals("false") && auditRecord.NewValue.ToString().ToLower().Equals("true"))
-                                    {
-                                        auditRecord.AuditMessage = string.Concat("{2} {3} activated access for user {0} {1}.");
-                                    }
-                                }
-                                else
-                                {
-                                    auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
-                                                                           internalAttribute.ColumnName,
-                                                                           " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
-                                                                           " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                                                           " on the ", entityAffected,
-                                                                           " for {0} {1}.");
-                                }
+                                auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                                                                       internalAttribute.ColumnName,
+                                                                       " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
+                                                                       " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
+                                                                       " on the ", entityAffected,
+                                                                       " for {0} {1}.");
+
                                 result.Add(auditRecord);
                             }
                         }
@@ -134,17 +126,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 {
                     if (oldCustomFieldValue.FieldId == newCustomFieldValue.FieldId)
                     {
-                        if (oldCustomFieldValue.Value != newCustomFieldValue.Value)
+                        string oldValue = string.IsNullOrEmpty(oldCustomFieldValue.Value) ? string.Empty : oldCustomFieldValue.Value;
+                        string newValue = string.IsNullOrEmpty(newCustomFieldValue.Value) ? string.Empty : newCustomFieldValue.Value;
+
+                        if (oldValue != newValue)
                         {
 
                             AuditRecord auditRecord = new AuditRecord();
 
                             auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
                                                   oldCustomFieldValue.Name,
-                                                  " information from ", string.IsNullOrEmpty(oldCustomFieldValue.Value) ? "a blank value" : oldCustomFieldValue.Value,
-                                                  " to ", string.IsNullOrEmpty(newCustomFieldValue.Value) ? "a blank value" : newCustomFieldValue.Value,
+                                                  " information from ", string.IsNullOrEmpty(oldValue) ? "a blank value" : oldValue,
+                                                  " to ", string.IsNullOrEmpty(newValue) ? "a blank value" : newValue,
                                                   " on the user profile",
                                                   " for {0} {1}.");
+
+                            auditRecord.LogActivityType = LogActivityTypeConstants.UPDATE_USER;
 
                             result.Add(auditRecord);
                         }
@@ -166,6 +163,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                           " to ", customField.Value,
                                           " on the user profile",
                                           " for {0} {1}.");
+
+                    auditRecord.LogActivityType = LogActivityTypeConstants.UPDATE_USER;
 
                     result.Add(auditRecord);
                 }
