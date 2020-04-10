@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -93,14 +94,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
 
                                 auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
 
-                                auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
-                                                                       internalAttribute.ColumnName,
-                                                                       " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
-                                                                       " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                                                       " on the ", entityAffected,
-                                                                       " for {0} {1}.");
+                                if (internalAttribute.Message != string.Empty)
+                                {
+                                    Dictionary<string, string> desarializedObject = (Dictionary<string, string>)JsonConvert.DeserializeObject<Dictionary<string, string>>(internalAttribute.Message);
 
-                                result.Add(auditRecord);
+                                    if (desarializedObject.ContainsKey(newValue.ToString()))
+                                    {
+                                        auditRecord.AuditMessage = desarializedObject.Where(p => p.Key == newValue.ToString()).FirstOrDefault().Value;
+
+                                        if (auditRecord.AuditMessage != string.Empty)
+                                        {
+                                            result.Add(auditRecord);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
+                                       internalAttribute.ColumnName,
+                                       " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
+                                       " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
+                                       " on the ", entityAffected,
+                                       " for {0} {1}.");
+
+                                    result.Add(auditRecord);
+                                }
                             }
                         }
                     }
@@ -148,9 +166,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                     }
                 }
             }
-            
+
             List<CustomFieldValue> newEnabledFields = newCustomField.Where(n => !oldCustomField.Any(o => o.FieldId == n.FieldId)).ToList();
-            
+
             foreach (CustomFieldValue customField in newEnabledFields)
             {
                 if (string.IsNullOrEmpty(customField.Value) == false)
