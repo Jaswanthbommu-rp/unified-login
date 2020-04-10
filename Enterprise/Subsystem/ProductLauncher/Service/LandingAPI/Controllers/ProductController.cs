@@ -501,9 +501,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             string loginUri = productSamlSettings.LoginUri; 
             if (productId == (int)ProductEnum.VendorMarketplace && _userClaims.RealPageEmployee)
             {
-                ProductInternalSettingRepository productInternalSettingRepo = new ProductInternalSettingRepository();
-                IList<ProductInternalSetting> productInternalSetting = productInternalSettingRepo.GetProductInternalSettings(productId);
-                loginUri = productInternalSetting.First(a => a.Name.Equals("ProductUrl", StringComparison.OrdinalIgnoreCase)).Value;                
+                ManageProduct manageProduct = new ManageProduct(_userClaims);                
+                IList<ProductInternalSetting> productInternalSetting = manageProduct.GetProductInternalSettings(productId);
+                loginUri = productInternalSetting.First(a => a.Name.Equals("AlternateLoginURL", StringComparison.OrdinalIgnoreCase)).Value;                
             }
 
             productLoginResponse.IsRedirect = true;
