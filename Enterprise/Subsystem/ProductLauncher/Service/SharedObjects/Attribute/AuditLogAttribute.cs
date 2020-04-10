@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute
 {
@@ -29,6 +30,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attrib
         /// </summary>
         public string Format { get; private set; }
 
+        /// <summary>
+        /// he message must be a json serialized dictionary
+        /// </summary>
+        public string Message { get; private set; }
+
         #endregion
 
         #region "Constructors"
@@ -39,13 +45,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attrib
         /// <param name="columName">Column name</param>
         /// <param name="format">Property format</param>
         /// <param name="logActivityTypeConstant">Activity log value</param>
+        /// <param name="message">The message must be a json serialized dictionary></param>
         /// <param name="nullBlankValue">Value for nulls or empty</param>
-        public AuditLogAttribute(string columName, string logActivityTypeConstant, string format ="", string nullBlankValue = "a blank value")
+        public AuditLogAttribute(string columName, string logActivityTypeConstant, string format = "",  string message = "", string nullBlankValue = "a blank value")
         {
             ColumnName = columName;
             NullBlankValue = nullBlankValue;
             LogActivityTypeConstant = logActivityTypeConstant;
             Format = format;
+            Message = message;
         }
 
         #endregion 
