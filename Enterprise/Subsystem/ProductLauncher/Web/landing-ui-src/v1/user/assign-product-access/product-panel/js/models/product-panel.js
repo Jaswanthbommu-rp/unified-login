@@ -17,8 +17,9 @@
             s.roleGridActive = false;
             s.propertyGridActive = false;
             s.changed = false;
+            s.roleRights = [];
 
-             s.data = {
+            s.data = {
                 "records": []
             };
 
@@ -67,6 +68,15 @@
             return s;
         };
 
+        p.setRoleRights = function (list) {
+            var s = this;
+            s.roleRights = [];
+            list.forEach(function (item) {
+                s.roleRights.push(item.rightNickName.toLowerCase());
+            });
+            return s;
+        };
+
         p.isRoleGridActive = function () {
             var s = this;
             return s.roleGridActive;
@@ -83,19 +93,23 @@
             return s.propertyGridActive;
         };
 
+         p.getRoleRights = function () {
+            var s = this;
+            return s.roleRights;
+        };
 
-         p.getData = function (productId) {
+        p.getData = function (productId) {
             var s = this,
                 hasRoleSelected = false,
                 hasPropertySelected = false;
-                s.batchData = angular.copy(s._batchData);
+            s.batchData = angular.copy(s._batchData);
 
-          var roles = dataSyncManager.getProductRolesData(productId);
-          var properties = dataSyncManager.getProductPropertiesData(productId);
+            var roles = dataSyncManager.getProductRolesData(productId);
+            var properties = dataSyncManager.getProductPropertiesData(productId);
 
-           s.batchData.productId = productId;
+            s.batchData.productId = productId;
 
-           if (roles !== undefined && roles.length) {
+            if (roles !== undefined && roles.length) {
                 s.batchData.inputJson.roleList = [];
                 roles.forEach(function (role) {
                     if (role.isAssigned) {
@@ -124,7 +138,7 @@
                         }
                     });
 
-                    if (productId == "9"){
+                    if (productId == "9") {
                         s.batchData.inputJson.isAssignedNewPropertyByDefault = dataSyncManager.isProductNewPropertyByDefault(productId);
                     }
                 }
