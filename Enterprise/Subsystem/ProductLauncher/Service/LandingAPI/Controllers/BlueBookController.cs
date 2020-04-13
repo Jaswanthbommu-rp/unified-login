@@ -21,7 +21,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// List of Top level properties from BlueBook
 		/// </summary>
 		/// <param name="booksCompanyMasterId">BlueBook CustomerMasterId</param>
-		/// <param name="include">List of fields names to return in the response (["customerPropertyId","customerCompanyId","propertyName","address"])</param>
+		/// <param name="include">List of fields names (comma delimited) to return in the response: customerPropertyId,customerCompanyId,propertyName,address</param>
 		/// <param name="filter">Optional (default = {ampersand}filter[isActive]=true{ampersand}page[size]=9999)</param>
 		/// <returns>List of Top level properties from BlueBook</returns>
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]

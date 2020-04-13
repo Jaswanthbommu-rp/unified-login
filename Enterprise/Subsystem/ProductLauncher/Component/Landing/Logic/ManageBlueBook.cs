@@ -562,9 +562,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             string includeFields = string.Empty;
 
-            if ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] { ',' }).Length > 0))
+            bool bIncludeFields = ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] { ',' }).Length > 0));
+
+            if (bIncludeFields)
             {
-                includeFields = "fields[customerproperty]=" + include + "&";
+                includeFields = "fields[customerproperty]=" + include.Replace(" ", string.Empty) + "&";
             }
 
             filter = string.IsNullOrWhiteSpace(filter) ? "&filter[isActive]=true&page[size]=9999" : filter;
@@ -572,10 +574,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<CustomerProperty> customerPropertyList = new List<CustomerProperty>();
 
             RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = $"getCustomerProperty_{booksCompanyMasterId}";
+            var cacheKey = $"getCustomerProperty_{booksCompanyMasterId}" + (bIncludeFields ? "_" + include.Replace(",", string.Empty) : string.Empty);
 
-            //customerPropertyList = rpcache.GetFromCache<List<CustomerProperty>>(cacheKey, CacheTimeSeconds, () =>
-            //{
+            customerPropertyList = rpcache.GetFromCache<List<CustomerProperty>>(cacheKey, CacheTimeSeconds, () =>
+            {
                 string uri = $"customerproperty?{includeFields}filter[customerCompanyId]={booksCompanyMasterId.ToString()}{filter}";
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - Getting info.", logData);
@@ -605,8 +607,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return null;
                 }
                 return customerPropertyList;
-            //});
-            //return customerPropertyList;
+            });
+            return customerPropertyList;
         }
 
         #region Privates
