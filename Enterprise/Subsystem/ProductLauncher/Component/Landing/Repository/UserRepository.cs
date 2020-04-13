@@ -2085,7 +2085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //Get the edited user Current Persona Id
 
             bool userIsExternalEverywhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
-            
+
             if ((oldProfile.Persona[0] != null) && (oldProfile.Persona[0].Organization != null))
             {
                 //Get the Organization IDP
@@ -2127,99 +2127,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             bool profileChanged = IsUserProfileChanged(profile, userDetails);
             bool loginNamechanged = isUserLoginNameChanged(profile, userDetails);
 
-            //Check if user type changed
-            int batchProcessUserType = 0;
-            bool userTypeChanged = false;
-            string userTypeName = "";
-            bool isUserTypeChangedFromNoEmailToRegular = false;
-            bool isUserTypeChangedFromNoEmailToExternal = false;
-            string userTypeChangedToFromExternal = string.Empty;
-
             //TODO: CG. THIS VARIABLE IS NOT NECESSARY BECASUE WE ALREADY HAVE IT IN OLDPROFILE
             userDetails.IsActive = currentOrgStatus.IsActive;
 
-            if (userDetails.UserRoleTypeId != profile.UserTypeId)
-            {
-                #region From Regular User
-
-                //To Regular (No Email) - NOT allowed
-
-                // To SuperUser
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.User) && (profile.UserTypeId == (int)UserRoleType.SuperUser))
-                {
-                    batchProcessUserType = (int)BatchProcessType.UserTypeRegularToAdmin;
-                    userTypeChanged = true;
-                    userTypeName = BatchProcessType.UserTypeRegularToAdmin.ToString();
-                }
-
-                //To External
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.User) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
-                {
-                    userTypeChangedToFromExternal = "ToExternal";
-                }
-
-                #endregion
-
-                #region From SuperUser
-
-                //To Regular
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.SuperUser) && (profile.UserTypeId == (int)UserRoleType.User))
-                {
-                    batchProcessUserType = (int)BatchProcessType.UserTypeAdminToRegular;
-                    userTypeChanged = true;
-                    userTypeName = BatchProcessType.UserTypeAdminToRegular.ToString();
-                }
-
-                //To External
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.SuperUser) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
-                {
-                    userTypeChangedToFromExternal = "ToExternal";
-                    batchProcessUserType = (int)BatchProcessType.UserTypeAdminToExternal;
-                    userTypeChanged = true;
-                    userTypeName = BatchProcessType.UserTypeAdminToExternal.ToString();
-                }
-
-                #endregion
-
-                #region From Regular (No Email)
-
-                //To Regular
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail) && (profile.UserTypeId == (int)UserRoleType.User))
-                {
-                    isUserTypeChangedFromNoEmailToRegular = true;
-                }
-
-                //To External
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
-                {
-                    isUserTypeChangedFromNoEmailToExternal = true;
-                    userTypeChangedToFromExternal = "ToExternal";
-                }
-
-                #endregion
-
-                #region From External
-
-                //To Regular (No Email) -- NOT allowed
-
-                //To SuperUser (If User is External EveryWhere)
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.ExternalUser) && (profile.UserTypeId == (int)UserRoleType.SuperUser) && (userIsExternalEverywhere))
-                {
-                    userTypeChangedToFromExternal = "FromExternal";
-                    batchProcessUserType = (int)BatchProcessType.UserTypeExternalToAdmin;
-                    userTypeChanged = true;
-                    userTypeName = BatchProcessType.UserTypeExternalToAdmin.ToString();
-                }
-
-                //To Regular
-                if ((userDetails.UserRoleTypeId == (int)UserRoleType.ExternalUser) && (profile.UserTypeId == (int)UserRoleType.User) && (userIsExternalEverywhere))
-                {
-                    userTypeChangedToFromExternal = "FromExternal";
-                }
-
-                #endregion
-            }
-
+            
             //If user is activated from deactivate status ,get all products data which are previously assigned to user
             if (profile.userLogin.Status == UserUiStatusType.Disabled)
             {
@@ -2291,10 +2202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 UserDetails = userDetails, //This is not necessary becasuse we already have the oldProfile
                 ProfileChanged = profileChanged,//pending
                 LoginNamechanged = loginNamechanged, //Pending
-                BatchProcessUserType = batchProcessUserType,
-                UserTypeChanged = userTypeChanged,
-                IsUserTypeChangedFromNoEmailToRegular = isUserTypeChangedFromNoEmailToRegular,
-                UserTypeChangedToFromExternal = userTypeChangedToFromExternal,
+                UserIsExternalEverywhere = userIsExternalEverywhere,
                 CurrentOrg = currentOrg,
                 EditorAssignedPersonaList = editorAssignedPersonaList
             };
@@ -4458,6 +4366,165 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        #endregion
+
+        #region Create UserLoginPersona and Persona
+
+        public class OrganizationPrimary
+        {
+            public Guid OrganizationRealPageId { get; set; }
+
+            public long OrganizationPartyId { get; set; }
+
+            public bool PrimaryOrganization { get; set; }
+
+            public DateTime OrganizationFromDate { get; set; }
+
+            public DateTime? OrganizationThruDate { get; set; }
+        }
+
+        #endregion
+
+        #region Audit
+        private void AuditUserUpdate(IProfileDetail oldProfile, IProfileDetail newProfile)
+        {
+            UserAuditDto oldUser = oldProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
+            UserAuditDto newUser = newProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
+
+            if (newProfile.userLogin.IsActive.HasValue && newProfile.userLogin.IsActive == true)
+            {
+                newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
+                oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
+            }
+
+            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile");
+
+            auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
+                                                      x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
+                                                      x.AuditMessage,
+                                                      "UpdateUser",
+                                                      newProfile));
+
+            var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
+
+            auditCustomFieldsResult.ForEach(x => LogAuditActivity(x.LogActivityType,
+                                           LogActivityCategoryType.User,
+                                           x.AuditMessage,
+                                           "UpdateUser",
+                                           newProfile));
+        }
+
+        #endregion
+
+
+        #region UpdateUser Private Methods
+        /// <summary>
+        /// Validate if the old user UserType has changed and set the UserBatchEntity values
+        /// </summary>
+        /// <param name="profile">New User</param>
+        /// <param name="oldProfile">Old User</param>
+        /// <param name="userIsExternalEverywhere"></param>
+        /// <returns>An UserBatchEntity object</returns>
+        private UserBatchEntity GetUserBatch(IProfileDetail profile, IProfileDetail oldProfile, bool userIsExternalEverywhere)
+        {
+            if (profile.UserTypeId == oldProfile.UserTypeId)
+            {
+                // From Regular User
+                // To SuperUser
+                if ((oldProfile.UserTypeId == (int)UserRoleType.User) && (profile.UserTypeId == (int)UserRoleType.SuperUser))
+                {
+                    return new UserBatchEntity
+                    {
+                        BatchProcessUserType = (int)BatchProcessType.UserTypeRegularToAdmin,
+                        UserTypeChanged = true,
+                        UserTypeName = BatchProcessType.UserTypeRegularToAdmin.ToString()
+                    };
+
+                }
+
+                //To External
+                if ((oldProfile.UserTypeId == (int)UserRoleType.User) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
+                {
+                    return new UserBatchEntity
+                    {
+                        UserTypeChangedToFromExternal = "ToExternal"
+                    };
+
+                }
+
+                // From SuperUser
+                // To Regular
+                if ((oldProfile.UserTypeId == (int)UserRoleType.SuperUser) && (profile.UserTypeId == (int)UserRoleType.User))
+                {
+                    return new UserBatchEntity
+                    {
+                        BatchProcessUserType = (int)BatchProcessType.UserTypeAdminToRegular,
+                        UserTypeChanged = true,
+                        UserTypeName = BatchProcessType.UserTypeAdminToRegular.ToString()
+                    };
+
+                }
+
+                //To External
+                if ((oldProfile.UserTypeId == (int)UserRoleType.SuperUser) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
+                {
+                    return new UserBatchEntity
+                    {
+                        UserTypeChangedToFromExternal = "ToExternal",
+                        BatchProcessUserType = (int)BatchProcessType.UserTypeAdminToExternal,
+                        UserTypeChanged = true,
+                        UserTypeName = BatchProcessType.UserTypeAdminToExternal.ToString()
+                    };
+                }
+
+                //From Regular (No Email)
+                //To Regular
+                if ((oldProfile.UserTypeId == (int)UserRoleType.UserNoEmail) && (profile.UserTypeId == (int)UserRoleType.User))
+                {
+                    return new UserBatchEntity
+                    {
+                        IsUserTypeChangedFromNoEmailToRegular = true
+                    };
+                }
+
+                //To External
+                if ((oldProfile.UserTypeId == (int)UserRoleType.UserNoEmail) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
+                {
+                    return new UserBatchEntity
+                    {
+                        IsUserTypeChangedFromNoEmailToExternal = true,
+                        UserTypeChangedToFromExternal = "ToExternal"
+                    };
+                }
+
+                //From External
+                //To Regular (No Email) -- NOT allowed
+                //To SuperUser (If User is External EveryWhere)
+                if ((oldProfile.UserTypeId == (int)UserRoleType.ExternalUser) && (profile.UserTypeId == (int)UserRoleType.SuperUser) && (userIsExternalEverywhere))
+                {
+                    return new UserBatchEntity
+                    {
+                        UserTypeChangedToFromExternal = "FromExternal",
+                        BatchProcessUserType = (int)BatchProcessType.UserTypeExternalToAdmin,
+                        UserTypeChanged = true,
+                        UserTypeName = BatchProcessType.UserTypeExternalToAdmin.ToString()
+                    };
+                }
+
+                //To Regular
+                if ((oldProfile.UserTypeId == (int)UserRoleType.ExternalUser) && (profile.UserTypeId == (int)UserRoleType.User) && (userIsExternalEverywhere))
+                {
+                    return new UserBatchEntity
+                    {
+                        UserTypeChangedToFromExternal = "FromExternal"
+                    };
+
+                }
+            }
+
+            return new UserBatchEntity { };
+        }
+
         /// <summary>
         /// Final method to update the user in the database
         /// </summary>
@@ -4469,17 +4536,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             DateTime utcNow = DateTime.UtcNow;
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
             RepositoryResponse repositoryResponse = new RepositoryResponse();
-
+            UserBatchEntity userBatchEntity;
             using (var repository = GetRepository())
             {
                 //Begin the transaction
                 repository.UnitOfWork.BeginTransaction();
+
+                userBatchEntity = GetUserBatch(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile, updateUserProfileEntity.UserIsExternalEverywhere);
+
+                //We can get this with the oldProfile
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = updateUserProfileEntity.Persona.Organization.RealPageId });
                 try
                 {
                     #region Update Person
                     repositoryResponse.Id = updateUserProfileEntity.UserDetails.PersonPartyId;
-                    if ((updateUserProfileEntity.ProfileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (updateUserProfileEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
+                    if ((updateUserProfileEntity.ProfileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
                     {
                         //Setup the parameter values to update the person's info
                         param = new
@@ -4508,7 +4579,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             idpt = updateUserProfileEntity.IdentityProviderTypeList[0];
                         }
 
-                        if (updateUserProfileEntity.IsCurrentOrgThePrimaryOrg || updateUserProfileEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))
+                        if (updateUserProfileEntity.IsCurrentOrgThePrimaryOrg || userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))
                         {
                             //Link Identity Provider (ContactMechanismId for the Identity Provider value) to new user by UserLoginId & ActivePersonaId
                             param = new
@@ -4539,7 +4610,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             param = new
                             {
                                 RealPageId = updateUserProfileEntity.NewProfile.RealPageId,
-                                LoginName = ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (updateUserProfileEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))) ? updateUserProfileEntity.NewProfile.userLogin.LoginName : updateUserProfileEntity.UserLoginOnly.LoginName,
+                                LoginName = ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))) ? updateUserProfileEntity.NewProfile.userLogin.LoginName : updateUserProfileEntity.UserLoginOnly.LoginName,
                                 FromDate = updateUserProfileEntity.NewProfile.userLogin.FromDate.Value,
                                 ThruDate = updateUserProfileEntity.NewProfile.userLogin.ThruDate,
                                 PartyId = updateUserProfileEntity.Persona.OrganizationPartyId
@@ -4552,7 +4623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
 
                             //UserType Changed To External OR From External
-                            string changeUserTypeExternal = ChangeUserTypeExternal(repository, updateUserProfileEntity.OrganizationExternalUser, updateUserProfileEntity.CurrentPrimaryOrgStatus, updateUserProfileEntity.NewProfile, updateUserProfileEntity.Persona, updateUserProfileEntity.UserPersonaOrganizationList, updateUserProfileEntity.EmailUsageType, updateUserProfileEntity.UserLoginOnly, idpt, updateUserProfileEntity.UserTypeChangedToFromExternal);
+                            string changeUserTypeExternal = ChangeUserTypeExternal(repository, updateUserProfileEntity.OrganizationExternalUser, updateUserProfileEntity.CurrentPrimaryOrgStatus, updateUserProfileEntity.NewProfile, updateUserProfileEntity.Persona, updateUserProfileEntity.UserPersonaOrganizationList, updateUserProfileEntity.EmailUsageType, updateUserProfileEntity.UserLoginOnly, idpt, userBatchEntity.UserTypeChangedToFromExternal);
                             if (changeUserTypeExternal != string.Empty)
                             {
                                 repositoryResponse.ErrorMessage = changeUserTypeExternal;
@@ -4690,14 +4761,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region Update Persona
 
                         //if user type changes then update persona type
-                        if (updateUserProfileEntity.UserTypeChanged)
+                        if (userBatchEntity.UserTypeChanged)
                         {
                             int personaTypeId = 0;
-                            if (updateUserProfileEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeAdminToRegular || updateUserProfileEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeAdminToExternal)
+                            if (userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeAdminToRegular || userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeAdminToExternal)
                             {
                                 personaTypeId = (int)PersonaType.Primary;
                             }
-                            else if (updateUserProfileEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeRegularToAdmin || updateUserProfileEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeExternalToAdmin)
+                            else if (userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeRegularToAdmin || userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeExternalToAdmin)
                             {
                                 personaTypeId = (int)PersonaType.SuperUser;
                             }
@@ -4957,7 +5028,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
-                        if (updateUserProfileEntity.UserIsActive && !updateUserProfileEntity.UserTypeChanged)
+                        if (updateUserProfileEntity.UserIsActive && !userBatchEntity.UserTypeChanged)
                         {
                             int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.AssignUserPersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.Persona.Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.UserIsActive, updateUserProfileEntity.AoProductsAvailableForUser);
 
@@ -4976,9 +5047,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             });
                         }
 
-                        if (updateUserProfileEntity.UserIsActive && updateUserProfileEntity.UserTypeChanged)
+                        if (updateUserProfileEntity.UserIsActive && userBatchEntity.UserTypeChanged)
                         {
-                            SaveUserProductBatchData(repository, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.AssignUserPersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.Persona.Organization.RealPageId, null, updateUserProfileEntity.BatchProcessUserType, updateUserProfileEntity.ProductBatchData, updateUserProfileEntity.AoProductsAvailableForUser, updateUserProfileEntity.NewProfile.UserTypeId);
+                            SaveUserProductBatchData(repository, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.AssignUserPersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.Persona.Organization.RealPageId, null, userBatchEntity.BatchProcessUserType, updateUserProfileEntity.ProductBatchData, updateUserProfileEntity.AoProductsAvailableForUser, updateUserProfileEntity.NewProfile.UserTypeId);
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
@@ -4992,7 +5063,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         else
                         {
                             //This will exceuted when user type changes and no productbatch record for greenbook role is coming from UI
-                            if (updateUserProfileEntity.UserTypeChanged)
+                            if (userBatchEntity.UserTypeChanged)
                             {
                                 IList<RoleType> roleTypes;
                                 dynamic paramUserRole = new
@@ -5072,7 +5143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
                     }
-                    if (updateUserProfileEntity.IsUserTypeChangedFromNoEmailToRegular)
+                    if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
                         //Log Activity
                         LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2} {3}.", "UpdateUser", updateUserProfileEntity.NewProfile);
@@ -5087,55 +5158,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repositoryResponse;
             }
         }
-
-        #endregion
-
-        #region Create UserLoginPersona and Persona
-
-        public class OrganizationPrimary
-        {
-            public Guid OrganizationRealPageId { get; set; }
-
-            public long OrganizationPartyId { get; set; }
-
-            public bool PrimaryOrganization { get; set; }
-
-            public DateTime OrganizationFromDate { get; set; }
-
-            public DateTime? OrganizationThruDate { get; set; }
-        }
-
-        #endregion
-
-        #region Audit
-        private void AuditUserUpdate(IProfileDetail oldProfile, IProfileDetail newProfile)
-        {
-            UserAuditDto oldUser = oldProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
-            UserAuditDto newUser = newProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
-
-            if (newProfile.userLogin.IsActive.HasValue && newProfile.userLogin.IsActive == true)
-            {
-                newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
-                oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
-            }
-
-            var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile");
-
-            auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
-                                                      x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
-                                                      x.AuditMessage,
-                                                      "UpdateUser",
-                                                      newProfile));
-
-            var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
-
-            auditCustomFieldsResult.ForEach(x => LogAuditActivity(x.LogActivityType,
-                                           LogActivityCategoryType.User,
-                                           x.AuditMessage,
-                                           "UpdateUser",
-                                           newProfile));
-        }
-
         #endregion
     }
 }

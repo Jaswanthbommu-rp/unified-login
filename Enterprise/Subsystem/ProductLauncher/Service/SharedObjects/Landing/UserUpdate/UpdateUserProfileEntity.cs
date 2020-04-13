@@ -33,11 +33,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public UserDetails UserDetails { get; set; }
         public bool ProfileChanged { get; set; }
         public bool LoginNamechanged { get; set; }
-        public int BatchProcessUserType { get; set; }
-        public bool UserTypeChanged { get; set; }
-        public bool IsUserTypeChangedFromNoEmailToRegular { get; set; }
-        public string UserTypeChangedToFromExternal { get; set; }
         public Organization CurrentOrg { get; set; }
         public IList<EditorAssignedPersona> EditorAssignedPersonaList { get; set; }
+        public bool UserIsExternalEverywhere { get; set; }
     }
 }
