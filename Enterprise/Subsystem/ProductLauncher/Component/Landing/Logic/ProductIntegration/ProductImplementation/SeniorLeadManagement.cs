@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserExistEndpoint), loginNameToCheck);
 
             var response = GetResultFromApi<SLMUserExist>(baseUrlAndQuery, false);
-            if (response != null && response.Message.Equals("UserName not exists", StringComparison.OrdinalIgnoreCase))
+            if (response != null && response.Message.Equals("User Not exists", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
