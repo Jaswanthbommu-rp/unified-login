@@ -12,6 +12,7 @@
         vm.init = function () {
             vm.title = "Assign Properties";
             vm.subtitle = "";
+            vm.isFilter=false;
 
             vm.asideGrid = asideGrid;
             gridTransform.watch(asideGrid);
@@ -32,6 +33,7 @@
             vm.gridSelectionWatch = asideGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridAllWatch = asideGrid.subscribe("selectAll", vm.selectionAll);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
+            vm.filterData = asideGrid.subscribe("filterBy", vm.filter.bind(vm));
             return vm;
         };
 
@@ -42,9 +44,23 @@
         vm.isReady = function () {
             return dataModel.isReady();
         };
+        vm.filter = function(filterBy){
+            if(!angular.equals(filterBy, {}))
+            {
+               vm.isFilter=true;
+            }else{
+                vm.isFilter=false;
+            }
+        };
 
         vm.selectionAll = function (bool) {
-            var data = sync.allPropertiesSync(vm.companyId, bool);
+            var data;
+            if(vm.isFilter){
+             data = sync.allPropertiesSync(vm.companyId, bool, vm.isFilter);
+            }
+            else{
+                 data = sync.allPropertiesSync(vm.companyId, bool, vm.isFilter);
+            }
             paDataModel.setSelectedProperties(data.propertyList);
         };
 

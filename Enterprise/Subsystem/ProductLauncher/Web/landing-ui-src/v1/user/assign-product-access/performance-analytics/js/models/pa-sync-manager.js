@@ -188,7 +188,7 @@
             return s;
         };
 
-        p.allPropertiesSync = function (companyId, selected) {
+        p.allPropertiesSync = function (companyId, selected, isFilter) {
             var s = this,
                 propertyList,
                 selectState = false,
@@ -196,9 +196,10 @@
                 totalCount = 0;
 
             propertyList = s.propertyMap['company' + companyId].property;
-
             propertyList.properties.forEach(function (item) {
-                item["isAssigned"] = selected;
+                if(!isFilter){
+                    item ["isAssigned"] = selected;
+                }
                 if (item.isAssigned) {
                     assignedCount++;
                 }
