@@ -144,7 +144,6 @@
             if (resp.additional) {
                 vm.setAccessType(resp.additional.accessType);
             }
-            
         };
 
         vm.setRegionData = function (resp) {
