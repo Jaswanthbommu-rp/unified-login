@@ -2,13 +2,13 @@
 {
     public class UserBatchEntity
     {
-        public string UserTypeChangedToFromExternal { get; set; }
+        public string UserTypeChangedToFromExternal { get; set; } = string.Empty;
 
         public int BatchProcessUserType { get; set; }
 
         public bool UserTypeChanged { get; set; }
 
-        public string UserTypeName { get; set; }
+        public string UserTypeName { get; set; } = string.Empty;
 
         public bool IsUserTypeChangedFromNoEmailToRegular { get; set; }
 

@@ -2050,10 +2050,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Update User Detail and Products
         /// </summary>
         /// <param name="loggedInUserRealPageId">Logged-In User unique identifier</param>
-		/// <param name="profile">Edited User detail and Products</param>
+		/// <param name="newProfile">Edited User detail and Products</param>
 		/// <param name="oldProfile">Old detail profile from database</param>
         /// <returns>Repository response object</returns>
-        public RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile, IProfileDetail oldProfile)
+        public RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail newProfile, IProfileDetail oldProfile)
         {
             long createUserPersonaId = 0L;
 
@@ -2077,7 +2077,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //BlueBook MasterId for External Users
             IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
 
-            IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(profile.RealPageId);
+            IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.RealPageId);
 
             IList<UserOrganization> userPersonaOrganizationList = new List<UserOrganization>();
             userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
@@ -2095,14 +2095,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             // get the users existing UnifiedLogin role
             long existingRoleId = userRoleRightRepository.GetRoleIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedLogin);
 
-            OrganizationStatus currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, 0, true);
-            OrganizationStatus currentOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(profile.userLogin.UserId, userLoginOnly.LastLogin, oldProfile.Persona[0].OrganizationPartyId, false);
+            OrganizationStatus currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(newProfile.userLogin.UserId, userLoginOnly.LastLogin, 0, true);
+            OrganizationStatus currentOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(newProfile.userLogin.UserId, userLoginOnly.LastLogin, oldProfile.Persona[0].OrganizationPartyId, false);
 
 
             //Get the logged-in user Current Persona Id
             createUserPersonaId = personaRespository.GetActivePersonaId(realPageId: loggedInUserRealPageId);
 
-            IList<Persona> personaList = personaRespository.ListActivePersona(profile.RealPageId, true);
+            IList<Persona> personaList = personaRespository.ListActivePersona(newProfile.RealPageId, true);
             if (!currentOrgStatus.PrimaryOrganization)
             {
                 personaList = personaList.Where(p => p.OrganizationPartyId == currentOrgStatus.PartyId).ToList();
@@ -2110,7 +2110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IList<string> aoProductsAvailableForUser = null;
             // Get AO roles before transaction scope begins
-            if (profile.UserTypeId == (int)UserRoleType.SuperUser)
+            if (newProfile.UserTypeId == (int)UserRoleType.SuperUser)
             {
                 // if company has AO product assigned then get products available to assign based on editor User
                 aoProductsAvailableForUser = GetEditorUserAoProduct(loggedInUserRealPageId, createUserPersonaId, oldProfile.Persona[0].Organization.RealPageId);
@@ -2124,21 +2124,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             //TODO: CG. VALIDATE THIS
             //Check if ONLY user profile changed without any product changes
-            bool profileChanged = IsUserProfileChanged(profile, userDetails);
-            bool loginNamechanged = isUserLoginNameChanged(profile, userDetails);
+            bool profileChanged = IsUserProfileChanged(newProfile, userDetails);
+            bool loginNamechanged = isUserLoginNameChanged(newProfile, userDetails);
 
             //TODO: CG. THIS VARIABLE IS NOT NECESSARY BECASUE WE ALREADY HAVE IT IN OLDPROFILE
             userDetails.IsActive = currentOrgStatus.IsActive;
 
-            
             //If user is activated from deactivate status ,get all products data which are previously assigned to user
-            if (profile.userLogin.Status == UserUiStatusType.Disabled)
+            if (newProfile.userLogin.Status == UserUiStatusType.Disabled)
             {
-                productBatchData = GetActivatedUserProductBatchData(oldProfile.Persona[0].PersonaId, profile.productBatch);
+                productBatchData = GetActivatedUserProductBatchData(oldProfile.Persona[0].PersonaId, newProfile.productBatch);
             }
             else
             {
-                productBatchData = profile.productBatch;
+                productBatchData = newProfile.productBatch;
             }
 
             //Get Current user state before any update
@@ -2158,7 +2157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     Persona editorPersona = managePersona.GetFirstAvailablePersonaByCompany(realPageEmployeeAccessId, o.OrganizationPartyId);
 
                     //asigned persona
-                    Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(profile.RealPageId, o.OrganizationPartyId);
+                    Persona assignedPersona = managePersona.GetFirstAvailablePersonaByCompany(newProfile.RealPageId, o.OrganizationPartyId);
 
                     editorAssignedPersonaList.Add(
                         new EditorAssignedPersona()
@@ -2176,13 +2175,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             UpdateUserProfileEntity updateUserProfileEntity = new UpdateUserProfileEntity
             {
                 LoggedInUserRealPageId = loggedInUserRealPageId,
-                NewProfile = profile,
+                NewProfile = newProfile,
                 OldProfile = oldProfile,
                 CreateUserPersonaId = createUserPersonaId,
                 GreenBookRole = 0, //It is declared at the begin, it must be decalre in UpdateUserDatabase method, not here.
                 SaveProductBatchError = saveProductBatchError,
                 ContactMechanismId = null, //It is declared at the begin, it must be decalre in UpdateUserDatabase method, not here.
-                UserIsActive = profile.userLogin.IsActive.GetBooleanValue(), //We created a extension method for this, we must delete the UserIsActive variable
+                UserIsActive = newProfile.userLogin.IsActive.GetBooleanValue(), //We created a extension method for this, we must delete the UserIsActive variable
                 IsFeatureUser = false, //This is just declared at the begin and false and that's it, It must be declare only in the UpdateUserDatabase method, not here
                 IsCurrentOrgThePrimaryOrg = isCurrentOrgThePrimaryOrg,
                 IdentityProviderTypeList = identityProviderTypeList,
@@ -4421,29 +4420,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// Validate if the old user UserType has changed and set the UserBatchEntity values
         /// </summary>
-        /// <param name="profile">New User</param>
+        /// <param name="newProfile">New User</param>
         /// <param name="oldProfile">Old User</param>
         /// <param name="userIsExternalEverywhere"></param>
         /// <returns>An UserBatchEntity object</returns>
-        private UserBatchEntity GetUserBatch(IProfileDetail profile, IProfileDetail oldProfile, bool userIsExternalEverywhere)
+        private UserBatchEntity GetUserBatch(IProfileDetail newProfile, IProfileDetail oldProfile, bool userIsExternalEverywhere)
         {
-            if (profile.UserTypeId == oldProfile.UserTypeId)
+            if (newProfile.UserTypeId != oldProfile.UserTypeId)
             {
                 // From Regular User
                 // To SuperUser
-                if ((oldProfile.UserTypeId == (int)UserRoleType.User) && (profile.UserTypeId == (int)UserRoleType.SuperUser))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.User) && (newProfile.UserTypeId == (int)UserRoleType.SuperUser))
                 {
                     return new UserBatchEntity
                     {
                         BatchProcessUserType = (int)BatchProcessType.UserTypeRegularToAdmin,
                         UserTypeChanged = true,
-                        UserTypeName = BatchProcessType.UserTypeRegularToAdmin.ToString()
+                        UserTypeName = BatchProcessType.UserTypeRegularToAdmin.ToString(),
                     };
 
                 }
 
                 //To External
-                if ((oldProfile.UserTypeId == (int)UserRoleType.User) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.User) && (newProfile.UserTypeId == (int)UserRoleType.ExternalUser))
                 {
                     return new UserBatchEntity
                     {
@@ -4454,7 +4453,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 // From SuperUser
                 // To Regular
-                if ((oldProfile.UserTypeId == (int)UserRoleType.SuperUser) && (profile.UserTypeId == (int)UserRoleType.User))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.SuperUser) && (newProfile.UserTypeId == (int)UserRoleType.User))
                 {
                     return new UserBatchEntity
                     {
@@ -4466,7 +4465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 //To External
-                if ((oldProfile.UserTypeId == (int)UserRoleType.SuperUser) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.SuperUser) && (newProfile.UserTypeId == (int)UserRoleType.ExternalUser))
                 {
                     return new UserBatchEntity
                     {
@@ -4479,7 +4478,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 //From Regular (No Email)
                 //To Regular
-                if ((oldProfile.UserTypeId == (int)UserRoleType.UserNoEmail) && (profile.UserTypeId == (int)UserRoleType.User))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.UserNoEmail) && (newProfile.UserTypeId == (int)UserRoleType.User))
                 {
                     return new UserBatchEntity
                     {
@@ -4488,7 +4487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 //To External
-                if ((oldProfile.UserTypeId == (int)UserRoleType.UserNoEmail) && (profile.UserTypeId == (int)UserRoleType.ExternalUser))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.UserNoEmail) && (newProfile.UserTypeId == (int)UserRoleType.ExternalUser))
                 {
                     return new UserBatchEntity
                     {
@@ -4500,7 +4499,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //From External
                 //To Regular (No Email) -- NOT allowed
                 //To SuperUser (If User is External EveryWhere)
-                if ((oldProfile.UserTypeId == (int)UserRoleType.ExternalUser) && (profile.UserTypeId == (int)UserRoleType.SuperUser) && (userIsExternalEverywhere))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.ExternalUser) && (newProfile.UserTypeId == (int)UserRoleType.SuperUser) && (userIsExternalEverywhere))
                 {
                     return new UserBatchEntity
                     {
@@ -4512,7 +4511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 //To Regular
-                if ((oldProfile.UserTypeId == (int)UserRoleType.ExternalUser) && (profile.UserTypeId == (int)UserRoleType.User) && (userIsExternalEverywhere))
+                if ((oldProfile.UserTypeId == (int)UserRoleType.ExternalUser) && (newProfile.UserTypeId == (int)UserRoleType.User) && (userIsExternalEverywhere))
                 {
                     return new UserBatchEntity
                     {
@@ -4548,8 +4547,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = updateUserProfileEntity.Persona.Organization.RealPageId });
                 try
                 {
-                    #region Update Person
                     repositoryResponse.Id = updateUserProfileEntity.UserDetails.PersonPartyId;
+
+                    #region Update Person
+
                     if ((updateUserProfileEntity.ProfileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
                     {
                         //Setup the parameter values to update the person's info
