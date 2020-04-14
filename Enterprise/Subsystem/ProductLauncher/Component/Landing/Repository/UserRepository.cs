@@ -4527,7 +4527,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="newProfile">New Profile</param>
         /// <param name="repository">IRepository Object</param>
-        private void UptatePerson(IProfileDetail newProfile , IRepository repository)
+        private RepositoryResponse UptatePerson(IProfileDetail newProfile , IRepository repository)
         {
             //Setup the parameter values to update the person's info
              var param = new
@@ -4539,12 +4539,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             };
 
             //Update the person's info
-            var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
-            if (repositoryResponse.Id == 0)
+            return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
+            
+        }
+
+        private RepositoryResponse UpdatePersona(IProfileDetail oldProfile, IRepository repository , int batchProcessUserType)
+        {
+            int personaTypeId = 0;
+            if (batchProcessUserType == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessUserType == (int)BatchProcessType.UserTypeAdminToExternal)
             {
-                repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
-                throw new Exception(repositoryResponse.ErrorMessage);
+                personaTypeId = (int)PersonaType.Primary;
             }
+            else if (batchProcessUserType == (int)BatchProcessType.UserTypeRegularToAdmin || batchProcessUserType == (int)BatchProcessType.UserTypeExternalToAdmin)
+            {
+                personaTypeId = (int)PersonaType.SuperUser;
+            }
+
+            var param = new
+            {
+                PersonaId = oldProfile.Persona[0].PersonaId,
+                PersonaTypeId = personaTypeId,
+                PersonaEnvironmentTypeId = oldProfile.Persona[0].PersonaEnvironmentTypeId
+            };
+             return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersona, param);
         }
 
         /// <summary>
@@ -4582,7 +4599,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if ((profileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
                     {
-                        UptatePerson(updateUserProfileEntity.NewProfile , repository);
+                        repositoryResponse = UptatePerson(updateUserProfileEntity.NewProfile , repository);
+
+                        if (repositoryResponse.Id == 0)
+                        {
+                            repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
+                            throw new Exception(repositoryResponse.ErrorMessage);
+                        }
                     }
                     #endregion
 
@@ -4778,23 +4801,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //if user type changes then update persona type
                         if (userBatchEntity.UserTypeChanged)
                         {
-                            int personaTypeId = 0;
-                            if (userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeAdminToRegular || userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeAdminToExternal)
-                            {
-                                personaTypeId = (int)PersonaType.Primary;
-                            }
-                            else if (userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeRegularToAdmin || userBatchEntity.BatchProcessUserType == (int)BatchProcessType.UserTypeExternalToAdmin)
-                            {
-                                personaTypeId = (int)PersonaType.SuperUser;
-                            }
+                            repositoryResponse = UpdatePersona(updateUserProfileEntity.OldProfile , repository , userBatchEntity.BatchProcessUserType);
 
-                            param = new
-                            {
-                                PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId,
-                                PersonaTypeId = personaTypeId,
-                                PersonaEnvironmentTypeId = updateUserProfileEntity.OldProfile.Persona[0].PersonaEnvironmentTypeId
-                            };
-                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersona, param);
                             if (repositoryResponse.Id == 0)
                             {
                                 repositoryResponse.ErrorMessage = "Persona name was not associated to the Persona.";
