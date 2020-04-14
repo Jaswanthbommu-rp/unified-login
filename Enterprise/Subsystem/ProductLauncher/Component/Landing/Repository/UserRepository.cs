@@ -4527,6 +4527,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="newProfile">New Profile</param>
         /// <param name="repository">IRepository Object</param>
+        /// <returns>RepositoryResponse object</returns>
         private RepositoryResponse UptatePerson(IProfileDetail newProfile , IRepository repository)
         {
             //Setup the parameter values to update the person's info
@@ -4543,6 +4544,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             
         }
 
+        /// <summary>
+        /// Update the Persona's info
+        /// </summary>
+        /// <param name="oldProfile">Old Profile</param>
+        /// <param name="repository">IRepository Object</param>
+        /// <param name="batchProcessUserType">BatchProcessUserType</param>
+        /// <returns>RepositoryResponse Object</returns>
         private RepositoryResponse UpdatePersona(IProfileDetail oldProfile, IRepository repository , int batchProcessUserType)
         {
             int personaTypeId = 0;
@@ -4562,6 +4570,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 PersonaEnvironmentTypeId = oldProfile.Persona[0].PersonaEnvironmentTypeId
             };
              return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersona, param);
+        }
+
+        /// <summary>
+        /// Update User Type
+        /// </summary>
+        /// <param name="newProfile">New Profile</param>
+        /// <param name="oldProfile">Old Profile</param>
+        /// <param name="repository">IRepository Object</param>
+        /// <param name="relationshipType">PartyRelationship Object</param>
+        /// <returns>RepositoryResponse Object</returns>
+        private RepositoryResponse UpdateUserType(IProfileDetail newProfile , IProfileDetail oldProfile , IRepository repository , PartyRelationship relationshipType)
+        {
+            var param = new
+            {
+                PersonRealPageId = newProfile.RealPageId,
+                OrganizationRealPageId = oldProfile.Persona[0].Organization.RealPageId,
+                UnlinkRoleTypeIdFrom = relationshipType.RoleTypeIdFrom,
+                LinkRoleTypeIdFrom = newProfile.UserTypeId,
+                RoleTypeIdTo = relationshipType.RoleTypeIdTo
+            };
+
+            return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonToOrganization, param);
         }
 
         /// <summary>
@@ -4830,16 +4860,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //Update the User Type  
                         if ((relationshipType != null) && (relationshipType.RoleTypeIdFrom != updateUserProfileEntity.NewProfile.UserTypeId))
                         {
-                            param = new
-                            {
-                                PersonRealPageId = updateUserProfileEntity.NewProfile.RealPageId,
-                                OrganizationRealPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId,
-                                UnlinkRoleTypeIdFrom = relationshipType.RoleTypeIdFrom,
-                                LinkRoleTypeIdFrom = updateUserProfileEntity.NewProfile.UserTypeId,
-                                RoleTypeIdTo = relationshipType.RoleTypeIdTo
-                            };
-
-                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonToOrganization, param);
+                            repositoryResponse = UpdateUserType(updateUserProfileEntity.NewProfile , updateUserProfileEntity.OldProfile , repository , relationshipType);
+                            
                             if (repositoryResponse.Id == 0)
                             {
                                 repositoryResponse.ErrorMessage = "Update User Error: Unable to set new user type.";
