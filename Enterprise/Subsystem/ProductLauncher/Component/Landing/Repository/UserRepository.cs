@@ -2122,14 +2122,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //Get User Details before save
             var userDetails = GetUserDetails(oldProfile.Persona[0].PersonaId);
 
-            //TODO: CG. VALIDATE THIS
-            //Check if ONLY user profile changed without any product changes
-            bool profileChanged = IsUserProfileChanged(newProfile, userDetails);
-            bool loginNamechanged = isUserLoginNameChanged(newProfile, userDetails);
-
-            //TODO: CG. THIS VARIABLE IS NOT NECESSARY BECASUE WE ALREADY HAVE IT IN OLDPROFILE
-            userDetails.IsActive = currentOrgStatus.IsActive;
-
             //If user is activated from deactivate status ,get all products data which are previously assigned to user
             if (newProfile.userLogin.Status == UserUiStatusType.Disabled)
             {
@@ -2178,11 +2170,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 NewProfile = newProfile,
                 OldProfile = oldProfile,
                 CreateUserPersonaId = createUserPersonaId,
-                GreenBookRole = 0, //It is declared at the begin, it must be decalre in UpdateUserDatabase method, not here.
                 SaveProductBatchError = saveProductBatchError,
-                ContactMechanismId = null, //It is declared at the begin, it must be decalre in UpdateUserDatabase method, not here.
-                UserIsActive = newProfile.userLogin.IsActive.GetBooleanValue(), //We created a extension method for this, we must delete the UserIsActive variable
-                IsFeatureUser = false, //This is just declared at the begin and false and that's it, It must be declare only in the UpdateUserDatabase method, not here
                 IsCurrentOrgThePrimaryOrg = isCurrentOrgThePrimaryOrg,
                 IdentityProviderTypeList = identityProviderTypeList,
                 ProductBatchData = productBatchData,
@@ -2190,17 +2178,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 OrganizationExternalUser = organizationExternalUser,
                 UserLoginOnly = userLoginOnly,
                 UserPersonaOrganizationList = userPersonaOrganizationList,
-                Persona = oldProfile.Persona[0], //This object we can get it from the oldprofile object
-                CurrentOrgPartyId = oldProfile.Persona[0].OrganizationPartyId, //This variable we have it in oldProfile.Persona[0].OrganizationPartyId. We do not need this variable
-                AssignUserPersonaId = oldProfile.Persona[0].PersonaId, //It is the personId. We should delete this
                 ExistingRoleId = existingRoleId,
                 CurrentPrimaryOrgStatus = currentPrimaryOrgStatus,
                 CurrentOrgStatus = currentOrgStatus,
                 PersonaList = personaList,
                 AoProductsAvailableForUser = aoProductsAvailableForUser,
-                UserDetails = userDetails, //This is not necessary becasuse we already have the oldProfile
-                ProfileChanged = profileChanged,//pending
-                LoginNamechanged = loginNamechanged, //Pending
                 UserIsExternalEverywhere = userIsExternalEverywhere,
                 CurrentOrg = currentOrg,
                 EditorAssignedPersonaList = editorAssignedPersonaList
@@ -3857,16 +3839,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// IsUserProfileChanged
         /// </summary>
         /// <param name="profile"></param>
-        /// <param name="userDetails"></param>
+        /// <param name="oldProfile"></param>
         /// <returns></returns>
-        private bool IsUserProfileChanged(IProfileDetail profile, UserDetails userDetails)
+        private bool IsUserProfileChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
             bool isChanged = (
-                (!profile.FirstName.Equals(userDetails.FirstName))
+                (!profile.FirstName.Equals(oldProfile.FirstName))
                 ||
-                (!string.IsNullOrEmpty(profile.MiddleName) && !profile.MiddleName.Equals(userDetails.MiddleName))
+                (!string.IsNullOrEmpty(profile.MiddleName) && !profile.MiddleName.Equals(oldProfile.MiddleName))
                 ||
-                (!profile.LastName.Equals(userDetails.LastName))
+                (!profile.LastName.Equals(oldProfile.LastName))
+            );
+            return isChanged;
+        }
+
+        /// <summary>
+        /// IsUserProfileChanged
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="userDetail"></param>
+        /// <returns></returns>
+        private bool IsUserProfileChanged(IProfileDetail profile, UserDetails userDetail)
+        {
+            bool isChanged = (
+                (!profile.FirstName.Equals(userDetail.FirstName))
+                ||
+                (!string.IsNullOrEmpty(profile.MiddleName) && !profile.MiddleName.Equals(userDetail.MiddleName))
+                ||
+                (!profile.LastName.Equals(userDetail.LastName))
             );
             return isChanged;
         }
@@ -3875,13 +3875,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// isUserLoginNameChanged
         /// </summary>
         /// <param name="profile"></param>
-        /// <param name="userDetails"></param>
+        /// <param name="oldProfile"></param>
         /// <returns></returns>
-        private bool isUserLoginNameChanged(IProfileDetail profile, UserDetails userDetails)
+        private bool isUserLoginNameChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
-            bool isChanged = !profile.userLogin.LoginName.Equals(userDetails.LoginName);
-
-            return isChanged;
+            return !profile.userLogin.LoginName.Equals(oldProfile.userLogin.LoginName);
         }
 
         /// <summary>
@@ -4525,6 +4523,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Uptate the person's info
+        /// </summary>
+        /// <param name="newProfile">New Profile</param>
+        /// <param name="repository">IRepository Object</param>
+        private void UptatePerson(IProfileDetail newProfile , IRepository repository)
+        {
+            //Setup the parameter values to update the person's info
+             var param = new
+            {
+                RealPageId = newProfile.RealPageId,
+                FirstName = newProfile.FirstName,
+                MiddleName = newProfile.MiddleName,
+                LastName = newProfile.LastName
+            };
+
+            //Update the person's info
+            var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
+            if (repositoryResponse.Id == 0)
+            {
+                repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
+                throw new Exception(repositoryResponse.ErrorMessage);
+            }
+        }
+
+        /// <summary>
         /// Final method to update the user in the database
         /// </summary>
         /// <param name="updateUserProfileEntity">Update user profile entity</param>
@@ -4536,39 +4559,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             UserBatchEntity userBatchEntity;
+            bool isFeatureUser = false;
             using (var repository = GetRepository())
             {
                 //Begin the transaction
                 repository.UnitOfWork.BeginTransaction();
 
+                int greenBookRole = 0;
+
                 userBatchEntity = GetUserBatch(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile, updateUserProfileEntity.UserIsExternalEverywhere);
+                
+                bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
+                bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
                 //We can get this with the oldProfile
-                var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = updateUserProfileEntity.Persona.Organization.RealPageId });
+                var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
                 try
                 {
-                    repositoryResponse.Id = updateUserProfileEntity.UserDetails.PersonPartyId;
+                    repositoryResponse.Id = updateUserProfileEntity.OldProfile.Persona[0].PersonPartyId;
 
                     #region Update Person
 
-                    if ((updateUserProfileEntity.ProfileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
+                    if ((profileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
                     {
-                        //Setup the parameter values to update the person's info
-                        param = new
-                        {
-                            RealPageId = updateUserProfileEntity.NewProfile.RealPageId,
-                            FirstName = updateUserProfileEntity.NewProfile.FirstName,
-                            MiddleName = updateUserProfileEntity.NewProfile.MiddleName,
-                            LastName = updateUserProfileEntity.NewProfile.LastName
-                        };
-                        //Update the person's info
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePerson, param);
-                        if (repositoryResponse.Id == 0)
-                        {
-                            repositoryResponse.ErrorMessage = "Update User Error: Update person failed.";
-                            throw new Exception(repositoryResponse.ErrorMessage);
-                        }
-
+                        UptatePerson(updateUserProfileEntity.NewProfile , repository);
                     }
                     #endregion
 
@@ -4601,7 +4615,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (updateUserProfileEntity.NewProfile.userLogin != null)
                         {
                             //check to see if user from date changed to feature date
-                            updateUserProfileEntity.IsFeatureUser = updateUserProfileEntity.NewProfile.userLogin.FromDate.Value.Date > DateTime.Now.Date ? true : false;
+                            isFeatureUser = updateUserProfileEntity.NewProfile.userLogin.FromDate.Value.Date > DateTime.Now.Date ? true : false;
 
                             if (updateUserProfileEntity.NewProfile.userLogin.ThruDate == null)
                             {
@@ -4614,7 +4628,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 LoginName = ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))) ? updateUserProfileEntity.NewProfile.userLogin.LoginName : updateUserProfileEntity.UserLoginOnly.LoginName,
                                 FromDate = updateUserProfileEntity.NewProfile.userLogin.FromDate.Value,
                                 ThruDate = updateUserProfileEntity.NewProfile.userLogin.ThruDate,
-                                PartyId = updateUserProfileEntity.Persona.OrganizationPartyId
+                                PartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId
                             };
                             repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, param);
                             if (repositoryResponse.Id == 0)
@@ -4624,7 +4638,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
 
                             //UserType Changed To External OR From External
-                            string changeUserTypeExternal = ChangeUserTypeExternal(repository, updateUserProfileEntity.OrganizationExternalUser, updateUserProfileEntity.CurrentPrimaryOrgStatus, updateUserProfileEntity.NewProfile, updateUserProfileEntity.Persona, updateUserProfileEntity.UserPersonaOrganizationList, updateUserProfileEntity.EmailUsageType, updateUserProfileEntity.UserLoginOnly, idpt, userBatchEntity.UserTypeChangedToFromExternal);
+                            string changeUserTypeExternal = ChangeUserTypeExternal(repository, updateUserProfileEntity.OrganizationExternalUser, updateUserProfileEntity.CurrentPrimaryOrgStatus, updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile.Persona[0], updateUserProfileEntity.UserPersonaOrganizationList, updateUserProfileEntity.EmailUsageType, updateUserProfileEntity.UserLoginOnly, idpt, userBatchEntity.UserTypeChangedToFromExternal);
                             if (changeUserTypeExternal != string.Empty)
                             {
                                 repositoryResponse.ErrorMessage = changeUserTypeExternal;
@@ -4639,7 +4653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     param = new
                                     {
                                         UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
-                                        OrganizationPartyId = updateUserProfileEntity.CurrentOrgPartyId
+                                        OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId
                                     };
                                     IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
 
@@ -4742,7 +4756,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     param = new
                                     {
                                         RealPageId = updateUserProfileEntity.NewProfile.RealPageId,
-                                        OrganizationPartyId = updateUserProfileEntity.Persona.OrganizationPartyId,
+                                        OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId,
                                         StatusTypeId = statusTypeId,
                                         FromDate = updateUserProfileEntity.NewProfile.userLogin.FromDate,
                                         StatusThruDate = statusThruDate
@@ -4776,9 +4790,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             param = new
                             {
-                                PersonaId = updateUserProfileEntity.AssignUserPersonaId,
+                                PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId,
                                 PersonaTypeId = personaTypeId,
-                                PersonaEnvironmentTypeId = updateUserProfileEntity.Persona.PersonaEnvironmentTypeId
+                                PersonaEnvironmentTypeId = updateUserProfileEntity.OldProfile.Persona[0].PersonaEnvironmentTypeId
                             };
                             repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersona, param);
                             if (repositoryResponse.Id == 0)
@@ -4799,7 +4813,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         dynamic paramRelType = new
                         {
                             RealPageIdFrom = updateUserProfileEntity.NewProfile.RealPageId,
-                            RealPageIdTo = updateUserProfileEntity.Persona.Organization.RealPageId,
+                            RealPageIdTo = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId,
                             RoleTypeName = roleTypeName,
                             RelationshipTypeName = relationshipTypeName
                         };
@@ -4811,7 +4825,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             param = new
                             {
                                 PersonRealPageId = updateUserProfileEntity.NewProfile.RealPageId,
-                                OrganizationRealPageId = updateUserProfileEntity.Persona.Organization.RealPageId,
+                                OrganizationRealPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId,
                                 UnlinkRoleTypeIdFrom = relationshipType.RoleTypeIdFrom,
                                 LinkRoleTypeIdFrom = updateUserProfileEntity.NewProfile.UserTypeId,
                                 RoleTypeIdTo = relationshipType.RoleTypeIdTo
@@ -4862,7 +4876,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (userContactMechanismId != 0)
                         {
                             // the user already had the contact mechanism so update id
-                            if ((updateUserProfileEntity.NewProfile.UserTypeId != (int)UserRoleType.UserNoEmail) && updateUserProfileEntity.LoginNamechanged)
+                            if ((updateUserProfileEntity.NewProfile.UserTypeId != (int)UserRoleType.UserNoEmail) && loginNamechanged)
                             {
                                 param = new
                                 {
@@ -4915,7 +4929,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Save the notification email if it exists
-                        if (updateUserProfileEntity.NewProfile.NotificationEmail != null && (updateUserProfileEntity.IsFeatureUser || (priorNotificationEmail.ToLower() != updateUserProfileEntity.NewProfile.NotificationEmail.ToLower())) && !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.NotificationEmail))
+                        if (updateUserProfileEntity.NewProfile.NotificationEmail != null && (isFeatureUser || (priorNotificationEmail.ToLower() != updateUserProfileEntity.NewProfile.NotificationEmail.ToLower())) && !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.NotificationEmail))
                         {
                             if (EmailFormatValidation.IsValidEmail(updateUserProfileEntity.NewProfile.NotificationEmail))
                             {
@@ -4932,10 +4946,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 electronicAddress.ContactMechanismUsageType.ContactMechanismUsageTypeId = (int)EmailContactMechanism.ContactMechanismUsageTypeId;
                                 addressType = EmailContactMechanism.Name;
 
-                                updateUserProfileEntity.ContactMechanismId = null;
+                                long? contactMechanismId = null;
                                 param = new
                                 {
-                                    ContactMechanismId = updateUserProfileEntity.ContactMechanismId
+                                    ContactMechanismId = contactMechanismId
                                 };
 
                                 //Create Contact Mechanism
@@ -4946,12 +4960,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     throw new Exception(repositoryResponse.ErrorMessage);
                                 }
 
-                                updateUserProfileEntity.ContactMechanismId = repositoryResponse.Id;
+                                contactMechanismId = repositoryResponse.Id;
 
                                 //Associate the Contact Mechanism to a Party
                                 IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
                                 partyContactMechanism = electronicAddress.PartyContactMechanism;
-                                partyContactMechanism.ContactMechanismId = Convert.ToInt32(updateUserProfileEntity.ContactMechanismId);
+                                partyContactMechanism.ContactMechanismId = Convert.ToInt32(contactMechanismId);
                                 partyContactMechanism.PartyContactMechanismId = partyContactMechanismId;
 
                                 param = new
@@ -4986,7 +5000,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                 param = new
                                 {
-                                    ContactMechanismId = updateUserProfileEntity.ContactMechanismId,
+                                    ContactMechanismId = contactMechanismId,
                                     ElectronicAddressString = updateUserProfileEntity.NewProfile.NotificationEmail,
                                     ElectronicAddressType = addressType
                                 };
@@ -4999,7 +5013,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
 
                                 // "Pending email notification" For Feature user
-                                if (idpt.IsLocal && updateUserProfileEntity.IsFeatureUser)
+                                if (idpt.IsLocal && isFeatureUser)
                                 {
                                     IList<CommonAddress> contactMechanismList = ListContactMechanismForPerson(repository, updateUserProfileEntity.CurrentOrg.RealPageId, updateUserProfileEntity.EmailUsageType);
                                     var fromPartyContactMechanismId = contactMechanismList[0].PartyContactMechanismId;
@@ -5029,18 +5043,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
-                        if (updateUserProfileEntity.UserIsActive && !userBatchEntity.UserTypeChanged)
+                        if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
-                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.AssignUserPersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.Persona.Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.UserIsActive, updateUserProfileEntity.AoProductsAvailableForUser);
-
+                            int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser);
                         }
 
-                        if (!updateUserProfileEntity.UserIsActive)
+                        if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
                         {
-                            DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.AssignUserPersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
+                            DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
                         }
 
-                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (updateUserProfileEntity.ProfileChanged || updateUserProfileEntity.LoginNamechanged || (!priorNotificationEmail.Equals(updateUserProfileEntity.NewProfile.NotificationEmail, StringComparison.OrdinalIgnoreCase))))
+                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || (!priorNotificationEmail.Equals(updateUserProfileEntity.NewProfile.NotificationEmail, StringComparison.OrdinalIgnoreCase))))
                         {
                             updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
                             {
@@ -5048,18 +5061,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             });
                         }
 
-                        if (updateUserProfileEntity.UserIsActive && userBatchEntity.UserTypeChanged)
+                        if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && userBatchEntity.UserTypeChanged)
                         {
-                            SaveUserProductBatchData(repository, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.AssignUserPersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.Persona.Organization.RealPageId, null, userBatchEntity.BatchProcessUserType, updateUserProfileEntity.ProductBatchData, updateUserProfileEntity.AoProductsAvailableForUser, updateUserProfileEntity.NewProfile.UserTypeId);
+                            SaveUserProductBatchData(repository, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, userBatchEntity.BatchProcessUserType, updateUserProfileEntity.ProductBatchData, updateUserProfileEntity.AoProductsAvailableForUser, updateUserProfileEntity.NewProfile.UserTypeId);
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
-                        updateUserProfileEntity.GreenBookRole = 0;
 
                         var gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedLogin);
                         if (gbProdBatch != null)
                         {
-                            updateUserProfileEntity.GreenBookRole = GetGreenBookRole(gbProdBatch);
+                            greenBookRole = GetGreenBookRole(gbProdBatch);
                         }
                         else
                         {
@@ -5076,22 +5088,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                 if (SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId)
                                 {
-                                    updateUserProfileEntity.GreenBookRole = enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId;
+                                    greenBookRole = enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId;
                                 }
                                 else
                                 {
                                     var paramDefaultRole = new
                                     {
-                                        RealPageID = updateUserProfileEntity.Persona.Organization.RealPageId
+                                        RealPageID = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId
                                     };
                                     var defaultRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole, paramDefaultRole);
 
-                                    updateUserProfileEntity.GreenBookRole = defaultRole != null ? defaultRole.RoleId : enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId;
+                                    greenBookRole = defaultRole != null ? defaultRole.RoleId : enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId;
                                 }
                             }
                         }
 
-                        UpdateGreenBookRole(repository, updateUserProfileEntity.GreenBookRole, updateUserProfileEntity.AssignUserPersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.Persona.Organization.RealPageId, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.ExistingRoleId);
+                        UpdateGreenBookRole(repository, greenBookRole, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.ExistingRoleId);
 
                         if (updateUserProfileEntity.SaveProductBatchError != "Save Product(s) Error: ")
                         {
@@ -5134,12 +5146,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 // Activity logging
                 if (repositoryResponse.Id > 0 || string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
                 {
-                    if (updateUserProfileEntity.GreenBookRole != 0 && updateUserProfileEntity.GreenBookRole != updateUserProfileEntity.ExistingRoleId && updateUserProfileEntity.ExistingRoleId != 0)
+                    if (greenBookRole != 0 && greenBookRole != updateUserProfileEntity.ExistingRoleId && updateUserProfileEntity.ExistingRoleId != 0)
                     {
                         if (enterpriseRoles != null)
                         {
                             var existingUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.ExistingRoleId).Select(e => e.Role).FirstOrDefault();
-                            var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == updateUserProfileEntity.GreenBookRole).Select(e => e.Role).FirstOrDefault();
+                            var newUserRole = enterpriseRoles.ToList().Where(e => e.RoleId == greenBookRole).Select(e => e.Role).FirstOrDefault();
                             var auditMessage = $"{{2}} {{3}} changed the Unified Platform role from {existingUserRole} to {newUserRole} for {{0}} {{1}}.";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, auditMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
