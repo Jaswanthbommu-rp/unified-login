@@ -335,6 +335,9 @@
     <Compile Include="Landing\Product\Ops\Extensions\RoleExtensions.cs" />
     <Compile Include="Landing\SerializerContractResolver.cs" />
     <Compile Include="Landing\UserDetails.cs" />
+    <Compile Include="Landing\UserUpdate\UpdateUserProfileEntity.cs" />
+    <Compile Include="Landing\UserUpdate\EditorAssignedPersona.cs" />
+    <Compile Include="Landing\UserUpdate\UserBatchEntity.cs" />
     <Compile Include="Mappers\ProfileDetailsMapper.cs" />
     <Compile Include="Mappers\UserDetailsMapper.cs" />
     <Compile Include="Product\Accounting\AccountingRoleAndPropertyList.cs" />
