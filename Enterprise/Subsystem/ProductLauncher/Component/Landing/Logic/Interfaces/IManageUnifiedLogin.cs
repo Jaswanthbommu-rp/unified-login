@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
@@ -83,6 +84,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Returns Roles with assigned rights for User (User Access Groups in UserManagement)
         /// </summary>
         ListResponse GetUserRolesWithRights(long editorPersonaId, long userPersonaId, long partyId);
+
+        /// <summary>
+        /// Used to get the list of properties for the company or for the given user
+        /// </summary>
+        ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
 
     }
 }

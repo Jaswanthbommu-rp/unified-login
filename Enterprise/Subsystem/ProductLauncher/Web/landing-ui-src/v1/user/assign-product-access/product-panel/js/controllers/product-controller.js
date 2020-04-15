@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, tabsModel, userDetailsModel, switchConfig, cntrlSvc, templateModel) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, tabsModel, userDetailsModel, switchConfig, cntrlSvc, templateModel, menuConfig) {
         var vm = this,
             active = false,
             panelNmae = "",
@@ -244,7 +244,6 @@ logc("vm.tabsList", vm.tabsList);
                             if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
                                 tabGrp.controls.forEach(function (ctrl) {
                                     if (ctrl.type === 'Switch') {
-                                        logc("switch control", ctrl);
                                         var c = {
                                             id: ctrl.id,
                                             text: ctrl.displayName,
@@ -257,9 +256,8 @@ logc("vm.tabsList", vm.tabsList);
                                         aSwitch.push(c);
                                     }
                                 });
-                                //logc("aSwitch", aSwitch);
+
                                 if (aSwitch.length > 0) {
-                                    logc("aSwitch", aSwitch);
                                     productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
                                 }
                             }
@@ -267,7 +265,41 @@ logc("vm.tabsList", vm.tabsList);
                     }
                 });
             }
-            // return aSwitch;
+        };
+
+        vm.setSelectConfigs = function (data) {
+            var aSwitch = [];
+            //Check and Set any Switch
+            if (data && data.controls) {
+                data.controls.forEach(function (tabControl) {
+                    if (tabControl.type === 'Tab Group') {
+                        tabControl.controls.forEach(function (tabGrp) {
+                            aSwitch = [];
+                            var tabName = tabGrp.displayName.replace(/ /g, "");
+                            if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
+                                tabGrp.controls.forEach(function (ctrl) {
+                                    if (ctrl.type === 'Switch') {
+                                        var c = {
+                                            id: ctrl.id,
+                                            text: ctrl.displayName,
+                                            key: ctrl.dataSource,
+                                            configData: switchConfig({
+                                                onChange: vm.noop,
+                                                disabled: false
+                                            })
+                                        };
+                                        aSwitch.push(c);
+                                    }
+                                });
+
+                                if (aSwitch.length > 0) {
+                                    productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
         };
 
         vm.setState = function (value) {
@@ -328,6 +360,7 @@ logc("vm.tabsList", vm.tabsList);
             "rpSwitchConfig",
             "productControlsSvc",
             "productTemplateModel",
+            "rpFormSelectMenuConfig",
             ProductCommonCtrl
         ]);
 })(angular);
