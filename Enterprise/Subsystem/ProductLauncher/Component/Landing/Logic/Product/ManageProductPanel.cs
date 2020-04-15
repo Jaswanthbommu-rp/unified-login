@@ -132,7 +132,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.DepositAlternative:
 					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
 					result = productDALogic.GetProductProperties(datafilter);
-					break;			
+					break;
+				case (int)ProductEnum.UnifiedLogin:
+					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+					result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+					break;
 				default:
 					break;
 			}

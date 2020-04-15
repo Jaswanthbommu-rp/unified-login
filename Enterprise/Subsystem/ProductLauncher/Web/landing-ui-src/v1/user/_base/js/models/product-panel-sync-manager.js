@@ -28,6 +28,8 @@
             s.productTabsMap = {};
             s.productActiveTabMap = {};
 
+            s.originalPropertyListMap = {};
+
             s.productControlsList = {
                 products: []
             };
@@ -182,7 +184,8 @@
             return controlId;
         };
 
-         p.getProductAllTabs = function (product) {
+
+        p.getProductAllTabs = function (product) {
             var s = this,
                 productTabsList;
 
@@ -505,7 +508,7 @@
             };
         };
 
-         p.renderProductTabsMap = function (key, allTabs, initTab) {
+        p.renderProductTabsMap = function (key, allTabs, initTab) {
             var s = this;
 
             s.productTabsMap['product' + key] = {
@@ -529,6 +532,23 @@
                     properties: s.propertyList,
                     allProperties: false,
                     newPropertyByDefault: false
+                };
+            }
+        };
+
+        p.renderOriginalPropertyListMap = function (key) {
+            var s = this,
+                assignedProp = [];
+
+            if (!angular.equals({}, s.propertyList)) {
+                s.propertyList.forEach(function (item) {
+                    if (item.isAssigned) {
+                        assignedProp.push(item.id);
+                    }
+                });
+
+                s.originalPropertyListMap['product' + key] = {
+                    properties: s.assignedProp
                 };
             }
         };

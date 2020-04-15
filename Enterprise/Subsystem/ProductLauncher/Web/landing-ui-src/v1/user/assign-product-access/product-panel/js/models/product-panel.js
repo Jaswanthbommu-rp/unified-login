@@ -17,7 +17,6 @@
             s.roleGridActive = false;
             s.propertyGridActive = false;
             s.changed = false;
-            s.roleRights = [];
 
             s.data = {
                 "records": []
@@ -30,6 +29,7 @@
                 inputJson: {
                     roleList: [],
                     propertyList: [],
+                    removedPropertyList: [],
                     isAssignedNewPropertyByDefault: false
                 }
             };
@@ -68,14 +68,16 @@
             return s;
         };
 
-        p.setRoleRights = function (list) {
-            var s = this;
-            s.roleRights = [];
-            list.forEach(function (item) {
-                s.roleRights.push(item.rightNickName.toLowerCase());
-            });
-            return s;
-        };
+
+        // p.setRoleRights = function (list) {
+        //     var s = this;
+        //     s.roleRights = [];
+        //     list.forEach(function (item) {
+        //         s.roleRights.push(item.rightNickName.toLowerCase());
+        //     });
+        //     return s;
+        // };
+
 
         p.isRoleGridActive = function () {
             var s = this;
@@ -93,10 +95,10 @@
             return s.propertyGridActive;
         };
 
-         p.getRoleRights = function () {
-            var s = this;
-            return s.roleRights;
-        };
+        //  p.getRoleRights = function () {
+        //     var s = this;
+        //     return s.roleRights;
+        // };
 
         p.getData = function (productId) {
             var s = this,
@@ -124,7 +126,7 @@
                 s.batchData.inputJson.propertyList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14") {
+                    if (productId == "14" && productId == "3") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
                     else {
@@ -135,6 +137,9 @@
                     properties.forEach(function (prop) {
                         if (prop.isAssigned) {
                             s.batchData.inputJson.propertyList.push(prop.id);
+                        }
+                        if (!prop.isAssigned && prop.originalProperty) {
+                            s.batchData.inputJson.removedPropertyList.push(prop.id);
                         }
                     });
 

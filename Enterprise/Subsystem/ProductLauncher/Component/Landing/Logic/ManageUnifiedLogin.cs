@@ -4,6 +4,8 @@ using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -38,7 +40,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Public Methods
 
         #region Properties and Roles
+        /// <summary>
+		/// Used to get the list of properties for the company or for the given user
+		/// </summary>
+		/// <param name="editorPersonaId">User making the request</param>
+		/// <param name="userPersonaId">The user id to merge with the property list, if used. 0 for all properties</param>
+		/// <param name="assignedOnly">Only return the properties assigned to the given user persona id</param>
+		/// <param name="datafilter">A datafilter used to filter the properties. Not currently used</param>
+		/// <returns></returns>
+		public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
 
+            try
+            {
+                result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (result.IsError)
+                {
+                    WriteToErrorLog($"ManageUnifiedLogin.GetProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                //long companyId = _editorPersona.Organization.BooksMasterId;
+                long companyMasterId = _editorPersona.Organization.BooksCustomerMasterId;
+
+                if (companyMasterId == 0)
+                {
+                    WriteToErrorLog($"ManageUnifiedLogin.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                }
+
+                IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
+                IList<CustomerProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
+
+                IList<ProductProperty> blueBookPropertyList = FromBlueBookMasterPropertyToGBProperties(customerPropertyList) ?? new List<ProductProperty>();
+                WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
+
+                // need to do a filter on the result
+                if (userPersonaId != 0)
+                {
+                    WriteToDiagnosticLog($"GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    result = MergeProductPropertiesWithGreenbook(blueBookPropertyList, userPersonaId, assignedOnly);
+                    WriteToDiagnosticLog($"GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                }
+                else
+                {
+                    result = new ListResponse() // create new user
+                    {
+                        Records = blueBookPropertyList.Cast<object>().ToList(),
+                        TotalRows = blueBookPropertyList.Count,
+                        RowsPerPage = blueBookPropertyList.Count,
+                        TotalPages = 1,
+                        ErrorReason = string.Empty
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                result.IsError = true;
+                result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+                WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
+                    exception: ex);
+            }
+
+            return result;
+        }
+
+       
         /// <summary>
         /// Used to add/update a role in Greenbook
         /// </summary>
@@ -1610,7 +1679,70 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<Property> prop = ocr.ListPropByPersona(userPersonaId, productId);
             return prop;
         }
-		
+
+        /// <summary>
+        /// Used to merge product property data with Unifed Login property data for the user
+        /// </summary>
+        /// <param name="blueBookPropertyList">The list of properties from BlueBook</param>
+        /// <param name="userPersonaId">The user id to filter on</param>
+        /// <param name="assignedOnly">Only return assigned records</param>
+        /// <returns></returns>
+        private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
+        {
+            // merge the given user details with the list
+            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedLogin);
+
+            foreach (var property in propertyList)
+            {
+                if (blueBookPropertyList.Any(a => a.ID == property.ID.ToString()))
+                {
+                    ProductProperty pp = (from a in blueBookPropertyList
+                                          where a.ID == property.ID.ToString()
+                                          select a).FirstOrDefault();
+                    if (pp != null)
+                    {
+                        pp.IsAssigned = true;
+                    }
+                }
+            }
+
+            if (assignedOnly)
+            {
+                blueBookPropertyList = blueBookPropertyList.Where(a => a.IsAssigned == true).ToList();
+            }
+
+            return new ListResponse()
+            {
+                Records = blueBookPropertyList.Cast<object>().ToList(),
+                TotalRows = blueBookPropertyList.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = null
+            };
+        }
+
+        /// <summary>
+		/// Used to convert a BlueBook master property into a GreenBook property
+		/// </summary>
+		/// <param name="properties"></param>
+		/// <returns></returns>
+		private IList<ProductProperty> FromBlueBookMasterPropertyToGBProperties(IList<CustomerProperty> properties)
+        {
+            if (properties == null) return null;
+            IList<ProductProperty> results = new List<ProductProperty>();
+            foreach (var property in properties)
+            {
+                results.Add(new ProductProperty
+                {
+                    ID = property.propertyId.ToString(),
+                    Name = property.name,
+                    Street1 = property.street,
+                    State = property.state
+                });
+            }
+            return results;
+        }
         #endregion
     }
 	
