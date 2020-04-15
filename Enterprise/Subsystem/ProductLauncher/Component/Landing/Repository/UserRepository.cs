@@ -2188,7 +2188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 EditorAssignedPersonaList = editorAssignedPersonaList
             };
 
-            return UpdateUserDatabase(updateUserProfileEntity);
+            return UpdateUserData(updateUserProfileEntity);
         }
 
         /// <summary>
@@ -4599,7 +4599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="updateUserProfileEntity">Update user profile entity</param>
         /// <returns>A repository response</returns>
-        private RepositoryResponse UpdateUserDatabase(UpdateUserProfileEntity updateUserProfileEntity)
+        private RepositoryResponse UpdateUserData(UpdateUserProfileEntity updateUserProfileEntity)
         {
             dynamic param;
             DateTime utcNow = DateTime.UtcNow;
