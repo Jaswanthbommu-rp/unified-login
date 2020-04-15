@@ -1,45 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	/// <summary>
-	/// Manage Role Type repository calls
-	/// </summary>
-	public class ManageRoleType : IManageRoleType
-	{
-		#region Private Variables
-		IRoleTypeRepository _roleTypeRepository;
+    /// <summary>
+    /// Manage Role Type repository calls
+    /// </summary>
+    public class ManageRoleType : IManageRoleType
+    {
+        #region Private Variables
+
+        readonly IRoleTypeRepository _roleTypeRepository;
         IList<RoleType> _roleTypeList = new List<RoleType>();
+
         #endregion
 
         #region Constructors
+
         /// <summary>
         /// Role Type Repository Constructor
         /// </summary>
         /// <param name="roleTypeRepository">Role Type Repository</param>
         public ManageRoleType(IRoleTypeRepository roleTypeRepository)
-		{
-			_roleTypeRepository = roleTypeRepository;
-		}
+        {
+            _roleTypeRepository = roleTypeRepository;
+        }
 
-		/// <summary>
-		/// Create a basic instance of the ManageOrganization Controller class
-		/// </summary>
-		public ManageRoleType()
-		{
-			_roleTypeRepository = new RoleTypeRepository();
-		}
+        /// <summary>
+        /// Create a basic instance of the ManageOrganization Controller class
+        /// </summary>
+        public ManageRoleType()
+        {
+            _roleTypeRepository = new RoleTypeRepository();
+        }
+
         #endregion
 
         #region Public Methods
+
         /// <summary>
         /// Get RoleType
         /// </summary>
@@ -74,6 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region Private Methods
+
         /// <summary>
         /// Filter RoleType list
         /// </summary>
@@ -84,32 +89,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>List of RoleType object</returns>
         private IList<RoleType> FilterRoleType(IList<RoleType> roleTypeList, string loginName, long? partyId, long? orgMasterId)
         {
-            if ((roleTypeList != null) && (!string.IsNullOrWhiteSpace(loginName)))
+            if (roleTypeList != null && !string.IsNullOrWhiteSpace(loginName))
             {
                 IManageUserLogin manageUserLogin = new ManageUserLogin();
                 IList<UserOrganization> userPersonaOrganizationList = manageUserLogin.GetUserPersonaOrganization(loginName);
-				if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
+                if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
                 {
-					if (userPersonaOrganizationList.ToList().Any(i => !i.OrganizationPartyId.Equals(partyId) && !i.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)))
-					{
-						roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)).ToList();
-					}
-
-					if (userPersonaOrganizationList.ToList().Any(i => i.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)))
-					{
-						roleTypeList = roleTypeList.ToList().Where(r => !r.PartyRoleTypeId.Equals((int)UserRoleType.UserNoEmail)).ToList();
-					}
-				}
-                else
-                {
-                    if (!string.IsNullOrEmpty(loginName) && loginName.Contains("realpage.com") && orgMasterId != -1)
+                    if (userPersonaOrganizationList.ToList().Any(i => !i.OrganizationPartyId.Equals(partyId) && !i.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)))
                     {
                         roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)).ToList();
                     }
+
+                    if (userPersonaOrganizationList.ToList().Any(i => i.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)))
+                    {
+                        roleTypeList = roleTypeList.ToList().Where(r => !r.PartyRoleTypeId.Equals((int) UserRoleType.UserNoEmail)).ToList();
+                    }
                 }
             }
+
             return roleTypeList;
         }
+
         #endregion
     }
 }

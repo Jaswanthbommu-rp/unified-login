@@ -109,6 +109,7 @@
                 UtilManDataModel.setProperties(vm.properties);
                 if (resp.additional) {
                     vm.setAccessType(resp.additional.accessType);
+                    vm.resetDataModel();
                 }
             }
             if (resp.isError) {
