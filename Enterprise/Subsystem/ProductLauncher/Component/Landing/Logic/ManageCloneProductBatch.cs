@@ -146,7 +146,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)
 					{
 						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(userClaim);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+                        propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
+                        rolesResponse = manageUnifiedAmenities.GetRoles(createUserPersonaId, personaId, product.OrganizationPartyId);
+
+                        productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
 					}
 					else if (product.ProductId == (int)ProductEnum.LeadManagement)
 					{
@@ -783,7 +786,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 			}
 
-			ProductBatch pb = new ProductBatch()
+            // Below logic is applied when a user is being cloned from a user that has access to all properties. 
+            if (propertiesCollection != null && propertyGroupList.Count == 0)
+            {
+                var unselectedPropertiesCount = propertiesCollection.Where(p => ((RumPropertyGroup)p).IsAssigned == false).Count();
+                if (unselectedPropertiesCount == propertiesCollection.Count())
+                    propertyList.Add("All");
+            }
+
+            ProductBatch pb = new ProductBatch()
 			{
 				ProductId = (int)ProductEnum.UtilityManagement,
 				StatusTypeId = 5,
