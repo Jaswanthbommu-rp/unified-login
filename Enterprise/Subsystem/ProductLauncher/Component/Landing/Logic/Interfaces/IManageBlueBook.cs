@@ -73,5 +73,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList);
 
+        IList<CustomerProperty> GetCustomerProperty(long booksCompanyMasterId, string include, string filter);
     }
 }
