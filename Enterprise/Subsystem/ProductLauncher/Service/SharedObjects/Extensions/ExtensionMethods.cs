@@ -29,6 +29,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 .ToArray());
         }
 
+        /// <summary>
+        /// Validate a boolean value state 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>A boolean value</returns>
+        public static bool GetBooleanValue(this bool? value)
+        {
+            if (value.HasValue && value.Value == true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region "Audit"

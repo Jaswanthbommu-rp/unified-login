@@ -129,19 +129,19 @@ DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
 need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
 */
 
-INSERT INTO @ProductConfiguration(SettingName,  SettingDescription,  SettingValue) VALUES('AlternateLoginURL','Alternate URL that can be used for Product Login','https://dev.realpagevendormarketplace.com')
+INSERT INTO @ProductConfiguration(SettingName,  SettingDescription,  SettingValue) VALUES('AlternateLoginURL','Alternate URL that can be used for Product Login','https://dev.realpagevendormarketplace.com/login')
 
 IF @ServerName IN ( 'RCTUSODBSQL001')
 BEGIN
-	Update @ProductConfiguration set SettingValue = 'https://qa.realpagevendormarketplace.com' where SettingName = 'AlternateLoginURL'
+	Update @ProductConfiguration set SettingValue = 'https://qa.realpagevendormarketplace.com/login' where SettingName = 'AlternateLoginURL'
 END
 IF @ServerName IN ( 'RCQUSODBSQL001')
 BEGIN
-	Update @ProductConfiguration set SettingValue = 'https://sat.realpagevendormarketplace.com' where SettingName = 'AlternateLoginURL'
+	Update @ProductConfiguration set SettingValue = 'https://sat.realpagevendormarketplace.com/login' where SettingName = 'AlternateLoginURL'
 END
 IF @ServerName IN ( 'RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
-	Update @ProductConfiguration set SettingValue = 'https://www.realpagevendormarketplace.com' where SettingName = 'AlternateLoginURL'
+	Update @ProductConfiguration set SettingValue = 'https://www.realpagevendormarketplace.com/login' where SettingName = 'AlternateLoginURL'
 END
 
 --The following block picks up all the detail frm Enterprise.ProductSettingType table
