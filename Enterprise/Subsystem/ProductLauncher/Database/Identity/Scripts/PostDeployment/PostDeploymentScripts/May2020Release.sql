@@ -352,3 +352,35 @@ BEGIN
 END;
 
 Go
+
+
+Declare @PartyId int;
+Declare @RoleId int;
+Declare @RightValueTypeId int;
+
+select @PartyId = PartyId from Enterprise.Organization
+where name = 'RealPage Employee'
+
+select @RoleId = r.RoleID from Enterprise.Role r
+inner join Enterprise.RoleValueType rovt
+on rovt.RoleValueTypeId = r.RoleValueTypeId
+where  r.PartyID = @PartyId
+and rovt.Value = 'User Administrator'
+
+select  @RightValueTypeId = r.RightValueTypeId from Enterprise.[Right] r 
+inner join Enterprise.RightValueType rvt
+on rvt.RightValueTypeId = r.RightValueTypeId
+where PartyId = @PartyId
+and r.RoleID = @RoleId
+and ShortName = 'AccessVendorMarketplace'
+
+select * from Enterprise.[Right]
+where RightValueTypeId = @RightValueTypeId
+and PartyId = @PartyId
+
+if exists(select * from Enterprise.[Right] where  RightValueTypeId = @RightValueTypeId and PartyId = @PartyId)
+BEGIN
+	DELETE from Enterprise.[Right] where  RightValueTypeId = @RightValueTypeId and PartyId = @PartyId
+END;
+
+Go
