@@ -102,6 +102,7 @@
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
     <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
     <Compile Include="BlackBook\CustomerCompany.cs" />
+    <Compile Include="BlackBook\CustomerProperty.cs" />
     <Compile Include="BlackBook\InstanceAddress.cs" />
     <Compile Include="BlackBook\InstanceAttribute.cs" />
     <Compile Include="BlackBook\InstancePhone.cs" />
@@ -334,6 +335,9 @@
     <Compile Include="Landing\Product\Ops\Extensions\RoleExtensions.cs" />
     <Compile Include="Landing\SerializerContractResolver.cs" />
     <Compile Include="Landing\UserDetails.cs" />
+    <Compile Include="Landing\UserUpdate\UpdateUserProfileEntity.cs" />
+    <Compile Include="Landing\UserUpdate\EditorAssignedPersona.cs" />
+    <Compile Include="Landing\UserUpdate\UserBatchEntity.cs" />
     <Compile Include="Mappers\ProfileDetailsMapper.cs" />
     <Compile Include="Mappers\UserDetailsMapper.cs" />
     <Compile Include="Product\Accounting\AccountingRoleAndPropertyList.cs" />

@@ -222,6 +222,7 @@
     <Compile Include="Controllers\AccessController.cs" />
     <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Controllers\BatchProcessController.cs" />
+    <Compile Include="Controllers\BlueBookController.cs" />
     <Compile Include="Controllers\ClientSetupController.cs" />
     <Compile Include="Controllers\ConfigurationSettingController.cs" />
     <Compile Include="Controllers\ContactMechanismController.cs" />
