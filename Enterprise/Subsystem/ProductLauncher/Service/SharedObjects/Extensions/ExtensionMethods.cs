@@ -127,9 +127,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                 {
                                     auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
                                        internalAttribute.ColumnName,
-                                       " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
+                                       newValueIsDate || oldValueIsDate ? " date from " :" from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
                                        " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                       " on the ", entityAffected,
+                                       newValueIsDate || oldValueIsDate ? " CST" : " on the ", newValueIsDate || oldValueIsDate ? string.Empty :entityAffected,
                                        " for {0} {1}.");
 
                                     result.Add(auditRecord);
