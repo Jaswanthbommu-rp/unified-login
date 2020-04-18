@@ -129,19 +129,19 @@ DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
 need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
 */
 
-INSERT INTO @ProductConfiguration(SettingName,  SettingDescription,  SettingValue) VALUES('AlternateLoginURL','Alternate URL that can be used for Product Login','https://dev.realpagevendormarketplace.com')
+INSERT INTO @ProductConfiguration(SettingName,  SettingDescription,  SettingValue) VALUES('AlternateLoginURL','Alternate URL that can be used for Product Login','https://dev.realpagevendormarketplace.com/login')
 
 IF @ServerName IN ( 'RCTUSODBSQL001')
 BEGIN
-	Update @ProductConfiguration set SettingValue = 'https://qa.realpagevendormarketplace.com' where SettingName = 'AlternateLoginURL'
+	Update @ProductConfiguration set SettingValue = 'https://qa.realpagevendormarketplace.com/login' where SettingName = 'AlternateLoginURL'
 END
 IF @ServerName IN ( 'RCQUSODBSQL001')
 BEGIN
-	Update @ProductConfiguration set SettingValue = 'https://sat.realpagevendormarketplace.com' where SettingName = 'AlternateLoginURL'
+	Update @ProductConfiguration set SettingValue = 'https://sat.realpagevendormarketplace.com/login' where SettingName = 'AlternateLoginURL'
 END
 IF @ServerName IN ( 'RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
-	Update @ProductConfiguration set SettingValue = 'https://www.realpagevendormarketplace.com' where SettingName = 'AlternateLoginURL'
+	Update @ProductConfiguration set SettingValue = 'https://www.realpagevendormarketplace.com/login' where SettingName = 'AlternateLoginURL'
 END
 
 --The following block picks up all the detail frm Enterprise.ProductSettingType table
@@ -349,6 +349,38 @@ IF NOT EXISTS
 BEGIN
 	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
 	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
+END;
+
+Go
+
+
+Declare @PartyId int;
+Declare @RoleId int;
+Declare @RightValueTypeId int;
+
+select @PartyId = PartyId from Enterprise.Organization
+where name = 'RealPage Employee'
+
+select @RoleId = r.RoleID from Enterprise.Role r
+inner join Enterprise.RoleValueType rovt
+on rovt.RoleValueTypeId = r.RoleValueTypeId
+where  r.PartyID = @PartyId
+and rovt.Value = 'User Administrator'
+
+select  @RightValueTypeId = r.RightValueTypeId from Enterprise.[Right] r 
+inner join Enterprise.RightValueType rvt
+on rvt.RightValueTypeId = r.RightValueTypeId
+where PartyId = @PartyId
+and r.RoleID = @RoleId
+and ShortName = 'AccessVendorMarketplace'
+
+select * from Enterprise.[Right]
+where RightValueTypeId = @RightValueTypeId
+and PartyId = @PartyId
+
+if exists(select * from Enterprise.[Right] where  RightValueTypeId = @RightValueTypeId and PartyId = @PartyId)
+BEGIN
+	DELETE from Enterprise.[Right] where  RightValueTypeId = @RightValueTypeId and PartyId = @PartyId
 END;
 
 Go

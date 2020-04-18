@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
             Xunit.Assert.True("GetCustomerProperty" == baseTest.VerifyRouteToAction(
                 HttpMethod.Get,
-                "http://localhost/api/CustomerProperty/826"
+                "http://localhost/api/CustomerProperty"
                 )
             );
         }
