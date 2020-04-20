@@ -27,6 +27,7 @@
             s.productDependencyMap = {};
             s.productTabsMap = {};
             s.productActiveTabMap = {};
+            s.productSelectTypeConfigMap = {};
 
             s.originalPropertyListMap = {};
 
@@ -115,6 +116,15 @@
                 config;
             if (s.productSwitchConfigMap['product' + productId + tabName] !== undefined) {
                 config = s.productSwitchConfigMap['product' + productId + tabName].switchCtrlConfig;
+            }
+            return config;
+        };
+
+        p.getProductSelectTypeConfig = function (productId, tabName) {
+            var s = this,
+                config;
+            if (s.productSelectTypeConfigMap['product' + productId + tabName] !== undefined) {
+                config = s.productSelectTypeConfigMap['product' + productId + tabName].selectCtrlConfig;
             }
             return config;
         };
@@ -477,6 +487,13 @@
             };
             s.switchConfigLoaded = true;
             // logc("s.productSwitchConfigMap", s.productSwitchConfigMap);
+        };
+
+         p.renderProductSelectTypeConfigMap = function (productId, tabName, config) {
+            var s = this;
+            s.productSelectTypeConfigMap['product' + productId + tabName] = {
+                selectCtrlConfig: config
+            };
         };
 
         p.renderProductRadioConfigMap = function (productId, tabName, config) {

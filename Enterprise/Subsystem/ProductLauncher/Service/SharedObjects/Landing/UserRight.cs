@@ -23,14 +23,6 @@
 		/// <summary>
 		/// Right ShortName (NickName)
 		/// </summary>
-        public string RightNickName { get; set; }
-		/// <summary>
-		/// THe id of the right
-		/// </summary>
-		public int ID { get; set; }
-		/// <summary>
-		/// The description of the right
-		/// </summary>
-		public string Description { get; set; }
+        public string RightNickName { get; set; }		
 	}
 }

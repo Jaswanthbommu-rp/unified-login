@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
@@ -998,9 +999,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ProductRepository pr = new ProductRepository();
                 UserRoleRightRepository urr = new UserRoleRightRepository();
                 IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
-                var gbAllRoles = urr.GetAllRoleRights(partyId, productIdList, productId);
+                var gbAllRoles = urr.GetPlatFormRoleRights(partyId, productIdList, productId);
 
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
+
+                foreach ( var role in gbAllRoles){                    
+
+                    var itemsToRemove = role.UserRights.Where(r => (r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN" ||
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" || 
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS" ||
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN")).ToList();
+
+                    foreach (var item in itemsToRemove)
+                    {
+                        role.UserRights.Remove(item);
+                    }                 
+                }
+
 
                 WriteToDiagnosticLog(
                     $"UserManagement - ManageUnifiedLogin.GetUserRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
@@ -1490,7 +1505,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
         }
 
-        private ListResponse SetUserSelectedRole(IList<UserRoleRights> allRoles, long userPersonaId)
+        private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId)
         {
 
             // get roles from DB for UnifiedLogin product
@@ -1504,7 +1519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 if (allRoles.Any(a => a.RoleId.ToString() == role.RoleID.ToString()))
                 {
-                    UserRoleRights selrole = (from a in allRoles
+                    UnifiedLoginRoleRights selrole = (from a in allRoles
                                            where a.RoleId.ToString() == role.RoleID.ToString()
                                            select a).FirstOrDefault();
                     if (selrole != null)

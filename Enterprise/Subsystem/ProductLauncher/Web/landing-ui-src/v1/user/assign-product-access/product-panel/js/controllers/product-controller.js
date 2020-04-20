@@ -28,14 +28,16 @@
         };
 
         vm.productSelected = function (obj) {
+            active = false;
             var productExists = templateModel.isProductExists(obj.productId);
             if (productExists) {
                 vm.productId = obj.productId;
                 $scope.productId = obj.productId;
                 vm.loadProductControlsData(obj.productId);
+                active = true;
             }
-            logc("productExists", productExists, obj.productId);
-            active = productExists ? true : false;
+            //logc("productExists", productExists, obj.productId);
+            //active = productExists ? true : false;
             return vm;
         };
 
@@ -60,7 +62,7 @@
         };
 
         vm.isActive = function () {
-            return active; // panelModel.isActive();
+            return active;
         };
 
         vm.getActiveUrl = function () {
@@ -86,12 +88,13 @@
 
             vm.setTabsConfigData(data);
             vm.setSwitchConfigs(data);
+            vm.setSelectConfigs(data);
 
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
 
             vm.tabsList = tabs.tabsList;
-logc("vm.tabsList", vm.tabsList);
+            //logc("vm.tabsList", vm.tabsList);
             tabsModel.setTabMenuData(tabs.tabsList);
             tabsModel.activateTab(vm.activeTab).initActiveTab();
 
@@ -116,16 +119,22 @@ logc("vm.tabsList", vm.tabsList);
                                         activeTab = true;
                                     }
                                     if (item.key === "Hide" && item.value === "True") {
-                                       hideTab = true;
+                                        hideTab = true;
                                     }
                                 });
+                            }
+
+                            var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
+                            if (tabName === "rights"){
+                                tabName = "roles";
                             }
                             var tab = {
                                 id: tabGrp.displayName.toLowerCase(),
                                 text: tabGrp.displayName,
                                 isActive: activeTab,
-                                incUrl: "user/assign-product-access/product-panel/templates/" + tabGrp.displayName.replace(/ /g, "").toLowerCase() + ".html"
+                                incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
                             };
+
                             allTabs.push(tab);
                             if (!hideTab) {
                                 initialTabs.push(tab);
@@ -173,7 +182,7 @@ logc("vm.tabsList", vm.tabsList);
                                         if (listAsideconfigs !== undefined &&
                                             listAsideconfigs.config.length > 0) {
                                             var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, showSelectAll);
-                                        logc("asideGridConfig", asideGridConfig);
+                                            logc("asideGridConfig", asideGridConfig);
                                             productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
                                         }
                                     }
@@ -268,32 +277,36 @@ logc("vm.tabsList", vm.tabsList);
         };
 
         vm.setSelectConfigs = function (data) {
-            var aSwitch = [];
+            var aSelect = [];
             //Check and Set any Switch
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
-                            aSwitch = [];
+                            aSelect = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
-                            if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
+                            if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
                                 tabGrp.controls.forEach(function (ctrl) {
-                                    if (ctrl.type === 'Switch') {
+                                    if (ctrl.type === 'Select') {
                                         var c = {
                                             id: ctrl.id,
                                             text: ctrl.displayName,
                                             key: ctrl.dataSource,
-                                            configData: switchConfig({
+                                            configData: menuConfig({
+                                                nameKey:   ctrl.dataSource,
+                                                valueKey:  ctrl.id,
+                                                fieldName: ctrl.displayName,
                                                 onChange: vm.noop,
                                                 disabled: false
                                             })
                                         };
-                                        aSwitch.push(c);
+                                        aSelect.push(c);
                                     }
                                 });
 
-                                if (aSwitch.length > 0) {
-                                    productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
+                                if (aSelect.length > 0) {
+                                    logc("aSelect config", aSelect);
+                                    productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aSelect);
                                 }
                             }
                         });

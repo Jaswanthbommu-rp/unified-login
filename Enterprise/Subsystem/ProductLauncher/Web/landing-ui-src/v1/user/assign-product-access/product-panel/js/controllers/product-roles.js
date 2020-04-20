@@ -17,6 +17,9 @@
             vm.rolesGrid = rolesGrid;
             vm.assignedRoleId = 0;
             vm.roleRights = [];
+            vm.presetRoles = [];
+            vm.roleSelected = "";
+
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
 
@@ -103,15 +106,12 @@
                         productId: productId
                     });
 
-                    if (item.isAssigned) {
+                    if (item.isAssigned && item.userRights !== undefined) {
                         vm.assignedRoleId = item.roleId;
-                        if (item.userRights !== undefined) {
-                            vm.roleRights = item.userRights;
-                            item.userRights.forEach(function (item) {
-                                vm.roleRights.push(item.rightNickName.toLowerCase());
-                            });
-                           // productDataModel.setRoleRights(item.userRights);
-                        }
+                        vm.roleRights = item.userRights;
+                        // if (item.userRights !== undefined) {
+                        //     vm.roleRights = item.userRights;
+                        // }
                         //logc("record.userRights11111", vm.roleRights, vm);
                     }
                 });
@@ -154,24 +154,35 @@
 
         };
 
+         vm.setSelectTypeConfig = function () {
+            var productId = $scope.$parent.productId;
+            vm.selectconfigs = syncMgr.getProductSelectTypeConfig(productId, "Roles");
+
+            if (vm.selectconfigs !== undefined && vm.selectconfigs.length > 0) {
+                vm.selectconfigs.forEach(function (item) {
+                    item.configData = menuConfig({
+                        onChange: vm.roleSelectedChange,
+                        disabled: vm.hasViewOnlyAccess()
+                        //productId == 9 ? vm.updateNewPropertyByDefault :
+                    });
+                });
+            }
+        };
+
         vm.setControlDependencyData = function (resp) {
             logc("setControlDependencyData", resp.data);
             //var roleRights = productDataModel.getRoleRights();
-            logc("vm.roleRights", vm.roleRights);
+            //logc("vm.roleRights", vm.roleRights);
             if (resp.data && resp.data.length > 0 && vm.roleRights.length > 0) {
                 var matchFound = false;
                 vm.roleRights.forEach(function (right) {
-                    // var record = resp.data.filter(function (data) {
-                    //     return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
-                    // })[0];
                     var record = resp.data.filter(function (data) {
-                        return right === data.masterControlValue.toLowerCase();
+                        return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
                     })[0];
 
                     if (record !== undefined && record) {
                         matchFound = true;
                     }
-                    logc("setControlDependencyData matchFound", matchFound);
                 });
 
                 var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
@@ -188,15 +199,11 @@
 
         vm.updateRoleRecords = function (record) {
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
-            logc("record.userRights2222", record.userRights, vm);
             if (record.isAssigned && record.userRights !== undefined) {
                 vm.roleRights = [];
-                //productDataModel.setRoleRights(record.userRights);
-                record.userRights.forEach(function (item) {
-                    vm.roleRights.push(item.rightNickName.toLowerCase());
-                });
-                // logc("record.userRights333", vm.roleRights, vm);
-                //vm.roleRights = record.userRights;
+                if (record.userRights !== undefined) {
+                    vm.roleRights = record.userRights;
+                }
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
 
                 if (dependencyControlId > 0) {

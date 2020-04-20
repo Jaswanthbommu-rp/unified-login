@@ -12,6 +12,14 @@
             });
         }
 
+        if (templateModel.isProductExists(6)) {
+            productAccess.register({
+                model: model,
+                key: "soln305",
+                product: "6"
+            });
+        }
+
         if (templateModel.isProductExists(10)) {
             productAccess.register({
                 model: model,
