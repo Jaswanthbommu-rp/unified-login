@@ -73,25 +73,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
-                IList<CustomerProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
-
-                IList<ProductProperty> blueBookPropertyList = FromBlueBookMasterPropertyToGBProperties(customerPropertyList) ?? new List<ProductProperty>();
+                IList<ProductProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
+              
                 WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
 
                 // need to do a filter on the result
                 if (userPersonaId != 0)
                 {
                     WriteToDiagnosticLog($"GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-                    result = MergeProductPropertiesWithGreenbook(blueBookPropertyList, userPersonaId, assignedOnly);
+                    result = MergeProductPropertiesWithGreenbook(customerPropertyList, userPersonaId, assignedOnly);
                     WriteToDiagnosticLog($"GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
                 }
                 else
                 {
                     result = new ListResponse() // create new user
                     {
-                        Records = blueBookPropertyList.Cast<object>().ToList(),
-                        TotalRows = blueBookPropertyList.Count,
-                        RowsPerPage = blueBookPropertyList.Count,
+                        Records = customerPropertyList.Cast<object>().ToList(),
+                        TotalRows = customerPropertyList.Count,
+                        RowsPerPage = customerPropertyList.Count,
                         TotalPages = 1,
                         ErrorReason = string.Empty
                     };
@@ -1736,28 +1735,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 Additional = null
             };
         }
-
-        /// <summary>
-		/// Used to convert a BlueBook master property into a GreenBook property
-		/// </summary>
-		/// <param name="properties"></param>
-		/// <returns></returns>
-		private IList<ProductProperty> FromBlueBookMasterPropertyToGBProperties(IList<CustomerProperty> properties)
-        {
-            if (properties == null) return null;
-            IList<ProductProperty> results = new List<ProductProperty>();
-            foreach (var property in properties)
-            {
-                results.Add(new ProductProperty
-                {
-                    ID = property.propertyId.ToString(),
-                    Name = property.name,
-                    Street1 = property.street,
-                    State = property.state
-                });
-            }
-            return results;
-        }
+       
         #endregion
     }
 	
