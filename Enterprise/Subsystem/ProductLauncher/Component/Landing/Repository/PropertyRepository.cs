@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -73,6 +74,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				int i = repository.ExecuteNonQuery(StoredProcNameConstants.SP_CreatePropertyMapping, param);
 				repositoryResponse.Id = i;
 
+				return repositoryResponse;
+			}
+		}
+
+		public RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON)
+		{
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+			repositoryResponse.Id = 0;
+
+			using (var repository = GetRepository())
+			{
+				repository.UnitOfWork.BeginTransaction();
+				try
+				{
+					repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { personaId, productId, propertyJSON });
+					if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
+					{
+						repositoryResponse.ErrorMessage = $"Update Property Mapping Error: {repositoryResponse.ErrorMessage}.";
+					}
+				}
+				catch (Exception exception)
+				{
+					repositoryResponse.Id = 0;
+					repositoryResponse.ErrorMessage = "Update Property MApping Exception: " + exception.Message;
+				}
+				finally
+				{
+					if (repositoryResponse.ErrorMessage.Length == 0)
+					{
+						//Commit and end transaction.
+						repository.UnitOfWork.Commit();
+					}
+					else
+					{
+						//Rollback transaction and dispose it.
+						repository.UnitOfWork.Rollback();
+					}
+				}
 				return repositoryResponse;
 			}
 		}

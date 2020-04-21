@@ -979,6 +979,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, param);
 
                         int greenBookRole = 0;
+                        ProductBatch gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedLogin));
                         if (currentOrg.OrganizationPartyId.Equals(organizationExternalUser.PartyId))
                         {
                             greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
@@ -991,7 +992,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                             else
                             {
-                                ProductBatch gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedLogin));
                                 if (gbProductBatch != null)
                                 {
                                     greenBookRole = GetGreenBookRole(gbProductBatch);
@@ -1039,6 +1039,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
+                        }
+                        else
+                        {
+                            if ((gbProductBatch != null) && ((gbProductBatch.InputJson?.PropertyList?.Count > 0) || (gbProductBatch.InputJson?.RemovedPropertyList?.Count > 0)))
+                            {
+                                string propertyJSON = JsonConvert.SerializeObject(gbProductBatch);
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedLogin, PropertyJSON = propertyJSON });
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repository.UnitOfWork.Rollback();
+                                    errorStatus.Success = false;
+                                    errorStatus.ErrorCode = "User.CreateUser.27";
+                                    errorStatus.ErrorMsg = "There was an error assigning top level properties to persona: {personaId}.";
+                                    createUserResponse.Status = errorStatus;
+                                    createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                    return createUserResponse;
+                                }
+                            }
                         }
 
                         //End Create Persona
@@ -5140,9 +5158,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse.Id = 0;
                             repositoryResponse.ErrorMessage = updateUserProfileEntity.SaveProductBatchError;
                         }
-
-
-
+                        else
+                        {
+                            ProductBatch productBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId.Equals((int)ProductEnum.UnifiedLogin));
+                            if ((gbProdBatch != null) && ((productBatch.InputJson?.PropertyList?.Count > 0) || (productBatch.InputJson?.RemovedPropertyList?.Count > 0)))
+                            {
+                                string propertyJSON = JsonConvert.SerializeObject(productBatch);
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedLogin, PropertyJSON = propertyJSON });
+                            }
+                        }
                     }
                 }
                 catch (Exception exception)

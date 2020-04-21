@@ -27,5 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="remove">isDeleted</param>   
 		/// <returns>List of Roles assigned to Persona</returns>
 		RepositoryResponse InsertRemoveAssignedPropertyToUser(long userPersonaId, ProductEnum productId, long propertyId, int remove = 0);
+
+		RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON);
 	}
 }
