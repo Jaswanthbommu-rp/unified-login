@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
@@ -46,5 +47,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns></returns>
 		IList<UserRoleRights> GetAllRoleRights(long partyId, IList<int> productIdList, int productId);
 
+		/// <summary>
+		/// Get all roles and associated rights in master-detail hirerachy 
+		/// </summary>
+		/// <param name="partyId"></param>
+		/// <param name="productIdList"></param>
+		/// <param name="productId"></param>
+		/// <returns></returns>
+		IList<UnifiedLoginRoleRights> GetPlatFormRoleRights(long partyId, IList<int> productIdList, int productId);
 	}
 }

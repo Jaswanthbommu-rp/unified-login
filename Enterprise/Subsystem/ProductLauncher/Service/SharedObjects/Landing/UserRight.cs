@@ -23,6 +23,6 @@
 		/// <summary>
 		/// Right ShortName (NickName)
 		/// </summary>
-        public string RightNickName { get; set; }
-    }
+        public string RightNickName { get; set; }		
+	}
 }

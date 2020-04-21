@@ -23,6 +23,7 @@ BEGIN
            RVT.Value [Role],
            RVT.ShortName AS [RoleNickname],
            ST.Name [RoleType],
+		   r2.DefaultRole AS 'DefaultRole',
            r.RightID [RightId],
            rvtt.Value [Right],
            rvtt.ShortName [RightNickName],
