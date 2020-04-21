@@ -545,7 +545,9 @@
     <Compile Include="Product\UnifiedAmenities\UnifiedAmenitiesUser.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginCompany.cs" />
     <Compile Include="Product\UnifiedLogin\RightAddRem.cs" />
+    <Compile Include="Product\UnifiedLogin\UnifiedLoginRight.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginRole.cs" />
+    <Compile Include="Product\UnifiedLogin\UnifiedLoginRoleRights.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginService.cs" />
     <Compile Include="Product\VendorServices\Notification.cs" />
     <Compile Include="Product\VendorServices\ProductPropertyNotification.cs" />

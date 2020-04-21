@@ -24,6 +24,12 @@
             s.productAsideGridConfigMap = {};
             s.productSwitchConfigMap = {};
             s.productRadioConfigMap = {};
+            s.productDependencyMap = {};
+            s.productTabsMap = {};
+            s.productActiveTabMap = {};
+            s.productSelectTypeConfigMap = {};
+
+            s.originalPropertyListMap = {};
 
             s.productControlsList = {
                 products: []
@@ -114,6 +120,15 @@
             return config;
         };
 
+        p.getProductSelectTypeConfig = function (productId, tabName) {
+            var s = this,
+                config;
+            if (s.productSelectTypeConfigMap['product' + productId + tabName] !== undefined) {
+                config = s.productSelectTypeConfigMap['product' + productId + tabName].selectCtrlConfig;
+            }
+            return config;
+        };
+
         p.getProductRadioConfig = function (productId, tabName) {
             var s = this,
                 config;
@@ -166,6 +181,51 @@
             }
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
+        };
+
+        p.getProductDependencyControlId = function (product, name) {
+            var s = this,
+                controlId = 0;
+
+            if (s.productDependencyMap['product' + product + name] !== undefined) {
+                controlId = s.productDependencyMap['product' + product + name].controlId;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return controlId;
+        };
+
+
+        p.getProductAllTabs = function (product) {
+            var s = this,
+                productTabsList;
+
+            if (s.productTabsMap['product' + product] !== undefined) {
+                productTabsList = s.productTabsMap['product' + product].allTabs;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return productTabsList;
+        };
+
+        p.getProductInitialTabs = function (product) {
+            var s = this,
+                productTabsList;
+
+            if (s.productTabsMap['product' + product] !== undefined) {
+                productTabsList = s.productTabsMap['product' + product].intialTabs;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return productTabsList;
+        };
+
+        p.getProductActiveTab = function (product) {
+            var s = this,
+                activeTab;
+
+            if (s.productActiveTabMap['product' + product] !== undefined) {
+                activeTab = s.productActiveTabMap['product' + product].activeTab;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return activeTab;
         };
         // Setters
 
@@ -429,6 +489,13 @@
             // logc("s.productSwitchConfigMap", s.productSwitchConfigMap);
         };
 
+         p.renderProductSelectTypeConfigMap = function (productId, tabName, config) {
+            var s = this;
+            s.productSelectTypeConfigMap['product' + productId + tabName] = {
+                selectCtrlConfig: config
+            };
+        };
+
         p.renderProductRadioConfigMap = function (productId, tabName, config) {
             var s = this;
             s.productRadioConfigMap['product' + productId + tabName] = {
@@ -450,6 +517,31 @@
             }
         };
 
+        p.renderProductDependencyMap = function (key, name, controlId) {
+            var s = this;
+
+            s.productDependencyMap['product' + key + name] = {
+                controlId: controlId
+            };
+        };
+
+        p.renderProductTabsMap = function (key, allTabs, initTab) {
+            var s = this;
+
+            s.productTabsMap['product' + key] = {
+                allTabs: allTabs,
+                intialTabs: initTab
+            };
+        };
+
+        p.renderProductActiveTabMap = function (key, name) {
+            var s = this;
+
+            s.productActiveTabMap['product' + key] = {
+                activeTab: name
+            };
+        };
+
         p.renderPropertyMap = function (key) {
             var s = this;
             if (!angular.equals({}, s.propertyList)) {
@@ -457,6 +549,23 @@
                     properties: s.propertyList,
                     allProperties: false,
                     newPropertyByDefault: false
+                };
+            }
+        };
+
+        p.renderOriginalPropertyListMap = function (key) {
+            var s = this,
+                assignedProp = [];
+
+            if (!angular.equals({}, s.propertyList)) {
+                s.propertyList.forEach(function (item) {
+                    if (item.isAssigned) {
+                        assignedProp.push(item.id);
+                    }
+                });
+
+                s.originalPropertyListMap['product' + key] = {
+                    properties: s.assignedProp
                 };
             }
         };

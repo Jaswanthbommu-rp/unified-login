@@ -1,16 +1,19 @@
 //  Bind usermgmt Model
 
-(function(angular) {
+(function (angular) {
     "use strict";
 
-    function config(model, productAccess) {
-        productAccess.register({
-            model: model,
-            key: "soln503"
-        });
+    function config(model, productAccess, templateModel) {
+        if (!templateModel.isProductExists(3)) {
+            productAccess.register({
+                model: model,
+                key: "soln503",
+                product: "3"
+            });
+        }
     }
 
     angular
         .module("settings")
-        .run(["userMgmtDataModel", "assignProductAccessModel", config]);
+        .run(["userMgmtDataModel", "assignProductAccessModel", "productTemplateModel", config]);
 })(angular);
