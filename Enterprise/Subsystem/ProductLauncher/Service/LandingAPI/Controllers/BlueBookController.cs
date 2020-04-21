@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using System.Diagnostics.CodeAnalysis;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -20,63 +21,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <summary>
 		/// List of Top level properties from BlueBook
 		/// </summary>
-		/// <param name="booksCompanyMasterId">BlueBook CustomerMasterId</param>
-		/// <param name="include">List of fields names (comma delimited) to return in the response: customerPropertyId,customerCompanyId,propertyName,address</param>
+		/// <param name="booksCompanyMasterId">Optional BlueBook CustomerMasterId (default to value from Token))</param>
+		/// <param name="include">Optional List of fields names (comma delimited) to return in the response: customerPropertyId,customerCompanyId,propertyName,address</param>
 		/// <param name="filter">Optional (default = {ampersand}filter[isActive]=true{ampersand}page[size]=9999)</param>
 		/// <returns>List of Top level properties from BlueBook</returns>
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List of Top level properties from BlueBook", Type = typeof(CustomerProperty))]
-		[SwaggerResponseExamples(typeof(CustomerProperty), typeof(CustomerPropertyExample))]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List of Top level properties from BlueBook", Type = typeof(ProductProperty))]
+		[SwaggerResponseExamples(typeof(ProductProperty), typeof(ProductPropertyExample))]
 		[Authorize]
 		[HttpGet]
-		[Route("CustomerProperty/{booksCompanyMasterId}")]
-		public HttpResponseMessage GetCustomerProperty(long booksCompanyMasterId, string include = null, string filter = null)
+		[Route("CustomerProperty")]
+		public HttpResponseMessage GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null)
 		{
-			ObjectListOutput<CustomerProperty, IErrorData> output = new ObjectListOutput<CustomerProperty, IErrorData>();
+			ObjectListOutput<ProductProperty, IErrorData> output = new ObjectListOutput<ProductProperty, IErrorData>();
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
 
 			IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
 
-			IList<CustomerProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(booksCompanyMasterId, include, filter);
+			IList<ProductProperty> productPropertyList = manageBlueBook.GetCustomerProperty(booksCompanyMasterId, include, filter);
 
-			output = new ObjectListOutput<CustomerProperty, IErrorData>() { list = customerPropertyList, Status = errorStatus };
+			output = new ObjectListOutput<ProductProperty, IErrorData>() { list = productPropertyList, Status = errorStatus };
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 
 		[ExcludeFromCodeCoverage]
-		public class CustomerPropertyExample : IProvideExamples
+		public class ProductPropertyExample : IProvideExamples
 		{
 			public object GetExamples()
 			{
-				List<CustomerProperty> customerPropertyList = new List<CustomerProperty>()
+				List<ProductProperty> productPropertyList = new List<ProductProperty>()
 				{
-					new CustomerProperty()
+					new ProductProperty()
 					{
-						id = "9533",
-						companyId = "826",
-						propertyId = "9533",
-						name = "LYONS COURT SENIOR",
-						street = "510 SELBY AVE",
-						city = "SAINT PAUL",
-						state = "MN",
-						postalCode = "55102-1729"
+						ID = "9533",
+						Name = "LYONS COURT SENIOR",
+						Street1 = "510 SELBY AVE",
+						City = "SAINT PAUL",
+						State = "MN",
+						Zip = "55102-1729"
 					},
-					new CustomerProperty()
+					new ProductProperty()
 					{
-						id = "9538",
-						companyId = "826",
-						propertyId = "9538",
-						name = "HARRISON LOFTS",
-						street = "1420 N HARRISON ST",
-						city = "DAVENPORT",
-						state = "IA",
-						postalCode = "52803-4801"
+						ID = "9538",
+						Name = "HARRISON LOFTS",
+						Street1 = "1420 N HARRISON ST",
+						City = "DAVENPORT",
+						State = "IA",
+						Zip = "52803-4801"
 					}
 				};
 
-				ObjectListOutput<CustomerProperty, IErrorData> output = new ObjectListOutput<CustomerProperty, IErrorData>() { list = customerPropertyList };
+				ObjectListOutput<ProductProperty, IErrorData> output = new ObjectListOutput<ProductProperty, IErrorData>() { list = productPropertyList };
 
 				return output;
 			}

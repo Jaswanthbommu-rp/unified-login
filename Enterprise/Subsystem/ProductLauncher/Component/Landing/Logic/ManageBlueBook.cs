@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Concurrent;
@@ -553,8 +554,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return vCompanyPropertyMap;
         }
 
-        public IList<CustomerProperty> GetCustomerProperty(long booksCompanyMasterId, string include = null, string filter = null)
+        public IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null)
         {
+            if (booksCompanyMasterId == 0)
+            {
+                booksCompanyMasterId = _defaultUserClaim.CustomerMasterId;
+            }
+
             if (booksCompanyMasterId == 0)
             {
                 throw new Exception("Invalid parameter booksCompanyMasterId.");
@@ -572,11 +578,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             filter = string.IsNullOrWhiteSpace(filter) ? "&filter[isActive]=true&page[size]=9999" : filter;
 
             List<CustomerProperty> customerPropertyList = new List<CustomerProperty>();
+            List<ProductProperty> productPropertyList = new List<ProductProperty>();
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"getCustomerProperty_{booksCompanyMasterId}" + (bIncludeFields ? "_" + include.Replace(",", string.Empty) : string.Empty);
 
-            customerPropertyList = rpcache.GetFromCache<List<CustomerProperty>>(cacheKey, CacheTimeSeconds, () =>
+            productPropertyList = rpcache.GetFromCache<List<ProductProperty>>(cacheKey, CacheTimeSeconds, () =>
             {
                 string uri = $"customerproperty?{includeFields}filter[customerCompanyId]={booksCompanyMasterId.ToString()}{filter}";
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
@@ -584,20 +591,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                customerPropertyList = JsonConvert.DeserializeObject<List<CustomerProperty>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
-                customerPropertyList = customerPropertyList.Select(p => new CustomerProperty
-                {
-                    companyId = p.attributes != null ? p.attributes.customerCompanyId : null,
-                    propertyId = p.attributes != null ? p.attributes.customerPropertyId : null,
-                    name = p.attributes.propertyName,
-                    street = p.attributes.address != null ? p.attributes.address.address : null,
-                    city = p.attributes.address != null ? p.attributes.address.city : null,
-                    state = p.attributes.address != null ? p.attributes.address.state: null,
-                    postalCode = p.attributes.address != null ? p.attributes.address.postalCode : null,
-                    attributes = null
-                }).ToList();
+                    customerPropertyList = JsonConvert.DeserializeObject<List<CustomerProperty>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    productPropertyList = customerPropertyList.Select(p => new ProductProperty
+                    {
+                        //companyId = p.attributes != null ? p.attributes.customerCompanyId : null,
+                        ID = p.attributes != null ? p.attributes.customerPropertyId : null,
+                        Name = p.attributes.propertyName,
+                        Street1 = p.attributes.address != null ? p.attributes.address.address : null,
+                        City = p.attributes.address != null ? p.attributes.address.city : null,
+                        State = p.attributes.address != null ? p.attributes.address.state: null,
+                        Zip = p.attributes.address != null ? p.attributes.address.postalCode : null
+                    }).ToList();
 
-                logData = new Dictionary<string, object>() { { "ManageBlueBook.GetCustomerProperty", customerPropertyList } };
+                    logData = new Dictionary<string, object>() { { "ManageBlueBook.GetCustomerProperty", customerPropertyList } };
                     WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - Got info.", logData);
                 }
                 else
@@ -606,9 +612,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - No info found.", logData);
                     return null;
                 }
-                return customerPropertyList;
+                return productPropertyList;
             });
-            return customerPropertyList;
+            return productPropertyList;
         }
 
         #region Privates
