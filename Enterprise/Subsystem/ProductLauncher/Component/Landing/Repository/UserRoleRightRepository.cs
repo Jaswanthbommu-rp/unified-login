@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,6 +130,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return rr;
+        }
+
+        /// <summary>
+        /// Get all roles and associated rights in master-detail hierarchy
+        /// </summary>
+        /// <param name="partyId"></param>
+        /// <param name="productIdList"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        public IList<UnifiedLoginRoleRights> GetPlatFormRoleRights(long partyId, IList<int> productIdList, int productId)
+        {
+            Dictionary<int, UnifiedLoginRoleRights> userRoles = new Dictionary<int, UnifiedLoginRoleRights>();
+
+            if (productIdList.Count == 0)
+            {
+                throw new Exception("Missing company product id list");
+            }
+
+            using (var repository = GetRepository())
+            {
+                repository.GetManyWithSpliOn<UnifiedLoginRoleRights, UnifiedLoginRight, UnifiedLoginRoleRights>(
+                    sql: StoredProcNameConstants.SP_ListRightsAssociatedWithRoles,
+                    map: (roles, rights) =>
+                    {
+                        if (!userRoles.ContainsKey(roles.RoleId))
+                        {
+                            userRoles.Add(roles.RoleId, roles);
+                        }
+                        UnifiedLoginRoleRights userRole = userRoles[roles.RoleId];
+                        userRole.UserRights.Add(rights);
+                        return userRole;
+                    },
+                    param: new
+                    {
+                        PartyId = partyId,
+                        ProductId = productId,
+                        TargetProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
+                    },
+                      splitOn: "RoleId,RightId");
+                return userRoles.Values.ToList<UnifiedLoginRoleRights>();
+            }
         }
 
         /// <summary>
