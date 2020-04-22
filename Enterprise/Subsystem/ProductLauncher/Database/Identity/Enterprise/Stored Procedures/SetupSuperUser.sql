@@ -1083,17 +1083,19 @@ AS
                                 @TargetProductId = @TargetProductId, 
                                 @VisibilityStatusId = @VisibilityStatusId;
                         SELECT @RightID;
-                        EXECUTE Enterprise.CreateRight 
-                                @RoleID = @RoleId, 
-                                @PartyId = @OrganizationId, 
-                                @ProductId = 3, 
-                                @RightName = 'Ability to manage Platform Notifications', 
-                                @RightCategoryId = @Status_Right, 
-                                @RightID = @RightID OUTPUT, 
-                                @Description = '', 
-                                @TargetProductId = @TargetProductId, 
-                                @VisibilityStatusId = @VisibilityStatusId;
-                        SELECT @RightID;
+
+                        --EXECUTE Enterprise.CreateRight 
+                        --        @RoleID = @RoleId, 
+                        --        @PartyId = @OrganizationId, 
+                        --        @ProductId = 3, 
+                        --        @RightName = 'Ability to manage Platform Notifications', 
+                        --        @RightCategoryId = @Status_Right, 
+                        --        @RightID = @RightID OUTPUT, 
+                        --        @Description = '', 
+                        --        @TargetProductId = @TargetProductId, 
+                        --        @VisibilityStatusId = @VisibilityStatusId;
+                        --SELECT @RightID;
+
                         SELECT @TargetProductId = ProductId
                         FROM Enterprise.Product
                         WHERE Name = 'Migration Tool Application';
