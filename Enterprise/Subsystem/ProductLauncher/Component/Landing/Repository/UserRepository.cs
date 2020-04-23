@@ -5101,7 +5101,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
                         }
 
-                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || (!priorNotificationEmail.Equals(updateUserProfileEntity.NewProfile.NotificationEmail, StringComparison.OrdinalIgnoreCase))))
+                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || (!string.Equals(priorNotificationEmail ?? string.Empty, updateUserProfileEntity.NewProfile.NotificationEmail ?? string.Empty, StringComparison.OrdinalIgnoreCase))))
                         {
                             updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
                             {
