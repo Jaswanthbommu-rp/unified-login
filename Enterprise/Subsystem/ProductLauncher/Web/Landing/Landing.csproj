@@ -271,6 +271,13 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="email\email-notification\images\Facebook-Logo.png" />
+    <Content Include="email\email-notification\images\LinkedIn-Logo.png" />
+    <Content Include="email\email-notification\images\PDF-Logo.png" />
+    <Content Include="email\email-notification\images\RealPage-Logo.png" />
+    <Content Include="email\email-notification\images\Twitter-Logo.png" />
+    <Content Include="email\email-notification\new-end-user\index.html" />
+    <Content Include="email\email-notification\new-super-user\index.html" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -289,6 +296,8 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="email\email-notification\assets\Quick Start Guide - Administrators.pdf" />
+    <Content Include="email\email-notification\assets\Quick Start Guide - Users.pdf" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
@@ -385,7 +394,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="email\" />
     <Folder Include="Models\" />
     <Folder Include="SAML\" />
   </ItemGroup>
