@@ -1,11 +1,12 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
+﻿using System;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
 using Swashbuckle.Swagger.Annotations;
-using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -18,28 +19,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("webhook/books")]
-        public Task<HttpResponseMessage> PostBooks(ThinEvent<string> thinEvent)
+        public Task<HttpResponseMessage> PostBooks(ThinEvent<JToken> thinEvent)
+        //public Task<HttpResponseMessage> PostBooks(object thinEvent2)
         {
-
-            //"books.customerproperty.deleted";
-            //"books.customerproperty.updated";
-
-            //"books.customercompany.deleted"
-            //"books.customercompany.updated"
-
-
-string result = "OK";
-
-            string signingSecret = "7EFE59F38D17D83721E241D27638FED0";
-            string signature = Request.Headers.FirstOrDefault(h => h.Key == "signature").Value.FirstOrDefault();
-
-            string requestBody = Request.Properties["TibcoPostData"] as string;
-            var hashed = SHA.GenerateHMACSHA256String(signingSecret, requestBody);
-            if (!string.Equals(signature, hashed, StringComparison.CurrentCultureIgnoreCase))
+            var response = Request.CreateResponse(HttpStatusCode.Accepted);
+            try
             {
-                throw new UnauthorizedAccessException("Invalid Signature.");
+                switch (thinEvent.Topic.ToLowerInvariant())
+                {
+                    case "books.customerproperty.deleted":
+                        var customerPropertyIdDeleted = thinEvent.Payload["payload"]["customerPropertyId"];
+                        break;
+
+                    case "books.customerproperty.updated":
+                        var customerPropertyIdUpdates = thinEvent.Payload["payload"]["customerPropertyId"];
+
+                        break;
+                    case "books.customercompany.deleted":
+                        var customerCompanyIdDeleted = thinEvent.Payload["payload"]["customerCompanyId"];
+
+                        break;
+                    case "books.customercompany.updated":
+                        var customerCompanyIdUpdated = thinEvent.Payload["payload"]["customerCompanyId"];
+                        break;
+
+                    default:
+                        response = Request.CreateResponse(HttpStatusCode.BadRequest);
+                        break;
+                }
             }
-            var response = Request.CreateResponse(HttpStatusCode.Accepted, result);
+            catch (Exception ex)
+            {
+                response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
+            }
+
+            //response = Request.CreateResponse(HttpStatusCode.BadRequest);
+
+            //string signingSecret = "7EFE59F38D17D83721E241D27638FED0";
+            //string signature = Request.Headers.FirstOrDefault(h => h.Key == "signature").Value.FirstOrDefault();
+            //
+            //string requestBody = Request.Properties["TibcoPostData"] as string;
+            //var hashed = SHA.GenerateHMACSHA256String(signingSecret, requestBody);
+            //if (!string.Equals(signature, hashed, StringComparison.CurrentCultureIgnoreCase))
+            //{
+            //    throw new UnauthorizedAccessException("Invalid Signature.");
+            //}
+            
             return Task.FromResult(response);
 
         }
