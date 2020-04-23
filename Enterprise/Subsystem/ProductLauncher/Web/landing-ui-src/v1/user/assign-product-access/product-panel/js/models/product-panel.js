@@ -155,6 +155,11 @@
             if (productId == "10") {
                 hasRoleSelected = true;
             }
+//logc("roleDependencyControlId", dataSyncManager.isProductDependencyDataNeeded(productId));
+            if (productId == "3" && !dataSyncManager.isProductDependencyDataNeeded(productId)) {
+                hasPropertySelected = true;
+                s.batchData.inputJson.propertyList = [];
+            }
 
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;
