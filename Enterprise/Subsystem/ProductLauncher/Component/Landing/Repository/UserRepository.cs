@@ -3901,6 +3901,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// isNotificationEmailChanged
+        /// </summary>
+        /// <param name="priorNotificationEmail"></param>
+        /// <param name="newNotificationEmail"></param>
+        /// <returns></returns>
+        private bool isNotificationEmailChanged(string priorNotificationEmail, string newNotificationEmail)
+        {
+            return !string.Equals(priorNotificationEmail ?? string.Empty, newNotificationEmail ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// GetAoBatchRecords
         /// </summary>
         /// <param name="editorRealPageGuid"></param>
@@ -4636,6 +4647,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
+                
 
                 //We can get this with the oldProfile
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
@@ -4895,7 +4907,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         long partyContactMechanismId = 0;
                         long userContactMechanismId = 0;
                         bool endExistingNotificationEmail = false;
-
+                        
                         #region Existing email check
 
                         // see if an existing notification email already exists
@@ -5090,6 +5102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
+                        bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
@@ -5101,7 +5114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
                         }
 
-                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || (!string.Equals(priorNotificationEmail ?? string.Empty, updateUserProfileEntity.NewProfile.NotificationEmail ?? string.Empty, StringComparison.OrdinalIgnoreCase))))
+                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged))
                         {
                             updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
                             {
