@@ -257,6 +257,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			return result;
 		}
-			#endregion
+
+		public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false)
+		{
+			ListResponse result = new ListResponse();
+			IProduct product;
+			string productName = Enum.GetName(typeof(ProductEnum), productId);
+			switch (productId)
+			{
+				
+				case (int)ProductEnum.OnSite:
+					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+					result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
+					break;
+				
+				default:
+					break;
+			}
+			return result;
+		}
+		#endregion
 	}
 }
