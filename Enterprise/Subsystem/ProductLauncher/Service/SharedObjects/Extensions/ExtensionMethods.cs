@@ -171,7 +171,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                                   oldCustomFieldValue.Name,
                                                   " information from ", string.IsNullOrEmpty(oldValue) ? "a blank value" : oldValue,
                                                   " to ", string.IsNullOrEmpty(newValue) ? "a blank value" : newValue,
-                                                  " on the user profile",
                                                   " for {0} {1}.");
 
                             auditRecord.LogActivityType = LogActivityTypeConstants.UPDATE_USER;
