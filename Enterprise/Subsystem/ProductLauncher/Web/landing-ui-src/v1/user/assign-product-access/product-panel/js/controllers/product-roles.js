@@ -34,6 +34,7 @@
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
+            vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
 
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
@@ -46,6 +47,10 @@
 
         vm.isReady = function () {
             return productDataModel.isRoleGridActive(); //productDataModel.isActive();
+        };
+
+        vm.isSelectTypeConfigLoaded = function () {
+            return syncMgr.isSelectTypeConfigLoaded() && vm.isReady();
         };
 
         vm.hasViewOnlyAccess = function () {
@@ -109,10 +114,6 @@
                     if (item.isAssigned && item.userRights !== undefined) {
                         vm.assignedRoleId = item.roleId;
                         vm.roleRights = item.userRights;
-                        // if (item.userRights !== undefined) {
-                        //     vm.roleRights = item.userRights;
-                        // }
-                        //logc("record.userRights11111", vm.roleRights, vm);
                     }
                 });
 
@@ -129,6 +130,23 @@
             }
 
             return vm;
+        };
+
+         vm.roleSelectedChange = function (val) {
+            var roleSelected = vm.presetRoles.find(function (item) {
+                return item.id === val;
+            });
+            //presetModel.setData(roleSelected);
+
+            // Clear any selections
+            vm.rolesGrid.selectAll(false);
+            vm.rolesGrid.updateSelected();
+
+            // Select defaults based on role
+            // vm.rights.forEach(function (item) {
+            //     item.isAssigned = presetModel.containsId(item.id);
+            // });
+            vm.rolesGrid.updateSelected();
         };
 
         vm.selectionAll = function (bool) {
@@ -157,20 +175,23 @@
          vm.setSelectTypeConfig = function () {
             var productId = $scope.$parent.productId;
             vm.selectconfigs = syncMgr.getProductSelectTypeConfig(productId, "Roles");
-
+logc("vm.selectconfigs", vm.selectconfigs);
             if (vm.selectconfigs !== undefined && vm.selectconfigs.length > 0) {
                 vm.selectconfigs.forEach(function (item) {
+                    logc("select item", item);
                     item.configData = menuConfig({
+                        nameKey:   item.keys,
+                        valueKey:  item.id,
+                       // fieldName: item.displayName,
                         onChange: vm.roleSelectedChange,
                         disabled: vm.hasViewOnlyAccess()
-                        //productId == 9 ? vm.updateNewPropertyByDefault :
                     });
                 });
             }
         };
 
         vm.setControlDependencyData = function (resp) {
-            logc("setControlDependencyData", resp.data);
+            //logc("setControlDependencyData", resp.data);
             //var roleRights = productDataModel.getRoleRights();
             //logc("vm.roleRights", vm.roleRights);
             if (resp.data && resp.data.length > 0 && vm.roleRights.length > 0) {
@@ -190,6 +211,7 @@
                     tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
                 }
 
+                syncMgr.setProductDependencyDataMap($scope.$parent.productId, matchFound);
                 var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
                 tabsModel.setTabs(tabs);
                 tabsModel.setTabMenuData(tabs);
@@ -225,6 +247,7 @@
             vm.activeWatch();
             vm.gridAllWatch();
             vm.gridSelectionWatch();
+            vm.productSelectTypeWatch();
             if (vm.dataRoleReq) {
                 vm.dataRoleReq.$cancelRequest();
             }

@@ -15,8 +15,9 @@
             var s = this;
             s.gridConfigLoaded = false;
             s.switchConfigLoaded = false;
+            s.selectTypeConfigLoaded = false;
             s.productControlsMap = {};
-            s.groupMap = {};
+            s.propertyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
             s.sidePanelDataMap = {};
@@ -28,6 +29,7 @@
             s.productTabsMap = {};
             s.productActiveTabMap = {};
             s.productSelectTypeConfigMap = {};
+            s.productDependencyDataMap = {};
 
             s.originalPropertyListMap = {};
 
@@ -37,6 +39,7 @@
             //s.productControlsList = [];
             s.groupList = [];
             s.propertyList = [];
+            s.propertyGroupList = [];
             s.productsTouched = [];
             s.originalPropertyList = [];
             s.roleList = [];
@@ -183,6 +186,17 @@
             return productPropertiesList;
         };
 
+        p.getProductPropertyGroupData = function (product) {
+            var s = this,
+                productPropertyGroupList;
+
+            if (s.propertyGroupMap['product' + product] !== undefined) {
+                productPropertyGroupList = s.propertyGroupMap['product' + product].propertyGroup;
+            }
+
+            return productPropertyGroupList;
+        };
+
         p.getProductDependencyControlId = function (product, name) {
             var s = this,
                 controlId = 0;
@@ -237,6 +251,13 @@
             return s;
         };
 
+        p.setPropertyGroupList = function (list, key) {
+            var s = this;
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
+            return s;
+        };
+
         p.setOriginalPropertyList = function (list) {
             var s = this;
             s.originalPropertyList = angular.copy(list);
@@ -273,6 +294,14 @@
             var s = this;
             s.roleSelectKey = key;
             return s;
+        };
+
+        p.setProductDependencyDataMap = function (key, bool) {
+            var s = this;
+
+            s.productDependencyDataMap['product' + key] = {
+                dependencyData: bool
+            };
         };
 
         p.updateProductAllProperties = function (product, value) {
@@ -318,6 +347,22 @@
         p.isSwitchConfigLoaded = function () {
             var s = this;
             return s.switchConfigLoaded;
+        };
+
+        p.isSelectTypeConfigLoaded = function () {
+            var s = this;
+            return s.selectTypeConfigLoaded;
+        };
+
+        p.isProductDependencyDataNeeded = function (product) {
+            var s = this,
+                dependencyData = false;
+
+            if (s.productDependencyDataMap['product' + product] !== undefined) {
+                dependencyData = s.productDependencyDataMap['product' + product].dependencyData;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return dependencyData;
         };
 
         p.selectedRoleSync = function (key, record) {
@@ -412,6 +457,22 @@
             return s;
         };
 
+        p.groupToPropertySync = function (productId, group) {
+            var s = this,
+                propertyList,
+                selectState = false;
+
+            propertyList = s.propertyMap['product' + productId].properties;
+            //propertyList = s.groupMap['group' + group.id].properties;
+            propertyList.forEach(function (item) {
+                if (item.region_id === group.id) {
+                     item["isAssigned"] = group.isAssigned;
+                 }
+            });
+
+            return s;
+        };
+
         p.allPropertiesSync = function (productId, selected) {
             var s = this,
                 propertyList,
@@ -489,11 +550,13 @@
             // logc("s.productSwitchConfigMap", s.productSwitchConfigMap);
         };
 
-         p.renderProductSelectTypeConfigMap = function (productId, tabName, config) {
+        p.renderProductSelectTypeConfigMap = function (productId, tabName, config) {
             var s = this;
             s.productSelectTypeConfigMap['product' + productId + tabName] = {
                 selectCtrlConfig: config
             };
+
+            s.selectTypeConfigLoaded = true;
         };
 
         p.renderProductRadioConfigMap = function (productId, tabName, config) {
@@ -549,6 +612,15 @@
                     properties: s.propertyList,
                     allProperties: false,
                     newPropertyByDefault: false
+                };
+            }
+        };
+
+        p.renderPropertyGroupMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.propertyGroupList)) {
+                s.propertyGroupMap['product' + key] = {
+                    propertyGroup: s.propertyGroupList
                 };
             }
         };
@@ -678,13 +750,14 @@
 
         p.reset = function () {
             var s = this;
-            s.groupMap = {};
+            s.propertyGroupMap = {};
             s.companyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
             s.bmRoleMap = {};
             s.groupList = [];
             s.propertyList = [];
+            s.propertyGroupList = [];
             s.roleList = [];
             s.originalPropertyList = [];
             s.bmRoleList = [];

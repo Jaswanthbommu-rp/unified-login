@@ -34,7 +34,6 @@
                 vm.productId = obj.productId;
                 $scope.productId = obj.productId;
                 vm.loadProductControlsData(obj.productId);
-                active = true;
             }
             //logc("productExists", productExists, obj.productId);
             //active = productExists ? true : false;
@@ -97,7 +96,7 @@
             //logc("vm.tabsList", vm.tabsList);
             tabsModel.setTabMenuData(tabs.tabsList);
             tabsModel.activateTab(vm.activeTab).initActiveTab();
-
+            active = true;
             panelModel.setPropertyGridActive(true);
             panelModel.setRoleGridActive(true);
         };
@@ -285,6 +284,9 @@
                         tabControl.controls.forEach(function (tabGrp) {
                             aSelect = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
+                            if (tabName === "Rights"){
+                                tabName = "Roles";
+                            }
                             if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
                                 tabGrp.controls.forEach(function (ctrl) {
                                     if (ctrl.type === 'Select') {
@@ -305,7 +307,7 @@
                                 });
 
                                 if (aSelect.length > 0) {
-                                    logc("aSelect config", aSelect);
+                                    logc("aSelect config", aSelect, tabName);
                                     productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aSelect);
                                 }
                             }
