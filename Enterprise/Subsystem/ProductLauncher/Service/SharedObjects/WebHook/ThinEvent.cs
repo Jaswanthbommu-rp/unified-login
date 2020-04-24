@@ -12,7 +12,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHoo
         /// <summary>
         /// the topic of the event
         /// </summary>
-        public string Topic { get; set; }
+        public string Topic { get; set; } = "Unknown";
 
         /// <summary>
         /// The date/time the event was created

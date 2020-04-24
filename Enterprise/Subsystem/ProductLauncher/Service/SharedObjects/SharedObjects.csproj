@@ -152,6 +152,7 @@
     <Compile Include="Extensions\MultiQueryMapperExtension.cs" />
     <Compile Include="Extensions\ProfileExtensions.cs" />
     <Compile Include="Handlers\NoCacheHandler.cs" />
+    <Compile Include="Handlers\TibcoRequestHandler.cs" />
     <Compile Include="Helper\CheckUserRight.cs" />
     <Compile Include="Helper\ClientTimezone.cs" />
     <Compile Include="Helper\ConfigReader.cs" />
