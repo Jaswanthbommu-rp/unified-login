@@ -94,5 +94,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productUserProfile">Product user information</param>
 		/// <returns>string.Empty if success else response contents.</returns>
 		bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile);
+
+		/// <summary>
+		/// Returns Product Rights for a Company
+		/// </summary>
+		/// <param name="dataFilter">Request parameters</param>
+		/// <param name="baseUrlAndQuery">Base url</param>
+		/// <returns>A response list</returns>
+		ListResponse GetAllRights(RequestParameter dataFilter, string baseUrlAndQuery = null);
 	}
 }

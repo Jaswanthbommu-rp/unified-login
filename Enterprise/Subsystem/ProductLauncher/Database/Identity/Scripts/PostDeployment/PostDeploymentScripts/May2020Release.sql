@@ -450,6 +450,9 @@ VALUES
 
 ,('GetRoleEndpoint','Role End point for product API','/roles/{0}')
 ,('GetRightEndpoint','Right End point for product API','/roleRights/{0}')
+
+,('GetAllRightsEndpoint','Get all rights for product API','/rights/{0}')--Input parameter company id
+
 ,('GetPropertyEndpoint','Property End point for product API','/properties/{0}')
 ,('GetUserEndpoint','GET User Endpoint for product API','/users?loginName={0}')
 ,('GetListUsersEndpoint','','/users/{0}?filter={1}&pageNumber={2}&PageSize={3}')
