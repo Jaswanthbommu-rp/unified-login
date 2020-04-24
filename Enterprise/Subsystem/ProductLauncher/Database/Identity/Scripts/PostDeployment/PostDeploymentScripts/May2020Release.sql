@@ -115,6 +115,38 @@ BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 END
+ELSE
+BEGIN
+	IF NOT EXISTS(SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE [ControlId] = 86)
+	BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+		VALUES (86, 147, 5, N'UnifiedPlatformProductAccessAddressLabelUIId', N'Address', N'street1', 3, @UserId, @Now)
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+	END
+
+	IF NOT EXISTS(SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE [ControlId] = 87)
+	BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+		VALUES (87, 147, 5, N'UnifiedPlatformProductAccessZipLabelUIId', N'Zip Code', N'zip', 6, @UserId, @Now)
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+	END
+
+	UPDATE	[UserManagement].[Control]
+	SET			[DisplayName] = 'Assign current and new properties automatically'
+	WHERE	[ControlId] = 146
+
+	--City
+	UPDATE	[UserManagement].[Control]
+	SET			[Sequence] = 4
+	WHERE	[ControlId] = 150
+
+	--State
+	UPDATE	[UserManagement].[Control]
+	SET			[Sequence] = 5
+	WHERE	[ControlId] = 151
+END
 
 GO
 
