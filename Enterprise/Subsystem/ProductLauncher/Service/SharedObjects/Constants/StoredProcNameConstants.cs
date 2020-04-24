@@ -128,7 +128,7 @@
         public const string SP_MapBlueBookIdtoPartyId = "Enterprise.MapBlueBookIdtoPartyId";
         //public const string SP_GetBlueBookIdByOrganization = "Enterprise.GetBlueBookIdByOrganization";
         public const string SP_GetBookIdByOrganization = "Enterprise.GetBookIdByOrganization";
-
+        public const string SP_DataImportMappingUpdate = "Enterprise.DataImportMappingUpdate";
         //Organization
         //public const string SP_SetupOrganization = "Enterprise.SetupOrganization";
         public const string SP_SetupOrganization = "Enterprise.SetupOrganization_Ver01";

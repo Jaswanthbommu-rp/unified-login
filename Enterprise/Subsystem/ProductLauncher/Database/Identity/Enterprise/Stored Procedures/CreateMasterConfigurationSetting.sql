@@ -1,4 +1,4 @@
-﻿CREATE or alter PROCEDURE [Enterprise].[CreateMasterConfigurationSetting]
+﻿CREATE PROCEDURE [Enterprise].[CreateMasterConfigurationSetting]
 (@MasterConfigurationType NVARCHAR(200),
  @MasterSettingType       NVARCHAR(100),
  @PartyId                 BIGINT,

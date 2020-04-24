@@ -230,6 +230,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return booksMaster;
         }
 
+        public RepositoryResponse UpdateOrganizationBooksCompanyMasterId(Organization oldOrganization, Organization newOrganization)
+        {
+            RepositoryResponse result = new RepositoryResponse() {Id = 0, ErrorMessage = ""};
+            
+            dynamic param = new
+            {
+                @ApplicationId = BookMasterType.CustomerMasterId,
+                @PartyId = oldOrganization.PartyId,
+                @Original_SourceId = oldOrganization.BooksCustomerMasterId,
+                @SourceId = newOrganization.BooksCustomerMasterId,
+            };
+
+            using (var repository = GetRepository())
+            {
+                repository.UnitOfWork.BeginTransaction();
+                try
+                {
+                    result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, param);
+                }
+                catch (Exception exception)
+                {
+                    result.ErrorMessage = exception.Message;
+                }
+                finally
+                {
+                    if (result.ErrorMessage.Length == 0)
+                    {
+                        repository.UnitOfWork.Commit();
+                    }
+                    else
+                    {
+                        repository.UnitOfWork.Rollback();
+                    }
+                }
+                return result;
+            }
+        }
+
         /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId
         /// </summary>
