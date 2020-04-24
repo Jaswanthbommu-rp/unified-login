@@ -528,9 +528,7 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)..\email-src\*.*" "$(ProjectDir)email\" /Y /E
-
-if $(ConfigurationName) == Debug goto :debug
+    <PostBuildEvent>if $(ConfigurationName) == Debug goto :debug
 
 goto :exit
 
@@ -555,8 +553,7 @@ xcopy "$(ProjectDir)unityui\*.*" "$(ProjectDir)" /Y /E
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>xcopy "$(ProjectDir)..\email-src\*.*" "$(ProjectDir)email\" /Y /E</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
