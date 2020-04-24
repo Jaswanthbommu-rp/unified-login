@@ -276,6 +276,7 @@
         public const string SP_ListAllRights = "Enterprise.ListAllRights";
         public const string SP_ListSecurityStatus = "Enterprise.ListSecurityStatus";
         public const string SP_SetDefaulteRole = "Enterprise.SetDefaultRole";
+        public const string SP_AddUpdatePropertyMapping = "Enterprise.AddUpdatePropertyMapping";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";

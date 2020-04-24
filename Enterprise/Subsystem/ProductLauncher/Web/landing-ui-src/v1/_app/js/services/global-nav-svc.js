@@ -105,7 +105,7 @@
                                 {
                                     linkId: "manage settings",
                                     title: "Manage Settings",
-                                    url: "../settings"
+                                    url: "/settings"
                                 },                                
                                 {
                                     linkId: "settings activity log",
