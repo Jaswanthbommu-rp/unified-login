@@ -124,7 +124,8 @@
                             }
 
                             var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
-                            if (tabName === "rights"){
+                            logc("tabName", tabName);
+                            if (tabName === "rights") {
                                 tabName = "roles";
                             }
                             var tab = {
@@ -168,6 +169,9 @@
                                         });
                                     }
                                     if (productModel.getProductGridConfig(productId, tabName) === undefined) {
+                                        if (tabName === "Rights") {
+                                            tabName = "Roles";
+                                        }
                                         var cnfg = configData.getGridConfigTypes(tab, tabName);
                                         var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
                                         productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
@@ -284,7 +288,7 @@
                         tabControl.controls.forEach(function (tabGrp) {
                             aSelect = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
-                            if (tabName === "Rights"){
+                            if (tabName === "Rights") {
                                 tabName = "Roles";
                             }
                             if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
@@ -295,9 +299,9 @@
                                             text: ctrl.displayName,
                                             key: ctrl.dataSource,
                                             configData: menuConfig({
-                                                nameKey:   ctrl.dataSource,
-                                                valueKey:  ctrl.id,
-                                                fieldName: ctrl.displayName,
+                                                nameKey: "name",
+                                                valueKey: "id",
+                                                fieldName: "roleSelect",
                                                 onChange: vm.noop,
                                                 disabled: false
                                             })
