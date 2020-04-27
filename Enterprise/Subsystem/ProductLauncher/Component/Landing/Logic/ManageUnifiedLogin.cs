@@ -1705,19 +1705,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             // merge the given user details with the list
             List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedLogin);
+            var propertyOption = new Dictionary<string, bool>();
+            propertyOption.Add("allProperties", false);// Single Property
 
             foreach (var property in propertyList)
             {
-                if (blueBookPropertyList.Any(a => a.ID == property.ID.ToString()))
-                {
-                    ProductProperty pp = (from a in blueBookPropertyList
-                                          where a.ID == property.ID.ToString()
-                                          select a).FirstOrDefault();
-                    if (pp != null)
+                if (property.ID.ToString() == "-1") {
+                    // PMC level (all properties)
+                    propertyOption["allProperties"] = true;
+                }
+                else {
+                    if (blueBookPropertyList.Any(a => a.ID == property.ID.ToString()))
                     {
-                        pp.IsAssigned = true;
+                        ProductProperty pp = (from a in blueBookPropertyList
+                                              where a.ID == property.ID.ToString()
+                                              select a).FirstOrDefault();
+                        if (pp != null)
+                        {
+                            pp.IsAssigned = true;
+                        }
                     }
                 }
+               
             }
 
             if (assignedOnly)
@@ -1732,7 +1741,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 RowsPerPage = 9999,
                 ErrorReason = string.Empty,
                 TotalPages = 1,
-                Additional = null
+                Additional = propertyOption
             };
         }
        

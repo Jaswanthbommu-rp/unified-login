@@ -346,8 +346,7 @@
         p.isProductAllProperties = function (productId) {
             var s = this;
 
-            if (s.propertyMap['product' + productId] !== undefined &&
-                productId !== 9) {
+            if (s.propertyMap['product' + productId] !== undefined && productId !== 9) {
                 return s.propertyMap['product' + productId].allProperties;
             }
 
