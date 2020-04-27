@@ -3,8 +3,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using System;
@@ -12,9 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Caching;
 using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -54,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         public WebHookTests()
         {
-            _userClaim = new DefaultUserClaim(){ CorrelationId = Guid.NewGuid()};
+            _userClaim = new DefaultUserClaim() {CorrelationId = Guid.NewGuid()};
 
             _organization = new Organization()
             {
@@ -96,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _productInternalSettings = new List<ProductInternalSetting>() {new ProductInternalSetting() {Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret}};
         }
 
-        
+
         [Fact]
         public void Post_Books_NullInput()
         {
@@ -148,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_invalidata);
             webHookController.Request.Headers.Add("signature", "12345");
-            
+
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
 
             //Act
@@ -164,8 +163,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_MissingSecretKey()
         {
-            var cacheKey = "productInternalSetting_" + (int) ProductEnum.UnifiedLogin;
-            MemoryCache.Default.Remove(cacheKey);
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
 
@@ -184,7 +183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_invalidata);
             webHookController.Request.Headers.Add("signature", "12345");
-            
+
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
 
             //Act
@@ -200,8 +199,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_Success()
         {
-            var cacheKey = "productInternalSetting_" + (int) ProductEnum.UnifiedLogin;
-            MemoryCache.Default.Remove(cacheKey);
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
@@ -299,7 +298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim) 
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -347,12 +346,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
-        
+
         [Fact]
         public void Post_Books_Update_CustomerProperty_BooksMasterId_Success()
         {
-            var cacheKey = "productInternalSetting_" + (int) ProductEnum.UnifiedLogin;
-            MemoryCache.Default.Remove(cacheKey);
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
