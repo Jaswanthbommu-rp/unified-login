@@ -66,6 +66,13 @@
                 key: "soln204",
                 product: "15"
             });
+            if (templateModel.isProductExists(26)) {
+                productAccess.register({
+                    model: model,
+                    key: "soln204",
+                    product: "26"
+                });
+            }
         }
         logc("productAccess", productAccess);
     }
