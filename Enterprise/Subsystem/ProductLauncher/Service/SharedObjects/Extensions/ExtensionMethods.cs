@@ -81,8 +81,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                             bool oldValueIsDate = oldValue != null && oldValue.GetType() == Type.GetType("System.DateTime") ? true : false;
                             bool newValueIsDate = newValue != null && newValue.GetType() == Type.GetType("System.DateTime") ? true : false;
 
+                            if (oldValueIsDate)
+                            {
+                                oldValue = TimeZoneInfo.ConvertTime(Convert.ToDateTime(oldValue), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
+                            }
+
                             if (newValueIsDate)
                             {
+                                newValue = TimeZoneInfo.ConvertTime(Convert.ToDateTime(newValue), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
+
                                 if (String.Format("{0:MM/dd/yyyy}", newValue).Equals(DateTime.MaxValue.ToString("MM/dd/yyyy")))
                                 {
                                     newValue = null;
