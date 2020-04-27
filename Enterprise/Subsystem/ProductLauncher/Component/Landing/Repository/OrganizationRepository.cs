@@ -230,6 +230,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return booksMaster;
         }
 
+        /// <summary>
+        /// Used to update any company master id records that match the old id to a new id
+        /// </summary>
+        /// <param name="oldOrganization"></param>
+        /// <param name="newOrganization"></param>
+        /// <returns></returns>
         public RepositoryResponse UpdateOrganizationBooksCompanyMasterId(Organization oldOrganization, Organization newOrganization)
         {
             RepositoryResponse result = new RepositoryResponse() {Id = 0, ErrorMessage = ""};

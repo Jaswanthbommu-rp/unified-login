@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RP.Enterprise.Foundation.Audit.Core.Component;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -14,26 +15,30 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Routing;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
     public class WebHookController : BaseApiController
     {
-        private OrganizationRepository _organizationRepository;
+        private IOrganizationRepository _organizationRepository;
+        private IPropertyRepository _propertyRepository;
         private ProductInternalSettingRepository _productInternalSettingRepository;
-
+        
         public WebHookController()
         {
             _organizationRepository = new OrganizationRepository();
+            _propertyRepository = new PropertyRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
-        public WebHookController(IRepository repository)
+        public WebHookController(IRepository repository, DefaultUserClaim userClaim)
         {
             _organizationRepository = new OrganizationRepository(repository);
+            _propertyRepository = new PropertyRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _userClaims = userClaim;
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -64,6 +69,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (Request.Properties?["TibcoPostData"] is string requestBody)
             {
                 string signingSecret = GetTiboWebHookSigningSecret();
+                if (string.IsNullOrEmpty(signingSecret))
+                {
+                    response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signing Secret.");
+                    WriteToLog(LogType.Error, "Signing secret was empty");
+                    return response;
+                }
                 var hashed = SHA.GenerateHMACSHA256String(signingSecret, requestBody);
                 logData.Add("requestBody", requestBody);
 
@@ -83,7 +94,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     switch (thinEvent.Topic.ToLowerInvariant())
                     {
                         case "books.customerproperty.deleted":
-                            var customerPropertyIdDeleted = thinEvent.Payload?["payload"]["customerPropertyId"];
+                            var customerPropertyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerPropertyId"]);
+                            var newCustomerPropertyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerPropertyId"]);
+                            if (customerPropertyIdDeleted != 0)
+                            {
+                                if (newCustomerPropertyId != 0)
+                                {
+                                    RepositoryResponse result = _propertyRepository.UpdatePropertyMappingReMap(customerPropertyIdDeleted, newCustomerPropertyId);
+                                    if (result.ErrorMessage.Length != 0)
+                                    {
+                                        logData = new Dictionary<string, object> {{"error", result}};
+
+                                        WriteToLog(LogType.Error, "Error", logData);
+                                        return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
+                                    }
+                                }
+                                else
+                                {
+                                    // the site is being deleted with no replacement, but we don't do anything with this yet
+                                }
+                            }
+
                             break;
 
                         case "books.customerproperty.updated":
@@ -108,6 +139,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
                                     }
                                 }
+                                else
+                                {
+                                    // the company is being deleted with no replacement, but we don't do anything with this yet
+                                }
                             }
 
                             break;
@@ -126,7 +161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             
-            logData = new Dictionary<string, object>() {{"response", response}};
+            logData = new Dictionary<string, object>() {{"response.StatusCode", response.StatusCode}};
             WriteToLog(LogType.Diagnostic, "PostBooks : Complete", logData);
             return response;
         }
@@ -183,7 +218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     UserId = "0",
                     PmcId = "0",
                     Exception = exception,
-                    CorrelationId = _userClaims.CorrelationId.ToString(),
+                    CorrelationId = _userClaims?.CorrelationId.ToString(),
                 });
             }
             catch

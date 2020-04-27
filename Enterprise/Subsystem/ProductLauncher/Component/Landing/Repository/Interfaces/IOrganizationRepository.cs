@@ -37,6 +37,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null);
 
         /// <summary>
+        /// Used to update any company master id records that match the old id to a new id
+        /// </summary>
+        /// <param name="oldOrganization"></param>
+        /// <param name="newOrganization"></param>
+        /// <returns></returns>
+        RepositoryResponse UpdateOrganizationBooksCompanyMasterId(Organization oldOrganization, Organization newOrganization);
+
+        /// <summary>
         /// Used to get the Organization list
         /// </summary>
         /// <returns></returns>

@@ -32,5 +32,9 @@ BEGIN
 		SELECT PersonaId, @NewPropertyID, Productid, @Now
 		FROM 
 		@UpdatedPropertyList
+
+	SELECT
+		1 As Id,
+		ErrorMessage = ''
 END;
 GO
