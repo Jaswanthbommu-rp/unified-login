@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -14,6 +15,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Routing;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -44,14 +46,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             var response = Request.CreateResponse(HttpStatusCode.Accepted);
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
-            
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"signature", signature}};
+
+            WriteToLog(LogType.Diagnostic, "PostBooks : Begin", logData);
+
             if (signature != null && Request.Properties?["TibcoPostData"] is string requestBody)
             {
                 string signingSecret = GetTiboWebHookSigningSecret();
                 var hashed = SHA.GenerateHMACSHA256String(signingSecret, requestBody);
+                logData.Add("requestBody", requestBody);
+                
+                logData.Add("hashed", hashed);
+                WriteToLog(LogType.Diagnostic, "Hash compare begin", logData);
+
                 if (!string.Equals(signature, hashed, StringComparison.CurrentCultureIgnoreCase))
                 {
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid Signature.");
+                    WriteToLog(LogType.Diagnostic, "Hash compare failed");
                     return response;
                 }
             }
@@ -60,9 +71,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
             }
-
+            
             try
             {
+                WriteToLog(LogType.Diagnostic, thinEvent.Topic.ToLowerInvariant());
                 switch (thinEvent.Topic.ToLowerInvariant())
                 {
                     case "books.customerproperty.deleted":
@@ -85,6 +97,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 RepositoryResponse result = _organizationRepository.UpdateOrganizationBooksCompanyMasterId(organization, newOrganization);
                                 if (result.ErrorMessage.Length != 0 || result.Id == 0)
                                 {
+                                    logData = new Dictionary<string, object> {{"error", result}};
+
+                                    WriteToLog(LogType.Error, "Error", logData);
                                     return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
                                 }
                             }
@@ -104,8 +119,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
             }
 
+            logData = new Dictionary<string, object>() {{"response", response}};
+            WriteToLog(LogType.Diagnostic, "PostBooks : Complete", logData);
             return response;
-
         }
 
         /// <summary>
@@ -139,6 +155,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             errorMessage += "id not updated";
             return errorMessage;
+        }
+
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        /// <param name="logType"></param>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        /// <param name="exception"></param>
+        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            try
+            {
+                Log.Write(logType, new LogDetails
+                {
+                    Message = message,
+                    AdditionalInfo = logData,
+                    ProductModule = this.GetType().ToString(),
+                    UserId = "0",
+                    PmcId = "0",
+                    Exception = exception,
+                    CorrelationId = _userClaims.CorrelationId.ToString(),
+                });
+            }
+            catch
+            {
+                /*ignored*/
+            }
         }
     }
 }
