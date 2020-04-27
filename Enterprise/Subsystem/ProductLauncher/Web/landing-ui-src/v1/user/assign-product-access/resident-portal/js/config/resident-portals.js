@@ -3,7 +3,7 @@
 (function (angular) {
     "use strict";
 
-    function config(model, productAccess) {
+    function config(model, productAccess, templateModel) {
         if (!templateModel.isProductExists(17)) {
             productAccess.register({
                 model: model,
