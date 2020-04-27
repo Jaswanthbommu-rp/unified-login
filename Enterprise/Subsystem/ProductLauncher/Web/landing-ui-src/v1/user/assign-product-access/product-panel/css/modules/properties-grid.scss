@@ -19,26 +19,28 @@
         }
 
         .is-assigned {
-            min-width: 125px;
-            max-width: 125px;
-            white-space: nowrap;
+           width: 85px;
         }
 
         .name {
-            width: 90%;
-            //min-width: 250px;
+            min-width: 40%;
+            max-width: 80%;
+        }
+
+        .street1 {
+            width: 20%;
         }
 
         .city {
-            min-width: 270px;
-            max-width: 270px;
-            white-space: nowrap;
+            width: 15%;
         }
 
         .state {
-            min-width: 105px;
-            max-width: 105px;
-            white-space: nowrap;
+            width: 10%;
+        }
+
+        .zip {
+            width: 15%;
         }
     }
 }

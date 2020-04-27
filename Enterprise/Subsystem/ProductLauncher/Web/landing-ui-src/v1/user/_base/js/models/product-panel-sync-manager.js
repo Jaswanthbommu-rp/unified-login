@@ -30,6 +30,7 @@
             s.productActiveTabMap = {};
             s.productSelectTypeConfigMap = {};
             s.productDependencyDataMap = {};
+            s.productPresetRolesMap = {};
 
             s.originalPropertyListMap = {};
 
@@ -43,6 +44,7 @@
             s.productsTouched = [];
             s.originalPropertyList = [];
             s.roleList = [];
+            s.presetRoleList = [];
             s.sidePanelDataList = [];
 
         };
@@ -174,6 +176,17 @@
             return productRolesList;
         };
 
+        p.getProductPresetRolesData = function (product) {
+            var s = this,
+                productRolesList;
+
+            if (s.productPresetRolesMap['product' + product] !== undefined) {
+                productRolesList = s.productPresetRolesMap['product' + product].roles;
+            }
+            // logc("master data",product,s.roleMap, productRolesList);
+            return productRolesList;
+        };
+
         p.getProductPropertiesData = function (product) {
             var s = this,
                 productPropertiesList;
@@ -290,6 +303,13 @@
             return s;
         };
 
+        p.setPresetRoleList = function (list, key) {
+            var s = this;
+            s.presetRoleList = list;
+            s.renderPresetRoleMap(key);
+            return s;
+        };
+
         p.setRoleSelectKey = function (key) {
             var s = this;
             s.roleSelectKey = key;
@@ -395,6 +415,24 @@
             roleData.forEach(function (item) {
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
+                }
+            });
+
+            return s;
+        };
+
+        p.setSelectedPresetRoleSync = function (key, val) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.roleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                item.isAssigned = false;
+                if (item.roletype == val) {
+                    item.isAssigned = true;
                 }
             });
 
@@ -652,6 +690,16 @@
             }
         };
 
+        p.renderPresetRoleMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.presetRoleList)) {
+                s.productPresetRolesMap['product' + key] = {
+                    roles: s.presetRoleList
+                };
+            }
+        };
+
         p.renderMap = function (key) {
             var s = this;
 
@@ -764,6 +812,7 @@
             s.companyGroupList = [];
             s.productControlsList = [];
             s.productControlsMap = {};
+            s.productPresetRolesMap ={};
         };
 
         return new ProductDataSyncManager();
