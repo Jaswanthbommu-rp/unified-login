@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_Success()
         {
-            var cacheKey = "productInternalSetting_" + (int)ProductEnum.UnifiedLogin;
+            var cacheKey = "productInternalSetting_" + (int) ProductEnum.UnifiedLogin;
             MemoryCache.Default.Remove(cacheKey);
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
@@ -119,13 +119,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 mockRepository.Object
             )
             {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books")
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
 
             webHookController.Request.Properties.Add("TibcoPostData", _mocjJson_books_customercompany_deleted);
             webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_Signature);
 
-            webHookController.Configuration = new HttpConfiguration();
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mocjJson_books_customercompany_deleted);
 
             //Act
@@ -152,12 +151,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 mockRepository.Object
             )
             {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books")
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
             webHookController.Request.Properties.Add("TibcoPostData", _mocjJson_books_customercompany_deleted);
             webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_Signature);
 
-            webHookController.Configuration = new HttpConfiguration();
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mocjJson_books_customercompany_deleted);
 
             //Act
@@ -197,12 +195,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 mockRepository.Object
             )
             {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books")
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
             webHookController.Request.Properties.Add("TibcoPostData", _mocjJson_books_customercompany_deleted);
             webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_Signature);
 
-            webHookController.Configuration = new HttpConfiguration();
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mocjJson_books_customercompany_deleted);
 
             //Act
@@ -235,12 +232,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 mockRepository.Object
             )
             {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books")
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
             webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_invalidata);
             webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_invalidata_Signature);
 
-            webHookController.Configuration = new HttpConfiguration();
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
 
             //Act
@@ -267,18 +263,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 mockRepository.Object
             )
             {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books")
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
             webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_invalidata);
             webHookController.Request.Headers.Add("signature", "12345");
 
-            webHookController.Configuration = new HttpConfiguration();
+
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-            
+
             var message = response.Content.ReadAsStringAsync().Result;
             var expectedValue = "\"Invalid Signature.\"";
 
@@ -293,20 +289,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Arrange
             WebHookController webHookController = new WebHookController(
                 mockRepository.Object
-            )
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books")
-            };
-
-            webHookController.Configuration = new HttpConfiguration();
-            ThinEvent<JToken> thinEvent = null;
+            ) {Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()};
 
             //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            HttpResponseMessage response = webHookController.PostBooks(null);
             Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-            
+
             var message = response.Content.ReadAsStringAsync().Result;
             var expectedValue = "\"Missing Content.\"";
+
+            Assert.Equal(expectedValue, message, ignoreCase: true);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
+            //Act
+            response = webHookController.PostBooks(thinEvent);
+            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
+
+            message = response.Content.ReadAsStringAsync().Result;
+            expectedValue = "\"Missing Signature.\"";
 
             Assert.Equal(expectedValue, message, ignoreCase: true);
         }

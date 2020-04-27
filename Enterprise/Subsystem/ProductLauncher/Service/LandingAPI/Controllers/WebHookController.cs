@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
-        
+
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.Accepted, Description = "Received book event successfully", Type = typeof(ThinEvent<string>))]
@@ -46,79 +46,86 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             var response = Request.CreateResponse(HttpStatusCode.Accepted);
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
-            Dictionary<string, object> logData = new Dictionary<string, object>() {{"signature", signature}};
-
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"signature", signature ?? "null"}};
             WriteToLog(LogType.Diagnostic, "PostBooks : Begin", logData);
 
-            if (signature != null && Request.Properties?["TibcoPostData"] is string requestBody)
+            if (thinEvent == null)
+            {
+                WriteToLog(LogType.Error, "Missing Content.");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
+            }
+
+            if (signature == null)
+            {
+                WriteToLog(LogType.Error, "Missing Signature.");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signature.");
+            }
+
+            if (Request.Properties?["TibcoPostData"] is string requestBody)
             {
                 string signingSecret = GetTiboWebHookSigningSecret();
                 var hashed = SHA.GenerateHMACSHA256String(signingSecret, requestBody);
                 logData.Add("requestBody", requestBody);
-                
-                logData.Add("hashed", hashed);
+
+                logData.Add("hashed", hashed ?? "null");
                 WriteToLog(LogType.Diagnostic, "Hash compare begin", logData);
 
                 if (!string.Equals(signature, hashed, StringComparison.CurrentCultureIgnoreCase))
                 {
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid Signature.");
-                    WriteToLog(LogType.Diagnostic, "Hash compare failed");
+                    WriteToLog(LogType.Error, "Hash compare failed");
                     return response;
                 }
-            }
 
-            if (thinEvent == null)
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
-            }
-            
-            try
-            {
-                WriteToLog(LogType.Diagnostic, thinEvent.Topic.ToLowerInvariant());
-                switch (thinEvent.Topic.ToLowerInvariant())
+                try
                 {
-                    case "books.customerproperty.deleted":
-                        var customerPropertyIdDeleted = thinEvent.Payload?["payload"]["customerPropertyId"];
-                        break;
+                    WriteToLog(LogType.Diagnostic, thinEvent.Topic.ToLowerInvariant());
+                    switch (thinEvent.Topic.ToLowerInvariant())
+                    {
+                        case "books.customerproperty.deleted":
+                            var customerPropertyIdDeleted = thinEvent.Payload?["payload"]["customerPropertyId"];
+                            break;
 
-                    case "books.customerproperty.updated":
-                        var customerPropertyIdUpdates = thinEvent.Payload?["payload"]["customerPropertyId"];
+                        case "books.customerproperty.updated":
+                            var customerPropertyIdUpdates = thinEvent.Payload?["payload"]["customerPropertyId"];
 
-                        break;
-                    case "books.customercompany.deleted":
-                        var customerCompanyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerCompanyId"]);
-                        var organization = _organizationRepository.GetOrganization(blueBookId: customerCompanyIdDeleted);
-                        if (organization != null)
-                        {
-                            var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
-                            if (newCustomerCompanyId != 0)
+                            break;
+                        case "books.customercompany.deleted":
+                            var customerCompanyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerCompanyId"]);
+                            var organization = _organizationRepository.GetOrganization(blueBookId: customerCompanyIdDeleted);
+                            if (organization != null)
                             {
-                                Organization newOrganization = new Organization() {PartyId = organization.PartyId, BooksCustomerMasterId = newCustomerCompanyId};
-                                RepositoryResponse result = _organizationRepository.UpdateOrganizationBooksCompanyMasterId(organization, newOrganization);
-                                if (result.ErrorMessage.Length != 0 || result.Id == 0)
+                                var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
+                                if (newCustomerCompanyId != 0)
                                 {
-                                    logData = new Dictionary<string, object> {{"error", result}};
+                                    Organization newOrganization = new Organization() {PartyId = organization.PartyId, BooksCustomerMasterId = newCustomerCompanyId};
+                                    RepositoryResponse result = _organizationRepository.UpdateOrganizationBooksCompanyMasterId(organization, newOrganization);
+                                    if (result.ErrorMessage.Length != 0 || result.Id == 0)
+                                    {
+                                        logData = new Dictionary<string, object> {{"error", result}};
 
-                                    WriteToLog(LogType.Error, "Error", logData);
-                                    return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
+                                        WriteToLog(LogType.Error, "Error", logData);
+                                        return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
+                                    }
                                 }
                             }
-                        }
-                        break;
 
-                    case "books.customercompany.updated":
-                        var customerCompanyIdUpdated = thinEvent.Payload["payload"]["customerCompanyId"];
-                        break;
+                            break;
 
-                    default:
-                        return Request.CreateResponse(HttpStatusCode.Accepted);
+                        case "books.customercompany.updated":
+                            var customerCompanyIdUpdated = thinEvent.Payload["payload"]["customerCompanyId"];
+                            break;
+
+                        default:
+                            return Request.CreateResponse(HttpStatusCode.Accepted);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
-            }
-
+            
             logData = new Dictionary<string, object>() {{"response", response}};
             WriteToLog(LogType.Diagnostic, "PostBooks : Complete", logData);
             return response;
