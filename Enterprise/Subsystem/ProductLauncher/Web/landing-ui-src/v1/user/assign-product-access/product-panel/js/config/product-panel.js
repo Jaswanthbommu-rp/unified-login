@@ -69,7 +69,7 @@
             if (templateModel.isProductExists(26)) {
                 productAccess.register({
                     model: model,
-                    key: "soln204",
+                    key: "soln107",
                     product: "26"
                 });
             }
