@@ -126,7 +126,7 @@
                 s.batchData.inputJson.propertyList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14" && productId == "3") {
+                    if (productId == "14" || productId == "3" || productId == "23") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
                     else {
@@ -155,7 +155,7 @@
             if (productId == "10") {
                 hasRoleSelected = true;
             }
-//logc("roleDependencyControlId", dataSyncManager.isProductDependencyDataNeeded(productId));
+            //logc("roleDependencyControlId", dataSyncManager.isProductDependencyDataNeeded(productId));
             if (productId == "3" && !dataSyncManager.isProductDependencyDataNeeded(productId)) {
                 hasPropertySelected = true;
                 s.batchData.inputJson.propertyList = [];

@@ -248,6 +248,12 @@
             return vm;
         };
 
+
+        vm.showNotification = function () {
+            logc("$scope.$parent.productId", $scope.$parent.productId);
+            return productDataModel.isPropertyGridActive() && $scope.$parent.productId === 3;
+        };
+
         vm.selectionAll = function (bool) {
             vm.propertySelect = "property";
             if (bool) {
