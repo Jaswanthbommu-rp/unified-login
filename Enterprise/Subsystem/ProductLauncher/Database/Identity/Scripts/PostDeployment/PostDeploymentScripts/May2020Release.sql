@@ -547,6 +547,61 @@ END;
 
 Go
 
+DECLARE @ProductId INT = 3,
+		 @CurrentProductConfigurationID INT,
+		 @ProductSettingTypeId INT,
+		 @ProductSettingId INT,
+		 @Now DATETIME = GETUTCDATE()
+
+SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+FROM Enterprise.GlobalProductConfiguration AS gpc
+WHERE gpc.ProductId = @ProductId AND 
+		( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+		) OR 
+		( @NOW >= gpc.FromDate AND 
+			gpc.ThruDate IS NULL
+		)
+		)
+ORDER BY GlobalProductConfigurationId DESC;
+
+IF
+(
+	SELECT 1
+	FROM Enterprise.ProductSettingType
+	WHERE Name = 'TiboWebHookSigningSecret'
+) IS NULL
+BEGIN
+	EXEC Enterprise.CreateProductSettingType 'TiboWebHookSigningSecret', 'Used to verify Tibco WebHook requests', @ProductSettingTypeId OUTPUT;
+END;
+
+IF @ProductSettingTypeId IS NOT NULL AND 
+	   NOT EXISTS
+	(
+		SELECT TOP 1 1
+		FROM Enterprise.ProductSetting
+		WHERE ProductID = @productId AND 
+			  ProductSettingTypeId = @ProductSettingTypeId AND 
+			  ThruDate IS NULL
+	)
+	BEGIN
+	
+		-- Create the Value and assign it to the Product and ProductSettingType
+		EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+		@ProductSettingTypeId = @ProductSettingTypeId, -- int
+		@Value = '7EFE59F38D17D83721E241D27638FED0', 
+		@FromDate = @NOW, -- datetime
+		@ThruDate = NULL, -- datetime
+		@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+		-- Link the Product Setting to an actual configuration
+		EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+		@ProductSettingId = @ProductSettingId, -- int
+		@FromDate = @NOW, -- datetime
+		@ThruDate = NULL;   -- datetime
+	END;
+
+GO
+
 DECLARE
 	@NOW DATETIME = GETUTCDATE()
 

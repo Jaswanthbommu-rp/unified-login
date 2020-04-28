@@ -1,15 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
     public class MasterConfigurationSetting
     {
-        public string SettingName { get; set; }
+        /// <summary>
+        /// The configuration type. Global
+        /// </summary>
+        public string ConfigurationType { get; set; }
+
+        /// <summary>
+        /// The setting type allowed. IdentityServerCorsAllowedOrigins, LandingApiCorsAllowedOrigins
+        /// </summary>
+        public string SettingType { get; set; }
+
+        /// <summary>
+        /// The value for the setting
+        /// </summary>
         public string Value { get; set; }
-        public int MasterConfigurationSettingId { get; set; }
+
+        /// <summary>
+        /// The company id the setting belongs, null should be used for global settings
+        /// </summary>
+        public string PartyId { get; set; } = null;
     }
 }
