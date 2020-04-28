@@ -386,7 +386,6 @@ END;
 
 Go
 
-
 Declare @PartyId int;
 Declare @RoleId int;
 Declare @RightValueTypeId int;
@@ -417,3 +416,79 @@ BEGIN
 END;
 
 Go
+
+DECLARE
+	@NOW DATETIME = GETUTCDATE()
+
+DECLARE @PropertyMapping TABLE (
+	PersonaId bigint,
+	PropertyId bigint,
+	ProductId int,
+	FromDate datetime,
+	ThruDate datetime
+)
+
+--List Roles that have CIMPL OR Settings Rights
+--Filter Enterprise.PersonaPrivilege to these Roles
+;With cteRightValueType (
+	RightValueTypeId
+)
+AS
+(
+	SELECT	RightValueTypeId
+	FROM	Enterprise.RightValueType
+	WHERE	Value IN ('Ability to Answer Questions for CIMPL', 'Access to Submit questionnaires within CIMPL', 'Manage Personally Identifiable Information (PII) in CIMPL', 'Manage Sensitive Financial Data in CIMPL', 'View CIMPL Implementation Questions', 'Manage All Unified Settings', 'Manage Settings Templates', 'View all Unified Settings')
+)
+
+INSERT INTO @PropertyMApping (
+	PersonaId,
+	PropertyId,
+	ProductId,
+	FromDate,
+	ThruDate
+)
+SELECT	DISTINCT
+				epp.PersonaId,
+				'-1' AS 'PropertyId',
+				erivt.ProductId,
+				@Now,
+				NULL
+FROM		Enterprise.[Right] eri
+				INNER JOIN Enterprise.Role  ero ON (eri.RoleID = ero.RoleID)
+				INNER JOIN Enterprise.RoleValueType erovt ON (erovt.RoleValueTypeId = ero.RoleValueTypeId)
+				INNER JOIN Enterprise.RightValueType erivt ON (erivt.RightValueTypeId = eri.RightValueTypeId)
+				INNER JOIN Enterprise.StatusType est ON (erovt.StatusTypeId = est.StatusTypeId)
+				INNER JOIN Enterprise.PersonaPrivilege epp ON (epp.RoleID = ero.RoleID)
+WHERE	eri.RightValueTypeId IN (
+	SELECT	RightValueTypeId
+	FROM	cteRightValueType
+)
+
+--UnAssign existing Properties by Setting the ThruDate By PersoanId and ProductID
+--SELECT		epm.*
+UPDATE	epm
+SET			epm.ThruDate = @Now
+FROM		Enterprise.PropertyMapping epm
+				INNER JOIN @PropertyMapping pm ON (epm.PersonaId = pm.PersonaId AND	epm.ProductId = pm.ProductId)
+WHERE	((@NOW >= epm.FromDate AND epm.ThruDate IS NULL) OR (@NOW BETWEEN epm.FromDate AND epm.ThruDate))
+AND			epm.PropertyId != -1
+
+--Assign All properties (-1) to each PersonaId by adding a records to Enterprise.PropertyMapping
+INSERT INTO Enterprise.PropertyMapping (
+	PersonaId,
+	PropertyId,
+	ProductId,
+	FromDate,
+	ThruDate
+)
+SELECT	pm.PersonaId,
+				pm.PropertyId,
+				pm.ProductId,
+				pm.FromDate,
+				pm.ThruDate
+FROM	@PropertyMApping pm
+			LEFT OUTER JOIN Enterprise.PropertyMapping epm ON (epm.PersonaId = pm.PersonaId AND epm.ProductId = pm.ProductId AND epm.PropertyId = pm.PropertyId)
+WHERE	epm.PersonaId IS NULL
+AND			epm.ProductId IS NULL
+
+GO
