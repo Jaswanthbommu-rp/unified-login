@@ -23,6 +23,7 @@
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
 
+            vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
         };
@@ -61,7 +62,7 @@
         };
 
         vm.isActive = function () {
-            return active;
+            return active && persona.isReady();
         };
 
         vm.getActiveUrl = function () {
