@@ -933,6 +933,8 @@
     <Build Include="UserManagement\Stored Procedures\ListActiveProductPage.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\May2020Release.sql" />
     <Build Include="Enterprise\Stored Procedures\AddUpdatePropertyMapping.sql" />
+    <Build Include="Enterprise\Stored Procedures\DataImportMappingUpdate.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdatePropertyMappingReMap.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
