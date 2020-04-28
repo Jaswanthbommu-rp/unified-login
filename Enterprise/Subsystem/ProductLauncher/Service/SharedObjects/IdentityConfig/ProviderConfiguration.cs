@@ -100,5 +100,10 @@
 		/// </summary>
 		public string UserLoginClaim { get; set; }
 
-	}
+        /// <summary>
+        /// Used to set if the Authenticate Request Signing Behavior should be signed
+        /// </summary>
+        public int SigningBehavior { get; set; } = 3; //Never
+
+    }
 }
