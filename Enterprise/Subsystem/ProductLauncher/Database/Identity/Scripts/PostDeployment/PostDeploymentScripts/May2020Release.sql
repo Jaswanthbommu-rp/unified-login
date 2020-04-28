@@ -47,7 +47,7 @@ BEGIN
 	VALUES (145, 135, 9, N'UnifiedPlatformProductAccessPropertiesTabUIId', N'Properties', NULL, 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (146, 145, 1, N'UnifiedPlatformProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId', N'Allow access to current and future properties', N'allProperties', 1, @UserId, @Now)
+	VALUES (146, 145, 1, N'UnifiedPlatformProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId', N'Assign access to current and new properties automatically', N'allProperties', 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 	VALUES (147, 145, 3, N'UnifiedPlatformProductAccessPropertiesMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
