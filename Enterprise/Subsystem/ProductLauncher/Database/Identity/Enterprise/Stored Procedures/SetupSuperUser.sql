@@ -1,4 +1,4 @@
-﻿CREATE ROCEDURE [Enterprise].[SetupSuperUser]
+﻿CREATE PROCEDURE [Enterprise].[SetupSuperUser]
 (@OrganizationId    INT, --PartyId
  @FirstName         NVARCHAR(200), 
  @MiddleName        NVARCHAR(50), 
