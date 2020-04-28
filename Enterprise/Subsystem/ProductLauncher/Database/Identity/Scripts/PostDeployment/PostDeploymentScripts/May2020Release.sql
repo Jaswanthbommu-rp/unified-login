@@ -622,3 +622,143 @@ WHERE	epm.PersonaId IS NULL
 AND			epm.ProductId IS NULL
 
 GO
+
+--Assign missing CIMPL Rights to companies.
+DECLARE @NOW DATETIME = GETUTCDATE(),
+	@RoleValueTypeId int
+
+DECLARE @RightValueType TABLE (
+	RightValueTypeId	int
+)
+
+DECLARE @Organization TABLE (
+	PartyId bigint
+)
+
+DECLARE @RoleOrganization TABLE (
+	RoleID	int,
+	PartyId	bigint
+)
+
+DECLARE @Right TABLE (
+	RoleID	int,
+	RightValueTypeId	int,
+	PartyId	bigint
+)
+
+SELECT	@RoleValueTypeId = RoleValueTypeId
+FROM	Enterprise.RoleValueType
+WHERE	Value = 'User Administrator'
+
+INSERT INTO @RightValueType (
+	RightValueTypeId
+)
+SELECT	RightValueTypeId
+FROM	Enterprise.RightValueType
+WHERE	Value IN ('Ability to Answer Questions for CIMPL', 'Access to Submit questionnaires within CIMPL', 'Manage Personally Identifiable Information (PII) in CIMPL', 'Manage Sensitive Financial Data in CIMPL', 'View CIMPL Implementation Questions')
+
+--SELECT	eri.PartyId, eo.Name, COUNT(*)
+--FROM		Enterprise.[Right] eri
+--				INNER JOIN Enterprise.Role ero ON (ero.PartyID = eri.PartyId AND ero.RoleID = eri.RoleID)
+--				INNER JOIN Enterprise.Organization eo ON (eri.PartyId = eo.PartyId)
+--WHERE	eri.RightValueTypeId IN (
+--	SELECT	RightValueTypeId
+--	FROM	@RightValueType
+--)
+--AND		ero.RoleValueTypeId = @RoleValueTypeId
+--GROUP BY eri.PartyId, eo.Name
+--HAVING COUNT(*) < 5
+--ORDER BY eri.PartyId, COUNT(*)
+
+INSERT INTO @Organization (
+	PartyId
+)
+SELECT	ero.PartyId
+FROM		Enterprise.[Right] eri
+				INNER JOIN Enterprise.Role ero ON (ero.PartyID = eri.PartyId AND ero.RoleID = eri.RoleID)
+				INNER JOIN Enterprise.Organization eo ON (eri.PartyId = eo.PartyId)
+				INNER JOIN Enterprise.RoleValueType erovt ON (erovt.RoleValueTypeId = ero.RoleValueTypeId)
+WHERE	eri.RightValueTypeId IN (
+	SELECT	RightValueTypeId
+	FROM	@RightValueType
+)
+AND		ero.RoleValueTypeId = @RoleValueTypeId
+GROUP BY ero.PartyId
+HAVING COUNT(*) < 5
+
+INSERT INTO @RoleOrganization (
+	RoleID,
+	PartyId	
+)
+SELECT	ero.RoleID,
+				o.PartyId
+FROM	Enterprise.RoleValueType erovt
+			INNER JOIN Enterprise.Role ero ON (ero.RoleValueTypeId = erovt.RoleValueTypeId)
+			INNER JOIN @Organization o ON (ero.PartyID = o.PartyId)
+WHERE	Value = 'User Administrator'
+
+INSERT INTO @Right (
+	RoleId,
+	RightValueTypeId,
+	PartyId
+)
+SELECT	ro.RoleId,
+				rvt.RightValueTypeId,
+				ro.PartyId
+FROM	@RoleOrganization ro
+			CROSS JOIN (
+				SELECT	RightValueTypeId
+				FROM	@RightValueType
+			) rvt
+
+DECLARE @CurrentOrganizationRight TABLE (
+	RoleID	int,
+	RightValueTypeId	int,
+	PartyId	bigint
+)
+
+INSERT INTO @CurrentOrganizationRight (
+	RoleID,
+	RightValueTypeId,
+	PartyId
+)
+SELECT	ero.RoleID,
+			eri.RightValueTypeId,
+			ero.PartyId
+FROM		Enterprise.[Right] eri
+				INNER JOIN Enterprise.Role ero ON (ero.PartyID = eri.PartyId AND ero.RoleID = eri.RoleID)
+				INNER JOIN Enterprise.Organization eo ON (eri.PartyId = eo.PartyId)
+				INNER JOIN Enterprise.RoleValueType erovt ON (erovt.RoleValueTypeId = ero.RoleValueTypeId)
+WHERE	eri.RightValueTypeId IN (
+	SELECT	RightValueTypeId
+	FROM	@RightValueType
+)
+AND		ero.RoleValueTypeId = @RoleValueTypeId
+
+INSERT INTO Enterprise.[Right] (
+	RoleID,
+	RightValueTypeId,
+	PartyId,
+	LastUpdateDateTime
+)
+SELECT	ri.RoleID,
+				ri.RightValueTypeId,
+				ri.PartyId,
+				@Now
+FROM		@Right ri
+				LEFT OUTER JOIN @CurrentOrganizationRight x ON (x.RightValueTypeId = ri.RightValueTypeId AND x.PartyId = ri.PartyId AND x.RoleID = ri.RoleID)
+WHERE	x.RightValueTypeId IS NULL
+
+--SELECT	eri.PartyId, eo.Name, COUNT(*)
+--FROM		Enterprise.[Right] eri
+--				INNER JOIN Enterprise.Role ero ON (ero.PartyID = eri.PartyId AND ero.RoleID = eri.RoleID)
+--				INNER JOIN Enterprise.Organization eo ON (eri.PartyId = eo.PartyId)
+--WHERE	eri.RightValueTypeId IN (
+--	SELECT	RightValueTypeId
+--	FROM	@RightValueType
+--)
+--AND		ero.RoleValueTypeId = @RoleValueTypeId
+--GROUP BY eri.PartyId, eo.Name
+--ORDER BY eri.PartyId, COUNT(*)
+
+GO
