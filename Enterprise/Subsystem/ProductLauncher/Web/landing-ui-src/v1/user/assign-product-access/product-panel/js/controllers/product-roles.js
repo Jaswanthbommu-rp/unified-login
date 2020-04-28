@@ -174,7 +174,9 @@
             // vm.rights.forEach(function (item) {
             //     item.isAssigned = presetModel.containsId(item.id);
             // });
-            syncMgr.setSelectedPresetRoleSync($scope.$parent.productId, val);
+            //var presetroleData = syncMgr.getProductPresetRolesData($scope.$parent.productId);
+            //logc("presetroleData", presetroleData, roleSelected);
+            syncMgr.setSelectedPresetRoleSync($scope.$parent.productId, roleSelected.roleIds);
             vm.rolesGrid.updateSelected();
         };
 
