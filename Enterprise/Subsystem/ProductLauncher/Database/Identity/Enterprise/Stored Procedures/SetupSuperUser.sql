@@ -1,18 +1,17 @@
-﻿CREATE PROCEDURE [Enterprise].[SetupSuperUser]
-(@OrganizationId    INT, --PartyId
- @FirstName         NVARCHAR(200), 
- @MiddleName        NVARCHAR(50), 
- @LastName          NVARCHAR(200), 
- @Title             NVARCHAR(50), 
- @Suffix            NVARCHAR(50), 
- @Email             NVARCHAR(200), 
- @DefaultIDP        BIT           = 1, 
- @IDPTypeId         INT           = NULL, 
- @AssignedProductId PRODUCTIDTYPE READONLY
+﻿CREATE PROCEDURE [Enterprise].[SetupSuperUser] (
+	@OrganizationId int, --PartyId
+	@FirstName nvarchar(200), 
+	@MiddleName nvarchar(50), 
+	@LastName nvarchar(200), 
+	@Title nvarchar(50), 
+	@Suffix nvarchar(50), 
+	@Email nvarchar(200), 
+	@DefaultIDP bit = 1, 
+	@IDPTypeId int = NULL, 
+	@AssignedProductId PRODUCTIDTYPE READONLY
 )
 AS
     BEGIN
-
 /*
 	 Initial Stored procedure to setup:
 	  1. Super User for the newly created or existing organization
@@ -372,198 +371,7 @@ AS
                              @UserActionId = @UserActionID OUTPUT;
                 END;
                 SET @RoleId = NULL;
-                ------
-                --IF NOT EXISTS
-                --(
-                --    SELECT 1
-                --    FROM Enterprise.Role AS R
-                --         INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                --    WHERE Value = 'Basic End User & CIMPL'
-                --          AND PartyID = @OrganizationId
-                --)
-                --    BEGIN
-                --        EXEC Enterprise.CreateRole 
-                --             @RoleName = N'Basic End User & CIMPL', 
-                --             @Description = N'', 
-                --             @RoleTypeID = 400, 
-                --             @PartyID = @OrganizationId, 
-                --             @RoleCategoryId = @Status_Role, 
-                --             @RoleID = @RoleId OUTPUT;
-                --        SET @RoleName = 'Basic End User & CIMPL';
-                --        SELECT @RoleId = RoleID
-                --        FROM Enterprise.Role AS R
-                --             INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                --        WHERE Value = @RoleName
-                --              AND PartyID = @OrganizationId;
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Ability to edit my own profile', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Access to Product Learning Portal', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Access to Help Center', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Default_SideMenu_Users', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '';
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Default_Dashboard_Users', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                        
-                --        SELECT @TargetProductId = ProductId
-                --        FROM Enterprise.Product
-                --        WHERE Name = 'Vendor Marketplace';
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Access to Vendor Marketplace', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        SELECT @TargetProductId = ProductId
-                --        FROM Enterprise.Product
-                --        WHERE Name = 'CIMPL';
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'View CIMPL Implementation Questions', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Ability to Answer Questions for CIMPL', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Manage Sensitive Financial Data in CIMPL', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        EXECUTE Enterprise.CreateRight 
-                --                @RoleID = @RoleId, 
-                --                @PartyId = @OrganizationId, 
-                --                @ProductId = 3, 
-                --                @RightName = 'Manage Personally Identifiable Information (PII) in CIMPL', 
-                --                @RightCategoryId = @Status_Right, 
-                --                @RightID = @RightID OUTPUT, 
-                --                @Description = '', 
-                --                @TargetProductId = @TargetProductId, 
-                --                @VisibilityStatusId = @VisibilityStatusId;
-                --        SELECT @ActionID = ActionID
-                --        FROM Enterprise.ACTION
-                --        WHERE ObjectValue = 'SideMenu'
-                --              AND ObjectType = 'ROUTE'
-                --              AND Description = 'User';
-                --        SELECT @RoleId = RoleID
-                --        FROM Enterprise.Role AS R
-                --             INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                --        WHERE Value = 'Basic End User & CIMPL'
-                --              AND PartyID = @OrganizationId;
-                --        SELECT @RightID = RightID
-                --        FROM Enterprise.[Right] AS R
-                --             INNER JOIN Enterprise.RightValueType AS RVT ON RVT.RightValueTypeId = R.RightValueTypeId
-                --        WHERE Value = 'Default_SideMenu_Users'
-                --              AND RoleID = @RoleId;
-                --        EXEC Enterprise.LinkActionToRights 
-                --             @ActionID = @ActionID, 
-                --             @RightId = @RightID, 
-                --             @StatusId = @Status_Right, 
-                --             @UserActionId = @UserActionID OUTPUT;
-                --        SELECT @ActionID = ActionID
-                --        FROM Enterprise.ACTION
-                --        WHERE ObjectValue = 'Dashboard'
-                --              AND ObjectType = 'ROUTE'
-                --              AND Description = 'User';
-                --        SELECT @RoleId = RoleID
-                --        FROM Enterprise.Role AS R
-                --             INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                --        WHERE Value = 'Basic End User & CIMPL'
-                --              AND PartyID = @OrganizationId;
-                --        SELECT @RightID = RightID
-                --        FROM Enterprise.[Right] AS R
-                --             INNER JOIN Enterprise.RightValueType AS RVT ON RVT.RightValueTypeId = R.RightValueTypeId
-                --        WHERE Value = 'Default_Dashboard_Users'
-                --              AND RoleID = @RoleId;
-                --        EXEC Enterprise.LinkActionToRights 
-                --             @ActionID = @ActionID, 
-                --             @RightId = @RightID, 
-                --             @StatusId = @Status_Right, 
-                --             @UserActionId = @UserActionID OUTPUT;
-                --        SELECT @ActionID = ActionID
-                --        FROM Enterprise.ACTION
-                --        WHERE ObjectValue = 'EditUser'
-                --              AND ObjectType = 'ROUTE'
-                --              AND Description = 'User';
-                --        SELECT @RoleId = RoleID
-                --        FROM Enterprise.Role AS R
-                --             INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                --        WHERE Value = 'Basic End User & CIMPL'
-                --              AND PartyID = @OrganizationId;
-                --        SELECT @RightID = RightID
-                --        FROM Enterprise.[Right] AS R
-                --             INNER JOIN Enterprise.RightValueType AS RVT ON RVT.RightValueTypeId = R.RightValueTypeId
-                --        WHERE Value = 'Ability to edit my own profile'
-                --              AND RoleID = @RoleId;
-                --        EXEC Enterprise.LinkActionToRights 
-                --             @ActionID = @ActionID, 
-                --             @RightId = @RightID, 
-                --             @StatusId = @Status_Right, 
-                --             @UserActionId = @UserActionID OUTPUT;
-                --END;
 
-                ------
-                --SET @RoleId = NULL;
                 IF NOT EXISTS
                 (
                     SELECT 1
@@ -1066,6 +874,39 @@ AS
                                 @PartyId = @OrganizationId, 
                                 @ProductId = 3, 
                                 @RightName = 'Ability to Answer Questions for CIMPL', 
+                                @RightCategoryId = @Status_Right, 
+                                @RightID = @RightID OUTPUT, 
+                                @Description = '', 
+                                @TargetProductId = @TargetProductId, 
+                                @VisibilityStatusId = @VisibilityStatusId;
+                        SELECT @RightID;
+                        EXECUTE Enterprise.CreateRight 
+                                @RoleID = @RoleId, 
+                                @PartyId = @OrganizationId, 
+                                @ProductId = 3, 
+                                @RightName = 'Access to Submit questionnaires within CIMPL', 
+                                @RightCategoryId = @Status_Right, 
+                                @RightID = @RightID OUTPUT, 
+                                @Description = '', 
+                                @TargetProductId = @TargetProductId, 
+                                @VisibilityStatusId = @VisibilityStatusId;
+                        SELECT @RightID;
+                        EXECUTE Enterprise.CreateRight 
+                                @RoleID = @RoleId, 
+                                @PartyId = @OrganizationId, 
+                                @ProductId = 3, 
+                                @RightName = 'Manage Personally Identifiable Information (PII) in CIMPL', 
+                                @RightCategoryId = @Status_Right, 
+                                @RightID = @RightID OUTPUT, 
+                                @Description = '', 
+                                @TargetProductId = @TargetProductId, 
+                                @VisibilityStatusId = @VisibilityStatusId;
+                        SELECT @RightID;
+                        EXECUTE Enterprise.CreateRight 
+                                @RoleID = @RoleId, 
+                                @PartyId = @OrganizationId, 
+                                @ProductId = 3, 
+                                @RightName = 'Manage Sensitive Financial Data in CIMPL', 
                                 @RightCategoryId = @Status_Right, 
                                 @RightID = @RightID OUTPUT, 
                                 @Description = '', 
