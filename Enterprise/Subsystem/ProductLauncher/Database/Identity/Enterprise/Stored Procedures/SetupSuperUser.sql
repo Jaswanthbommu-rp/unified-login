@@ -1,14 +1,14 @@
-﻿CREATE PROCEDURE [Enterprise].[SetupSuperUser] (
-	@OrganizationId int, --PartyId
-	@FirstName nvarchar(200), 
-	@MiddleName nvarchar(50), 
-	@LastName nvarchar(200), 
-	@Title nvarchar(50), 
-	@Suffix nvarchar(50), 
-	@Email nvarchar(200), 
-	@DefaultIDP bit = 1, 
-	@IDPTypeId int = NULL, 
-	@AssignedProductId PRODUCTIDTYPE READONLY
+﻿CREATE ROCEDURE [Enterprise].[SetupSuperUser]
+(@OrganizationId    INT, --PartyId
+ @FirstName         NVARCHAR(200), 
+ @MiddleName        NVARCHAR(50), 
+ @LastName          NVARCHAR(200), 
+ @Title             NVARCHAR(50), 
+ @Suffix            NVARCHAR(50), 
+ @Email             NVARCHAR(200), 
+ @DefaultIDP        BIT           = 1, 
+ @IDPTypeId         INT           = NULL, 
+ @AssignedProductId PRODUCTIDTYPE READONLY
 )
 AS
     BEGIN
