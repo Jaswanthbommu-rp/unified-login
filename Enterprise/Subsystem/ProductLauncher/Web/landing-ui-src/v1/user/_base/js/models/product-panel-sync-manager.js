@@ -421,7 +421,7 @@
             return s;
         };
 
-        p.setSelectedPresetRoleSync = function (key, val) {
+        p.setSelectedPresetRoleSync = function (key, list) {
             var s = this,
                 roleData,
                 selectedRole,
@@ -431,7 +431,7 @@
 
             roleData.forEach(function (item) {
                 item.isAssigned = false;
-                if (item.roletype == val) {
+                if (list.contains(parseInt(item.id))) {
                     item.isAssigned = true;
                 }
             });
