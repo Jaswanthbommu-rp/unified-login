@@ -3,30 +3,30 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductMessageGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
         var vm = this,
-            pgGrid = gridModel(),
-            pgGridTransform = gridTransformSvc(),
-            pgGridPagination = gridPaginationModel();
+            pmgGrid = gridModel(),
+            pmgGridTransform = gridTransformSvc(),
+            pmgGridPagination = gridPaginationModel();
 
         vm.init = function () {
-            vm.grid = pgGrid;
+            vm.grid = pmgGrid;
             vm.propertyGroupsError = $filter("productPanelText")("panelError.generic");
             vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "PropertyGroup");
-            pgGridTransform.watch(pgGrid);
-            pgGrid.setConfig(vm.config);
-            pgGridPagination.setGrid(pgGrid);
-            $scope.pgGridPagination = pgGridPagination;
+            pmgGridTransform.watch(pmgGrid);
+            pmgGrid.setConfig(vm.config);
+            pmgGridPagination.setGrid(pmgGrid);
+            $scope.pmgGridPagination = pmgGridPagination;
 
-            pgGridPagination.setConfig({
+            pmgGridPagination.setConfig({
                 recordsPerPage: 25
             });
 
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
-            vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
-            vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
+            vm.gridSelectionWatch = pmgGrid.subscribe("selectChange", vm.selectionChange);
+            vm.gridSelectAllWatch = pmgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
+            vm.filterData = pmgGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
@@ -59,16 +59,15 @@
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
 
-            pgGrid.busy(true);
+            pmgGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
-                var propertyData = syncMgr.getProductPropertyGroupData(productId);
+                var propertyData = syncMgr.getMessageGroupMap(productId);
 
                 if (propertyData === undefined) {
 
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
-                        editorPersonaId: persona.getId(),
-                        productId: productId
+                        editorPersonaId: persona.getId()
                     };
 
                     vm.dataPropReq = dataSvc.get(params, vm.setPropertyGroupData);
@@ -80,16 +79,16 @@
         };
 
         vm.loadGridData = function (productId) {
-            pgGrid.busy(false);
+            pmgGrid.busy(false);
 
-            var propData = syncMgr.getProductPropertyGroupData(productId);
+            var propData = syncMgr.getMessageGroupMap(productId);
 
             if (propData && propData.length > 0) {
                 if (vm.hasViewOnlyAccess()) {
                     propData.forEach(function (item) {
                         angular.extend(item, {
                             disabled: false,
-                            radname: "propertyGroup"
+                            radname: "messageGroup"
                         });
                         item.disabled = true;
                     });
@@ -97,14 +96,14 @@
 
                 propData.forEach(function (item) {
                     angular.extend(item, {
-                        radname: "propertyGroup",
+                        radname: "messageGroup",
                         productId: productId,
                         originalProperty: item.isAssigned
                     });
 
                 });
 
-                pgGridPagination.setData(propData).goToPage({
+                pmgGridPagination.setData(propData).goToPage({
                     number: 0
                 });
             }
@@ -113,9 +112,9 @@
         };
 
         vm.setPropertyGroupData = function (resp) {
-            pgGrid.busy(false);
+            pmgGrid.busy(false);
             if (resp.records && resp.records.length) {
-                var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
+                var pdata = syncMgr.setMessageGroupList(resp.records, $scope.$parent.productId);
                 vm.loadGridData($scope.$parent.productId);
             }
 
@@ -131,17 +130,17 @@
             vm.activeWatch();
             vm.gridSelectionWatch();
             vm.gridSelectAllWatch();
-            pgGrid.destroy();
+            pmgGrid.destroy();
 
             if (vm.dataPropReq) {
                 vm.dataPropReq.$cancelRequest();
             }
 
-            pgGridTransform.destroy();
-            pgGridPagination.destroy();
-            pgGrid = undefined;
-            pgGridTransform = undefined;
-            pgGridPagination = undefined;
+            pmgGridTransform.destroy();
+            pmgGridPagination.destroy();
+            pmgGrid = undefined;
+            pmgGridTransform = undefined;
+            pmgGridPagination = undefined;
             //vm = undefined;
             $scope = undefined;
         };
@@ -151,10 +150,10 @@
 
     angular
         .module("settings")
-        .controller("ProductPropertyGroupsGridCtrl", [
+        .controller("ProductMessageGroupsGridCtrl", [
             "$scope",
             "$filter",
-            "ProductPropertyGroupSvc",
+            "RPMessagingGroupsSvc",
             "rpGridModel",
             "rpGridTransform",
             "rpGridPaginationModel",
@@ -163,6 +162,6 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
-            ProductPropertyGroupsGridCtrl
+            ProductMessageGroupsGridCtrl
         ]);
 })(angular);
