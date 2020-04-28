@@ -36,7 +36,8 @@ BEGIN
 			pvt.MetadataLocation, 
 			pvt.ClientSecret, 
 			pvt.ValidAudience,
-			pvt.UserLoginClaim
+			pvt.UserLoginClaim,
+			pvt.SigningBehavior
 		FROM
 		(
 			SELECT ipt.ContactMechanismId, ipt.IdentityProviderTypeId, ipt.Name AS IdentityTypeName, ipt.Description, ipst.Name AS SettingTypeName, ips.Value
@@ -65,7 +66,8 @@ BEGIN
 				[MetadataLocation], 
 				[ClientSecret], 
 				[ValidAudience],
-				[UserLoginClaim]
+				[UserLoginClaim],
+				[SigningBehavior]
 			)) AS pvt
 END;
 
