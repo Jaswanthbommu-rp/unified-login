@@ -5,7 +5,6 @@
 
     function config(model, productAccess, templateModel) {
         if (!templateModel.isProductExists(26)){
-            logc("templateModel", templateModel);
             productAccess.register({
                 model: model,
                 key: "soln107",
