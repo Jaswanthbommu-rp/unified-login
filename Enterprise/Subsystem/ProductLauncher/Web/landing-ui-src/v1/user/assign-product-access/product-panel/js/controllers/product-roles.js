@@ -248,6 +248,12 @@
                     }
                 });
 
+                //Exclude properties tab fro employee and external user company
+                var compId = persona.getBooksMasterId();
+                if (compId === -1 || compId === -2){
+                    matchFound = false;
+                }
+
                 var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
                 if (matchFound) {
                     tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
