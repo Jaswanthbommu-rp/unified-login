@@ -363,7 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
                     fromUtcDateTime = orgStatus.FromDate;
-                    orgStatus.ThruDate = Convert.ToDateTime("12/31/9999");
+                    orgStatus.ThruDate = new DateTime(9999,12,31);
                     if (orgStatus.FromDate > DateTime.UtcNow)
                     {
                         DateTime fromDate = DateTime.UtcNow;

@@ -4,10 +4,13 @@ using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
@@ -38,7 +41,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Public Methods
 
         #region Properties and Roles
+        /// <summary>
+		/// Used to get the list of properties for the company or for the given user
+		/// </summary>
+		/// <param name="editorPersonaId">User making the request</param>
+		/// <param name="userPersonaId">The user id to merge with the property list, if used. 0 for all properties</param>
+		/// <param name="assignedOnly">Only return the properties assigned to the given user persona id</param>
+		/// <param name="datafilter">A datafilter used to filter the properties. Not currently used</param>
+		/// <returns></returns>
+		public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
 
+            try
+            {
+                result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (result.IsError)
+                {
+                    WriteToErrorLog($"ManageUnifiedLogin.GetProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                //long companyId = _editorPersona.Organization.BooksMasterId;
+                long companyMasterId = _editorPersona.Organization.BooksCustomerMasterId;
+
+                if (companyMasterId == 0)
+                {
+                    WriteToErrorLog($"ManageUnifiedLogin.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                }
+
+                IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
+                IList<ProductProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
+              
+                WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
+
+                // need to do a filter on the result
+                if (userPersonaId != 0)
+                {
+                    WriteToDiagnosticLog($"GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    result = MergeProductPropertiesWithGreenbook(customerPropertyList, userPersonaId, assignedOnly);
+                    WriteToDiagnosticLog($"GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                }
+                else
+                {
+                    result = new ListResponse() // create new user
+                    {
+                        Records = customerPropertyList.Cast<object>().ToList(),
+                        TotalRows = customerPropertyList.Count,
+                        RowsPerPage = customerPropertyList.Count,
+                        TotalPages = 1,
+                        ErrorReason = string.Empty
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                result.IsError = true;
+                result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+                WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
+                    exception: ex);
+            }
+
+            return result;
+        }
+
+       
         /// <summary>
         /// Used to add/update a role in Greenbook
         /// </summary>
@@ -903,6 +972,91 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Returns Roles for User (User Access Groups in UserManagement)
+        /// </summary>
+        public ListResponse GetUserRolesWithRights(long editorPersonaId, long userPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UserManagement - ManageUnifiedLogin.GetUserRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UserManagement - ManageUnifiedLogin.GetUserRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UserManagement product
+                WriteToDiagnosticLog(
+                   $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedLogin;
+
+                ProductRepository pr = new ProductRepository();
+                UserRoleRightRepository urr = new UserRoleRightRepository();
+                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                var gbAllRoles = urr.GetPlatFormRoleRights(partyId, productIdList, productId);
+
+                gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
+
+                foreach ( var role in gbAllRoles){                    
+
+                    var itemsToRemove = role.UserRights.Where(r => (r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN" ||
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" || 
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS" ||
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN")).ToList();
+
+                    foreach (var item in itemsToRemove)
+                    {
+                        role.UserRights.Remove(item);
+                    }                 
+                }
+
+
+                WriteToDiagnosticLog(
+                    $"UserManagement - ManageUnifiedLogin.GetUserRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+
+                if (userPersonaId != 0) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog(
+                         $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    response = SetUserSelectedRole(gbAllRoles, userPersonaId);
+                    WriteToDiagnosticLog(
+                           $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+                    // For new user, set a default role - User Role (Name = BASIC END USER)
+                    if (gbAllRoles != null)
+                    {
+                        gbAllRoles.FirstOrDefault(s => s.DefaultRole == "True").IsAssigned = true;
+                    }
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRoles.Cast<object>().ToList(),
+                        TotalRows = gbAllRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetUserRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
         /// Returns all Companies in Green Book
         /// </summary>
         /// <param name="editorPersonaId">The persona of the user making the change. Used to log the GreenBook user making the change.</param>
@@ -1350,6 +1504,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
         }
 
+        private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId)
+        {
+
+            // get roles from DB for UnifiedLogin product
+            WriteToDiagnosticLog(
+                   $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+
+            // if a user record exists
+
+            foreach (var role in roleList)
+            {
+                if (allRoles.Any(a => a.RoleId.ToString() == role.RoleID.ToString()))
+                {
+                    UnifiedLoginRoleRights selrole = (from a in allRoles
+                                           where a.RoleId.ToString() == role.RoleID.ToString()
+                                           select a).FirstOrDefault();
+                    if (selrole != null)
+                    {
+                        selrole.IsAssigned = true;
+                    }
+                }
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
         private ListResponse GetResidentPortalUserRoles(IList<ProductRole> allRoles, long userPersonaId,long editorPersonaId)
         {
             var personaId = userPersonaId == 0 ? editorPersonaId : userPersonaId;
@@ -1505,7 +1693,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<Property> prop = ocr.ListPropByPersona(userPersonaId, productId);
             return prop;
         }
-		
+
+        /// <summary>
+        /// Used to merge product property data with Unifed Login property data for the user
+        /// </summary>
+        /// <param name="blueBookPropertyList">The list of properties from BlueBook</param>
+        /// <param name="userPersonaId">The user id to filter on</param>
+        /// <param name="assignedOnly">Only return assigned records</param>
+        /// <returns></returns>
+        private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
+        {
+            // merge the given user details with the list
+            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedLogin);
+            var propertyOption = new Dictionary<string, bool>();
+            propertyOption.Add("allProperties", false);// Single Property
+
+            foreach (var property in propertyList)
+            {
+                if (property.ID.ToString() == "-1")
+                {
+                    // PMC level (all properties)
+                    propertyOption["allProperties"] = true;
+                }
+                else {
+                    if (blueBookPropertyList.Any(a => a.ID == property.ID.ToString()))
+                    {
+                        ProductProperty pp = (from a in blueBookPropertyList
+                                              where a.ID == property.ID.ToString()
+                                              select a).FirstOrDefault();
+                        if (pp != null)
+                        {
+                            pp.IsAssigned = true;
+                        }
+                    }
+                }               
+            }
+
+            if (assignedOnly)
+            {
+                blueBookPropertyList = blueBookPropertyList.Where(a => a.IsAssigned == true).ToList();
+            }
+
+            return new ListResponse()
+            {
+                Records = blueBookPropertyList.Cast<object>().ToList(),
+                TotalRows = blueBookPropertyList.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = propertyOption
+            };
+        }
+       
         #endregion
     }
 	

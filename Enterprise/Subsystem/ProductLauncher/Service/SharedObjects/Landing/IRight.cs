@@ -23,6 +23,6 @@
 		/// <summary>
 		/// Right Value TypeId
 		/// </summary>
-		int RightValueTypeId { get; set; }
+		int RightValueTypeId { get; set; }	
 	}
 }

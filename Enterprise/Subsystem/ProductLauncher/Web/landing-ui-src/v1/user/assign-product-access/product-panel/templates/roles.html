@@ -1,5 +1,12 @@
 <div class="product-panel-roles-wrapper" ng-controller="ProductRolesGridCtrl as cpr">
     <div class="product-panel-roles-body" ng-if="!cpr.isDataError">
+        <div class="product-panel-roles-select" ng-if="cpr.isSelectTypeConfigLoaded()">
+            <rp-form-select-menu ng-repeat="sop in cpr.selectconfigs"
+                ng-if="!cpr.presetRoles.empty()"
+                config="sop.configData"
+                rp-model="cpr.roleSelected">
+            </rp-form-select-menu>
+        </div>
         <div class="grid-controls">
             <div class="grid-control-item">
                 <rp-toggle model="cpr.rolesGrid.filtersModel.state.active" options="{
@@ -10,7 +17,7 @@
                 </rp-toggle>
             </div>
         </div>
-        <rp-grid  ng-if="cpr.isActive()" model="cpr.rolesGrid" class="product-panel-roles-grid">
+        <rp-grid ng-if="cpr.isActive()" model="cpr.rolesGrid" class="product-panel-roles-grid">
         </rp-grid>
         <rp-grid-pagination ng-if="cpr.isActive()" model="roleGridPagination">
         </rp-grid-pagination>

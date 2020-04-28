@@ -30,7 +30,7 @@
             "panelName.portfolioManagement": "Portfolio Management Product Access",
             "panelName.easylms": "EasyLMS Product Access",
             "panelName.clickPay" : "Payments Product Access",
-            "panelName.depositAlternative" : "Deposit Alternative",
+            "panelName.depositAlternative" : "Deposit Alternative Product Access",
             "panelName.comingSoon": "Coming Soon",
 
             "panelError.generic": "There was a problem getting information for the product"

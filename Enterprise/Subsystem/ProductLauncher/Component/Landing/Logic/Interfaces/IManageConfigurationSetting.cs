@@ -30,5 +30,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="configurationSetting">Master Configuration setting object</param>
         /// <returns>Repository response object</returns>
         RepositoryResponse UpdateConfigurationSetting(ConfigurationSetting configurationSetting);
-	}
+
+        /// <summary>
+        /// Update an existing Configuration Setting
+        /// </summary>
+        /// <param name="masterConfigurationSetting">Master Configuration setting object</param>
+        /// <returns>Repository response object</returns>
+        RepositoryResponse CreateMasterConfigurationSetting(MasterConfigurationSetting masterConfigurationSetting);
+    }
 }
