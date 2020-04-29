@@ -82,6 +82,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
+        /// <summary>
+	    /// Get Unified Login User Mapping id for given Product user Id's
+	    /// </summary>
+	    /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of UL mapping users id by company and products", Type = typeof(MappedUnifiedLoginUserDetails))]
+        [Route("ulusermappingidbycompanyproductUserId")]
+        [AuthorizeScope("userinfoapi")]
+        [HttpPost]
+        public HttpResponseMessage GetULUserIdMappedToProductUserIdByCompanyAndProducts([FromBody] ProductUserIDMappingRequest productUserIDMappingRequest)
+        {            
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Started");
+            MappedUnifiedLoginUserDetails mappedUnifiedLoginUserDetails = new MappedUnifiedLoginUserDetails
+            {
+                CompanyId = productUserIDMappingRequest.CompanyId,
+                ProductId = productUserIDMappingRequest.ProductId,
+                ULMappedUserId = new List<ULMappedUserIds>()
+            };
+            
+            if (productUserIDMappingRequest == null ||
+                productUserIDMappingRequest.CompanyId <= 0 ||
+                productUserIDMappingRequest.ProductId <= 0)
+            {                
+                return Request.CreateResponse(HttpStatusCode.BadRequest, mappedUnifiedLoginUserDetails);
+            }
+
+            IProductRepository productRepository = new ProductRepository();
+            mappedUnifiedLoginUserDetails.ULMappedUserId = productRepository.GetULMappingUsersByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
+                                                                                 productUserIDMappingRequest.ProductId,
+                                                                                 productUserIDMappingRequest.ProductUserId);
+            var logData = new Dictionary<string, object>();
+            logData.Add("result", mappedUnifiedLoginUserDetails);
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Data returned", logData);
+
+            return Request.CreateResponse(HttpStatusCode.OK, mappedUnifiedLoginUserDetails);
+        }
+
 
         #endregion
 
