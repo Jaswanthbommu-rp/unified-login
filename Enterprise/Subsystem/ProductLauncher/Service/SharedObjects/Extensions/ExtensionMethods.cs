@@ -139,7 +139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                        internalAttribute.ColumnName,
                                        newValueIsDate || oldValueIsDate ? " date from " :" from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
                                        " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                       newValueIsDate || oldValueIsDate ? " CST" : " on the ", newValueIsDate || oldValueIsDate ? string.Empty :entityAffected,
+                                       ((newValueIsDate || oldValueIsDate) && (auditRecord.NewValue != null && !string.IsNullOrEmpty(auditRecord.NewValue.ToString()))) ? " CST" : "", newValueIsDate || oldValueIsDate ? string.Empty : " on the " + entityAffected,
                                        " for {0} {1}.");
 
                                     result.Add(auditRecord);
