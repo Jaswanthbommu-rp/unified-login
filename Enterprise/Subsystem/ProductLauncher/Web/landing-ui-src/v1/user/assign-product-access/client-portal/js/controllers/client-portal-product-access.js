@@ -3,7 +3,7 @@
 (function(angular, undefined) {
     "use strict";
 
-    function ClientPortalProductAccessCtrl($scope, $filter, tabsMenu, tabsData, ClientPortalProductModel, pubsub) {
+    function ClientPortalProductAccessCtrl($scope, $filter, tabsMenu, tabsData, ClientPortalProductModel, pubsub, templateModel) {
         var vm = this;
 
         vm.init = function() {
@@ -15,7 +15,7 @@
 
 
         vm.isActive = function () {
-            return ClientPortalProductModel.isActive();
+            return ClientPortalProductModel.isActive() && !templateModel.isProductExists(14);
         };
 
         vm.setChanged = function () {
@@ -48,6 +48,7 @@
             "clientPortalTabsData",
             "clientPortalDataModel",
             "pubsub",
+            "productTemplateModel",
             ClientPortalProductAccessCtrl
         ]);
 })(angular);
