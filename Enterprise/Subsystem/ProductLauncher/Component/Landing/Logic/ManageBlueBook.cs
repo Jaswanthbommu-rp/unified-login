@@ -601,7 +601,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         City = p.attributes.address != null ? p.attributes.address.city : null,
                         State = p.attributes.address != null ? p.attributes.address.state: null,
                         Zip = p.attributes.address != null ? p.attributes.address.postalCode : null
-                    }).ToList();
+                    }).OrderBy(p => p.Name).ToList();
 
                     logData = new Dictionary<string, object>() { { "ManageBlueBook.GetCustomerProperty", customerPropertyList } };
                     WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - Got info.", logData);
