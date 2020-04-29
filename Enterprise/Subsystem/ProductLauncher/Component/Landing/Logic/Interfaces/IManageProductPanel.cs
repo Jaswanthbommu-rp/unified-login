@@ -14,7 +14,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 	public interface IManageProductPanel
 	{
 		/// <summary>
-		/// Creates Product User
+		/// Get Product Properties
 		/// </summary> 
 		/// <param name="editorPersonaId">editorPersonaId</param>		
 		/// <param name="productId"></param>
@@ -45,5 +45,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="assignedToRoleOnly"></param>		
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductRightsForRole(long editorPersonaId, int roleId, long partyId, int productId, RequestParameter datafilter, bool assignedToRoleOnly = false);
+		/// <summary>
+		/// Get Product PropertyGroups
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>		
+		/// <param name="productId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="assignedOnly"></param>
+		/// <param name="datafilter"></param>
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false);
 	}
 }

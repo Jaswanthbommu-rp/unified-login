@@ -12,6 +12,14 @@
             });
         }
 
+        if (templateModel.isProductExists(6)) {
+            productAccess.register({
+                model: model,
+                key: "soln305",
+                product: "6"
+            });
+        }
+
         if (templateModel.isProductExists(10)) {
             productAccess.register({
                 model: model,
@@ -36,6 +44,45 @@
             });
         }
 
+        if (templateModel.isProductExists(3)) {
+            productAccess.register({
+                model: model,
+                key: "soln503",
+                product: "3"
+            });
+        }
+
+        if (templateModel.isProductExists(23)) {
+            productAccess.register({
+                model: model,
+                key: "soln307",
+                product: "23"
+            });
+        }
+
+        if (templateModel.isProductExists(15)) {
+            productAccess.register({
+                model: model,
+                key: "soln204",
+                product: "15"
+            });
+        }
+
+        if (templateModel.isProductExists(17)) {
+            productAccess.register({
+                model: model,
+                key: "soln201",
+                product: "17"
+            });
+        }
+
+        if (templateModel.isProductExists(26)) {
+            productAccess.register({
+                model: model,
+                key: "soln107",
+                product: "26"
+            });
+        }
         logc("productAccess", productAccess);
     }
 

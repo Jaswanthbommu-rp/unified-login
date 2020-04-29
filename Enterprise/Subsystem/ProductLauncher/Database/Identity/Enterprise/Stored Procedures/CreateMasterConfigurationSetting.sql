@@ -14,7 +14,8 @@ AS
 		 SELECT  @MasterConfigurationId = MasterConfigurationId
          FROM Enterprise.MasterConfiguration MC
               INNER JOIN Enterprise.MasterConfigurationType MCT ON MC.MasterConfigurationTypeId = MCT.MasterConfigurationTypeId
-         WHERE MC.AttributeId = @PartyId
+         WHERE 
+			( MC.AttributeId = @PartyId OR ( 1 = case when @PartyId IS NULL AND MC.AttributeId IS NULL Then 1 else 0 End) )
                AND MCT.Name = @MasterConfigurationType;
          
 
@@ -29,17 +30,15 @@ AS
          IF EXISTS
 		(
 			SELECT 1             
-                            FROM Enterprise.MasterConfigurationSetting mcs
-                            INNER JOIN Enterprise.MasterConfiguration mc ON mc.MasterConfigurationId = mcs.MasterConfigurationId
-                            INNER JOIN Enterprise.MasterSetting ms ON mcs.MasterSettingId = ms.MasterSettingId
-                            INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterSettingTypeId = ms.MasterSettingTypeId
-                            INNER JOIN Enterprise.MasterConfigurationType mct ON mct.MasterConfigurationTypeId = mst.MasterConfigurationTypeId
-                            WHERE MST.Name = @MasterSettingType
+                FROM Enterprise.MasterConfigurationSetting mcs
+                INNER JOIN Enterprise.MasterConfiguration mc ON mc.MasterConfigurationId = mcs.MasterConfigurationId
+                INNER JOIN Enterprise.MasterSetting ms ON mcs.MasterSettingId = ms.MasterSettingId
+                INNER JOIN Enterprise.MasterSettingType mst ON mst.MasterSettingTypeId = ms.MasterSettingTypeId
+                INNER JOIN Enterprise.MasterConfigurationType mct ON mct.MasterConfigurationTypeId = mst.MasterConfigurationTypeId
+			WHERE MST.Name = @MasterSettingType
 				  AND MCT.Name = @MasterConfigurationType
-				  AND MC.AttributeId = @PartyId
-			
-			
-			
+				  AND ( MC.AttributeId = @PartyId OR ( 1 = case when @PartyId IS NULL AND MC.AttributeId IS NULL Then 1 else 0 End) )
+				  AND MS.Value = @Value
 		)
 		BEGIN
 			SELECT @MasterSettingId = MasterSettingId
@@ -52,40 +51,40 @@ AS
 			SELECT @MasterSettingId As Id, 'Setting already exists. Try updating the value.' as ErrorMessage
 		END
 		ELSE
-             BEGIN TRY
-                 INSERT INTO Enterprise.MasterSetting
+           BEGIN TRY
+               INSERT INTO Enterprise.MasterSetting
 					(MasterSettingTypeId,
 					 Value,
 					 FromDate,
 					 ThruDate
 					)
-                 VALUES
+              VALUES
 					(@MasterSettingTypeId,
 					 @Value,
 					 GETUTCDATE(),
 					 NULL
 					);
-                 SELECT @MasterSettingId = SCOPE_IDENTITY();
-                 INSERT INTO Enterprise.MasterCOnfigurationSetting
+              SELECT @MasterSettingId = SCOPE_IDENTITY();
+              INSERT INTO Enterprise.MasterCOnfigurationSetting
 					(MasterCOnfigurationId,
 					 MasterSettingId
 					)
-                 VALUES
+              VALUES
 					(@MasterCOnfigurationId,
 					 @MasterSettingId
 					);
 				 SELECT @MasterConfigurationSettingId = SCOPE_IDENTITY()
-                 SELECT @MasterSettingId AS 'Id',
-                        '' AS ErrorMessage;
-             END TRY
-             BEGIN CATCH
-                 DECLARE @ErrorLogID INT;
-                 EXEC dbo.LogError
-                      @ErrorLogID = @ErrorLogID OUTPUT;
-                 SELECT 0 AS Id,
-                        '' ErrorMessage
-                 FROM dbo.ErrorLog
-                 WHERE ErrorLogID = @ErrorLogID;
-                 ROLLBACK;
-             END CATCH;
+               SELECT @MasterSettingId AS 'Id',
+                      '' AS ErrorMessage;
+           END TRY
+           BEGIN CATCH
+               DECLARE @ErrorLogID INT;
+               EXEC dbo.LogError
+                    @ErrorLogID = @ErrorLogID OUTPUT;
+               SELECT 0 AS Id,
+                      '' ErrorMessage
+               FROM dbo.ErrorLog
+               WHERE ErrorLogID = @ErrorLogID;
+               ROLLBACK;
+           END CATCH;
      END;

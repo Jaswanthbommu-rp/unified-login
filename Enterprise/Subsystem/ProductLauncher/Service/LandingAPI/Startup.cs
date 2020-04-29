@@ -52,6 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
 
             // Add our custom no-cache handler to the response
             config.MessageHandlers.Add(new NoCacheHandler());
+            config.MessageHandlers.Add(new TibcoRequestHandler());
 
             WebApiConfig.Register(config);
 

@@ -7,14 +7,19 @@
     margin-top: 20px;
 }
 
+.product-panel-roles-select {
+    width: 40%;
+}
+
 .product-panel-roles {
     width: 100%;
 
-     &-wrapper {
+    &-wrapper {
         margin-top: 10px;
     }
 
     &-grid {
+
         .rp-grid-headers-1,
         .rp-grid-filters-1,
         .rp-grid-body-1 {
@@ -28,7 +33,7 @@
         }
 
         .name {
-             width: 90%;
+            width: 90%;
             //min-width: 200px;
         }
 

@@ -88,6 +88,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> PropertyList { get; set; }
 
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> RemovedPropertyList { get; set; }
+
 		/// <summary>
 		/// List of Roles to assign to a user
 		/// </summary>

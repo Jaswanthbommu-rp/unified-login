@@ -102,6 +102,7 @@
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
     <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
     <Compile Include="BlackBook\CustomerCompany.cs" />
+    <Compile Include="BlackBook\CustomerProperty.cs" />
     <Compile Include="BlackBook\InstanceAddress.cs" />
     <Compile Include="BlackBook\InstanceAttribute.cs" />
     <Compile Include="BlackBook\InstancePhone.cs" />
@@ -151,6 +152,7 @@
     <Compile Include="Extensions\MultiQueryMapperExtension.cs" />
     <Compile Include="Extensions\ProfileExtensions.cs" />
     <Compile Include="Handlers\NoCacheHandler.cs" />
+    <Compile Include="Handlers\TibcoRequestHandler.cs" />
     <Compile Include="Helper\CheckUserRight.cs" />
     <Compile Include="Helper\ClientTimezone.cs" />
     <Compile Include="Helper\ConfigReader.cs" />
@@ -334,6 +336,9 @@
     <Compile Include="Landing\Product\Ops\Extensions\RoleExtensions.cs" />
     <Compile Include="Landing\SerializerContractResolver.cs" />
     <Compile Include="Landing\UserDetails.cs" />
+    <Compile Include="Landing\UserUpdate\UpdateUserProfileEntity.cs" />
+    <Compile Include="Landing\UserUpdate\EditorAssignedPersona.cs" />
+    <Compile Include="Landing\UserUpdate\UserBatchEntity.cs" />
     <Compile Include="Mappers\ProfileDetailsMapper.cs" />
     <Compile Include="Mappers\UserDetailsMapper.cs" />
     <Compile Include="Product\Accounting\AccountingRoleAndPropertyList.cs" />
@@ -541,7 +546,9 @@
     <Compile Include="Product\UnifiedAmenities\UnifiedAmenitiesUser.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginCompany.cs" />
     <Compile Include="Product\UnifiedLogin\RightAddRem.cs" />
+    <Compile Include="Product\UnifiedLogin\UnifiedLoginRight.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginRole.cs" />
+    <Compile Include="Product\UnifiedLogin\UnifiedLoginRoleRights.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginService.cs" />
     <Compile Include="Product\VendorServices\Notification.cs" />
     <Compile Include="Product\VendorServices\ProductPropertyNotification.cs" />
@@ -557,6 +564,10 @@
     <Compile Include="Saml\SamlAttributes.cs" />
     <Compile Include="Swagger\IProvideExamples.cs" />
     <Compile Include="Swagger\SwaggerUtil.cs" />
+    <Compile Include="WebHook\Books\CustomerCompanyUpdated.cs" />
+    <Compile Include="WebHook\Books\CustomerCompanyDeleted.cs" />
+    <Compile Include="WebHook\SHA.cs" />
+    <Compile Include="WebHook\ThinEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="All\" />
