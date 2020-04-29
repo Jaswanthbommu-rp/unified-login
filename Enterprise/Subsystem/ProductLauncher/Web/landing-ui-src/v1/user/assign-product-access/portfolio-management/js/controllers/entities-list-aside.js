@@ -3,8 +3,9 @@
 (function(angular, undefined) {
     "use strict";
 
-    function EntitiesListAsideCtrl($scope, aside, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, sync, pmDataModel) {
+    function EntitiesListAsideCtrl($scope, aside, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, dataModel, sync, pmDataModel, $filter) {
         var vm = this,
+            filteredRecords,
             asideGrid = gridModel(),
             gridTransform = gridTransformSvc(),
             gridPagination = gridPaginationModel();
@@ -30,6 +31,7 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridAllWatch = asideGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = asideGrid.subscribe("selectChange", vm.selectionChange);
+            vm.filterData = asideGrid.subscribe("filterBy", vm.filter.bind(vm));
             return vm;
         };
         vm.selectionChange = function (record) {
@@ -43,6 +45,10 @@
             });
         };
 
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.model.data.propertiesList, filterBy);
+        };
+
         vm.update = function(){
             pmDataModel.setChanged();
             aside.hide();
@@ -52,10 +58,13 @@
             aside.hide();
         };
 
-        vm.selectAllProperties = function (record) {
-            vm.model.data.propertiesList.forEach(function (item) {
-               item["isAssigned"] = record;
-            });
+        vm.selectAllProperties = function (val) {
+            if(vm.filteredRecords !== undefined){
+                pmDataModel.setAllPropertiesData(vm.filteredRecords, val);
+            }
+            else{
+                pmDataModel.setAllPropertiesData(vm.model.data.propertiesList, val);
+            }
 
             sync.selectedEntitySync();
         };
@@ -93,6 +102,7 @@
             "pmEntitiesAssignModel",
             "pmSyncManager",
             "portfolioManagementDataModel",
+            "$filter",
             EntitiesListAsideCtrl
         ]);
 })(angular);
