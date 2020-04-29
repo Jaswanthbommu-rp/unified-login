@@ -3,7 +3,7 @@
 (function(angular, undefined) {
     "use strict";
 
-    function UserMgmtProductAccess($scope, model, tabsMenu, tabsData, UMDataModel) {
+    function UserMgmtProductAccess($scope, model, tabsMenu, tabsData, UMDataModel, templateModel) {
         var vm = this;
         var panelName = "UserMgmt";
 
@@ -14,7 +14,7 @@
         };
 
         vm.isActive = function() {
-            return UMDataModel.isActive();
+            return UMDataModel.isActive() && !templateModel.isProductExists(3);
         };
 
         vm.setChanged = function() {
@@ -40,6 +40,7 @@
             "userMgmtTabsMenu",
             "userMgmtTabsData",
             "userMgmtDataModel",
+            "productTemplateModel",
             UserMgmtProductAccess
         ]);
 })(angular);
