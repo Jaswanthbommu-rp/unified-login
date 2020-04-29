@@ -132,7 +132,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.DepositAlternative:
 					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
 					result = productDALogic.GetProductProperties(datafilter);
-					break;			
+					break;
+				case (int)ProductEnum.UnifiedLogin:
+					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+					result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+					break;
 				default:
 					break;
 			}
@@ -225,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.UnifiedLogin:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-					result = manageUnifiedLogin.GetUserRoles(editorPersonaId, userPersonaId, partyId);
+					result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
 					break;
 				default:
 					break;
@@ -244,11 +248,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
 					result = manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
 					break;
+				case (int)ProductEnum.UnifiedLogin:
+					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+					result = manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
+					break;
 				default:
 					break;
 			}
 			return result;
 		}
-			#endregion
+
+		public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false)
+		{
+			ListResponse result = new ListResponse();
+			IProduct product;
+			string productName = Enum.GetName(typeof(ProductEnum), productId);
+			switch (productId)
+			{
+				
+				case (int)ProductEnum.OnSite:
+					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+					result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
+					break;
+				
+				default:
+					break;
+			}
+			return result;
+		}
+		#endregion
 	}
 }

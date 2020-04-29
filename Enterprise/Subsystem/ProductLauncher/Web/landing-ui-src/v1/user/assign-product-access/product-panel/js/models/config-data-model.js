@@ -68,6 +68,7 @@
 
             if (data && data.controls) {
                 data.controls.forEach(function (ctrl) {
+                    logc("icon control", ctrl);
                     if (ctrl.type === "Icon") {
                         if (ctrl.attributes !== null) {
                             ctrl.attributes.forEach(function (item) {
@@ -79,6 +80,7 @@
                         }
                         if (isSlideScreen) {
                             ctrl.controls.forEach(function (subCtrls) {
+                                logc("sub controls", subCtrls);
                                 if (subCtrls.type === "Grid") {
                                     listasideConfig.displayName = subCtrls.displayName;
                                     subCtrls.controls.forEach(function (gridCtrl) {

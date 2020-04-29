@@ -45,16 +45,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         [AuditLog("Notification Email", LogActivityTypeConstants.UPDATE_USER)]
         public string NotificationEmail { get; set; }
 
-        //[AuditLog("User Expires", LogActivityTypeConstants.UPDATE_USER, "{0:MM/dd/yyyy}")]
-        //public DateTime? UserExpire { get; set; }
+        /// <summary>
+        /// User Expires
+        /// </summary>
+        [AuditLog("User Expires", LogActivityTypeConstants.UPDATE_USER, "{0:MM/dd/yyyy}")]
+        public DateTime? UserExpire { get; set; }
 
-        //[AuditLog("User Effective", LogActivityTypeConstants.UPDATE_USER, "{0:MM/dd/yyyy}")]
-        //public DateTime? UserEffective { get; set; }
+        /// <summary>
+        /// User Effective
+        /// </summary>
+        [AuditLog("User Effective", LogActivityTypeConstants.UPDATE_USER, "{0:MM/dd/yyyy}")]
+        public DateTime? UserEffective { get; set; }
 
         /// <summary>
         /// User Enable Access
         /// </summary>
-        [AuditLog("Active Access", LogActivityTypeConstants.UPDATE_USER)]
+        [AuditLog("Active Access", LogActivityTypeConstants.UPDATE_USER, "", "{ 'True':'{2} {3} activated access for user {0} {1}.' }")]
         public bool? IsActive { get; set; }
     }
 }

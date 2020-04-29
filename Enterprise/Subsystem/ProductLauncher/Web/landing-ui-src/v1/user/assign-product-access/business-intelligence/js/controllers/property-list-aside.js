@@ -42,7 +42,7 @@
                 editorPersonaId: persona.getId(),
                 userPersonaId: userModel.getPersonaId(),
                 propertyGroupId: groupModel.getPropertyGroupID(),
-                userLoginName: userModel.getLoginName() === undefined ? userLoginName : userModel.getLoginName() 
+                userLoginName: userModel.getUsername() === undefined ? userLoginName : userModel.getUsername() 
             };
 
             vm.dataReq = dataSvc.get(params, vm.setData);

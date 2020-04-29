@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -13,12 +15,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 	{
 		#region Constructor
 		/// <summary>
-		/// Omnichannel base Constructor
+		/// PropertyRepository base Constructor
 		/// </summary>
 		public PropertyRepository() : base(DbConnectionEnum.IdpConfigurationDb)
 		{
 		}
-		#endregion
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        public PropertyRepository(IRepository repository) : base(repository)
+        {
+        }
+
+        #endregion
 
 		/// <summary>
 		/// List of Roles by User Persona ID
@@ -76,5 +87,85 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				return repositoryResponse;
 			}
 		}
+
+		public RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON)
+		{
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+			repositoryResponse.Id = 0;
+
+			using (var repository = GetRepository())
+			{
+				repository.UnitOfWork.BeginTransaction();
+				try
+				{
+					repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { personaId, productId, propertyJSON });
+					if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
+					{
+						repositoryResponse.ErrorMessage = $"Update Property Mapping Error: {repositoryResponse.ErrorMessage}.";
+					}
+				}
+				catch (Exception exception)
+				{
+					repositoryResponse.Id = 0;
+					repositoryResponse.ErrorMessage = "Update Property Mapping Exception: " + exception.Message;
+				}
+				finally
+				{
+					if (repositoryResponse.ErrorMessage.Length == 0)
+					{
+						//Commit and end transaction.
+						repository.UnitOfWork.Commit();
+					}
+					else
+					{
+						//Rollback transaction and dispose it.
+						repository.UnitOfWork.Rollback();
+					}
+				}
+				return repositoryResponse;
+			}
+		}
+
+		/// <summary>
+		/// Used to update any property mapping records that match the old id to a new id
+		/// </summary>
+		/// <param name="originalPropertyId"></param>
+		/// <param name="newPropertyId"></param>
+		/// <returns></returns>
+        public RepositoryResponse UpdatePropertyMappingReMap(long originalPropertyId, long newPropertyId)
+        {
+            RepositoryResponse result = new RepositoryResponse() {Id = 0, ErrorMessage = ""};
+            
+            dynamic param = new
+            {
+                @OriginalPropertyID = originalPropertyId,
+                @NewPropertyID = newPropertyId
+            };
+
+            using (var repository = GetRepository())
+            {
+                repository.UnitOfWork.BeginTransaction();
+                try
+                {
+                    result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyMappingReMap, param);
+                }
+                catch (Exception exception)
+                {
+                    result.ErrorMessage = exception.Message;
+                }
+                finally
+                {
+                    if (result.ErrorMessage.Length == 0)
+                    {
+                        repository.UnitOfWork.Commit();
+                    }
+                    else
+                    {
+                        repository.UnitOfWork.Rollback();
+                    }
+                }
+                return result;
+            }
+        }
 	}
 }

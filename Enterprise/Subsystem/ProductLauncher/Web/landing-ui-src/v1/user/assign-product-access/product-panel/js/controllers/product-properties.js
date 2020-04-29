@@ -123,7 +123,7 @@
                 var propertyData = syncMgr.getProductPropertiesData(productId);
 
                 if (propertyData === undefined) {
-                    propertiesGrid.busy(false);
+                   // propertiesGrid.busy(false);
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
@@ -187,7 +187,8 @@
                 propData.forEach(function (item) {
                     angular.extend(item, {
                         radname: "property",
-                        productId: productId
+                        productId: productId,
+                        originalProperty: item.isAssigned
                     });
 
                     if (item.active !== undefined && productId === 10) {
@@ -245,6 +246,12 @@
             }
 
             return vm;
+        };
+
+
+        vm.showNotification = function () {
+            logc("$scope.$parent.productId", $scope.$parent.productId);
+            return productDataModel.isPropertyGridActive() && $scope.$parent.productId === 3;
         };
 
         vm.selectionAll = function (bool) {
@@ -344,7 +351,7 @@
             propertiesGridTransform = undefined;
             propertiesGridPagination = undefined;
             vm.filteredPropertiesArray = [];
-            vm = undefined;
+            //vm = undefined;
             $scope = undefined;
         };
 

@@ -18,7 +18,7 @@
             s.propertyGridActive = false;
             s.changed = false;
 
-             s.data = {
+            s.data = {
                 "records": []
             };
 
@@ -29,6 +29,7 @@
                 inputJson: {
                     roleList: [],
                     propertyList: [],
+                    removedPropertyList: [],
                     isAssignedNewPropertyByDefault: false
                 }
             };
@@ -67,6 +68,17 @@
             return s;
         };
 
+
+        // p.setRoleRights = function (list) {
+        //     var s = this;
+        //     s.roleRights = [];
+        //     list.forEach(function (item) {
+        //         s.roleRights.push(item.rightNickName.toLowerCase());
+        //     });
+        //     return s;
+        // };
+
+
         p.isRoleGridActive = function () {
             var s = this;
             return s.roleGridActive;
@@ -83,19 +95,23 @@
             return s.propertyGridActive;
         };
 
+        //  p.getRoleRights = function () {
+        //     var s = this;
+        //     return s.roleRights;
+        // };
 
-         p.getData = function (productId) {
+        p.getData = function (productId) {
             var s = this,
                 hasRoleSelected = false,
                 hasPropertySelected = false;
-                s.batchData = angular.copy(s._batchData);
+            s.batchData = angular.copy(s._batchData);
 
-          var roles = dataSyncManager.getProductRolesData(productId);
-          var properties = dataSyncManager.getProductPropertiesData(productId);
+            var roles = dataSyncManager.getProductRolesData(productId);
+            var properties = dataSyncManager.getProductPropertiesData(productId);
 
-           s.batchData.productId = productId;
+            s.batchData.productId = productId;
 
-           if (roles !== undefined && roles.length) {
+            if (roles !== undefined && roles.length) {
                 s.batchData.inputJson.roleList = [];
                 roles.forEach(function (role) {
                     if (role.isAssigned) {
@@ -110,7 +126,7 @@
                 s.batchData.inputJson.propertyList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14") {
+                    if (productId == "14" || productId == "3" || productId == "23") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
                     else {
@@ -122,9 +138,12 @@
                         if (prop.isAssigned) {
                             s.batchData.inputJson.propertyList.push(prop.id);
                         }
+                        if (!prop.isAssigned && prop.originalProperty) {
+                            s.batchData.inputJson.removedPropertyList.push(prop.id);
+                        }
                     });
 
-                    if (productId == "9"){
+                    if (productId == "9") {
                         s.batchData.inputJson.isAssignedNewPropertyByDefault = dataSyncManager.isProductNewPropertyByDefault(productId);
                     }
                 }
@@ -135,6 +154,11 @@
 
             if (productId == "10") {
                 hasRoleSelected = true;
+            }
+            //logc("roleDependencyControlId", dataSyncManager.isProductDependencyDataNeeded(productId));
+            if (productId == "3" && !dataSyncManager.isProductDependencyDataNeeded(productId)) {
+                hasPropertySelected = true;
+                s.batchData.inputJson.propertyList = [];
             }
 
             if (hasRoleSelected && hasPropertySelected) {

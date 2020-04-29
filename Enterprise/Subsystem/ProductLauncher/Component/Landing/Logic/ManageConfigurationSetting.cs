@@ -83,6 +83,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			return _configurationSettingRepository.UpdateConfigurationSetting(configurationSetting);
 		}
+
+        /// <summary>
+        /// Update an existing Configuration Setting
+        /// </summary>
+        /// <param name="masterConfigurationSetting">Master Configuration setting object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreateMasterConfigurationSetting(MasterConfigurationSetting masterConfigurationSetting)
+        {
+            if (masterConfigurationSetting == null)
+            {
+                throw new ArgumentNullException(nameof(masterConfigurationSetting), "Null MasterConfigurationSetting.");
+            }
+
+            return _configurationSettingRepository.CreateMasterConfigurationSetting(masterConfigurationSetting);
+        }
+
 		#endregion
 	}
 }
