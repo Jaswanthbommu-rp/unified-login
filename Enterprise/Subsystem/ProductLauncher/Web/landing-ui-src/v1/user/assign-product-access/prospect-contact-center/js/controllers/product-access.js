@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProspectContactCenterProductAccess($scope, $filter, tabsMenuModel, navData, prospectContactCenterDataModel) {
+    function ProspectContactCenterProductAccess($scope, $filter, tabsMenuModel, navData, prospectContactCenterDataModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -19,7 +19,7 @@
         };
 
         vm.isActive = function () {
-            return prospectContactCenterDataModel.isActive();
+            return prospectContactCenterDataModel.isActive() && !templateModel.isProductExists(10);
         };
 
         vm.setChanged = function () {
@@ -44,6 +44,7 @@
             "rpScrollingTabsMenuModel",
             "prospectContactCenterNavModel",
             "prospectContactCenterDataModel",
+            "productTemplateModel",
             ProspectContactCenterProductAccess
         ]);
 })(angular);
