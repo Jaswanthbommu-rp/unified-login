@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function Lead2LeaseProductAccess($scope, $filter, tabsMenuModel, navData, lead2LeaseDataModel) {
+    function Lead2LeaseProductAccess($scope, $filter, tabsMenuModel, navData, lead2LeaseDataModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -19,7 +19,7 @@
         };
 
         vm.isActive = function () {
-            return lead2LeaseDataModel.isActive();
+            return lead2LeaseDataModel.isActive() && !templateModel.isProductExists(6);
         };
 
         vm.setChanged = function () {
@@ -44,6 +44,7 @@
             "rpScrollingTabsMenuModel",
             "lead2LeaseNavModel",
             "lead2LeaseDataModel",
+            "productTemplateModel",
             Lead2LeaseProductAccess
         ]);
 })(angular);

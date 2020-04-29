@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function OnesiteProductAccess($scope, $filter, model, tabsMenu, tabsData, OSDataModel) {
+    function OnesiteProductAccess($scope, $filter, model, tabsMenu, tabsData, OSDataModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -13,7 +13,7 @@
         };
 
         vm.isActive = function () {
-            return OSDataModel.isActive();
+            return OSDataModel.isActive() && !templateModel.isProductExists(1);
         };
 
         vm.setChanged = function () {
@@ -40,6 +40,7 @@
             "osTabsMenu",
             "osTabsData",
             "onesiteDataModel",
+            "productTemplateModel",
             OnesiteProductAccess
         ]);
 })(angular);
