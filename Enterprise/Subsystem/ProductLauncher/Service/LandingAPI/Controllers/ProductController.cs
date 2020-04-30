@@ -14,10 +14,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Claims;
 using System.Web.Http;
 using Thinktecture.IdentityModel.Client;
@@ -285,7 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
 
-        [Route("product/{productId}/persona/{personaId}")]
+        [Route("product/{productId:int}/persona/{personaId}")]
         [Authorize]
         [HttpGet]
         public ProductLoginResponse GetProductLoginDetails(int productId, long personaId)
@@ -295,6 +297,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             string accessToken = (from nvp in currentClaimPrincipal.Claims where nvp.Type == "token" select nvp.Value).FirstOrDefault();
+
+            if (personaId == 0)
+                personaId = _userClaims.PersonaId;
 
             RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
@@ -357,7 +362,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return productLoginResponse;
         }
 
+       
+        [Route("product/{productCode}/persona/{personaId}")]
+        [Authorize]
+        [HttpGet]
+        public ProductLoginResponse GetProductLoginDetailsFromProductCode(string productCode, long personaId)
+        {
+            try
+            {
+                ProductEnum productEnum = GetProductEnumByProductCode(productCode);
+                return GetProductLoginDetails((int)productEnum, personaId);
+            }
+            catch (Exception ex)
+            {
+                return new ProductLoginResponse() { ErrorMessage = ex.Message };
+            }            
+        }
+
         #endregion
+
+        public ProductEnum GetProductEnumByProductCode(string productCode)
+        {   
+            var ProductEnumsList = Enum.GetValues(typeof(ProductEnum));
+
+            foreach (object pEnum in ProductEnumsList)
+            {
+                string result;
+                FieldInfo fi = typeof(ProductEnum).GetField(pEnum.ToString());
+                if (fi != null)
+                {
+                    try
+                    {
+                        object[] descriptionAttrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+                        DescriptionAttribute description = (DescriptionAttribute)descriptionAttrs[0];
+                        result = (description.Description);
+                        if (result == productCode)
+                            return (ProductEnum)pEnum;
+                    }
+                    catch
+                    {
+                        result = null;
+                    }
+                }
+            }
+
+            //If Code reach here that means product code did not match with any Product Enum Description value. So raise an exception
+            throw new Exception("Invalid product code");            
+        }
 
         /// <summary>
         /// Used to log a user into an OAuth client
