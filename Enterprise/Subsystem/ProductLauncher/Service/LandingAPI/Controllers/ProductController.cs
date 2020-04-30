@@ -381,7 +381,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #endregion
 
-        public ProductEnum GetProductEnumByProductCode(string productCode)
+        private ProductEnum GetProductEnumByProductCode(string productCode)
         {   
             var ProductEnumsList = Enum.GetValues(typeof(ProductEnum));
 
