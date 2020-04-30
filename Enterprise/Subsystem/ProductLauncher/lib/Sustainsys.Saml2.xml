@@ -2206,6 +2206,12 @@
             <param name="spOptions">Sp Options with configuration</param>
             <returns>Configured or created audience restriction.</returns>
         </member>
+        <member name="M:Sustainsys.Saml2.Saml2P.Saml2PSecurityTokenHandler.ValidateSubjectConfirmation(System.IdentityModel.Tokens.Saml2SecurityToken)">
+            <summary>
+            Ensure subject confirmation is bearer.
+            </summary>
+            <param name="samlToken"></param>
+        </member>
         <member name="T:Sustainsys.Saml2.Saml2P.Saml2AuthenticationRequest">
             <summary>
             An authentication request corresponding to section 3.4.1 in SAML Core specification.
