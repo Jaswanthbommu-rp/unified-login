@@ -3,7 +3,7 @@
 (function(angular, undefined) {
     "use strict";
 
-    function MCProductAccess($scope, $filter, tabsMenuModel, navData, MCDataModel) {
+    function MCProductAccess($scope, $filter, tabsMenuModel, navData, MCDataModel, templateModel) {
         var vm = this;
 
         vm.init = function() {
@@ -19,7 +19,7 @@
         };
 
         vm.isActive = function () {
-            return MCDataModel.isActive();
+            return MCDataModel.isActive() && !templateModel.isProductExists(9);
         };
 
         vm.setChanged = function () {
@@ -44,6 +44,7 @@
             "rpScrollingTabsMenuModel",
             "MCNavModel",
             "MarketingCenterDataModel",
+            "productTemplateModel",
             MCProductAccess
         ]);
 })(angular);
