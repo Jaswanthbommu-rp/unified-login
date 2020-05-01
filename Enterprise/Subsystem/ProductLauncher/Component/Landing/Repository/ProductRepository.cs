@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -1592,7 +1593,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 dynamic param = new
                 {
-                    PartyId = partyId,
+                    PartyId = partyId,  
                     ProductId = productId,
                     TargetProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
                 };
@@ -1730,6 +1731,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return productUsers;
+        }
+
+        /// <summary>
+        /// Get Unified Login mapping UserId for Product UserId by company and product id
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="productId"></param>
+        /// <param name="productUserIds"></param>
+        /// <returns>List of Unified Login mapping UserId by product and company</returns>
+        public List<ULMappedUserIds> GetULMappingUsersByCompanyAndProducts(int companyId, int productId, List<string> productUserIds)
+        {
+            List<ULMappedUserIds> mappingUserList = new List<ULMappedUserIds>();
+
+             dynamic param = new
+            {
+                CompanyId = companyId,
+                ProductId = productId,
+                TargetProductUserIds = productUserIds.Count > 0 ? string.Join(",", productUserIds) : string.Empty,
+             };
+
+            using (var repository = GetRepository())
+            {
+                mappingUserList = repository.GetMany<ULMappedUserIds>(EnterpriseStoredProcNameConstants.SP_ListULMappingUserIdForProductUserId, param);
+            }
+
+            return mappingUserList;
         }
 
 
