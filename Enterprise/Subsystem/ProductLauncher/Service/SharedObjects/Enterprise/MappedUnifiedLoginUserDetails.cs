@@ -15,7 +15,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 
     public class ULMappedUserIds
     {
-        public int ProductUserId { get; set; }
-        public int UnifiedLoginUserId { get; set; }
+        public string ProductUserId { get; set; }
+        public long UnifiedLoginUserId { get; set; }
     }
 }
