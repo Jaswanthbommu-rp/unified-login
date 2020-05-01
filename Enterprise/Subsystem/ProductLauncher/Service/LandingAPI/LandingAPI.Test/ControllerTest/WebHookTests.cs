@@ -35,17 +35,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         private string _mockTiboWebHookSigningSecret = "1234567890";
 
-        private string _mockJson_books_customercompany_deleted = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customercompany.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t\"link\": \"/customercompany?filter[customerCompanyId]={customerCompanyId}&filter[deletedAt]=not:null\",\r\n\t\t\"payload\": {\r\n    \t\t\"customerCompanyId\": 15862,\r\n    \t\t\"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n    \t\t\"replacementCustomerCompanyId\"  : 9999\r\n\t\t}\r\n\t}\r\n}\r\n";
-        private string _mockJson_books_customercompany_deleted_invalidata = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customercompany.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t\"link\": \"/customercompany?filter[customerCompanyId]={customerCompanyId}&filter[deletedAt]=not:null\",\r\n\t\t\"payload\": {\r\n    \t\t\"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n    \t\t\"replacementCustomerCompanyId\"  : 9999\r\n\t\t}\r\n\t}\r\n}\r\n";
-
+        private readonly string _mockJson_books_customercompany_deleted = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customercompany.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t\"link\": \"/customercompany?filter[customerCompanyId]={customerCompanyId}&filter[deletedAt]=not:null\",\r\n\t\t\"payload\": {\r\n    \t\t\"customerCompanyId\": 15862,\r\n    \t\t\"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n    \t\t\"replacementCustomerCompanyId\"  : 9999\r\n\t\t}\r\n\t}\r\n}\r\n";
         private readonly string _mockJson_books_customercompany_deleted_Signature = "2c136a645e98e682babdaba914c3ff2a81ac0d9fd41e60c9cd27e7fb74aef05d";
-        private readonly string _mockJson_books_customercompany_deleted_invalidata_Signature = "37ba2498b33d96dfdcce3cb6993ad66b48e879d0904b1090a6a7857ef4e0775c";
+        
+        private readonly string _mockJson_books_customercompany_deleted_missing_customercompanyid = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customercompany.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t\"link\": \"/customercompany?filter[customerCompanyId]={customerCompanyId}&filter[deletedAt]=not:null\",\r\n\t\t\"payload\": {\r\n    \t\t\"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n    \t\t\"replacementCustomerCompanyId\"  : 9999\r\n\t\t}\r\n\t}\r\n}\r\n";
+        private readonly string _mockJson_books_customercompany_deleted_missing_customercompanyid_Signature = "37ba2498b33d96dfdcce3cb6993ad66b48e879d0904b1090a6a7857ef4e0775c";
 
+        private readonly string _mockJson_books_customercompany_deleted_null_customercompanyid = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customercompany.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t\"link\": \"/customercompany?filter[customerCompanyId]={customerCompanyId}&filter[deletedAt]=not:null\",\r\n\t\t\"payload\": {\r\n    \t\t\"customerCompanyId\": null,\r\n    \t\t\"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n    \t\t\"replacementCustomerCompanyId\"  : 9999\r\n\t\t}\r\n\t}\r\n}\r\n";
+        private readonly string _mockJson_books_customercompany_deleted_null_customercompanyid_Signature = "ad0f422783095cb66b87111ec0bdbb1bbc6eb34a2c074f0bd47e5a34410c2676";
+
+        private readonly string _mockJson_books_customercompany_deleted_null_replacementcustomercompanyid = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customercompany.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t\"link\": \"/customercompany?filter[customerCompanyId]={customerCompanyId}&filter[deletedAt]=not:null\",\r\n\t\t\"payload\": {\r\n    \t\t\"customerCompanyId\": 15862,\r\n    \t\t\"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n    \t\t\"replacementCustomerCompanyId\"  : null\r\n\t\t}\r\n\t}\r\n}\r\n";
+        private readonly string _mockJson_books_customercompany_deleted_null_replacementcustomercompanyid_Signature = "e17c9b4448e1f3b8b2ce2d2277650199a798c58cced15c1ef257346ffbb3921e";
+        
         private readonly string _mockJson_books_customerproperty_deleted = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customerproperty.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t  \"link\": \"/customerproperty?filter[customerPropertyId]={customerPropertyId}&filter[deletedAt]=not:null\",\r\n\t\t  \"payload\": {\r\n\t\t    \"customerPropertyId\": 199685,\r\n\t\t    \"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n\t\t    \"replacementCustomerPropertyId\": 123456789\r\n\t\t  }\r\n\t}\r\n}\r\n";
-        private readonly string _mockJson_books_customerproperty_deleted_invalidata = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customerproperty.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t  \"link\": \"/customerproperty?filter[customerPropertyId]={customerPropertyId}&filter[deletedAt]=not:null\",\r\n\t\t  \"payload\": {\r\n\t\t    \"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n\t\t    \"replacementCustomerPropertyId\": 123456789\r\n\t\t  }\r\n\t}\r\n}\r\n";
-
         private readonly string _mockJson_books_customerproperty_deleted_Signature = "5a29729cf7e401e05905e2146761735e9bc23c80bd0d646c4d1d8674eae51c6c";
-        private readonly string _mockJson_books_customerproperty_deleted_invalidata_Signature = "244036174789556c720aef46357fda9741aad802a579496014e61221ed99ea2c";
+        
+        private readonly string _mockJson_books_customerproperty_deleted_missing_customerpropertyid = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customerproperty.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t  \"link\": \"/customerproperty?filter[customerPropertyId]={customerPropertyId}&filter[deletedAt]=not:null\",\r\n\t\t  \"payload\": {\r\n\t\t    \"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n\t\t    \"replacementCustomerPropertyId\": 123456789\r\n\t\t  }\r\n\t}\r\n}\r\n";
+        private readonly string _mockJson_books_customerproperty_deleted_missing_customerpropertyid_Signature = "244036174789556c720aef46357fda9741aad802a579496014e61221ed99ea2c";
+
+        private readonly string _mockJson_books_customerproperty_deleted_null_customerpropertyid = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customerproperty.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t  \"link\": \"/customerproperty?filter[customerPropertyId]={customerPropertyId}&filter[deletedAt]=not:null\",\r\n\t\t  \"payload\": {\r\n\t\t    \"customerPropertyId\": null,\r\n\t\t    \"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n\t\t    \"replacementCustomerPropertyId\": 123456789\r\n\t\t  }\r\n\t}\r\n}\r\n";
+        private readonly string _mockJson_books_customerproperty_deleted_null_customerpropertyid_Signature = "8c43650ba0b1e722120e4b9b7e264b76f6d3c817259d725faadba845361fc7b4";
+
+        private readonly string _mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customerproperty.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t  \"link\": \"/customerproperty?filter[customerPropertyId]={customerPropertyId}&filter[deletedAt]=not:null\",\r\n\t\t  \"payload\": {\r\n\t\t    \"customerPropertyId\": 199685,\r\n\t\t    \"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n\t\t    \"replacementCustomerPropertyId\": null\r\n\t\t  }\r\n\t}\r\n}\r\n";
+        private readonly string _mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid_Signature = "704e37bab4ae5534cc7f8f459e6b83b58e75c4d5e95a6b9a37ccf11bbb216fcb";
 
         private List<OrganizationType> _organizationTypeList;
         private Organization _organization = null;
@@ -116,7 +128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             Assert.Equal(expectedValue, message, ignoreCase: true);
 
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_missing_customercompanyid);
             //Act
             response = webHookController.PostBooks(thinEvent);
             Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
@@ -145,10 +157,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_invalidata);
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_missing_customercompanyid);
             webHookController.Request.Headers.Add("signature", "12345");
 
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_missing_customercompanyid);
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
@@ -181,10 +193,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_invalidata);
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_missing_customercompanyid);
             webHookController.Request.Headers.Add("signature", "12345");
 
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_missing_customercompanyid);
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
@@ -337,10 +349,66 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_invalidata);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_invalidata_Signature);
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_missing_customercompanyid);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_missing_customercompanyid_Signature);
 
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_invalidata);
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_missing_customercompanyid);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
+
+        [Fact]
+        public void Post_Books_Update_CustomerCompany_BooksMasterId_CompanyIdAttributeNull()
+        {
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+                .Returns(() => null);
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_null_customercompanyid);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_null_customercompanyid_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_null_customercompanyid);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
+
+        [Fact]
+        public void Post_Books_Update_CustomerCompany_BooksMasterId_ReplacementCompanyIdAttributeNull()
+        {
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+                .Returns(() => null);
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customercompany_deleted_null_replacementcustomercompanyid);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_customercompany_deleted_null_replacementcustomercompanyid_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_null_replacementcustomercompanyid);
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
@@ -398,10 +466,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customerproperty_deleted_invalidata);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_customerproperty_deleted_invalidata_Signature);
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customerproperty_deleted_missing_customerpropertyid);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_customerproperty_deleted_missing_customerpropertyid_Signature);
 
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customerproperty_deleted_invalidata);
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customerproperty_deleted_missing_customerpropertyid);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
+
+        [Fact]
+        public void Post_Books_Update_CustomerProperty_CustomerPropertyIdNull()
+        {
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customerproperty_deleted_null_customerpropertyid);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_customerproperty_deleted_null_customerpropertyid_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customerproperty_deleted_null_customerpropertyid);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
+
+        [Fact]
+        public void Post_Books_Update_CustomerProperty_ReplacementCustomerPropertyIdNull()
+        {
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid);
 
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
