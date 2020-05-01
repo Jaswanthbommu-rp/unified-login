@@ -1031,10 +1031,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userOnSiteRoles = onSiteUserUser.OnSiteUserProfile.Roles;
             foreach (var userOnSiteRole in userOnSiteRoles)
             {
-                if (allRoles.Any(a => a.Level == userOnSiteRole.Level))
+                if (allRoles.Any(a => a.GetRoleId == userOnSiteRole.GetRoleId))
                 {
                     OnSiteRole accessGroup = (from a in allRoles
-                                              where a.Level == userOnSiteRole.Level
+                                              where a.GetRoleId == userOnSiteRole.GetRoleId
                                               select a).FirstOrDefault();
 
                     if (accessGroup != null)
@@ -1389,7 +1389,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             foreach (var x in userPropertyRegionRole.RoleList)
             {
-                os.Add(new OnSiteRole { Level = x, IsAssigned = null, CompanyId = companyId });
+                os.Add(new OnSiteRole { SetRoleId = x, IsAssigned = null, CompanyId = companyId });
             }
 
             return os;
@@ -1553,11 +1553,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
     public class OnSiteRole
     {
-        [JsonProperty(PropertyName = "title", NullValueHandling = NullValueHandling.Ignore)]
-        public string Title { get; set; }
+        private string _name = string.Empty;
+        private int _Id;
+
+        [JsonProperty(PropertyName = "id")]
+        public int GetRoleId => _Id;
 
         [JsonProperty(PropertyName = "level", NullValueHandling = NullValueHandling.Ignore)]
-        public int Level { get; set; }
+        public int SetRoleId
+        {
+            set { this._Id = value; }
+        }
+
+        [JsonProperty(PropertyName = "name")]
+        public string GetRoleName => _name;
+
+        [JsonProperty(PropertyName = "title", NullValueHandling = NullValueHandling.Ignore)]
+        public string SetRoleName
+        {
+            set { _name = value; }
+        }
+
+        //[JsonProperty(PropertyName = "title", NullValueHandling = NullValueHandling.Ignore)]
+        //public string Title { get; set; }
+
+        //[JsonProperty(PropertyName = "level", NullValueHandling = NullValueHandling.Ignore)]
+        //public int Level { get; set; }
 
         [JsonProperty(PropertyName = "company_id", NullValueHandling = NullValueHandling.Ignore)]
         public int CompanyId { get; set; }

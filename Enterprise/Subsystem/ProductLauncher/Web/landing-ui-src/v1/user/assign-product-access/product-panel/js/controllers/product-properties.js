@@ -52,6 +52,7 @@
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
+            vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
         };
 
         vm.productSelected = function (obj) {
@@ -250,7 +251,6 @@
 
 
         vm.showNotification = function () {
-            logc("$scope.$parent.productId", $scope.$parent.productId);
             return productDataModel.isPropertyGridActive() && $scope.$parent.productId === 3;
         };
 
@@ -305,6 +305,10 @@
             }
         };
 
+        vm.updateGrid = function () {
+            vm.propertiesGrid.updateSelected();
+        };
+
         vm.resetDataModel = function () {
             //vm.clearProperties();
             vm.resetProperties();
@@ -340,6 +344,7 @@
             vm.gridAllWatch();
             vm.gridSelectionWatch();
             vm.productPropertySwitchWatch();
+            vm.updateGridWatch();
             //  vm.productSelectedWatch();
             if (vm.dataPropReq) {
                 vm.dataPropReq.$cancelRequest();

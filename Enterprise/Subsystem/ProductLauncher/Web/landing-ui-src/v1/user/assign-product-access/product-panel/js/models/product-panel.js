@@ -29,6 +29,7 @@
                 inputJson: {
                     roleList: [],
                     propertyList: [],
+                    regionList: [],
                     removedPropertyList: [],
                     isAssignedNewPropertyByDefault: false
                 }
@@ -36,6 +37,7 @@
 
             s.roles = [];
             s.properties = [];
+            s.propertyGroups = [];
             s.isAllProperties = false;
             s._batchData = angular.copy(s.batchData);
         };
@@ -68,17 +70,6 @@
             return s;
         };
 
-
-        // p.setRoleRights = function (list) {
-        //     var s = this;
-        //     s.roleRights = [];
-        //     list.forEach(function (item) {
-        //         s.roleRights.push(item.rightNickName.toLowerCase());
-        //     });
-        //     return s;
-        // };
-
-
         p.isRoleGridActive = function () {
             var s = this;
             return s.roleGridActive;
@@ -95,10 +86,6 @@
             return s.propertyGridActive;
         };
 
-        //  p.getRoleRights = function () {
-        //     var s = this;
-        //     return s.roleRights;
-        // };
 
         p.getData = function (productId) {
             var s = this,
@@ -108,6 +95,7 @@
 
             var roles = dataSyncManager.getProductRolesData(productId);
             var properties = dataSyncManager.getProductPropertiesData(productId);
+            var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
 
             s.batchData.productId = productId;
 
@@ -150,12 +138,22 @@
 
                 hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;
             }
+
+            if (propertyGroups !== undefined && propertyGroups.length) {
+                s.batchData.inputJson.regionList = [];
+
+                propertyGroups.forEach(function (group) {
+                    if (group.isAssigned) {
+                        s.batchData.inputJson.regionList.push(group.id);
+                    }
+                });
+            }
             //s.data.records.push(s.padata);
 
             if (productId == "10") {
                 hasRoleSelected = true;
             }
-            //logc("roleDependencyControlId", dataSyncManager.isProductDependencyDataNeeded(productId));
+
             if (productId == "3" && !dataSyncManager.isProductDependencyDataNeeded(productId)) {
                 hasPropertySelected = true;
                 s.batchData.inputJson.propertyList = [];
