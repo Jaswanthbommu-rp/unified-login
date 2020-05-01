@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function RentersInsuranceProductAccessCtrl($scope, $filter, rentInsDataModel, tabsModel) {
+    function RentersInsuranceProductAccessCtrl($scope, $filter, rentInsDataModel, tabsModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -16,7 +16,7 @@
         };
 
         vm.isActive = function () {
-            return rentInsDataModel.isActive();
+            return rentInsDataModel.isActive() && !templateModel.isProductExists(15);
         };
 
         vm.setChanged = function () {
@@ -40,6 +40,7 @@
             "$filter",
             "rentersInsuranceDataModel",
             "RentersInsuranceTabsModel",
+            "productTemplateModel",
             RentersInsuranceProductAccessCtrl
         ]);
 })(angular);
