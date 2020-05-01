@@ -83,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         /// <summary>
-	    /// Get Unified Login User Mapping id for given Product user Id's
+	    /// Get Unified Login User Mapping id for given Product user Id's by  Blue Book Company ID and ProductId.
 	    /// </summary>
 	    /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]

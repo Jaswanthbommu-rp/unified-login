@@ -1,13 +1,13 @@
 ﻿CREATE PROCEDURE [Enterprise].[ListULMappingUserIdForProductUserId]
 (
-    @CompanyId INT,
+    @CompanyId INT, --BlueBook ID
     @ProductId INT,
     @TargetProductUserIds nvarchar(max)
 )
 AS
 BEGIN
 
-	DECLARE @SamlAttributeId int;
+	Declare @SamlAttributeId int;
 	DECLARE @ProductUserIdList TABLE(ProductUserId nvarchar(50));
 
 	INSERT INTO @ProductUserIdList(ProductUserId)
@@ -19,12 +19,14 @@ BEGIN
 	SELECT @SamlAttributeId = SamlAttributeId FROM Ident.SamlAttribute
 	WHERE Name = 'UserId'
 
-	SELECT sua.Value AS ProductUserId, sua.PersonaId UnifiedLoginUserId 
-	FROM Ident.SamlUserAttribute sua
-	INNER JOIN @ProductUserIdList puid ON sua.Value = puid.ProductUserId	
-	INNER JOIN Person.Persona p ON p.PersonaId = sua.PersonaId
-	INNER JOIN Ident.UserLoginPersona ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
-	WHERE ulp.OrganizationPartyId = @CompanyId
+	SELECT sua.Value as ProductUserId, sua.PersonaId UnifiedLoginUserId 
+	from Ident.SamlUserAttribute sua
+	inner join @ProductUserIdList puid on sua.Value = puid.ProductUserId	
+	inner join Person.Persona p on p.PersonaId = sua.PersonaId
+	inner join Ident.UserLoginPersona ulp on p.UserLoginPersonaId = ulp.UserLoginPersonaId
+	inner join Enterprise.DataImportMapping dim on dim.PartyId = ulp.OrganizationPartyId
+	WHERE dim.SourceId = @CompanyId
+	AND dim.DataImportApplicationId = 2
 	AND ProductId = @ProductId
 	AND SamlAttributeId = @SamlAttributeId
 	
