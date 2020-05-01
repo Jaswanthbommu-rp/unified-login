@@ -10,10 +10,10 @@
             return [{
                 key: "isAssigned",
                 type: "custom",
-                idKey: "level",
+                idKey: "id",
                 templateUrl: "user/assign-product-access/on-site/templates/role-radio.html"
             }, {
-                key: "title",
+                key: "name",
                 type: "text",
             }];
         };
@@ -21,7 +21,7 @@
         model.getHeaders = function() {
             return [
                 [{ }, {
-                    key: "title",
+                    key: "name",
                     text: "Role",
                 }]
             ];
@@ -49,7 +49,7 @@
                     ]
                 },
                 {
-                    key: "title",
+                    key: "name",
                     type: "text",
                     placeholder: "Filter by Role Name"
                 }
