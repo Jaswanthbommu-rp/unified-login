@@ -501,12 +501,14 @@
                 selectState = false;
 
             propertyList = s.propertyMap['product' + productId].properties;
-            //propertyList = s.groupMap['group' + group.id].properties;
+
             propertyList.forEach(function (item) {
-                if (item.region_id === group.id) {
+                if (parseInt(item.region_id) == parseInt(group.id)) {
                      item["isAssigned"] = group.isAssigned;
                  }
             });
+
+            pubsub.publish("pplpropertygroup.updateGrids");
 
             return s;
         };
@@ -528,6 +530,7 @@
             });
 
             propertyList.assignedProperties = assignedCount + " of " + totalCount;
+            pubsub.publish("pplpropertygroup.updateGrids");
             return s;
         };
 

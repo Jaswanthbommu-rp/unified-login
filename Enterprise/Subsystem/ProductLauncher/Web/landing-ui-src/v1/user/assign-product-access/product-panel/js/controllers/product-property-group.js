@@ -45,12 +45,14 @@
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
-        vm.selectionAll = function (val) {
+        vm.selectAllPropertyGroup = function (val) {
+            logc("group recordselectall", val);
             syncMgr.allPropertiesSync($scope.$parent.productId, val);
             vm.updateGrid();
         };
 
         vm.selectionChange = function (record) {
+            logc("group records", record);
             if (record) {
                 syncMgr.groupToPropertySync($scope.$parent.productId, record);
             }
@@ -154,7 +156,7 @@
         .controller("ProductPropertyGroupsGridCtrl", [
             "$scope",
             "$filter",
-            "ProductPropertyGroupSvc",
+            "productPropertyGroupSvc",
             "rpGridModel",
             "rpGridTransform",
             "rpGridPaginationModel",
