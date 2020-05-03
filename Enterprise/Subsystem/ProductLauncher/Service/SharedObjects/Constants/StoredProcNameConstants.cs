@@ -152,6 +152,7 @@
         public const string SP_ListOrganizationByLoginName = "Enterprise.ListOrganizationByLoginName";
         public const string SP_ListOrganizationStatusByUserId = "Enterprise.ListOrganizationStatusByUserId";
         public const string SP_ListOrganizationType = "Enterprise.ListOrganizationType";
+        public const string SP_ListOrganizationDomain = "Enterprise.ListOrganizationDomain";
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
 
 		//PartyRelationship

@@ -207,6 +207,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organizationType = new OrganizationType()
                 {
                     OrganizationTypeId = organization.OrganizationTypeId
+                },
+				OrganizationDomain = new OrganizationDomain()
+                {
+					OrganizationDomainId = organization.OrganizationDomainId
                 }
             };
             _repositoryResponse = _organizationLogic.InsertOrganization(org);
@@ -377,7 +381,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpPut]
 		public HttpResponseMessage UpdateOrganization([FromBody] OrganizationUpdate organization)
 	    {
-		    IOrganization org = null;
+		    Organization org = null;
 			if (organization.BooksCustomerMasterId != 0)
 			{
 				// get the organization by customer master id
@@ -425,7 +429,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing organization type");
 			}
 
+            var orgDomains = _organizationLogic.ListOrganizationDomain();
+			if (organization.OrganizationDomainId != 0)
+			{
+				if (orgDomains.All(o => o.OrganizationDomainId != organization.OrganizationDomainId))
+				{
+					// error
+					return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid organization domain id");
+				}
+			}
+			else if (!string.IsNullOrEmpty(organization.OrganizationDomainName))
+			{
+				if (orgDomains.Any(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)))
+				{
+					organization.OrganizationDomainId = orgDomains.FirstOrDefault(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+				}
+				else
+				{
+					return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid organization domain");
+				}
+			}
+			else
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing organization domain");
+            }
 			org.organizationType.OrganizationTypeId = organization.OrganizationTypeId;
+            org.OrganizationDomain.OrganizationDomainId = organization.OrganizationDomainId;
 
 			_repositoryResponse = _organizationLogic.UpdateOrganization(org);
 
@@ -768,8 +797,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Organization Type object have invalid entries)")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List Organization Types", Type = typeof(IOrganizationType))]
-		[SwaggerResponseExamples(typeof(IOrganizationType), typeof(OrganizationTypeExample))]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List Organization Types", Type = typeof(OrganizationType))]
+		[SwaggerResponseExamples(typeof(OrganizationType), typeof(OrganizationTypeExample))]
 		[Route("organizationtype")]
 		[HttpGet]
 		[AuthorizeScope("companyfunctions", "rplandingapi")]

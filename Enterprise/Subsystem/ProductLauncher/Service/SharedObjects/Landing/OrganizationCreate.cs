@@ -22,11 +22,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public long BooksCustomerMasterId { get; set; }
 
 		/// <summary>
-		/// Used to store the books id for the company
+		/// Used to store the company type id for the company
 		/// </summary>
 		[Required(ErrorMessage = "The Organization Type Id is required")]
 		[Range(1, int.MaxValue, ErrorMessage = "Please enter a Organization Type Id greater than {0}")]
 		public int OrganizationTypeId { get; set; }
+
+        /// <summary>
+        /// Used to store the domain for the company
+        /// </summary>
+        [Required(ErrorMessage = "The Organization Domain Id is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please enter a Organization Domain Id greater than {0}")]
+        public int OrganizationDomainId { get; set; } = 1;
 
 		/// <summary>
 		/// The name of the Organization

@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="organization">Organization object</param>
         /// <returns>Repository response object</returns>
-        RepositoryResponse UpdateOrganization(IOrganization organization);
+        RepositoryResponse UpdateOrganization(Organization organization);
 
         /// <summary>
         /// Used to get the Organization based on the realPageId, party id, customer master or master id
@@ -93,8 +93,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// Used to get the list of all Organization Types
         /// </summary>
         /// <returns>Organization object</returns>
-        IList<OrganizationType> ListOrganizationType();
+        List<OrganizationType> ListOrganizationType();
 
+        List<OrganizationDomain> ListOrganizationDomain();
 
         /// <summary>
         /// Used to get a list of products by company id
