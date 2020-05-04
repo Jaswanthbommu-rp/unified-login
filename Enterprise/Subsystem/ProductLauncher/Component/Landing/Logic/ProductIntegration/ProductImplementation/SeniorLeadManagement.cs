@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #region "Public Methods"
 
         protected override bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
-        {            
+        {
             if (baseUrlAndQuery == null)
                 baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserExistEndpoint), loginNameToCheck);
 
@@ -56,10 +56,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = SubjectUserDetails.FirstName,
                 LastName = SubjectUserDetails.LastName,
                 Email = SubjectUserDetails.Email,
-                Phone = SubjectUserDetails.PhoneNumber,                
+                Phone = SubjectUserDetails.PhoneNumber,
                 IsActive = true,
                 IsMigratedUser = true,
-                PropertyGroups = (userRolePropertiesRegion.PropertyGroupList == null)? new List<string>(): userRolePropertiesRegion.PropertyGroupList,
+                PropertyGroups = (userRolePropertiesRegion.PropertyGroupList == null) ? new List<string>() : userRolePropertiesRegion.PropertyGroupList,
                 Properties = userRolePropertiesRegion.PropertyList,
                 Roles = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
                 PropertyRoles = userRolePropertiesRegion.PropertyRoleList,
@@ -176,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 WriteToDiagnosticLog(
                   $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received all the rights with count = {allRights?.Count}");
-    
+
 
                 if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
                 {
@@ -242,20 +242,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (rol.Rights.Any((p) => p.RightId.ToString() == right.GetRightId))
                     {
-                        rolesId.Add(Convert.ToInt32(rol.GetRoleId));
+                        if (!rolesId.Contains(Convert.ToInt32(rol.GetRoleId)))
+                        {
+                            rolesId.Add(Convert.ToInt32(rol.GetRoleId));
+                        }
                     }
                 }
 
-                Preset preset = new Preset();
+                if (!presets.Any(p => p.Id == Convert.ToInt32(right.GetRightId)))
+                {
+                    Preset preset = new Preset();
 
-                preset.Id = Convert.ToInt32(right.GetRightId);
-                preset.Name = right.GetName;
-                preset.RoleIds = rolesId;
+                    preset.Id = Convert.ToInt32(right.GetRightId);
+                    preset.Name = right.GetName;
+                    preset.RoleIds = rolesId;
 
-                presets.Add(preset);
+                    presets.Add(preset);
+                }
             }
 
-            result.Add("Presets", presets);
+            result.Add("Presets", presets.OrderBy(p=>p.Id).ToList());
 
             return result;
         }
