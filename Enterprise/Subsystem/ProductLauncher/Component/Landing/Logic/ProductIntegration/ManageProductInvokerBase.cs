@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -12,11 +8,15 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration
 {
@@ -129,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
                 if (isCompanyIdRequiredToQuery)
-                    baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+                    baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
 
                 var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
 
@@ -240,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// Returns Product Rights for a Company
+        /// Returns Product Rights for a Company 
         /// </summary>
         /// <param name="dataFilter">Request parameters</param>
         /// <param name="baseUrlAndQuery">Base url</param>
@@ -252,47 +252,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
-                if (string.IsNullOrEmpty(baseUrlAndQuery))
-                    baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetAllRightsEndpoint);             
+                //Get all rights by company
+                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRightEndpoint);
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+                var allRights = GetResultFromApi<IList<ProductRight>>(baseUrlAndQuery);
 
                 WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+                    $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {allRights?.Count}");
 
-
-                var rightList = GetResultFromApi<IList<ProductRight>>(baseUrlAndQuery);
-
-                WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {rightList?.Count}");
-
-                if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
-                {
-                    WriteToDiagnosticLog(
-                        $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
-                    var user = GetProductUser();
-
-                    // map user roles
-                    if (user != null)
-                    {
-                        WriteToDiagnosticLog(
-                            $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
-
-                        var userRoles = user.Roles;
-                        MergeUserRights(rightList, userRoles);
-                    }
-                }
-
-                if (rightList == null)
+                if (allRights == null)
                     throw new Exception("Null Right List.");
 
                 return new ListResponse
                 {
-                    Records = rightList.Cast<object>().ToList(),
-                    TotalRows = rightList.Count,
+                    Records = allRights.Cast<object>().ToList(),
+                    TotalRows = allRights.Count,
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
                     TotalPages = 1
-                };
+            };
             }
             catch (Exception ex)
             {
@@ -857,6 +835,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return integration.PatchEntity<ProductUserProfile>(productUserProfile);
         }
 
+        protected void MergeUserRoles(IList<ProductRole> roleList, List<string> userRoles)
+        {
+            foreach (var role in roleList)
+            {
+                if (userRoles != null && userRoles.Contains(role.GetRoleId))
+                {
+                    role.IsAssigned = true;
+                }
+            }
+        }
         #endregion
 
         #region Migration
@@ -1093,17 +1081,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #region Private methods
-
-        private void MergeUserRoles(IList<ProductRole> roleList, List<string> userRoles)
-        {
-            foreach (var role in roleList)
-            {
-                if (userRoles != null && userRoles.Contains(role.GetRoleId))
-                {
-                    role.IsAssigned = true;
-                }
-            }
-        }
 
         private void MergeUserRights(IList<ProductRight> rightList, List<string> userRights)
         {

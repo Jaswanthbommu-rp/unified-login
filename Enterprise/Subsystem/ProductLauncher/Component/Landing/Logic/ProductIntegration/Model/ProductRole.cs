@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
 {
@@ -50,6 +52,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// RoleType 
 		/// </summary>
 		[JsonProperty(PropertyName = "RoleType", NullValueHandling = NullValueHandling.Ignore)]
-		public string RoleType { get; set; }		
-	}
+		public string RoleType { get; set; }
+
+        [JsonProperty(PropertyName = "Rights")]
+        public List<Right> Rights { get; set; }
+
+    }
+
 }
