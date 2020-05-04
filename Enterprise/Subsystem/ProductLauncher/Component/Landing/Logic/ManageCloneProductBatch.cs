@@ -18,6 +18,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Re
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -60,7 +61,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						ManageProductOneSiteAccounting accounting = new ManageProductOneSiteAccounting(userClaim);
 						propertiesResponse = accounting.GetUserProperties(createUserPersonaId, personaId, null);
 						rolesResponse = accounting.GetUserRoles(createUserPersonaId, personaId, null);
-						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+						ListResponse companiesResponse = accounting.GetUserCompanies(createUserPersonaId, personaId, null);
+						productListToCreate.Add(CreateFinancialSuiteProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId, companiesResponse));
 					}
 					else if (product.ProductId == (int)ProductEnum.MarketingCenter)
 					{
@@ -569,7 +571,78 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return pb;
         }
 
-        private bool CheckForIsAssignedNewPropertyFlag(object additionalInfo)
+		private ProductBatch CreateFinancialSuiteProductBatchRecord(ListResponse propertiesResponse, ListResponse rolesResponse, int productID, ListResponse companiesResponse)
+		{
+			List<string> PropertyList = new List<string>();
+			List<string> RoleList = new List<string>();
+			bool hasAccessToSiteSpendManagementOnly = false;
+			bool isAccountingAdmin = false;
+			bool hasAccessToAllCurrentFutureProperties = false;
+			IEnumerable<object> propertiesCollection;
+			
+			if (propertiesResponse.Records != null)
+			{
+				propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
+			}
+			else
+			{
+				propertiesCollection = new List<object>();
+			}
+
+			if (companiesResponse.Additional != null)
+			{
+				AccountingUser accountingUser = (AccountingUser)companiesResponse.Additional;
+				hasAccessToSiteSpendManagementOnly = accountingUser.HasAccessToSiteSpendManagementOnly;
+				isAccountingAdmin = accountingUser.IsAccountingAdmin;
+				hasAccessToAllCurrentFutureProperties = accountingUser.HasAccessToAllCurrentFutureProperties;
+			}
+
+			if (productID != (int)ProductEnum.ProspectContactCenter)
+			{
+				if (rolesResponse.Records != null)
+				{
+					IEnumerable<object> roleCollection = (IEnumerable<object>)rolesResponse.Records;
+					foreach (object item in roleCollection)
+					{
+						if (((ProductRole)item).IsAssigned)
+						{
+							RoleList.Add(((ProductRole)item).ID);
+						}
+					}
+				}
+			}
+
+			foreach (object item in propertiesCollection)
+			{
+				if (productID == (int)ProductEnum.OpsBuyer)
+				{
+					if (((Component.SharedObjects.Product.Ops.AssetGroup)item).IsAssigned)
+					{
+						PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
+					}
+				}
+				else if (((ProductProperty)item).IsAssigned)
+				{
+					PropertyList.Add(((ProductProperty)item).ID);
+				}
+			}		
+
+			ProductBatch pb = new ProductBatch()
+			{
+				ProductId = productID,
+				StatusTypeId = 5,
+				RetryCount = 0,
+				InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList,
+													 HasAccessToSiteSpendManagementOnly = hasAccessToSiteSpendManagementOnly,
+													 IsAccountingAdmin = isAccountingAdmin,
+													 HasAccessToAllCurrentFutureProperties = hasAccessToAllCurrentFutureProperties
+				}
+			};
+
+			return pb;
+		}
+
+		private bool CheckForIsAssignedNewPropertyFlag(object additionalInfo)
         {
             bool isAssignNewPropertyByDefault = false;
             if (additionalInfo.GetType().Name.ToUpper() != "STRING")
