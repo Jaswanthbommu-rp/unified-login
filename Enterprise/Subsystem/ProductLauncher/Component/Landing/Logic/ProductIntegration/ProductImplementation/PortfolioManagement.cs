@@ -98,8 +98,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IsError = true
 				};
 			}
-
-			//return base.GetProductRoles(dataFilter, baseUrlAndQuery);
 		}
 
 		/// <summary>
