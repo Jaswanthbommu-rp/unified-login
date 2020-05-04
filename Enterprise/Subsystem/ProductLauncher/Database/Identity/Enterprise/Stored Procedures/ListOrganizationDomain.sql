@@ -10,5 +10,7 @@ BEGIN
 		ThruDate IS NULL 
 		OR 
 		Thrudate > GETUTCDATE()
+	ORDER BY
+		Name
 END
 

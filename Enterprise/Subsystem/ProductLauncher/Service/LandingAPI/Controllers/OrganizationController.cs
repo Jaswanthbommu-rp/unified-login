@@ -826,6 +826,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		}
 		#endregion
 
+        #region Public Organization Domain Methods
+        /// <summary>
+        /// List Organization Domains
+        /// </summary>
+        /// <returns>Company domains</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Organization Domain object has invalid entries)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List Organization Domains", Type = typeof(OrganizationDomain))]
+        [SwaggerResponseExamples(typeof(OrganizationDomain), typeof(OrganizationDomainExample))]
+        [Route("organizationdomain")]
+        [HttpGet]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        public HttpResponseMessage GetOrganizationDomain()
+        {
+            ObjectListOutput<OrganizationDomain, IErrorData> output = new ObjectListOutput<OrganizationDomain, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            IList<OrganizationDomain> organizationDomainList = _organizationLogic.ListOrganizationDomain();
+
+            if (organizationDomainList != null)
+            {
+                output.Status = errorStatus;
+                output.list = organizationDomainList;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Organization.OrganizationDomain.1";
+                errorStatus.ErrorMsg = "List OrganizationDomain: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
+        #endregion
+
 		#region Private functions
 		/// <summary>
 		/// Used to parse the list of product codes and convert them into ProductEnum
@@ -1080,6 +1117,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return output;
 			}
 		}
+
+        /// <summary>
+        /// Used to document examples of the OrganizationDomain Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class OrganizationDomainExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Organization Types example</returns>
+            public object GetExamples()
+            {
+                OrganizationDomain example = new OrganizationDomain()
+                {
+                    OrganizationDomainId = 1,
+                    Name = "Primary",
+                    CreateDate = DateTime.Today
+                };
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<OrganizationDomain, IErrorData> output = new ObjectOutput<OrganizationDomain, IErrorData>()
+                {
+                    obj = example,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
 
 		/// <summary>
 		/// Used to document examples of the Organization customfields Model webapi result
