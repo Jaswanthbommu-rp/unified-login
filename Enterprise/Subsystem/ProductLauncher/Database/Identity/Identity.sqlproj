@@ -935,6 +935,7 @@
     <Build Include="Enterprise\Stored Procedures\AddUpdatePropertyMapping.sql" />
     <Build Include="Enterprise\Stored Procedures\DataImportMappingUpdate.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdatePropertyMappingReMap.sql" />
+    <Build Include="Enterprise\Stored Procedures\ListULMappingUserIdForProductUserId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
