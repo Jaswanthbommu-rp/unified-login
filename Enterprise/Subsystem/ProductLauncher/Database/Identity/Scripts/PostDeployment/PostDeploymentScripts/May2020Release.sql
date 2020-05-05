@@ -82,6 +82,9 @@ BEGIN
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
 	VALUES (22, 147, N'ShowSelectAll', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+	VALUES (29, 140, N'FilterType', N'menu', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
