@@ -611,14 +611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			foreach (object item in propertiesCollection)
 			{
-				if (productID == (int)ProductEnum.OpsBuyer)
-				{
-					if (((Component.SharedObjects.Product.Ops.AssetGroup)item).IsAssigned)
-					{
-						PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
-					}
-				}
-				else if (((ProductProperty)item).IsAssigned)
+				if (((ProductProperty)item).IsAssigned)
 				{
 					PropertyList.Add(((ProductProperty)item).ID);
 				}
