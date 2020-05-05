@@ -5,6 +5,7 @@
 
     function RentersInsurancePropertiesGridCtrl($scope, $filter, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, persona, RentInsDataModel, userDetailsModel, security) {
         var vm = this,
+            filteredRecords,
             propertiesGrid = gridModel(),
             propertiesGridTransform = gridTransformSvc(),
             propertiesGridPagination = gridPaginationModel(),
@@ -26,6 +27,9 @@
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
+            vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
+
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -42,7 +46,10 @@
         vm.isUserHasManageProductAccess = function () {
             return !persona.data.hasManageRentersInsuranceProductAccess;
         };
-
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+    
         vm.loadData = function () {
             if (persona.isReady() && vm.isActive()) {
                 propertiesGrid.busy(true);
@@ -84,6 +91,14 @@
                     vm.dataErrorReason = genericDataErrorReason;
                 }
             }
+        };
+        vm.selectAllProperties = function (val) {
+            if(vm.filteredRecords !== undefined){
+                RentInsDataModel.setAllPropertiesData(vm.filteredRecords, val);
+            }
+            else{
+                RentInsDataModel.setAllPropertiesData(vm.dataReq.records, val);
+            } 
         };
 
         vm.destroy = function () {
