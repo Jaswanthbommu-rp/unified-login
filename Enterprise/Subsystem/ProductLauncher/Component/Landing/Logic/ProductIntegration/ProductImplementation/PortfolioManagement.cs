@@ -43,14 +43,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public override ListResponse GetProductRoles(RequestParameter dataFilter, string apiQuery = null)
 		{
-			WriteToDiagnosticLog(
-				$"PortfolioManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+			try
+			{
+				WriteToDiagnosticLog(
+					$"PortfolioManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
-			// Get end point for global role
-			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);  //http://wmu-books.asseteye.net/api/gandk/Roles?isGlobalRoles=true
-			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "true");
+				// Get end point for global role
+				var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);  //http://wmu-books.asseteye.net/api/gandk/Roles?isGlobalRoles=true
+				baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "true");
 
-			return base.GetProductRoles(dataFilter, baseUrlAndQuery);
+				WriteToDiagnosticLog(
+					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+
+				var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
+
+				WriteToDiagnosticLog(
+					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}");
+
+				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
+				{
+					WriteToDiagnosticLog(
+						$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+					var user = GetProductUser();
+
+					// map user roles
+					if (user != null)
+					{
+						WriteToDiagnosticLog(
+							$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+
+						var userRoles = user.RoleList;
+						MergeUserRoles(roleList, userRoles);
+					}
+				}
+
+				if (roleList == null)
+					throw new Exception("Null Role List.");
+
+				return new ListResponse
+				{
+					Records = roleList.Cast<object>().ToList(),
+					TotalRows = roleList.Count,
+					RowsPerPage = 9999,
+					ErrorReason = string.Empty,
+					TotalPages = 1
+				};
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog($"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+				return new ListResponse()
+				{
+					ErrorReason = ex.Message,
+					IsError = true
+				};
+			}
 		}
 
 		/// <summary>
@@ -132,10 +179,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return false;
 		}
-		
+
 		#endregion
 
 		#region Private Methods
+
+		private void MergeUserRoles(IList<ProductRole> roleList, List<string> userRoles)
+		{
+			foreach (var role in roleList)
+			{
+				if (userRoles != null && userRoles.Contains(role.GetRoleId))
+				{
+					role.IsAssigned = true;
+				}
+			}
+		}
 
 		private IList<ProductRole> GetPortfolioPropertySpecificRoles()
 		{

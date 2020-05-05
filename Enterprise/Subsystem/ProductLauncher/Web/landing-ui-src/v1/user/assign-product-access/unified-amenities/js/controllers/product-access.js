@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function UnifiedAmenitiesProductAccessCtrl($scope, $filter, model, tabsModel) {
+    function UnifiedAmenitiesProductAccessCtrl($scope, $filter, model, tabsModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -18,7 +18,7 @@
         };
 
         vm.isActive = function () {
-            return model.isActive();
+            return model.isActive() && !templateModel.isProductExists(26);
         };
 
         vm.setChanged = function () {
@@ -41,5 +41,6 @@
             "$filter",
             "unifiedAmenitiesProductAccessModel",
             "UnifiedAmenitiesTabsModel",
+            "productTemplateModel",
             UnifiedAmenitiesProductAccessCtrl]);
 })(angular);

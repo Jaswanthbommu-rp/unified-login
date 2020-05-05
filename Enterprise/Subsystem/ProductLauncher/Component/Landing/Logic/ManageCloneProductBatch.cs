@@ -394,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 				if (result)
 				{
-					roleList.Add(((OnSiteRole)item).Level.ToString());
+					roleList.Add(((OnSiteRole)item).GetRoleId.ToString());
 				}
 			}
 

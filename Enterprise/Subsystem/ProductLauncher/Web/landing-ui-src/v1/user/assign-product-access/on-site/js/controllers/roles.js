@@ -21,7 +21,7 @@
             });
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
-            
+
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
@@ -90,7 +90,7 @@
             var roleList = dataModel.getRoles();
 
             roleList.forEach(function (item) {
-                item.isAssigned = item.level == record.level;
+                item.isAssigned = item.id == record.id;
             });
         };
 

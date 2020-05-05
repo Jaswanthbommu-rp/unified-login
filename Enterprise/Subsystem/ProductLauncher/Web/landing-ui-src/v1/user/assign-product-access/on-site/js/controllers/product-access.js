@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function OnSiteProductAccess($scope, $filter, tabsMenuModel, navData, dataModel) {
+    function OnSiteProductAccess($scope, $filter, tabsMenuModel, navData, dataModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -19,7 +19,7 @@
         };
 
         vm.isActive = function () {
-            return dataModel.isActive();
+            return dataModel.isActive() && !templateModel.isProductExists(23);
         };
 
         vm.setChanged = function () {
@@ -44,6 +44,7 @@
             "rpScrollingTabsMenuModel",
             "onSiteNavModel",
             "onSiteDataModel",
+            "productTemplateModel",
             OnSiteProductAccess
         ]);
 })(angular);
