@@ -23,15 +23,15 @@
             // logc("griddata--", gridData,gridData.Type);
             if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid") {
                 filterType = undefined;
-                if (item.attributes !== null) {
-                    item.attributes.forEach(function (data) {
-                        if (data.key === "FilterType" && data.value === "menu") {
-                            filterType = "menu";
-                        }
-                    });
-                }
-
                 gridData.controls.forEach(function (item) {
+                    if (item.attributes !== null) {
+                        item.attributes.forEach(function (data) {
+                            if (data.key === "FilterType" && data.value === "menu") {
+                                filterType = "menu";
+                            }
+                        });
+                    }
+
                     config.push({
                         "key": item.dataSource,
                         "type": s.isType(item.type),
