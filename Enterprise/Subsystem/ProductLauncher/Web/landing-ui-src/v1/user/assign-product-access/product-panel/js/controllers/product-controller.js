@@ -146,7 +146,7 @@
                 productModel.renderProductTabsMap($scope.productId, allTabs, initialTabs);
                 productModel.renderProductActiveTabMap($scope.productId, vm.activeTab);
             }
-            return allTabs;
+            return initialTabs;
         };
 
         vm.setTabsConfigData = function (data) {

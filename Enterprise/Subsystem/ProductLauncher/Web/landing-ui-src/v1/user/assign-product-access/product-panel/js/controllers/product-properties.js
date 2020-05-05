@@ -124,7 +124,7 @@
                 var propertyData = syncMgr.getProductPropertiesData(productId);
 
                 if (propertyData === undefined) {
-                   // propertiesGrid.busy(false);
+                    // propertiesGrid.busy(false);
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
@@ -222,7 +222,7 @@
                 vm.allPropertiesData = propData;
 
                 if (productId == "10") {
-                    if (vm.propertySelect !== "allProperties"){
+                    if (vm.propertySelect !== "allProperties") {
                         vm.propertySelect = inActiveCount > 0 ? "inactive" : "active";
                     }
 
@@ -271,20 +271,18 @@
         };
 
         vm.selectAllProperties = function (val) {
-            if(vm.filteredRecords !== undefined){
+            if (vm.filteredRecords !== undefined) {
+                vm.filteredRecords.forEach(function (item) {
+                    item.isAssigned = val;
+                });
+
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.filteredRecords);
             }
-            else{
-                if(val){
-                    vm.allPropertiesData.forEach(function(item){
-                        item.isAssigned = true;
-                    });
-                }
-                else{
-                    vm.allPropertiesData.forEach(function(item){
-                        item.isAssigned = false;
-                    });
-                }
+            else {
+                vm.allPropertiesData.forEach(function (item) {
+                    item.isAssigned = val;
+                });
+
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.allPropertiesData);
             }
         };
