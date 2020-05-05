@@ -90,12 +90,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 try
                 {
+                    logData = new Dictionary<string, object>();
                     WriteToLog(LogType.Diagnostic, thinEvent.Topic.ToLowerInvariant());
                     switch (thinEvent.Topic.ToLowerInvariant())
                     {
                         case "books.customerproperty.deleted":
-                            var customerPropertyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerPropertyId"]);
-                            var newCustomerPropertyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerPropertyId"]);
+                            var customerPropertyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerPropertyId"] == null || thinEvent.Payload["payload"]["customerPropertyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["customerPropertyId"]);
+                            var newCustomerPropertyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerPropertyId"] == null || thinEvent.Payload["payload"]["replacementCustomerPropertyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["replacementCustomerPropertyId"]);
                             if (customerPropertyIdDeleted != 0)
                             {
                                 if (newCustomerPropertyId != 0)
@@ -122,11 +123,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                             break;
                         case "books.customercompany.deleted":
-                            var customerCompanyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerCompanyId"]);
+                            var customerCompanyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerCompanyId"] == null || thinEvent.Payload["payload"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["customerCompanyId"]);
                             var organization = _organizationRepository.GetOrganization(blueBookId: customerCompanyIdDeleted);
                             if (organization != null)
                             {
-                                var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
+                                var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"] == null || thinEvent.Payload["payload"]["replacementCustomerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
                                 if (newCustomerCompanyId != 0)
                                 {
                                     Organization newOrganization = new Organization() {PartyId = organization.PartyId, BooksCustomerMasterId = newCustomerCompanyId};
@@ -161,7 +162,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             
-            logData = new Dictionary<string, object>() {{"response.StatusCode", response.StatusCode}};
+            logData.Add("response.StatusCode", response.StatusCode);
             WriteToLog(LogType.Diagnostic, "PostBooks : Complete", logData);
             return response;
         }

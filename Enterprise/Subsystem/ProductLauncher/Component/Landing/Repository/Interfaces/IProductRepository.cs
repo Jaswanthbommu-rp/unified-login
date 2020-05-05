@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
@@ -196,5 +197,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="products"></param>
         /// <returns>List of Users by product or company</returns>
         IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products);
+
+        /// <summary>
+        /// Get Unified Login mapping UserId for Product UserId by company and product id
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="productId"></param>
+        /// <param name="productUserIds"></param>
+        /// <returns>List of Unified Login mapping UserId by product and company</returns>
+        List<ULMappedUserIds> GetULMappingUsersByCompanyAndProducts(int companyId, int productId, List<string> productUserIds);
     }
 }
