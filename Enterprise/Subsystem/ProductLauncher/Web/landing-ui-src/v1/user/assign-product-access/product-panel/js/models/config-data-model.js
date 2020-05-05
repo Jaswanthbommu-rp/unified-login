@@ -18,15 +18,25 @@
 
         p.getGridConfigTypes = function (gridData, tabName) {
             var s = this,
+                filterType,
                 config = [];
             // logc("griddata--", gridData,gridData.Type);
             if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid") {
                 gridData.controls.forEach(function (item) {
+                    filterType = undefined;
+                    if (item.attributes !== null) {
+                        item.attributes.forEach(function (data) {
+                            if (data.key === "FilterType" && data.value === "menu") {
+                                filterType = "menu";
+                            }
+                        });
+                    }
                     config.push({
                         "key": item.dataSource,
                         "type": s.isType(item.type),
                         "text": item.displayName,
                         "idKey": "id",
+                        "filterType": filterType,
                         "templateUrl": s.getTemplate(s.isControl(item.type), tabName)
                     });
                 });
@@ -68,7 +78,7 @@
 
             if (data && data.controls) {
                 data.controls.forEach(function (ctrl) {
-                    logc("icon control", ctrl);
+                    //logc("icon control", ctrl);
                     if (ctrl.type === "Icon") {
                         if (ctrl.attributes !== null) {
                             ctrl.attributes.forEach(function (item) {
@@ -164,7 +174,7 @@
             var s = this;
             var fltr = [];
             tab.forEach(function (item) {
-                if (item.type === 'text') {
+                if (item.type === 'text' && item.filterType === undefined) {
                     fltr.push({
                         "key": item.key,
                         "text": item.text,
@@ -172,11 +182,28 @@
                         "placeholder": "Filter by " + item.text + " Name"
                     });
                 }
-                // if (item.type === 'custom') {
-                //     fltr.push({
-                //         "key": item.key,
-                //     });
-                // }
+
+                if (item.type === 'text' && item.key === "roletype" && item.filterType === "menu") {
+                    fltr.push({
+                        "key": item.key,
+                        "value": "",
+                        "type": "menu",
+                        "options": [{
+                                value: "",
+                                name: "All"
+                            },
+                            {
+                                value: "Custom",
+                                name: "Custom"
+                            },
+                            {
+                                value: "System",
+                                name: "System"
+                            }
+                        ]
+                    });
+                }
+
                 if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon')) {
                     fltr.push({
                         "key": item.key,
