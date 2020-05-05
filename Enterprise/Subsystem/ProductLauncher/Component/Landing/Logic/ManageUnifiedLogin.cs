@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -939,7 +940,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     WriteToDiagnosticLog(
                          $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-                    response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
+                    response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId, partyId);
                     WriteToDiagnosticLog(
                            $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
                 }
@@ -1002,19 +1003,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
 
-                foreach ( var role in gbAllRoles){                    
-
+                foreach (var role in gbAllRoles)
+                {
                     var itemsToRemove = role.UserRights.Where(r => (r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN" ||
-                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" || 
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" ||
                                                                     r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS" ||
                                                                     r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN")).ToList();
 
                     foreach (var item in itemsToRemove)
                     {
                         role.UserRights.Remove(item);
-                    }                 
+                    }
                 }
-
 
                 WriteToDiagnosticLog(
                     $"UserManagement - ManageUnifiedLogin.GetUserRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
@@ -1022,11 +1022,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (userPersonaId != 0) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog(
-                         $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-                    response = SetUserSelectedRole(gbAllRoles, userPersonaId);
-                    WriteToDiagnosticLog(
-                           $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog($"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    
+                    response = SetUserSelectedRole(gbAllRoles, userPersonaId, partyId);
+                    WriteToDiagnosticLog($"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
                 }
                 else // Called during creating a new User
                 {
@@ -1393,13 +1392,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-
-
             return result;
         }
-
         
-
         private List<ProductRight> GetRightsWithRolesCount(List<RightRoleDetail> allRights)
         {
             var result = new List<ProductRight>();
@@ -1454,12 +1449,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
-        private List<Role> GetAssignedRoleForPersona(long userPersonaId)
+        private List<Role> GetAssignedRoleForPersona(long userPersonaId, long organizationPartyId)
         {
             int productId = (int)ProductEnum.UnifiedLogin;
-			//UnifiedLoginRepository ocr = new UnifiedLoginRepository();
 			UserRoleRightRepository urr = new UserRoleRightRepository();
-            List<UL.Role> propRole = urr.ListRoleByPersona(productId, userPersonaId, null);
+            var cacheKey = $"sp_ListRolesForProductsByPersonaId_{productId}_{userPersonaId}_{organizationPartyId}";
+            MemoryCache.Default.Remove(cacheKey);
+            List<UL.Role> propRole = urr.ListRoleByPersona(productId, userPersonaId, organizationPartyId);
             return propRole;
         }
 
@@ -1470,13 +1466,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return categoryList;
         }
 
-        private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
+        private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId, long partyId)
         {
 
             // get roles from DB for UnifiedLogin product
             WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
-            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
 
             // if a user record exists
 
@@ -1504,13 +1500,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
         }
 
-        private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId)
+        private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId, long partyId)
         {
 
             // get roles from DB for UnifiedLogin product
-            WriteToDiagnosticLog(
-                   $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
-            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+            WriteToDiagnosticLog($"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
 
             // if a user record exists
 
