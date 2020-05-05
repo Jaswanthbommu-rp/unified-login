@@ -32,6 +32,7 @@
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.allPropWatch = pubsub.subscribe("resPort.allProperties", vm.setAllProperties);
             vm.gridAllWatch = grid.subscribe("selectAll", vm.selectAllProperties);
+            vm.propertiesFilterData = grid.subscribe("filterBy", vm.filter.bind(vm));
 
             if (persona.isReady()) {               
                 vm.loadData();
