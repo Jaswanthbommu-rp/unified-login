@@ -10,9 +10,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
     public class ConsentService : IConsentStore
     {
-	    private readonly IdentityServerRepository _identityServerRepository;
+	    private readonly IIdentityServerRepository _identityServerRepository;
 
-		public ConsentService(IdentityServerRepository identityServerRepository)
+		public ConsentService(IIdentityServerRepository identityServerRepository)
 		{
 			_identityServerRepository = identityServerRepository;
 		}

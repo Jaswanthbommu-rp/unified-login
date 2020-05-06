@@ -11,9 +11,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
 	class ScopeService : IScopeStore
     {
-        private readonly IdentityServerRepository _identityServerRepository;
+        private readonly IIdentityServerRepository _identityServerRepository;
 
-        public ScopeService(IdentityServerRepository identityServerRepository)
+        public ScopeService(IIdentityServerRepository identityServerRepository)
         {
 	        _identityServerRepository = identityServerRepository;
         }

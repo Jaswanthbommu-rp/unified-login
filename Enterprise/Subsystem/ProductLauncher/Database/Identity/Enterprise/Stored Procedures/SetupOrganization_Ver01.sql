@@ -4,7 +4,8 @@
 	@BlueBookId int= 0,
 	@BlackBookId int= 0,
 	@ThirdPartyIDP int= NULL,
-	@OrganizationTypeId INT
+	@OrganizationTypeId INT,
+	@OrganizationDomainId INT = 1
 )
 AS
 BEGIN
@@ -17,7 +18,7 @@ BEGIN
 
 	Revision History:
 	1/25/2018: 
-		1. Update the IDP setting in oranization in case is thirdparty
+		1. Update the IDP setting in organization in case is thirdparty
 		2. Changed Output list
 
 	1/30/2018
@@ -70,7 +71,8 @@ BEGIN
 		EXEC Enterprise.CreateOrganization
 			@OrganizationId = NULL,
 			@OrganizationName = @OrganizationName,
-			@OrganizationTypeId = @OrganizationTypeId;
+			@OrganizationTypeId = @OrganizationTypeId,
+			@OrganizationDomainId = @OrganizationDomainId;
 	END;
 	ELSE
 	BEGIN

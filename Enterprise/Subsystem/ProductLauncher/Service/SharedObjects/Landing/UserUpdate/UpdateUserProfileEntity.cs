@@ -15,7 +15,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public IList<IdentityProviderType> IdentityProviderTypeList { get; set; }
         public IList<ProductBatch> ProductBatchData { get; set; }
         public IList<ContactMechanismUsageType> EmailUsageType { get; set; }
-        public IOrganization OrganizationExternalUser { get; set; }
+        public Organization OrganizationExternalUser { get; set; }
         public IUserLoginOnly UserLoginOnly { get; set; }
         public IList<UserOrganization> UserPersonaOrganizationList { get; set; }
         public long ExistingRoleId { get; set; }
