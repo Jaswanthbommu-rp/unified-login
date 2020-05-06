@@ -129,8 +129,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 BlackBookId = blackBookId
             };
 
-            //var organizationTypeList = ListOrganizationType();
-
             using (var repo = GetRepository())
             {
                 Organization organization = repo.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, param);
