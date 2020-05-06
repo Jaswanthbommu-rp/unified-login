@@ -17,7 +17,8 @@ BEGIN
 					ULP.PrimaryOrganization,
 					COALESCE(ISNULL(edim.MasterId, 0), 0) AS 'BooksMasterId',
 					COALESCE(ISNULL(Edim.CompanyMasterId, 0), 0) AS 'BooksCustomerMasterId',
-					O.OrganizationTypeId
+					O.OrganizationTypeId,
+					O.OrganizationDomainId
 	FROM		Enterprise.PartyRelationship pr
 					INNER JOIN Enterprise.Party pp ON (pr.PartyIdFrom = pp.PartyId)
 					INNER JOIN Person.Person p ON (pp.PartyId = p.PartyId)

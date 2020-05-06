@@ -27,5 +27,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
         List<ClientUserClaim> GetUserClaimTypesForClient(string clientId);
 
         IEnumerable<SameSiteExclusion> GetSameSiteExclusionList();
+
+        IEnumerable<GlobalSetting> GetGlobalSettings();
+
     }
 }
