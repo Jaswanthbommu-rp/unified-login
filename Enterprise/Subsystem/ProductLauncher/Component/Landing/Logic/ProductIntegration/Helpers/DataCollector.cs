@@ -18,6 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private readonly IProductRepository _productRepository = new ProductRepository();
 		private readonly ISamlRepository _samlRepository = new SamlRepository();
 		private readonly IUserRepository _userRepository = new UserRepository();
+		private readonly ITelecommunicationNumberRepository _telecommunicationNumberRepository = new TelecommunicationNumberRepository();
 
 		/// <summary>
 		/// Get Product Company Map
@@ -110,20 +111,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		public UserDetails GetUserDetailsByPersona(long personaId, int productId)
 		{
-			var manyUserDetails = _userRepository.GeManyUserDetails(personaId);
-			
-			List<string> PhoneNumbers = new List<string>();
+			// Get user details
+			var userDetails = _userRepository.GetUserDetails(personaId);
 
-			foreach (var item in manyUserDetails.ToList())
-			{
-				if (!string.IsNullOrEmpty(item.PhoneNumber) && !string.IsNullOrWhiteSpace(item.PhoneNumber))
-				{
-					PhoneNumbers.Add(item.PhoneNumber);
-				}
-			}
+			//Get the Person's phone numbers
+			var telecommunicationPhoneNumbers = _telecommunicationNumberRepository.ListTelecommunicationNumberForPerson(userDetails.UserRealPageId , string.Empty);
 
-			var userDetails = manyUserDetails.FirstOrDefault();
-			userDetails.PhoneNumbers = PhoneNumbers;
+			userDetails.PhoneNumbers = telecommunicationPhoneNumbers.Select(x => $"{x.AreaCode}{x.PhoneNumber}").ToList();
 
 			// get user saml details & append to userDetails
 			GetUserSamlDetails(userDetails, productId);
