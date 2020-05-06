@@ -16,7 +16,6 @@
         GetAllUsers,
 	    GetCompanyEndpoint,
 	    GetParentCompanyEndpoint,
-        GetUserExistEndpoint,
-        GetAllRightsEndpoint
+        GetUserExistEndpoint        
     }
 }

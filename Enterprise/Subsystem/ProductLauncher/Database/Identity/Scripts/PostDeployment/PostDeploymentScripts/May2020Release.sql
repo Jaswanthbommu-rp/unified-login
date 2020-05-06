@@ -448,10 +448,8 @@ VALUES
 --,('ApiPassword','','7mgp43EIvc8c!@')
 ,('ApiKey','','53448358-FC1C-4B30-8C45-1171B06D84D1') -- For DEV Environment
 
-,('GetRoleEndpoint','Role End point for product API','/roles/{0}')
+,('GetRoleEndpoint','Role End point for product API','/{0}/Roles?isIncludeRights={1}')
 ,('GetRightEndpoint','Right End point for product API','/roleRights/{0}')
-
-,('GetAllRightsEndpoint','Get all rights for product API','/rights/{0}')--Input parameter company id
 
 ,('GetPropertyEndpoint','Property End point for product API','/properties/{0}')
 ,('GetUserEndpoint','GET User Endpoint for product API','/users?loginName={0}')
