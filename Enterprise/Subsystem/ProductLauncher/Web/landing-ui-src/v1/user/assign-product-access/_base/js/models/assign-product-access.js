@@ -3,9 +3,10 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory(pubsub, templateModel) {
+    function factory(pubsub, templateModel, $timeout) {
         function AssignProductAccessModel() {
-            var s = this;
+            var s = this,
+                callUpdate = false;
             s.init();
         }
 
@@ -20,6 +21,8 @@
 
         p.getAccessData = function (key, productId) {
             var s = this;
+
+            $timeout(function() { s.callUpdate = true;}, 3000);
 
             if (s.products[key]) {
                 if (templateModel.isProductExists(productId)) {
@@ -95,5 +98,5 @@
 
     angular
         .module("settings")
-        .factory("assignProductAccessModel", ["pubsub", "productTemplateModel", factory]);
+        .factory("assignProductAccessModel", ["pubsub", "productTemplateModel", "$timeout", factory]);
 })(angular);
