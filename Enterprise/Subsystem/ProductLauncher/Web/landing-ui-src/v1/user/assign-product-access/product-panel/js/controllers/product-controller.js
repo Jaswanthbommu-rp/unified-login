@@ -94,7 +94,7 @@
             var tabs = tabsModel.setTabs(tabData);
 
             vm.tabsList = tabs.tabsList;
-            //logc("vm.tabsList", vm.tabsList);
+
             tabsModel.setTabMenuData(tabs.tabsList);
             tabsModel.activateTab(vm.activeTab).initActiveTab();
             active = true;
@@ -146,8 +146,8 @@
                 productModel.renderProductTabsMap($scope.productId, allTabs, initialTabs);
                 productModel.renderProductActiveTabMap($scope.productId, vm.activeTab);
             }
-            //logc("tabs", allTabs, initialTabs);
-            return initialTabs;
+
+            return allTabs;
         };
 
         vm.setTabsConfigData = function (data) {
