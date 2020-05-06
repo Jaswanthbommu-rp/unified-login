@@ -88,21 +88,21 @@ BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
-	SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
+	--SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
 	
-	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
-	VALUES (16, 139, 145, N'ManageCIMPLQuestions', 1, @UserId, @Now)
+	--INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	--VALUES (16, 139, 145, N'ManageCIMPLQuestions', 1, @UserId, @Now)
 
-	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
-	VALUES (17, 139, 145, N'CIMPLManagePII', 1, @UserId, @Now)
+	--INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	--VALUES (17, 139, 145, N'CIMPLManagePII', 1, @UserId, @Now)
 
-	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
-	VALUES (18, 139, 145, N'CIMPLManageSensitiveFinancialData', 1, @UserId, @Now)
+	--INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	--VALUES (18, 139, 145, N'CIMPLManageSensitiveFinancialData', 1, @UserId, @Now)
 
-	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
-	VALUES (19, 139, 145, N'ViewCIMPLQuestions', 1, @UserId, @Now)
+	--INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	--VALUES (19, 139, 145, N'ViewCIMPLQuestions', 1, @UserId, @Now)
 
-	SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
+	--SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
 
