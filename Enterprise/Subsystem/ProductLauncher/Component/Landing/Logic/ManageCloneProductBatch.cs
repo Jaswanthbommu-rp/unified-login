@@ -575,6 +575,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			List<string> PropertyList = new List<string>();
 			List<string> RoleList = new List<string>();
+			List<string> companiesList = new List<string>();
 			bool hasAccessToSiteSpendManagementOnly = false;
 			bool isAccountingAdmin = false;
 			bool hasAccessToAllCurrentFutureProperties = false;
@@ -595,6 +596,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				hasAccessToSiteSpendManagementOnly = accountingUser.HasAccessToSiteSpendManagementOnly;
 				isAccountingAdmin = accountingUser.IsAccountingAdmin;
 				hasAccessToAllCurrentFutureProperties = accountingUser.HasAccessToAllCurrentFutureProperties;
+			}
+
+			if(companiesResponse?.Records != null)
+			{
+				IEnumerable<object> companiesCollection = (IEnumerable<object>)companiesResponse.Records;
+				foreach (object item in companiesCollection)
+				{
+					if (!string.IsNullOrEmpty(((ACCompany)item).Id))
+					{
+						companiesList.Add(((ACCompany)item).Id);
+					}
+				}
 			}
 			
 			if (rolesResponse.Records != null)
@@ -628,7 +641,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					RoleList = RoleList,
 					HasAccessToSiteSpendManagementOnly = hasAccessToSiteSpendManagementOnly,
 					IsAccountingAdmin = isAccountingAdmin,
-					HasAccessToAllCurrentFutureProperties = hasAccessToAllCurrentFutureProperties
+					HasAccessToAllCurrentFutureProperties = hasAccessToAllCurrentFutureProperties,
+					CompaniesList = companiesList
 				}
 			};
 
