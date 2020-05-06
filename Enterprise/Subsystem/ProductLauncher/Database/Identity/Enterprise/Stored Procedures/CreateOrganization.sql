@@ -1,7 +1,8 @@
 ﻿CREATE PROCEDURE [Enterprise].[CreateOrganization] @OrganizationId   UNIQUEIDENTIFIER = NULL,
                                                   @OrganizationName NVARCHAR(150),
                                                   @TimeZone         NVARCHAR(200) NULL = 'Central Standard Time',
-												  @OrganizationTypeId INT
+												  @OrganizationTypeId INT,
+                                                  @OrganizationDomainId INT = 1
 AS
      BEGIN
          DECLARE @IdentityProviderId INT;
@@ -12,7 +13,8 @@ AS
          SELECT @IdentityProviderId = IdentityProviderTypeId,
                 @ContactMechanismId = ContactMechanismId
          FROM Ident.IdentityProviderType
-         WHERE Name = 'ID3';
+            WHERE Name = 'ID3';
+         
          BEGIN TRY
              IF @OrganizationId IS NULL
                  BEGIN
@@ -21,6 +23,7 @@ AS
              BEGIN TRANSACTION;
              SET NOCOUNT ON;
              DECLARE @PartyId BIGINT;
+
              INSERT INTO [Enterprise].Party
 				(RealPageId,
 				 CreateDate
@@ -29,12 +32,15 @@ AS
 				(@OrganizationId,
 				 GETUTCDATE()
 				);
+
              SET @PartyId = SCOPE_IDENTITY();
+
              INSERT INTO [Enterprise].Organization
 				(PartyId,
 				 Name,
 				 IdentityProviderTypeId,
 				 OrganizationTypeId,
+                 OrganizationDomainId,
 				 CreateDate
 				)
              VALUES
@@ -42,8 +48,10 @@ AS
 				 @OrganizationName,
 				 @IdentityProviderId,
 				 @OrganizationTypeId,
+                 @OrganizationDomainId,
 				 GETUTCDATE()
 				);
+
              INSERT INTO Enterprise.PartyContactMechanism
 				(PartyId,
 				 ContactMechanismId,

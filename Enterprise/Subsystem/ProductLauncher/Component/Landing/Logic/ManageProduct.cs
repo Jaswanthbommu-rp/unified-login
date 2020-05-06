@@ -111,7 +111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IList<RightRoleDetail> listRightRoleDetail = new List<RightRoleDetail>();
             IList<RightRoleDetail> listRightByRole = new List<RightRoleDetail>();
             IList<Role> roleList = new List<Role>();
-            IOrganization organization = new Organization();
+            Organization organization = new Organization();
             long? userPersonaId = null;
 
             //Get the UL Organization details by the CompanyInstanceId from BlackBook

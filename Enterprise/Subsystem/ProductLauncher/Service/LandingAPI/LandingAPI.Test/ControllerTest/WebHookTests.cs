@@ -14,6 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Castle.Components.DictionaryAdapter;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -30,6 +31,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static long _BooksCompanyMasterId = 12345;
         private static int _organizationTypeId = 6;
         private static string _organizationTypeName = "Multifamily";
+        private static int _organizationDomainId = 1;
+        private static string _organizationDomainName = "Primary";
 
         private static DefaultUserClaim _userClaim;
 
@@ -60,6 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private readonly string _mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid_Signature = "704e37bab4ae5534cc7f8f459e6b83b58e75c4d5e95a6b9a37ccf11bbb216fcb";
 
         private List<OrganizationType> _organizationTypeList;
+        private List<OrganizationDomain> _organizationDomains;
+
         private Organization _organization = null;
         private List<ProductInternalSetting> _productInternalSettings;
 
@@ -79,6 +84,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 organizationType = new OrganizationType()
                 {
                     OrganizationTypeId = _organizationTypeId
+                },
+                OrganizationDomain = new OrganizationDomain()
+                {
+                    OrganizationDomainId = _organizationDomainId
                 }
             };
 
@@ -104,9 +113,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
+            _organizationDomains = new List<OrganizationDomain>()
+            {
+                new OrganizationDomain()
+                {
+                    OrganizationDomainId = 1,
+                    Name = "Primary",
+                    CreateDate = new DateTime()
+                },
+                new OrganizationDomain()
+                {
+                    OrganizationDomainId = 2,
+                    Name = "UAT",
+                    CreateDate = new DateTime()
+                }
+            };
+
             _productInternalSettings = new List<ProductInternalSetting>() {new ProductInternalSetting() {Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret}};
         }
-
 
         [Fact]
         public void Post_Books_NullInput()
@@ -230,6 +254,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_organizationTypeList);
 
             mockRepository
+                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(_organizationDomains);
+
+            mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
                 .Returns(new RepositoryResponse {Id = 1, ErrorMessage = ""});
 
@@ -300,6 +328,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(_organizationTypeList);
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(_organizationDomains);
 
             mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
