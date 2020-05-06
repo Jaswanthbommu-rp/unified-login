@@ -79,13 +79,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="organization">Organization object</param>
         /// <returns>Repository response object</returns>
-        public RepositoryResponse UpdateOrganization(IOrganization organization)
+        public RepositoryResponse UpdateOrganization(Organization organization)
         {
             RepositoryResponse response = new RepositoryResponse();
-            RepositoryResponse booksUpdateresult = new RepositoryResponse();
 
-            IList<OrganizationType> organizationTypeList = ListOrganizationType();
-            int organizationTypeId = organizationTypeList.ToList().Find(t => t.Name.Equals("Multifamily", StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+            int organizationTypeId = ListOrganizationType().Find(t => t.Name != null && t.Name.Equals("Multifamily", StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+            int organizationDomainId = ListOrganizationDomain().ToList().Find(d => d.Name != null && d.Name.Equals("Primary", StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
 
             using (var repository = GetRepository())
             {
@@ -96,7 +95,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         organizationId = organization.RealPageId,
                         organizationName = organization.Name,
-                        OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId
+                        OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId,
+                        OrganizationDomainId = organization?.OrganizationDomain?.OrganizationDomainId ?? organizationDomainId
                     };
 
                     response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, paramsList);
@@ -129,14 +129,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 BlackBookId = blackBookId
             };
 
-            IList<OrganizationType> organizationTypeList = ListOrganizationType();
             using (var repo = GetRepository())
             {
                 Organization organization = repo.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, param);
 
                 if (organization != null)
                 {
-                    organization.organizationType = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organization.OrganizationTypeId);
+                    var orgType = ListOrganizationType().FirstOrDefault(o => o.OrganizationTypeId == organization.OrganizationTypeId);
+                    organization.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
+                    var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == organization.OrganizationDomainId);
+                    organization.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
                 }
                 return organization;
             }
@@ -150,14 +152,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             dynamic param = null;
 
-            IList<OrganizationType> organizationTypeList = ListOrganizationType();
-
             using (var repository = GetRepository())
             {
                 IList<Organization> organizationList = repository.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, param);
 
                 organizationList.ToList().ForEach(o =>
-                    o.organizationType = organizationTypeList.ToList().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId)
+                    {
+                        var orgType = ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId);
+                        o.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
+                        var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
+                        o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
+                    }
                 );
 
                 return organizationList;
@@ -399,13 +404,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// Used to get the list of all Organization Types
         /// </summary>
-        /// <returns>Organization object</returns>
-        public IList<OrganizationType> ListOrganizationType()
+        /// <returns>OrganizationType listobject</returns>
+        public List<OrganizationType> ListOrganizationType()
         {
             RPObjectCache rpCache = new RPObjectCache();
-
             string cacheKey = $"getListOrganizationType";
-            IList<OrganizationType> organizationTypeList = rpCache.GetFromCache<IList<OrganizationType>>(cacheKey, 180, () =>
+
+            List<OrganizationType> organizationTypeList = rpCache.GetFromCache<List<OrganizationType>>(cacheKey, 180, () =>
             {
                 dynamic param = null;
                 using (var repository = GetRepository())
@@ -415,6 +420,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return organizationTypeList;
+        }
+        #endregion
+
+        #region public Organization Domain methods
+        /// <summary>
+        /// Used to get the list of all Organization Domains
+        /// </summary>
+        /// <returns>OrganizationDomain list</returns>
+        public List<OrganizationDomain> ListOrganizationDomain()
+        {
+            RPObjectCache rpCache = new RPObjectCache();
+            string cacheKey = $"getListOrganizationDomain";
+
+            List<OrganizationDomain> organizationDomainList = rpCache.GetFromCache<List<OrganizationDomain>>(cacheKey, 120, () =>
+            {
+                dynamic param = null;
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param);
+                }
+            });
+
+            return organizationDomainList;
         }
         #endregion
     }

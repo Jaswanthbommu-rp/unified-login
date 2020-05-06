@@ -15,9 +15,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         protected readonly TokenTypeEnum TokenType;
         private readonly IScopeStore _scopeStore;
         private readonly IClientStore _clientStore;
-        private readonly IdentityServerRepository _identityServerRepository;
+        private readonly IIdentityServerRepository _identityServerRepository;
 
-		public BaseTokenService(TokenTypeEnum tokenType, IScopeStore scopeStore, IClientStore clientStore, IdentityServerRepository identityServerRepository)
+		public BaseTokenService(TokenTypeEnum tokenType, IScopeStore scopeStore, IClientStore clientStore, IIdentityServerRepository identityServerRepository)
         {
             TokenType = tokenType;
             _scopeStore = scopeStore;

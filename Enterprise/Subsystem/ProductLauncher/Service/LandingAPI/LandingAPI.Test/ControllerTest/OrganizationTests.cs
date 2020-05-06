@@ -742,7 +742,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             rPObjectCache.BustCache();
 
 			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
-			IOrganization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
+			Organization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
 
 			//Assert
 			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
@@ -770,6 +770,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 						CreateDate = new DateTime()
 					},
 					OrganizationTypeId = 1,
+					OrganizationDomainId = 1,
+					OrganizationDomain = new OrganizationDomain()
+                    {
+						OrganizationDomainId = 1,
+						Name = "Primary",
+						CreateDate = new DateTime()
+                    },
 					PartyId = 1,
 					PrimaryOrganization = true
 				}
@@ -1138,6 +1145,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				CreateDate = new DateTime()
 			};
 
+            OrganizationDomain organizationDomain = new OrganizationDomain()
+            {
+                OrganizationDomainId = 1,
+                Name = "Primary",
+                CreateDate = new DateTime()
+            };
+
 			RoleType roleTypeFrom = new RoleType()
 			{
 				PartyRoleTypeId = (int)UserRoleType.User,
@@ -1188,14 +1202,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					BooksMasterId = _BooksMasterId,
 					organizationType = organizationType,
 					OrganizationTypeId = 1,
+					OrganizationDomain = organizationDomain,
+					OrganizationDomainId = 1,
 					PartyId = 1,
 					PrimaryOrganization = true,
 					partyRelationship = partyRelationship
 				}
 			};
 
-			IList<OrganizationType> organizationTypeList = new List<OrganizationType>();
-			organizationTypeList.Add(organizationType);
+            IList<OrganizationType> organizationTypeList = new List<OrganizationType>() {organizationType};
 
 			_mockRepository
 				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_ListOrganizationByRealPageId, It.IsAny<object>()))

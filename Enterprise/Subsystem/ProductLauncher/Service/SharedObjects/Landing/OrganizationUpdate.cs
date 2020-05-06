@@ -32,12 +32,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		[JsonProperty(PropertyName = "organizationTypeId")]
 		public int OrganizationTypeId { get; set; }
 
+        /// <summary>
+        /// Organization Domain Id
+        /// </summary>
+        [Range(1, int.MaxValue, ErrorMessage = "Please enter a Organization Domain Id greater than {0}")]
+        [JsonProperty(PropertyName = "organizationDomainId")]
+        public int OrganizationDomainId { get; set; }
+
 		/// <summary>
 		/// Organization Type Name
 		/// </summary>
 		[StringLength(25)]
 		[JsonProperty(PropertyName = "organizationTypeName")]
 		public string OrganizationTypeName { get; set; }
+
+        /// <summary>
+        /// Organization Domain Name
+        /// </summary>
+        [StringLength(25)]
+        [JsonProperty(PropertyName = "organizationDomainName")]
+        public string OrganizationDomainName { get; set; }
 
 		/// <summary>
 		/// The UL guid for the company
