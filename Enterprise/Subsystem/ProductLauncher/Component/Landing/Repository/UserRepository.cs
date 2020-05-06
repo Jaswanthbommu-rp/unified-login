@@ -3036,6 +3036,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// Get Many User Details
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="userRealPageId"></param>
+        /// <returns>IEnumerable Collection of UserDetails</returns>
+        public IEnumerable<UserDetails> GeManyUserDetails(long? personaId = null , string userRealPageId = null)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<UserDetails>(StoredProcNameConstants.SP_GetUserDetails,
+                    new { personaId , userRealPageId });
+            }
+        }
         #endregion
 
         #region Private methods

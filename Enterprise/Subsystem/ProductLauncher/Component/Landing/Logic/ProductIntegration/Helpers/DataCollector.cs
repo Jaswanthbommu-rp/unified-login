@@ -110,8 +110,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		public UserDetails GetUserDetailsByPersona(long personaId, int productId)
 		{
-			// Get user details
-			var userDetails = _userRepository.GetUserDetails(personaId);
+			var manyUserDetails = _userRepository.GeManyUserDetails(personaId);
+			
+			List<string> PhoneNumbers = new List<string>();
+
+			foreach (var item in manyUserDetails.ToList())
+			{
+				if (!string.IsNullOrEmpty(item.PhoneNumber) && !string.IsNullOrWhiteSpace(item.PhoneNumber))
+				{
+					PhoneNumbers.Add(item.PhoneNumber);
+				}
+			}
+
+			var userDetails = manyUserDetails.FirstOrDefault();
+			userDetails.PhoneNumbers = PhoneNumbers;
 
 			// get user saml details & append to userDetails
 			GetUserSamlDetails(userDetails, productId);
