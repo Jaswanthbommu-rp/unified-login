@@ -13,9 +13,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
     {
         private static string IdentityServerCORSAllowedOrigins = "IdentityServerCorsAllowedOrigins";
 
-        private readonly IdentityServerRepository _identityServerRepository;
+        private readonly IIdentityServerRepository _identityServerRepository;
 
-        public CorsPolicyService(IdentityServerRepository identityServerRepository)
+        public CorsPolicyService(IIdentityServerRepository identityServerRepository)
         {
             _identityServerRepository = identityServerRepository;
         }

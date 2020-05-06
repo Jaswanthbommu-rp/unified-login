@@ -1,7 +1,8 @@
 ﻿CREATE PROCEDURE [Enterprise].[UpdateOrganization]
     @OrganizationId UNIQUEIDENTIFIER,
 	@OrganizationName NVARCHAR(150),
-	@OrganizationTypeId INT
+	@OrganizationTypeId INT,
+	@OrganizationDomainId INT
 AS
     BEGIN
 		BEGIN TRY
@@ -12,6 +13,9 @@ AS
 			SET Name = @OrganizationName
 				,OrganizationTypeId = CASE WHEN @OrganizationTypeId IS NULL THEN O.OrganizationTypeId
 					ELSE @OrganizationTypeId
+				END
+				,OrganizationDomainId = CASE WHEN @OrganizationDomainId IS NULL THEN O.OrganizationDomainId
+					ELSE @OrganizationDomainId
 				END
 			FROM [Enterprise].Organization o
 			JOIN [Enterprise].Party p ON p.PartyId = o.PartyId

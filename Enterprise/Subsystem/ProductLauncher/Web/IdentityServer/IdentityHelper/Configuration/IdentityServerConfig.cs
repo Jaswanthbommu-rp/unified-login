@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
         public static void SetupCustomImplementationHooks(IdentityServerOptions options)
         {
-            options.Factory.Register(new Registration<IdentityServerRepository>());
+            options.Factory.Register(new Registration<IIdentityServerRepository, IdentityServerRepository>());
             options.Factory.Register(new Registration<AuthenticateService>());
             options.Factory.Register(new Registration<ManageUserLoginIdentity>());
             options.Factory.Register(new Registration<ManageUserLogin>());

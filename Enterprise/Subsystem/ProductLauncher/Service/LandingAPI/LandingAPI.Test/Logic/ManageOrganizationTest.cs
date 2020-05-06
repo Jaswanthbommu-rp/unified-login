@@ -29,11 +29,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private static long _BooksMasterId = 12345;
         private static long _BooksCompanyMasterId = 12345;
 		private static int _organizationTypeId = 6;
+        private static int _organizationDomainId = 1;
 		private static string _organizationTypeName = "Multifamily";
 
         private Organization _organization = null;
         private List<Organization> _organizationList = null;
         private List<OrganizationType> _organizationTypes = null;
+        private List<OrganizationDomain> _organizationDomains = null;
         private List<IdentityProviderType> _identityProviderTypes = null;
 
         private Mock<IRepository> _mockRepository = new Mock<IRepository>();
@@ -53,6 +55,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 organizationType = new OrganizationType()
                 {
                     OrganizationTypeId = _organizationTypeId
+                },
+                OrganizationDomain = new OrganizationDomain()
+                {
+                    OrganizationDomainId = _organizationDomainId
                 }
             };
 
@@ -80,6 +86,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 }
             };
 
+            _organizationDomains = new List<OrganizationDomain>()
+            {
+                new OrganizationDomain()
+                {
+                    OrganizationDomainId = 1,
+                    Name = "Primary",
+                    CreateDate = new DateTime()
+                }
+            };
+
             _identityProviderTypes = new List<IdentityProviderType>() {new IdentityProviderType() {ContactMechanismId = 1000, AuthenticationType = "id3"}, new IdentityProviderType() {ContactMechanismId = 1001, AuthenticationType = "aad"}};
 
             List<DatabaseResult> orgList = new List<DatabaseResult>();
@@ -95,6 +111,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockRepository.Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(_organizationTypes);
+
+            _mockRepository.Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(_organizationDomains);
 
             _mockRepository.Setup(m => m.GetMany<IdentityProviderType>(StoredProcNameConstants.SP_GetOrganizationIdentityProviderType, It.IsAny<object>()))
                 .Returns(_identityProviderTypes);
@@ -132,7 +151,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 organizationType = new OrganizationType()
 				{
 					OrganizationTypeId = _organizationTypeId
-				}
+				},
+                OrganizationDomainId = _organizationDomainId,
+                OrganizationDomain = new OrganizationDomain()
+                {
+                    OrganizationDomainId = _organizationDomainId
+                }
 			};
 
             //Assert
@@ -169,7 +193,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 organizationType = new OrganizationType()
 				{
 					OrganizationTypeId = _organizationTypeId
-				}
+				},
+                OrganizationDomain = new OrganizationDomain()
+                {
+                    OrganizationDomainId = _organizationDomainId
+                }
 			};
 
             //Assert

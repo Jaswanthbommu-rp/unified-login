@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
@@ -8,7 +7,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 	/// <summary>
 	/// An Organization in the GreenBook system
 	/// </summary>
-	public class Organization : IOrganization
+	public class Organization
 	{
 		/// <summary>
 		/// The unique id for the Organization in BlueBook
@@ -80,6 +79,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		public OrganizationType organizationType { get; set;}
 
         /// <summary>
+        /// Organization Domain Id
+        /// </summary>
+        [JsonIgnore]
+        public int OrganizationDomainId { get; set; }
+
+        /// <summary>
+        /// Organization Domain
+        /// </summary>
+        [JsonProperty(PropertyName = "OrganizationDomain")]
+        public OrganizationDomain OrganizationDomain { get; set;}
+
+        /// <summary>
         /// Flag to indicate which company is used for auth purposes
         /// </summary>
         public bool PrimaryOrganization { get; set; }
@@ -101,7 +112,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 					OrganizationTypeId = 6,
 					Name = "Multifamily",
 					CreateDate = DateTime.Today
-				}
+				}, 
+				OrganizationDomain = new OrganizationDomain()
+                {
+					OrganizationDomainId = 1,
+					Name = "Primary",
+					CreateDate = DateTime.Today
+                }
 			};
             return result;
         }

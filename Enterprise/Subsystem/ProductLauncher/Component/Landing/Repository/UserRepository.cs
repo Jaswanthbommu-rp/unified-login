@@ -216,7 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             //BlueBook MasterId for External Users
-            IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
+            Organization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
 
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             IList<ContactMechanismUsageType> emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
@@ -1973,7 +1973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IOrganizationRepository organizationRepository = new OrganizationRepository();
 
-            IOrganization organization = organizationRepository.GetOrganization(organizationRealPageId);
+            Organization organization = organizationRepository.GetOrganization(organizationRealPageId);
 
             IPersonaRepository personaRepository = new PersonaRepository();
 
@@ -2124,7 +2124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
 
             //BlueBook MasterId for External Users
-            IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
+            Organization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
 
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.RealPageId);
 
@@ -4021,7 +4021,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
-        private string ChangeUserTypeExternal(IRepository repository, IOrganization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal)
+        private string ChangeUserTypeExternal(IRepository repository, Organization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal)
         {
             dynamic param;
             long? personaId = null;
