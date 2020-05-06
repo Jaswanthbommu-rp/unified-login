@@ -125,6 +125,10 @@
                 if (dependencyControlId > 0) {
                     vm.loadProductControlDependencyData(dependencyControlId);
                 }
+                else if ($scope.$parent.productId === 3 || $scope.$parent.productId === 17) {
+                    var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
+                    vm.setProductTabs(tabs);
+                }
 
                 if (presetroleData !== undefined) {
                     vm.presetRoles = [];
@@ -138,14 +142,14 @@
                     presetroleData.forEach(function (option) {
                         vm.presetRoles.push(option);
                     });
-                     logc("vm.presetRoles data", vm.presetRoles);
+                    logc("vm.presetRoles data", vm.presetRoles);
                     //vm.roleSelect.setOptions(vm.presetRoles);
                     // logc("vm.selectconfigs data", vm.selectconfigs);
                     vm.selectconfigs.forEach(function (item) {
                         item.configData.setOptions(vm.presetRoles);
                         logc("item.configData", item.configData);
                     });
-                   // vm.selectconfigs[0].configData.setOptions(vm.presetRoles);
+                    // vm.selectconfigs[0].configData.setOptions(vm.presetRoles);
                     logc("presetroleData", vm.selectconfigs);
                 }
 
@@ -211,8 +215,8 @@
             var configs = syncMgr.getProductSelectTypeConfig(productId, "Roles");
             //logc("vm.selectconfigs from model", vm.selectconfigs);
             if (configs !== undefined && configs.length > 0) {
-                    configs.forEach(function (item) {
-                   // logc("select config item", item);
+                configs.forEach(function (item) {
+                    // logc("select config item", item);
                     // vm.roleSelect = menuConfig({
                     //     nameKey: "name",
                     //     valueKey: "id",
@@ -235,6 +239,7 @@
         };
 
         vm.setControlDependencyData = function (resp) {
+            var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
 
             if (resp.data && resp.data.length > 0 && vm.roleRights.length > 0) {
                 var matchFound = false;
@@ -250,21 +255,27 @@
 
                 //Exclude properties tab fro employee and external user company
                 var compId = persona.getBooksMasterId();
-                if (compId === -1 || compId === -2){
+                if (compId === -1 || compId === -2) {
                     matchFound = false;
                 }
 
-                var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
                 if (matchFound) {
                     tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
                 }
 
                 syncMgr.setProductDependencyDataMap($scope.$parent.productId, matchFound);
-                var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
-                tabsModel.setTabs(tabs);
-                tabsModel.setTabMenuData(tabs);
-                tabsModel.activateTab(activeTab).initActiveTab();
+                vm.setProductTabs(tabs);
             }
+            else {
+                vm.setProductTabs(tabs);
+            }
+        };
+
+         vm.setProductTabs = function (tabs) {
+            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+            tabsModel.setTabs(tabs);
+            tabsModel.setTabMenuData(tabs);
+            tabsModel.activateTab(activeTab).initActiveTab();
         };
 
         vm.updateRoleRecords = function (record) {
@@ -295,7 +306,7 @@
             vm.activeWatch();
             vm.gridAllWatch();
             vm.gridSelectionWatch();
-           // vm.productSelectTypeWatch();
+            // vm.productSelectTypeWatch();
             if (vm.dataRoleReq) {
                 vm.dataRoleReq.$cancelRequest();
             }
