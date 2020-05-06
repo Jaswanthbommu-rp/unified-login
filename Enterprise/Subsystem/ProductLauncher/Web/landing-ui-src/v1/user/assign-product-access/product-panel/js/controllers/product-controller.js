@@ -125,7 +125,6 @@
                             }
 
                             var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
-                            logc("tabName", tabName);
                             if (tabName === "rights") {
                                 tabName = "roles";
                             }
@@ -146,7 +145,7 @@
                 productModel.renderProductTabsMap($scope.productId, allTabs, initialTabs);
                 productModel.renderProductActiveTabMap($scope.productId, vm.activeTab);
             }
-            return initialTabs;
+            return allTabs;
         };
 
         vm.setTabsConfigData = function (data) {
