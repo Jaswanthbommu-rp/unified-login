@@ -14,10 +14,6 @@
 .product-panel-roles {
     width: 100%;
 
-    &-wrapper {
-        margin-top: 10px;
-    }
-
     &-grid {
 
         .rp-grid-headers-1,
@@ -27,25 +23,20 @@
         }
 
         .is-assigned {
-            min-width: 120px;
-            max-width: 120px;
-            white-space: nowrap;
+            width: 10%;
         }
 
         .name {
-            width: 90%;
-            //min-width: 200px;
+            width: 60%;
         }
 
-
         .roletype {
-            min-width: 200px;
+            width: 20%;
         }
 
         .info-icon {
-            min-width: 50px;
+            width: 10%;
         }
-
     }
 }
 

@@ -227,8 +227,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
+                if ((SigningBehavior) provider.SigningBehavior != SigningBehavior.Never)
+                {
+                    authServicesOptions.SPOptions.ServiceCertificates.Add(GetSigningCertificate());
+                }
 
-                authServicesOptions.SPOptions.ServiceCertificates.Add(GetSigningCertificate());
                 authServicesOptions.Notifications.EmitSameSiteNone = userAgent =>
                 {
                     return !ManageSameSite.SuppressSameSiteNoneCookies(null, userAgent);

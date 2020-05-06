@@ -265,12 +265,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             newProfile.productBatch.Add(pb);
                         }
 
-                        ////Then Remove Products Which are Deselected in UI
+                        //Then Remove Products Which are Deselected in UI
                         var profileProductBatch = newProfile.productBatch.Where(x => x.InputJson.IsAssigned == false);
                         foreach (var pb in profileProductBatch.ToList())
                         {
                             newProfile.productBatch.Remove(pb);
                         }
+                    }
+
+                    //Get the Clone User list of UnifiedLogin Top level properties and Role
+                    var ulRole = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, new { ProductId = (int)ProductEnum.UnifiedLogin, PersonaId = cloneUserPersonaId });
+                    var ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new { PersonaId = cloneUserPersonaId, ProductId = (int)ProductEnum.UnifiedLogin });
+
+                    if ((ulProperties != null) && (ulRole != null))
+                    {
+                        List<string> roleList = new List<string>();
+                        foreach (var role in ulRole)
+                        {
+                            roleList.Add(Convert.ToString(role.RoleId));
+                        }
+                        List<string> propertyList = new List<string>();
+                        foreach (var property in ulProperties)
+                        {
+                            propertyList.Add(Convert.ToString(property.PropertyID));
+                        }
+                        ProductBatch unifiedPlatformProductBatch = new ProductBatch()
+                        {
+                            ProductId = (int)ProductEnum.UnifiedLogin,
+                            StatusTypeId = 5,
+                            RetryCount = 0,
+                            InputJson = new RolePropertyList()
+                            {
+                                PropertyList = propertyList,
+                                RoleList = roleList
+                            }
+                        };
+
+                        newProfile.productBatch.Add(unifiedPlatformProductBatch);
                     }
                 }
             }
