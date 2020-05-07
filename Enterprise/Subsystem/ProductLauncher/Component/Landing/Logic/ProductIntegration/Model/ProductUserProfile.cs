@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
 {
@@ -25,8 +26,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty(PropertyName = "isActive")]
 		public bool IsActive { get; set; }
 
-		[JsonProperty(PropertyName = "phone", NullValueHandling = NullValueHandling.Ignore)]
-		public string Phone { get; set; }
+		[JsonProperty(PropertyName = "phoneNumbers", NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> PhoneNumbers { get; set; } = new List<string>();
 
 		[JsonProperty(PropertyName = "companyId", NullValueHandling = NullValueHandling.Ignore)]
 		public string CompanyId { get; set; }
