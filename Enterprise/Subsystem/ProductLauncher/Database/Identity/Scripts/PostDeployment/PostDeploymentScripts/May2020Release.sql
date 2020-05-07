@@ -107,7 +107,7 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
 
 	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive])
-	VALUES (9, 3, N'Unified Platform Product Access', @UserId, @Now, 1)
+	VALUES (9, 3, N'Unified Platform Product Access', @UserId, @Now, 0)
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
 
