@@ -279,18 +279,18 @@
         };
 
         vm.updateRoleRecords = function (record) {
+            rolesGrid.busy(true);
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
-            if (record.isAssigned && record.userRights !== undefined) {
+            var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
+            if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
                 vm.roleRights = [];
                 if (record.userRights !== undefined) {
                     vm.roleRights = record.userRights;
                 }
-                var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
 
-                if (dependencyControlId > 0) {
-                    vm.loadProductControlDependencyData(dependencyControlId);
-                }
+                vm.loadProductControlDependencyData(dependencyControlId);
             }
+            rolesGrid.busy(false);
         };
 
         vm.updateMultiSelectRoleRecords = function (record) {
