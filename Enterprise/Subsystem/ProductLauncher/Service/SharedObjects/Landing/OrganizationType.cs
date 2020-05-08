@@ -6,7 +6,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 	/// <summary>
 	/// Organization Type
 	/// </summary>
-	public class OrganizationType : IOrganizationType
+	public class OrganizationType
 	{
 		/// <summary>
 		/// The date the Organization Type was added to GreenBook

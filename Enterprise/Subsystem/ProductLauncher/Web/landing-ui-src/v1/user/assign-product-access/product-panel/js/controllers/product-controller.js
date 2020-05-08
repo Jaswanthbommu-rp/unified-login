@@ -125,7 +125,6 @@
                             }
 
                             var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
-                            logc("tabName", tabName);
                             if (tabName === "rights") {
                                 tabName = "roles";
                             }

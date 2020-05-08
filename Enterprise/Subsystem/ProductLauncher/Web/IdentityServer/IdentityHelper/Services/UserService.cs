@@ -40,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         private readonly SamlRepository _samlRepository;
         private readonly ManageContactMechanismUsageType _contactMechanismUsageType;
         private readonly ManageTelecommunicationNumber _manageTelecommunicationNumber;
-        private readonly IdentityServerRepository _identityServerRepository;
+        private readonly IIdentityServerRepository _identityServerRepository;
         private readonly IOwinContext _ctx;
 
         /// <summary>

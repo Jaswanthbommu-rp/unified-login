@@ -480,12 +480,10 @@
             propertyData = s.propertyMap['product' + key].properties;
 
             records.forEach(function (item) {
-                //var record = records.findIndex( record => record.id == item.id);
                 var record = propertyData.filter(function (data) {
                     return item.id === data.id;
                 })[0];
 
-                logc("updatedrecord", record);
                 if (item.id == record.id) {
                     record.isAssigned = item.isAssigned;
                 }

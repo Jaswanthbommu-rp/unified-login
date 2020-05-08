@@ -232,7 +232,6 @@
     <Compile Include="Landing\ICustomFieldType.cs" />
     <Compile Include="Landing\ICustomFieldValue.cs" />
     <Compile Include="Landing\IFilterTableType.cs" />
-    <Compile Include="Landing\IOrganizationType.cs" />
     <Compile Include="Landing\IPagingSummary.cs" />
     <Compile Include="Landing\IPasswordPolicyCommon.cs" />
     <Compile Include="Landing\ISendGridEmail.cs" />
@@ -240,6 +239,7 @@
     <Compile Include="Landing\ISecuritySettings.cs" />
     <Compile Include="Landing\ISortTableType.cs" />
     <Compile Include="Landing\IStatusType.cs" />
+    <Compile Include="Landing\OrganizationDomain.cs" />
     <Compile Include="Landing\OrganizationRole.cs" />
     <Compile Include="Landing\OrganizationStatus.cs" />
     <Compile Include="Landing\OrganizationType.cs" />
@@ -396,7 +396,6 @@
     <Compile Include="IdentityConfig\ScopeSecret.cs" />
     <Compile Include="IdentityConfig\Token.cs" />
     <Compile Include="Landing\AccountExpirationResponse.cs" />
-    <Compile Include="Landing\IOrganization.cs" />
     <Compile Include="Landing\JobTitle.cs" />
     <Compile Include="Landing\Organization.cs" />
     <Compile Include="Landing\Phone.cs" />

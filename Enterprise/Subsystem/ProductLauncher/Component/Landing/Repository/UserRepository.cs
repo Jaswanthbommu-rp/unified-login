@@ -216,7 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IOrganizationRepository organizationRepository = new OrganizationRepository();
             //BlueBook MasterId for External Users
-            IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
+            Organization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
 
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             IList<ContactMechanismUsageType> emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
@@ -265,12 +265,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             newProfile.productBatch.Add(pb);
                         }
 
-                        ////Then Remove Products Which are Deselected in UI
+                        //Then Remove Products Which are Deselected in UI
                         var profileProductBatch = newProfile.productBatch.Where(x => x.InputJson.IsAssigned == false);
                         foreach (var pb in profileProductBatch.ToList())
                         {
                             newProfile.productBatch.Remove(pb);
                         }
+                    }
+
+                    //Get the Clone User list of UnifiedLogin Top level properties and Role
+                    var ulRole = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, new { ProductId = (int)ProductEnum.UnifiedLogin, PersonaId = cloneUserPersonaId });
+                    var ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new { PersonaId = cloneUserPersonaId, ProductId = (int)ProductEnum.UnifiedLogin });
+
+                    if ((ulProperties != null) && (ulRole != null))
+                    {
+                        List<string> roleList = new List<string>();
+                        foreach (var role in ulRole)
+                        {
+                            roleList.Add(Convert.ToString(role.RoleId));
+                        }
+                        List<string> propertyList = new List<string>();
+                        foreach (var property in ulProperties)
+                        {
+                            propertyList.Add(Convert.ToString(property.PropertyID));
+                        }
+                        ProductBatch unifiedPlatformProductBatch = new ProductBatch()
+                        {
+                            ProductId = (int)ProductEnum.UnifiedLogin,
+                            StatusTypeId = 5,
+                            RetryCount = 0,
+                            InputJson = new RolePropertyList()
+                            {
+                                PropertyList = propertyList,
+                                RoleList = roleList
+                            }
+                        };
+
+                        newProfile.productBatch.Add(unifiedPlatformProductBatch);
                     }
                 }
             }
@@ -1942,7 +1973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             IOrganizationRepository organizationRepository = new OrganizationRepository();
 
-            IOrganization organization = organizationRepository.GetOrganization(organizationRealPageId);
+            Organization organization = organizationRepository.GetOrganization(organizationRealPageId);
 
             IPersonaRepository personaRepository = new PersonaRepository();
 
@@ -2093,7 +2124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
 
             //BlueBook MasterId for External Users
-            IOrganization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
+            Organization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
 
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.RealPageId);
 
@@ -3990,7 +4021,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
-        private string ChangeUserTypeExternal(IRepository repository, IOrganization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal)
+        private string ChangeUserTypeExternal(IRepository repository, Organization organizationExternalUser, OrganizationStatus currentPrimaryOrgStatus, IProfileDetail profile, IPersona persona, IList<UserOrganization> userPersonaOrganizationList, IList<ContactMechanismUsageType> emailUsageType, IUserLoginOnly userLoginOnly, IIdentityProviderType identityProviderType, string userTypeChangedToFromExternal)
         {
             dynamic param;
             long? personaId = null;

@@ -10,10 +10,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
     public class AuthorizationService : BaseTokenService<AuthorizationCode>, IAuthorizationCodeStore
     {
-	    private static IdentityServerRepository _identityServerRepository;
+	    private static IIdentityServerRepository _identityServerRepository;
 
-	    public AuthorizationService(IdentityServerRepository identityServerRepository, IScopeStore scopeStore, IClientStore clientStore)
-		    : base(TokenTypeEnum.AuthorizationCode, scopeStore, clientStore, _identityServerRepository)
+	    public AuthorizationService(IIdentityServerRepository identityServerRepository, IScopeStore scopeStore, IClientStore clientStore)
+		    : base(TokenTypeEnum.AuthorizationCode, scopeStore, clientStore, identityServerRepository)
 	    {
 		    _identityServerRepository = identityServerRepository;
 	    }

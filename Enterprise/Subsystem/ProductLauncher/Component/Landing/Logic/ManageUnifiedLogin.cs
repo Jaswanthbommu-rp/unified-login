@@ -1,4 +1,8 @@
 ﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -1056,14 +1060,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 foreach (var role in gbAllRoles)
                 {
                     var itemsToRemove = role.UserRights.Where(r => (r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN" ||
-                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" || 
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" ||
                                                                     r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS" ||
                                                                     r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN")).ToList();
 
                     foreach (var item in itemsToRemove)
                     {
                         role.UserRights.Remove(item);
-                    }                 
+                    }
                 }
 
                 WriteToDiagnosticLog(
@@ -1444,7 +1448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return result;
         }
-
+        
         private List<ProductRight> GetRightsWithRolesCount(List<RightRoleDetail> allRights)
         {
             var result = new List<ProductRight>();

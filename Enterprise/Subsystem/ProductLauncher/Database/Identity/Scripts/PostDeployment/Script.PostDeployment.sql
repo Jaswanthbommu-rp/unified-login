@@ -9,26 +9,8 @@ Post-Deployment Script Template
 					SELECT * FROM [$(TableName)]
 --------------------------------------------------------------------------------------
 */
+:r .\PostDeploymentScripts\_SeedData.sql
 
---:r .\PostDeploymentScripts\June2018Release.sql
---:r .\PostDeploymentScripts\July2018Release.sql
---:r .\PostDeploymentScripts\September2018Release.sql
---:r .\PostDeploymentScripts\October2018Release.sql
---:r .\PostDeploymentScripts\November2018Release.sql
---:r .\PostDeploymentScripts\December2018Release.sql
---:r .\PostDeploymentScripts\January2019Release.sql
---:r .\PostDeploymentScripts\February2019Release.sql
---:r .\PostDeploymentScripts\March2019Release.sql
---:r .\PostDeploymentScripts\April2019Release.sql
---:r .\PostDeploymentScripts\May2019Release.sql
---:r .\PostDeploymentScripts\June2019Release.sql
---:r .\PostDeploymentScripts\August2019Release.sql
---:r .\PostDeploymentScripts\September2019Release.sql
---:r .\PostDeploymentScripts\PopulateMultiCompanySchema.sql
---:r .\PostDeploymentScripts\October2019Release.sql
---:r .\PostDeploymentScripts\November2019Release.sql
---:r .\PostDeploymentScripts\December2019Release.sql
---:r .\PostDeploymentScripts\January2020Release.sql
 
 --:r .\PostDeploymentScripts\SameSiteData.sql
 
@@ -39,7 +21,7 @@ Post-Deployment Script Template
 
 --:r .\PostDeploymentScripts\UserManagementData.sql
 
-:r .\PostDeploymentScripts\May2020Release.sql
+:r .\PostDeploymentScripts\June2020Release.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql

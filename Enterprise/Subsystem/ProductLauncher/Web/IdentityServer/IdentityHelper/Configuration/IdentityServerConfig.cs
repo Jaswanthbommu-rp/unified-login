@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
         public static void SetupCustomImplementationHooks(IdentityServerOptions options)
         {
-            options.Factory.Register(new Registration<IdentityServerRepository>());
+            options.Factory.Register(new Registration<IIdentityServerRepository, IdentityServerRepository>());
             options.Factory.Register(new Registration<AuthenticateService>());
             options.Factory.Register(new Registration<ManageUserLoginIdentity>());
             options.Factory.Register(new Registration<ManageUserLogin>());
@@ -227,8 +227,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
+                if ((SigningBehavior) provider.SigningBehavior != SigningBehavior.Never)
+                {
+                    authServicesOptions.SPOptions.ServiceCertificates.Add(GetSigningCertificate());
+                }
 
-                authServicesOptions.SPOptions.ServiceCertificates.Add(GetSigningCertificate());
                 authServicesOptions.Notifications.EmitSameSiteNone = userAgent =>
                 {
                     return !ManageSameSite.SuppressSameSiteNoneCookies(null, userAgent);

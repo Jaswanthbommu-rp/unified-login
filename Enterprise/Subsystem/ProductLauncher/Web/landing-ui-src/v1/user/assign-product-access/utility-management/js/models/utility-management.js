@@ -56,6 +56,13 @@
             return s.active;
         };
 
+        p.setAllPropertiesData = function(propertiesData,val){
+            var s = this;
+            propertiesData.forEach(function (item) {
+              item["isAssigned"] = val;
+           });
+        };
+
         p.setProperties = function (propertiesData) {
             var s = this;
             s.properties = propertiesData;
