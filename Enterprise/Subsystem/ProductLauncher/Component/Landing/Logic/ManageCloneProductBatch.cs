@@ -625,7 +625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			foreach (object item in propertiesCollection)
 			{
-				if (((ProductProperty)item).IsAssigned)
+				if (((ProductProperty)item).IsAssigned.Value)
 				{
 					PropertyList.Add(((ProductProperty)item).ID);
 				}
