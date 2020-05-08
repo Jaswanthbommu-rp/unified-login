@@ -29,6 +29,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -193,10 +194,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
 					result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
 					break;
-				//case (int)ProductEnum.Insurance:
-				//	ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
-				//	result = manageProductRentersInsurance.ListRoles(editorPersonaId, userPersonaId, datafilter);
-				//	break;
+				case (int)ProductEnum.Insurance:
+					ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
+					IList<ProductRole> productRoleList = manageProductRentersInsurance.ListRoles(editorPersonaId, userPersonaId);
+					result = new ListResponse()
+					{
+						Records = productRoleList.Cast<object>().ToList(),
+						TotalRows = productRoleList.Count,
+						RowsPerPage = productRoleList.Count,
+						TotalPages = 1,
+						ErrorReason = ""
+					};
+					break;
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);
 					result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);
