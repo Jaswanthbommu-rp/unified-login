@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.ClickPay;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -17,6 +15,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -489,7 +490,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
 						}
 					}
-					else if (((ProductProperty)item).IsAssigned)
+					else if (((ProductProperty)item).IsAssigned.Value)
 					{
 						PropertyList.Add(((ProductProperty)item).ID);
 					}
@@ -552,7 +553,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
                     }
                 }
-                else if (((ProductProperty)item).IsAssigned)
+                else if (((ProductProperty)item).IsAssigned.Value)
                 {
                     PropertyList.Add(((ProductProperty)item).ID);
                 }
@@ -652,7 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 							PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
 						}
 					}
-					else if (((ProductProperty)item).IsAssigned)
+					else if (((ProductProperty)item).IsAssigned.Value)
 					{
 						PropertyList.Add(((ProductProperty)item).ID);
 					}
@@ -838,7 +839,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				foreach (object item in propertiesCollection)
 				{
-					if (((ProductProperty)item).IsAssigned)
+					if (((ProductProperty)item).IsAssigned.Value)
 					{
 						PropertyList.Add(((ProductProperty)item).ID);
 					}
@@ -907,7 +908,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				foreach (object item in propertiesCollection)
 				{
-					if (((ProductProperty)item).IsAssigned)
+					if (((ProductProperty)item).IsAssigned.Value)
 					{
 						PropertyList.Add(((ProductProperty)item).ID);
 					}
@@ -984,7 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						result = manageProductRpDocumentManagement.GetRoleClassifierDataset(createUserPersonaId, personaId, role.ID, null);
 						if (result != null && result.Records.Count > 0)
 						{
-							IList<ProductProperty> assignedList = result.Records.Cast<ProductProperty>().ToList().FindAll(p => p.IsAssigned);
+							IList<ProductProperty> assignedList = result.Records.Cast<ProductProperty>().ToList().FindAll(p => p.IsAssigned.Value);
 							if (role.Roletype.ToUpper() == "SITE NAME")
 							{
 								inputJson.PropertyList = new List<string>();
