@@ -367,7 +367,7 @@
         public const string SP_ListUserInformation = "Person.GetUserInformation_Ver02";
         public const string SP_CreateUnityUser = "Ident.CreateUser_Ver01";
         public const string SP_ListUsersWithCompanyId = "Person.ListUsersWithCompanyId";
-        public const string SP_ListULMappingUserIdForProductUserId = "Enterprise.ListULMappingUserIdForProductUserId";
+        public const string SP_ListULMappingPersonaIdForProductUserId = "Enterprise.ListULMappingPersonaIdForProductUserId";
 
     }
 }

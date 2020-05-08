@@ -1,6 +1,6 @@
-﻿CREATE PROCEDURE [Enterprise].[ListULMappingUserIdForProductUserId]
+﻿CREATE PROCEDURE [Enterprise].[ListULMappingPersonaIdForProductUserId]
 (
-    @CompanyId INT, --BlueBook ID
+    @CompanyId INT, --BlueBookID
     @ProductId INT,
     @TargetProductUserIds nvarchar(max)
 )
@@ -19,7 +19,7 @@ BEGIN
 	SELECT @SamlAttributeId = SamlAttributeId FROM Ident.SamlAttribute
 	WHERE Name = 'UserId'
 
-	SELECT sua.Value as ProductUserId, sua.PersonaId UnifiedLoginUserId 
+	SELECT sua.Value as ProductUserId, sua.PersonaId as UnifiedLoginPersonaId 
 	from Ident.SamlUserAttribute sua
 	inner join @ProductUserIdList puid on sua.Value = puid.ProductUserId	
 	inner join Person.Persona p on p.PersonaId = sua.PersonaId

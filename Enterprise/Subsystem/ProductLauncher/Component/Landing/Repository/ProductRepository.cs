@@ -1740,9 +1740,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="productId"></param>
         /// <param name="productUserIds"></param>
         /// <returns>List of Unified Login mapping UserId by product and company</returns>
-        public List<ULMappedUserIds> GetULMappingUsersByCompanyAndProducts(int companyId, int productId, List<string> productUserIds)
+        public List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, int productId, List<string> productUserIds)
         {
-            List<ULMappedUserIds> mappingUserList = new List<ULMappedUserIds>();
+            List<ULMappedPersonaIds> mappingUserList = new List<ULMappedPersonaIds>();
 
              dynamic param = new
             {
@@ -1753,7 +1753,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
-                mappingUserList = repository.GetMany<ULMappedUserIds>(EnterpriseStoredProcNameConstants.SP_ListULMappingUserIdForProductUserId, param);
+                mappingUserList = repository.GetMany<ULMappedPersonaIds>(EnterpriseStoredProcNameConstants.SP_ListULMappingPersonaIdForProductUserId, param);
             }
 
             return mappingUserList;

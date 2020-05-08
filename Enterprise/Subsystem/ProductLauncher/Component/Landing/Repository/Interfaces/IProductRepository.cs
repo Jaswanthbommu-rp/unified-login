@@ -205,6 +205,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="productId"></param>
         /// <param name="productUserIds"></param>
         /// <returns>List of Unified Login mapping UserId by product and company</returns>
-        List<ULMappedUserIds> GetULMappingUsersByCompanyAndProducts(int companyId, int productId, List<string> productUserIds);
+        List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, int productId, List<string> productUserIds);
     }
 }
