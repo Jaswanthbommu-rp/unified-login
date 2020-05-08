@@ -31,6 +31,7 @@
             s.productSelectTypeConfigMap = {};
             s.productDependencyDataMap = {};
             s.productPresetRolesMap = {};
+            s.productMessageGroupMap = {};
 
             s.originalPropertyListMap = {};
 
@@ -46,7 +47,7 @@
             s.roleList = [];
             s.presetRoleList = [];
             s.sidePanelDataList = [];
-
+            s.productMessageGroupList = [];
         };
 
         // Getters
@@ -210,6 +211,16 @@
             return productPropertyGroupList;
         };
 
+        p.getMessageGroupMap = function (product) {
+            var s = this,
+                messageGroupList;
+            if (s.productMessageGroupMap['product' + product] !== undefined) {
+                messageGroupList = s.productMessageGroupMap['product' + product].messageGroup;
+            }
+            return messageGroupList;
+
+        };
+
         p.getProductDependencyControlId = function (product, name) {
             var s = this,
                 controlId = 0;
@@ -268,6 +279,13 @@
             var s = this;
             s.propertyGroupList = list;
             s.renderPropertyGroupMap(key);
+            return s;
+        };
+
+        p.setMessageGroupList = function (list, key) {
+            var s = this;
+            s.productMessageGroupList = list;
+            s.renderMessageGroupMap(key);
             return s;
         };
 
@@ -660,6 +678,15 @@
             if (!angular.equals({}, s.propertyGroupList)) {
                 s.propertyGroupMap['product' + key] = {
                     propertyGroup: s.propertyGroupList
+                };
+            }
+        };
+
+        p.renderMessageGroupMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.productMessageGroupList)) {
+                s.productMessageGroupMap['product' + key] = {
+                    messageGroup: s.productMessageGroupList
                 };
             }
         };
