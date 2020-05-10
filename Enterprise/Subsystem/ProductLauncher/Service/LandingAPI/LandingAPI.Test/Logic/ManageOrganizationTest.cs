@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -41,8 +42,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private Mock<IRepository> _mockRepository = new Mock<IRepository>();
         private Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
 
+        private DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
+
         public ManageOrganizationTest()
         {
+            _defaultUserClaim.CorrelationId = new Guid();
+
             _organization = new Organization()
             {
                 RealPageId = _RealPageId,
@@ -236,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			rPObjectCache.BustCache();
 
 			//Act
-			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
             IRepositoryResponse repositoryResponse = manageOrganization.InsertOrganization(_organization);
 
             //Assert
@@ -255,7 +260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			rPObjectCache.BustCache();
 
 			//Act
-			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
             IRepositoryResponse repositoryResponse = manageOrganization.UpdateOrganization(_organization);
 
             //Assert
@@ -272,7 +277,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Arrange
 
             //Act
-            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
             var orgResult = manageOrganization.GetOrganization(realPageId: _RealPageId);
 
             //Assert
@@ -312,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void ListOrganization_ReturnList()
         {
             //Arrange
-            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             //Act
             var result = manageOrganization.GetOrganizationList();
@@ -331,7 +336,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			//Act
 			int NumberOfProperties = type.GetProperties().Length;
-			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 			IList<OrganizationType> organizationTypeList = manageOrganization.ListOrganizationType();
 
 			//Assert
@@ -355,7 +360,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void GetOrganizationIdentityProviderType_ReturnExampleData()
         {
             //Arrange
-            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
             
             //Act
             var result = manageOrganization.GetOrganizationIdentityProviderType(_RealPageId);
@@ -371,7 +376,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         {
             //Arrange
             //OrganizationRepository organizationRepository = new OrganizationRepository(_mockRepository.Object);
-            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             //Act
             var result = manageOrganization.GetOrganization(_RealPageId);
@@ -397,7 +402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void GetOrganizationList_ReturnExampleData()
         {
             //Arrange
-            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             //Act
             var result = manageOrganization.GetOrganizationList();
@@ -408,7 +413,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void GetOrganizationAdminUserRealPageId_ReturnExampleData()
         {
             //Arrange
-            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
+            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             //Act
             var result = manageOrganization.GetOrganizationAdminUserRealPageId(_organization.RealPageId);

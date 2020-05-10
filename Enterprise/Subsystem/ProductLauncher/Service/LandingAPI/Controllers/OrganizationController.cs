@@ -13,6 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Caching;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -34,13 +35,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		public OrganizationController()
         {
             _repositoryResponse = new RepositoryResponse();
-            _organizationLogic = new ManageOrganization();
 			_organizationProductRepository = new OrganizationProductRepository();
 			_manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
-	        _userLoginRepository = new UserLoginRepository();
-	        _personaRepository = new PersonaRepository();
+	        //_userLoginRepository = new UserLoginRepository();
+	        //_personaRepository = new PersonaRepository();
 			_manageUserLogin = new ManageUserLogin();
 			_managePartyRelationship = new ManagePartyRelationship();
+            _manageOrganization = new ManageOrganization(_userClaims);
 		}
 
 		/// <summary>
@@ -56,17 +57,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="manageUserLogin"></param>
 		/// <param name="managePartyRelationship"></param>
 		/// <param name="userClaims"></param>
-		public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IUserLoginRepository userLoginRepository, IPersonaRepository personaRepository, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims)
+		public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims)
         {
-            _organizationLogic = manageOrganization;
 			_repositoryResponse = repositoryResponse;
 			_organizationProductRepository = organizationProductRepository;
 			_manageOrganizationProduct = manageOrganizationProduct;
-	        _userLoginRepository = userLoginRepository;
-	        _personaRepository = personaRepository;
 			_manageCustomFields = manageCustomFields;
 			_manageUserLogin = manageUserLogin;
 			_managePartyRelationship = managePartyRelationship;
+            _manageOrganization = manageOrganization;
 			_userClaims = userClaims;
 		}
 		#endregion
@@ -75,14 +74,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         IRepository _repository;
 		IRepositoryResponse _repositoryResponse;
-        IManageOrganization _organizationLogic;
 		IOrganizationProductRepository _organizationProductRepository;
 		IManageOrganizationProduct _manageOrganizationProduct;
-	    IUserLoginRepository _userLoginRepository;
-	    IPersonaRepository _personaRepository;
+	    //IUserLoginRepository _userLoginRepository;
+	    //IPersonaRepository _personaRepository;
 		IManageCustomFields _manageCustomFields;
 		IManageUserLogin _manageUserLogin;
 		IManagePartyRelationship _managePartyRelationship;
+        private IManageOrganization _manageOrganization;
 		#endregion
 
 		#region Public Organization Methods
@@ -149,215 +148,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         public HttpResponseMessage InsertOrganization([FromBody] OrganizationCreate organization, bool processBlueBookMessage = false)
         {
-			if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Duplicate master ids");
-			}
-
-			if (organization.OrganizationTypeId == 0)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"An invalid Organization Type id was given: {organization.OrganizationTypeId}");
-			}
-
-			List<ProductEnum> addProductList = new List<ProductEnum>();
-            // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = ParseProduct(organization.Products, addProductList);
-
-            if (invalidProductList.Count > 0)
+            var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
+			
+            if (!result.Status.Success)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, result.Status.ErrorMsg);
             }
-
-            OrganizationAdminUser aUser = organization.AdminUser;
-            if (aUser == null)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No admin user information provided");
-            }
-
-            if (processBlueBookMessage)
-            {
-                IList<Organization> organizationList = _organizationLogic.GetOrganizationList();
-                if (organizationList.Any(c => c.Name.Equals(organization.Name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"MessageHandler.Handle - Company: {organization.Name} with BlueBookId: {organization.BooksCustomerMasterId} already exists!");
-                }
-
-                if (organizationList.Any(c => c.BooksCustomerMasterId == organization.BooksCustomerMasterId))
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"MessageHandler.Handle - Bluebook customer master id {organization.BooksCustomerMasterId} already in use!");
-                }
-            }
-
-            // see if the given email already exists and reject it if it is found
-            UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(aUser.Email);
-            if (findExistingUser != null)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Admin email already exists");
-            }
-
-            //var organizationLogic = new ManageOrganization(_organizationRepository, _credentialRepository);
-            //var organizationLogic = new ManageOrganization();
-
-            // create the organization
-            Organization org = new Organization()
-            {
-                Name = organization.Name,
-                BooksMasterId = organization.BooksCompanyId,
-                BooksCustomerMasterId = organization.BooksCustomerMasterId,
-                organizationType = new OrganizationType()
-                {
-                    OrganizationTypeId = organization.OrganizationTypeId
-                },
-				OrganizationDomain = new OrganizationDomain()
-                {
-					OrganizationDomainId = organization.OrganizationDomainId
-                }
-            };
-            _repositoryResponse = _organizationLogic.InsertOrganization(org);
-
-            if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
-            }
-
-            Guid organizationRealPageId = _repositoryResponse.RealPageId;
-
-            org = _organizationLogic.GetOrganization(organizationRealPageId);
-
-            // add the given products to the new company
-            _repositoryResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId);
-            if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
-            {
-                Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
-            }
-            // add the first time super user to the new org
-
-            try
-            {
-                _organizationLogic.CreateInitialOrgSuperUser(org.PartyId, aUser.FirstName, "", aUser.LastName, aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId);
-            }
-            catch (Exception ex)
-            {
-            }
-
-            var userLogin = _userLoginRepository.GetUserLoginOnly(aUser.Email);
-            long personaId = _personaRepository.GetActivePersonaId(userLogin.RealPageId);
-
-            CreateOrganizationResult createOrg = new CreateOrganizationResult()
-            {
-                Org = org,
-                adminLogin = aUser.Email,
-                //adminPersonaId = personaId,
-                BooksCompanyId = org.BooksMasterId,
-                BooksCustomerMasterId = org.BooksCustomerMasterId
-            };
-
-            //Create an additional admin user for the Company
-            if ((processBlueBookMessage) && (organization.CompanyAdminUser != null) && (!string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email)))
-            {
-                findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
-
-                ManageUser manageUser = new ManageUser(_userClaims);
-                IList<Persona> personaList = new List<Persona>();
-                ProfileDetail profileDetail = new ProfileDetail()
-                {
-                    FirstName = organization.CompanyAdminUser.FirstName,
-                    LastName = organization.CompanyAdminUser.LastName,
-                    MiddleName = string.Empty,
-                    NotificationEmail = string.Empty,
-                    Password = string.Empty,
-                    Persona = new List<Persona>(),
-                    CreateUserSourceType = CreateUserSourceType.UnifiedPlatform,
-                    TelecommunicationNumber = new List<TelecommunicationNumber>(),
-                    CustomFields = new List<CustomFieldValue>(),
-                    UserTypeId = (int) UserRoleType.SuperUser,
-                    Title = string.Empty,
-                    userLogin = new UserLogin()
-                    {
-                        ThruDate = null,
-                        LoginName = organization.CompanyAdminUser.Email,
-                        IsActive = true,
-                        IsPending = false,
-                        IsExpired = false,
-                        FromDate = DateTime.UtcNow,
-                        Is3rdPartyIDP = false
-                    },
-                    productBatch = null
-                };
-                if (findExistingUser != null)
-                {
-                    ManagePerson managePerson = new ManagePerson();
-                    var existingPerson = managePerson.GetPerson(findExistingUser.RealPageId);
-                    if (existingPerson != null)
-                    {
-                        profileDetail.FirstName = existingPerson.FirstName;
-                        profileDetail.LastName = existingPerson.LastName;
-                        profileDetail.UserTypeId = (int) UserRoleType.ExternalUser;
-                        UnifiedLoginRepository umr = new UnifiedLoginRepository();
-                        List<int> _productIdList = new List<int>() {(int) ProductEnum.UnifiedLogin};
-                        var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int) ProductEnum.UnifiedLogin, _productIdList);
-                        if (gbAllRoles.Any(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            string roleId = gbAllRoles?.FirstOrDefault(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).ID;
-                            if (!string.IsNullOrEmpty(roleId))
-                            {
-                                ProductBatch pb = new ProductBatch
-                                {
-                                    ProductId = (int)ProductEnum.UnifiedLogin,
-                                    InputJson = new RolePropertyList
-                                    {
-                                        RoleList = new List<string>() { roleId }
-                                    }
-                                };
-                                profileDetail.productBatch = new List<ProductBatch>() {pb};
-                            }
-                        }
-                    }
-                }
-
-                //Default Persona
-                ManagePersona managePersona = new ManagePersona(_userClaims);
-                IList<PersonaEnvironment> personaEnvironment = managePersona.GetPersonaEnvironmentType();
-                var personaEnviornment = personaEnvironment.SingleOrDefault<PersonaEnvironment>(p => p.Name.Equals("Production", StringComparison.OrdinalIgnoreCase));
-                if (personaEnviornment == null)
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.OK, $"MessageHandler.Handle - Persona environment is missing!");
-                }
-                else
-                {
-                    Persona persona = new Persona()
-                    {
-                        Name = profileDetail.UserTypeId == (int) UserRoleType.SuperUser ? "System Administrator" : "Primary",
-                        PersonaEnvironmentTypeId = (int) personaEnviornment.PersonaEnvironmentTypeId,
-                        FromDate = DateTime.UtcNow,
-                        ThruDate = null
-                    };
-                    personaList.Add(persona);
-                    profileDetail.Persona = personaList;
-                }
-
-                if (profileDetail.organization.Count == 0)
-                {
-                    profileDetail.organization.Add(org);
-                }
-
-                CreateUserResponse<IErrorData> errorDataResponse = manageUser.CreateUser(profileDetail, personaList);
-                if (!errorDataResponse.Status.Success)
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.OK, $"{profileDetail.userLogin.LoginName}: " + errorDataResponse.Status.ErrorMsg);
-                }
-                else
-                {
-                    IManagePartyRole managePartyRole = new ManagePartyRole();
-                    IPartyRole partyRole = new PartyRole()
-                    {
-                        RoleTypeId = profileDetail.UserTypeId
-                    };
-                    RepositoryResponse repositoryResponse = managePartyRole.CreatePartyRoleEnterpriseUserID(profileDetail.userLogin.RealPageId, partyRole);
-                }
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, createOrg);
+			 
+            return Request.CreateResponse(HttpStatusCode.OK, result.obj);
         }
 
         /// <summary>
@@ -385,17 +183,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (organization.BooksCustomerMasterId != 0)
 			{
 				// get the organization by customer master id
-				org = _organizationLogic.GetOrganization(realPageId:Guid.Empty, blueBookId: organization.BooksCustomerMasterId);
+				org = _manageOrganization.GetOrganization(realPageId:Guid.Empty, blueBookId: organization.BooksCustomerMasterId);
 			}
 			else if (organization.BooksMasterId != 0)
 			{
                 // get the organization by Master Data Management (black book) master id
-                org = _organizationLogic.GetOrganization(realPageId: Guid.Empty, blackBookId: organization.BooksMasterId);
+                org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: organization.BooksMasterId);
 			}
 			else
 			{
 				// get the org by UL realpageID
-				org = _organizationLogic.GetOrganization(organization.RealPageId);
+				org = _manageOrganization.GetOrganization(organization.RealPageId);
 			}
 			
 			if (org == null)
@@ -404,7 +202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 			org.Name = organization.Name;
 
-			var orgTypes = _organizationLogic.ListOrganizationType();
+			var orgTypes = _manageOrganization.ListOrganizationType();
 			if (organization.OrganizationTypeId != 0)
 			{
 				if (!orgTypes.Any(o => o.OrganizationTypeId == organization.OrganizationTypeId))
@@ -429,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing organization type");
 			}
 
-            var orgDomains = _organizationLogic.ListOrganizationDomain();
+            var orgDomains = _manageOrganization.ListOrganizationDomain();
 			if (organization.OrganizationDomainId != 0)
 			{
 				if (orgDomains.All(o => o.OrganizationDomainId != organization.OrganizationDomainId))
@@ -456,13 +254,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			org.organizationType.OrganizationTypeId = organization.OrganizationTypeId;
             org.OrganizationDomain.OrganizationDomainId = organization.OrganizationDomainId;
 
-			_repositoryResponse = _organizationLogic.UpdateOrganization(org);
+			_repositoryResponse = _manageOrganization.UpdateOrganization(org);
 
 			if (!String.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
 			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
 			}
-			org = _organizationLogic.GetOrganization(org.RealPageId);
+			org = _manageOrganization.GetOrganization(org.RealPageId);
 
 			return Request.CreateResponse(HttpStatusCode.OK, org);
 		}
@@ -489,7 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			if (realPageId.HasValue)
 			{
-				Organization org = _organizationLogic.GetOrganization(realPageId.Value);
+				Organization org = _manageOrganization.GetOrganization(realPageId.Value);
 				if (org == null)
 				{
 					return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
@@ -498,7 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 			else
 			{
-				IList<Organization> orgList = _organizationLogic.GetOrganizationList();
+				IList<Organization> orgList = _manageOrganization.GetOrganizationList();
 				return Request.CreateResponse(HttpStatusCode.OK, orgList);
 			}
 		}
@@ -575,7 +373,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				realPageId = _userClaims.OrganizationRealPageGuid;
 			}
 
-            Organization org = _organizationLogic.GetOrganization(realPageId.Value);
+            Organization org = _manageOrganization.GetOrganization(realPageId.Value);
 
             if (org == null)
             {
@@ -611,6 +409,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if ((checkPasswordExpirationResponse != null) && (!checkPasswordExpirationResponse.IsPasswordExpired))
 			{
 				var manageProduct = new ManageProduct(_userClaims);
+                var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
+                MemoryCache.Default.Remove(cacheKey);
+
 				IList<ProductUI> productList = manageProduct.GetProducts(org.RealPageId, personaId, (allProducts.HasValue ? allProducts.Value : false));
 
 				output.list = productList;
@@ -645,7 +446,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
 			}
 
-			Organization org = _organizationLogic.GetOrganization(realPageId);
+			Organization org = _manageOrganization.GetOrganization(realPageId);
 
 			if (org == null)
 			{
@@ -665,7 +466,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			List<ProductEnum> addProductList = new List<ProductEnum>();
 			// verify the products, if any, exist and can be added to the customer
-			List<string> invalidProductList = ParseProduct(products, addProductList);
+			List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
 			if (invalidProductList.Count > 0)
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -710,7 +511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
 			}
 
-			Organization org = _organizationLogic.GetOrganization(realPageId);
+			Organization org = _manageOrganization.GetOrganization(realPageId);
 
 			if (org == null)
 			{
@@ -730,7 +531,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			List<ProductEnum> addProductList = new List<ProductEnum>();
 			// verify the products, if any, exist and can be added to the customer
-			List<string> invalidProductList = ParseProduct(products, addProductList);
+			List<string> invalidProductList = ManageOrganization.ParseProduct(products, addProductList);
 			if (invalidProductList.Count > 0)
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -770,7 +571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 realPageId = _userClaims.OrganizationRealPageGuid;
 			}
 
-			IManageOrganization manageOrganization = new ManageOrganization();
+			IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
 			IList<IdentityProviderType> identityProviderTypeList = manageOrganization.GetOrganizationIdentityProviderType(realPageId.Value);
             IIdentityProviderType idpt = (from a in identityProviderTypeList where a.IsLocal == (identityProviderTypeList.Count > 1 ? false : true) select a).FirstOrDefault();
             if (idpt != null)
@@ -807,7 +608,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ObjectListOutput<OrganizationType, IErrorData> output = new ObjectListOutput<OrganizationType, IErrorData>();
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			IList<OrganizationType> organizationTypeList = _organizationLogic.ListOrganizationType();
+			IList<OrganizationType> organizationTypeList = _manageOrganization.ListOrganizationType();
 
 			if (organizationTypeList != null)
 			{
@@ -844,7 +645,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             ObjectListOutput<OrganizationDomain, IErrorData> output = new ObjectListOutput<OrganizationDomain, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-            IList<OrganizationDomain> organizationDomainList = _organizationLogic.ListOrganizationDomain();
+            IList<OrganizationDomain> organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
             if (organizationDomainList != null)
             {
@@ -864,121 +665,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #endregion
 
 		#region Private functions
-		/// <summary>
-		/// Used to parse the list of product codes and convert them into ProductEnum
-		/// </summary>
-		/// <param name="productCode"></param>
-		/// <param name="addProductList"></param>
-		/// <returns></returns>
-		public List<string> ParseProduct(List<string> productCode, List<ProductEnum> addProductList)
-		{
-			List<string> invalidProductList = new List<string>();
-			if (productCode != null)
-			{
-				foreach (string product in productCode)
-				{
-					bool foundProduct = AddProductToList(product, addProductList);
-					if (!foundProduct)
-					{
-						invalidProductList.Add(product);
-					}
-				}
-			}
+		///// <summary>
+		///// Used to parse the list of product codes and convert them into ProductEnum
+		///// </summary>
+		///// <param name="productCode"></param>
+		///// <param name="addProductList"></param>
+		///// <returns></returns>
+		//public List<string> ParseProduct(List<string> productCode, List<ProductEnum> addProductList)
+		//{
+		//	List<string> invalidProductList = new List<string>();
+		//	if (productCode != null)
+		//	{
+		//		foreach (string product in productCode)
+		//		{
+		//			bool foundProduct = AddProductToList(product, addProductList);
+		//			if (!foundProduct)
+		//			{
+		//				invalidProductList.Add(product);
+		//			}
+		//		}
+		//	}
+		//
+		//	return invalidProductList;
+		//}
+		//
+		///// <summary>
+		///// Used to convert the BlueBook product name to the UnifiedUI product id
+		///// </summary>
+		///// <param name="product"></param>
+		///// <param name="addProductList"></param>
+		///// <returns></returns>
+		//private bool AddProductToList(string product, List<ProductEnum> addProductList)
+		//{
+		//	bool foundProduct = false;
+		//	foreach (var pi in typeof(BlueBookProductConstants).GetFields())
+		//	{
+		//		if (product.ToUpper() == pi.GetValue(pi).ToString())
+		//		{
+		//			// found product, so add it to the list to add to the company
+		//			// get the product id from the product enum
+		//			foreach (var pr in typeof(ProductEnum).GetFields())
+		//			{
+		//				if (pr.Name.ToUpper() == pi.Name.ToUpper())
+		//				{
+		//					foundProduct = true;
+		//					addProductList.Add((ProductEnum)Enum.Parse(typeof(ProductEnum), pr.Name));
+		//					break;
+		//				}
+		//			}
+		//			break;
+		//		}
+		//	}
+		//	return foundProduct;
+		//}
 
-			return invalidProductList;
-		}
 
-		/// <summary>
-		/// Used to convert the BlueBook product name to the UnifiedUI product id
-		/// </summary>
-		/// <param name="product"></param>
-		/// <param name="addProductList"></param>
-		/// <returns></returns>
-		private bool AddProductToList(string product, List<ProductEnum> addProductList)
-		{
-			bool foundProduct = false;
-			foreach (var pi in typeof(BlueBookProductConstants).GetFields())
-			{
-				if (product.ToUpper() == pi.GetValue(pi).ToString())
-				{
-					// found product, so add it to the list to add to the company
-					// get the product id from the product enum
-					foreach (var pr in typeof(ProductEnum).GetFields())
-					{
-						if (pr.Name.ToUpper() == pi.Name.ToUpper())
-						{
-							foundProduct = true;
-							addProductList.Add((ProductEnum)Enum.Parse(typeof(ProductEnum), pr.Name));
-							break;
-						}
-					}
-					break;
-				}
-			}
-			return foundProduct;
-		}
-
-		/// <summary>
-		/// Used to add a product to an organization
-		/// </summary>
-		/// <param name="addProductList">Product List</param>
-		/// <param name="partyId">Organization PartyId</param>
-		/// <param name="organizationTypeId">Organization Type</param>
-		/// <returns>IRepositoryResponse</returns>
-		private IRepositoryResponse AddProductsToOrganization(List<ProductEnum> addProductList, long partyId, int organizationTypeId)
-		{
-			IRepositoryResponse response = new RepositoryResponse();
-			if (_manageOrganizationProduct == null)
-			{
-				_manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
-			}
-
-			IList<OrganizationType> organizationTypeList = _organizationLogic.ListOrganizationType();
-			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
-
-			if (!addProductList.Contains(ProductEnum.UnifiedLogin))
-			{
-				// add unified login product to every new org
-				addProductList.Add(ProductEnum.UnifiedLogin);
-			}
-			if (!addProductList.Contains(ProductEnum.ProductUpdates))
-			{
-				// add product updates to every new org
-				addProductList.Add(ProductEnum.ProductUpdates);
-			}
-			if (!addProductList.Contains(ProductEnum.ClientPortal))
-			{
-				// add client portal product to every new org
-				addProductList.Add(ProductEnum.ClientPortal);
-			}
-			if (!addProductList.Contains(ProductEnum.MigrationTool))
-			{
-				// add migration tool product to every new org
-				addProductList.Add(ProductEnum.MigrationTool);
-			}
-
-			//Do not add products ClientPortal and MigrationTool to Company if the company type is Vendor.
-			if (organizationTypeName.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
-			{
-				addProductList.Remove(ProductEnum.ClientPortal);
-				addProductList.Remove(ProductEnum.MigrationTool);
-				if (!addProductList.Contains(ProductEnum.VendorMarketplace))
-				{
-					// add VendorMarketplace product to every new org of type Vendor
-					addProductList.Add(ProductEnum.VendorMarketplace);
-				}
-			}
-
-			foreach (ProductEnum product in addProductList)
-			{
-				response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);
-				if (!string.IsNullOrEmpty(response.ErrorMessage))
-				{
-					return response;
-				}
-			}
-			return response;
-		}
 
 		/// <summary>
 		/// Used to delete products from an organization
@@ -1193,38 +934,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 		}
 		#endregion
-
-		#region public Objects
-		/// <summary>
-		/// used to return the result of create organization
-		/// </summary>
-		public class CreateOrganizationResult
-	    {
-			/// <summary>
-			/// Organization
-			/// </summary>
-			public Organization Org { get; set; }
-
-			/// <summary>
-			/// admin unique PersonaId
-			/// </summary>
-			public long adminPersonaId { get; set; }
-
-			/// <summary>
-			/// admin login
-			/// </summary>
-			public string adminLogin { get; set; }
-
-			/// <summary>
-			/// Organization Book MasterId
-			/// </summary>
-			public long BooksCompanyId { get; set; }
-
-			/// <summary>
-			/// Organization Book Customer MasterId
-			/// </summary>
-			public long BooksCustomerMasterId { get; set; }
-		}
-		#endregion
+		
 	}
 }

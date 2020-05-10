@@ -152,6 +152,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var customerCompanyIdUpdated = thinEvent.Payload["payload"]["customerCompanyId"];
                             break;
 
+                        case "provisioning.upfmorder.create":
+                            // get the company info
+
+                            break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
                     }

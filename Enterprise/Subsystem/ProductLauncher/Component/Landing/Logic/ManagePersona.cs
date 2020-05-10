@@ -58,10 +58,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Create a basic instance of the ManagePerson Controller class
         /// </summary>
-        public ManagePersona(IRepository repository)
+        public ManagePersona(IRepository repository, DefaultUserClaim userClaim)
         {
             _personaRepository = new PersonaRepository(repository);
-            _manageOrganization = new ManageOrganization(repository);
+            _manageOrganization = new ManageOrganization(repository, userClaim);
         }
 
         /// <summary>

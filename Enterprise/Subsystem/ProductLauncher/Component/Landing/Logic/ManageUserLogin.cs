@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Private Variables
         IUserLoginRepository _userLoginRepository;
         ICredentialRepository _credentialRepository;
-        IManageOrganization _organizationLogic;
+        //IManageOrganization _organizationLogic;
         IUserRepository _userRepository;
         IProductRepository _productRepository;
 		IOrganizationRepository _organizationRepository;
@@ -45,8 +45,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _userLoginRepository = new UserLoginRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
-            _organizationLogic = new ManageOrganization(repository);
-            _userRepository = new UserRepository(repository);
+            //_organizationLogic = new ManageOrganization(repository, userClaim);
+            _userRepository = new UserRepository(repository, userClaim);
             _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _userLoginRepository = new UserLoginRepository();
             _credentialRepository = new CredentialRepository();
-            _organizationLogic = new ManageOrganization();
+            //_organizationLogic = new ManageOrganization();
             _userRepository = new UserRepository();
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
@@ -77,7 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _userLoginRepository = new UserLoginRepository();
             _credentialRepository = new CredentialRepository();
-            _organizationLogic = new ManageOrganization();
+            //_organizationLogic = new ManageOrganization(userClaim);
             _userRepository = new UserRepository(userClaim);
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
@@ -556,7 +556,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private OrganizationStatus CheckPrimaryOrganizationStatus(UserLoginOnly userLogin, DateTime? lastLoginDate, int userTypeId, ManageProfile manageProfile, DefaultUserClaim adminUserClaim)
         {
             var primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, lastLoginDate, 0, true);
-            var organization = _organizationLogic.GetOrganization(primaryOrgStatus.RealPageId);
+            var organization = _organizationRepository.GetOrganization(realPageId: primaryOrgStatus.RealPageId);
 
             if ((primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.Pending || primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.ForceResetPassword) &&
                 primaryOrgStatus.StatusThruDate != null &&
@@ -645,7 +645,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     // Get Userlogin to pass Data
                     var userLogin = _userLoginRepository.GetUserLoginOnly(user.UserRealPageId);
-                    var org = _organizationLogic.GetOrganization(user.OrganizationRealPageId);
+                    var org = _organizationRepository.GetOrganization(realPageId: user.OrganizationRealPageId);
 
                     var orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, org.PartyId, false);
                     var orgList = _userLoginRepository.ListOrganizationByEnterpriseUserId(user.UserRealPageId, null);
@@ -744,7 +744,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private DefaultUserClaim GetCurrentUserClaim(ManageProfile profileLogic, Organization org)
         {
             DefaultUserClaim currentUserClaim;
-            Guid realPageEmployeeAccessID = _organizationLogic.GetOrganizationAdminUserRealPageId(org.RealPageId);
+            //Guid realPageEmployeeAccessID = _organizationLogic.GetOrganizationAdminUserRealPageId(org.RealPageId);
+            Guid realPageEmployeeAccessID = _organizationRepository.GetOrganizationAdminUserRealPageId(org.RealPageId);
+
             if (realPageEmployeeAccessID != Guid.Empty)
             {
                 var adminUserLogin = _userLoginRepository.GetUserLoginOnly(realPageEmployeeAccessID);

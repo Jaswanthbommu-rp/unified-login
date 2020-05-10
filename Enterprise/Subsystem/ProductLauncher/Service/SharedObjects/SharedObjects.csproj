@@ -239,6 +239,7 @@
     <Compile Include="Landing\ISecuritySettings.cs" />
     <Compile Include="Landing\ISortTableType.cs" />
     <Compile Include="Landing\IStatusType.cs" />
+    <Compile Include="Landing\OrganizationCreateResult.cs" />
     <Compile Include="Landing\OrganizationDomain.cs" />
     <Compile Include="Landing\OrganizationRole.cs" />
     <Compile Include="Landing\OrganizationStatus.cs" />
