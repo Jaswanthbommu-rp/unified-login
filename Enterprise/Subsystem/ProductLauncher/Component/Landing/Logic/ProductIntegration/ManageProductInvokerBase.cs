@@ -763,7 +763,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 MiddleName = SubjectUserDetails.MiddleName,
                 LastName = SubjectUserDetails.LastName,
                 Email = SubjectUserDetails.Email,
-                Phone = SubjectUserDetails.PhoneNumber,
+                PhoneNumbers = SubjectUserDetails.PhoneNumbers,
                 IsActive = true,
                 //Title = SubjectUserDetails.Title,
                 UserId = SubjectUserDetails.ProductUserId,
