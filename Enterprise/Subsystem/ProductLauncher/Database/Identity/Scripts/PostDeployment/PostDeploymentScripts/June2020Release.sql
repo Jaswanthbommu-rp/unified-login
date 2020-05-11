@@ -156,3 +156,68 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
+
+SELECT @ProductId = 40
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+              SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+              INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			  VALUES (219, NULL, 8, N'ILMLeadManagementProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (220, 219, 9, N'ILMLeadManagementProductAccessPropertiesTabUIId', N'Properties', NULL, 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			  VALUES (221, 220, 3, N'ILMLeadManagementProductAccessPropertiesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (222, 221, 10, N'ILMLeadManagementProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			  VALUES (223, 221, 5, N'ILMLeadManagementProductAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			  VALUES (224, 221, 5, N'ILMLeadManagementProductAccessStateLabelUIId', N'State', N'state', 3, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (225, 219, 9, N'ILMLeadManagementProductAccessRolesTabUIId', N'Roles', NULL, 2, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (226, 225, 3, N'ILMLeadManagementProductAccessRolesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			  VALUES (227, 226, 10, N'ILMLeadManagementProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			  VALUES (228, 226, 5, N'ILMLeadManagementProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+              
+              SET IDENTITY_INSERT [UserManagement].[Control] OFF
+              
+              SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+              
+              INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+			  VALUES (7, 221, N'ShowSelectAll', N'True', @UserId, @Now)
+
+			  INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+			  VALUES (8, 226, N'ShowSelectAll', N'True', @UserId, @Now)
+
+              SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+              SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+              
+              INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+			  VALUES (16, 40, N'ILM Lead Management Product Access', @UserId, @Now, 1)
+              
+              SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+              
+              SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+              
+              INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+			  VALUES (2, 16, 219, @UserId, @Now)
+              
+              SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+
+END
