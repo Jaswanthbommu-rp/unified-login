@@ -1157,6 +1157,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             return valid;
         }
+
+		public ListResponse ListLevelsResponse(long editorPersonaId, long userPersonaId)
+		{
+			List<ILevel> listLevels = ListLevels(editorPersonaId, userPersonaId);
+			return new ListResponse()
+			{
+				Records = listLevels.Cast<object>().ToList(),
+				TotalRows = listLevels.Count,
+				RowsPerPage = 9999,
+				TotalPages = 1,
+				ErrorReason = ""
+			};
+		}
+
+
         /// <summary>
         /// List Level
         /// </summary>
