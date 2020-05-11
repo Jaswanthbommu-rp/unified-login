@@ -100,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 CompanyId = productUserIDMappingRequest.CompanyId,
                 ProductId = productUserIDMappingRequest.ProductId,
-                ULMappedUserId = new List<ULMappedUserIds>()
+                ULMappedPersonaId = new List<ULMappedPersonaIds>()
             };
             
             if (productUserIDMappingRequest == null ||
@@ -111,7 +111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             IProductRepository productRepository = new ProductRepository();
-            mappedUnifiedLoginUserDetails.ULMappedUserId = productRepository.GetULMappingUsersByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
+            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
                                                                                  productUserIDMappingRequest.ProductId,
                                                                                  productUserIDMappingRequest.ProductUserId);
             var logData = new Dictionary<string, object>();
