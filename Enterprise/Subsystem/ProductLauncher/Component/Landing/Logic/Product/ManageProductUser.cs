@@ -447,6 +447,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new ClickPayProduct(ProductEnum.ClickPay);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
+                case ProductEnum.SeniorLeadManagement:
+                    product = new SeniorLeadManagementProduct(ProductEnum.SeniorLeadManagement);
+                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    break;
                 default:
                     result = "Product code does not exist.";
                     break;
