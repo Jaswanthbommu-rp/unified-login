@@ -58,13 +58,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    {
 			    IManagePersona managePersona = new ManagePersona(_userClaims);
                 //Active Persona is linked to one organization
-                //persona = managePersona.GetActivePersona(realPageId);
                 persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
 
                 //Verify if same company
-                //IManageOrganization manageOrganization = new ManageOrganization();
-                //bool isValidOrganization = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, persona.Organization.RealPageId);
-                //if (!isValidOrganization)
                 if (persona == null || persona.OrganizationPartyId != _orgPartyId)
                 {
 				    return Request.CreateResponse(HttpStatusCode.NotFound);
@@ -79,15 +75,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    switch (ManageBlueBook.GetBlueBookProductId(productCode))
 		    {
 			    case (int) ProductEnum.OpsBuyer:
-
 				    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 				    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, persona.PersonaId, false, null);
 				    List<AssetGroup> opsFilteredList = productResponse.Records.Cast<AssetGroup>().ToList().FindAll(p => p.IsAssigned);
 				    filteredList = opsFilteredList.Cast<object>().ToList();
 					break;
-
 			    default:
-				    error.Errors.Add(new Error() {Title = "Bad request", Detail = "No valid product code could be found", Source = "/role", StatusCode = ""});
+				    error.Errors.Add(new Error() {Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = ""});
 				    return Request.CreateResponse(HttpStatusCode.BadRequest, error);
 		    }
 
@@ -105,13 +99,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			    return Request.CreateResponse(HttpStatusCode.BadRequest, error);
 		    }
 	    }
-		
-	    /// <summary>
-		/// Get a list of properties for the given product
-		/// </summary>
-		/// <param name="productCode">The code for the product being requested. Supported products OPS-Ops</param>
-		/// <returns></returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+
+        /// <summary>
+        /// Get a list of properties for the given product
+        /// </summary>
+        /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops</param>
+        /// <param name="include">Optional List of serialize properties names (comma delimited) to return in the response: ID, Name, Street1, City, State, Zip.  Supported products: Unified Login only</param>
+        /// <returns>http Response</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 	    [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 	    [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 	    [SwaggerResponse(HttpStatusCode.OK, Description = "A list of properties for the given company", Type = typeof(ProductProperty))]
@@ -119,7 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	    [Route("product/{productCode}/properties")]
 	    [AuthorizeScope("enterpriseapi")]
 	    [HttpGet]
-	    public HttpResponseMessage GetProductProperties(string productCode)
+	    public HttpResponseMessage GetProductProperties(string productCode, string include = null)
 	    {
 		    PagedResponse response = new PagedResponse() {Meta = new Meta()};
 		    ErrorResponse error = new ErrorResponse()
@@ -127,27 +122,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			    Errors = new List<Error>()
 		    };
 
-			if (ManageBlueBook.GetBlueBookProductId(productCode) == (int) ProductEnum.OpsBuyer)
-		    {
-			    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
-			    ListResponse productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
-				if (!productResponse.IsError)
-			    {
-				    response.Data = productResponse.Records;
-				    response.Meta.CurrentPage = 1;
-				    response.Meta.TotalRows = productResponse.TotalRows;
-				    response.Meta.RowsPerPage = productResponse.TotalRows;
-					return Request.CreateResponse(HttpStatusCode.OK, response);
-			    }
-			    else
-				{
-					error.Errors.Add(new Error() {Title = "Error", Detail = productResponse.ErrorReason, Source = "/property", StatusCode = ""});
-				    return Request.CreateResponse(HttpStatusCode.BadRequest, error);
-				}
-		    }
+            ListResponse productResponse;
+            switch (ManageBlueBook.GetBlueBookProductId(productCode))
+            {
+                case (int)ProductEnum.OpsBuyer:
+                    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
+                    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
+                    break;
+                case (int)ProductEnum.UnifiedLogin:
+                    ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+                    productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
+                    break;
+                default:
+                    error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = "" });
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+            }
 
-		    error.Errors.Add(new Error() {Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = "" });
-		    return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+            if (!productResponse.IsError)
+            {
+                response.Data = productResponse.Records;
+                response.Meta.CurrentPage = 1;
+                response.Meta.TotalRows = productResponse.TotalRows;
+                response.Meta.RowsPerPage = productResponse.TotalRows;
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            else
+            {
+                error.Errors.Add(new Error() { Title = "Error", Detail = productResponse.ErrorReason, Source = "/property", StatusCode = "" });
+                return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+            }
 		}
 
         /// <summary>
