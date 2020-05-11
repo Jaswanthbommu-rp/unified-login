@@ -156,3 +156,82 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
+
+SELECT @ProductId = 41
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+            SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (205, NULL, 8, N'ILMLeasingAnalyticsProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+			
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (206, 205, 9, N'ILMLeasingAnalyticsProductAccessPropertyGroupsTabUIId', N'Property Groups', NULL, 1, @UserId, @Now)
+			
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (207, 206, 3, N'ILMLeasingAnalyticsProductAccessPropertyGroupsMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (208, 207, 10, N'ILMLeasingAnalyticsProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (209, 207, 5, N'ILMLeasingAnalyticsProductAccessPropertyGroupLabelUIId', N'Property Group', N'name', 2, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (210, 205, 9, N'ILMLeasingAnalyticsProductAccessPropertiesTabUIId', N'Properties', NULL, 2, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (211, 210, 3, N'ILMLeasingAnalyticsProductAccessPropertiesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (212, 211, 10, N'ILMLeasingAnalyticsProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (213, 211, 5, N'ILMLeasingAnalyticsProductAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (214, 211, 5, N'ILMLeasingAnalyticsProductAccessStateLabelUIId', N'State', N'state', 3, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (215, 205, 9, N'ILMLeasingAnalyticsProductAccessRolesTabUIId', N'Roles', NULL, 3, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (216, 215, 3, N'ILMLeasingAnalyticsProductAccessRolesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (217, 216, 10, N'ILMLeasingAnalyticsProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+				
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (218, 216, 5, N'ILMLeasingAnalyticsProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+				
+			SET IDENTITY_INSERT [UserManagement].[Control] OFF
+              
+            SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+                
+			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+			VALUES (4, 207, N'ShowSelectAll', N'True', @UserId, @Now)
+
+			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+			VALUES (5, 211, N'ShowSelectAll', N'True', @UserId, @Now)
+
+			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+			VALUES (6, 216, N'ShowSelectAll', N'True', @UserId, @Now)
+
+            SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+            SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+              
+			INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive])
+			VALUES (15, 41, N'ILM Leasing Analytics Product Access', @UserId, @Now, 1)
+  
+            SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+              
+            SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+            
+			INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+			VALUES (1, 15, 205, @UserId, @Now)
+          
+            SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+
+END
