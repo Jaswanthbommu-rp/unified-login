@@ -82,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			{
 				if (_userClaims.UserId != 0 && !string.IsNullOrEmpty(_userClaims.FirstName) && !string.IsNullOrEmpty(_userClaims.LastName))
 				{
-					GbProductMap booksProductDetail = GetBooksMasterProductDetail(_userClaims, (int)ProductEnum.UnifiedLogin);
+					GbProductMap booksProductDetail = GetBooksMasterProductDetail(_userClaims, (int)ProductEnum.UnifiedPlatform);
 
 					LogActivity.WriteActivity(new ActivityDetails
 					{

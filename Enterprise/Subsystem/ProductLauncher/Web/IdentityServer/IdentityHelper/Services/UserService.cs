@@ -270,11 +270,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var allowedToImpersonate = false;
             
             var impersonatorPersona = _personaManager.GetActivePersona(impersonator.RealPageId);
-            var roleList = _userRoleManager.GetProductRolesByPersona(impersonatorPersona.PersonaId, ProductEnum.UnifiedLogin);
+            var roleList = _userRoleManager.GetProductRolesByPersona(impersonatorPersona.PersonaId, ProductEnum.UnifiedPlatform);
             
             foreach (var productRole in roleList)
             {
-                var roleRights = _userRoleManager.ListRightsByRole(impersonatorPersona.OrganizationPartyId, impersonatorPersona.Organization.RealPageId, ProductEnum.UnifiedLogin, Convert.ToInt32(productRole.ID));
+                var roleRights = _userRoleManager.ListRightsByRole(impersonatorPersona.OrganizationPartyId, impersonatorPersona.Organization.RealPageId, ProductEnum.UnifiedPlatform, Convert.ToInt32(productRole.ID));
                 if (roleRights.Any(a => a.Alias.Equals("AccessToUnifiedPlatform", StringComparison.OrdinalIgnoreCase) ||
                                         a.Alias.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -822,10 +822,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var rightToCheck = productInternalSettingList.First(a => a.Name.Equals("REQUIRESUNIFIEDLOGINRIGHT", StringComparison.OrdinalIgnoreCase)).Value;
             if (string.IsNullOrEmpty(rightToCheck)) return true;
 
-            var roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.UnifiedLogin);
+            var roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, ProductEnum.UnifiedPlatform);
             foreach (ProductRole pr in roleList)
             {
-                IList<ProductRight> roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, ProductEnum.UnifiedLogin, Convert.ToInt32(pr.ID));
+                IList<ProductRight> roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, ProductEnum.UnifiedPlatform, Convert.ToInt32(pr.ID));
                 if (roleRights.Where(q => q.Alias != null).Any(a => a.Alias.Equals(rightToCheck, StringComparison.OrdinalIgnoreCase)))
                 {
                     return true;
@@ -916,8 +916,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 
                     ToUserLoginName = null,
                     ToUserLoginId = null,
-                    //ToUserRealpageId = Guid.Empty.ToString(), 
-                    BooksProductCode = "UL"
+                    BooksProductCode = ProductEnum.UnifiedPlatform.ToEnumDescription()
                 });
             }
             catch (Exception)

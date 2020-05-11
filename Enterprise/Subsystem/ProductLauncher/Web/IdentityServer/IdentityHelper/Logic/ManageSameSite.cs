@@ -93,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
         {
             var correlationId = Guid.NewGuid().ToString();
             ManageSameSite manageSameSite = new ManageSameSite();
-            var settingList = manageSameSite.GetProductInternalSettings((int) ProductEnum.UnifiedLogin, 30);
+            var settingList = manageSameSite.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform, 30);
             if (settingList.Any(p => p.Name.Equals("IsSuppressSameSiteEnabled", StringComparison.OrdinalIgnoreCase)))
             {
                 var IsSuppressSameSiteEnabled = settingList.FirstOrDefault(p => p.Name.Equals("IsSuppressSameSiteEnabled", StringComparison.OrdinalIgnoreCase)).Value;
