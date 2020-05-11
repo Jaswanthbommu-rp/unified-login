@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			{
 				case ProductEnum.OneSite: return "onesite";
 				case ProductEnum.UnifiedUI: return "unified-ui";
-				case ProductEnum.UnifiedLogin: return "unified-platform";
+				case ProductEnum.UnifiedPlatform: return "unified-platform";
 				case ProductEnum.AssetOptimizer: return "asset-optimization";
 				case ProductEnum.Propertyware: return "propertyware";
 				case ProductEnum.Lead2Lease: return "lead2lease";
@@ -181,13 +181,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Unified Ui
 		/// </summary>
+		[Description("UI")]
 		UnifiedUI = 2,
 
 		/// <summary>
 		/// The Greenbook landing website
 		/// </summary>
-		[Description("UL")]
-		UnifiedLogin = 3,
+		[Description("UPFM")]
+		UnifiedPlatform = 3,
 
 		/// <summary>
 		/// Asset Optimizer - Umbrella for all AO products

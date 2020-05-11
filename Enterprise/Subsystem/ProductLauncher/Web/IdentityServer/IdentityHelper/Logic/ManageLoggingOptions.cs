@@ -29,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
         public static int GetIdentityServerLogEventLevel()
         {
             ManageLoggingOptions manageOptions = new ManageLoggingOptions();
-            var settingList = manageOptions.GetProductInternalSettings((int) ProductEnum.UnifiedLogin, 30);
+            var settingList = manageOptions.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform, 30);
             if (settingList != null && settingList.Any(p => p.Name.Equals("IdentityServerLogEventLevel", StringComparison.OrdinalIgnoreCase)))
             {
                 return Convert.ToInt16(settingList.FirstOrDefault(p => p.Name.Equals("IdentityServerLogEventLevel", StringComparison.OrdinalIgnoreCase))?.Value);
@@ -65,7 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
         public bool GetLoggingSetting(string settingName)
         {
             ManageLoggingOptions manageOptions = new ManageLoggingOptions();
-            var settingList = manageOptions.GetProductInternalSettings((int) ProductEnum.UnifiedLogin, 30);
+            var settingList = manageOptions.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform, 30);
             if (settingList != null && settingList.Any(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)))
             {
                 var settingValue = settingList.FirstOrDefault(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase))?.Value;

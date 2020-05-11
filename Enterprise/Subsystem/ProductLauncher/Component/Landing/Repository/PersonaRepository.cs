@@ -231,16 +231,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         long activePersonaId = GetActivePersonaId(userClaim.ImpersonatedBy);
                         Persona impersonatorPersona = GetPersona(activePersonaId, false);
                         UserRoleRightRepository urr = new UserRoleRightRepository();
-                        List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int) ProductEnum.UnifiedLogin, impersonatorPersona.PersonaId, impersonatorPersona.OrganizationPartyId);
+                        List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int) ProductEnum.UnifiedPlatform, impersonatorPersona.PersonaId, impersonatorPersona.OrganizationPartyId);
 
                         RPObjectCache rpCache = new RPObjectCache();
-                        var cacheKey = $"getRolesByParty_{impersonatorPersona.OrganizationPartyId}_{(int) ProductEnum.UnifiedLogin}";
+                        var cacheKey = $"getRolesByParty_{impersonatorPersona.OrganizationPartyId}_{(int) ProductEnum.UnifiedPlatform}";
                         IList<UserRoleRights> roleList = rpCache.GetFromCache<IList<UserRoleRights>>(cacheKey, 180, () =>
                         {
                             SharedDataRepository sdr = new SharedDataRepository();
                             IList<int> productList = sdr.GetProductIdsByCompany(impersonatorPersona.OrganizationPartyId);
                             UserRoleRightRepository urrCache = new UserRoleRightRepository();
-                            return urrCache.GetAllRoleRights(impersonatorPersona.OrganizationPartyId, productList, (int) ProductEnum.UnifiedLogin);
+                            return urrCache.GetAllRoleRights(impersonatorPersona.OrganizationPartyId, productList, (int) ProductEnum.UnifiedPlatform);
                         });
 
                         foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
