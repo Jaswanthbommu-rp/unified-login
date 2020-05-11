@@ -156,3 +156,149 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
+
+-- New API in MT for Resident Portals
+DECLARE  @ProductId INT = 17,
+		 @CurrentProductConfigurationID INT,
+		 @ProductSettingTypeId INT,
+		 @ProductSettingId INT,
+		 @Now DATETIME = GETUTCDATE(),
+		 @ServerName SYSNAME = @@SERVERNAME;
+
+IF @ServerName NOT IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+		SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+		FROM Enterprise.GlobalProductConfiguration AS gpc
+		WHERE gpc.ProductId = @ProductId AND 
+				( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+				) OR 
+				( @NOW >= gpc.FromDate AND 
+					gpc.ThruDate IS NULL
+				)
+				)
+		ORDER BY GlobalProductConfigurationId DESC;
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'MTApiEndPoint'
+		) IS NOT NULL
+		BEGIN
+			SELECT @ProductSettingTypeId=ProductSettingTypeId
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'MTApiEndPoint'
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+				EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @ProductId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+				-- Update the Value and assign it to the Product and ProductSettingType
+
+				IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
+				BEGIN
+					UPDATE Enterprise.ProductSetting SET Value='https://api.ocr.activebuilding.com/ulmt',
+					@ProductSettingId= ProductSettingId
+					WHERE ProductId=@ProductId AND ProductSettingTypeId= @ProductSettingTypeId
+				END
+				IF @ServerName IN ('RCQUSODBSQL001')
+				BEGIN
+					UPDATE Enterprise.ProductSetting SET Value='https://api.sat.activebuilding.com/ulmt',
+					@ProductSettingId= ProductSettingId
+					WHERE ProductId=@ProductId AND ProductSettingTypeId= @ProductSettingTypeId
+				END
+				IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+				BEGIN
+					UPDATE Enterprise.ProductSetting SET Value='https://api.activebuilding.com/ulmt',
+					@ProductSettingId= ProductSettingId
+					WHERE ProductId=@ProductId AND ProductSettingTypeId= @ProductSettingTypeId
+				END
+		
+		
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'AppId'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'AppId', 'The APP Id provided by the Resident Portals for your account', @ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = 'd8f43b85', 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'AppKey'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'AppKey', 'The APP Key provided by the Resident Portals for your account', @ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = '50aa7342baf824716f87e6999cf4b472', 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+END;
