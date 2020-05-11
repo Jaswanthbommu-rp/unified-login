@@ -36,19 +36,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
 		Mock<IOrganizationProductRepository> _mockOrganizationProductRepository = new Mock<IOrganizationProductRepository>();
 		Mock<IManageOrganizationProduct> _mockManageOrganizationProduct = new Mock<IManageOrganizationProduct>();
-		Mock<IUserLoginRepository> _mockUserLoginRepository = new Mock<IUserLoginRepository>();
-		Mock<IPersonaRepository> _mockPersonaRepository = new Mock<IPersonaRepository>();
-		Mock<ICredentialRepository> _mockObjectCredential = new Mock<ICredentialRepository>();
 		Mock<IManageCustomFields> _mockManageCustomFields = new Mock<IManageCustomFields>();
-		Mock<ICustomFieldsRepository> _mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
+		//Mock<ICustomFieldsRepository> _mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 		Mock<IManageUserLogin> _mockManageUserLogin = new Mock<IManageUserLogin>();
 		Mock<IManagePartyRelationship> _mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
-		Mock<ICredentialRepository> _mockCredentialRepository = new Mock<ICredentialRepository>();
 		
-		Mock<IUserRepository> _mockUserRepository = new Mock<IUserRepository>();
-		Mock<IProductRepository> _mockProductRepository = new Mock<IProductRepository>();
-		Mock<IPersonRepository> _mockPersonRepository = new Mock<IPersonRepository>();
-
 		private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
 		private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
 		private static string _CompanyName = "CF Real Estate Services";
@@ -59,16 +51,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		private static int _organizationTypeId = 6;
 		private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
 
-        private static List<Organization> _organizationList;
-        private static List<OrganizationType> _organizationTypeList;
-        private static List<OrganizationDomain> _organizationDomainList;
         #endregion
 
         public OrganizationTests()
-        { 
+        {
             _defaultUserClaim.CorrelationId = new Guid();
 
-            _organizationTypeList = new List<OrganizationType>()
+            var organizationTypeList = new List<OrganizationType>()
             {
                 new OrganizationType()
                 {
@@ -90,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            _organizationDomainList = new List<OrganizationDomain>()
+            var organizationDomainList = new List<OrganizationDomain>()
             {
                 new OrganizationDomain()
                 {
@@ -100,7 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
-            _organizationList = new List<Organization>()
+            var organizationList = new List<Organization>()
             {
                 new Organization()
                 {
@@ -129,16 +118,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             _mockRepository
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(_organizationList);
+                .Returns(organizationList);
 
             // THIS RESULT IS CACHED SO WE CANT REALLY TEST IT HAVING MULTIPLE RESULTS!
             _mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
+                .Returns(organizationTypeList);
 
             _mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomainList);
+                .Returns(organizationDomainList);
         }
 
 		#region Controller Unit Tests
@@ -166,34 +155,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		public void InsertOrganization_DuplicateBookMasterId_BadRequest()
 		{
 			//Arrange
-
-            //IList<Organization> organizationList = new List<Organization>()
-            //{
-            //    new Organization()
-            //    {
-            //        RealPageId = _RealPageId,
-            //        CreateDate = _CreateDate,
-            //        Name = _CompanyName,
-            //        PartyId = _PartyId,
-            //        BooksMasterId = _BooksMasterId,
-            //        BooksCustomerMasterId = _BooksCompanyMasterId,
-            //        organizationType = new OrganizationType()
-            //        {
-            //            OrganizationTypeId = _organizationTypeId,
-            //            Name = "Multifamily",
-            //            CreateDate = new DateTime()
-            //        },
-            //        OrganizationTypeId = _organizationTypeId,
-            //        OrganizationDomainId = 1,
-            //        OrganizationDomain = new OrganizationDomain()
-            //        {
-            //            OrganizationDomainId = 1,
-            //            Name = "Primary",
-            //            CreateDate = new DateTime()
-            //        },
-            //    }
-            //};
-
 			OrganizationCreate organizationCreate = new OrganizationCreate()
 			{
 				BooksCompanyId = _BooksCompanyMasterId,
@@ -218,8 +179,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 			
-            //IOrganizationRepository organizationRepository = new OrganizationRepository(_mockRepository.Object);
-
             IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             OrganizationController organizationController = new OrganizationController(
@@ -267,10 +226,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				}
 			};
 
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-            
             IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             OrganizationController organizationController = new OrganizationController(
@@ -285,7 +240,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
 
-            
+			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+           
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"An invalid Organization Type id was given: 0\"}";
@@ -319,10 +277,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				}
 			};
 
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             OrganizationController organizationController = new OrganizationController(
@@ -330,14 +284,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockOrganizationProductRepository.Object
                 , _mockManageOrganizationProduct.Object
-                //, _mockUserLoginRepository.Object
-                //, _mockPersonaRepository.Object
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
+
+			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 			
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
@@ -365,10 +321,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				AdminUser = null
 			};
 
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
             IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
             OrganizationController organizationController = new OrganizationController(
@@ -376,14 +328,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockOrganizationProductRepository.Object
                 , _mockManageOrganizationProduct.Object
-                //, _mockUserLoginRepository.Object
-                //, _mockPersonaRepository.Object
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
+
+			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
@@ -398,7 +352,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		public void InsertOrganization_CompanyExits_BadRequest()
 		{
 			//Arrange
-
 			OrganizationCreate organizationCreate = new OrganizationCreate()
 			{
 				BooksCompanyId = _BooksMasterId,
@@ -426,8 +379,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockOrganizationProductRepository.Object
                 , _mockManageOrganizationProduct.Object
-                //, _mockUserLoginRepository.Object
-                //, _mockPersonaRepository.Object
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
@@ -472,26 +423,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				}
 			};
 
+            IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
+
+			OrganizationController organizationController = new OrganizationController(
+				manageOrganization
+				, _mockRepositoryResponse.Object
+				, _mockOrganizationProductRepository.Object
+				, _mockManageOrganizationProduct.Object
+				, _mockManageCustomFields.Object
+				, _mockManageUserLogin.Object
+				, _mockManagePartyRelationship.Object
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
+			RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
-
-			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
-
-            OrganizationController organizationController = new OrganizationController(
-                manageOrganization
-                , _mockRepositoryResponse.Object
-                , _mockOrganizationProductRepository.Object
-                , _mockManageOrganizationProduct.Object
-                //, _mockUserLoginRepository.Object
-                //, _mockPersonaRepository.Object
-                , _mockManageCustomFields.Object
-                , _mockManageUserLogin.Object
-                , _mockManagePartyRelationship.Object
-                , _defaultUserClaim);
-            organizationController.Request = new HttpRequestMessage();
-            organizationController.Configuration = new HttpConfiguration();
 
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate, true);
 			string message = response.Content.ReadAsStringAsync().Result;
@@ -521,19 +471,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			ManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
 			OrganizationController organizationController = new OrganizationController(
-                manageOrganization
+				manageOrganization
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, null
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-				, _defaultUserClaim);
-
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			OrganizationCreate organizationCreate = new OrganizationCreate()
 			{
@@ -598,20 +547,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ManageOrganization organizationLogic = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
-            OrganizationController organizationController = new OrganizationController(
-                organizationLogic
-                , _mockRepositoryResponse.Object
-                , _mockOrganizationProductRepository.Object
+			OrganizationController organizationController = new OrganizationController(
+				organizationLogic
+				, _mockRepositoryResponse.Object
+				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, userLoginRepository
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-				, _defaultUserClaim);
-
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			OrganizationCreate organizationCreate = new OrganizationCreate()
 			{
@@ -705,18 +653,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
 				, _defaultUserClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
+			RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
 			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
@@ -760,18 +708,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
 				, _defaultUserClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
+			RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
 			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
@@ -824,18 +772,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
 				, _defaultUserClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
+			RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
 			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
@@ -925,18 +873,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, manageCustomFields
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
 				, userClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
+			RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
 			int NumberOfProperties = type.GetProperties().Length;
@@ -999,29 +947,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			ObjectListOutput<OrganizationType, IErrorData> output = new ObjectListOutput<OrganizationType, IErrorData>();
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			_organizationTypeList = null;
+			List<OrganizationType> organizationTypeList = null;
 
 			Mock<IRepository> mockRepository = new Mock<IRepository>();
 
 			mockRepository
 				.Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-				.Returns(_organizationTypeList);
+				.Returns(organizationTypeList);
 
 			ManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim);
 
 			OrganizationController organizationController = new OrganizationController(
-                manageOrganization
-                , _mockRepositoryResponse.Object
+				manageOrganization
+				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-				, _defaultUserClaim);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
 			RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1049,14 +997,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-				, _defaultUserClaim);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
 			RPObjectCache rPObjectCache = new RPObjectCache();
@@ -1077,8 +1025,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
@@ -1132,18 +1078,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, _mockUserLoginRepository.Object
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
 				, _defaultUserClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
+			RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 			
 			HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
@@ -1261,22 +1207,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				.Returns(partyRelationship);
 
 			OrganizationController organizationController = new OrganizationController(
-                manageOrganization
+				manageOrganization
 				, _mockRepositoryResponse.Object
 				, _mockOrganizationProductRepository.Object
 				, _mockManageOrganizationProduct.Object
-				//, userLoginRepository
-				//, _mockPersonaRepository.Object
 				, _mockManageCustomFields.Object
-				,_mockManageUserLogin.Object
+				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
 				, userClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+				)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
 
 			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
+			RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
 			HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
