@@ -1,3 +1,4 @@
+﻿using Newtonsoft.Json;
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,18 +7,20 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
+    public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
     {
         private DefaultUserClaim _userClaims;
 
@@ -108,7 +111,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
-       
+        public ListResponse GetProperties(long userPersonaId, string include = null)
+        {
+            ListResponse response = new ListResponse();
+
+            List<ProductProperty> productPropertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedLogin);
+
+            if (productPropertyList != null)
+            {
+                IList<ProductProperty> blueBookPropertyList = _blueBook.GetCustomerProperty(_userClaims.CustomerMasterId);
+                if ((productPropertyList.Count == 1) && (productPropertyList[0].ID.Equals("-1")))
+                {
+                    productPropertyList = blueBookPropertyList.ToList();
+                }
+                else
+                {
+                    productPropertyList = blueBookPropertyList.Where(b => productPropertyList.All(p => p.ID.Equals(b.ID))).ToList();
+                }
+            }
+
+            if (productPropertyList.Count > 0)
+            {
+                string includeFields = string.Empty;
+
+                bool bIncludeFields = ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] { ',' }).Length > 0));
+
+                if (bIncludeFields)
+                {
+                    DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
+                    string productPropertySerializableProperties = JsonConvert.SerializeObject(
+                        productPropertyList,
+                        new JsonSerializerSettings()
+                        {
+                            ContractResolver = dynamicContractResolver
+                        }
+                    );
+                    productPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+                }
+
+                productPropertyList.ForEach(p =>
+                {
+                    p.IsAssigned = null;
+                    p.disableSelection = null;
+                });
+
+                response.IsError = false;
+                response.Records = productPropertyList.Cast<object>().ToList();
+                response.TotalRows = productPropertyList.Count;
+                response.RowsPerPage = productPropertyList.Count;
+                response.TotalPages = 1;
+                response.ErrorReason = string.Empty;
+            }
+
+            return response;
+        }
+
         /// <summary>
         /// Used to add/update a role in Greenbook
         /// </summary>
@@ -1434,7 +1491,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
 
-
                     if (list != null && list.Count > 0)
                     {
                         int roles = list.Count;
@@ -1444,7 +1500,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-
 
             return result;
         }
@@ -1468,7 +1523,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId, long partyId)
         {
-
             // get roles from DB for UnifiedLogin product
             WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
@@ -1502,7 +1556,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId, long partyId)
         {
-
             // get roles from DB for UnifiedLogin product
             WriteToDiagnosticLog($"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
             List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);

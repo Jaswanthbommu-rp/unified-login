@@ -392,11 +392,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             result = manageProduct.GetRoleClassifierDataset(_editorPersonaId, 0, "70700", null);
             List<ProductProperty> _resultPropertyList = result.Records.Cast<ProductProperty>().ToList();
-            Assert.True(_resultPropertyList.Count == 2 && _resultPropertyList.Count(m => m.IsAssigned) == 0);
+            Assert.True(_resultPropertyList.Count == 2 && _resultPropertyList.Count(m => m.IsAssigned.Value) == 0);
 
             result = manageProduct.GetRoleClassifierDataset(_editorPersonaId, _userPersonaId, "70700", null);
             _resultPropertyList = result.Records.Cast<ProductProperty>().ToList();
-            Assert.True(_resultPropertyList.Count == 2 && _resultPropertyList.Count(m => m.IsAssigned) == 1);
+            Assert.True(_resultPropertyList.Count == 2 && _resultPropertyList.Count(m => m.IsAssigned.Value) == 1);
 
         }
 
