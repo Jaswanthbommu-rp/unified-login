@@ -1,5 +1,12 @@
 ﻿GO
 
+UPDATE	Enterprise.Product
+SET			BooksProductCode = 'UPFM'
+WHERE	ProductId = 3
+AND			BooksProductCode = 'UL'
+
+GO
+
 --Unified Platform Product Access Data
 DECLARE @UserId bigint,
 	@ProductId int =15,
