@@ -23,7 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		Mock<ICustomFieldsRepository> _mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 		#endregion
 
-		public ManageCustomFieldsTests() : base((int)ProductEnum.UnifiedLogin)
+		public ManageCustomFieldsTests() : base((int)ProductEnum.UnifiedPlatform)
 		{
 		}
 
