@@ -3747,6 +3747,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if ((CreateUserPersonaId > 0) && (AssignUserPersonaId > 0))
                 {
                     // if the user isn't a superuser, check to see if both Lead2Lease and OneSite are in the products to be saved. If they are, then they need to be combined into a single product call
+                    // if the user isn't a superuser, check to see if both SeniorLead and OneSite are in the products to be saved. If they are, then they need to be combined into a single product call
+
+                    //Lead2Lease and OneSite, SeniorLead and OneSite, SeniorLead and OneSite and Lead2Lease
                     if (!(userTypeId == (int)UserRoleType.SuperUser) && productList.Any(a => a.ProductId == (int)ProductEnum.OneSite) && productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
@@ -3762,7 +3765,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                                   select a).FirstOrDefault();
                         l2lOneSite.OneSite = pbOneSite.InputJson;
 
-                        SaveProductBatch(repository, pbLead2Lease, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(l2lOneSite));
+                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(l2lOneSite));
 
                         if (errorStatus.Success == false)
                         {
