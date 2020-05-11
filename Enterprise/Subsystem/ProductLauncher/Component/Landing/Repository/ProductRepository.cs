@@ -1431,7 +1431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (p.Name.Equals("Administration", StringComparison.OrdinalIgnoreCase))
                 {
                     //always set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
-                    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.UnifiedLogin);
+                    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.UnifiedPlatform);
                     if (solution != null)
                     {
                         solution.IsAssigned = true;

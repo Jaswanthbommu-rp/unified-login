@@ -129,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
                     productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
                     break;
-                case (int)ProductEnum.UnifiedLogin:
+                case (int)ProductEnum.UnifiedPlatform:
                     ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
                     productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
                     break;

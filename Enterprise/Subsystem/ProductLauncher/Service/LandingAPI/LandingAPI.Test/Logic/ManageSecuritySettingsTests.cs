@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         #endregion
 
-        public ManageSecuritySettingsTests() : base((int)ProductEnum.UnifiedLogin)
+        public ManageSecuritySettingsTests() : base((int)ProductEnum.UnifiedPlatform)
 		{
             _expectedSecuritySettings = new List<Setting>()
             {

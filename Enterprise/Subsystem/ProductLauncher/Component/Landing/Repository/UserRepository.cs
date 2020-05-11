@@ -274,8 +274,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     //Get the Clone User list of UnifiedLogin Top level properties and Role
-                    var ulRole = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, new { ProductId = (int)ProductEnum.UnifiedLogin, PersonaId = cloneUserPersonaId });
-                    var ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new { PersonaId = cloneUserPersonaId, ProductId = (int)ProductEnum.UnifiedLogin });
+                    var ulRole = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, new { ProductId = (int)ProductEnum.UnifiedPlatform, PersonaId = cloneUserPersonaId });
+                    var ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new { PersonaId = cloneUserPersonaId, ProductId = (int)ProductEnum.UnifiedPlatform });
 
                     if ((ulProperties != null) && (ulRole != null))
                     {
@@ -291,7 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         ProductBatch unifiedPlatformProductBatch = new ProductBatch()
                         {
-                            ProductId = (int)ProductEnum.UnifiedLogin,
+                            ProductId = (int)ProductEnum.UnifiedPlatform,
                             StatusTypeId = 5,
                             RetryCount = 0,
                             InputJson = new RolePropertyList()
@@ -1010,7 +1010,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, param);
 
                         int greenBookRole = 0;
-                        ProductBatch gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedLogin));
+                        ProductBatch gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
                         if (currentOrg.OrganizationPartyId.Equals(organizationExternalUser.PartyId))
                         {
                             greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
@@ -1035,7 +1035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         param = new
                                         {
                                             PersonaID = cloneUserPersonaId,
-                                            ProductID = (int)ProductEnum.UnifiedLogin
+                                            ProductID = (int)ProductEnum.UnifiedPlatform
                                         };
                                         var userRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, param);
                                         greenBookRole = userRole != null ? userRole.RoleId : 0;
@@ -1076,7 +1076,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if ((gbProductBatch != null) && ((gbProductBatch.InputJson?.PropertyList?.Count > 0) || (gbProductBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(gbProductBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedLogin, PropertyJSON = propertyJSON });
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON });
                                 if (repositoryResponse.Id == 0)
                                 {
                                     repository.UnitOfWork.Rollback();
@@ -2142,7 +2142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             // get the users existing UnifiedLogin role
-            long existingRoleId = userRoleRightRepository.GetRoleIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedLogin);
+            long existingRoleId = userRoleRightRepository.GetRoleIdByPersona(oldProfile.Persona[0].PersonaId, (int)ProductEnum.UnifiedPlatform);
 
             OrganizationStatus currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(newProfile.userLogin.UserId, userLoginOnly.LastLogin, 0, true);
             OrganizationStatus currentOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(newProfile.userLogin.UserId, userLoginOnly.LastLogin, oldProfile.Persona[0].OrganizationPartyId, false);
@@ -3070,7 +3070,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productList)
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedLogin)
+                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
                         {
                             continue;
                         }
@@ -3304,7 +3304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productListToRemove)
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedLogin)
+                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
                         {
                             continue;
                         }
@@ -3395,7 +3395,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productListToCreate)
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedLogin)
+                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
                         {
                             continue;
                         }
@@ -3762,7 +3762,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productListToDisable)
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedLogin)
+                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
                         {
                             continue;
                         }
@@ -4400,7 +4400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productBatch)
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedLogin)
+                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
                         {
                             continue;
                         }
@@ -5160,7 +5160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         // GreenBook - UnifiedLogin call updating GB Role
 
-                        var gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedLogin);
+                        var gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
                         if (gbProdBatch != null)
                         {
                             greenBookRole = GetGreenBookRole(gbProdBatch);
@@ -5204,11 +5204,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            ProductBatch productBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId.Equals((int)ProductEnum.UnifiedLogin));
+                            ProductBatch productBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId.Equals((int)ProductEnum.UnifiedPlatform));
                             if ((gbProdBatch != null) && ((productBatch.InputJson?.PropertyList?.Count > 0) || (productBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(productBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedLogin, PropertyJSON = propertyJSON });
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON });
                             }
                         }
                     }
