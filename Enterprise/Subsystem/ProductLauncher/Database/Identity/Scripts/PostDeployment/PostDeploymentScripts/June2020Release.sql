@@ -199,24 +199,24 @@ BEGIN
               SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
               
               INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			  VALUES (7, 221, N'ShowSelectAll', N'True', @UserId, @Now)
+			  VALUES (39, 221, N'ShowSelectAll', N'True', @UserId, @Now)
 
 			  INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			  VALUES (8, 226, N'ShowSelectAll', N'True', @UserId, @Now)
+			  VALUES (40, 226, N'ShowSelectAll', N'True', @UserId, @Now)
 
               SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
               SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
               
               INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
-			  VALUES (16, 40, N'ILM Lead Management Product Access', @UserId, @Now, 1)
+			  VALUES (15, 40, N'ILM Lead Management Product Access', @UserId, @Now, 1)
               
               SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
               
               SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
               
               INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
-			  VALUES (2, 16, 219, @UserId, @Now)
+			  VALUES (24, 15, 219, @UserId, @Now)
               
               SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
