@@ -83,6 +83,13 @@
                 product: "26"
             });
         }
+        if (templateModel.isProductExists(40)) {
+            productAccess.register({
+                model: model,
+                key: "soln308",
+                product: "40"
+            });
+        }
         logc("productAccess", productAccess);
     }
 
