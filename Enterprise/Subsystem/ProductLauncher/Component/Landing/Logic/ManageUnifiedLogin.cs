@@ -149,8 +149,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     productPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
                 }
 
-                productPropertyList.ForEach(p => p.IsAssigned = null);
-                productPropertyList.ForEach(p => p.disableSelection = null);
+                productPropertyList.ForEach(p =>
+                {
+                    p.IsAssigned = null;
+                    p.disableSelection = null;
+                });
 
                 response.IsError = false;
                 response.Records = productPropertyList.Cast<object>().ToList();
