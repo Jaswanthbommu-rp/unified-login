@@ -193,10 +193,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
 					result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
 					break;
-				//case (int)ProductEnum.Insurance:
-				//	ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
-				//	result = manageProductRentersInsurance.ListRoles(editorPersonaId, userPersonaId, datafilter);
-				//	break;
+				case (int)ProductEnum.Insurance:
+					ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
+					result = manageProductRentersInsurance.ListRolesResponse(editorPersonaId, userPersonaId);
+					break;
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);
 					result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);
