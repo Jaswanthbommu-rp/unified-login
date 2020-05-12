@@ -1,9 +1,28 @@
-<div class="messaging-groups-wrapper" ng-controller="ProductNotificationGridCtrl as mgpr">
-    <div  class="all-feature-properties" ng-if="cpp.isSwitchConfigLoaded()">
-        <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpp.switchconfigs"
-            config="sw.configData"
-            rp-model="cpp.allProperties"
-            rp-label-text="sw.text">
-        </rp-switch>
+<div ng-controller="ProductNotificationGridCtrl as rpn">
+    <div class="row">
+        <div class="col-xs-10 col-sm-7">
+            <rp-switch class="label-1 theme-1"
+                config="rpn.frontDeskSwitch"
+                rp-model="rpn.frontDesk"
+                rp-label-text="::'notificationName.FrontDesk' | residentPortalsText">
+            </rp-switch>
+            <hr>
+        </div>
+        <div class="col-xs-10 col-sm-7">
+            <rp-switch class="label-1 theme-1"
+                config="rpn.amenitySwitch"
+                rp-model="rpn.amenity"
+                rp-label-text="::'notificationName.Reservation' | residentPortalsText">
+            </rp-switch>
+            <hr>
+        </div>
+        <div class="col-xs-10 col-sm-7">
+            <rp-switch class="label-1 theme-1"
+                config="rpn.serviceReqSwitch"
+                rp-model="rpn.serviceReq"
+                rp-label-text="::'notificationName.ServiceRequest' | residentPortalsText">
+            </rp-switch>
+            <hr>
+        </div>
     </div>
 </div>

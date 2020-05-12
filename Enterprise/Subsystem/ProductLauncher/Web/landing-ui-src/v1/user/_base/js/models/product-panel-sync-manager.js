@@ -96,6 +96,7 @@
             if (s.productGridConfigMap['product' + productId + tabName] !== undefined) {
                 gridConfig = s.productGridConfigMap['product' + productId + tabName].gridConfig[0];
             }
+            logc(s);
             return gridConfig;
         };
 
@@ -198,6 +199,15 @@
             }
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
+        };
+
+        p.getProductNotificationsData = function (product) {
+            var s = this,
+                productNotificationsList;
+            if (s.propertyMap['product' + product] !== undefined) {
+                productNotificationsList = s.propertyMap['product' + product].notifications;
+            }
+            return productNotificationsList;
         };
 
         p.getProductPropertyGroupData = function (product) {
@@ -348,6 +358,13 @@
 
             if (s.propertyMap['product' + product] !== undefined) {
                 s.propertyMap['product' + product].allProperties = value;
+            }
+        };
+
+        p.updateProductAllNotifications = function (product, value) {
+            var s = this;
+            if (s.propertyMap['product' + product] !== undefined) {
+                s.propertyMap['product' + product].notifications = value;
             }
         };
 

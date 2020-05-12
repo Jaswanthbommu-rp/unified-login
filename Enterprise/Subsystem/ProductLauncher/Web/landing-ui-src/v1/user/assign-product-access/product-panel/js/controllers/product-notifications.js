@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductNotificationGridCtrl($scope, $filter, dataSvc, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductNotificationGridCtrl($scope, $filter, dataSvc, security, persona, syncMgr, productDataModel, userDetailsModel, switchConfig) {
         var vm = this;
 
         vm.init = function () {
@@ -23,81 +23,47 @@
             return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
         };
 
-
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
-
+            vm.setSwitchStatus();
             if (persona.isReady() && vm.isActive()) {
-                var propertyData = syncMgr.getProductPropertiesData(productId);
-
-                if (propertyData === undefined) {
-
+                var notificationsData = syncMgr.getProductNotificationsData(productId);
+                if (notificationsData === undefined) {
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId()
                     };
-
-                    vm.dataPropReq = dataSvc.get(params, vm.setPropertyGroupData);
-                }
-                else {
-                    vm.loadGridData(productId);
+                    vm.datareq = dataSvc.get(params, vm.setNotificationsData);
                 }
             }
         };
 
-        vm.loadGridData = function (productId) {
-            // pmgGrid.busy(false);
-
-            // var propData = syncMgr.getMessageGroupMap(productId);
-
-            // if (propData && propData.length > 0) {
-            //     if (vm.hasViewOnlyAccess()) {
-            //         propData.forEach(function (item) {
-            //             angular.extend(item, {
-            //                 disabled: false,
-            //                 radname: "messageGroup"
-            //             });
-            //             item.disabled = true;
-            //         });
-            //     }
-
-            //     propData.forEach(function (item) {
-            //         angular.extend(item, {
-            //             radname: "messageGroup",
-            //             productId: productId,
-            //             originalProperty: item.isAssigned
-            //         });
-
-            //     });
-
-            //     pmgGridPagination.setData(propData).goToPage({
-            //         number: 0
-            //     });
-            // }
-
-            return vm;
+        vm.setNotificationsData = function(notificationData){
+            logc(notificationData.data);
+            var productId = $scope.$parent.productId;
+            syncMgr.updateProductAllNotifications(productId, notificationData.data);
         };
 
-        // vm.setPropertyGroupData = function (resp) {
-        //     pmgGrid.busy(false);
-        //     if (resp.records && resp.records.length) {
-        //         var pdata = syncMgr.setMessageGroupList(resp.records, $scope.$parent.productId);
-        //         vm.loadGridData($scope.$parent.productId);
-        //     }
+        vm.setSwitchStatus = function(notificationsData) {
+            vm.frontDeskSwitch = switchConfig({
+                disabled: security.isAllowed("viewUser") || !persona.data.hasResidentPortalUserAccess,
+                trueValue: true
+            });
 
-        //     if (resp.isError) {
-        //         vm.isPropertyGroupsError = true;
-        //     }
-        // };
+            vm.amenitySwitch = switchConfig({
+                disabled: security.isAllowed("viewUser") || !persona.data.hasResidentPortalUserAccess,
+                trueValue: true
+            });
 
-
+            vm.serviceReqSwitch = switchConfig({
+                disabled: security.isAllowed("viewUser") || !persona.data.hasResidentPortalUserAccess,
+                trueValue: true
+            });
+        };
 
         vm.destroy = function () {
             vm.destWatch();
             vm.activeWatch();
-
-
-            //vm = undefined;
             $scope = undefined;
         };
 
@@ -115,6 +81,7 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
+            "rpSwitchConfig",
             ProductNotificationGridCtrl
         ]);
 })(angular);

@@ -10,9 +10,11 @@
             pmgGridPagination = gridPaginationModel();
 
         vm.init = function () {
+            logc('message group tab');
             vm.grid = pmgGrid;
             vm.propertyGroupsError = $filter("productPanelText")("panelError.generic");
-            vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "PropertyGroup");
+            vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "MessagingGroups");
+            logc(vm.config);
             pmgGridTransform.watch(pmgGrid);
             pmgGrid.setConfig(vm.config);
             pmgGridPagination.setGrid(pmgGrid);
@@ -24,13 +26,14 @@
 
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            vm.gridSelectionWatch = pmgGrid.subscribe("selectChange", vm.selectionChange);
-            vm.gridSelectAllWatch = pmgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
+            //vm.gridSelectionWatch = pmgGrid.subscribe("selectChange", vm.selectionChange);
+            //vm.gridSelectAllWatch = pmgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pmgGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
-            return productDataModel.isPropertyGridActive();
+            return true;
+            //return productDataModel.isPropertyGridActive();
         };
 
         vm.hasViewOnlyAccess = function () {
@@ -113,8 +116,8 @@
 
         vm.setPropertyGroupData = function (resp) {
             pmgGrid.busy(false);
-            if (resp.records && resp.records.length) {
-                var pdata = syncMgr.setMessageGroupList(resp.records, $scope.$parent.productId);
+            if (resp.data && resp.data.length) {
+                var pdata = syncMgr.setMessageGroupList(resp.data, $scope.$parent.productId);
                 vm.loadGridData($scope.$parent.productId);
             }
 
@@ -122,8 +125,6 @@
                 vm.isPropertyGroupsError = true;
             }
         };
-
-
 
         vm.destroy = function () {
             vm.destWatch();

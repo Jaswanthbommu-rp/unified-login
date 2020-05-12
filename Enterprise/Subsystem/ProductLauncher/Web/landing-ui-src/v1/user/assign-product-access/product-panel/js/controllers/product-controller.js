@@ -174,6 +174,7 @@
                                         }
                                         var cnfg = configData.getGridConfigTypes(tab, tabName);
                                         var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
+                                        logc(gridConfig);
                                         productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
                                         vm.setProductDependency(tab, productId);
                                     }
