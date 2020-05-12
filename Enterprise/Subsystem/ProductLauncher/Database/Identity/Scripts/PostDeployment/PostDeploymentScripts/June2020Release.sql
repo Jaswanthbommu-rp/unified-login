@@ -336,7 +336,7 @@ BEGIN
               SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
               
 			  INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-			  VALUES (41, 229, N'Default', N'True', @UserId, @Now)
+			  VALUES (41, 231, N'Default', N'True', @UserId, @Now)
               
               SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
