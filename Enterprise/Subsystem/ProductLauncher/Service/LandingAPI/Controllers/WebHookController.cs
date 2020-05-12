@@ -191,11 +191,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
             RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "productInternalSetting_" + (int)ProductEnum.UnifiedLogin;
+            var cacheKey = "productInternalSetting_" + (int)ProductEnum.UnifiedPlatform;
             productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
             {
                 // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedLogin);
+                return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             });
             
             string signingSecret = signingSecret = productInternalSettingList?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;

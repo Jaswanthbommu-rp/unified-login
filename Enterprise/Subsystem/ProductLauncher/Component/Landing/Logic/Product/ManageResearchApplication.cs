@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_researchApplicationApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
 			_client.BaseAddress = new Uri(_researchApplicationApiEndPoint);
 
-			IList<ProductInternalSetting> listUnifiedLoginProductSetting = GetProductSetting((int)ProductEnum.UnifiedLogin);
+			IList<ProductInternalSetting> listUnifiedLoginProductSetting = GetProductSetting((int)ProductEnum.UnifiedPlatform);
 			_UnifiedLoginResearchApplicationClientSecret = Encoding.UTF8.GetString(Convert.FromBase64String(listUnifiedLoginProductSetting.First(a => a.Name.ToUpper() == "UNIFIEDLOGINRESEARCHAPPLICATIONCLIENTSECRET").Value));
 
 			GetToken();

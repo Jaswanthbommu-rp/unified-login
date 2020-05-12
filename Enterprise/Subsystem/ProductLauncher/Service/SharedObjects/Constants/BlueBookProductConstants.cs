@@ -8,7 +8,7 @@
 		/// <summary>
 		/// UnifiedLogin
 		/// </summary>
-		public const string UnifiedLogin = "UL";
+		public const string UnifiedPlatform = "UPFM";
 
 		/// <summary>
 		/// OneSite

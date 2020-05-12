@@ -133,7 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
 					result = productDALogic.GetProductProperties(datafilter);
 					break;
-				case (int)ProductEnum.UnifiedLogin:
+				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
 					break;
@@ -193,10 +193,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
 					result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
 					break;
-				//case (int)ProductEnum.Insurance:
-				//	ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
-				//	result = manageProductRentersInsurance.ListRoles(editorPersonaId, userPersonaId, datafilter);
-				//	break;
+				case (int)ProductEnum.Insurance:
+					ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
+					result = manageProductRentersInsurance.ListRolesResponse(editorPersonaId, userPersonaId);
+					break;
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);
 					result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);
@@ -216,6 +216,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var productLALogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadAnalytics, editorPersonaId, userPersonaId, _userClaims);
 					result = productLALogic.GetProductRoles(datafilter);
 					break;
+				case (int)ProductEnum.IntegrationMarketplace:
+					var manageProductIntegartionMarketplace = new ManageProductIntegrationMarketplace(_userClaims);
+					result = manageProductIntegartionMarketplace.GetRoles(editorPersonaId, userPersonaId, partyId);
+					break;
 				//case (int)ProductEnum.RPDocumentManagement:
 
 				//	break;
@@ -227,7 +231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
 					result = productDALogic.GetProductRoles(datafilter);
 					break;
-				case (int)ProductEnum.UnifiedLogin:
+				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
 					break;
@@ -248,7 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
 					result = manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
 					break;
-				case (int)ProductEnum.UnifiedLogin:
+				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
 					break;
