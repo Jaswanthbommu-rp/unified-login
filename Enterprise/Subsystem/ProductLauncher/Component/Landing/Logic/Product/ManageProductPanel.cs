@@ -29,7 +29,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
-using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -196,15 +195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.Insurance:
 					ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
-					IList<ProductRole> productRoleList = manageProductRentersInsurance.ListRoles(editorPersonaId, userPersonaId);
-					result = new ListResponse()
-					{
-						Records = productRoleList.Cast<object>().ToList(),
-						TotalRows = productRoleList.Count,
-						RowsPerPage = productRoleList.Count,
-						TotalPages = 1,
-						ErrorReason = ""
-					};
+					result = manageProductRentersInsurance.ListRolesResponse(editorPersonaId, userPersonaId);
 					break;
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);

@@ -481,6 +481,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// List Roles Response
+		/// </summary>
+		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
+		/// <param name="userPersonaId">new user PersonaId</param>
+		/// <returns>Levels list</returns>
+		public ListResponse ListRolesResponse(long editorPersonaId, long userPersonaId)
+		{
+			IList<ProductRole> productRoleList = ListRoles(editorPersonaId, userPersonaId);
+			ListResponse result = new ListResponse()
+			{
+				Records = productRoleList.Cast<object>().ToList(),
+				TotalRows = productRoleList.Count,
+				RowsPerPage = productRoleList.Count,
+				TotalPages = 1,
+				ErrorReason = ""
+			};
+			return result;
+		}
+
+		/// <summary>
 		/// Change user type
 		/// </summary>
 		/// <param name="createUserPersonaId">Logged-in user PersonaId</param>
