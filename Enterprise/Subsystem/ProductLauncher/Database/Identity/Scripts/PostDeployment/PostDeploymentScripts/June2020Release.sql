@@ -309,8 +309,8 @@ BEGIN
 END
 
 -- New API in MT for Resident Portals
-DECLARE  @ProductId INT = 17,
-		 @CurrentProductConfigurationID INT,
+ SELECT  @ProductId = 17;
+ DECLARE @CurrentProductConfigurationID INT,
 		 @ProductSettingTypeId INT,
 		 @ProductSettingId INT,
 		 @Now DATETIME = GETUTCDATE(),
