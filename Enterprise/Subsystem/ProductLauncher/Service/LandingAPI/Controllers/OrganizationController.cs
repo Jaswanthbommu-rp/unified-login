@@ -294,8 +294,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         profileDetail.LastName = existingPerson.LastName;
                         profileDetail.UserTypeId = (int) UserRoleType.ExternalUser;
                         UnifiedLoginRepository umr = new UnifiedLoginRepository();
-                        List<int> _productIdList = new List<int>() {(int) ProductEnum.UnifiedLogin};
-                        var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int) ProductEnum.UnifiedLogin, _productIdList);
+                        List<int> _productIdList = new List<int>() {(int) ProductEnum.UnifiedPlatform};
+                        var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int) ProductEnum.UnifiedPlatform, _productIdList);
                         if (gbAllRoles.Any(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)))
                         {
                             string roleId = gbAllRoles?.FirstOrDefault(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).ID;
@@ -303,7 +303,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             {
                                 ProductBatch pb = new ProductBatch
                                 {
-                                    ProductId = (int)ProductEnum.UnifiedLogin,
+                                    ProductId = (int)ProductEnum.UnifiedPlatform,
                                     InputJson = new RolePropertyList
                                     {
                                         RoleList = new List<string>() { roleId }
@@ -936,10 +936,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IList<OrganizationType> organizationTypeList = _organizationLogic.ListOrganizationType();
 			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
 
-			if (!addProductList.Contains(ProductEnum.UnifiedLogin))
+			if (!addProductList.Contains(ProductEnum.UnifiedPlatform))
 			{
 				// add unified login product to every new org
-				addProductList.Add(ProductEnum.UnifiedLogin);
+				addProductList.Add(ProductEnum.UnifiedPlatform);
 			}
 			if (!addProductList.Contains(ProductEnum.ProductUpdates))
 			{

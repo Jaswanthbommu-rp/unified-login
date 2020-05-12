@@ -130,7 +130,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 					identity.AddClaim(new Claim("PERSONAID", persona.PersonaId.ToString()));
 
 					// get the users role so the rights can be retrieved
-					IList<Component.SharedObjects.Product.UserManagement.Role> userRoles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedLogin, persona.PersonaId, persona.Organization.PartyId);
+					IList<Component.SharedObjects.Product.UserManagement.Role> userRoles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId, persona.Organization.PartyId);
 					identity.AddClaims((userRoles.Select(a => new Claim("role", a.Name)).ToList()));
 				}
 
