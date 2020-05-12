@@ -216,6 +216,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var productLALogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadAnalytics, editorPersonaId, userPersonaId, _userClaims);
 					result = productLALogic.GetProductRoles(datafilter);
 					break;
+				case (int)ProductEnum.IntegrationMarketplace:
+					var manageProductIntegartionMarketplace = new ManageProductIntegrationMarketplace(_userClaims);
+					result = manageProductIntegartionMarketplace.GetRoles(editorPersonaId, userPersonaId, partyId);
+					break;
 				//case (int)ProductEnum.RPDocumentManagement:
 
 				//	break;

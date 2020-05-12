@@ -311,6 +311,50 @@ BEGIN
               SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
+SELECT @ProductId = 39
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+              SET IDENTITY_INSERT [UserManagement].[Control] ON 
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (229, NULL, 8, N'IntegrationMarketplaceProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (230, 229, 9, N'IntegrationMarketplaceProductAccessRolesTabUIId', N'Roles', NULL, 2, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (231, 230, 2, N'IntegrationMarketplaceProductAccessRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (232, 231, 7, N'IntegrationMarketplaceProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+			  INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			  VALUES (233, 231, 5, N'IntegrationMarketplaceProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+              
+              SET IDENTITY_INSERT [UserManagement].[Control] OFF
+              
+              SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+              
+			  INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+			  VALUES (41, 231, N'Default', N'True', @UserId, @Now)
+              
+              SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+              SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+              
+			  INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+			  VALUES (16, 39, N'Integration Marketplace Product Access', @UserId, @Now, 1)
+              
+              SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+              
+              SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+              
+			  INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+			  VALUES (25, 16, 229, @UserId, @Now)
+              
+              SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+
+END
 
 -- New API in MT for Resident Portals
  SELECT  @ProductId = 17;
