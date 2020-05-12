@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function PAPropertyAssignedListAsideCtrl($scope, aside, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, propertiesModel, userModel, persona, dataModel, sync, paDataModel, pubsub, security) {
+    function PAPropertyAssignedListAsideCtrl($scope, $filter, aside, dataSvc, gridModel, gridConfig, gridTransformSvc, gridPaginationModel, propertiesModel, userModel, persona, dataModel, sync, paDataModel, pubsub, security) {
         var vm = this,
             asideGrid = gridModel(),
             gridTransform = gridTransformSvc(),
@@ -22,15 +22,15 @@
             vm.model = dataModel;
             vm.model.setPropertyData();
             vm.companyId = 0;
-
             gridPagination.setConfig({
                 recordsPerPage: 10
             });
-
+            vm.filterBy = undefined;
             vm.personaWatch = angular.noop;
             vm.readyWatch = $scope.$watch(vm.isReady, vm.setData);
             vm.gridSelectionWatch = asideGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridAllWatch = asideGrid.subscribe("selectAll", vm.selectionAll);
+            vm.filterData = asideGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             return vm;
         };
@@ -44,8 +44,19 @@
         };
 
         vm.selectionAll = function (bool) {
-            var data = sync.allPropertiesSync(vm.companyId, bool);
+            var response = sync.getPropertyListbyCompanyId(vm.companyId);
+
+            var filterList = $filter("filter")(response.propertyList[0].properties, vm.filterBy);
+            filterList.forEach(function (item) {
+                item["isAssigned"] = bool;
+            });
+
+            var data = sync.allPropertiesSync(vm.companyId);
             paDataModel.setSelectedProperties(data.propertyList);
+        };
+
+        vm.filter = function(filterBy){
+            vm.filterBy = filterBy;
         };
 
         vm.selectionChange = function (record) {
@@ -112,6 +123,7 @@
         .module("settings")
         .controller("PAPropertyAssignedListAsideCtrl", [
             "$scope",
+            "$filter",
             "paAssignPropertyAside",
             "AssetOptimizationGroupPropertyListSvc",
             "rpGridModel",
