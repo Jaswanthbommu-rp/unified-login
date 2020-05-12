@@ -41,6 +41,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private string _residentPortalUrl;
 		private string _residentPortalApiEndPoint;
 		private string _mtApiEndPoint;
+		private string _appId;
+		private string _appKey;
 		private string _accessToken;
 		private string _consumerId;
 		private string _consumerVersion;
@@ -79,7 +81,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_password = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;
 			_consumerId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CONSUMERID").Value;
 			_consumerVersion = _productInternalSettingList.First(a => a.Name.ToUpper() == "CONSUMERVERSION").Value;
-            _userClaims = userClaims;
+			_appId = _productInternalSettingList.First(a => a.Name.ToUpper() == "APPID").Value;
+			_appKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APPKEY").Value;
+			_userClaims = userClaims;
 		}
 
 		/// <summary>
@@ -123,7 +127,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _client = new HttpClient(messageHandler, false);
 
             _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
-        }
+			_appId = _productInternalSettingList.First(a => a.Name.ToUpper() == "APPID").Value;
+			_appKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APPKEY").Value;
+		}
 
 		/// <summary>
 		/// Unit test constructor to test list properties
@@ -1620,7 +1626,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
+            var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/users?filter={filter}&app_id={_appId}&app_key={_appKey}";
             WriteToDiagnosticLog("ManageProductResidentPortal.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
 
             var residentPortalUsers = GetResultFromApi<IList<ResidentPortalMigrationUser>>(url);
@@ -1682,7 +1688,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return migrateResponse;
             }
 
-            var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users";
+            var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users?app_id={_appId}&app_key={_appKey}";
             var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
             var responseContent = response.Content.ReadAsStringAsync().Result;
 
