@@ -15,6 +15,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
@@ -25,12 +27,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IOrganizationRepository _organizationRepository;
         private IPropertyRepository _propertyRepository;
         private ProductInternalSettingRepository _productInternalSettingRepository;
+        private IManageOrganization _manageOrganization;
         
         public WebHookController()
         {
             _organizationRepository = new OrganizationRepository();
             _propertyRepository = new PropertyRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _manageOrganization = new ManageOrganization();
         }
 
         public WebHookController(IRepository repository, DefaultUserClaim userClaim)
@@ -38,6 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _organizationRepository = new OrganizationRepository(repository);
             _propertyRepository = new PropertyRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _manageOrganization = new ManageOrganization(repository, userClaim);
             _userClaims = userClaim;
         }
 
@@ -154,7 +159,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                         case "provisioning.upfmorder.create":
                             // get the company info
+                            string createResult = CreateCompanyFromBooks();
+                            if (!string.IsNullOrEmpty(createResult))
+                            {
+                                logData = new Dictionary<string, object> {{"error", createResult}};
 
+                                WriteToLog(LogType.Error, "Error", logData);
+                                return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
+                            }
                             break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
@@ -189,6 +201,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             string signingSecret = signingSecret = productInternalSettingList?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
 
             return signingSecret ?? "";
+        }
+
+        private string CreateCompanyFromBooks(long booksCustomerMasterId)
+        {
+            
+
+            bool processBlueBookMessage = false;
+
+            // check to see if the company already exists
+            var organizationList = _manageOrganization.GetOrganizationList();
+            if (organizationList.Any(o => o.BooksCustomerMasterId == booksCustomerMasterId))
+            {
+                return "";
+            }
+            
+            OrganizationCreate organization = new OrganizationCreate()
+            {
+                BooksCompanyId = 1234,
+                BooksCustomerMasterId = booksCustomerMasterId,
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "RealPage",
+                    LastName = "Access",
+                    Suffix = "",
+                    Title = "",
+                    Email = $"{booksCustomerMasterId}admin@realpage.com"
+                }
+            };
+            var organizationTypeList = _manageOrganization.ListOrganizationType();
+            var organizationDomainList = _manageOrganization.ListOrganizationDomain();
+
+            organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals("TYPEHERE", StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+            organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals("DOMAIN", StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+
+            organization.Products = new List<string>();
+            
+
+            var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
+
+            if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
+            {
+                return result.Status.ErrorMsg;
+            }
+
+            return "";
         }
 
         private static string ResultErrorMessage(RepositoryResponse result)

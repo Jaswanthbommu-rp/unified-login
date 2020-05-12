@@ -87,7 +87,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
                 outputResult.Status.ErrorMsg = $"An invalid Organization Type id was given: {organization.OrganizationTypeId}";
                 return outputResult;
-
             }
 
 			List<ProductEnum> addProductList = new List<ProductEnum>();
@@ -157,6 +156,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Guid organizationRealPageId = repositoryResponse.RealPageId;
 
             org = GetOrganization(organizationRealPageId);
+
+            //check the guid
+
 
             // add the given products to the new company
             var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId);
