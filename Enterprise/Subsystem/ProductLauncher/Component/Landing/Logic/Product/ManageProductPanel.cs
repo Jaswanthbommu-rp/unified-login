@@ -36,7 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	{
 		#region Private Variables		
 		private DefaultUserClaim _userClaims;
-		
+
 		#endregion
 
 		#region Constructors
@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		#endregion
 
 		#region
-		public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false)
+		public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
 		{
 			ListResponse result = new ListResponse();
 			IProduct product;
@@ -81,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.ClientPortal:
 					IManageProductClientPortal _manageProductClientPortal = new ManageProductClientPortal(_userClaims);
-					result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);				
+					result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);
 					break;
 				case (int)ProductEnum.ProspectContactCenter:
 					IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims.UserRealPageGuid);
@@ -111,9 +111,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
 					result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
 					break;
-				//case (int)ProductEnum.AssetOptimizer:
-					
-				//	break;
+				case (int)ProductEnum.AoBusinessIntelligence:
+				case (int)ProductEnum.AoInvestmentAnalytics:
+				case (int)ProductEnum.AoPerformanceAnalytics:
+				case (int)ProductEnum.AoRevenueManagement:
+				case (int)ProductEnum.AoBenchmarking:
+					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+					result = manageProductAo.GetProductProperties(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
+					break;
 				case (int)ProductEnum.LeadManagement:
 					var productLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadManagement, editorPersonaId, userPersonaId, _userClaims);
 					result = productLMLogic.GetProductProperties(datafilter);
@@ -123,17 +128,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					result = productLALogic.GetProductProperties(datafilter);
 					break;
 				//case (int)ProductEnum.RPDocumentManagement:
-				
+
 				//	break;
 				case (int)ProductEnum.PortfolioManagement:
 					var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
 					result = productPMLogic.GetProductProperties(datafilter);
-					break;					
+					break;
 				case (int)ProductEnum.DepositAlternative:
 					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
 					result = productDALogic.GetProductProperties(datafilter);
 					break;
-				case (int)ProductEnum.UnifiedLogin:
+				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
 					break;
@@ -143,7 +148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return result;
 		}
 
-		public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, bool assignedOnly = false)
+		public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
 		{
 			ListResponse result = new ListResponse();
 			string productName = Enum.GetName(typeof(ProductEnum), productId);
@@ -171,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.OpsBuyer:
 					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
-					result = manageProductOps.GetRoles(editorPersonaId, userPersonaId,"", datafilter);
+					result = manageProductOps.GetRoles(editorPersonaId, userPersonaId, "", datafilter);
 					break;
 				case (int)ProductEnum.VendorServices:
 					IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
@@ -180,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.ClientPortal:
 					IManageProductClientPortal _manageProductClientPortal = new ManageProductClientPortal(_userClaims);
 					result = _manageProductClientPortal.GetRoles(editorPersonaId, userPersonaId, datafilter);
-					break;			
+					break;
 				case (int)ProductEnum.Lead2Lease:
 					IManageProductLead2Lease manageProductLead2Lease = new ManageProductLead2Lease(_userClaims);
 					result = manageProductLead2Lease.GetRoles(editorPersonaId, userPersonaId, datafilter);
@@ -205,9 +210,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
 					result = manageUnifiedAmenities.GetRoles(editorPersonaId, userPersonaId, partyId);
 					break;
-				//case (int)ProductEnum.AssetOptimizer:
-
-				//	break;
+				case (int)ProductEnum.AoBusinessIntelligence:
+				case (int)ProductEnum.AoInvestmentAnalytics:
+				case (int)ProductEnum.AoPerformanceAnalytics:
+				case (int)ProductEnum.AoRevenueManagement:
+				case (int)ProductEnum.AoBenchmarking:
+					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+					result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
+					break;
 				case (int)ProductEnum.LeadManagement:
 					var productLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadManagement, editorPersonaId, userPersonaId, _userClaims);
 					result = productLMLogic.GetProductRoles(datafilter);
@@ -227,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
 					result = productDALogic.GetProductRoles(datafilter);
 					break;
-				case (int)ProductEnum.UnifiedLogin:
+				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
 					break;
@@ -248,7 +258,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
 					result = manageProductOneSite.GetOneSiteRights(editorPersonaId, datafilter, roleId, assignedToRoleOnly);
 					break;
-				case (int)ProductEnum.UnifiedLogin:
+				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
 					break;
@@ -258,19 +268,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return result;
 		}
 
-		public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false)
+		public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
 		{
 			ListResponse result = new ListResponse();
 			IProduct product;
 			string productName = Enum.GetName(typeof(ProductEnum), productId);
 			switch (productId)
 			{
-				
+
 				case (int)ProductEnum.OnSite:
 					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
 					result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
 					break;
-				
+				case (int)ProductEnum.AoBusinessIntelligence:
+				case (int)ProductEnum.AoInvestmentAnalytics:
+				case (int)ProductEnum.AoPerformanceAnalytics:
+				case (int)ProductEnum.AoRevenueManagement:
+				case (int)ProductEnum.AoBenchmarking:
+					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+					result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productName, userLoginName);
+					break;
 				default:
 					break;
 			}
