@@ -127,7 +127,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _client = new HttpClient(messageHandler, false);
 
             _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
-        }
+			_appId = _productInternalSettingList.First(a => a.Name.ToUpper() == "APPID").Value;
+			_appKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APPKEY").Value;
+		}
 
 		/// <summary>
 		/// Unit test constructor to test list properties
