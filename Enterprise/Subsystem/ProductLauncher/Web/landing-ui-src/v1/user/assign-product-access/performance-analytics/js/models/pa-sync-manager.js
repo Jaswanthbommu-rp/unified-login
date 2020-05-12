@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory(pubsub, security, persona) {
+    function factory(pubsub, security, persona, $filter) {
         function PASyncManager() {
             var s = this;
             s.init();
@@ -188,23 +188,25 @@
             return s;
         };
 
-        p.allPropertiesSync = function (companyId, selected) {
+        p.allPropertiesSync = function (companyId, selected, filterBy) {
             var s = this,
                 propertyList,
+                filterList,
                 selectState = false,
                 assignedCount = 0,
                 totalCount = 0;
 
             propertyList = s.propertyMap['company' + companyId].property;
-
-            propertyList.properties.forEach(function (item) {
+            filterList = $filter("filter")(propertyList.properties, filterBy);
+            filterList.forEach(function (item) {
                 item["isAssigned"] = selected;
-                if (item.isAssigned) {
-                    assignedCount++;
-                }
-                totalCount++;
             });
-
+            propertyList.properties.forEach(function (item) {
+                    if (item.isAssigned) {
+                        assignedCount++;
+                    }
+                    totalCount++;
+            });
             propertyList.assignedProperties = assignedCount + " of " + totalCount;
             return s;
         };
@@ -497,6 +499,7 @@
             "pubsub",
             "routeSecurity",
             "personaDetails",
+            "$filter",
             factory
         ]);
 })(angular);
