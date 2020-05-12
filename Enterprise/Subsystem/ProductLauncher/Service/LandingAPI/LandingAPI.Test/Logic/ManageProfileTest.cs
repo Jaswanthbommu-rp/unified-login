@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         Mock<IManagePartyRole> _mockPartyRoleLogic = new Mock<IManagePartyRole>();
 		#endregion
 		
-		public ManageProfileTest() : base((int) ProductEnum.UnifiedLogin)
+		public ManageProfileTest() : base((int) ProductEnum.UnifiedPlatform)
 		{
 			_productSettingType.Add(new ProductSettingType() { ProductSettingTypeId = 1, Name = "ProductStatus" });
 
