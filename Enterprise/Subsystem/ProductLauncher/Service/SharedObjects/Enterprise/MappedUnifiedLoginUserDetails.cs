@@ -10,12 +10,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
     {
         public int CompanyId { get; set; }
         public int ProductId { get; set; }
-        public List<ULMappedUserIds> ULMappedUserId { get; set; }
+        public List<ULMappedPersonaIds> ULMappedPersonaId { get; set; }
     }
-
-    public class ULMappedUserIds
+    public class ULMappedPersonaIds
     {
         public string ProductUserId { get; set; }
-        public long UnifiedLoginUserId { get; set; }
+        public long UnifiedLoginPersonaId { get; set; }
     }
 }

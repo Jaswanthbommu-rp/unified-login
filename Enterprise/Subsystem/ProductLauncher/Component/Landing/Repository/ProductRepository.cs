@@ -1431,7 +1431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (p.Name.Equals("Administration", StringComparison.OrdinalIgnoreCase))
                 {
                     //always set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
-                    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.UnifiedLogin);
+                    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.UnifiedPlatform);
                     if (solution != null)
                     {
                         solution.IsAssigned = true;
@@ -1734,15 +1734,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Get Unified Login mapping UserId for Product UserId by company and product id
+        /// Get Unified Login mapping PersonaId for Product UserId by company and product id
         /// </summary>
         /// <param name="companyId"></param>
         /// <param name="productId"></param>
         /// <param name="productUserIds"></param>
         /// <returns>List of Unified Login mapping UserId by product and company</returns>
-        public List<ULMappedUserIds> GetULMappingUsersByCompanyAndProducts(int companyId, int productId, List<string> productUserIds)
+        public List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, int productId, List<string> productUserIds)
         {
-            List<ULMappedUserIds> mappingUserList = new List<ULMappedUserIds>();
+            List<ULMappedPersonaIds> mappingUserList = new List<ULMappedPersonaIds>();
 
              dynamic param = new
             {
@@ -1753,7 +1753,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
-                mappingUserList = repository.GetMany<ULMappedUserIds>(EnterpriseStoredProcNameConstants.SP_ListULMappingUserIdForProductUserId, param);
+                mappingUserList = repository.GetMany<ULMappedPersonaIds>(EnterpriseStoredProcNameConstants.SP_ListULMappingPersonaIdForProductUserId, param);
             }
 
             return mappingUserList;

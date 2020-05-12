@@ -594,7 +594,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     customerPropertyList = JsonConvert.DeserializeObject<List<CustomerProperty>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     productPropertyList = customerPropertyList.Select(p => new ProductProperty
                     {
-                        //companyId = p.attributes != null ? p.attributes.customerCompanyId : null,
                         ID = p.attributes != null ? p.attributes.customerPropertyId : null,
                         Name = p.attributes.propertyName,
                         Street1 = p.attributes.address != null ? p.attributes.address.address : null,

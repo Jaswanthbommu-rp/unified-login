@@ -1,3 +1,4 @@
+﻿using Newtonsoft.Json;
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,18 +7,20 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
+    public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
     {
         private DefaultUserClaim _userClaims;
 
@@ -28,10 +31,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedLogin, null)
+        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedPlatform, null)
         {
             WriteToDiagnosticLog("UnifiedLogin - ManageUnifiedLogin.Ctor - Getting Product settings.");
-            _productId = (int)ProductEnum.UnifiedLogin;
+            _productId = (int)ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
 	        _userClaims = userClaims;
@@ -108,7 +111,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
-       
+        public ListResponse GetProperties(long userPersonaId, string include = null)
+        {
+            ListResponse response = new ListResponse();
+
+            List<ProductProperty> productPropertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+
+            if (productPropertyList != null)
+            {
+                IList<ProductProperty> blueBookPropertyList = _blueBook.GetCustomerProperty(_userClaims.CustomerMasterId);
+                if ((productPropertyList.Count == 1) && (productPropertyList[0].ID.Equals("-1")))
+                {
+                    productPropertyList = blueBookPropertyList.ToList();
+                }
+                else
+                {
+                    productPropertyList = blueBookPropertyList.Where(b => productPropertyList.All(p => p.ID.Equals(b.ID))).ToList();
+                }
+            }
+
+            if (productPropertyList.Count > 0)
+            {
+                string includeFields = string.Empty;
+
+                bool bIncludeFields = ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] { ',' }).Length > 0));
+
+                if (bIncludeFields)
+                {
+                    DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
+                    string productPropertySerializableProperties = JsonConvert.SerializeObject(
+                        productPropertyList,
+                        new JsonSerializerSettings()
+                        {
+                            ContractResolver = dynamicContractResolver
+                        }
+                    );
+                    productPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+                }
+
+                productPropertyList.ForEach(p =>
+                {
+                    p.IsAssigned = null;
+                    p.disableSelection = null;
+                });
+
+                response.IsError = false;
+                response.Records = productPropertyList.Cast<object>().ToList();
+                response.TotalRows = productPropertyList.Count;
+                response.RowsPerPage = productPropertyList.Count;
+                response.TotalPages = 1;
+                response.ErrorReason = string.Empty;
+            }
+
+            return response;
+        }
+
         /// <summary>
         /// Used to add/update a role in Greenbook
         /// </summary>
@@ -425,7 +482,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 
                 var productIds = GetProductIdsByOrg();
 
@@ -479,7 +536,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRoleWithRights with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
                 //Get Product Id's by org
@@ -536,7 +593,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB rights from GB DB - pr.ListRightForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
@@ -596,7 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRoleWithRights with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 //Get Product Id's by org
 
                 var productIds = GetProductIdsByOrg();
@@ -653,7 +710,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get rights from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
@@ -711,7 +768,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get rights from DB for UserManagement product
                 WriteToDiagnosticLog(
                    $"UserManagement - Getting all GB roles from GB DB - pr.ListAllRightsForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
@@ -781,7 +838,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get rights from DB for UserManagement product
                 WriteToDiagnosticLog(
                    $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
@@ -914,7 +971,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UserManagement product
                 WriteToDiagnosticLog(
                    $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
 
@@ -994,7 +1051,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UserManagement product
                 WriteToDiagnosticLog(
                    $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 ProductRepository pr = new ProductRepository();
                 UserRoleRightRepository urr = new UserRoleRightRepository();
@@ -1130,7 +1187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
 
             UnifiedLoginRepository umr = new UnifiedLoginRepository();
-            var allRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedLogin, productIdList);
+            var allRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedPlatform, productIdList);
 
             bool isEditorHasRight = true;
             foreach (var rt in rightToUpdated)
@@ -1434,7 +1491,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
 
-
                     if (list != null && list.Count > 0)
                     {
                         int roles = list.Count;
@@ -1445,13 +1501,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
-
             return result;
         }
 
         private List<Role> GetAssignedRoleForPersona(long userPersonaId, long organizationPartyId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
+            int productId = (int)ProductEnum.UnifiedPlatform;
 			UserRoleRightRepository urr = new UserRoleRightRepository();
             var cacheKey = $"sp_ListRolesForProductsByPersonaId_{productId}_{userPersonaId}_{organizationPartyId}";
             MemoryCache.Default.Remove(cacheKey);
@@ -1468,7 +1523,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId, long partyId)
         {
-
             // get roles from DB for UnifiedLogin product
             WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
@@ -1502,7 +1556,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId, long partyId)
         {
-
             // get roles from DB for UnifiedLogin product
             WriteToDiagnosticLog($"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
             List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
@@ -1664,7 +1717,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<ProductRole> GetAssignedRolesForRight(long partyId, long rightId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
+            int productId = (int)ProductEnum.UnifiedPlatform;
             UnifiedLoginRepository umr = new UnifiedLoginRepository();
             List<ProductRole> roles = umr.ListRolesByRight(partyId, productId, rightId);
             return roles;
@@ -1672,7 +1725,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<ProductRight> GetAssignedRightsForRole(long partyId, long roleId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
+            int productId = (int)ProductEnum.UnifiedPlatform;
             var productIds = GetProductIdsByOrg();
             UnifiedLoginRepository umr = new UnifiedLoginRepository();
 	        ProductRepository pr = new ProductRepository();
@@ -1683,7 +1736,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<Property> GetAssignedPropertyForPersona(long userPersonaId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
+            int productId = (int)ProductEnum.UnifiedPlatform;
             UnifiedLoginRepository ocr = new UnifiedLoginRepository();
             List<Property> prop = ocr.ListPropByPersona(userPersonaId, productId);
             return prop;
@@ -1699,7 +1752,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
         {
             // merge the given user details with the list
-            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedLogin);
+            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
             var propertyOption = new Dictionary<string, bool>();
             propertyOption.Add("allProperties", false);// Single Property
 

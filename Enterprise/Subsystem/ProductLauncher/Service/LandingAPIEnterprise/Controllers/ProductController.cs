@@ -5,6 +5,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -39,7 +41,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             
             //Passing null to get all the Products
             var result = productRepository.GetAllProducts();
-            IList<string> excludeProducts = new List<string>() { "UI", "UL", "SF" };
+            IList<string> excludeProducts = new List<string>()
+            {
+                ProductEnum.SalesForce.ToEnumDescription(),
+                ProductEnum.UnifiedPlatform.ToEnumDescription(),
+                ProductEnum.UnifiedUI.ToEnumDescription()
+            };
             result = result.Where(x => !excludeProducts.Contains(x.BooksProductCode)).ToList();
 
             var logData = new Dictionary<string, object>();
@@ -100,7 +107,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 CompanyId = productUserIDMappingRequest.CompanyId,
                 ProductId = productUserIDMappingRequest.ProductId,
-                ULMappedUserId = new List<ULMappedUserIds>()
+                ULMappedPersonaId = new List<ULMappedPersonaIds>()
             };
             
             if (productUserIDMappingRequest == null ||
@@ -111,7 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             IProductRepository productRepository = new ProductRepository();
-            mappedUnifiedLoginUserDetails.ULMappedUserId = productRepository.GetULMappingUsersByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
+            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
                                                                                  productUserIDMappingRequest.ProductId,
                                                                                  productUserIDMappingRequest.ProductUserId);
             var logData = new Dictionary<string, object>();

@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function RevenueManagementProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, RMDataModel, pubsub) {
+    function RevenueManagementProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, RMDataModel, pubsub, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -17,7 +17,7 @@
         };
 
         vm.isActive = function () {
-            return RMDataModel.isActive();
+            return RMDataModel.isActive() && !templateModel.isProductExists(32);
         };
 
         vm.isReady = function () {
@@ -53,6 +53,7 @@
             "revenueManagementTabsData",
             "revenueManagementDataModel",
             "pubsub",
+            "productTemplateModel",
             RevenueManagementProductAccessCtrl
         ]);
 })(angular);

@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             //Exclude following products from RealPage Employee Access admin user
             //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedLogin));
+            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedPlatform));
             productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AssetOptimizer));
             productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.FinancialSuite));
             productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ClientPortal));

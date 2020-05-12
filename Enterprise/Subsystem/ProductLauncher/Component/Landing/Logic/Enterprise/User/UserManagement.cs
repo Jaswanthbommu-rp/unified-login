@@ -399,7 +399,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			{
 				filterProductIdList.Add((int)ProductEnum.OpsBuyer);
 			}
-            filterProductIdList.Add((int)ProductEnum.UnifiedLogin);
+            filterProductIdList.Add((int)ProductEnum.UnifiedPlatform);
 
 			EntUserRepository entUserRepository = new EntUserRepository(_userClaims);
 			usersDataList = entUserRepository.ListUsers(organizationPartyId, filterProductIdList, realPageId, name, rowsPerPage, pageNumber);

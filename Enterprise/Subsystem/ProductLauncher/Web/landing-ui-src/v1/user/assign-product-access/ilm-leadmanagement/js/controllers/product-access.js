@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ILMLeadManagementProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, ILMLMDatamodel, pubsub) {
+    function ILMLeadManagementProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, ILMLMDatamodel, pubsub, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -17,7 +17,7 @@
         };
 
         vm.isActive = function () {
-            return ILMLMDatamodel.isActive();
+            return ILMLMDatamodel.isActive() && !templateModel.isProductExists(40);
         };
 
         vm.setChanged = function () {
@@ -49,6 +49,7 @@
             "ILMLeadManagementTabsData",
             "ilmLeadManagementDataModel",
             "pubsub",
+            "productTemplateModel",
             ILMLeadManagementProductAccessCtrl
         ]);
 })(angular);

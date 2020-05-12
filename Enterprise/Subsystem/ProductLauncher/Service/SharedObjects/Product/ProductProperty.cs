@@ -16,48 +16,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// The id of the property in the product
         /// </summary>
         public string ID { get; set; }
+
         /// <summary>
         /// The name of the property in the product
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
+
         /// <summary>
         /// The first street address of the property in the product
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Street1 { get; set; }
+
         /// <summary>
         /// The second street address of the property in the product
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Street2 { get; set; }
+
         /// <summary>
         /// The city where the property is located
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string City { get; set; }
+
         /// <summary>
         /// The state where the property is located
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string State { get; set; }
+
         /// <summary>
         /// The zip code where the property is located
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Zip { get; set; }
+
         /// <summary>
         /// Is the property assigned to the users
         /// </summary>
-        public bool IsAssigned { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsAssigned { get; set; } = false;
+
         /// <summary>
         /// Is the property disabled to the users
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool? disableSelection { get; set; } = false;
+
 	    /// <summary>
 	    /// Alias for the property
 	    /// </summary>
 	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 	    public string Alias { get; set; }
+
         /// <summary>
 	    /// Alias for the property
 	    /// </summary>
