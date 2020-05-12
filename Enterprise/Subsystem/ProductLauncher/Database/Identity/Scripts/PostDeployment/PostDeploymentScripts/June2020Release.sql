@@ -10,7 +10,11 @@ GO
 --Unified Platform Product Access Data
 DECLARE @UserId bigint,
 	@ProductId int =15,
-	@Now datetime = GETDATE()
+	@Now datetime = GETDATE(),
+	@CurrentProductConfigurationID INT,
+	@ProductSettingTypeId INT,
+	@ProductSettingId INT,
+	@ServerName SYSNAME = @@SERVERNAME;
 
 SELECT	@UserId = UserId
 FROM	Ident.UserLogin
@@ -310,11 +314,6 @@ END
 
 -- New API in MT for Resident Portals
  SELECT  @ProductId = 17;
- DECLARE @CurrentProductConfigurationID INT,
-		 @ProductSettingTypeId INT,
-		 @ProductSettingId INT,
-		 @Now DATETIME = GETUTCDATE(),
-		 @ServerName SYSNAME = @@SERVERNAME;
 
 IF @ServerName NOT IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
