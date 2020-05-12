@@ -479,6 +479,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			//return productRoleList.OrderBy(item => item.Name).ToList();
 			return productRoleList;
 		}
+		/// <summary>
+		/// List Roles Response
+		/// </summary>
+		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
+		/// <param name="userPersonaId">new user PersonaId</param>
+		/// <returns>Levels list</returns>
+		public ListResponse ListRolesResponse(long editorPersonaId, long userPersonaId)
+		{
+			IList<ProductRole> productRoleList = ListRoles(editorPersonaId, userPersonaId);
+			ListResponse result = new ListResponse()
+			{
+				Records = productRoleList.Cast<object>().ToList(),
+				TotalRows = productRoleList.Count,
+				RowsPerPage = productRoleList.Count,
+				TotalPages = 1,
+				ErrorReason = ""
+			};
+			return result;
+		}
 
 		/// <summary>
 		/// Change user type
