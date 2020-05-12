@@ -22,7 +22,6 @@
             vm.model = dataModel;
             vm.model.setPropertyData();
             vm.companyId = 0;
-
             gridPagination.setConfig({
                 recordsPerPage: 10
             });
@@ -45,7 +44,14 @@
         };
 
         vm.selectionAll = function (bool) {
-            var data = sync.allPropertiesSync(vm.companyId, bool, vm.filterBy);
+            var response = sync.getPropertyListbyCompanyId(vm.companyId);
+
+            var filterList = $filter("filter")(response.propertyList[0].properties, vm.filterBy);
+            filterList.forEach(function (item) {
+                item["isAssigned"] = bool;
+            });
+
+            var data = sync.allPropertiesSync(vm.companyId);
             paDataModel.setSelectedProperties(data.propertyList);
         };
 
