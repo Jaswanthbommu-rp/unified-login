@@ -246,7 +246,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 			try
 			{
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
+				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (result.IsError)
+				{
+					WriteToErrorLog(
+						$"ManageProductAssetOptimization.GetProductRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					return result;
+				}
+
+				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
 				string aoCompanyId = company.CompanyInstanceSourceId;
 				if (string.IsNullOrEmpty(aoCompanyId))
 				{
@@ -378,7 +386,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 			try
 			{
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
+				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (result.IsError)
+				{
+					WriteToErrorLog(
+						$"ManageProductAssetOptimization.GetProductRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					return result;
+				}
+
+				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
 				string aoCompanyId = company.CompanyInstanceSourceId;
 				if (string.IsNullOrEmpty(aoCompanyId))
 				{
@@ -1393,7 +1409,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
+				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
 				string aoCompanyId = company.CompanyInstanceSourceId;
 				if (string.IsNullOrEmpty(aoCompanyId))
 				{
