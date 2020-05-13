@@ -159,7 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                         case "provisioning.upfmorder.create":
                             // get the company info
-                            string createResult = CreateCompanyFromBooks();
+                            string createResult = CreateCompanyFromBooks(1234);
                             if (!string.IsNullOrEmpty(createResult))
                             {
                                 logData = new Dictionary<string, object> {{"error", createResult}};
