@@ -188,7 +188,15 @@
             return s;
         };
 
-        p.allPropertiesSync = function (companyId, selected) {
+        p.getPropertyListbyCompanyId = function (companyId){
+            var s = this,
+            propertyList;
+            propertyList = s.propertyMap['company' + companyId].property;
+            
+            return s;
+        };
+
+        p.allPropertiesSync = function (companyId) {
             var s = this,
                 propertyList,
                 selectState = false,
@@ -198,13 +206,11 @@
             propertyList = s.propertyMap['company' + companyId].property;
 
             propertyList.properties.forEach(function (item) {
-                item["isAssigned"] = selected;
-                if (item.isAssigned) {
-                    assignedCount++;
-                }
-                totalCount++;
+                    if (item.isAssigned) {
+                        assignedCount++;
+                    }
+                    totalCount++;
             });
-
             propertyList.assignedProperties = assignedCount + " of " + totalCount;
             return s;
         };

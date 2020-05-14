@@ -193,10 +193,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
 					result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
 					break;
-				//case (int)ProductEnum.Insurance:
-				//	ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
-				//	result = manageProductRentersInsurance.ListRoles(editorPersonaId, userPersonaId, datafilter);
-				//	break;
+				case (int)ProductEnum.Insurance:
+					ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
+					result = manageProductRentersInsurance.ListRolesResponse(editorPersonaId, userPersonaId);
+					break;
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);
 					result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);
@@ -215,6 +215,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.LeadAnalytics:
 					var productLALogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadAnalytics, editorPersonaId, userPersonaId, _userClaims);
 					result = productLALogic.GetProductRoles(datafilter);
+					break;
+				case (int)ProductEnum.IntegrationMarketplace:
+					var manageProductIntegartionMarketplace = new ManageProductIntegrationMarketplace(_userClaims);
+					result = manageProductIntegartionMarketplace.GetRoles(editorPersonaId, userPersonaId, partyId);
 					break;
 				//case (int)ProductEnum.RPDocumentManagement:
 

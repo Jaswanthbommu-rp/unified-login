@@ -159,6 +159,9 @@
                 s.batchData.inputJson.propertyList = [];
             }
 
+            if (productId == "39") {
+                hasPropertySelected = true;
+            }
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;
             }
