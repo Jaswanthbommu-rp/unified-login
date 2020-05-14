@@ -57,6 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse result = new ListResponse();
 			IProduct product;
 			string productName = Enum.GetName(typeof(ProductEnum), productId);
+			string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
 			switch (productId)
 			{
 				case (int)ProductEnum.OneSite:
@@ -116,8 +117,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.AoPerformanceAnalytics:
 				case (int)ProductEnum.AoRevenueManagement:
 				case (int)ProductEnum.AoBenchmarking:
+				case (int)ProductEnum.AoLeaseRentOption:
+				case (int)ProductEnum.AoAmenityOptimization:
+				case (int)ProductEnum.AoAIRevenueManagement:
+				case (int)ProductEnum.AoRentControl:
 					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-					result = manageProductAo.GetProductProperties(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
+					result = manageProductAo.GetProductProperties(editorPersonaId, userPersonaId, productcode, datafilter, userLoginName);
 					break;
 				case (int)ProductEnum.LeadManagement:
 					var productLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadManagement, editorPersonaId, userPersonaId, _userClaims);
@@ -152,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			ListResponse result = new ListResponse();
 			string productName = Enum.GetName(typeof(ProductEnum), productId);
-
+			string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
 			switch (productId)
 			{
 				case (int)ProductEnum.OneSite:
@@ -215,8 +220,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.AoPerformanceAnalytics:
 				case (int)ProductEnum.AoRevenueManagement:
 				case (int)ProductEnum.AoBenchmarking:
+				case (int)ProductEnum.AoLeaseRentOption:
+				case (int)ProductEnum.AoAmenityOptimization:
+				case (int)ProductEnum.AoAIRevenueManagement:
+				case (int)ProductEnum.AoRentControl:
 					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-					result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productName, datafilter, userLoginName);
+					result = manageProductAo.GetProductRoles(editorPersonaId, userPersonaId, productcode, datafilter, userLoginName);
 					break;
 				case (int)ProductEnum.LeadManagement:
 					var productLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadManagement, editorPersonaId, userPersonaId, _userClaims);
@@ -277,6 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse result = new ListResponse();
 			IProduct product;
 			string productName = Enum.GetName(typeof(ProductEnum), productId);
+			string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
 			switch (productId)
 			{
 
@@ -289,8 +299,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.AoPerformanceAnalytics:
 				case (int)ProductEnum.AoRevenueManagement:
 				case (int)ProductEnum.AoBenchmarking:
+				case (int)ProductEnum.AoLeaseRentOption:
+				case (int)ProductEnum.AoAmenityOptimization:
+				case (int)ProductEnum.AoAIRevenueManagement:
+				case (int)ProductEnum.AoRentControl:
 					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-					result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productName, userLoginName);
+					result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
 					break;
 				default:
 					break;

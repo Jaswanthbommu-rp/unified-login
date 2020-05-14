@@ -116,6 +116,22 @@
             templateUrl: "user/assign-product-access/investment-analytics/templates/index.html"
         },
 
+        "soln407": {
+            name: "LRO"
+        },
+
+        "soln408": {
+            name: "Amenity Optimization"
+        },
+
+        "soln409": {
+            name: "AI Revenue Management"
+        },
+
+        "soln410": {
+            name: "Rent Control"
+        },
+
         "soln501": {
             name: "Client Portal",
             templateUrl: "user/assign-product-access/client-portal/templates/index.html"

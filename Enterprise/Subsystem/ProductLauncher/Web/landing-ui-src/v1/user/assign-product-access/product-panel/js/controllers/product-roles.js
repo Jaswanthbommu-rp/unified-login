@@ -11,6 +11,7 @@
             genericDataErrorReason = "",
             assignedRoleId = 0,
             roleRights = [],
+            userLoginName = "",
             selectconfigs = [];
 
         vm.init = function () {
@@ -71,7 +72,8 @@
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
                         partyId: persona.data.organization.partyId,
-                        productId: productId
+                        productId: productId,
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                     };
 
                     vm.dataRoleReq = roleSvc.get(params, vm.setRolesData);

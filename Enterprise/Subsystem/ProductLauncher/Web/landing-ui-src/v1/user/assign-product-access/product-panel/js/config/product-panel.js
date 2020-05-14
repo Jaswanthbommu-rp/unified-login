@@ -142,6 +142,37 @@
             });
         }
 
+        if (templateModel.isProductExists(51)) {
+            productAccess.register({
+                model: model,
+                key: "soln407",
+                product: "51"
+            });
+        }
+
+        if (templateModel.isProductExists(52)) {
+            productAccess.register({
+                model: model,
+                key: "soln408",
+                product: "52"
+            });
+        }
+
+        if (templateModel.isProductExists(53)) {
+            productAccess.register({
+                model: model,
+                key: "soln409",
+                product: "53"
+            });
+        }
+
+        if (templateModel.isProductExists(54)) {
+            productAccess.register({
+                model: model,
+                key: "soln410",
+                product: "54"
+            });
+        }
         logc("productAccess", productAccess);
     }
 

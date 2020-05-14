@@ -264,7 +264,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductRoles - Found blue book company source id {aoCompanyId}");
 
-				List<AORoles> roles = GetRoles(Convert.ToInt32(aoCompanyId), productName, userLoginName, userPersonaId).ToList();
+				List<AORoles> roles = GetRoles(Convert.ToInt32(aoCompanyId),productName, userLoginName, userPersonaId).ToList();
 				List<ProductRole> companyRoles = new List<ProductRole>();
 				if (roles?.Count > 0)
 				{
@@ -657,6 +657,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToErrorLog($"ManageProductAssetOptimization.ManageAssetOptimizationUser. Error - Get CompanyMap - greenBookCares not enabled {blueAOCompanyInfo}");
 
 					return "Company Setup Error: Please Contact Support.";
+				}
+
+				foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+				{
+					if (data.CompanyId == 0)
+					{
+						data.CompanyId = Convert.ToInt32(blueAOCompanyInfo.CompanyInstanceSourceId);
+					}
 				}
 
 				string userEmailAddress = GetUserEmailAddress(realPageId, productUserGbLogin.LoginName, productUserPersonaId);
