@@ -3183,6 +3183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             RoleList = batchRecord.InputJson.RoleList,
                                             PropertyRoleList = batchRecord.InputJson.PropertyRoleList,
                                             PropertyGroup = batchRecord.InputJson.PropertyGroup,
+                                            RolePropertiesList = batchRecord.InputJson.RolePropertiesList,
                                             Notifications = batchRecord.InputJson.Notifications,
                                             RegionList = batchRecord.InputJson.RegionList,
                                             PropertyGroupList = batchRecord.InputJson.PropertyGroupList,
