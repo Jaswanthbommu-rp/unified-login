@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
@@ -110,15 +111,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 switch (productUser.ProductName)
                 {
                     case ProductEnum.OneSite:
+
                         product = new OneSiteProduct(_defaultUserClaim);
+
                         productPropertiesRoles =
-                            JsonConvert.DeserializeObject<Lead2LeaseOneSiteProduct>(productUser.InputJson.Trim());
-                        if ((productPropertiesRoles as Lead2LeaseOneSiteProduct).Lead2Lease == null &&
-                            (productPropertiesRoles as Lead2LeaseOneSiteProduct).OneSite == null)
-                        {
-                            // if the parser fails try deserializing to the normal class instead
-                            productPropertiesRoles = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
-                        }
+                           JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
 
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                             productUser.AssignUserPersonaId, productPropertiesRoles);
@@ -691,13 +688,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.Lead2Lease:
                         product = new Lead2LeaseProduct(_defaultUserClaim);
                         productPropertiesRoles =
-                            JsonConvert.DeserializeObject<Lead2LeaseOneSiteProduct>(batchRecord.InputJson.Trim());
-                        if ((productPropertiesRoles as Lead2LeaseOneSiteProduct).Lead2Lease == null &&
-                            (productPropertiesRoles as Lead2LeaseOneSiteProduct).OneSite == null)
-                        {
-                            // if the parser fails try deserializing to the normal class instead
-                            productPropertiesRoles = GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
-                        }
+
+                        JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
 
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
@@ -1072,21 +1064,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
-
             // try initally getting just the Lead2Lease data
             var roleProp = rolePropList as RolePropertyList;
-            var combinedRoleProp = new Lead2LeaseOneSiteProduct();
+            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
             string productResult = "";
 
             if (roleProp == null)
             {
                 // the single data failed so attempt to parse Lead2Lease and OneSite as a combined product
-                combinedRoleProp = rolePropList as Lead2LeaseOneSiteProduct;
-                if (combinedRoleProp == null)
+                combinedRoleProp = rolePropList as Dictionary<string, RolePropertyList>;
+
+                if (!combinedRoleProp.Any())
                 {
                     return "Input JSON parsing issue; Null object.";
                 }
-                roleProp = combinedRoleProp?.OneSite;
+
+                if (combinedRoleProp.Any(p => p.Key == ProductEnum.OneSite.ToString()))
+                {
+                    roleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
+                }
             }
 
             if (roleProp == null)
@@ -1114,14 +1110,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             //Lead2Lease
-            if (combinedRoleProp?.Lead2Lease != null && string.IsNullOrEmpty(productResult))
+            if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()) && string.IsNullOrEmpty(productResult))
             {
                 var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
+
+                RolePropertyList lead2Lease = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
 
                 // assign user
                 if (roleProp.IsAssigned)
                 {
-                    productResult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, combinedRoleProp.Lead2Lease.RoleList, combinedRoleProp.Lead2Lease.PropertyList);
+                    productResult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, lead2Lease.RoleList, lead2Lease.PropertyList);
                 }
                 else
                 {
@@ -1954,26 +1952,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             // try initally getting just the Lead2Lease data
             var roleProp = rolePropList as RolePropertyList;
-            var combinedRoleProp = new Lead2LeaseOneSiteProduct();
+            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
             if (roleProp == null)
             {
                 // the single data failed so attempt to parse Lead2Lease and OneSite as a combined product
-                combinedRoleProp = rolePropList as Lead2LeaseOneSiteProduct;
+                combinedRoleProp = rolePropList as Dictionary<string, RolePropertyList>;
                 if (combinedRoleProp == null)
                 {
                     return "Input JSON parsing issue; Null object.";
                 }
 
-                roleProp = combinedRoleProp?.Lead2Lease;
+                roleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
             }
 
             string oneSiteResult = "";
 
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
-            if (combinedRoleProp?.OneSite != null)
+
+            if (!combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
             {
                 var productOneSite = new ManageProductOneSite(base.UserClaim);
-                var onesiteRoleProp = combinedRoleProp.OneSite;
+                var onesiteRoleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
                 //un assign user first
                 oneSiteResult = productOneSite.UnassignUser(createUserPersonaId, assignUserPersonaId);
 

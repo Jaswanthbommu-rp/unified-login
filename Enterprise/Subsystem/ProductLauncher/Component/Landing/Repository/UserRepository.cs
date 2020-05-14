@@ -3767,17 +3767,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (!(userTypeId == (int)UserRoleType.SuperUser) && productList.Any(a => a.ProductId == (int)ProductEnum.OneSite) && productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
-                        SO.Product.Lead2Lease.Lead2LeaseOneSiteProduct l2lOneSite = new SO.Product.Lead2Lease.Lead2LeaseOneSiteProduct();
+                        Dictionary<string, RolePropertyList> l2lOneSite = new Dictionary<string, RolePropertyList>();
 
                         ProductBatch pbLead2Lease = (from a in productList
                                                      where a.ProductId == (int)ProductEnum.Lead2Lease
                                                      select a).FirstOrDefault();
-                        l2lOneSite.Lead2Lease = pbLead2Lease.InputJson;
+
+                        l2lOneSite.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
 
                         ProductBatch pbOneSite = (from a in productList
                                                   where a.ProductId == (int)ProductEnum.OneSite
                                                   select a).FirstOrDefault();
-                        l2lOneSite.OneSite = pbOneSite.InputJson;
+
+                        l2lOneSite.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
 
                         SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(l2lOneSite));
 
