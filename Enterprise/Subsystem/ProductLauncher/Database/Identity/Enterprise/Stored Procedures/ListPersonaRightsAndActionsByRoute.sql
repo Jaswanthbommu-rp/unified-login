@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [Enterprise].[ListPersonaRightsAndActionsByRoute]
+﻿CREATE PROCEDURE [Enterprise].[ListPersonaRightsAndActionsByRoute]
 ( 
 				@PersonaID bigint, @RouteID nvarchar(50)
 )
@@ -42,25 +41,28 @@ BEGIN
 	FROM Person.Persona PE
 	INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId
 	WHERE PersonaId = @PersonaId;
-	SELECT RD.RightValueTypeId, RD.DependentRightValueTypeId
-	INTO #HoldDependencies
-	FROM Enterprise.PersonaPrivilege AS PP
-		 INNER JOIN
-		 Enterprise.Role AS R
-		 ON R.RoleId = PP.RoleId AND R.PartyID = @OrganizationId
-		 INNER JOIN
-		 Enterprise.[Right] AS RT
-		 ON RT.RoleId = R.RoleId
-		 INNER JOIN
-		 Enterprise.RightValueTYpe AS RVT
-		 ON RVT.RightValueTypeId = RT.RightValueTypeId
-		 INNER JOIN
-		 Enterprise.RightDependency AS RD
-		 ON RD.RightValueTypeId = RVT.RightValueTypeId
-	WHERE pp.PersonaId = @Personaid;
+	
 	IF(@RoleTypeState = 0)
 	BEGIN
-		WITH ActionsCTE
+		with holddependencies (RightValueTypeId, DependentRightValueTypeId)
+		AS (	SELECT RD.RightValueTypeId, RD.DependentRightValueTypeId
+			--INTO #HoldDependencies
+			FROM Enterprise.PersonaPrivilege AS PP
+				 INNER JOIN
+				 Enterprise.Role AS R
+				 ON R.RoleId = PP.RoleId AND R.PartyID = @OrganizationId
+				 INNER JOIN
+				 Enterprise.[Right] AS RT
+				 ON RT.RoleId = R.RoleId
+				 INNER JOIN
+				 Enterprise.RightValueTYpe AS RVT
+				 ON RVT.RightValueTypeId = RT.RightValueTypeId
+				 INNER JOIN
+				 Enterprise.RightDependency AS RD
+				 ON RD.RightValueTypeId = RVT.RightValueTypeId
+			WHERE pp.PersonaId = @Personaid)
+
+		, ActionsCTE
 			 AS (
 			 SELECT A1.ActionID, RLVT.Value AS 'RoleName', RVT.value AS 'RightName', RL.RoleId, R.RightID, A1.ProductId, ObjectValue AS 'Action', ObjectType AS 'ObjectType', ParentActionId, A1.ActionvalueTypeId, 1 AS 'Level'
 			 FROM Enterprise.ACTION AS A1
@@ -140,7 +142,7 @@ BEGIN
 						 ON UA.ActionId = A.ActionId
 					WHERE A.ObjectValue NOT LIKE 'DefaultRoute%' AND 
 						  RD.DependentRightValueTypeId IN
-								(SELECT DependentRightValueTypeId FROM #HoldDependencies)
+								(SELECT DependentRightValueTypeId FROM HoldDependencies)
 						OPTION (OPTIMIZE FOR UNKNOWN)
 
 		IF @RouteId IN( 'SideMenu' )
@@ -326,6 +328,5 @@ BEGIN
 
 		DROP TABLE #HoldRoutes
 		DROP TABLE #HoldRights
-		DROP TABLE #HoldDependencies
 	END;
 END;
