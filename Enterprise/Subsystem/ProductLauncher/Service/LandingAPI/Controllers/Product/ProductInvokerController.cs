@@ -488,7 +488,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			if (_realpageUserId == Guid.Empty)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-			var productLogic = ManageProductFactory.GetProductLogic(productType, _personaId, _personaId, _userClaims);
+			var productLogic = ManageProductFactory.GetProductLogic(productType, _personaId, long.Parse(productUserProfile.UserId), _userClaims);
+
 			var result = productLogic.ExternalProductUserProfileChange(productUserProfile);
 
 			if (result)
