@@ -947,7 +947,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
                 $"editorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
 
+            switch ((ProductEnum)ProductId)
+            {
+                case ProductEnum.SeniorLeadManagement:
+
+                    var userAux = _dataCollector.GetUserDetailsByPersona(long.Parse(productUserProfile.UserId), ProductId);
+
+                    productUserProfile.PhoneNumbers = userAux.PhoneNumbers;
+                    productUserProfile.UserId = userAux.ProductUserId;
+
+                    break;
+
+                default:
+                    break;
+            }
+
+
+            
+
             // used from external source (migration tool) so no activity logging required
+
+            var json = JsonConvert.SerializeObject(productUserProfile);
+
             var result = ProductUserProfileChange(productUserProfile);
 
             if (result.IsSuccessStatusCode)
