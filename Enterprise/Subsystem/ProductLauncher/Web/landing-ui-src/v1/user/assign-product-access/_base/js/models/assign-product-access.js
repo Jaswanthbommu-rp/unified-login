@@ -21,13 +21,11 @@
         p.getAccessData = function (key, productId) {
             var s = this;
 
-            if (s.products[key]) {
-                if (templateModel.isProductExists(productId)) {
-                    return s.products[key].getData(productId);
-                }
-                else {
-                    return s.products[key].getData();
-                }
+            if (templateModel.isProductExists(productId)) {
+                return s.products[key].getData(productId);
+            }
+            else {
+                return s.products[key].getData();
             }
 
             return undefined;
@@ -37,6 +35,7 @@
 
         p.register = function (data) {
             var s = this;
+            logc("register model", data);
             s.products[data.key] = data.model;
             return s;
         };

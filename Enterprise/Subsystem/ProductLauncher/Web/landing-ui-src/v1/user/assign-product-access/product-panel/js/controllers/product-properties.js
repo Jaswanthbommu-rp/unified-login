@@ -11,6 +11,7 @@
             propertiesGridTransform = gridTransformSvc(),
             propertiesGridPagination = gridPaginationModel(),
             genericDataErrorReason = "",
+            userLoginName = "",
             activeProperties = [],
             inactiveProperties = [];
 
@@ -128,7 +129,8 @@
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
-                        productId: productId
+                        productId: productId,
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                     };
 
                     vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);

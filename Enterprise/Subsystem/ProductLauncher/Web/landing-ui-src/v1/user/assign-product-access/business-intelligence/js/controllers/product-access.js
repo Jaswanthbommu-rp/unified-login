@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function BusinessIntelligenceProductAccessCtrl($scope, $filter, tabsMenu, tabsData, model, pubsub, userDetailsModel) {
+    function BusinessIntelligenceProductAccessCtrl($scope, $filter, tabsMenu, tabsData, model, pubsub, userDetailsModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -18,7 +18,7 @@
         };
 
         vm.isActive = function () {
-            return model.isActive();
+            return model.isActive() && !templateModel.isProductExists(29);
         };
 
         vm.isReady = function () {
@@ -56,6 +56,7 @@
             "businessIntelligenceDataModel",
             "pubsub",
             "userDetailsModel",
+            "productTemplateModel",
             BusinessIntelligenceProductAccessCtrl
         ]);
 })(angular);
