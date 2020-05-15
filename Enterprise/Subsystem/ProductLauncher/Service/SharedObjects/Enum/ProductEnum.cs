@@ -82,7 +82,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.LeadAnalytics: return "ilm-leasing-analytics";
 				case ProductEnum.DepositAlternative: return "deposit-iq";
 				case ProductEnum.ClickPay: return "payments";
-				case ProductEnum.AoLeaseRentOption: return "lease-rent-option";
+				case ProductEnum.AoLeaseRentOption: return "lro";
+				case ProductEnum.AoAmenityOptimization: return "amenity-analytics";
+				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
+				case ProductEnum.AoRentControl: return "rent-control";
 			}
 			return null;
 		}

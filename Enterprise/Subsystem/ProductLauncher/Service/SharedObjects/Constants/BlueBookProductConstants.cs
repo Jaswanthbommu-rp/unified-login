@@ -228,5 +228,21 @@
 		/// Click Pay
 		/// </summary>
 		public const string HelpCenter = "HLP";
+		/// <summary>
+		/// AoAIRevenueManagement
+		/// </summary>
+		public const string AoAIRevenueManagement = "AIRM";
+		/// <summary>
+		/// AoAmenityOptimization
+		/// </summary>
+		public const string AoAmenityOptimization = "AA";
+		/// <summary>
+		/// AoRentControl
+		/// </summary>
+		public const string AoRentControl = "RC";
+		/// <summary>
+		/// LRO
+		/// </summary>
+		public const string AoLeaseRentOption = "LRO";
 	}
 }
