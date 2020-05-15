@@ -20,6 +20,7 @@ using System.Dynamic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -234,6 +235,81 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		///Get product roles
+		/// </summary>
+		public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
+		{
+			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductRoles at beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}");
+
+			var response = new ListResponse();
+			ListResponse result = new ListResponse();
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+			try
+			{
+				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (result.IsError)
+				{
+					WriteToErrorLog(
+						$"ManageProductAssetOptimization.GetProductRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					return result;
+				}
+
+				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				string aoCompanyId = company.CompanyInstanceSourceId;
+				if (string.IsNullOrEmpty(aoCompanyId))
+				{
+					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					WriteToDiagnosticLog("ManageProductAssetOptimization.GetProductRoles - Error looking for company id in bluebook.");
+					return result;
+				}
+				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductRoles - Found blue book company source id {aoCompanyId}");
+
+				List<AORoles> roles = GetRoles(Convert.ToInt32(aoCompanyId),productName, userLoginName, userPersonaId).ToList();
+				List<ProductRole> companyRoles = new List<ProductRole>();
+				if (roles?.Count > 0)
+				{
+					roles = roles.OrderBy(x => x.DisplayName).ToList();
+					int i = 1;
+
+					foreach (var role in roles)
+					{
+						companyRoles.Add(new ProductRole
+						{
+							ID = i.ToString(),
+							Name = role.Name,
+							Description = role.DisplayName,
+							IsAssigned = role.IsAssigned						
+						});
+						i++;
+					}					
+				}
+				
+				response = new ListResponse()
+				{
+					Records = companyRoles.Cast<object>().ToList(),
+					TotalRows = companyRoles.Count,
+					RowsPerPage = companyRoles.Count,
+					ErrorReason = string.Empty,
+					TotalPages = 1
+				};
+
+				WriteToDiagnosticLog(
+					$"Exiting ManageProductAssetOptimization.GetProductRoles method with total rows - {response.TotalRows} " +
+					$"for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+			}
+			catch (Exception ex)
+			{
+				response.IsError = true;
+				response.ErrorReason = "There was a problem getting the Product Roles.";
+				WriteToErrorLog($"ManageProductAssetOptimization.GetProductRoles Error for user with " +
+								$"editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}",
+					exception: ex);
+			}
+
+			return response;
+		}
+
+		/// <summary>
 		/// Get Companies With Properties
 		/// </summary>
 		public ListResponse GetCompaniesWithProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
@@ -290,6 +366,85 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				response.ErrorReason = "There was a problem getting the GetCompaniesWithProperties.";
 				WriteToErrorLog(
 					$"ManageProductAssetOptimization.GetCompaniesWithProperties Error for user with editorPersona id - {editorPersonaId} " +
+					$"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
+			}
+
+			return response;
+		}
+
+		/// <summary>
+		/// Get product Properties
+		/// </summary>
+		public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
+		{
+			WriteToDiagnosticLog(
+				$"ManageProductAssetOptimization.GetProductProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
+				$"and userPersonaId {userPersonaId} for product {productName}.");
+
+			var response = new ListResponse();
+			ListResponse result = new ListResponse();
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+			try
+			{
+				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (result.IsError)
+				{
+					WriteToErrorLog(
+						$"ManageProductAssetOptimization.GetProductRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					return result;
+				}
+
+				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				string aoCompanyId = company.CompanyInstanceSourceId;
+				if (string.IsNullOrEmpty(aoCompanyId))
+				{
+					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					WriteToDiagnosticLog("ManageProductAssetOptimization.GetProductProperties - Error looking for company id in bluebook.");
+					return result;
+				}
+				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductProperties - Found blue book company source id {aoCompanyId}");
+
+				IList<ProductProperty> companyProperties = new List<ProductProperty>();
+				// for  properties
+				List<AoProperty> properties = GetProperties(Convert.ToInt32(aoCompanyId), productName, userLoginName, userPersonaId).ToList();
+				properties = properties.OrderBy(x => x.PropertyName).ToList();
+
+				if (properties != null)
+				{
+					string assignedCount = $"{properties.Count(p => p.IsAssigned)} of {properties.Count}";
+
+					foreach (var property in properties)
+					{
+						companyProperties.Add(new ProductProperty
+						{
+							ID = property.PropertyId.ToString(),
+							Name = property.PropertyName,
+							IsAssigned = property.IsAssigned,
+							State = property.State
+						});
+					}					
+				}
+
+
+				response = new ListResponse()
+				{
+					Records = companyProperties.Cast<object>().ToList(),
+					TotalRows = companyProperties.Count,
+					RowsPerPage = companyProperties.Count,
+					ErrorReason = string.Empty,
+					TotalPages = 1
+				};
+
+				WriteToDiagnosticLog(
+					$"Exiting ManageProductAssetOptimization.GetProductProperties method with total rows - {response.TotalRows} for user" +
+					$" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+			}
+			catch (Exception ex)
+			{
+				response.IsError = true;
+				response.ErrorReason = "There was a problem getting the Product Properties.";
+				WriteToErrorLog(
+					$"ManageProductAssetOptimization.GetProductProperties Error for user with editorPersona id - {editorPersonaId} " +
 					$"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
 			}
 
@@ -502,6 +657,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToErrorLog($"ManageProductAssetOptimization.ManageAssetOptimizationUser. Error - Get CompanyMap - greenBookCares not enabled {blueAOCompanyInfo}");
 
 					return "Company Setup Error: Please Contact Support.";
+				}
+
+				foreach (var data in aoGbUserCompanyPropertyRoleDetails)
+				{
+					if (data.CompanyId == 0)
+					{
+						data.CompanyId = Convert.ToInt32(blueAOCompanyInfo.CompanyInstanceSourceId);
+					}
 				}
 
 				string userEmailAddress = GetUserEmailAddress(realPageId, productUserGbLogin.LoginName, productUserPersonaId);
@@ -1228,6 +1391,123 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the groups.";
 				WriteToErrorLog($"ManageProductAssetOptimization.GetPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+			}
+
+			return response;
+		}
+
+		/// <summary>
+		/// Get Property Groups
+		/// </summary>
+		public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, string productName, string userLoginName = "")
+		{
+			WriteToDiagnosticLog(
+				$"ManageProductAssetOptimization.GetProductPropertyGroups at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+			var response = new ListResponse();
+			try
+			{
+				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				IList<AoPropertyGroups> propertyGroups = new List<AoPropertyGroups>();
+				IList<AoPropertyGroup> aoPropertyGroups = new List<AoPropertyGroup>();
+				if (result.IsError)
+				{
+					WriteToErrorLog(
+						$"ManageProductAssetOptimization.GetProductPropertyGroups.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					return result;
+				}
+
+				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				string aoCompanyId = company.CompanyInstanceSourceId;
+				if (string.IsNullOrEmpty(aoCompanyId))
+				{
+					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					WriteToDiagnosticLog("ManageProductAssetOptimization.GetProductPropertyGroups - Error looking for company id in bluebook.");
+					return result;
+				}
+				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductPropertyGroups - Found blue book company source id {aoCompanyId}");
+
+				IList<int> selectedCompanies = new List<int>();
+				selectedCompanies.Add(Convert.ToInt32(aoCompanyId));
+
+				if (productName == "MA" || productName == "AX")
+				{
+					// return all groups
+					var groups = GetAllPropertyGroups().Groups;
+
+					foreach (var grp in groups)
+					{
+						propertyGroups.Add(new AoPropertyGroups { GroupId = grp.GroupId, GroupName = grp.GroupName });
+					}
+
+					WriteToDiagnosticLog(
+						$"ManageProductAssetOptimization.GetPropertyGroups-Received {groups.Count} groups for existing user.");
+
+				}
+			
+				string productUserId = _productUserId;
+				if (userPersonaId == 0 && string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
+				{
+					productUserId = userLoginName;
+				}
+				if (!string.IsNullOrEmpty(productUserId)) // Called during updating Existing User
+				{
+					// existing user
+					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
+
+					var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
+					var userProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
+					propertyGroups = GetPropertyGroupsForExistingUser(assgnPropertGroups, userProfile, productName);
+				}
+				else
+				{
+					// return all groups for new user
+					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
+					propertyGroups = GetPropertyGroupsForNewUser(assgnPropertGroups);
+				}
+
+				if (propertyGroups == null || propertyGroups.Count == 0)
+				{
+					WriteToErrorLog(
+						$"ManageProductAssetOptimization.GetProductPropertyGroups-no groups received from product for user with editorPersona id - {editorPersonaId}.");
+
+					response.IsError = true;
+					response.ErrorReason = "No groups received from product.";
+					return response;
+				}
+
+				WriteToDiagnosticLog(
+					$"ManageProductAssetOptimization.GetProductPropertyGroups-Received {propertyGroups.Count} groups for existing user with editorPersona id - {editorPersonaId} & userPersonaId {userPersonaId}");
+
+				propertyGroups = propertyGroups.OrderBy(x => x.GroupName).ToList();
+
+				foreach (var grp in propertyGroups)
+				{
+					aoPropertyGroups.Add(new AoPropertyGroup
+					{
+						ID = grp.GroupId.ToString(),
+						Name = grp.GroupName,						
+						IsAssigned = grp.IsAssigned
+					});
+				}
+
+				response = new ListResponse()
+				{
+					Records = aoPropertyGroups.Cast<object>().ToList(),
+					TotalRows = aoPropertyGroups.Count,
+					RowsPerPage = aoPropertyGroups.Count,
+					ErrorReason = string.Empty,
+					TotalPages = 1
+				};
+
+				WriteToDiagnosticLog(
+					$"Exiting ManageProductAssetOptimization.GetProductPropertyGroups method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}.");
+			}
+			catch (Exception ex)
+			{
+				response.IsError = true;
+				response.ErrorReason = "There was a problem getting the groups.";
+				WriteToErrorLog($"ManageProductAssetOptimization.GetProductPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
 
 			return response;
@@ -2675,6 +2955,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty("groupname")] public string GroupName { get; set; }
 
 		[JsonProperty("products")] public IList<DivisionGroupProduct> Products { get; set; }
+	}
+
+	public class AoPropertyGroup
+	{
+		public string ID { get; set; }		
+		public string Name { get; set; }
+		public bool IsAssigned { get; set; }
 	}
 
 	public class DivisionGroupProduct

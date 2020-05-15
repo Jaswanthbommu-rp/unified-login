@@ -64,10 +64,10 @@
             return count;
         };
 
-        p.getProductsTouched = function () {
-            var s = this;
-            return s.productsTouched;
-        };
+        // p.getProductsTouched = function () {
+        //     var s = this;
+        //     return s.productsTouched;
+        // };
 
         p.getProductControlsList = function () {
             var s = this;
@@ -398,9 +398,9 @@
                 item.isAssigned = item.id == record.id;
             });
 
-            if (s.productsTouched.indexOf(key) !== -1) {
-                s.productsTouched.push(key);
-            }
+            // if (s.productsTouched.indexOf(key) !== -1) {
+            //     s.productsTouched.push(key);
+            // }
             return s;
         };
 
@@ -450,9 +450,9 @@
                 item.isAssigned = item.id == record.id;
             });
 
-            if (s.productsTouched.indexOf(key) !== -1) {
-                s.productsTouched.push(key);
-            }
+            // if (s.productsTouched.indexOf(key) !== -1) {
+            //     s.productsTouched.push(key);
+            // }
 
             return s;
         };
