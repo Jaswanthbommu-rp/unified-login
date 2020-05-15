@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ILMLeadAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, ILMLADatamodel, pubsub) {
+    function ILMLeadAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, ILMLADatamodel, pubsub, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -17,7 +17,7 @@
         };
 
         vm.isActive = function () {
-            return ILMLADatamodel.isActive();
+            return ILMLADatamodel.isActive() && !templateModel.isProductExists(41);
         };
 
         vm.isReady = function () {
@@ -54,6 +54,7 @@
             "ILMLeadAnalyticsTabsData",
             "ilmLeadAnalyticsDataModel",
             "pubsub",
+            "productTemplateModel",
             ILMLeadAnalyticsProductAccessCtrl
         ]);
 })(angular);
