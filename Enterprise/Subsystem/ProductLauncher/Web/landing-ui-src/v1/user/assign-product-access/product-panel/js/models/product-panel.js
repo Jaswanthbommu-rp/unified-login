@@ -170,10 +170,6 @@
 
                 hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
             }
-            //s.data.records.push(s.padata);
-logc("hasRoleSelected", hasRoleSelected , s.batchData);
-logc("hasPropertySelected", hasPropertySelected , s.batchData);
-logc("hasPropertyGroupSelected", hasPropertyGroupSelected , s.batchData);
 
             if (productId == "10") {
                 hasRoleSelected = true;
