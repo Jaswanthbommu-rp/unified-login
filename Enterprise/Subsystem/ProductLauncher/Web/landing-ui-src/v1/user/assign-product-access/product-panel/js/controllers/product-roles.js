@@ -11,6 +11,7 @@
             genericDataErrorReason = "",
             assignedRoleId = 0,
             roleRights = [],
+            userLoginName = "",
             selectconfigs = [];
 
         vm.init = function () {
@@ -49,7 +50,7 @@
         };
 
         vm.isActive = function () {
-            return true; //productDataModel.isActive();
+            return productDataModel.isRoleGridActive();
         };
 
         vm.isReady = function () {
@@ -69,14 +70,15 @@
             rolesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var roleData = syncMgr.getProductRolesData(productId);
-                // logc("propertyData",propertyData,productId);
+                 logc("roleData",roleData,productId);
                 if (roleData === undefined) {
 
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
                         partyId: persona.data.organization.partyId,
-                        productId: productId
+                        productId: productId,
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                     };
 
                     vm.dataRoleReq = roleSvc.get(params, vm.setRolesData);
@@ -284,18 +286,18 @@
         };
 
         vm.updateRoleRecords = function (record) {
+            rolesGrid.busy(true);
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
-            if (record.isAssigned && record.userRights !== undefined) {
+            var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
+            if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
                 vm.roleRights = [];
                 if (record.userRights !== undefined) {
                     vm.roleRights = record.userRights;
                 }
-                var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
 
-                if (dependencyControlId > 0) {
-                    vm.loadProductControlDependencyData(dependencyControlId);
-                }
+                vm.loadProductControlDependencyData(dependencyControlId);
             }
+            rolesGrid.busy(false);
         };
 
         vm.updateMultiSelectRoleRecords = function (record) {

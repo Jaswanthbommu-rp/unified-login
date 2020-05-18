@@ -5,6 +5,7 @@
 
     function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
         var vm = this,
+            userLoginName = "",
             pgGrid = gridModel(),
             pgGridTransform = gridTransformSvc(),
             pgGridPagination = gridPaginationModel();
@@ -52,7 +53,6 @@
         };
 
         vm.selectionChange = function (record) {
-            logc("group records", record);
             if (record) {
                 syncMgr.groupToPropertySync($scope.$parent.productId, record);
             }
@@ -70,7 +70,8 @@
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
-                        productId: productId
+                        productId: productId,
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                     };
 
                     vm.dataPropReq = dataSvc.get(params, vm.setPropertyGroupData);

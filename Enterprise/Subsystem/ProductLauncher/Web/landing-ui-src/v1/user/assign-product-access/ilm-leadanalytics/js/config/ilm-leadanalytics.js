@@ -4,7 +4,7 @@
     "use strict";
 
     function config(model, productAccess, templateModel) {
-        if (!templateModel.isProductExists(41)){
+       if (!templateModel.isProductExists(41)) {
             productAccess.register({
                 model: model,
                 key: "soln309",

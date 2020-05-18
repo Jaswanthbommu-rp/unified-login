@@ -30,6 +30,21 @@
                     roleList: [],
                     propertyList: [],
                     regionList: [],
+                    propertyGroupList: [],
+                    removedPropertyList: [],
+                    isAssignedNewPropertyByDefault: false
+                }
+            };
+
+            s.batchBMData = {
+                productId: 34,
+                statusTypeId: 5,
+                retryCount: 0,
+                inputJson: {
+                    roleList: [],
+                    propertyList: [],
+                    regionList: [],
+                    propertyGroupList: [],
                     removedPropertyList: [],
                     isAssignedNewPropertyByDefault: false
                 }
@@ -40,6 +55,8 @@
             s.propertyGroups = [];
             s.isAllProperties = false;
             s._batchData = angular.copy(s.batchData);
+            s._batchBMData = angular.copy(s.batchBMData);
+            s._data = angular.copy(s.data);
         };
 
         p.setChanged = function () {
@@ -90,20 +107,38 @@
         p.getData = function (productId) {
             var s = this,
                 hasRoleSelected = false,
-                hasPropertySelected = false;
+                hasPropertySelected = false,
+                hasPropertyGroupSelected = false,
+                aoFamilyProduct = false;
+
             s.batchData = angular.copy(s._batchData);
 
             var roles = dataSyncManager.getProductRolesData(productId);
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
+            var bmroles = "";
+            if (productId == "30") {
+                logc("test",productId);
+                bmroles = dataSyncManager.getProductBenchMarkRolesData(34);
+            }
 
             s.batchData.productId = productId;
+
+            if (productId == "29" || productId == "30" || productId == "31" || productId == "32" ||
+                productId == "51" || productId == "52" || productId == "53" || productId == "54") {
+                aoFamilyProduct = true;
+            }
 
             if (roles !== undefined && roles.length) {
                 s.batchData.inputJson.roleList = [];
                 roles.forEach(function (role) {
                     if (role.isAssigned) {
-                        s.batchData.inputJson.roleList.push(role.id);
+                        if (aoFamilyProduct) {
+                            s.batchData.inputJson.roleList.push(role.name);
+                        }
+                        else {
+                            s.batchData.inputJson.roleList.push(role.id);
+                        }
                     }
                 });
 
@@ -141,14 +176,36 @@
 
             if (propertyGroups !== undefined && propertyGroups.length) {
                 s.batchData.inputJson.regionList = [];
+                s.batchData.inputJson.propertyGroupList = [];
 
                 propertyGroups.forEach(function (group) {
                     if (group.isAssigned) {
-                        s.batchData.inputJson.regionList.push(group.id);
+                        if (aoFamilyProduct) {
+                            s.batchData.inputJson.propertyGroupList.push(group.id);
+                        }
+                        else {
+                            s.batchData.inputJson.regionList.push(group.id);
+                        }
                     }
                 });
+
+                hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
             }
-            //s.data.records.push(s.padata);
+
+            if (bmroles && bmroles.length) {
+                s.batchBMData = angular.copy(s._batchBMData);
+                s.batchBMData.inputJson.roleList = [];
+                s.batchBMData.inputJson.propertyList = [];
+                s.batchBMData.inputJson.propertyList = s.batchData.inputJson.propertyList;
+                bmroles.forEach(function (role) {
+                    if (role.isAssigned) {
+                        s.batchBMData.inputJson.roleList.push(role.name);
+                    }
+                });
+
+                s.data.records.push(s.batchData);
+                s.data.records.push(s.batchBMData);
+            }
 
             if (productId == "10") {
                 hasRoleSelected = true;
@@ -159,9 +216,24 @@
                 s.batchData.inputJson.propertyList = [];
             }
 
+            if (aoFamilyProduct) {
+                if (hasRoleSelected && (hasPropertySelected || hasPropertyGroupSelected)) {
+                    return s.batchData;
+                }
+            }
+
             if (productId == "39") {
                 hasPropertySelected = true;
             }
+
+            if (productId === "30" && bmroles && bmroles.length > 0) {
+                if (hasRoleSelected && hasPropertySelected) {
+                    return s.data.records;
+                }
+            }
+
+logc("model data", s.data, s.batchData);
+
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;
             }

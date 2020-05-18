@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function PerformanceAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, PADatamodel, pubsub) {
+    function PerformanceAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, PADatamodel, pubsub, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -17,7 +17,7 @@
         };
 
         vm.isActive = function () {
-            return PADatamodel.isActive();
+            return PADatamodel.isActive() && !templateModel.isProductExists(30);
         };
 
         vm.isReady = function () {
@@ -53,6 +53,7 @@
             "performanceAnalyticsTabsData",
             "performanceAnalyticsDataModel",
             "pubsub",
+            "productTemplateModel",
             PerformanceAnalyticsProductAccessCtrl
         ]);
 })(angular);

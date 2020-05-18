@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function InvestmentAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, IADatamodel, pubsub, userDetailsModel) {
+    function InvestmentAnalyticsProductAccessCtrl($scope, $filter, tabsMenu, tabsDatasvc, IADatamodel, pubsub, userDetailsModel, templateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -18,7 +18,7 @@
         };
 
         vm.isActive = function () {
-            return IADatamodel.isActive();
+            return IADatamodel.isActive() && !templateModel.isProductExists(31);
         };
 
         vm.isReady = function () {
@@ -56,6 +56,7 @@
             "investmentAnalyticsDataModel",
             "pubsub",
             "userDetailsModel",
+            "productTemplateModel",
             InvestmentAnalyticsProductAccessCtrl
         ]);
 })(angular);
