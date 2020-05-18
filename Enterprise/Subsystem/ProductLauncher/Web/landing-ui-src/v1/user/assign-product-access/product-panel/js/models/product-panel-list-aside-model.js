@@ -5,7 +5,7 @@
 
     function factory() {
         var model = {};
-        var productLists = [1, 3]; // list of panels don't require the footer buttons
+        var productLists = [44]; // list of panels require the footer buttons
         model.getName = function () {
             return model.Name;
         };
@@ -39,15 +39,15 @@
         };
 
         model.FooterRequired = function (productId){
-            var flag = true;
+            var flag = false;
             productLists.forEach(function (id) {
                 if(productId == id){
-                   flag = false;
+                   flag = true;
                 }
             });
             return flag;
         };
-        
+
         model.reset = function () {
             model = {};
         };
