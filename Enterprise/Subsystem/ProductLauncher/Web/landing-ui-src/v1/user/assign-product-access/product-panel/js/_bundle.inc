@@ -24,3 +24,4 @@
 {{{ include("services/controls-data.js") }}}
 {{{ include("services/product-control-dependency-data.js") }}}
 {{{ include("services/property-group-data.js") }}}
+{{{ include("services/group-properties-data.js") }}}
