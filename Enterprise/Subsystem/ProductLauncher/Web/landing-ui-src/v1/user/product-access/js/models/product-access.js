@@ -37,7 +37,7 @@
                     productId = soln.data.productId,
                     isDisabled = soln.isProductDisabled(),
                     prodData = productAccess.getAccessData(key, productId);
-//logc("getAccessData", prodData, key. productId);
+                logc("getAccessData", prodData, key, productId);
                 if (prodData && !isDisabled) {
                     if (angular.isArray(prodData) && prodData.length > 0) {
                         //For AO Prduct family loop through the company data
@@ -70,11 +70,14 @@
                     touched = soln.wasTouched(),
                     assignmentChanged = soln.assignmentChanged(),
                     accessChanged = productAccess.accessChanged(key);
-
+                logc("getAccessData", prodData, key, productId);
+                // logc("touched", touched);
+                // logc("assignmentChanged", assignmentChanged);
+                // logc("accessChanged", accessChanged);
                 if (assignmentChanged && !isDisabled) {
                     if (isAssigned) {
                         prodData = productAccess.getAccessData(key, productId);
-
+                        logc("prodData1", prodData, productId);
                         if (angular.isArray(prodData) && prodData.length > 0) {
                             prodData.forEach(function (data) {
                                 data.inputJson.isAssigned = isAssigned;
@@ -110,9 +113,20 @@
                 }
                 else if (templateModel.isProductExists(productId)) {
                     if (isAssigned && touched && !isDisabled) {
-                         prodData = productAccess.getAccessData(key, productId);
-                         prodData.inputJson.isAssigned = isAssigned;
-                         data.productBatch.push(prodData);
+                        prodData = productAccess.getAccessData(key, productId);
+                        logc("prodData2", prodData, productId);
+                        //prodData.inputJson.isAssigned = isAssigned;
+                        //data.productBatch.push(prodData);
+                        if (angular.isArray(prodData) && prodData.length > 0) {
+                            prodData.forEach(function (batch) {
+                                batch.inputJson.isAssigned = isAssigned;
+                                data.productBatch.push(batch);
+                            });
+                        }
+                        else {
+                            prodData.inputJson.isAssigned = isAssigned;
+                            data.productBatch.push(prodData);
+                        }
                     }
                 }
                 else if (isAssigned && accessChanged && !isDisabled) {
