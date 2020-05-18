@@ -9,6 +9,8 @@
 {{{ include("controllers/product-info-icon.js") }}}
 {{{ include("controllers/product-list-aside.js") }}}
 {{{ include("controllers/product-property-group.js") }}}
+{{{ include("controllers/additional-rights.js") }}}
+{{{ include("controllers/custom-roles.js") }}}
 
 {{{ include("models/product-panel.js") }}}
 {{{ include("models/config-data-model.js") }}}

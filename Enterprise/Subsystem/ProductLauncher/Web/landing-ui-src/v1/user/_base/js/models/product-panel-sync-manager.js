@@ -20,6 +20,7 @@
             s.propertyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
+            s.customRoleMap= {};
             s.sidePanelDataMap = {};
             s.productGridConfigMap = {};
             s.productAsideGridConfigMap = {};
@@ -31,6 +32,8 @@
             s.productSelectTypeConfigMap = {};
             s.productDependencyDataMap = {};
             s.productPresetRolesMap = {};
+            s.productPresetCustomRolesMap = {};
+
 
             s.originalPropertyListMap = {};
 
@@ -44,7 +47,9 @@
             s.productsTouched = [];
             s.originalPropertyList = [];
             s.roleList = [];
+            s.customRoleList = [];
             s.presetRoleList = [];
+            s.presetCustomRoleList = [];
             s.sidePanelDataList = [];
 
         };
@@ -88,6 +93,11 @@
             var s = this;
             return s.roleList;
         };
+        p.getCustomRoleList = function () {
+            var s = this;
+            return s.customRoleList;
+        };
+
 
         p.getProductGridConfig = function (productId, tabName) {
             var s = this,
@@ -175,6 +185,16 @@
             // logc("master data",product,s.roleMap, productRolesList);
             return productRolesList;
         };
+        p.getProductCustomRolesData = function (product) {
+            var s = this,
+                productCustomRolesList;
+
+            if (s.customRoleMap['product' + product] !== undefined) {
+                productCustomRolesList = s.customRoleMap['product' + product].customRoles;
+            }
+            // logc("master data",product,s.roleMap, productRolesList);
+            return productCustomRolesList;
+        };
 
         p.getProductPresetRolesData = function (product) {
             var s = this,
@@ -182,6 +202,16 @@
 
             if (s.productPresetRolesMap['product' + product] !== undefined) {
                 productRolesList = s.productPresetRolesMap['product' + product].roles;
+            }
+            // logc("master data",product,s.roleMap, productRolesList);
+            return productRolesList;
+        };
+        p.getProductPresetCustomRolesData = function (product) {
+            var s = this,
+                productRolesList;
+
+            if (s.productPresetCustomRolesMap['product' + product] !== undefined) {
+                productRolesList = s.productPresetCustomRolesMap['product' + product].roles;
             }
             // logc("master data",product,s.roleMap, productRolesList);
             return productRolesList;
@@ -302,11 +332,24 @@
             s.renderRoleMap(key);
             return s;
         };
+        p.setCustomRoleList = function (list, key) {
+            var s = this;
+            s.customRoleList = list;
+            s.renderCustomRoleMap(key);
+            return s;
+        };
 
         p.setPresetRoleList = function (list, key) {
             var s = this;
             s.presetRoleList = list;
             s.renderPresetRoleMap(key);
+            return s;
+        };
+
+        p.setPresetCustomRoleList = function (list, key) {
+            var s = this;
+            s.presetCustomRoleList = list;
+            s.renderPresetCustomRoleMap(key);
             return s;
         };
 
@@ -403,6 +446,24 @@
             }
             return s;
         };
+        p.selectedCustomRoleSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.customRoleMap['product' + key].customRoles;
+
+            roleData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            if (s.productsTouched.indexOf(key) !== -1) {
+                s.productsTouched.push(key);
+            }
+            return s;
+        };
 
         p.multiSelectedRoleSync = function (key, record) {
             var s = this,
@@ -428,6 +489,23 @@
                 selectState = false;
 
             roleData = s.roleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                item.isAssigned = false;
+                if (list.contains(parseInt(item.id))) {
+                    item.isAssigned = true;
+                }
+            });
+
+            return s;
+        };
+        p.setSelectedPresetCustomRoleSync = function (key, list) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.customRoleMap['product' + key].customRoles;
 
             roleData.forEach(function (item) {
                 item.isAssigned = false;
@@ -690,6 +768,15 @@
                 };
             }
         };
+        p.renderCustomRoleMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.customRoleList)) {
+                s.customRoleMap['product' + key] = {
+                    customRoles: s.customRoleList
+                };
+            }
+        };
 
         p.renderPresetRoleMap = function (key) {
             var s = this;
@@ -697,6 +784,16 @@
             if (!angular.equals({}, s.presetRoleList)) {
                 s.productPresetRolesMap['product' + key] = {
                     roles: s.presetRoleList
+                };
+            }
+        };
+
+        p.renderPresetCustomRoleMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.presetCustomRoleList)) {
+                s.productPresetCustomRolesMap['product' + key] = {
+                    roles: s.presetCustomRoleList
                 };
             }
         };
@@ -803,17 +900,20 @@
             s.companyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
+            s.customRoleMap = {};
             s.bmRoleMap = {};
             s.groupList = [];
             s.propertyList = [];
             s.propertyGroupList = [];
             s.roleList = [];
+            s.customRoleList = [];
             s.originalPropertyList = [];
             s.bmRoleList = [];
             s.companyGroupList = [];
             s.productControlsList = [];
             s.productControlsMap = {};
             s.productPresetRolesMap ={};
+            s.productPresetCustomRolesMap ={};
         };
 
         return new ProductDataSyncManager();

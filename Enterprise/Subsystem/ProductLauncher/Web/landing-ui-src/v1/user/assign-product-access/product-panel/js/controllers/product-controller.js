@@ -125,16 +125,20 @@
                             }
 
                             var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
-                            if (tabName === "rights") {
+                            
+                            if($scope.productId ===18 && tabName === "roles"){
+                                tabName="customroles";
+                            }
+                            if (tabName === "rights" || tabName === "additionalrights") {
                                 tabName = "roles";
                             }
+                            
                             var tab = {
                                 id: tabGrp.displayName.toLowerCase(),
                                 text: tabGrp.displayName,
                                 isActive: activeTab,
                                 incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
                             };
-
                             allTabs.push(tab);
                             if (!hideTab) {
                                 initialTabs.push(tab);
