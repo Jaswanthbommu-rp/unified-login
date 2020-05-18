@@ -58,5 +58,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userLoginName"></param>
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
+		/// <summary>
+		/// Get Product Group Properties
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>		
+		/// <param name="productId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="propertyGroupId"></param>
+		/// <param name="datafilter"></param>		
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, int propertyGroupId, RequestParameter datafilter);
 	}
 }
