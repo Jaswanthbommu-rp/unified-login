@@ -9,6 +9,7 @@
 {{{ include("controllers/product-info-icon.js") }}}
 {{{ include("controllers/product-list-aside.js") }}}
 {{{ include("controllers/product-property-group.js") }}}
+{{{ include("controllers/product-benchmark-roles.js") }}}
 
 {{{ include("models/product-panel.js") }}}
 {{{ include("models/config-data-model.js") }}}

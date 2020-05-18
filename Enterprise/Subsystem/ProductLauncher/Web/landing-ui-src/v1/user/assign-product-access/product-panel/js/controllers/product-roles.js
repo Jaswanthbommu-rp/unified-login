@@ -45,7 +45,7 @@
         };
 
         vm.isActive = function () {
-            return true; //productDataModel.isActive();
+            return productDataModel.isRoleGridActive();
         };
 
         vm.isReady = function () {
@@ -65,7 +65,7 @@
             rolesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var roleData = syncMgr.getProductRolesData(productId);
-                // logc("propertyData",propertyData,productId);
+                 logc("roleData",roleData,productId);
                 if (roleData === undefined) {
 
                     var params = {

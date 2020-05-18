@@ -36,11 +36,27 @@
                 }
             };
 
+            s.batchBMData = {
+                productId: 34,
+                statusTypeId: 5,
+                retryCount: 0,
+                inputJson: {
+                    roleList: [],
+                    propertyList: [],
+                    regionList: [],
+                    propertyGroupList: [],
+                    removedPropertyList: [],
+                    isAssignedNewPropertyByDefault: false
+                }
+            };
+
             s.roles = [];
             s.properties = [];
             s.propertyGroups = [];
             s.isAllProperties = false;
             s._batchData = angular.copy(s.batchData);
+            s._batchBMData = angular.copy(s.batchBMData);
+            s._data = angular.copy(s.data);
         };
 
         p.setChanged = function () {
@@ -100,6 +116,11 @@
             var roles = dataSyncManager.getProductRolesData(productId);
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
+            var bmroles = "";
+            if (productId == "30") {
+                logc("test",productId);
+                bmroles = dataSyncManager.getProductBenchMarkRolesData(34);
+            }
 
             s.batchData.productId = productId;
 
@@ -171,6 +192,21 @@
                 hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
             }
 
+            if (bmroles && bmroles.length) {
+                s.batchBMData = angular.copy(s._batchBMData);
+                s.batchBMData.inputJson.roleList = [];
+                s.batchBMData.inputJson.propertyList = [];
+                s.batchBMData.inputJson.propertyList = s.batchData.inputJson.propertyList;
+                bmroles.forEach(function (role) {
+                    if (role.isAssigned) {
+                        s.batchBMData.inputJson.roleList.push(role.name);
+                    }
+                });
+
+                s.data.records.push(s.batchData);
+                s.data.records.push(s.batchBMData);
+            }
+
             if (productId == "10") {
                 hasRoleSelected = true;
             }
@@ -189,6 +225,14 @@
             if (productId == "39") {
                 hasPropertySelected = true;
             }
+
+            if (productId === "30" && bmroles && bmroles.length > 0) {
+                if (hasRoleSelected && hasPropertySelected) {
+                    return s.data.records;
+                }
+            }
+
+logc("model data", s.data, s.batchData);
 
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;

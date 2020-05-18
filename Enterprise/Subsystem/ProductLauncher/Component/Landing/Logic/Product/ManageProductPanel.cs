@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ManageProductOneSite IManageProductOneSite_manageProductOneSite { get; private set; }
 		#endregion
 
-		#region
+		#region public methods
 		public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
 		{
 			ListResponse result = new ListResponse();
@@ -293,6 +293,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.OnSite:
 					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
 					result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
+					break;
+				case (int)ProductEnum.ResidentPortal:
+					List<IMessagingGroups> messageGroupsList = new List<IMessagingGroups>();
+					ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
+					messageGroupsList = manageProductResidentPortal.ListMessageGroups(editorPersonaId, userPersonaId);
+					if (messageGroupsList?.Count > 0){
+						result.Records = messageGroupsList.Cast<object>().ToList();
+						result.TotalRows = messageGroupsList.Count;
+						result.RowsPerPage = messageGroupsList.Count;
+						result.TotalPages = 1;
+						result.ErrorReason = string.Empty;
+						result.Additional = null;
+					}
 					break;
 				case (int)ProductEnum.AoBusinessIntelligence:
 				case (int)ProductEnum.AoInvestmentAnalytics:
