@@ -7,14 +7,14 @@
         var vm = this,
             asideGrid = gridModel(),
             asidegridTransform = gridTransformSvc(),
-            asidegridPagination = gridPaginationModel();
-
+            asidegridPagination = gridPaginationModel(),
+            isBtnFooterRequired;
         vm.init = function () {
             vm.subtitle = listAsideModel.getName();
             vm.tabName = listAsideModel.getTabName();
             vm.productId = listAsideModel.getProductID();
             vm.asideGrid = asideGrid;
-            asidegridTransform.watch(asideGrid);
+            vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
 
             var configTab = "";
             if (vm.tabName == "property"){
