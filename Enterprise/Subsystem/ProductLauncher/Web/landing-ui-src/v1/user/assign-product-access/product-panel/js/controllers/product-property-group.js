@@ -53,7 +53,6 @@
         };
 
         vm.selectionChange = function (record) {
-            logc("group records", record);
             if (record) {
                 syncMgr.groupToPropertySync($scope.$parent.productId, record);
             }
