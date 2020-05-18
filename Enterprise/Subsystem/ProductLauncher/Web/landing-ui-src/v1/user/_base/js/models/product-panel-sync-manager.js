@@ -21,6 +21,7 @@
             s.propertyMap = {};
             s.roleMap = {};
             s.benchMarkRoleMap = {};
+            s.additionalRightsMap = {};
             s.sidePanelDataMap = {};
             s.productGridConfigMap = {};
             s.productAsideGridConfigMap = {};
@@ -46,6 +47,7 @@
             s.originalPropertyList = [];
             s.roleList = [];
             s.benchMarkRoleList = [];
+            s.additionalRightsList = [];
             s.presetRoleList = [];
             s.sidePanelDataList = [];
 
@@ -189,6 +191,17 @@
             return productBMRolesList;
         };
 
+        p.getProductAdditionalRightsData = function (product) {
+            var s = this,
+            productadditionalRightsList;
+
+            if (s.additionalRightsMap['product' + product] !== undefined) {
+                productadditionalRightsList = s.additionalRightsMap['product' + product].roles;
+            }
+
+            return productadditionalRightsList;
+        };
+
         p.getProductPresetRolesData = function (product) {
             var s = this,
                 productRolesList;
@@ -322,7 +335,12 @@
             s.renderBenchMarkRoleMap(key);
             return s;
         };
-
+        p.setAdditionalRightsList = function (list, key) {
+            var s = this;
+            s.additionalRightsList = list;
+            s.renderAdditionalRightsMap(key);
+            return s;
+        };
         p.setPresetRoleList = function (list, key) {
             var s = this;
             s.presetRoleList = list;
@@ -436,7 +454,21 @@
 
             return s;
         };
+        p.selectedAdditionalRightsSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
 
+            roleData = s.additionalRightsMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            return s;
+        };
 
         p.multiSelectedRoleSync = function (key, record) {
             var s = this,
@@ -462,6 +494,22 @@
                 selectState = false;
 
             roleData = s.benchMarkRoleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                if (item.id == record.id) {
+                    item.isAssigned = record.isAssigned;
+                }
+            });
+
+            return s;
+        };
+        p.multiSelectAdditionalRightsSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.additionalRightsMap['product' + key].roles;
 
             roleData.forEach(function (item) {
                 if (item.id == record.id) {
@@ -608,6 +656,21 @@
                 totalCount = 0;
 
             roleList = s.benchMarkRoleMap['product' + productId].roles;
+
+            roleList.forEach(function (item) {
+                item["isAssigned"] = selected;
+            });
+
+            return s;
+        };
+        p.allAdditionalRightsSync = function (productId, selected) {
+            var s = this,
+                roleList,
+                selectState = false,
+                assignedCount = 0,
+                totalCount = 0;
+
+            roleList = s.additionalRightsMap['product' + productId].roles;
 
             roleList.forEach(function (item) {
                 item["isAssigned"] = selected;
@@ -763,7 +826,15 @@
                 };
             }
         };
+        p.renderAdditionalRightsMap = function (key) {
+            var s = this;
 
+            if (!angular.equals({}, s.additionalRightsList)) {
+                s.additionalRightsMap['product' + key] = {
+                    roles: s.additionalRightsList
+                };
+            }
+        };
         p.renderPresetRoleMap = function (key) {
             var s = this;
 
