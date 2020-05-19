@@ -954,16 +954,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var userAux = _dataCollector.GetUserDetailsByPersona(long.Parse(productUserProfile.UserId), ProductId);
 
                     productUserProfile.PhoneNumbers = userAux.PhoneNumbers;
-                    productUserProfile.UserId = userAux.ProductUserId;
-
                     break;
 
                 default:
                     break;
             }
-
-
-            
 
             // used from external source (migration tool) so no activity logging required
 
