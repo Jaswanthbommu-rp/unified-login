@@ -324,6 +324,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			return result;
 		}
+
+		public ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId,int propertyGroupId, RequestParameter datafilter)
+		{
+			ListResponse result = new ListResponse();
+			IProduct product;
+			string productName = Enum.GetName(typeof(ProductEnum), productId);
+			string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+			switch (productId)
+			{
+				case (int)ProductEnum.AoBusinessIntelligence:
+				case (int)ProductEnum.AoInvestmentAnalytics:
+				case (int)ProductEnum.AoPerformanceAnalytics:
+				case (int)ProductEnum.AoRevenueManagement:
+				case (int)ProductEnum.AoBenchmarking:
+				case (int)ProductEnum.AoLeaseRentOption:
+				case (int)ProductEnum.AoAmenityOptimization:
+				case (int)ProductEnum.AoAIRevenueManagement:
+				case (int)ProductEnum.AoRentControl:
+					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+					result = manageProductAo.GetPropertiesInGroup(editorPersonaId, userPersonaId, propertyGroupId);
+					break;
+				
+				default:
+					break;
+			}
+			return result;
+		}
 		#endregion
 	}
 }

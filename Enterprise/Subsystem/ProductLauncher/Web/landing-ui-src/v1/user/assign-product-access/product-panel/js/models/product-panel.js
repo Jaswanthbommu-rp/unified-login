@@ -118,8 +118,7 @@
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
             var bmroles = "";
             if (productId == "30") {
-                logc("test",productId);
-                bmroles = dataSyncManager.getProductBenchMarkRolesData(34);
+                bmroles = dataSyncManager.getProductBenchMarkRolesData("34");
             }
 
             s.batchData.productId = productId;
@@ -192,11 +191,14 @@
                 hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
             }
 
-            if (bmroles && bmroles.length) {
+            if (productId == "30" && bmroles !== undefined && bmroles.length > 0) {
+                s.data = angular.copy(s._data);
                 s.batchBMData = angular.copy(s._batchBMData);
+
                 s.batchBMData.inputJson.roleList = [];
                 s.batchBMData.inputJson.propertyList = [];
                 s.batchBMData.inputJson.propertyList = s.batchData.inputJson.propertyList;
+
                 bmroles.forEach(function (role) {
                     if (role.isAssigned) {
                         s.batchBMData.inputJson.roleList.push(role.name);
@@ -217,7 +219,12 @@
             }
 
             if (aoFamilyProduct) {
-                if (hasRoleSelected && (hasPropertySelected || hasPropertyGroupSelected)) {
+                if (productId == "30" && bmroles && bmroles.length > 0) {
+                    if (hasRoleSelected && hasPropertySelected) {
+                        return s.data.records;
+                    }
+                }
+                else if (hasRoleSelected && (hasPropertySelected || hasPropertyGroupSelected)) {
                     return s.batchData;
                 }
             }
@@ -225,14 +232,6 @@
             if (productId == "39") {
                 hasPropertySelected = true;
             }
-
-            if (productId === "30" && bmroles && bmroles.length > 0) {
-                if (hasRoleSelected && hasPropertySelected) {
-                    return s.data.records;
-                }
-            }
-
-logc("model data", s.data, s.batchData);
 
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;
