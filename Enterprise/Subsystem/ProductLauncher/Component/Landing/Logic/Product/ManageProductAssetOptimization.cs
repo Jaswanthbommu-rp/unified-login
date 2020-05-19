@@ -1843,7 +1843,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// Get token values from cache
 			var propertyGroups = groupCache["propertyGroups_AO"] as AoVisiblePropertyGroups;
 
-			if (propertyGroups == null)
+			if (propertyGroups.Groups == null)
 			{
 				WriteToDiagnosticLog("ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups.");
 
