@@ -20,6 +20,7 @@
             s.propertyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
+            s.benchMarkRoleMap = {};
             s.sidePanelDataMap = {};
             s.productGridConfigMap = {};
             s.productAsideGridConfigMap = {};
@@ -44,6 +45,7 @@
             s.productsTouched = [];
             s.originalPropertyList = [];
             s.roleList = [];
+            s.benchMarkRoleList = [];
             s.presetRoleList = [];
             s.sidePanelDataList = [];
 
@@ -64,10 +66,10 @@
             return count;
         };
 
-        p.getProductsTouched = function () {
-            var s = this;
-            return s.productsTouched;
-        };
+        // p.getProductsTouched = function () {
+        //     var s = this;
+        //     return s.productsTouched;
+        // };
 
         p.getProductControlsList = function () {
             var s = this;
@@ -172,8 +174,19 @@
             if (s.roleMap['product' + product] !== undefined) {
                 productRolesList = s.roleMap['product' + product].roles;
             }
-            // logc("master data",product,s.roleMap, productRolesList);
+
             return productRolesList;
+        };
+
+         p.getProductBenchMarkRolesData = function (product) {
+            var s = this,
+                productBMRolesList;
+
+            if (s.benchMarkRoleMap['product' + product] !== undefined) {
+                productBMRolesList = s.benchMarkRoleMap['product' + product].roles;
+            }
+
+            return productBMRolesList;
         };
 
         p.getProductPresetRolesData = function (product) {
@@ -303,6 +316,13 @@
             return s;
         };
 
+        p.setBenchMarkRoleList = function (list, key) {
+            var s = this;
+            s.benchMarkRoleList = list;
+            s.renderBenchMarkRoleMap(key);
+            return s;
+        };
+
         p.setPresetRoleList = function (list, key) {
             var s = this;
             s.presetRoleList = list;
@@ -398,11 +418,25 @@
                 item.isAssigned = item.id == record.id;
             });
 
-            if (s.productsTouched.indexOf(key) !== -1) {
-                s.productsTouched.push(key);
-            }
             return s;
         };
+
+         p.selectedBenchMarkRoleSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.benchMarkRoleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            return s;
+        };
+
 
         p.multiSelectedRoleSync = function (key, record) {
             var s = this,
@@ -411,6 +445,23 @@
                 selectState = false;
 
             roleData = s.roleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                if (item.id == record.id) {
+                    item.isAssigned = record.isAssigned;
+                }
+            });
+
+            return s;
+        };
+
+         p.multiSelectBenchMarkRoleSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.benchMarkRoleMap['product' + key].roles;
 
             roleData.forEach(function (item) {
                 if (item.id == record.id) {
@@ -449,10 +500,6 @@
                 item.isAssigned = false;
                 item.isAssigned = item.id == record.id;
             });
-
-            if (s.productsTouched.indexOf(key) !== -1) {
-                s.productsTouched.push(key);
-            }
 
             return s;
         };
@@ -550,6 +597,22 @@
             });
 
             roleList.assignedRoles = assignedCount + " of " + totalCount;
+            return s;
+        };
+
+         p.allBenchMarkRolesSync = function (productId, selected) {
+            var s = this,
+                roleList,
+                selectState = false,
+                assignedCount = 0,
+                totalCount = 0;
+
+            roleList = s.benchMarkRoleMap['product' + productId].roles;
+
+            roleList.forEach(function (item) {
+                item["isAssigned"] = selected;
+            });
+
             return s;
         };
 
@@ -687,6 +750,16 @@
             if (!angular.equals({}, s.roleList)) {
                 s.roleMap['product' + key] = {
                     roles: s.roleList
+                };
+            }
+        };
+
+        p.renderBenchMarkRoleMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.benchMarkRoleList)) {
+                s.benchMarkRoleMap['product' + key] = {
+                    roles: s.benchMarkRoleList
                 };
             }
         };

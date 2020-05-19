@@ -125,8 +125,12 @@
                             }
 
                             var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
+                            logc(tabName);
                             if (tabName === "rights") {
                                 tabName = "roles";
+                            }
+                            if (tabName === "markets" || tabName === "messaginggroups") {
+                                tabName = "propertygroup";
                             }
                             var tab = {
                                 id: tabGrp.displayName.toLowerCase(),
@@ -139,6 +143,7 @@
                             if (!hideTab) {
                                 initialTabs.push(tab);
                             }
+                            logc("tabsdata", allTabs);
                         });
                     }
                 });
@@ -150,11 +155,18 @@
 
         vm.setTabsConfigData = function (data) {
             var productId = $scope.productId;
+            var bmProductId = 34;
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             var tabName = tabGrp.displayName.replace(/ /g, "");
+                            if (tabName === "Markets" || tabName === "MessagingGroups") {
+                                tabName = "PropertyGroup";
+                            }
+                            else if (tabName === "Rights") {
+                                tabName = "Roles";
+                            }
 
                             tabGrp.controls.forEach(function (tab) {
                                 if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
@@ -168,14 +180,23 @@
                                             }
                                         });
                                     }
-                                    if (productModel.getProductGridConfig(productId, tabName) === undefined) {
-                                        if (tabName === "Rights") {
-                                            tabName = "Roles";
+
+                                    if (tabName === "BenchmarkingRole") {
+                                        if (productModel.getProductGridConfig(bmProductId, tabName) === undefined) {
+                                            var bmcnfg = configData.getGridConfigTypes(tab, tabName);
+                                            var bmgridConfig = vm.getGridConfig(bmcnfg, showSelectAll);
+
+                                            productModel.renderProductGridConfigMap(bmProductId, tabName, bmgridConfig);
                                         }
-                                        var cnfg = configData.getGridConfigTypes(tab, tabName);
-                                        var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
-                                        productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
-                                        vm.setProductDependency(tab, productId);
+                                    }
+                                    else {
+                                        if (productModel.getProductGridConfig(productId, tabName) === undefined) {
+                                            var cnfg = configData.getGridConfigTypes(tab, tabName);
+                                            var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
+
+                                            productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
+                                            vm.setProductDependency(tab, productId);
+                                        }
                                     }
 
                                     //Check and Set any Aside List Grid
