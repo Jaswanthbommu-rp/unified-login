@@ -281,7 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
                     case ProductEnum.SeniorLeadManagement:
-                        product = new SeniorLeadManagementProduct(productUser.ProductName);
+                        product = new SeniorLeadManagementProduct(_defaultUserClaim, productUser.ProductName);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(productUser.InputJson);
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -445,7 +445,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(ProductEnum.SeniorLeadManagement);
+                    product = new SeniorLeadManagementProduct(_defaultUserClaim, ProductEnum.SeniorLeadManagement);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 default:
@@ -566,7 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     case ProductEnum.SeniorLeadManagement:
-                        product = new SeniorLeadManagementProduct(productUser.ProductName);
+                        product = new SeniorLeadManagementProduct(_defaultUserClaim, productUser.ProductName);
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     default:
@@ -781,7 +781,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     case ProductEnum.SeniorLeadManagement:
-                        product = new SeniorLeadManagementProduct(batchRecord.ProductName);
+                        product = new SeniorLeadManagementProduct(_defaultUserClaim, batchRecord.ProductName);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -1125,6 +1125,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     // Unassign User
                     productResult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
+                }
+            }
+
+            //SeniorLeadManagement
+            if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()) && string.IsNullOrEmpty(productResult))
+            {
+                var productSeniorLeadManagement = new SeniorLeadManagementProduct(base.UserClaim, ProductEnum.SeniorLeadManagement);
+
+                RolePropertyList seniorLeadManagement = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
+
+                // assign user
+                if (roleProp.IsAssigned)
+                {
+                    productResult = productSeniorLeadManagement.CreateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, seniorLeadManagement);
+                }
+                else
+                {
+                    // Unassign User
+                    productResult = productSeniorLeadManagement.UpdateProductUserProfile(createUserRealPageId, createUserPersonaId, assignUserPersonaId);
                 }
             }
 
@@ -3482,8 +3501,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        /// <param name="productType">Identify products by id</param>
-        public SeniorLeadManagementProduct(ProductEnum productType) : base((int)productType, null)
+        /// <param name="userClaim">Use to hold user claim related information</param>
+        /// <param name="productType">Product Type</param>
+        public SeniorLeadManagementProduct(DefaultUserClaim userClaim, ProductEnum productType) : base((int)productType, userClaim, null)
         {
         }
 
