@@ -34,12 +34,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                     try
                     {
                         ctx.Request.Scheme = "https";
+                        if (ctx.Request.Path.HasValue && (ctx.Request.Path.Value.Contains("openid-configuration") || ctx.Request.Path.Value.Contains(".well-known/jwks")))
+                        {
+                            ctx.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0, private";
+                            ctx.Response.Headers["Pragma"] = "no-cache";
+                            ctx.Response.Headers["Expires"] = "0";
+                        }
                     }
                     catch (OperationCanceledException)
                     {
                     }
 
-                    return next();
+                    return next.Invoke();
                 });
 
                 var levelSwitch = new LoggingLevelSwitch {MinimumLevel = (LogEventLevel) IdentityServerConfig.GetIdentityServerLogEventLevel()};
