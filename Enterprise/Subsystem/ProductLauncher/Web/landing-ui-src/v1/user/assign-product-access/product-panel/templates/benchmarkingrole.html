@@ -2,7 +2,7 @@
     <div class="product-panel-roles-body" ng-if="!cpr.isDataError">
         <div class="grid-controls">
             <div class="grid-control-item">
-                <rp-toggle model="cpr.rolesGrid.filtersModel.state.active" options="{
+                <rp-toggle model="cpr.bmrolesGrid.filtersModel.state.active" options="{
                     defaultText: 'Filter',
                     activeIconClass: 'rp-icon-filter',
                     defaultIconClass: 'rp-icon-filter active'
@@ -12,7 +12,7 @@
         </div>
         <rp-grid ng-if="cpr.isActive()" model="cpr.bmrolesGrid" class="product-panel-roles-grid">
         </rp-grid>
-        <rp-grid-pagination ng-if="cpr.isActive()" model="bmroleGridPagination">
+        <rp-grid-pagination ng-if="cpr.isActive()" model="bmrolesGridPagination">
         </rp-grid-pagination>
     </div>
     <div class="product-panel-roles-error" ng-if="cpr.isDataError">
