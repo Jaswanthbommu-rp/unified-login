@@ -19,10 +19,13 @@
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
 
             var configTab = "";
-            if (vm.tabName == "property") {
+            if (vm.tabName.toLowerCase() === "property") {
                 configTab = "Properties";
             }
-            else if (vm.tabName == "role") {
+            else if (vm.tabName.toLowerCase() === "propertygroup") {
+                configTab = "PropertyGroup";
+            }
+            else if (vm.tabName.toLowerCase() == "role") {
                 configTab = "Roles";
             }
 

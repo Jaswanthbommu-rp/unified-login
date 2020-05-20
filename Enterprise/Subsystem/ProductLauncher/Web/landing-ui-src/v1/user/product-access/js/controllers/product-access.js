@@ -3,13 +3,20 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductAccessCtrl($scope, $params, model, timeout, tabs, modal, accessNotDefinedModel, helpData, security) {
+    function ProductAccessCtrl($scope, $params, model, timeout, tabs, modal, accessNotDefinedModel, helpData, security, productPanelModel) {
         var vm = this;
 
         vm.init = function () {
-            vm.register();
+           // vm.register();
             vm.security = security;
             vm.disableProductTab = false;
+
+            if (productPanelModel.isReady()) {
+                vm.register();
+            }
+            else {
+                vm.productPanelWatch = productPanelModel.subscribe(vm.register);
+            }
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
         };
 
@@ -27,7 +34,7 @@
         };
 
         vm.onTabActive = function () {
-            var helpWidget = document.querySelector('omnibar-unified-help');            
+            var helpWidget = document.querySelector('omnibar-unified-help');
             helpWidget.helpQuery = 'pg=ul-productAccess&vr=40&scrver=350';
             vm.active = true;
             model.setActive();
@@ -71,7 +78,7 @@
             model.reset();
             vm.destWatch();
             tabs.remove("productAccess");
-
+            vm.productPanelWatch();
             vm = undefined;
             $scope = undefined;
         };
@@ -91,6 +98,7 @@
             "accessNotDefinedModel",
             "rpGhHelpData",
             "routeSecurity",
+            "productTemplateModel",
             ProductAccessCtrl
         ]);
 })(angular);
