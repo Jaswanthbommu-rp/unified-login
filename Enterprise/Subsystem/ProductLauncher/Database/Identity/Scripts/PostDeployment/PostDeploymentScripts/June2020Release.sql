@@ -178,7 +178,7 @@ BEGIN
 			VALUES (205, NULL, 8, N'ILMLeasingAnalyticsProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
 			
 			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-			VALUES (206, 205, 9, N'ILMLeasingAnalyticsProductAccessPropertyGroupsTabUIId', N'Property Groups', NULL, 1, @UserId, @Now)
+			VALUES (206, 205, 9, N'ILMLeasingAnalyticsProductAccessPropertyGroupsTabUIId', N'Property Group', NULL, 1, @UserId, @Now)
 			
 			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
 			VALUES (207, 206, 3, N'ILMLeasingAnalyticsProductAccessPropertyGroupsMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
