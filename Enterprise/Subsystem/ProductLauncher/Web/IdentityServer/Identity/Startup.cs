@@ -34,7 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
                     try
                     {
                         ctx.Request.Scheme = "https";
-                        if (ctx.Request.Path.HasValue && (ctx.Request.Path.Value.Contains("openid-configuration") || ctx.Request.Path.Value.Contains(".well-known/jwks")))
+                        if (ctx.Request.Path.HasValue && ctx.Request.Path.Value.Contains(".well-known"))
                         {
                             ctx.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0, private";
                             ctx.Response.Headers["Pragma"] = "no-cache";
