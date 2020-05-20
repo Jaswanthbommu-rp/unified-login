@@ -343,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.AoAIRevenueManagement:
 				case (int)ProductEnum.AoRentControl:
 					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-					result = manageProductAo.GetPropertiesInGroup(editorPersonaId, userPersonaId, propertyGroupId);
+					result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, propertyGroupId);
 					break;
 				
 				default:

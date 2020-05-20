@@ -37,6 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private readonly string _apiEndPoint;
 		private readonly string _aoSuperUser;
 		private DefaultUserClaim _userClaims;
+		const int CacheTimeSeconds = 300;
 		#endregion
 
 		#region Ctor
@@ -1300,6 +1301,76 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Get Properties assigned to Group
+		/// </summary> 
+		public ListResponse GetGroupProperties(long editorPersonaId, long userPersonaId, int propertyGroupId)
+		{
+			WriteToDiagnosticLog(
+				$"ManageProductAssetOptimization.GetPropertiesInGroup - Begin with editorPersona id - {editorPersonaId}.");
+
+			var response = new ListResponse();
+
+			try
+			{
+				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+				if (listResponse.IsError)
+				{
+					WriteToErrorLog(
+						$"ManageProductAssetOptimization.GetPropertiesInGroup - Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+					return listResponse;
+				}
+
+				if (string.IsNullOrEmpty(_editorProductUserId))
+				{
+					response = new ListResponse()
+					{
+						Records = null,
+						TotalRows = 0,
+						RowsPerPage = 9999,
+						ErrorReason = $"User is not exisist in AO product with editorPersonaId {editorPersonaId}.",
+						TotalPages = 1
+					};
+
+					return response;
+				}
+
+				var props = GetGroupProperties(propertyGroupId);
+				props = props.OrderBy(x => x.Name).ToList();
+
+				if (props != null && props.Count > 0)
+				{
+					response = new ListResponse()
+					{
+						Records = props.Cast<object>().ToList(),
+						TotalRows = props.Count(),
+						RowsPerPage = 9999,
+						ErrorReason = string.Empty,
+						TotalPages = 1
+					};
+				}
+				else
+				{
+					response = new ListResponse()
+					{
+						Records = null,
+						TotalRows = 0,
+						RowsPerPage = 9999,
+						ErrorReason = $"Received null or empty products for AO user {_editorProductUserId}",
+						TotalPages = 1
+					};
+				}
+			}
+			catch (Exception ex)
+			{
+				response.IsError = true;
+				response.ErrorReason = "There was a problem getting the AO products.";
+				WriteToErrorLog($"ManageProductAssetOptimization.GetPropertiesInGroup. Error for user with editor AO user Id - {_editorProductUserId} ", exception: ex);
+			}
+
+			return response;
+		}
+
+		/// <summary>
 		/// Get Property Groups
 		/// </summary>
 		public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, IList<int> selectedCompanies, string userLoginName = "")
@@ -1833,35 +1904,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
+		private IList<ProductProperty> GetGroupProperties(int propertyGroupId)
+		{
+			WriteToDiagnosticLog(
+				$"ManageProductAssetOptimization.GetPropertiesInGroups at beginning of method.");
+
+			var response = new List<ProductProperty>();
+
+			AoVisiblePropertyGroups visiblePropertyGroups = GetAllPropertyGroups();
+
+			WriteToDiagnosticLog(
+				$"ManageProductAssetOptimization.GetPropertiesInGroups-Received {visiblePropertyGroups.Groups.Count} groups for existing user.");
+
+			foreach (var x in visiblePropertyGroups.Groups.Where(z => z.Properties != null && z.GroupId == propertyGroupId).SelectMany(s => s.Properties))
+			{
+				response.Add(new ProductProperty { ID = x.PropertyId.ToString(), Name = x.PropertyName, State = "" });
+			}
+
+			return response;
+		}
+
 		private AoVisiblePropertyGroups GetAllPropertyGroups()
 		{
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetAllPropertyGroups at beginning of method.");
 
 			ObjectCache groupCache = MemoryCache.Default;
+			AoVisiblePropertyGroups propertyGroups = new AoVisiblePropertyGroups();
+			RPObjectCache rpcache = new RPObjectCache();
+			var cacheKey = $"propertyGroups_AO_{_editorProductUserId.ToLower()}";
 
-			// Get token values from cache
-			var propertyGroups = groupCache["propertyGroups_AO"] as AoVisiblePropertyGroups;
-
-			if (propertyGroups == null)
+			propertyGroups = rpcache.GetFromCache<AoVisiblePropertyGroups>(cacheKey, CacheTimeSeconds, () =>
 			{
 				WriteToDiagnosticLog("ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups.");
 
 				var groupApiUrl = $"{_apiEndPoint}user/groups/visible/{_aoSuperUser.ToLower()}/{_editorProductUserId.ToLower()}/";
 				propertyGroups = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
 
-				var cachePolicy = new CacheItemPolicy
-				{
-					AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60)
-				};
-
-				groupCache.Set("propertyGroups_AO", propertyGroups, cachePolicy);
-			}
-			else
-			{
-				WriteToDiagnosticLog("ManageProductAssetOptimization.GetAllPropertyGroups- Received cache value for Groups.");
-			}
-
+				return propertyGroups;
+			});
+			
 			WriteToDiagnosticLog(
 				$"ManageProductAssetOptimization.GetAllPropertyGroups-Received {propertyGroups.Groups.Count} groups for existing user.");
 
