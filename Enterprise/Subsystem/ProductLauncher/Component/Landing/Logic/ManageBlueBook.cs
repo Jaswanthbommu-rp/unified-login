@@ -20,7 +20,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
+using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -365,6 +367,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return companyPropertyInstanceResource;
         }
 
+
+        public bool UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        {
+            string uri = $"companyinstance";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            WriteToLog(LogType.Diagnostic, "UpdateBooksGreenBookCompanyInstance - Updating info.", logData);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(JsonConvert.SerializeObject(companyInstance), Encoding.UTF8, "application/json"),
+                RequestUri = new Uri( _httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return false;
+            }
+            else
+            {
+
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Used to get a list of company id's for the given company list
         /// </summary>
@@ -662,7 +691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return response;
         }
-
+        
         /// <summary>
         /// Used to add the token header for Books
         /// </summary>

@@ -18,6 +18,7 @@ using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
@@ -260,7 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organization.Products.Add(customerCompanyMap.Source);
             }
 
-            return "";
+            //return "";
 
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
@@ -269,6 +270,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return result.Status.ErrorMsg;
             }
+            var companyInstance= new CompanyInstance()
+            {
+                CustomerCompanyId = booksCustomerMasterId,
+                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
+                CompanyName = result.obj.Org.Name,
+                Source = "UPFM",
+                IsActive = true,
+                CreatedBy = "UPFM Automation",
+                CustomerEnvironment = domain
+            };
+
+            // add the new company data back to books
+            var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(companyInstance);
 
             return "";
         }

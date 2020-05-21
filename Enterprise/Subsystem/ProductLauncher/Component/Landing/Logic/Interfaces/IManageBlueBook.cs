@@ -75,5 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList);
 
         IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null);
+
+        bool UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
     }
 }
