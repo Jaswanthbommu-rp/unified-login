@@ -28,6 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IPropertyRepository _propertyRepository;
         private ProductInternalSettingRepository _productInternalSettingRepository;
         private IManageOrganization _manageOrganization;
+        private IManageBlueBook _manageBlueBook;
         
         public WebHookController()
         {
@@ -35,6 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageOrganization = new ManageOrganization();
+            _manageBlueBook = new ManageBlueBook(base._userClaims);
         }
 
         public WebHookController(IRepository repository, DefaultUserClaim userClaim)
@@ -43,6 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim);
+            _manageBlueBook = new ManageBlueBook(userClaim);
             _userClaims = userClaim;
         }
 
@@ -159,14 +162,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                         case "provisioning.upfmorder.create":
                             // get the company info
-                            string createResult = CreateCompanyFromBooks(1234);
-                            if (!string.IsNullOrEmpty(createResult))
+                            var customerCompanyId = Convert.ToInt64(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
+                            var customerDomain = thinEvent.Payload?["customerEnvironment"].ToString();
+                            if (string.IsNullOrEmpty(customerDomain))
                             {
-                                logData = new Dictionary<string, object> {{"error", createResult}};
-
-                                WriteToLog(LogType.Error, "Error", logData);
-                                return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
+                                response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing customerEnvironment");
+                                WriteToLog(LogType.Error, "Missing customerEnvironment");
+                                return response;
                             }
+
+                            if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
+                            {
+                                string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain);
+                                if (!string.IsNullOrEmpty(createResult))
+                                {
+                                    logData = new Dictionary<string, object> {{"error", createResult}};
+
+                                    WriteToLog(LogType.Error, "Error", logData);
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
+                                }
+                            }
+
                             break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
@@ -203,10 +219,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return signingSecret ?? "";
         }
 
-        private string CreateCompanyFromBooks(long booksCustomerMasterId)
+        private string CreateCompanyFromBooks(long booksCustomerMasterId, string domain)
         {
-            
-
             bool processBlueBookMessage = false;
 
             // check to see if the company already exists
@@ -232,11 +246,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
-            organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals("TYPEHERE", StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
-            organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals("DOMAIN", StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(booksCustomerMasterId);
+
+            organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+            organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
 
             organization.Products = new List<string>();
-            
+
+            // get a list of products from blue
+            var productList = _manageBlueBook.GetCompanyMap(booksCustomerMasterId);
+            foreach (var customerCompanyMap in productList)
+            {
+                organization.Products.Add(customerCompanyMap.Source);
+            }
+
+            return "";
+
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
 
