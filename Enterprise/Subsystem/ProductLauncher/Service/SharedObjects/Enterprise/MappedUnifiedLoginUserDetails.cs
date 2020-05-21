@@ -9,7 +9,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
     public class MappedUnifiedLoginUserDetails
     {
         public int CompanyId { get; set; }
-        public int ProductId { get; set; }
+        public string ProductCode { get; set; }
         public List<ULMappedPersonaIds> ULMappedPersonaId { get; set; }
     }
     public class ULMappedPersonaIds
