@@ -209,7 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);
-					result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);
+					result = manageProductRum.GetUMGlobalRoles(editorPersonaId, userPersonaId, datafilter);								
 					break;
 				case (int)ProductEnum.UnifiedAmenities:
 					IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
@@ -346,6 +346,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, propertyGroupId);
 					break;
 				
+				default:
+					break;
+			}
+			return result;
+		}
+
+		public ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter)
+		{
+			ListResponse result = new ListResponse();
+			string productName = Enum.GetName(typeof(ProductEnum), productId);
+			string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+			switch (productId)
+			{
+				case (int)ProductEnum.UtilityManagement:
+					var manageProductRum = new ManageProductRum(_userClaims);
+					result = manageProductRum.GetRoles(editorPersonaId, userPersonaId, datafilter);								
+					break;
+
 				default:
 					break;
 			}

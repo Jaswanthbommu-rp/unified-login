@@ -432,6 +432,90 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
+        public ListResponse GetUMGlobalRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+        {
+            WriteToDiagnosticLog(
+               $"ManageProductRum.GetUMGlobalRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
+
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductRum.GetUMGlobalRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                //int companyInstanceSourceId = 279; // to get sample groups 
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductRum.GetUMGlobalRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                }
+
+                // get roles from rum product
+                List<ProductRole> globalRoles = new List<ProductRole>();
+                globalRoles.Add(new ProductRole
+                {
+                    ID ="PR",
+                    Name = "Property Manager",
+                    Description = "Property Manager",
+                    IsAssigned = false
+                });
+
+                globalRoles.Add(new ProductRole
+                {
+                    ID = "GM",
+                    Name = "Group Manager",
+                    Description = "Group Manager",
+                    IsAssigned = false
+                });
+
+                globalRoles.Add(new ProductRole
+                {
+                    ID = "PM",
+                    Name = "Property Manager",
+                    Description = "Property Manager",
+                    IsAssigned = false
+                });
+
+                if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog(
+                         $"ManageProductRum.GetUMGlobalRoles-MergeUserRolesWithProductRoles calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    response = MergeRumGlobalRolesWithGreenbook(globalRoles, userPersonaId);
+                    WriteToDiagnosticLog(
+                           $"ManageProductRum.GetUMGlobalRoles-MergeUserRolesWithProductRoles completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+                    response = new ListResponse()
+                    {
+                        Records = globalRoles.Cast<object>().ToList(),
+                        TotalRows = globalRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+
+                WriteToDiagnosticLog($"Exiting ManageProductRum.GetUMGlobalRoles method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}.");
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"There was a problem getting the roles.";
+                WriteToErrorLog($"ManageProductRum.GetUMGlobalRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
         /// <summary>
         /// Unassign User
         /// </summary> 
@@ -1300,6 +1384,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 Records = allPropertyGroups.Cast<object>().ToList(),
                 TotalRows = allPropertyGroups.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = accessType
+            };
+        }
+
+        private ListResponse MergeRumGlobalRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaID)
+        {
+            var accessType = new Dictionary<string, string>();
+
+            RumUserClaims rumUser = GetRumUserClaims(userPersonaID);
+
+            if (rumUser == null)
+            {
+                WriteToErrorLog($"Rum Services - MergeRumGlobalRolesWithGreenbook error for user {_productUserId} - User not found.");
+                return new ListResponse() { IsError = true, ErrorReason = "User not found." };
+            }
+
+            // if a user record exists
+            List<UserClaim> userClaims = (List<UserClaim>)rumUser.Claims;
+            string type = "";
+            var userAccessLevel = userClaims.Where(a => a.Type == "nwpusertype").Select(b => b.Value).FirstOrDefault();
+
+            ProductRole rpg = (from a in allRoles
+                                    where a.ID == userAccessLevel
+                               select a).FirstOrDefault();
+
+            if (rpg != null)
+            {
+                rpg.IsAssigned = true;
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
                 RowsPerPage = 9999,
                 ErrorReason = string.Empty,
                 TotalPages = 1,
