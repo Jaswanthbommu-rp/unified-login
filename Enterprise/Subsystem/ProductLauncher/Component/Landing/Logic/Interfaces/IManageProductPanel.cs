@@ -33,7 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userPersonaId"></param>
 		/// <param name="assignedOnly"></param>
 		/// <param name="datafilter"></param>
-		/// <param name="userLoginName"></param>
+		/// <param name="userLoginName"></param>		
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
 		/// <summary>
@@ -68,5 +68,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="datafilter"></param>		
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, int propertyGroupId, RequestParameter datafilter);
+
+		/// <summary>
+		/// Get Product Rights
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="partyId"></param>
+		/// <param name="productId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="datafilter"></param>			
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter);
 	}
 }

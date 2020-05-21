@@ -1,9 +1,9 @@
 (function(angular) {
     "use strict";
 
-    function ProductRightsSvc($resource,ENV) {
+    function ProductRoleRightsSvc($resource,ENV) {
         var url, params,actions;
-       url = ENV.landingAPI + "api/product/rights";
+       url = ENV.landingAPI + "api/product/rightsforrole";
         params = {
             editorPersonaId: "@editorPersonalID",
             productId: "@productId",
@@ -24,9 +24,9 @@
 
     angular
         .module("settings")
-        .factory("productRightsSvc", [
+        .factory("productRoleRightsSvc", [
             "$resource",
             "ENV",
-             ProductRightsSvc
+             ProductRoleRightsSvc
         ]);
 })(angular);
