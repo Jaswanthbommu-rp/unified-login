@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function UserCtrl($scope, $location, $params, view, userTabs, tabsManager, session, pubsub, security, persona, chkEmailModel, productDataSync) {
+    function UserCtrl($scope, $location, $params, view, userTabs, tabsManager, session, pubsub, security, persona, chkEmailModel, productDataSync, panelTemplateModel) {
         var vm = this;
 
         vm.init = function () {
@@ -69,6 +69,7 @@
             vm.profileWatch();
             tabsManager.reset();
             productDataSync.reset();
+            panelTemplateModel.reset();
             vm = undefined;
             $scope = undefined;
         };
@@ -91,6 +92,7 @@
             "personaDetails",
             "chkEmailModel",
             "productDataSyncManager",
+            "productTemplateModel",
             UserCtrl
         ]);
 })(angular);
