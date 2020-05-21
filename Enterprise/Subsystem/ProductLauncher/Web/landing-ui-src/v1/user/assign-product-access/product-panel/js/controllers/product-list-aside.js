@@ -19,16 +19,22 @@
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
 
             var configTab = "";
-            if (vm.tabName == "property") {
+            if (vm.tabName.toLowerCase() === "property") {
                 configTab = "Properties";
+                vm.title = "Property Details";
             }
-            else if (vm.tabName == "role") {
+            else if (vm.tabName.toLowerCase() === "propertygroup") {
+                configTab = "PropertyGroup";
+                vm.title = "Property Group Details";
+            }
+            else if (vm.tabName.toLowerCase() == "role") {
                 configTab = "Roles";
+                vm.title = "Role Details";
             }
 
             vm.asideConfig = syncMgr.getProductAsideGridConfig(vm.productId, configTab);
             //gridConfig.getListAsideConfig()[0];
-            vm.title = syncMgr.getProductAsideGridName(vm.productId, configTab);
+            //vm.title = syncMgr.getProductAsideGridName(vm.productId, configTab);
             //gridConfig.getListAsideDisplayName();
 
             asideGrid.setConfig(vm.asideConfig);
@@ -126,7 +132,7 @@
         .controller("ProductPanelListAsideCtrl", [
             "$scope",
             "productPanelListAside",
-            "productRightsSvc",
+            "productRoleRightsSvc",
             "productGroupPropertiesSvc",
             "productDataSyncManager",
             "rpGridModel",

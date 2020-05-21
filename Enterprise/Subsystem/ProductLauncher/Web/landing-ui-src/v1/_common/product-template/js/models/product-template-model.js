@@ -21,6 +21,10 @@
         };
 
 
+        p.isReady = function (){
+            var s = this;
+            return s.state.ready;
+        };
 
         p.isProductExists = function (productId) {
             var s = this;
