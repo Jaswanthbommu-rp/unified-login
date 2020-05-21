@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// </summary>
 		/// <param name="organization"></param>
 		/// <returns></returns>
-		RepositoryResponse UpdateOrganization(IOrganization organization);
+		RepositoryResponse UpdateOrganization(Organization organization);
 
 		/// <summary>
 		/// Get Organization details
@@ -93,7 +93,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// Used to list the Organization Types
 		/// </summary>
 		/// <returns>list of OrganizationType objects</returns>
-		IList<OrganizationType> ListOrganizationType();
+		List<OrganizationType> ListOrganizationType();
 		#endregion
-	}
+
+        /// <summary>
+        /// Used to list the Organization Domains
+        /// </summary>
+        /// <returns>list of OrganizationDomain objects</returns>
+        List<OrganizationDomain> ListOrganizationDomain();
+
+    }
 }

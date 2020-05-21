@@ -3,11 +3,12 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPanelListAsideCtrl($scope, aside, dataSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
+    function ProductPanelListAsideCtrl($scope, aside, dataSvc, groupSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
         var vm = this,
             asideGrid = gridModel(),
             asidegridTransform = gridTransformSvc(),
-            asidegridPagination = gridPaginationModel();
+            asidegridPagination = gridPaginationModel(),
+            isBtnFooterRequired;
 
         vm.init = function () {
             vm.subtitle = listAsideModel.getName();
@@ -15,18 +16,25 @@
             vm.productId = listAsideModel.getProductID();
             vm.asideGrid = asideGrid;
             asidegridTransform.watch(asideGrid);
+            vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
 
             var configTab = "";
-            if (vm.tabName == "property"){
+            if (vm.tabName.toLowerCase() === "property") {
                 configTab = "Properties";
+                vm.title = "Property Details";
             }
-            else  if (vm.tabName == "role"){
+            else if (vm.tabName.toLowerCase() === "propertygroup") {
+                configTab = "PropertyGroup";
+                vm.title = "Property Group Details";
+            }
+            else if (vm.tabName.toLowerCase() == "role") {
                 configTab = "Roles";
+                vm.title = "Role Details";
             }
 
             vm.asideConfig = syncMgr.getProductAsideGridConfig(vm.productId, configTab);
             //gridConfig.getListAsideConfig()[0];
-            vm.title = syncMgr.getProductAsideGridName(vm.productId, configTab);
+            //vm.title = syncMgr.getProductAsideGridName(vm.productId, configTab);
             //gridConfig.getListAsideDisplayName();
 
             asideGrid.setConfig(vm.asideConfig);
@@ -54,18 +62,39 @@
             asideGrid.busy(true);
             var productId = listAsideModel.getProductID();
             var assignedToRoleOnly = false;
+            var aoFamilyProduct = false;
+            var params = "";
             if (productId === 1) {
                 assignedToRoleOnly = true;
             }
-            var params = {
-                editorPersonaId: persona.getId(),
-                roleId: listAsideModel.getListID(),
-                productId: productId,
-                assignedToRoleOnly: assignedToRoleOnly,
-                partyId: persona.data.organization.partyId,
-            };
 
-            vm.dataReq = dataSvc.get(params, vm.setData);
+            if (productId == "29" || productId == "30" || productId == "31" || productId == "32" ||
+                productId == "51" || productId == "52" || productId == "53" || productId == "54") {
+                aoFamilyProduct = true;
+            }
+
+            if (aoFamilyProduct) {
+                params = {
+                    editorPersonaId: persona.getId(),
+                    userPersonaId: "0",
+                    productId: productId,
+                    propertyGroupId: listAsideModel.getListID()
+                };
+
+                vm.dataReq = groupSvc.get(params, vm.setData);
+            }
+            else {
+                params = {
+                    editorPersonaId: persona.getId(),
+                    roleId: listAsideModel.getListID(),
+                    productId: productId,
+                    assignedToRoleOnly: assignedToRoleOnly,
+                    partyId: persona.data.organization.partyId,
+                };
+
+                vm.dataReq = dataSvc.get(params, vm.setData);
+            }
+
         };
 
         vm.setData = function (resp) {
@@ -103,8 +132,8 @@
         .controller("ProductPanelListAsideCtrl", [
             "$scope",
             "productPanelListAside",
-            "productRightsSvc",
-            //"ConfigModel",
+            "productRoleRightsSvc",
+            "productGroupPropertiesSvc",
             "productDataSyncManager",
             "rpGridModel",
             "rpGridTransform",

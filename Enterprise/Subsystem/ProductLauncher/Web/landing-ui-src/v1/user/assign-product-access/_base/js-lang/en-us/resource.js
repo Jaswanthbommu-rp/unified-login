@@ -25,12 +25,16 @@
             "panelName.axiometrics": "Axiometrics Product Access",
             "panelName.performancenalytics": "Performance Analytics Product Access",
             "panelName.revenuemanagement": "YieldStar Product Access",
+            "panelName.lro": "LRO Product Access",
+            "panelName.amenityoptimization": "Amenity Optimization Product Access",
+            "panelName.airevenuemanagement": "AI Revenue Management Product Access",
+            "panelName.rentcontrol": "Rent Control Product Access",
             "panelName.ilmleadmanagement": "ILM Lead Management Product Access",
             "panelName.ilmleadanalytics": "ILM Leasing Analytics Product Access",
             "panelName.portfolioManagement": "Portfolio Management Product Access",
             "panelName.easylms": "EasyLMS Product Access",
             "panelName.clickPay" : "Payments Product Access",
-            "panelName.depositAlternative" : "Deposit Alternative",
+            "panelName.depositAlternative" : "Deposit Alternative Product Access",
             "panelName.comingSoon": "Coming Soon",
 
             "panelError.generic": "There was a problem getting information for the product"

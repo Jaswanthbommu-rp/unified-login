@@ -11,6 +11,7 @@
         };
 
         vm.showAside = function (record) {
+            logc("console.info()",record);
             listModel.setName(record.name);
             listModel.setTabName(record.radname);
             listModel.setListID(record.id);

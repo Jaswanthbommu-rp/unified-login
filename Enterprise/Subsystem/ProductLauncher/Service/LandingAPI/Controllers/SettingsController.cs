@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		public HttpResponseMessage GetSettings(string category, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
 		{
 			IApiError apiError;
-			IOrganization organization = new Organization();
+			Organization organization = new Organization();
 			IManageOrganization manageOrganization = new ManageOrganization();
 
 			switch (bookMasterTypeId)
@@ -217,7 +217,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IApiError apiError;
 			ISetting setting;
 
-			IOrganization organization = new Organization();
+			Organization organization = new Organization();
 			IManageOrganization manageOrganization = new ManageOrganization();
 			switch (bookMasterTypeId)
 			{

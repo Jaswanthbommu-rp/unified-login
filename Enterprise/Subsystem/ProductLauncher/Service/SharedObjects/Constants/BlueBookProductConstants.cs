@@ -8,7 +8,7 @@
 		/// <summary>
 		/// UnifiedLogin
 		/// </summary>
-		public const string UnifiedLogin = "UL";
+		public const string UnifiedPlatform = "UPFM";
 
 		/// <summary>
 		/// OneSite
@@ -233,5 +233,25 @@
 		/// Senior Lead Management
 		/// </summary>
 		public const string SeniorLeadManagement = "SLM";
-    }
+
+		/// <summary>
+		/// AoAIRevenueManagement
+		/// </summary>
+		public const string AoAIRevenueManagement = "AIRM";
+
+		/// <summary>
+		/// AoAmenityOptimization
+		/// </summary>
+		public const string AoAmenityOptimization = "AA";
+
+		/// <summary>
+		/// AoRentControl
+		/// </summary>
+		public const string AoRentControl = "RC";
+		
+		/// <summary>
+		/// LRO
+		/// </summary>
+		public const string AoLeaseRentOption = "LRO";
+	}
 }

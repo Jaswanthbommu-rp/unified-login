@@ -363,7 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
                     fromUtcDateTime = orgStatus.FromDate;
-                    orgStatus.ThruDate = Convert.ToDateTime("12/31/9999");
+                    orgStatus.ThruDate = new DateTime(9999,12,31);
                     if (orgStatus.FromDate > DateTime.UtcNow)
                     {
                         DateTime fromDate = DateTime.UtcNow;
@@ -407,7 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (uiStatusTypeName == UserUiStatusType.Active || uiStatusTypeName == UserUiStatusType.Disabled || uiStatusTypeName == UserUiStatusType.Locked || uiStatusTypeName == UserUiStatusType.Unlocked)
             {
                 var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
-                AddActivityLog(userLogin, uiStatusTypeName.ToString(), ProductEnum.UnifiedLogin.ToEnumDescription(), _defaultUserClaim);
+                AddActivityLog(userLogin, uiStatusTypeName.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
             }
 
             return true;
@@ -565,7 +565,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserUiStatusType.Expired, primaryOrgStatus.FromDate, null);
                 DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
-                AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedLogin.ToEnumDescription(), currentUserClaim);
+                AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
             }
 
             if (primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && DateTimeOffset.UtcNow.Date == primaryOrgStatus.FromDate.Date && lastLoginDate == null)
@@ -619,7 +619,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId)
                 {
                     DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
-                    AddActivityLog(userLogin, statusType, ProductEnum.UnifiedLogin.ToEnumDescription(), currentUserClaim);
+                    AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
                 }
                 primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, lastLoginDate, 0, true);
             }
@@ -670,7 +670,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 !userLogin.Is3rdPartyIDP)
                             {
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgStatus.PartyId, (int)UserUiStatusType.Expired, orgStatus.FromDate, null);
-								AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedLogin.ToEnumDescription(), currentUserClaim);
+								AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
 							}
 
 							//Feature user (with disabled state) and user never logged in
@@ -726,7 +726,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 }
 
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
-                                AddActivityLog(userLogin, statusType, ProductEnum.UnifiedLogin.ToEnumDescription(), currentUserClaim);
+                                AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
                             }
                         }
                     }
@@ -1018,7 +1018,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     foreach (UserLoginOnly userLogin in userLogins)
                     {
-                        AddActivityLog(userLogin, userLoginStatusType.ToString(), ProductEnum.UnifiedLogin.ToEnumDescription(), _defaultUserClaim);
+                        AddActivityLog(userLogin, userLoginStatusType.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
                     }
                 }
             }

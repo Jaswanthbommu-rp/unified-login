@@ -12,9 +12,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
 	public class ClientService : IClientStore
 	{
-		private readonly IdentityServerRepository _identityServerRepository;
+		private readonly IIdentityServerRepository _identityServerRepository;
 
-		public ClientService(IdentityServerRepository identityServerRepository)
+		public ClientService(IIdentityServerRepository identityServerRepository)
 		{
 			_identityServerRepository = identityServerRepository;
 		}

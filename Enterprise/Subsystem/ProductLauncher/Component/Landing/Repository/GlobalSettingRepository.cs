@@ -32,6 +32,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 		}
 
+
+        public RepositoryResponse UpdateGlobalSetting(GlobalSetting setting)
+        {
+            dynamic param = new
+            {
+                @MasterConfigurationSettingId = setting.MasterConfigurationSettingId,
+                @Value = setting.Value
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateMasterConfigurationSetting, param);
+                return result;
+            }
+        }
+
 		#endregion
 	}
 }

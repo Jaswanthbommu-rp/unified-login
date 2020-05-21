@@ -2,13 +2,17 @@
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,9 +21,6 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -110,6 +111,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //_authTokenInfo.Data.Password = "P>qx3g6MEkt(G:-";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIPASSWORD").Value;
 
             _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+        }
+
+        public ManageBlueBook(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository)
+        {
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _defaultUserClaim = userClaim;
         }
 
         /// <summary>
@@ -524,14 +531,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             vCompanyPropertyMap = rpcache.GetFromCache<IList<CustomerCompanyPropertyMap>>(cacheKey, CacheTimeSeconds, () =>
             {
                 // load from api
-
                 string uri = $"customercompanyproperty?filter[customerCompanyId]={booksCompanyMasterId.ToString()}&filter[migrationStatus]=in:%27staged%27,%27migrated%27&sort=PropertyName&page[number]=1&page[size]=9999";
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogType.Diagnostic, "GetVCompanyPropertyMap - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    //vCompanyPropertyMap = response.Content.ReadAsJsonApiManyAsync<CustomerCompanyPropertyMapResource>(_contractResolver, _cache).Result;
                     vCompanyPropertyMap = JsonConvert.DeserializeObject<List<CustomerCompanyPropertyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "vCompanyPropertyMapResource", vCompanyPropertyMap } };
                     WriteToLog(LogType.Diagnostic, "GetVCompanyPropertyMap - Got info.", logData);
@@ -547,6 +552,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             });
 
             return vCompanyPropertyMap;
+        }
+
+        public IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null)
+        {
+            if (booksCompanyMasterId == 0)
+            {
+                booksCompanyMasterId = _defaultUserClaim.CustomerMasterId;
+            }
+
+            if (booksCompanyMasterId == 0)
+            {
+                throw new Exception("Invalid parameter booksCompanyMasterId.");
+            }
+
+            string includeFields = string.Empty;
+
+            bool bIncludeFields = ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] { ',' }).Length > 0));
+
+            if (bIncludeFields)
+            {
+                includeFields = "fields[customerproperty]=" + include.Replace(" ", string.Empty) + "&";
+            }
+
+            filter = string.IsNullOrWhiteSpace(filter) ? "&filter[isActive]=true&page[size]=9999" : filter;
+
+            List<CustomerProperty> customerPropertyList = new List<CustomerProperty>();
+            List<ProductProperty> productPropertyList = new List<ProductProperty>();
+
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"getCustomerProperty_{booksCompanyMasterId}" + (bIncludeFields ? "_" + include.Replace(",", string.Empty) : string.Empty);
+
+            productPropertyList = rpcache.GetFromCache<List<ProductProperty>>(cacheKey, CacheTimeSeconds, () =>
+            {
+                string uri = $"customerproperty?{includeFields}filter[customerCompanyId]={booksCompanyMasterId.ToString()}{filter}";
+                Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    customerPropertyList = JsonConvert.DeserializeObject<List<CustomerProperty>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    productPropertyList = customerPropertyList.Select(p => new ProductProperty
+                    {
+                        ID = p.attributes != null ? p.attributes.customerPropertyId : null,
+                        Name = p.attributes.propertyName,
+                        Street1 = p.attributes.address != null ? p.attributes.address.address : null,
+                        City = p.attributes.address != null ? p.attributes.address.city : null,
+                        State = p.attributes.address != null ? p.attributes.address.state: null,
+                        Zip = p.attributes.address != null ? p.attributes.address.postalCode : null
+                    }).OrderBy(p => p.Name).ToList();
+
+                    logData = new Dictionary<string, object>() { { "ManageBlueBook.GetCustomerProperty", customerPropertyList } };
+                    WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - Got info.", logData);
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - No info found.", logData);
+                    return null;
+                }
+                return productPropertyList;
+            });
+            return productPropertyList;
         }
 
         #region Privates

@@ -29,6 +29,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 .ToArray());
         }
 
+        /// <summary>
+        /// Validate a boolean value state 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>A boolean value</returns>
+        public static bool GetBooleanValue(this bool? value)
+        {
+            if (value.HasValue && value.Value == true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region "Audit"
@@ -66,6 +81,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                             bool oldValueIsDate = oldValue != null && oldValue.GetType() == Type.GetType("System.DateTime") ? true : false;
                             bool newValueIsDate = newValue != null && newValue.GetType() == Type.GetType("System.DateTime") ? true : false;
 
+                            if (oldValueIsDate)
+                            {
+                                oldValue = TimeZoneInfo.ConvertTime(Convert.ToDateTime(oldValue), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
+                            }
+
                             if (newValueIsDate)
                             {
                                 if (String.Format("{0:MM/dd/yyyy}", newValue).Equals(DateTime.MaxValue.ToString("MM/dd/yyyy")))
@@ -73,6 +93,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                     newValue = null;
                                     formatedNewValue = null;
                                 }
+                                else
+                                {
+                                    newValue = TimeZoneInfo.ConvertTime(Convert.ToDateTime(newValue), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
+                                }
+
                             }
 
                             if (formatedOldValue != formatedNewValue)
@@ -112,9 +137,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                 {
                                     auditRecord.AuditMessage = string.Concat("{2} {3} updated the ",
                                        internalAttribute.ColumnName,
-                                       " from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
+                                       newValueIsDate || oldValueIsDate ? " date from " :" from ", auditRecord.OldValue == null ? internalAttribute.NullBlankValue : auditRecord.OldValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.OldValue,
                                        " to ", auditRecord.NewValue == null ? internalAttribute.NullBlankValue : auditRecord.NewValue.ToString() == string.Empty ? internalAttribute.NullBlankValue : auditRecord.NewValue,
-                                       " on the ", entityAffected,
+                                       ((newValueIsDate || oldValueIsDate) && (auditRecord.NewValue != null && !string.IsNullOrEmpty(auditRecord.NewValue.ToString()))) ? " CST" : "", newValueIsDate || oldValueIsDate ? string.Empty : " on the " + entityAffected,
                                        " for {0} {1}.");
 
                                     result.Add(auditRecord);
@@ -156,7 +181,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                                   oldCustomFieldValue.Name,
                                                   " information from ", string.IsNullOrEmpty(oldValue) ? "a blank value" : oldValue,
                                                   " to ", string.IsNullOrEmpty(newValue) ? "a blank value" : newValue,
-                                                  " on the user profile",
                                                   " for {0} {1}.");
 
                             auditRecord.LogActivityType = LogActivityTypeConstants.UPDATE_USER;

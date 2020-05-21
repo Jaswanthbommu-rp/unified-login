@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
 
         public static void SetupCustomImplementationHooks(IdentityServerOptions options)
         {
-            options.Factory.Register(new Registration<IdentityServerRepository>());
+            options.Factory.Register(new Registration<IIdentityServerRepository, IdentityServerRepository>());
             options.Factory.Register(new Registration<AuthenticateService>());
             options.Factory.Register(new Registration<ManageUserLoginIdentity>());
             options.Factory.Register(new Registration<ManageUserLogin>());
@@ -219,7 +219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     },
                     SPOptions = new SPOptions
                     {
-                        AuthenticateRequestSigningBehavior = SigningBehavior.Never, // or add a signing certificate
+                        AuthenticateRequestSigningBehavior = (SigningBehavior)provider.SigningBehavior,
                         EntityId = new EntityId(provider.AuthorityUri),
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
@@ -227,6 +227,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
                     },
                 };
+                if ((SigningBehavior) provider.SigningBehavior != SigningBehavior.Never)
+                {
+                    authServicesOptions.SPOptions.ServiceCertificates.Add(GetSigningCertificate());
+                }
 
                 authServicesOptions.Notifications.EmitSameSiteNone = userAgent =>
                 {

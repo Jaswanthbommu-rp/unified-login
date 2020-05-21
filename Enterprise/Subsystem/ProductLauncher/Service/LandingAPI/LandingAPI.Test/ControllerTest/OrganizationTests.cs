@@ -152,6 +152,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"Duplicate master ids\"}";
@@ -200,6 +203,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"An invalid Organization Type id was given: 0\"}";
@@ -248,6 +254,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"An invalid product was given : XX\"}";
@@ -289,6 +298,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"No admin user information provided\"}";
@@ -366,6 +378,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				.Returns(organizationList);
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate, true);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"MessageHandler.Handle - Company: CF Real Estate Services with BlueBookId: " + _BooksCompanyMasterId.ToString() + " already exists!\"}";
@@ -432,6 +447,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			_mockRepository
 				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
 				.Returns(organizationList);
@@ -505,6 +523,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"Admin email already exists\"}";
@@ -580,6 +601,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			};
 			
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "{\"Message\":\"Failed to create organization\"}";
@@ -659,6 +683,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			organizationController.Configuration = new HttpConfiguration();
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "\"Not found\"";
@@ -711,8 +738,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			organizationController.Configuration = new HttpConfiguration();
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
-			IOrganization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
+			Organization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
 
 			//Assert
 			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
@@ -740,6 +770,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 						CreateDate = new DateTime()
 					},
 					OrganizationTypeId = 1,
+					OrganizationDomainId = 1,
+					OrganizationDomain = new OrganizationDomain()
+                    {
+						OrganizationDomainId = 1,
+						Name = "Primary",
+						CreateDate = new DateTime()
+                    },
 					PartyId = 1,
 					PrimaryOrganization = true
 				}
@@ -765,6 +802,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			organizationController.Configuration = new HttpConfiguration();
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
 			IList<Organization> resultOrganizationList = response.Content.ReadAsAsync<IList<Organization>>().Result;
 
@@ -863,6 +903,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			organizationController.Configuration = new HttpConfiguration();
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			int NumberOfProperties = type.GetProperties().Length;
 			HttpResponseMessage response = organizationController.OrganizationCustomFields(datafilter: null);
 
@@ -950,6 +993,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			//Act
 			RPObjectCache rPObjectCache = new RPObjectCache();
 			rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.OrganizationType();
 			output = response.Content.ReadAsAsync<ObjectListOutput<OrganizationType, IErrorData>>().Result;
 
@@ -984,6 +1028,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			//Act
 			RPObjectCache rPObjectCache = new RPObjectCache();
 			rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.OrganizationType();
 			output = response.Content.ReadAsAsync<ObjectListOutput<OrganizationType, IErrorData>>().Result;
 
@@ -1065,6 +1110,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			organizationController.Configuration = new HttpConfiguration();
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+			
 			HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
 			string message = response.Content.ReadAsStringAsync().Result;
 			string expectedValue = "\"Invalid parameter: realPageId\"";
@@ -1096,6 +1144,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				Name = "Multifamily",
 				CreateDate = new DateTime()
 			};
+
+            OrganizationDomain organizationDomain = new OrganizationDomain()
+            {
+                OrganizationDomainId = 1,
+                Name = "Primary",
+                CreateDate = new DateTime()
+            };
 
 			RoleType roleTypeFrom = new RoleType()
 			{
@@ -1147,14 +1202,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					BooksMasterId = _BooksMasterId,
 					organizationType = organizationType,
 					OrganizationTypeId = 1,
+					OrganizationDomain = organizationDomain,
+					OrganizationDomainId = 1,
 					PartyId = 1,
 					PrimaryOrganization = true,
 					partyRelationship = partyRelationship
 				}
 			};
 
-			IList<OrganizationType> organizationTypeList = new List<OrganizationType>();
-			organizationTypeList.Add(organizationType);
+            IList<OrganizationType> organizationTypeList = new List<OrganizationType>() {organizationType};
 
 			_mockRepository
 				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_ListOrganizationByRealPageId, It.IsAny<object>()))
@@ -1186,6 +1242,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			organizationController.Configuration = new HttpConfiguration();
 
 			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
 			HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
 			output = response.Content.ReadAsAsync<ObjectListOutput<Organization, IErrorData>>().Result;
 

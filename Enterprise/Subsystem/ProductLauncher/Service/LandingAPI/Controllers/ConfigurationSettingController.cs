@@ -183,6 +183,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			output.Status = errorStatus;
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
+
+		/// <summary>
+        /// Update Configuration Setting
+        /// </summary>
+        /// <param name="masterConfigurationSetting">Master Configuration setting object</param>
+        /// <returns>Response with Success Message</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when ConfigurationSetting object have invalid entries / when Information is out of sync with the server)")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "MasterConfigurationSetting Updated")]
+		[Route("configurationsettings")]
+		[Authorize]
+		[HttpPost]
+		public HttpResponseMessage PostConfigurationSetting([FromBody] MasterConfigurationSetting masterConfigurationSetting)
+		{
+			ObjectOutput<MasterConfigurationSetting, IErrorData> output = new ObjectOutput<MasterConfigurationSetting, IErrorData>();
+			Status<IErrorData> errorStatus = new Status<IErrorData>();
+			output.obj = masterConfigurationSetting;
+
+			if (masterConfigurationSetting == null)
+			{
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "MasterConfigurationSetting.CreateMasterConfigurationSetting.1";
+				errorStatus.ErrorMsg = "Create MasterConfigurationSetting: Invalid parameter masterConfigurationSetting";
+				output.Status = errorStatus;
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
+            else if (string.IsNullOrWhiteSpace(masterConfigurationSetting.ConfigurationType))
+			{
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "MasterConfigurationSetting.CreateMasterConfigurationSetting.2";
+                errorStatus.ErrorMsg = "ConfigurationType is required.";
+				output.Status = errorStatus;
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
+            else if (string.IsNullOrWhiteSpace(masterConfigurationSetting.SettingType))
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "MasterConfigurationSetting.CreateMasterConfigurationSetting.3";
+                errorStatus.ErrorMsg = "SettingType is required.";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+			else if (string.IsNullOrWhiteSpace(masterConfigurationSetting.Value))
+			{
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "MasterConfigurationSetting.CreateMasterConfigurationSetting.4";
+				errorStatus.ErrorMsg = "Value is required.";
+				output.Status = errorStatus;
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
+
+			IManageConfigurationSetting configurationSettingLogic = new ManageConfigurationSetting();
+			repositoryResponse = configurationSettingLogic.CreateMasterConfigurationSetting(masterConfigurationSetting);
+			if (repositoryResponse.Id == 0)
+			{
+				output.obj = masterConfigurationSetting;
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "ConfigurationSetting.CreateMasterConfigurationSetting.4";
+				errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
+				output.Status = errorStatus;
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
+
+			output.Status = errorStatus;
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
 		#endregion
 
 		#region Get Examples

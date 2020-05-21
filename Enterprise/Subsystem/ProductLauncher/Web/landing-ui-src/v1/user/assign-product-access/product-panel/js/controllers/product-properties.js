@@ -11,6 +11,7 @@
             propertiesGridTransform = gridTransformSvc(),
             propertiesGridPagination = gridPaginationModel(),
             genericDataErrorReason = "",
+            userLoginName = "",
             activeProperties = [],
             inactiveProperties = [];
 
@@ -52,6 +53,7 @@
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
+            vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
         };
 
         vm.productSelected = function (obj) {
@@ -123,11 +125,12 @@
                 var propertyData = syncMgr.getProductPropertiesData(productId);
 
                 if (propertyData === undefined) {
-                    propertiesGrid.busy(false);
+                    // propertiesGrid.busy(false);
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
-                        productId: productId
+                        productId: productId,
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                     };
 
                     vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
@@ -187,7 +190,8 @@
                 propData.forEach(function (item) {
                     angular.extend(item, {
                         radname: "property",
-                        productId: productId
+                        productId: productId,
+                        originalProperty: item.isAssigned
                     });
 
                     if (item.active !== undefined && productId === 10) {
@@ -220,7 +224,7 @@
                 vm.allPropertiesData = propData;
 
                 if (productId == "10") {
-                    if (vm.propertySelect !== "allProperties"){
+                    if (vm.propertySelect !== "allProperties") {
                         vm.propertySelect = inActiveCount > 0 ? "inactive" : "active";
                     }
 
@@ -247,6 +251,11 @@
             return vm;
         };
 
+
+        vm.showNotification = function () {
+            return productDataModel.isPropertyGridActive() && $scope.$parent.productId === 3;
+        };
+
         vm.selectionAll = function (bool) {
             vm.propertySelect = "property";
             if (bool) {
@@ -264,20 +273,18 @@
         };
 
         vm.selectAllProperties = function (val) {
-            if(vm.filteredRecords !== undefined){
+            if (vm.filteredRecords !== undefined) {
+                vm.filteredRecords.forEach(function (item) {
+                    item.isAssigned = val;
+                });
+
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.filteredRecords);
             }
-            else{
-                if(val){
-                    vm.allPropertiesData.forEach(function(item){
-                        item.isAssigned = true;
-                    });
-                }
-                else{
-                    vm.allPropertiesData.forEach(function(item){
-                        item.isAssigned = false;
-                    });
-                }
+            else {
+                vm.allPropertiesData.forEach(function (item) {
+                    item.isAssigned = val;
+                });
+
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.allPropertiesData);
             }
         };
@@ -296,6 +303,10 @@
             if (record) {
                 var propertiesData = syncMgr.multiSelectedPropertySync(record.productId, record);
             }
+        };
+
+        vm.updateGrid = function () {
+            vm.propertiesGrid.updateSelected();
         };
 
         vm.resetDataModel = function () {
@@ -333,6 +344,7 @@
             vm.gridAllWatch();
             vm.gridSelectionWatch();
             vm.productPropertySwitchWatch();
+            vm.updateGridWatch();
             //  vm.productSelectedWatch();
             if (vm.dataPropReq) {
                 vm.dataPropReq.$cancelRequest();
@@ -344,7 +356,7 @@
             propertiesGridTransform = undefined;
             propertiesGridPagination = undefined;
             vm.filteredPropertiesArray = [];
-            vm = undefined;
+            //vm = undefined;
             $scope = undefined;
         };
 

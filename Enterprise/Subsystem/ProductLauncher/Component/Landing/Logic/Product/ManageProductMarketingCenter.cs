@@ -798,11 +798,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							List<ProductProperty> currentPropertyList = currentPropertyListResponse.Records.Cast<ProductProperty>().ToList();
 							List<int> removePropertyList = new List<int>();
 
-							if (currentPropertyList.Any(a => a.IsAssigned))
+							if (currentPropertyList.Any(a => a.IsAssigned.Value))
 							{
 								foreach (ProductProperty pp in currentPropertyList)
 								{
-									if (pp.IsAssigned)
+									if (pp.IsAssigned.Value)
 									{
 										if (mcUser.AssignPropertyIds.Contains(Convert.ToInt32(pp.ID)))
 										{

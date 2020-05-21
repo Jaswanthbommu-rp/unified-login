@@ -207,6 +207,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 organizationType = new OrganizationType()
                 {
                     OrganizationTypeId = organization.OrganizationTypeId
+                },
+				OrganizationDomain = new OrganizationDomain()
+                {
+					OrganizationDomainId = organization.OrganizationDomainId
                 }
             };
             _repositoryResponse = _organizationLogic.InsertOrganization(org);
@@ -290,8 +294,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         profileDetail.LastName = existingPerson.LastName;
                         profileDetail.UserTypeId = (int) UserRoleType.ExternalUser;
                         UnifiedLoginRepository umr = new UnifiedLoginRepository();
-                        List<int> _productIdList = new List<int>() {(int) ProductEnum.UnifiedLogin};
-                        var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int) ProductEnum.UnifiedLogin, _productIdList);
+                        List<int> _productIdList = new List<int>() {(int) ProductEnum.UnifiedPlatform};
+                        var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int) ProductEnum.UnifiedPlatform, _productIdList);
                         if (gbAllRoles.Any(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)))
                         {
                             string roleId = gbAllRoles?.FirstOrDefault(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).ID;
@@ -299,7 +303,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             {
                                 ProductBatch pb = new ProductBatch
                                 {
-                                    ProductId = (int)ProductEnum.UnifiedLogin,
+                                    ProductId = (int)ProductEnum.UnifiedPlatform,
                                     InputJson = new RolePropertyList
                                     {
                                         RoleList = new List<string>() { roleId }
@@ -377,7 +381,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpPut]
 		public HttpResponseMessage UpdateOrganization([FromBody] OrganizationUpdate organization)
 	    {
-		    IOrganization org = null;
+		    Organization org = null;
 			if (organization.BooksCustomerMasterId != 0)
 			{
 				// get the organization by customer master id
@@ -425,7 +429,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing organization type");
 			}
 
+            var orgDomains = _organizationLogic.ListOrganizationDomain();
+			if (organization.OrganizationDomainId != 0)
+			{
+				if (orgDomains.All(o => o.OrganizationDomainId != organization.OrganizationDomainId))
+				{
+					// error
+					return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid organization domain id");
+				}
+			}
+			else if (!string.IsNullOrEmpty(organization.OrganizationDomainName))
+			{
+				if (orgDomains.Any(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)))
+				{
+					organization.OrganizationDomainId = orgDomains.FirstOrDefault(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+				}
+				else
+				{
+					return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid organization domain");
+				}
+			}
+			else
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing organization domain");
+            }
 			org.organizationType.OrganizationTypeId = organization.OrganizationTypeId;
+            org.OrganizationDomain.OrganizationDomainId = organization.OrganizationDomainId;
 
 			_repositoryResponse = _organizationLogic.UpdateOrganization(org);
 
@@ -768,8 +797,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Organization Type object have invalid entries)")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List Organization Types", Type = typeof(IOrganizationType))]
-		[SwaggerResponseExamples(typeof(IOrganizationType), typeof(OrganizationTypeExample))]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List Organization Types", Type = typeof(OrganizationType))]
+		[SwaggerResponseExamples(typeof(OrganizationType), typeof(OrganizationTypeExample))]
 		[Route("organizationtype")]
 		[HttpGet]
 		[AuthorizeScope("companyfunctions", "rplandingapi")]
@@ -796,6 +825,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 		}
 		#endregion
+
+        #region Public Organization Domain Methods
+        /// <summary>
+        /// List Organization Domains
+        /// </summary>
+        /// <returns>Company domains</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Organization Domain object has invalid entries)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List Organization Domains", Type = typeof(OrganizationDomain))]
+        [SwaggerResponseExamples(typeof(OrganizationDomain), typeof(OrganizationDomainExample))]
+        [Route("organizationdomain")]
+        [HttpGet]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        public HttpResponseMessage GetOrganizationDomain()
+        {
+            ObjectListOutput<OrganizationDomain, IErrorData> output = new ObjectListOutput<OrganizationDomain, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            IList<OrganizationDomain> organizationDomainList = _organizationLogic.ListOrganizationDomain();
+
+            if (organizationDomainList != null)
+            {
+                output.Status = errorStatus;
+                output.list = organizationDomainList;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Organization.OrganizationDomain.1";
+                errorStatus.ErrorMsg = "List OrganizationDomain: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
+        #endregion
 
 		#region Private functions
 		/// <summary>
@@ -870,10 +936,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IList<OrganizationType> organizationTypeList = _organizationLogic.ListOrganizationType();
 			string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
 
-			if (!addProductList.Contains(ProductEnum.UnifiedLogin))
+			if (!addProductList.Contains(ProductEnum.UnifiedPlatform))
 			{
 				// add unified login product to every new org
-				addProductList.Add(ProductEnum.UnifiedLogin);
+				addProductList.Add(ProductEnum.UnifiedPlatform);
 			}
 			if (!addProductList.Contains(ProductEnum.ProductUpdates))
 			{
@@ -1051,6 +1117,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return output;
 			}
 		}
+
+        /// <summary>
+        /// Used to document examples of the OrganizationDomain Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class OrganizationDomainExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Organization Types example</returns>
+            public object GetExamples()
+            {
+                OrganizationDomain example = new OrganizationDomain()
+                {
+                    OrganizationDomainId = 1,
+                    Name = "Primary",
+                    CreateDate = DateTime.Today
+                };
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<OrganizationDomain, IErrorData> output = new ObjectOutput<OrganizationDomain, IErrorData>()
+                {
+                    obj = example,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
 
 		/// <summary>
 		/// Used to document examples of the Organization customfields Model webapi result

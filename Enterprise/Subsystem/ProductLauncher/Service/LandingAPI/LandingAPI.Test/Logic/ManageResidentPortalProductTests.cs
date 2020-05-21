@@ -46,10 +46,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private string testHostname = "http://producturl.com";
         private string _mtApiEndPoint = "http://producturl.com";
-        #endregion
+		private string _appId = "d8f43b85";
+		private string _appKey = "50aa7342baf824716f87e6999cf4b472";
+		#endregion
 
-        #region Constructor
-        public ManageResidentPortalProductTests() : base((int)ProductEnum.ResidentPortal)
+		#region Constructor
+		public ManageResidentPortalProductTests() : base((int)ProductEnum.ResidentPortal)
         {
 			_blueBookId = 236;
 
@@ -71,8 +73,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "ApiEndPoint", Value = testHostname });
             _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "MTAPIENDPOINT", Value = _mtApiEndPoint });
+			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "APPID", Value = _appId });
+			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "APPKEY", Value = _appKey });
 
-            _repositoryResponseProductStatus.ErrorMessage = "";
+			_repositoryResponseProductStatus.ErrorMessage = "";
 
             _userClaims = new DefaultUserClaim()
             {
@@ -787,7 +791,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 }
             };
             var totalRecords = 5;
-            var url = $"{_mtApiEndPoint}/{_blueBookId}/users?filter={filter}&startRow={dataFilter.Pages.StartRow}&resultsperpage={dataFilter.Pages.ResultsPerPage}";
+            var url = $"{_mtApiEndPoint}/{_blueBookId}/users?filter={filter}&app_id={_appId}&app_key={_appKey}";
             var editorPersonaId = _editorPersonaId;
             var actual = new List<ResidentPortalMigrationUser>()
             {
@@ -917,7 +921,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 Message = "Success",
                 Status = true
             };
-            var url = $"{_mtApiEndPoint}/{_blueBookId}/migrate-users";
+            var url = $"{_mtApiEndPoint}/{_blueBookId}/migrate-users?app_id={_appId}&app_key={_appKey}";
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(JsonConvert.SerializeObject(expected))

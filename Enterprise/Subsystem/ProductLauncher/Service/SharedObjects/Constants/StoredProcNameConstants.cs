@@ -25,8 +25,6 @@
 
         public const string SP_GetAllSameSiteValues = "Enterprise.GetAllSameSiteValues";
 
-        //public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
-
         #endregion
 
         #region Provider / user related SPs
@@ -130,7 +128,7 @@
         public const string SP_MapBlueBookIdtoPartyId = "Enterprise.MapBlueBookIdtoPartyId";
         //public const string SP_GetBlueBookIdByOrganization = "Enterprise.GetBlueBookIdByOrganization";
         public const string SP_GetBookIdByOrganization = "Enterprise.GetBookIdByOrganization";
-
+        public const string SP_DataImportMappingUpdate = "Enterprise.DataImportMappingUpdate";
         //Organization
         //public const string SP_SetupOrganization = "Enterprise.SetupOrganization";
         public const string SP_SetupOrganization = "Enterprise.SetupOrganization_Ver01";
@@ -154,6 +152,7 @@
         public const string SP_ListOrganizationByLoginName = "Enterprise.ListOrganizationByLoginName";
         public const string SP_ListOrganizationStatusByUserId = "Enterprise.ListOrganizationStatusByUserId";
         public const string SP_ListOrganizationType = "Enterprise.ListOrganizationType";
+        public const string SP_ListOrganizationDomain = "Enterprise.ListOrganizationDomain";
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
 
 		//PartyRelationship
@@ -265,6 +264,8 @@
         //Green Book
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";
         public const string SP_ListPropertyMapping = "Enterprise.ListPropertyMapping";
+        public const string SP_UpdatePropertyMappingReMap = "Enterprise.UpdatePropertyMappingReMap";
+
         public const string SP_ListRolesByParty = "Enterprise.ListRolesByParty";
         public const string SP_ListRolesForProductsByPersonaId = "Enterprise.ListRolesForProductsByPersonaId";
         public const string SP_ListRolesForProductsByPartyId = "Enterprise.ListRolesForProductsByPartyId";
@@ -278,6 +279,7 @@
         public const string SP_ListAllRights = "Enterprise.ListAllRights";
         public const string SP_ListSecurityStatus = "Enterprise.ListSecurityStatus";
         public const string SP_SetDefaulteRole = "Enterprise.SetDefaultRole";
+        public const string SP_AddUpdatePropertyMapping = "Enterprise.AddUpdatePropertyMapping";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";
@@ -366,6 +368,7 @@
         public const string SP_ListUserInformation = "Person.GetUserInformation_Ver02";
         public const string SP_CreateUnityUser = "Ident.CreateUser_Ver01";
         public const string SP_ListUsersWithCompanyId = "Person.ListUsersWithCompanyId";
+        public const string SP_ListULMappingPersonaIdForProductUserId = "Enterprise.ListULMappingPersonaIdForProductUserId";
 
     }
 }

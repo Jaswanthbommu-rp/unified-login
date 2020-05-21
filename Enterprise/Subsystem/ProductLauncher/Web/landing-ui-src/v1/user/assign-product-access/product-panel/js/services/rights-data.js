@@ -3,7 +3,7 @@
 
     function ProductRightsSvc($resource,ENV) {
         var url, params,actions;
-       url = ENV.landingAPI + "api/product/rightsforrole";
+       url = ENV.landingAPI + "api/product/rights";
         params = {
             editorPersonaId: "@editorPersonalID",
             productId: "@productId",

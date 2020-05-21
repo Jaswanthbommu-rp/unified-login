@@ -15,15 +15,25 @@
             var s = this;
             s.gridConfigLoaded = false;
             s.switchConfigLoaded = false;
+            s.selectTypeConfigLoaded = false;
             s.productControlsMap = {};
-            s.groupMap = {};
+            s.propertyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
+            s.benchMarkRoleMap = {};
             s.sidePanelDataMap = {};
             s.productGridConfigMap = {};
             s.productAsideGridConfigMap = {};
             s.productSwitchConfigMap = {};
             s.productRadioConfigMap = {};
+            s.productDependencyMap = {};
+            s.productTabsMap = {};
+            s.productActiveTabMap = {};
+            s.productSelectTypeConfigMap = {};
+            s.productDependencyDataMap = {};
+            s.productPresetRolesMap = {};
+
+            s.originalPropertyListMap = {};
 
             s.productControlsList = {
                 products: []
@@ -31,9 +41,12 @@
             //s.productControlsList = [];
             s.groupList = [];
             s.propertyList = [];
+            s.propertyGroupList = [];
             s.productsTouched = [];
             s.originalPropertyList = [];
             s.roleList = [];
+            s.benchMarkRoleList = [];
+            s.presetRoleList = [];
             s.sidePanelDataList = [];
 
         };
@@ -53,10 +66,10 @@
             return count;
         };
 
-        p.getProductsTouched = function () {
-            var s = this;
-            return s.productsTouched;
-        };
+        // p.getProductsTouched = function () {
+        //     var s = this;
+        //     return s.productsTouched;
+        // };
 
         p.getProductControlsList = function () {
             var s = this;
@@ -114,6 +127,15 @@
             return config;
         };
 
+        p.getProductSelectTypeConfig = function (productId, tabName) {
+            var s = this,
+                config;
+            if (s.productSelectTypeConfigMap['product' + productId + tabName] !== undefined) {
+                config = s.productSelectTypeConfigMap['product' + productId + tabName].selectCtrlConfig;
+            }
+            return config;
+        };
+
         p.getProductRadioConfig = function (productId, tabName) {
             var s = this,
                 config;
@@ -152,6 +174,28 @@
             if (s.roleMap['product' + product] !== undefined) {
                 productRolesList = s.roleMap['product' + product].roles;
             }
+
+            return productRolesList;
+        };
+
+         p.getProductBenchMarkRolesData = function (product) {
+            var s = this,
+                productBMRolesList;
+
+            if (s.benchMarkRoleMap['product' + product] !== undefined) {
+                productBMRolesList = s.benchMarkRoleMap['product' + product].roles;
+            }
+
+            return productBMRolesList;
+        };
+
+        p.getProductPresetRolesData = function (product) {
+            var s = this,
+                productRolesList;
+
+            if (s.productPresetRolesMap['product' + product] !== undefined) {
+                productRolesList = s.productPresetRolesMap['product' + product].roles;
+            }
             // logc("master data",product,s.roleMap, productRolesList);
             return productRolesList;
         };
@@ -167,6 +211,62 @@
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
         };
+
+        p.getProductPropertyGroupData = function (product) {
+            var s = this,
+                productPropertyGroupList;
+
+            if (s.propertyGroupMap['product' + product] !== undefined) {
+                productPropertyGroupList = s.propertyGroupMap['product' + product].propertyGroup;
+            }
+
+            return productPropertyGroupList;
+        };
+
+        p.getProductDependencyControlId = function (product, name) {
+            var s = this,
+                controlId = 0;
+
+            if (s.productDependencyMap['product' + product + name] !== undefined) {
+                controlId = s.productDependencyMap['product' + product + name].controlId;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return controlId;
+        };
+
+
+        p.getProductAllTabs = function (product) {
+            var s = this,
+                productTabsList;
+
+            if (s.productTabsMap['product' + product] !== undefined) {
+                productTabsList = s.productTabsMap['product' + product].allTabs;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return productTabsList;
+        };
+
+        p.getProductInitialTabs = function (product) {
+            var s = this,
+                productTabsList;
+
+            if (s.productTabsMap['product' + product] !== undefined) {
+                productTabsList = s.productTabsMap['product' + product].intialTabs;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return productTabsList;
+        };
+
+        p.getProductActiveTab = function (product) {
+            var s = this,
+                activeTab;
+
+            if (s.productActiveTabMap['product' + product] !== undefined) {
+                activeTab = s.productActiveTabMap['product' + product].activeTab;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return activeTab;
+        };
         // Setters
 
 
@@ -174,6 +274,13 @@
             var s = this;
             s.propertyList = list;
             s.renderPropertyMap(key);
+            return s;
+        };
+
+        p.setPropertyGroupList = function (list, key) {
+            var s = this;
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
             return s;
         };
 
@@ -209,10 +316,32 @@
             return s;
         };
 
+        p.setBenchMarkRoleList = function (list, key) {
+            var s = this;
+            s.benchMarkRoleList = list;
+            s.renderBenchMarkRoleMap(key);
+            return s;
+        };
+
+        p.setPresetRoleList = function (list, key) {
+            var s = this;
+            s.presetRoleList = list;
+            s.renderPresetRoleMap(key);
+            return s;
+        };
+
         p.setRoleSelectKey = function (key) {
             var s = this;
             s.roleSelectKey = key;
             return s;
+        };
+
+        p.setProductDependencyDataMap = function (key, bool) {
+            var s = this;
+
+            s.productDependencyDataMap['product' + key] = {
+                dependencyData: bool
+            };
         };
 
         p.updateProductAllProperties = function (product, value) {
@@ -260,6 +389,22 @@
             return s.switchConfigLoaded;
         };
 
+        p.isSelectTypeConfigLoaded = function () {
+            var s = this;
+            return s.selectTypeConfigLoaded;
+        };
+
+        p.isProductDependencyDataNeeded = function (product) {
+            var s = this,
+                dependencyData = false;
+
+            if (s.productDependencyDataMap['product' + product] !== undefined) {
+                dependencyData = s.productDependencyDataMap['product' + product].dependencyData;
+            }
+            //logc("master data",product,s.propertyMap, productPropertiesList);
+            return dependencyData;
+        };
+
         p.selectedRoleSync = function (key, record) {
             var s = this,
                 roleData,
@@ -273,11 +418,25 @@
                 item.isAssigned = item.id == record.id;
             });
 
-            if (s.productsTouched.indexOf(key) !== -1) {
-                s.productsTouched.push(key);
-            }
             return s;
         };
+
+         p.selectedBenchMarkRoleSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.benchMarkRoleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            return s;
+        };
+
 
         p.multiSelectedRoleSync = function (key, record) {
             var s = this,
@@ -296,6 +455,41 @@
             return s;
         };
 
+         p.multiSelectBenchMarkRoleSync = function (key, record) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.benchMarkRoleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                if (item.id == record.id) {
+                    item.isAssigned = record.isAssigned;
+                }
+            });
+
+            return s;
+        };
+
+        p.setSelectedPresetRoleSync = function (key, list) {
+            var s = this,
+                roleData,
+                selectedRole,
+                selectState = false;
+
+            roleData = s.roleMap['product' + key].roles;
+
+            roleData.forEach(function (item) {
+                item.isAssigned = false;
+                if (list.contains(parseInt(item.id))) {
+                    item.isAssigned = true;
+                }
+            });
+
+            return s;
+        };
+
         p.selectedPropertySync = function (key, record) {
             var s = this,
                 propertyData;
@@ -306,10 +500,6 @@
                 item.isAssigned = false;
                 item.isAssigned = item.id == record.id;
             });
-
-            if (s.productsTouched.indexOf(key) !== -1) {
-                s.productsTouched.push(key);
-            }
 
             return s;
         };
@@ -337,17 +527,33 @@
             propertyData = s.propertyMap['product' + key].properties;
 
             records.forEach(function (item) {
-                //var record = records.findIndex( record => record.id == item.id);
                 var record = propertyData.filter(function (data) {
                     return item.id === data.id;
                 })[0];
 
-                logc("updatedrecord", record);
                 if (item.id == record.id) {
                     record.isAssigned = item.isAssigned;
                 }
 
             });
+
+            return s;
+        };
+
+        p.groupToPropertySync = function (productId, group) {
+            var s = this,
+                propertyList,
+                selectState = false;
+
+            propertyList = s.propertyMap['product' + productId].properties;
+
+            propertyList.forEach(function (item) {
+                if (parseInt(item.region_id) == parseInt(group.id)) {
+                     item["isAssigned"] = group.isAssigned;
+                 }
+            });
+
+            pubsub.publish("pplpropertygroup.updateGrids");
 
             return s;
         };
@@ -369,6 +575,7 @@
             });
 
             propertyList.assignedProperties = assignedCount + " of " + totalCount;
+            pubsub.publish("pplpropertygroup.updateGrids");
             return s;
         };
 
@@ -390,6 +597,22 @@
             });
 
             roleList.assignedRoles = assignedCount + " of " + totalCount;
+            return s;
+        };
+
+         p.allBenchMarkRolesSync = function (productId, selected) {
+            var s = this,
+                roleList,
+                selectState = false,
+                assignedCount = 0,
+                totalCount = 0;
+
+            roleList = s.benchMarkRoleMap['product' + productId].roles;
+
+            roleList.forEach(function (item) {
+                item["isAssigned"] = selected;
+            });
+
             return s;
         };
 
@@ -429,6 +652,15 @@
             // logc("s.productSwitchConfigMap", s.productSwitchConfigMap);
         };
 
+        p.renderProductSelectTypeConfigMap = function (productId, tabName, config) {
+            var s = this;
+            s.productSelectTypeConfigMap['product' + productId + tabName] = {
+                selectCtrlConfig: config
+            };
+
+            s.selectTypeConfigLoaded = true;
+        };
+
         p.renderProductRadioConfigMap = function (productId, tabName, config) {
             var s = this;
             s.productRadioConfigMap['product' + productId + tabName] = {
@@ -450,6 +682,31 @@
             }
         };
 
+        p.renderProductDependencyMap = function (key, name, controlId) {
+            var s = this;
+
+            s.productDependencyMap['product' + key + name] = {
+                controlId: controlId
+            };
+        };
+
+        p.renderProductTabsMap = function (key, allTabs, initTab) {
+            var s = this;
+
+            s.productTabsMap['product' + key] = {
+                allTabs: allTabs,
+                intialTabs: initTab
+            };
+        };
+
+        p.renderProductActiveTabMap = function (key, name) {
+            var s = this;
+
+            s.productActiveTabMap['product' + key] = {
+                activeTab: name
+            };
+        };
+
         p.renderPropertyMap = function (key) {
             var s = this;
             if (!angular.equals({}, s.propertyList)) {
@@ -461,12 +718,58 @@
             }
         };
 
+        p.renderPropertyGroupMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.propertyGroupList)) {
+                s.propertyGroupMap['product' + key] = {
+                    propertyGroup: s.propertyGroupList
+                };
+            }
+        };
+
+        p.renderOriginalPropertyListMap = function (key) {
+            var s = this,
+                assignedProp = [];
+
+            if (!angular.equals({}, s.propertyList)) {
+                s.propertyList.forEach(function (item) {
+                    if (item.isAssigned) {
+                        assignedProp.push(item.id);
+                    }
+                });
+
+                s.originalPropertyListMap['product' + key] = {
+                    properties: s.assignedProp
+                };
+            }
+        };
+
         p.renderRoleMap = function (key) {
             var s = this;
 
             if (!angular.equals({}, s.roleList)) {
                 s.roleMap['product' + key] = {
                     roles: s.roleList
+                };
+            }
+        };
+
+        p.renderBenchMarkRoleMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.benchMarkRoleList)) {
+                s.benchMarkRoleMap['product' + key] = {
+                    roles: s.benchMarkRoleList
+                };
+            }
+        };
+
+        p.renderPresetRoleMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.presetRoleList)) {
+                s.productPresetRolesMap['product' + key] = {
+                    roles: s.presetRoleList
                 };
             }
         };
@@ -569,19 +872,21 @@
 
         p.reset = function () {
             var s = this;
-            s.groupMap = {};
+            s.propertyGroupMap = {};
             s.companyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
             s.bmRoleMap = {};
             s.groupList = [];
             s.propertyList = [];
+            s.propertyGroupList = [];
             s.roleList = [];
             s.originalPropertyList = [];
             s.bmRoleList = [];
             s.companyGroupList = [];
             s.productControlsList = [];
             s.productControlsMap = {};
+            s.productPresetRolesMap ={};
         };
 
         return new ProductDataSyncManager();

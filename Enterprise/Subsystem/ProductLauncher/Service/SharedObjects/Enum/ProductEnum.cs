@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 {
@@ -9,6 +10,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 	/// </summary>
 	public static class ProductEnumHelper
 	{
+		public static string StringValueOf(ProductEnum value)
+		{
+			FieldInfo fi = value.GetType().GetField(value.ToString());
+			DescriptionAttribute[] attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+			if (attributes.Length > 0)
+			{
+				return attributes[0].Description;
+			}
+			else
+			{
+				return value.ToString();
+			}
+		}
 		/// <summary>
 		/// Get ProductName by Product Id
 		/// </summary>
@@ -24,7 +38,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			{
 				case ProductEnum.OneSite: return "onesite";
 				case ProductEnum.UnifiedUI: return "unified-ui";
-				case ProductEnum.UnifiedLogin: return "unified-platform";
+				case ProductEnum.UnifiedPlatform: return "unified-platform";
 				case ProductEnum.AssetOptimizer: return "asset-optimization";
 				case ProductEnum.Propertyware: return "propertyware";
 				case ProductEnum.Lead2Lease: return "lead2lease";
@@ -69,7 +83,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.ClickPay: return "payments";
                 case ProductEnum.HelpCenter: return "help-center";
                 case ProductEnum.SeniorLeadManagement: return "help-center"; // Need this value replaced with actual based on the CDN value
-            }
+				case ProductEnum.AoLeaseRentOption: return "lro";
+				case ProductEnum.AoAmenityOptimization: return "amenity-analytics";
+				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
+				case ProductEnum.AoRentControl: return "rent-control";
+			}
 			return null;
 		}
 
@@ -86,7 +104,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 					ProductEnum.AoPerformanceAnalytics,
 					ProductEnum.AoRevenueManagement,
 					ProductEnum.AoAxiometrics,
-					ProductEnum.AoBenchmarking
+					ProductEnum.AoBenchmarking,
+					ProductEnum.AoLeaseRentOption,
+					ProductEnum.AoAIRevenueManagement,
+					ProductEnum.AoAmenityOptimization,
+					ProductEnum.AoRentControl,
 			};
 		}
 
@@ -121,6 +143,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.AoPerformanceAnalytics: return "YIELDSTAR";
 				case ProductEnum.AoRevenueManagement: return "YIELDSTAR";
 				case ProductEnum.AoBenchmarking: return "YIELDSTAR";
+				case ProductEnum.AoLeaseRentOption: return "YIELDSTAR";
+				case ProductEnum.AoAmenityOptimization: return "YIELDSTAR";
+				case ProductEnum.AoAIRevenueManagement: return "YIELDSTAR";
+				case ProductEnum.AoRentControl: return "YIELDSTAR";
 			}
 
 			return null;
@@ -143,6 +169,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 					case ProductEnum.AoPerformanceAnalytics: return "PA";
 					case ProductEnum.AoRevenueManagement: return "PO";
 					case ProductEnum.AoBenchmarking: return "BM";
+					case ProductEnum.AoLeaseRentOption: return "LRO";
+					case ProductEnum.AoAmenityOptimization: return "AA";
+					case ProductEnum.AoAIRevenueManagement: return "AIRM";
+					case ProductEnum.AoRentControl: return "RC";
 				}
 			}
 
@@ -161,6 +191,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case "PA": return ProductEnum.AoPerformanceAnalytics;
 				case "PO": return ProductEnum.AoRevenueManagement;
 				case "BM": return ProductEnum.AoBenchmarking;
+				case "LRO": return ProductEnum.AoLeaseRentOption;
+				case "AA": return ProductEnum.AoAmenityOptimization;
+				case "AIRM": return ProductEnum.AoAIRevenueManagement;
+				case "RC": return ProductEnum.AoRentControl;
 
 			}
 
@@ -182,13 +216,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Unified Ui
 		/// </summary>
+		[Description("UI")]
 		UnifiedUI = 2,
 
 		/// <summary>
 		/// The Greenbook landing website
 		/// </summary>
-		[Description("UL")]
-		UnifiedLogin = 3,
+		[Description("UPFM")]
+		UnifiedPlatform = 3,
 
 		/// <summary>
 		/// Asset Optimizer - Umbrella for all AO products
@@ -467,7 +502,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("SLM")]
         SeniorLeadManagement = 50,
-    }
+
+		/// <summary>
+		/// AO LeaseRentOption
+		/// </summary>
+		[Description("LRO")]
+		AoLeaseRentOption = 51,
+		/// <summary>
+		/// AO Amenity Optimization
+		/// </summary>
+		[Description("AA")]
+		AoAmenityOptimization = 52,
+		/// <summary>
+		/// AO AI Revenue Management
+		/// </summary>
+		[Description("AIRM")]
+		AoAIRevenueManagement = 53,
+		/// <summary>
+		/// AO Rent Control
+		/// </summary>
+		[Description("RC")]
+		AoRentControl = 54
+	}
 
 	/// <summary>
 	/// Used to identify products by id.
@@ -604,6 +660,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		AoBenchmarking = 34,
 
 		/// <summary>
+		/// Ao LRO
+		/// </summary>
+		[Description("LRO")]
+		AoLeaseRentOption = 51,
+
+		/// <summary>
+		/// AO Amenity Optimization
+		/// </summary>
+		[Description("AA")]
+		AoAmenityOptimization = 52,
+		/// <summary>
+		/// AO AI Revenue Management
+		/// </summary>
+		[Description("AIRM")]
+		AoAIRevenueManagement = 53,
+		/// <summary>
+		/// AO Rent Control
+		/// </summary>
+		[Description("RC")]
+		AoRentControl = 54,
+
+		/// <summary>
 		/// Integration Marketplace
 		/// </summary>
 		[Description("IMP")]
@@ -648,13 +726,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("CPAY")]
 		ManageClickPayProductAccess = 48,
-		
+
 		/// <summary>
 		/// Manage Unified settings
 		/// </summary>
 		ManageUnifiedSettings = 49,
 
-        /// <summary>
+		/// <summary>
 		/// Manage Settings Template
 		/// </summary>
 		ManageSettingsTemplates = 50,
@@ -666,3 +744,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         ManageSeniorLeadManagement = 51
     }
 }
+
+//public static class EnumHelper
+//{
+//	public static string GetDescription(this T enumerationValue) where T : struct
+//	{
+//		var type = enumerationValue.GetType();
+//		if (!type.IsEnum)
+//		{
+//			throw new ArgumentException($"{nameof(enumerationValue)} must be of Enum type", nameof(enumerationValue));
+//		}
+//		var memberInfo = type.GetMember(enumerationValue.ToString());
+//		if (memberInfo.Length > 0)
+//		{
+//			var attrs = memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+//			if (attrs.Length > 0)
+//			{
+//				return ((DescriptionAttribute)attrs[0]).Description;
+//			}
+//		}
+//		return enumerationValue.ToString();
+//	}
+//}

@@ -148,7 +148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog(
                             $"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-                        var userRoles = user.RoleList;
+                        var userRoles = user.Roles;
                         MergeUserRoles(roleList, userRoles);
                     }
                 }
@@ -764,6 +764,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 LastName = SubjectUserDetails.LastName,
                 Email = SubjectUserDetails.Email,
                 PhoneNumbers = SubjectUserDetails.PhoneNumbers,
+                Phone = SubjectUserDetails.PhoneNumber,
                 IsActive = true,
                 //Title = SubjectUserDetails.Title,
                 UserId = SubjectUserDetails.ProductUserId,

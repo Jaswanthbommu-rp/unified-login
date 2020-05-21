@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="organization">Organization object</param>
         /// <returns>Repository response object</returns>
-        RepositoryResponse UpdateOrganization(IOrganization organization);
+        RepositoryResponse UpdateOrganization(Organization organization);
 
         /// <summary>
         /// Used to get the Organization based on the realPageId, party id, customer master or master id
@@ -35,6 +35,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="blackBookId">Optional blackBookId</param>
         /// <returns>Organization object</returns>
         Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null);
+
+        /// <summary>
+        /// Used to update any company master id records that match the old id to a new id
+        /// </summary>
+        /// <param name="oldOrganization"></param>
+        /// <param name="newOrganization"></param>
+        /// <returns></returns>
+        RepositoryResponse UpdateOrganizationBooksCompanyMasterId(Organization oldOrganization, Organization newOrganization);
 
         /// <summary>
         /// Used to get the Organization list
@@ -85,8 +93,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// Used to get the list of all Organization Types
         /// </summary>
         /// <returns>Organization object</returns>
-        IList<OrganizationType> ListOrganizationType();
+        List<OrganizationType> ListOrganizationType();
 
+        List<OrganizationDomain> ListOrganizationDomain();
 
         /// <summary>
         /// Used to get a list of products by company id

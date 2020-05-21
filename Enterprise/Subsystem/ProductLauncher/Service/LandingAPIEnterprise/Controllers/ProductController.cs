@@ -5,6 +5,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -34,13 +36,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetProducts()
         {
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");
-            IProductRepository productRepository = new ProductRepository();
-            
-            //Passing null to get all the Products
-            var result = productRepository.GetAllProducts();
-            IList<string> excludeProducts = new List<string>() { "UI", "UL", "SF" };
-            result = result.Where(x => !excludeProducts.Contains(x.BooksProductCode)).ToList();
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");            
+
+            var result = GetAllProducts();
 
             var logData = new Dictionary<string, object>();
             logData.Add("result", result);
@@ -82,10 +80,72 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
+        /// <summary>
+	    /// Get Unified Login User Mapping id for given Product user Id's by  Blue Book Company ID and ProductId.
+	    /// </summary>
+	    /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of UL mapping users id by company and products", Type = typeof(MappedUnifiedLoginUserDetails))]
+        [Route("ulusermappingidbycompanyproductUserId")]
+        [AuthorizeScope("userinfoapi")]
+        [HttpPost]
+        public HttpResponseMessage GetULUserIdMappedToProductUserIdByCompanyAndProducts([FromBody] ProductUserIDMappingRequest productUserIDMappingRequest)
+        {
+            int productId = 0;
+
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Started");
+            MappedUnifiedLoginUserDetails mappedUnifiedLoginUserDetails = new MappedUnifiedLoginUserDetails
+            {
+                CompanyId = productUserIDMappingRequest.CompanyId,
+                ProductCode = productUserIDMappingRequest.ProductCode,
+                ULMappedPersonaId = new List<ULMappedPersonaIds>()
+            };
+
+            var result = GetAllProducts();
+            productId = result.Where(x => x.BooksProductCode == productUserIDMappingRequest.ProductCode).FirstOrDefault().ProductId;
+
+            if (productUserIDMappingRequest == null ||
+                productUserIDMappingRequest.CompanyId <= 0||
+                string.IsNullOrEmpty(productUserIDMappingRequest.ProductCode) ||
+                productId <=0)
+            {                
+                return Request.CreateResponse(HttpStatusCode.BadRequest, mappedUnifiedLoginUserDetails);
+            }
+
+            IProductRepository productRepository = new ProductRepository();
+            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
+                                                                                 productId,
+                                                                                 productUserIDMappingRequest.ProductUserId);
+            var logData = new Dictionary<string, object>();
+            logData.Add("result", mappedUnifiedLoginUserDetails);
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Data returned", logData);
+
+            return Request.CreateResponse(HttpStatusCode.OK, mappedUnifiedLoginUserDetails);
+        }
+
 
         #endregion
 
         #region Private methods
+
+        private IList<GbProductMap> GetAllProducts()
+        {
+            IProductRepository productRepository = new ProductRepository();
+
+            //Passing null to get all the Products
+            var result = productRepository.GetAllProducts();
+            IList<string> excludeProducts = new List<string>()
+            {
+                ProductEnum.SalesForce.ToEnumDescription(),
+                ProductEnum.UnifiedPlatform.ToEnumDescription(),
+                ProductEnum.UnifiedUI.ToEnumDescription()
+            };
+            result = result.Where(x => !excludeProducts.Contains(x.BooksProductCode)).ToList();
+
+            return result;
+        }
         /// <summary>
         /// Used to write to the log
         /// </summary>

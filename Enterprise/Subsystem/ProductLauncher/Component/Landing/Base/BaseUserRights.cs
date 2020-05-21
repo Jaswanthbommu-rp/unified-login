@@ -143,7 +143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             IList<UserRoleRights> userRoleRights = rpCache.GetFromCache(cacheKey, 120, () =>
             {
                 UserRoleRightRepository urr = new UserRoleRightRepository();
-                return urr.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedLogin);
+                return urr.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform);
             });
             
             return userRoleRights;
@@ -162,7 +162,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 			List<Component.SharedObjects.Product.UserManagement.Role> userRoles = rpCache.GetFromCache(cacheKey, 30, () =>
 			{
 				UserRoleRightRepository urr = new UserRoleRightRepository();
-				return urr.ListRoleByPersona((int)ProductEnum.UnifiedLogin, personaId, orgPartyId);
+				return urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
 			});
 			return userRoles;
 		}

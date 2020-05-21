@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             //Exclude following products from RealPage Employee Access admin user
             //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS
-            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedLogin));
+            productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedPlatform));
             productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AssetOptimizer));
             productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.FinancialSuite));
             productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ClientPortal));
@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="organization">Organization Object</param>
         /// <returns>RepositoryResponse object</returns>
-        public RepositoryResponse UpdateOrganization(IOrganization organization)
+        public RepositoryResponse UpdateOrganization(Organization organization)
         {
             if (organization == null)
             {
@@ -219,9 +219,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Used to list the Organization Types
         /// </summary>
         /// <returns>list of OrganizationType objects</returns>
-        public IList<OrganizationType> ListOrganizationType()
+        public List<OrganizationType> ListOrganizationType()
         {
             return _organizationRepository.ListOrganizationType();
+        }
+        #endregion
+
+        #region Public Organization Domain methods
+        /// <summary>
+        /// Used to list the Organization Domains
+        /// </summary>
+        /// <returns>list of OrganizationDomain objects</returns>
+        public List<OrganizationDomain> ListOrganizationDomain()
+        {
+            return _organizationRepository.ListOrganizationDomain();
         }
         #endregion
     }

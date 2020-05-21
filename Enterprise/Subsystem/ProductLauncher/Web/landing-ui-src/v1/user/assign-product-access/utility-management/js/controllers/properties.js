@@ -5,6 +5,8 @@
 
     function UtilityManagementPropertiesGridCtrl($scope, $filter, dataSvc, dataGroupSvc, gridModel, gridConfig, gridGroupConfig, gridRegionConfig, gridTransformSvc, gridPaginationModel, pubsub, persona, UtilManDataModel, userDetailsModel, security) {
         var vm = this,
+            filteredPropertiesRecords,
+            filteredPropertyGroupRecords,
             isUserHasViewOnlyAccess = false,
             propertiesGrid = gridModel(),
             propertyGroupGrid = gridModel(),
@@ -41,6 +43,8 @@
             });
 
             vm.regionsGrid = regionsGrid;
+            vm.filteredPropertiesRecords = filteredPropertiesRecords;
+            vm.filteredPropertyGroupRecords = filteredPropertyGroupRecords;
             regionsGridTransform.watch(regionsGrid);
             regionsGrid.setConfig(gridRegionConfig);
             regionsGridPagination.setGrid(regionsGrid);
@@ -52,6 +56,11 @@
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
+            vm.propertiesGridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.propertiesFilterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
+
+            vm.propertiesGroupGridAllWatch = propertyGroupGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
+            vm.propertiesGroupFilterData = propertyGroupGrid.subscribe("filterBy", vm.filterPropertyGroup.bind(vm));
 
             if (persona.isReady()) {
                 vm.loadData();
@@ -109,6 +118,7 @@
                 UtilManDataModel.setProperties(vm.properties);
                 if (resp.additional) {
                     vm.setAccessType(resp.additional.accessType);
+                    vm.resetDataModel();
                 }
             }
             if (resp.isError) {
@@ -217,6 +227,32 @@
             }
             else {
                 UtilManDataModel.setProperties(vm.properties);
+            }
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredPropertiesRecords = $filter("filter")(vm.properties, filterBy);
+        };
+
+        vm.selectAllProperties = function (val) {
+            if(vm.filteredPropertiesRecords !== undefined){
+                UtilManDataModel.setAllPropertiesData(vm.filteredPropertiesRecords, val);
+            }
+            else{
+                UtilManDataModel.setAllPropertiesData(vm.properties, val);
+            }
+        };
+
+        vm.filterPropertyGroup = function(filterBy){
+            vm.filteredPropertyGroupRecords = $filter("filter")(vm.propertyGroups, filterBy);
+        };
+
+        vm.selectAllPropertyGroup = function (val) {
+            if(vm.filteredPropertyGroupRecords !== undefined){
+                UtilManDataModel.setAllPropertiesData(vm.filteredPropertyGroupRecords, val);
+            }
+            else{
+                UtilManDataModel.setAllPropertiesData(vm.propertyGroups, val);
             }
         };
 

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -24,7 +26,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Returns Rights With Count  (Rights in GB)
         /// </summary>
         ListResponse GetRightsWithCount(long editorPersonaId, long partyId);
-        
 
         /// <summary>
         /// Returns Roles for User (Roles in GB)
@@ -40,7 +41,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Returns ALL Rights by role (Rights in GB)
         /// </summary>
         ListResponse GetAllRightsByRole(long editorPersonaId, long partyId, long roleId);
-        
 
         /// <summary>
         /// Returns Roles by right (Roles in GB)
@@ -62,7 +62,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         ListResponse SetDefaultRole(long editorPersonaId, long roleId);
         
-
         /// <summary>
         /// Add/Delete Rights
         /// </summary>
@@ -73,11 +72,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         ListResponse UpdateRolesByRight(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove);
         
-
         /// <summary>
         /// Clone Rights
         /// </summary>
         ListResponse CloneRightsToRole(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove);
 
+        /// <summary>
+        /// Returns Roles with assigned rights for User (User Access Groups in UserManagement)
+        /// </summary>
+        ListResponse GetUserRolesWithRights(long editorPersonaId, long userPersonaId, long partyId);
+
+        /// <summary>
+        /// Used to get the list of properties for the company or for the given user
+        /// </summary>
+        ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
+
+        ListResponse GetProperties(long userPersonaId, string include = null);
     }
 }

@@ -1,19 +1,26 @@
+﻿using Newtonsoft.Json;
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
+    public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
     {
         private DefaultUserClaim _userClaims;
 
@@ -24,10 +31,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedLogin, null)
+        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedPlatform, null)
         {
             WriteToDiagnosticLog("UnifiedLogin - ManageUnifiedLogin.Ctor - Getting Product settings.");
-            _productId = (int)ProductEnum.UnifiedLogin;
+            _productId = (int)ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
 	        _userClaims = userClaims;
@@ -38,6 +45,126 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Public Methods
 
         #region Properties and Roles
+        /// <summary>
+		/// Used to get the list of properties for the company or for the given user
+		/// </summary>
+		/// <param name="editorPersonaId">User making the request</param>
+		/// <param name="userPersonaId">The user id to merge with the property list, if used. 0 for all properties</param>
+		/// <param name="assignedOnly">Only return the properties assigned to the given user persona id</param>
+		/// <param name="datafilter">A datafilter used to filter the properties. Not currently used</param>
+		/// <returns></returns>
+		public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
+
+            try
+            {
+                result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (result.IsError)
+                {
+                    WriteToErrorLog($"ManageUnifiedLogin.GetProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                //long companyId = _editorPersona.Organization.BooksMasterId;
+                long companyMasterId = _editorPersona.Organization.BooksCustomerMasterId;
+
+                if (companyMasterId == 0)
+                {
+                    WriteToErrorLog($"ManageUnifiedLogin.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                }
+
+                IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
+                IList<ProductProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
+              
+                WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
+
+                // need to do a filter on the result
+                if (userPersonaId != 0)
+                {
+                    WriteToDiagnosticLog($"GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    result = MergeProductPropertiesWithGreenbook(customerPropertyList, userPersonaId, assignedOnly);
+                    WriteToDiagnosticLog($"GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                }
+                else
+                {
+                    result = new ListResponse() // create new user
+                    {
+                        Records = customerPropertyList.Cast<object>().ToList(),
+                        TotalRows = customerPropertyList.Count,
+                        RowsPerPage = customerPropertyList.Count,
+                        TotalPages = 1,
+                        ErrorReason = string.Empty
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                result.IsError = true;
+                result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+                WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
+                    exception: ex);
+            }
+
+            return result;
+        }
+
+        public ListResponse GetProperties(long userPersonaId, string include = null)
+        {
+            ListResponse response = new ListResponse();
+
+            List<ProductProperty> productPropertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+
+            if (productPropertyList != null)
+            {
+                IList<ProductProperty> blueBookPropertyList = _blueBook.GetCustomerProperty(_userClaims.CustomerMasterId);
+                if ((productPropertyList.Count == 1) && (productPropertyList[0].ID.Equals("-1")))
+                {
+                    productPropertyList = blueBookPropertyList.ToList();
+                }
+                else
+                {
+                    productPropertyList = blueBookPropertyList.Where(b => productPropertyList.All(p => p.ID.Equals(b.ID))).ToList();
+                }
+            }
+
+            if (productPropertyList.Count > 0)
+            {
+                string includeFields = string.Empty;
+
+                bool bIncludeFields = ((!string.IsNullOrWhiteSpace(include)) && (include.Split(new char[] { ',' }).Length > 0));
+
+                if (bIncludeFields)
+                {
+                    DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
+                    string productPropertySerializableProperties = JsonConvert.SerializeObject(
+                        productPropertyList,
+                        new JsonSerializerSettings()
+                        {
+                            ContractResolver = dynamicContractResolver
+                        }
+                    );
+                    productPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+                }
+
+                productPropertyList.ForEach(p =>
+                {
+                    p.IsAssigned = null;
+                    p.disableSelection = null;
+                });
+
+                response.IsError = false;
+                response.Records = productPropertyList.Cast<object>().ToList();
+                response.TotalRows = productPropertyList.Count;
+                response.RowsPerPage = productPropertyList.Count;
+                response.TotalPages = 1;
+                response.ErrorReason = string.Empty;
+            }
+
+            return response;
+        }
 
         /// <summary>
         /// Used to add/update a role in Greenbook
@@ -355,7 +482,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 
                 var productIds = GetProductIdsByOrg();
 
@@ -409,7 +536,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRoleWithRights with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
                 //Get Product Id's by org
@@ -466,7 +593,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB rights from GB DB - pr.ListRightForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
@@ -526,7 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRoleWithRights with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
                 //Get Product Id's by org
 
                 var productIds = GetProductIdsByOrg();
@@ -583,7 +710,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get rights from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
@@ -641,7 +768,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get rights from DB for UserManagement product
                 WriteToDiagnosticLog(
                    $"UserManagement - Getting all GB roles from GB DB - pr.ListAllRightsForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
@@ -711,7 +838,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get rights from DB for UserManagement product
                 WriteToDiagnosticLog(
                    $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
@@ -844,7 +971,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UserManagement product
                 WriteToDiagnosticLog(
                    $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-                int productId = (int)ProductEnum.UnifiedLogin;
+                int productId = (int)ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
 
@@ -870,7 +997,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     WriteToDiagnosticLog(
                          $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-                    response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
+                    response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId, partyId);
                     WriteToDiagnosticLog(
                            $"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
                 }
@@ -891,6 +1018,89 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     };
                 }
                 
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetUserRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Returns Roles for User (User Access Groups in UserManagement)
+        /// </summary>
+        public ListResponse GetUserRolesWithRights(long editorPersonaId, long userPersonaId, long partyId)
+        {
+            WriteToDiagnosticLog(
+                $"UserManagement - ManageUnifiedLogin.GetUserRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            var response = new ListResponse();
+            try
+            {
+                ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
+                if (result.IsError)
+                {
+                    WriteToErrorLog(
+                        $"UserManagement - ManageUnifiedLogin.GetUserRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                // get roles from DB for UserManagement product
+                WriteToDiagnosticLog(
+                   $"UserManagement - Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                int productId = (int)ProductEnum.UnifiedPlatform;
+
+                ProductRepository pr = new ProductRepository();
+                UserRoleRightRepository urr = new UserRoleRightRepository();
+                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                var gbAllRoles = urr.GetPlatFormRoleRights(partyId, productIdList, productId);
+
+                gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
+
+                foreach (var role in gbAllRoles)
+                {
+                    var itemsToRemove = role.UserRights.Where(r => (r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN" ||
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" ||
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS" ||
+                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN")).ToList();
+
+                    foreach (var item in itemsToRemove)
+                    {
+                        role.UserRights.Remove(item);
+                    }
+                }
+
+                WriteToDiagnosticLog(
+                    $"UserManagement - ManageUnifiedLogin.GetUserRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+
+
+                if (userPersonaId != 0) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog($"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    
+                    response = SetUserSelectedRole(gbAllRoles, userPersonaId, partyId);
+                    WriteToDiagnosticLog($"UserManagement - ManageUnifiedLogin.GetUserRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                }
+                else // Called during creating a new User
+                {
+                    // For new user, set a default role - User Role (Name = BASIC END USER)
+                    if (gbAllRoles != null)
+                    {
+                        gbAllRoles.FirstOrDefault(s => s.DefaultRole == "True").IsAssigned = true;
+                    }
+                    response = new ListResponse()
+                    {
+                        Records = gbAllRoles.Cast<object>().ToList(),
+                        TotalRows = gbAllRoles.Count(),
+                        RowsPerPage = 9999,
+                        ErrorReason = string.Empty,
+                        TotalPages = 1
+                    };
+                }
+
             }
             catch (Exception ex)
             {
@@ -977,7 +1187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
 
             UnifiedLoginRepository umr = new UnifiedLoginRepository();
-            var allRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedLogin, productIdList);
+            var allRights = umr.ListRightWithRoles(partyId, (int)ProductEnum.UnifiedPlatform, productIdList);
 
             bool isEditorHasRight = true;
             foreach (var rt in rightToUpdated)
@@ -1239,13 +1449,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-
-
             return result;
         }
-
         
-
         private List<ProductRight> GetRightsWithRolesCount(List<RightRoleDetail> allRights)
         {
             var result = new List<ProductRight>();
@@ -1285,7 +1491,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
 
-
                     if (list != null && list.Count > 0)
                     {
                         int roles = list.Count;
@@ -1296,16 +1501,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
-
             return result;
         }
 
-        private List<Role> GetAssignedRoleForPersona(long userPersonaId)
+        private List<Role> GetAssignedRoleForPersona(long userPersonaId, long organizationPartyId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
-			//UnifiedLoginRepository ocr = new UnifiedLoginRepository();
+            int productId = (int)ProductEnum.UnifiedPlatform;
 			UserRoleRightRepository urr = new UserRoleRightRepository();
-            List<UL.Role> propRole = urr.ListRoleByPersona(productId, userPersonaId, null);
+            var cacheKey = $"sp_ListRolesForProductsByPersonaId_{productId}_{userPersonaId}_{organizationPartyId}";
+            MemoryCache.Default.Remove(cacheKey);
+            List<UL.Role> propRole = urr.ListRoleByPersona(productId, userPersonaId, organizationPartyId);
             return propRole;
         }
 
@@ -1316,13 +1521,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return categoryList;
         }
 
-        private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
+        private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId, long partyId)
         {
-
             // get roles from DB for UnifiedLogin product
             WriteToDiagnosticLog(
                    $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
-            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
 
             // if a user record exists
 
@@ -1332,6 +1536,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     ProductRole selrole = (from a in allRoles
                                            where a.ID == role.RoleID.ToString()
+                                           select a).FirstOrDefault();
+                    if (selrole != null)
+                    {
+                        selrole.IsAssigned = true;
+                    }
+                }
+            }
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId, long partyId)
+        {
+            // get roles from DB for UnifiedLogin product
+            WriteToDiagnosticLog($"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
+
+            // if a user record exists
+
+            foreach (var role in roleList)
+            {
+                if (allRoles.Any(a => a.RoleId.ToString() == role.RoleID.ToString()))
+                {
+                    UnifiedLoginRoleRights selrole = (from a in allRoles
+                                           where a.RoleId.ToString() == role.RoleID.ToString()
                                            select a).FirstOrDefault();
                     if (selrole != null)
                     {
@@ -1481,7 +1717,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<ProductRole> GetAssignedRolesForRight(long partyId, long rightId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
+            int productId = (int)ProductEnum.UnifiedPlatform;
             UnifiedLoginRepository umr = new UnifiedLoginRepository();
             List<ProductRole> roles = umr.ListRolesByRight(partyId, productId, rightId);
             return roles;
@@ -1489,7 +1725,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<ProductRight> GetAssignedRightsForRole(long partyId, long roleId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
+            int productId = (int)ProductEnum.UnifiedPlatform;
             var productIds = GetProductIdsByOrg();
             UnifiedLoginRepository umr = new UnifiedLoginRepository();
 	        ProductRepository pr = new ProductRepository();
@@ -1500,12 +1736,63 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<Property> GetAssignedPropertyForPersona(long userPersonaId)
         {
-            int productId = (int)ProductEnum.UnifiedLogin;
+            int productId = (int)ProductEnum.UnifiedPlatform;
             UnifiedLoginRepository ocr = new UnifiedLoginRepository();
             List<Property> prop = ocr.ListPropByPersona(userPersonaId, productId);
             return prop;
         }
-		
+
+        /// <summary>
+        /// Used to merge product property data with Unifed Login property data for the user
+        /// </summary>
+        /// <param name="blueBookPropertyList">The list of properties from BlueBook</param>
+        /// <param name="userPersonaId">The user id to filter on</param>
+        /// <param name="assignedOnly">Only return assigned records</param>
+        /// <returns></returns>
+        private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
+        {
+            // merge the given user details with the list
+            List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+            var propertyOption = new Dictionary<string, bool>();
+            propertyOption.Add("allProperties", false);// Single Property
+
+            foreach (var property in propertyList)
+            {
+                if (property.ID.ToString() == "-1")
+                {
+                    // PMC level (all properties)
+                    propertyOption["allProperties"] = true;
+                }
+                else {
+                    if (blueBookPropertyList.Any(a => a.ID == property.ID.ToString()))
+                    {
+                        ProductProperty pp = (from a in blueBookPropertyList
+                                              where a.ID == property.ID.ToString()
+                                              select a).FirstOrDefault();
+                        if (pp != null)
+                        {
+                            pp.IsAssigned = true;
+                        }
+                    }
+                }               
+            }
+
+            if (assignedOnly)
+            {
+                blueBookPropertyList = blueBookPropertyList.Where(a => a.IsAssigned == true).ToList();
+            }
+
+            return new ListResponse()
+            {
+                Records = blueBookPropertyList.Cast<object>().ToList(),
+                TotalRows = blueBookPropertyList.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = propertyOption
+            };
+        }
+       
         #endregion
     }
 	
