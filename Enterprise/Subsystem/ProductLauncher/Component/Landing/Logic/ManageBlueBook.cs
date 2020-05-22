@@ -22,7 +22,6 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -157,8 +156,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
         /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
+        /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "")
+        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true)
         {
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
             Dictionary<string, object> logData;
@@ -177,8 +177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId.ToString()}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
             if (companyMap == null)
             {
-                //string uri = $"companymap?filter[companyInstance.greenBookCares]=true&filter[companyId]={companyId.ToString()}";
-                string uri = $"customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={booksCompanyMasterId.ToString()}&include=companyInstance&include=companyInstance.attributes";
+                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + $"filter[customerCompanyId]={booksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes";
                 if (!string.IsNullOrEmpty(source))
                 {
                     uri += "&filter[source]=" + source;
@@ -200,13 +199,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId.ToString()}_{source}_{IncludeExtra}", companyMap, policy);
+                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{IncludeExtra}", companyMap, policy);
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - No info found.", logData);
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
                         return companyMap;
@@ -367,13 +366,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return companyPropertyInstanceResource;
         }
 
-
-        public bool UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        /// <summary>
+        /// Used to add a new company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public bool AddBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
         {
             string uri = $"companyinstance";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogType.Diagnostic, "UpdateBooksGreenBookCompanyInstance - Updating info.", logData);
+            WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Updating info.", logData);
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
@@ -384,14 +387,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (response != null && response.IsSuccessStatusCode)
             {
                 var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-                return false;
-            }
-            else
-            {
-
+                return true;
             }
 
-            return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Used to delete an existing company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        {
+            string uri = $"companyinstance/{companyInstance.CompanyInstanceId}?modifiedBy={companyInstance.ModifiedBy}";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            WriteToLog(LogType.Diagnostic, "DeleteBooksGreenBookCompanyInstance - deleting info.", logData);
+            var response = _httpClient.DeleteAsync(uri).Result;
+            return response != null && response.IsSuccessStatusCode;
         }
 
         /// <summary>

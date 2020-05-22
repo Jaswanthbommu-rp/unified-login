@@ -175,7 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
                             {
                                 string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain);
-                                if (!string.IsNullOrEmpty(createResult))
+                                if (!string.IsNullOrEmpty(createResult) && !createResult.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
                                 {
                                     logData = new Dictionary<string, object> {{"error", createResult}};
 
@@ -204,7 +204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to get the signing secret used to validate Tibco WebHook events
         /// </summary>
         /// <returns>The list of settings</returns>
-        public string GetTiboWebHookSigningSecret()
+        private string GetTiboWebHookSigningSecret()
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
             RPObjectCache rpcache = new RPObjectCache();
@@ -230,25 +230,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return "";
             }
+
+            string test = ProductEnum.UnifiedPlatform.ToString();
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(booksCustomerMasterId);
+            if (customerCompany == null){ return "Company not found in books environment"; }
             
             OrganizationCreate organization = new OrganizationCreate()
             {
-                BooksCompanyId = 1234,
-                BooksCustomerMasterId = booksCustomerMasterId,
+                Name = customerCompany.CompanyName,
+                BooksCompanyId = customerCompany.MasterCompanyId,
+                BooksCustomerMasterId = customerCompany.CustomerCompanyId,
                 AdminUser = new OrganizationAdminUser()
                 {
                     FirstName = "RealPage",
                     LastName = "Access",
                     Suffix = "",
                     Title = "",
-                    Email = $"{booksCustomerMasterId}admin@realpage.com"
+                    Email = $"{customerCompany.CustomerCompanyId}admin@realpage.com"
                 }
             };
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
-
-            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(booksCustomerMasterId);
-
+            
             organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
             organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
 
@@ -256,13 +259,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             // get a list of products from blue
             var productList = _manageBlueBook.GetCompanyMap(booksCustomerMasterId);
-            foreach (var customerCompanyMap in productList)
+            if (productList != null)
             {
-                organization.Products.Add(customerCompanyMap.Source);
+                foreach (var customerCompanyMap in productList)
+                {
+                    organization.Products.Add(customerCompanyMap.Source);
+                }
             }
 
-            //return "";
+         
 
+            return "";
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
 
@@ -275,17 +282,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CustomerCompanyId = booksCustomerMasterId,
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
                 CompanyName = result.obj.Org.Name,
-                Source = "UPFM",
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,
-                CreatedBy = "UPFM Automation",
+                CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = domain
             };
 
             // add the new company data back to books
-            var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(companyInstance);
+            var booksResult = _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
 
             return "";
         }
+
 
         private static string ResultErrorMessage(RepositoryResponse result)
         {

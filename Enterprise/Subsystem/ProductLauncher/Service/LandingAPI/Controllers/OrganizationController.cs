@@ -1,8 +1,13 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -15,18 +20,13 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
-	/// <summary>
-	/// Used to insert/update the Blue Book Organization in the Green Book system
-	/// </summary>
-	public class OrganizationController : BaseApiController
+    /// <summary>
+    /// Used to insert/update the Blue Book Organization in the Green Book system
+    /// </summary>
+    public class OrganizationController : BaseApiController
     {
 		#region Constructor
 		/// <summary>
@@ -42,6 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			_manageUserLogin = new ManageUserLogin();
 			_managePartyRelationship = new ManagePartyRelationship();
             _manageOrganization = new ManageOrganization(_userClaims);
+            _manageBlueBook = new ManageBlueBook(_userClaims);
 		}
 
 		/// <summary>
@@ -82,6 +83,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		IManageUserLogin _manageUserLogin;
 		IManagePartyRelationship _managePartyRelationship;
         private IManageOrganization _manageOrganization;
+        private IManageBlueBook _manageBlueBook;
+
 		#endregion
 
 		#region Public Organization Methods
@@ -149,12 +152,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage InsertOrganization([FromBody] OrganizationCreate organization, bool processBlueBookMessage = false)
         {
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
-			
+
             if (!result.Status.Success)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, result.Status.ErrorMsg);
             }
-			 
+
+            IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
+
+            // add the new company to books
+            var companyInstance = new CompanyInstance()
+            {
+                CustomerCompanyId = organization.BooksCompanyId,
+                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
+                CompanyName = result.obj.Org.Name,
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                IsActive = true,
+                CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
+            };
+
+            if (companyMapResource != null)
+            {
+                // remove any existing instance and add a new one
+                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(companyInstance);
+            }
+
+            // add the new company data back to books
+            _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+			
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
         }
 
