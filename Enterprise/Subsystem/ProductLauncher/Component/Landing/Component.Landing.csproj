@@ -236,6 +236,7 @@
     <Compile Include="Logic\Product\ManageProductResidentPortal.cs" />
     <Compile Include="Logic\Product\ManageProductRum.cs" />
     <Compile Include="Logic\Product\ManageProductSelfProvisioningPortal.cs" />
+    <Compile Include="Logic\Product\ManageProductSeniorLeadManagment.cs" />
     <Compile Include="Logic\Product\ManageProductUser.cs" />
     <Compile Include="Logic\Product\ManageProductVendorServices.cs" />
     <Compile Include="Logic\ManageProfile.cs" />
