@@ -20,7 +20,6 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Web.Http;
-using Microsoft.Ajax.Utilities;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -38,12 +37,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _repositoryResponse = new RepositoryResponse();
 			_organizationProductRepository = new OrganizationProductRepository();
 			_manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
-	        //_userLoginRepository = new UserLoginRepository();
-	        //_personaRepository = new PersonaRepository();
 			_manageUserLogin = new ManageUserLogin();
 			_managePartyRelationship = new ManagePartyRelationship();
             _manageOrganization = new ManageOrganization(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
 		}
 
 		/// <summary>
@@ -53,8 +51,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="repositoryResponse"></param>
 		/// <param name="organizationProductRepository"></param>
 		/// <param name="manageOrganizationProduct"></param>
-		/// <param name="userLoginRepository"></param>
-		/// <param name="personaRepository"></param>
 		/// <param name="manageCustomFields"></param>
 		/// <param name="manageUserLogin"></param>
 		/// <param name="managePartyRelationship"></param>
@@ -68,6 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			_manageUserLogin = manageUserLogin;
 			_managePartyRelationship = managePartyRelationship;
             _manageOrganization = manageOrganization;
+            _productInternalSettingRepository = null;
 			_userClaims = userClaims;
 		}
 		#endregion
@@ -78,14 +75,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		IRepositoryResponse _repositoryResponse;
 		IOrganizationProductRepository _organizationProductRepository;
 		IManageOrganizationProduct _manageOrganizationProduct;
-	    //IUserLoginRepository _userLoginRepository;
-	    //IPersonaRepository _personaRepository;
 		IManageCustomFields _manageCustomFields;
 		IManageUserLogin _manageUserLogin;
 		IManagePartyRelationship _managePartyRelationship;
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
-
+        private IProductInternalSettingRepository _productInternalSettingRepository;
 		#endregion
 
 		#region Public Organization Methods
@@ -162,7 +157,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
 
             // add the new company to books
-			
             var companyInstance = new CompanyInstanceAdd()
             {
 				Id = organization.BooksCustomerMasterId,
@@ -343,6 +337,91 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, orgList);
 			}
 		}
+
+        /// <summary>
+        /// Used to sync UPFM records in books
+        /// </summary>
+        /// <returns>result of sync</returns>
+        /// <response code="200">Organization result</response>
+        /// <response code="400">Bad request(when Organization object has invalid entries / when Information is out of sync with the server)</response>
+        /// <response code="401">Unauthorized</response>
+        /// <response code="500">Internal Server Error</response>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.NoContent, Description = "Complete")]
+        [Route("organization/syncbooks")]
+        [HttpGet]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        public HttpResponseMessage SyncBooksOrganizations()
+        {
+            string result = "";
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
+            var booksUrl = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            if (booksUrl.Contains("booksapi.realpage.com"))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "This cannot be run no production books!");
+            }
+
+            IList<Organization> orgList = _manageOrganization.GetOrganizationList();
+            foreach (var organization in orgList)
+            {
+                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
+
+                // add the new company to books
+                var companyInstance = new CompanyInstanceAdd()
+                {
+                    Id = organization.BooksCustomerMasterId,
+                    CustomerCompanyId = organization.BooksCustomerMasterId,
+                    CompanyInstanceSourceId = organization.RealPageId.ToString(),
+                    CompanyName = organization.Name,
+                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    IsActive = true,
+                    CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                    CustomerEnvironment = organization.OrganizationDomain.Name
+                };
+                
+                bool foundInstance = false;
+
+                if (companyMapResource != null)
+                {
+                    // remove any existing instance and add a new one
+                    foreach (var customerCompanyMap in companyMapResource)
+                    {
+                        bool deleteInstance = false;
+                        customerCompanyMap.CompanyInstance.ForEach(i =>
+                        {
+                            if (i.CustomerEnvironment == null)
+                            {
+                                deleteInstance = true;
+                            }
+                            else if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase) && !i.CompanyInstanceSourceId.Equals(companyInstance.CompanyInstanceSourceId, StringComparison.OrdinalIgnoreCase))
+                            {
+                                deleteInstance = true;
+                            }
+                            else
+                            {
+                                foundInstance = true;
+                            }
+                        });
+                        if (deleteInstance)
+                        {
+                            //_manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                        }
+                    }
+                }
+
+                if(!foundInstance)
+                {
+                    // add the company data to books
+                    //_manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                }
+            }
+			
+            return Request.CreateResponse(HttpStatusCode.BadRequest, result);
+
+        }
+
 
 		/// <summary>
 		/// list of Organization By Enterprise User Id

@@ -46,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim);
-            _manageBlueBook = new ManageBlueBook(userClaim);
+            _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository);
             _userClaims = userClaim;
         }
 

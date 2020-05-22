@@ -90,6 +90,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="companyInstance"></param>
         /// <returns></returns>
         bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
-
     }
 }

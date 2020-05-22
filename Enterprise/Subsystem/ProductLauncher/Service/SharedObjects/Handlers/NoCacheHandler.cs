@@ -16,16 +16,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Handle
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // add the no-cache header to the response
-            var response = await base.SendAsync(request, cancellationToken);
-            System.Net.Http.Headers.CacheControlHeaderValue cache =
-                new System.Net.Http.Headers.CacheControlHeaderValue
-                {
-                    NoCache = true,
-                    NoStore = true
-                };
-            response.Headers.CacheControl = cache;
+            using (var response = await base.SendAsync(request, cancellationToken))
+            {
+                System.Net.Http.Headers.CacheControlHeaderValue cache =
+                    new System.Net.Http.Headers.CacheControlHeaderValue
+                    {
+                        NoCache = true,
+                        NoStore = true
+                    };
 
-            return response;
+                if (response != null)
+                {
+                    response.Headers.CacheControl = cache;
+                }
+
+                return response;
+            }
         }
     }
 }

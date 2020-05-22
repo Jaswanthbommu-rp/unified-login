@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -25,6 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IUserLoginRepository _userLoginRepository;
         private IPersonaRepository _personaRepository;
         private IOrganizationProductRepository _organizationProductRepository;
+        private IProductInternalSettingRepository _productInternalSettingRepository;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -40,6 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository(repository);
             _personaRepository = new PersonaRepository(repository);
             _organizationProductRepository = new OrganizationProductRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _defaultUserClaim = userClaim;
         }
 
@@ -53,6 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository();
             _personaRepository = new PersonaRepository();
             _organizationProductRepository = new OrganizationProductRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
             _defaultUserClaim = userClaim;
         }
 
@@ -66,6 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userLoginRepository = new UserLoginRepository();
             _personaRepository = new PersonaRepository();
             _organizationProductRepository = new OrganizationProductRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         #endregion
@@ -469,6 +474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return false;
         }
+
         #endregion
 
         /// <summary>
