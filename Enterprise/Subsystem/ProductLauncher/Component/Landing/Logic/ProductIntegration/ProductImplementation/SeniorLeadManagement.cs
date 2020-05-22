@@ -266,6 +266,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
+        /// <summary>
+        /// Direct call to product to change profile including isActive (mainly used to activate-deactivate from Migration tool)
+        /// </summary>
+        /// <param name="productUserProfile">Product user information</param>
+        /// <returns>string.Empty if success else response contents.</returns>
+        public override bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
+                $"editorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
+
+            switch ((ProductEnum)ProductId)
+            {
+                case ProductEnum.SeniorLeadManagement:
+
+                    var userAux = _dataCollector.GetUserDetailsByPersona(long.Parse(productUserProfile.UserId), ProductId);
+
+                    productUserProfile.PhoneNumbers = userAux.PhoneNumbers;
+                    break;
+
+                default:
+                    break;
+            }
+
+            // used from external source (migration tool) so no activity logging required
+            var result = ProductUserProfileChange(productUserProfile);
+
+            if (result.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            // log exception details from result
+            WriteToErrorLog(
+                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
+                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
+
+            return false;
+        }
+
         #endregion 
     }
 }
