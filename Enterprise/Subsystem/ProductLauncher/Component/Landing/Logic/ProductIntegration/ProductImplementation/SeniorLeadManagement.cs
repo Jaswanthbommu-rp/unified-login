@@ -281,8 +281,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch ((ProductEnum)ProductId)
             {
                 case ProductEnum.SeniorLeadManagement:
-
-                    var userAux = _dataCollector.GetUserDetailsByPersona(long.Parse(productUserProfile.UserId), ProductId);
+                    
+                    var userAux = _dataCollector.GetUserDetailsByPersona(long.Parse(_userClaims.PersonaId.ToString()), ProductId);
 
                     productUserProfile.PhoneNumbers = userAux.PhoneNumbers;
                     break;
