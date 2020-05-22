@@ -20,6 +20,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Web.Http;
+using Microsoft.Ajax.Utilities;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -161,22 +162,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
 
             // add the new company to books
-            var companyInstance = new CompanyInstance()
+			
+            var companyInstance = new CompanyInstanceAdd()
             {
-                CustomerCompanyId = organization.BooksCompanyId,
+				Id = organization.BooksCustomerMasterId,
+                CustomerCompanyId = organization.BooksCustomerMasterId,
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,
                 CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
 
             if (companyMapResource != null)
             {
                 // remove any existing instance and add a new one
-                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(companyInstance);
+                foreach (var customerCompanyMap in companyMapResource)
+                {
+					bool deleteInstance = false;
+                    customerCompanyMap.CompanyInstance.ForEach(i =>
+                    {
+                        if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
+                        {
+                            deleteInstance = true;
+                        }
+                    });
+                    if (deleteInstance)
+                    {
+                        _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                    }
+                }
             }
 
             // add the new company data back to books

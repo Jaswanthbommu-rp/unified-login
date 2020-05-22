@@ -344,7 +344,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstance - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyPropertyInstance_{companyInstanceId.ToString()}", companyPropertyInstanceResource, policy);
+                    _manageBlueBookCache.Set($"getCompanyPropertyInstance_{companyInstanceId}", companyPropertyInstanceResource, policy);
                 }
                 else
                 {
@@ -376,11 +376,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Updating info.", logData);
+            WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                Content = new StringContent(JsonConvert.SerializeObject(companyInstance), Encoding.UTF8, "application/json"),
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
                 RequestUri = new Uri( _httpClient.BaseAddress + uri)
             };
             var response = _httpClient.SendAsync(request).Result;
@@ -400,12 +402,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
         {
-            string uri = $"companyinstance/{companyInstance.CompanyInstanceId}?modifiedBy={companyInstance.ModifiedBy}";
+            string uri = $"companyinstance/{companyInstance.CompanyInstanceId}?modifiedBy={WebUtility.UrlEncode(companyInstance.ModifiedBy)}";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogType.Diagnostic, "DeleteBooksGreenBookCompanyInstance - deleting info.", logData);
+            WriteToLog(LogType.Diagnostic, $"DeleteBooksGreenBookCompanyInstance - deleting instance {companyInstance.CompanyInstanceId}.", logData);
             var response = _httpClient.DeleteAsync(uri).Result;
-            return response != null && response.IsSuccessStatusCode;
+            logData = new Dictionary<string, object>() {{"StatusCode", response.StatusCode}};
+            WriteToLog(LogType.Diagnostic, $"DeleteBooksGreenBookCompanyInstance - deleted instance {companyInstance.CompanyInstanceId}.", logData);
+            return response.IsSuccessStatusCode;
         }
 
         /// <summary>
