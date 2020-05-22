@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.SeniorLeadManagement
 {
@@ -8,10 +9,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     public sealed class OneSiteUserInfo
     {
         #region "Properties"
-
+        [JsonProperty(PropertyName = "userId", NullValueHandling = NullValueHandling.Ignore)]
         public int UserId { get; set; }
+
+        [JsonProperty(PropertyName = "firstName", NullValueHandling = NullValueHandling.Ignore)]
         public string FirstName { get; set; }
-        public int LastName { get; set; }
+
+        [JsonProperty(PropertyName = "lastName", NullValueHandling = NullValueHandling.Ignore)]
+        public string LastName { get; set; }
+
         public List<string> Properties { get; set; }
 
         #endregion

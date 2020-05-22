@@ -553,8 +553,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return $"{newProductUser.LoginName} already exist in the product {ProductType}.";
                 }
 
+                var json2 = JsonConvert.SerializeObject(newProductUser);
                 // Create User
                 result = CreateUser(newProductUser);
+
             }
             else
             {

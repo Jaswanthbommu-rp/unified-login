@@ -64,7 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Roles = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
                 PropertyRoles = userRolePropertiesRegion.PropertyRoleList,
                 OrganizationRoles = userRolePropertiesRegion.OrganizationRoleList,
-                CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport
+                CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
+                PhoneNumbers = SubjectUserDetails.PhoneNumbers
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
