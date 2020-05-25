@@ -1,12 +1,15 @@
-﻿using Moq;
+﻿using JsonApiSerializer;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
+using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using System;
 using System.Collections.Generic;
@@ -14,8 +17,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -65,6 +66,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         private readonly string _mockJson_books_provisioning_upfmorder_create = "{\"id\":\"7ac983c3-bb3f-f5a6-baf1-e41b139d690b\",\"topic\":\"provisioning.upfmorder.create\",\"createdAt\":\"2020-05-19T12:59:54-05:00\",\"payload\":{\"source\":\"UPFM\",\"company\":{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"1 BUSH ST STE 900\",\"country\":\"UNITED STATES\",\"postalCode\":\"94104-4425\",\"companyName\":\"VERITAS INVESTMENTS\",\"productCenters\":[],\"customerCompanyId\":1948,\"companyInstanceSourceId\":null},\"properties\":[{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"units\":35,\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"100 BRODERICK ST\",\"country\":\"UNITED STATES\",\"postalCode\":\"94117-3158\",\"propertyName\":\"100 BRODERICK\",\"productCenters\":[{\"productCenterSourceId\":\"17\"},{\"productCenterSourceId\":\"4\"}],\"customerPropertyId\":391411,\"propertyInstanceSourceId\":null}],\"customerEnvironment\":\"Primary\"}}";
         private readonly string _mockJson_books_provisioning_upfmorder_create_Signature = "13b82334dbf47345b48737af5eb59912870b4722aa1b33da9a02cfd418876acb";
+
+        private readonly string _mockJson_books_provisioning_upfmorder_create_nulldomain = "{\"id\":\"7ac983c3-bb3f-f5a6-baf1-e41b139d690b\",\"topic\":\"provisioning.upfmorder.create\",\"createdAt\":\"2020-05-19T12:59:54-05:00\",\"payload\":{\"source\":\"UPFM\",\"company\":{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"1 BUSH ST STE 900\",\"country\":\"UNITED STATES\",\"postalCode\":\"94104-4425\",\"companyName\":\"VERITAS INVESTMENTS\",\"productCenters\":[],\"customerCompanyId\":1948,\"companyInstanceSourceId\":null},\"properties\":[{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"units\":35,\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"100 BRODERICK ST\",\"country\":\"UNITED STATES\",\"postalCode\":\"94117-3158\",\"propertyName\":\"100 BRODERICK\",\"productCenters\":[{\"productCenterSourceId\":\"17\"},{\"productCenterSourceId\":\"4\"}],\"customerPropertyId\":391411,\"propertyInstanceSourceId\":null}],\"customerEnvironment\":null}}";
+        private readonly string _mockJson_books_provisioning_upfmorder_create_nulldomain_Signature = "5bf97d010439a93a40251271779f511f2514d15cfaf809dcebdb2b377577f510";
 
 
         private List<OrganizationType> _organizationTypeList;
@@ -141,9 +145,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_NullInput()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -172,6 +177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_Update_CustomerCompany_BooksMasterId_InvalidSignature()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
@@ -182,7 +188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -208,6 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             rPObjectCache.BustCache();
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
@@ -218,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(new List<ProductInternalSetting>());
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -245,6 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.UnitOfWork)
@@ -271,7 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -289,8 +297,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void Post_Books_Update_CustomerCompany_BooksMasterId_CompanyNotFound()
         {
-
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
@@ -301,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -321,6 +329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.UnitOfWork)
@@ -347,7 +356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -372,6 +381,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_Update_CustomerCompany_BooksMasterId_CompanyIdAttributeMissing()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
@@ -382,7 +392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -400,6 +410,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_Update_CustomerCompany_BooksMasterId_CompanyIdAttributeNull()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
@@ -410,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -428,6 +439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_Update_CustomerCompany_BooksMasterId_ReplacementCompanyIdAttributeNull()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
@@ -438,7 +450,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -460,6 +472,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.UnitOfWork)
@@ -474,7 +487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -493,13 +506,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_Update_CustomerProperty_CustomerPropertyIdAttributeMissing()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -517,13 +531,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void Post_Books_Update_CustomerProperty_CustomerPropertyIdNull()
         {
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -544,13 +559,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             rPObjectCache.BustCache();
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -564,7 +580,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
 
-                [Fact]
+        [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_Success()
         {
             RPObjectCache rPObjectCache = new RPObjectCache();
@@ -572,9 +588,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
+            //Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
+            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company",  MigrationStatus = "migrated", CompanyType = _organizationTypeName };//Category = "rpup"
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() {new CustomerCompanyMap() {CompanyInstanceSourceId = "1234567", Source = "OS"}};
+
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = $"{customercompany.CustomerCompanyId}admin@realpage.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+            HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
+            responseCustomerCompany.Content = new StringContent(jsonToSave);
+            HttpResponseMessage responseMapResource  = new HttpResponseMessage(HttpStatusCode.OK);
+            jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent(jsonToSave);
 
             mockRepository
                 .Setup(m => m.UnitOfWork)
@@ -583,6 +617,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(_organization);
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 0, ErrorMessage = "", RealPageId = _RealPageId});
 
             mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
@@ -600,14 +638,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
 
-            mockManageBlueBook
-                .Setup(m => m.GetCompanyCustomerInfo(
-                    It.IsAny<long>()
-                ))
-                .Returns(customercompany);
+            mockRepository
+                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnlyNull)
+                .Returns(userLoginOnly);
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 1, ErrorMessage = ""});
+
+            //mockManageBlueBook
+            //    .Setup(m => m.GetCompanyCustomerInfo(
+            //        It.IsAny<long>()
+            //    ))
+            //    .Returns(customercompany);
+            //
+            //mockManageBlueBook
+            //    .Setup(m => m.GetCompanyMap(
+            //        It.IsAny<long>()
+            //    ))
+            //    .Returns(mapResource);
+            
+
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
 
             //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockManageBlueBook.Object)
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
             {
                 Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
             };
@@ -622,5 +680,71 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
 
+        [Fact]
+        public void Post_Books_Provisioning_UPFMOrder_Create_NullDomain()
+        {
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+            //Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
+            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+           mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+            
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create_nulldomain);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_nulldomain_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create_nulldomain);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            
+            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
+
+            var message = response.Content.ReadAsStringAsync().Result;
+            var expectedValue = "\"Missing customerEnvironment\"";
+
+            Assert.Equal(expectedValue, message, ignoreCase: true);
+        }
+
+        [Fact]
+        public void Post_Books_Provisioning_UPFMOrder_Create_MissingBlueBook()
+        {
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+            //Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
+            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+           
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
     }
+
 }

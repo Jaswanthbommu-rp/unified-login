@@ -354,22 +354,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("organization/syncbooks")]
         [HttpGet]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
-        public HttpResponseMessage SyncBooksOrganizations()
+        public HttpResponseMessage SyncBooksOrganizations(bool commit = false)
         {
-            string result = "";
+			Dictionary<string, CompanyInstanceAdd> processResult = new Dictionary<string, CompanyInstanceAdd>();
             var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
             var booksUrl = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             if (booksUrl.Contains("booksapi.realpage.com"))
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "This cannot be run no production books!");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "This should not run on production books!");
             }
 
             IList<Organization> orgList = _manageOrganization.GetOrganizationList();
             foreach (var organization in orgList)
             {
+                if (organization.BooksCustomerMasterId <= 0)
+                {
+                    break;
+                }
+
                 IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
 
-                // add the new company to books
+                // add the missing company to books
                 var companyInstance = new CompanyInstanceAdd()
                 {
                     Id = organization.BooksCustomerMasterId,
@@ -407,7 +412,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         });
                         if (deleteInstance)
                         {
-                            //_manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                            if (commit)
+                            {
+                                //_manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                            }
                         }
                     }
                 }
@@ -415,11 +423,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if(!foundInstance)
                 {
                     // add the company data to books
-                    //_manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                    if (commit)
+                    {
+                        //_manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                    }
+                    processResult.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
                 }
             }
 			
-            return Request.CreateResponse(HttpStatusCode.BadRequest, result);
+            return Request.CreateResponse(HttpStatusCode.OK, processResult);
 
         }
 

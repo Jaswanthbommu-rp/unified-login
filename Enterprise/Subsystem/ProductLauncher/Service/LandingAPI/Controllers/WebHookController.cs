@@ -40,13 +40,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageBlueBook = new ManageBlueBook(base._userClaims);
         }
 
-        public WebHookController(IRepository repository, DefaultUserClaim userClaim, IManageBlueBook manageBlueBook = null)
+        public WebHookController(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
             _organizationRepository = new OrganizationRepository(repository);
             _propertyRepository = new PropertyRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim);
-            _manageBlueBook = manageBlueBook;
+            _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
             _userClaims = userClaim;
         }
 
@@ -234,7 +234,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return "";
             }
 
-            string test = ProductEnum.UnifiedPlatform.ToString();
             var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(booksCustomerMasterId);
             if (customerCompany == null){ return "Company not found in books environment"; }
             
@@ -270,9 +269,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
 
-         
-
-            return "";
+         //return "";
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
 

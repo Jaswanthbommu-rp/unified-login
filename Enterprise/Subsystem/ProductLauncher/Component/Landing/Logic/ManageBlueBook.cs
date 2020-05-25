@@ -120,6 +120,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _defaultUserClaim = userClaim;
         }
 
+        public ManageBlueBook(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
+        {
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _httpClient = new HttpClient(messageHandler){ BaseAddress = new Uri("http://localhost")};
+            _defaultUserClaim = userClaim;
+        }
+
         /// <summary>
         /// Used to get the product id for the given BlueBook source code
         /// </summary>
