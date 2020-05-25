@@ -4,8 +4,6 @@
 
 // Config
 
-{{{ include("config/vendor-compliance.js") }}}
-
 // Controllers
 
 {{{ include("controllers/product-access.js") }}}

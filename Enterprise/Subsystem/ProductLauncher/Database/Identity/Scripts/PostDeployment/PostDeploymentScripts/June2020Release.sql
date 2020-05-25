@@ -804,13 +804,13 @@ BEGIN
 			--VALUES (61, 303, N'ShowSelectAll', N'True', @UserId, @Now)
     
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-			VALUES (62, 307, N'ShowSelectAll', N'True', @UserId, @Now)
+			VALUES (62, 306, N'ShowSelectAll', N'True', @UserId, @Now)
 
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
 			VALUES (63, 309, N'InfoIcon', N'Slide', @UserId, @Now)			
 
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			VALUES (64, 316, N'ShowSelectAll', N'True', @UserId, @Now)
+			VALUES (64, 315, N'ShowSelectAll', N'True', @UserId, @Now)
 
             SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 

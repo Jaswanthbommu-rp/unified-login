@@ -12,6 +12,7 @@
             vm.disableContent = false;
             vm.tabsList = userTabs.getTabsList();
             vm.tabsMenu = userTabs.getTabsMenu();
+
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.profileWatch = pubsub.subscribe("up.user-details-disable", vm.setState);
         };
@@ -25,10 +26,16 @@
             }
             else {
                 //$location.path("/people/users");
+                panelTemplateModel.reset();
 				window.location.href = "../people/users";
             }
 
         };
+
+        // vm.loadTabs = function () {
+        //     vm.tabsList = userTabs.getTabsList();
+        //     vm.tabsMenu = userTabs.getTabsMenu();
+        // };
 
         vm.save = function () {
             if(!chkEmailModel.getIsBusy()){
@@ -67,6 +74,7 @@
         vm.destroy = function () {
             vm.destWatch();
             vm.profileWatch();
+            vm.productPanelWatch();
             tabsManager.reset();
             productDataSync.reset();
             panelTemplateModel.reset();

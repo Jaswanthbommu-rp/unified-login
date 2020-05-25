@@ -1,5 +1,4 @@
 {{{ include("config/tabs.js") }}}
-{{{ include("config/unified-amenities.js") }}}
 
 {{{ include("controllers/product-access.js") }}}
 {{{ include("controllers/properties-grid.js") }}}

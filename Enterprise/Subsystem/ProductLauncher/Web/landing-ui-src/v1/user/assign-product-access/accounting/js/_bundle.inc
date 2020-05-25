@@ -1,6 +1,5 @@
 // Config
 
-{{{ include("config/accounting.js") }}}
 
 // Controllers
 

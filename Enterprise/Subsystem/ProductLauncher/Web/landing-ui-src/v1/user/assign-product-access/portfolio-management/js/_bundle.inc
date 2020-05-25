@@ -1,4 +1,4 @@
-{{{ include("config/portfolio-management.js") }}}
+
 {{{ include("controllers/entities.js") }}}
 {{{ include("controllers/entity-roles.js") }}}
 {{{ include("controllers/roles.js") }}}

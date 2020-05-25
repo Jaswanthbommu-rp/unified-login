@@ -1,6 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/document-management.js") }}}
 {{{ include("config/tabs.js") }}}
 
 
