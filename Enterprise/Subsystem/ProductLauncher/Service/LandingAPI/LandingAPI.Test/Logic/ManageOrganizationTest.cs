@@ -148,7 +148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Guid emptyRealPageId = Guid.Empty;
             Organization organization = new Organization()
             {
-                RealPageId = _RealPageId,
+                RealPageId = emptyRealPageId,
                 CreateDate = _CreateDate,
                 Name = _CompanyName,
                 PartyId = _PartyId,
@@ -165,7 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
             //Assert
-            //Assert.Throws<Exception>(() => manageOrganization.InsertOrganization(emptyRealPageId, organization));
+            Assert.Throws<Exception>(() => manageOrganization.InsertOrganization(organization));
         }
 
         [Fact]

@@ -55,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="manageUserLogin"></param>
 		/// <param name="managePartyRelationship"></param>
 		/// <param name="userClaims"></param>
-		public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims)
+		public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageBlueBook manageBlueBook, DefaultUserClaim userClaims)
         {
 			_repositoryResponse = repositoryResponse;
 			_organizationProductRepository = organizationProductRepository;
@@ -65,6 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			_managePartyRelationship = managePartyRelationship;
             _manageOrganization = manageOrganization;
             _productInternalSettingRepository = null;
+            _manageBlueBook = manageBlueBook;
 			_userClaims = userClaims;
 		}
 		#endregion
@@ -429,7 +430,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="realPageId">User unique identifier</param>
 		/// <param name="roleTypeFrom">Person Role Type name in the Relationship (Optional)</param>
 		/// <param name="roleTypeTo">Organization Role Type name in the Relationship (Optional)</param>
-		/// <param name="relationshipType">Parties Relationhip type name (Optional)</param>
+		/// <param name="relationshipType">Parties Relationship type name (Optional)</param>
 		/// <returns>A list of Organization(s) Details for a person</returns>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]

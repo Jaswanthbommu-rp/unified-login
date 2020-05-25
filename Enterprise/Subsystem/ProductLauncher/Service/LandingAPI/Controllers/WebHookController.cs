@@ -40,13 +40,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageBlueBook = new ManageBlueBook(base._userClaims);
         }
 
-        public WebHookController(IRepository repository, DefaultUserClaim userClaim)
+        public WebHookController(IRepository repository, DefaultUserClaim userClaim, IManageBlueBook manageBlueBook = null)
         {
             _organizationRepository = new OrganizationRepository(repository);
             _propertyRepository = new PropertyRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim);
-            _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository);
+            _manageBlueBook = manageBlueBook;
             _userClaims = userClaim;
         }
 
@@ -175,12 +175,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
                             {
                                 string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain);
-                                if (!string.IsNullOrEmpty(createResult) && !createResult.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
+                                if (!string.IsNullOrEmpty(createResult) )
                                 {
                                     logData = new Dictionary<string, object> {{"error", createResult}};
 
                                     WriteToLog(LogType.Error, "Error", logData);
-                                    return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
+                                    if (!createResult.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
+                                    }
                                 }
                             }
 

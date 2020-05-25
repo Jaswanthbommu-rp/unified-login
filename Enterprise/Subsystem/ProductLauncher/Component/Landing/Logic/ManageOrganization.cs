@@ -11,7 +11,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -27,6 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IPersonaRepository _personaRepository;
         private IOrganizationProductRepository _organizationProductRepository;
         private IProductInternalSettingRepository _productInternalSettingRepository;
+        private IProductRepository _productRepository;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -43,6 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personaRepository = new PersonaRepository(repository);
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
         }
 
@@ -57,6 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personaRepository = new PersonaRepository();
             _organizationProductRepository = new OrganizationProductRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productRepository = new ProductRepository();
             _defaultUserClaim = userClaim;
         }
 
@@ -71,6 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personaRepository = new PersonaRepository();
             _organizationProductRepository = new OrganizationProductRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productRepository = new ProductRepository();
         }
 
         #endregion
@@ -344,9 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>RepositoryResponse object</returns>
         public RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, Guid organizationRealPageId)
         {
-            ProductRepository productRepository = new ProductRepository();
-
-            IList<int> productIdList = productRepository.GetProductIdsByCompany(organizationRealPageId);
+            IList<int> productIdList = _productRepository.GetProductIdsByCompany(organizationRealPageId);
 
             //Exclude following products from RealPage Employee Access admin user
             //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS

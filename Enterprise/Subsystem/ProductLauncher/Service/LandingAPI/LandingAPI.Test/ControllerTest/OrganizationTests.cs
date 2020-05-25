@@ -22,6 +22,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -40,7 +41,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		//Mock<ICustomFieldsRepository> _mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 		Mock<IManageUserLogin> _mockManageUserLogin = new Mock<IManageUserLogin>();
 		Mock<IManagePartyRelationship> _mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
-		
+		Mock<IManageBlueBook> _mockManageBlueBook = new Mock<IManageBlueBook>();
+
 		private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
 		private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
 		private static string _CompanyName = "CF Real Estate Services";
@@ -120,6 +122,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(organizationList);
 
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+                .Returns(organizationList[0]);
+			
             // THIS RESULT IS CACHED SO WE CANT REALLY TEST IT HAVING MULTIPLE RESULTS!
             _mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
@@ -128,6 +134,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(organizationDomainList);
+
+			//_mockManageBlueBook
         }
 
 		#region Controller Unit Tests
@@ -189,6 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
+				, null
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -236,6 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
+                , null
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -287,6 +297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
+                , null
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -331,6 +342,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
+                , null
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -382,6 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
+                , null
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -433,6 +446,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -478,6 +492,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -555,6 +570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -592,6 +608,97 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			//Assert
 			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
 			Assert.True(expectedValue == message);
+		}
+        
+        [Fact]
+		public void InsertOrganization_Success()
+		{
+			//Arrange
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = "jack.doe@example.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+			Organization organization = new Organization();
+			RepositoryResponse repositoryResponse = new RepositoryResponse()
+			{
+				Id = 0,
+				ErrorMessage = "",
+				RealPageId = _RealPageId
+			};            
+
+			_mockRepository
+				.Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+				.Returns(userLoginOnly);
+
+			_mockRepository
+				.Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
+				.Returns(repositoryResponse);
+
+			_mockRepository
+				.Setup(m => m.UnitOfWork)
+				.Returns(_mockUnitofWork.Object);
+
+            _mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
+                .Returns(repositoryResponse);
+
+            _mockRepository
+                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnlyNull)
+                .Returns(userLoginOnly);
+
+            ManageOrganization organizationLogic = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
+
+			OrganizationController organizationController = new OrganizationController(
+				organizationLogic
+				, _mockRepositoryResponse.Object
+				, _mockOrganizationProductRepository.Object
+				, _mockManageOrganizationProduct.Object
+				, _mockManageCustomFields.Object
+				, null
+				, _mockManagePartyRelationship.Object
+                , _mockManageBlueBook.Object
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
+
+			OrganizationCreate organizationCreate = new OrganizationCreate()
+			{
+				BooksCompanyId = _BooksMasterId,
+				BooksCustomerMasterId = _BooksCompanyMasterId,
+				OrganizationTypeId = 6,
+				Name = "New Company",
+				Products = new List<string>()
+				{
+					"AB"
+				},
+				AdminUser = new OrganizationAdminUser()
+				{
+					FirstName = "Jack",
+					LastName = "Doe",
+					Email = "jack.doe@example.com",
+					Suffix = string.Empty,
+					Title = string.Empty
+				}
+			};
+			
+			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+			
+            //Assert
+			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+			Assert.True(orgResult.Org.RealPageId == _RealPageId && orgResult.adminLogin == organizationCreate.AdminUser.Email);
 		}
 
 		[Fact]
@@ -656,6 +763,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim
 				)
 			{
@@ -711,6 +819,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim
 				)
 			{
@@ -775,6 +884,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim
 				)
 			{
@@ -876,6 +986,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, manageCustomFields
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, userClaim
 				)
 			{
@@ -965,6 +1076,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -1000,6 +1112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -1028,6 +1141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim);
 
 			List<ProductEnum> productList = new EditableList<ProductEnum>();
@@ -1081,6 +1195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, _defaultUserClaim
 				)
 			{
@@ -1214,6 +1329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
+                , null
 				, userClaim
 				)
 			{

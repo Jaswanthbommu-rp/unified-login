@@ -14,7 +14,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using Castle.Components.DictionaryAdapter;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -61,6 +62,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         private readonly string _mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid = "{\r\n\t\"id\": \"601e13a6-7360-ceda-bf0c-41c62fa694c7\",\r\n\t\"topic\": \"books.customerproperty.deleted\",\r\n\t\"createdAt\": \"2020-04-21T08:25:31-05:00\",\r\n\t\"payload\": {\r\n\t\t  \"link\": \"/customerproperty?filter[customerPropertyId]={customerPropertyId}&filter[deletedAt]=not:null\",\r\n\t\t  \"payload\": {\r\n\t\t    \"customerPropertyId\": 199685,\r\n\t\t    \"deletedAt\": \"2020-02-21 11:35:43.000000-0600\",\r\n\t\t    \"replacementCustomerPropertyId\": null\r\n\t\t  }\r\n\t}\r\n}\r\n";
         private readonly string _mockJson_books_customerproperty_deleted_null_replacementcustomerpropertyid_Signature = "704e37bab4ae5534cc7f8f459e6b83b58e75c4d5e95a6b9a37ccf11bbb216fcb";
+
+        private readonly string _mockJson_books_provisioning_upfmorder_create = "{\"id\":\"7ac983c3-bb3f-f5a6-baf1-e41b139d690b\",\"topic\":\"provisioning.upfmorder.create\",\"createdAt\":\"2020-05-19T12:59:54-05:00\",\"payload\":{\"source\":\"UPFM\",\"company\":{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"1 BUSH ST STE 900\",\"country\":\"UNITED STATES\",\"postalCode\":\"94104-4425\",\"companyName\":\"VERITAS INVESTMENTS\",\"productCenters\":[],\"customerCompanyId\":1948,\"companyInstanceSourceId\":null},\"properties\":[{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"units\":35,\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"100 BRODERICK ST\",\"country\":\"UNITED STATES\",\"postalCode\":\"94117-3158\",\"propertyName\":\"100 BRODERICK\",\"productCenters\":[{\"productCenterSourceId\":\"17\"},{\"productCenterSourceId\":\"4\"}],\"customerPropertyId\":391411,\"propertyInstanceSourceId\":null}],\"customerEnvironment\":\"Primary\"}}";
+        private readonly string _mockJson_books_provisioning_upfmorder_create_Signature = "13b82334dbf47345b48737af5eb59912870b4722aa1b33da9a02cfd418876acb";
+
 
         private List<OrganizationType> _organizationTypeList;
         private List<OrganizationDomain> _organizationDomains;
@@ -558,5 +563,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
+
+                [Fact]
+        public void Post_Books_Provisioning_UPFMOrder_Create_Success()
+        {
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
+            Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
+
+            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company",  MigrationStatus = "migrated", CompanyType = _organizationTypeName };//Category = "rpup"
+
+            mockRepository
+                .Setup(m => m.UnitOfWork)
+                .Returns(mockUnitOfWork.Object);
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+                .Returns(_organization);
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
+                .Returns(_organizationTypeList);
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(_organizationDomains);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 1, ErrorMessage = ""});
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            mockManageBlueBook
+                .Setup(m => m.GetCompanyCustomerInfo(
+                    It.IsAny<long>()
+                ))
+                .Returns(customercompany);
+
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockManageBlueBook.Object)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
+
     }
 }
