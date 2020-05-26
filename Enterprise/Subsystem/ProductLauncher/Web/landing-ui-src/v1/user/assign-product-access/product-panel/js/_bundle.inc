@@ -1,6 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/product-panel.js") }}}
 {{{ include("controllers/product-controller.js") }}}
 {{{ include("controllers/product-properties.js") }}}
 {{{ include("controllers/product-roles.js") }}}

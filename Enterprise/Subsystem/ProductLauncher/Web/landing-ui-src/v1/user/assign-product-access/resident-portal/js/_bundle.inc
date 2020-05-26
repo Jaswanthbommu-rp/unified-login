@@ -1,6 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/resident-portals.js") }}}
 {{{ include("config/tabs.js") }}}
 
 {{{ include("controllers/messaging-groups-grid.js") }}}

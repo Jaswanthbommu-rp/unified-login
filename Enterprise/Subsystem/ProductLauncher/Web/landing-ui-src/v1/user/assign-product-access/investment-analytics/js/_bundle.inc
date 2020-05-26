@@ -1,4 +1,4 @@
-{{{ include("config/investment-analytics.js") }}}
+
 {{{ include("controllers/companies.js") }}}
 {{{ include("controllers/company-roles.js") }}}
 {{{ include("controllers/markets.js") }}}
