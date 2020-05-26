@@ -1,6 +1,5 @@
 // Config
 
-{{{ include("config/prospect-contact-center.js") }}}
 
 // Controllers
 

@@ -1,6 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/renters-insurance.js") }}}
 {{{ include("config/tabs.js") }}}
 
 {{{ include("controllers/product-access.js") }}}

@@ -1,6 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/res-app.js") }}}
 {{{ include("config/goals-config.js") }}}
 
 

@@ -1,7 +1,5 @@
 // Config
 
-{{{ include("config/on-site.js") }}}
-
 // Controllers
 
 {{{ include("controllers/properties.js") }}}
