@@ -1,4 +1,4 @@
-{{{ include("config/business-intelligence.js") }}}
+
 {{{ include("config/tabs.js") }}}
 {{{ include("controllers/product-access.js") }}}
 {{{ include("controllers/properties.js") }}}

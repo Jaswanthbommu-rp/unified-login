@@ -14,5 +14,6 @@
 {{{ include("services/product-roles-data.js") }}}
 {{{ include("services/product-group-properties-data.js") }}}
 {{{ include("services/product-property-groups-data.js") }}}
+{{{ include("services/register-product-model.js") }}}
 {{{ include("templates/templates.inc.js") }}}
 {{{ include("filters/product-panel-text.js") }}}
