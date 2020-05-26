@@ -1,7 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/client-portal.js") }}}
-
 {{{ include("controllers/client-portal-product-access.js") }}}
 {{{ include("controllers/client-portal-properties-roles.js") }}}
 {{{ include("controllers/properties.js") }}}

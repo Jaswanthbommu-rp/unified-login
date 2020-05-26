@@ -1,4 +1,3 @@
-{{{ include("config/performance-analytics.js") }}}
 
 {{{ include("controllers/companies.js") }}}
 {{{ include("controllers/company-bm-roles.js") }}}

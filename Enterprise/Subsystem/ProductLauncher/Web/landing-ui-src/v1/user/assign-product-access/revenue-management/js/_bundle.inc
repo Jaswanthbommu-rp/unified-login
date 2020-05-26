@@ -1,4 +1,4 @@
-{{{ include("config/revenue-management.js") }}}
+
 {{{ include("controllers/companies.js") }}}
 {{{ include("controllers/company-property.js") }}}
 {{{ include("controllers/company-roles.js") }}}

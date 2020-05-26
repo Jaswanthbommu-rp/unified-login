@@ -1,7 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/onesite.js") }}}
-
 {{{ include("controllers/onesite-product-access.js") }}}
 {{{ include("controllers/onesite-properties-roles.js") }}}
 {{{ include("controllers/properties-grid.js") }}}

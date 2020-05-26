@@ -36,18 +36,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetProducts()
         {
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");
-            IProductRepository productRepository = new ProductRepository();
-            
-            //Passing null to get all the Products
-            var result = productRepository.GetAllProducts();
-            IList<string> excludeProducts = new List<string>()
-            {
-                ProductEnum.SalesForce.ToEnumDescription(),
-                ProductEnum.UnifiedPlatform.ToEnumDescription(),
-                ProductEnum.UnifiedUI.ToEnumDescription()
-            };
-            result = result.Where(x => !excludeProducts.Contains(x.BooksProductCode)).ToList();
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");            
+
+            var result = GetAllProducts();
 
             var logData = new Dictionary<string, object>();
             logData.Add("result", result);
@@ -101,25 +92,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [AuthorizeScope("userinfoapi")]
         [HttpPost]
         public HttpResponseMessage GetULUserIdMappedToProductUserIdByCompanyAndProducts([FromBody] ProductUserIDMappingRequest productUserIDMappingRequest)
-        {            
+        {
+            int productId = 0;
+
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Started");
             MappedUnifiedLoginUserDetails mappedUnifiedLoginUserDetails = new MappedUnifiedLoginUserDetails
             {
                 CompanyId = productUserIDMappingRequest.CompanyId,
-                ProductId = productUserIDMappingRequest.ProductId,
+                ProductCode = productUserIDMappingRequest.ProductCode,
                 ULMappedPersonaId = new List<ULMappedPersonaIds>()
             };
-            
+
+            var result = GetAllProducts();
+            productId = result.Where(x => x.BooksProductCode == productUserIDMappingRequest.ProductCode).FirstOrDefault().ProductId;
+
             if (productUserIDMappingRequest == null ||
-                productUserIDMappingRequest.CompanyId <= 0 ||
-                productUserIDMappingRequest.ProductId <= 0)
+                productUserIDMappingRequest.CompanyId <= 0||
+                string.IsNullOrEmpty(productUserIDMappingRequest.ProductCode) ||
+                productId <=0)
             {                
                 return Request.CreateResponse(HttpStatusCode.BadRequest, mappedUnifiedLoginUserDetails);
             }
 
             IProductRepository productRepository = new ProductRepository();
             mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
-                                                                                 productUserIDMappingRequest.ProductId,
+                                                                                 productId,
                                                                                  productUserIDMappingRequest.ProductUserId);
             var logData = new Dictionary<string, object>();
             logData.Add("result", mappedUnifiedLoginUserDetails);
@@ -132,6 +129,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         #endregion
 
         #region Private methods
+
+        private IList<GbProductMap> GetAllProducts()
+        {
+            IProductRepository productRepository = new ProductRepository();
+
+            //Passing null to get all the Products
+            var result = productRepository.GetAllProducts();
+            IList<string> excludeProducts = new List<string>()
+            {
+                ProductEnum.SalesForce.ToEnumDescription(),
+                ProductEnum.UnifiedPlatform.ToEnumDescription(),
+                ProductEnum.UnifiedUI.ToEnumDescription()
+            };
+            result = result.Where(x => !excludeProducts.Contains(x.BooksProductCode)).ToList();
+
+            return result;
+        }
         /// <summary>
         /// Used to write to the log
         /// </summary>
