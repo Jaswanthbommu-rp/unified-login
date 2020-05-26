@@ -1,7 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/user-mgmt.js") }}}
-
 {{{ include("controllers/rights-list-aside.js") }}}
 {{{ include("controllers/role-info-icon.js") }}}
 {{{ include("controllers/roles-radio.js") }}}

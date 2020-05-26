@@ -1,7 +1,5 @@
 // Config
 
-{{{ include("config/marketing-center.js") }}}
-
 // Controllers
 
 {{{ include("controllers/product-access.js") }}}

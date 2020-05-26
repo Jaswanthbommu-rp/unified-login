@@ -1,6 +1,4 @@
 
-{{{ include("config/click-pay.js") }}}
-
 {{{ include("controllers/companies-list-aside.js") }}}
 {{{ include("controllers/sites-list-aside.js") }}}
 {{{ include("controllers/role-info.js") }}}
