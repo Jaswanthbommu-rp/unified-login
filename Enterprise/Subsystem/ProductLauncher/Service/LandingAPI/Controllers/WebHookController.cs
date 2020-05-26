@@ -282,7 +282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return result.Status.ErrorMsg;
             }
-            var companyInstance= new CompanyInstance()
+            var companyInstance= new CompanyInstanceAdd()
             {
                 CustomerCompanyId = booksCustomerMasterId,
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
