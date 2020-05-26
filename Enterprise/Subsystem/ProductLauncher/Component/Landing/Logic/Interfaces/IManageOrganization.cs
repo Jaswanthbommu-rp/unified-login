@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -11,7 +12,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 	public interface IManageOrganization
 	{
 		#region Organization methods
-		
+
+		/// <summary>
+		/// Used to create a new organization with product details
+		/// </summary>
+		/// <param name="organization"></param>
+		/// <param name="processBlueBookMessage"></param>
+        ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, bool processBlueBookMessage = false);
+
 		/// <summary>
 		/// Used to insert a new Organization
 		/// </summary>

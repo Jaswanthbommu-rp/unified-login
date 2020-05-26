@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
 {
-	public class CustomerCompany
+    public class CustomerCompany
 	{
         /// <summary>
 		/// The id 
@@ -17,6 +11,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// The id of the company
         /// </summary>
         public int CustomerCompanyId { get; set; }
+
+        /// <summary>
+        /// The master id of the company
+        /// </summary>
+        public int MasterCompanyId { get; set; }
 
 		/// <summary>
 		/// The name of the company
