@@ -421,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         {
                             if (commit)
                             {
-                                //_manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
                             }
                         }
                     }
@@ -432,7 +432,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     // add the company data to books
                     if (commit)
                     {
-                        //_manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                        _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
                     }
 
                     processResult.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
@@ -440,7 +440,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             return Request.CreateResponse(HttpStatusCode.NoContent, processResult);
-
         }
 
 
