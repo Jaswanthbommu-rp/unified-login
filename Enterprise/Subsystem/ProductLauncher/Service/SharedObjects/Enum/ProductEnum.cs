@@ -23,6 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				return value.ToString();
 			}
 		}
+
 		/// <summary>
 		/// Get ProductName by Product Id
 		/// </summary>

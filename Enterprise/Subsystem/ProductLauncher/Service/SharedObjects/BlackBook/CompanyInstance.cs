@@ -16,7 +16,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// Property instance id
         /// </summary>
         public int CompanyInstanceId { get; set; }
-        
+
+        /// <summary>
+        /// Customer company instance id
+        /// </summary>
+        public long CustomerCompanyId { get; set; }
+
 		/// <summary>
         /// Property instance source id
         /// </summary>
@@ -66,5 +71,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		/// List of attributes
 		/// </summary>
 		public List<InstanceAttribute> Attributes { get; set; }
+
+        /// <summary>
+        /// used to store the customer domain
+        /// </summary>
+        public string CustomerEnvironment { get; set; }
 	}
 }

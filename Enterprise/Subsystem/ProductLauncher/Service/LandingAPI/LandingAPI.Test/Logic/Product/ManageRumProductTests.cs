@@ -94,7 +94,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                .Setup(m => m.GetCompanyMap(
                    It.IsAny<long>(),
                    It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                   It.IsAny<bool>()
 				))
                 .Returns(mapCompany);
 
