@@ -165,6 +165,7 @@
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayRole.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayUsers.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ProductRight.cs" />
+    <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\OneSiteUserInfo.cs" />
     <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\SLMUserExist.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\ClickPayManagement.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\DepositAlternativeManagement.cs" />
@@ -235,6 +236,7 @@
     <Compile Include="Logic\Product\ManageProductResidentPortal.cs" />
     <Compile Include="Logic\Product\ManageProductRum.cs" />
     <Compile Include="Logic\Product\ManageProductSelfProvisioningPortal.cs" />
+    <Compile Include="Logic\Product\ManageProductSeniorLeadManagment.cs" />
     <Compile Include="Logic\Product\ManageProductUser.cs" />
     <Compile Include="Logic\Product\ManageProductVendorServices.cs" />
     <Compile Include="Logic\ManageProfile.cs" />

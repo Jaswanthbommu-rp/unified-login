@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.SeniorLeadManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
@@ -26,6 +27,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public List<PAMRolePropertyList> PropertyRoleList { get; set; } // used in PAM
 		[JsonProperty(PropertyName = "RoleList", NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> RoleList { get; set; } // used in PAM
+
+		[JsonProperty(PropertyName = "oneSiteUserInfo", NullValueHandling = NullValueHandling.Ignore)]
+		public OneSiteUserInfo OneSiteUserInfo { get; set; } //SLM
+
+		[JsonProperty(PropertyName = "phoneNumbers")]
+		public List<string> PhoneNumbers { get; set; } //SLM
+
+		[JsonProperty(PropertyName = "additionalFields")]
+		public List<KeyValuePair<string , string>> AdditionalFields { get; set; } //SLM
 	}
 
 	public class BaseIntegrationProductUser

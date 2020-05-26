@@ -3517,19 +3517,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
-            var rpList = rolePropList as ProductUserRolePropertiesGroups;
-            if (rpList == null)
-            {
-                return "Input JSON parsing issue; Null object.";
-            }
+            //Try to cast as ProductUserRolePropertiesGroups
+            var productUserRolePropertiesGroups = rolePropList as ProductUserRolePropertiesGroups;
 
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
-            // Create-update user
-            if (rpList.IsAssigned)
+            if (productUserRolePropertiesGroups == null)
             {
-                return productLogic.CreateUpdateProductUser(rpList);
+                //Try to cast as dictionary of RolePropertyList
+                Dictionary<string, RolePropertyList> rolePropertyList = rolePropList as Dictionary<string, RolePropertyList>;
+                RolePropertyList rolePropSLM;
+
+                if (rolePropertyList != null)
+                {
+                    if (!rolePropertyList.Any())
+                    {
+                        return "Input JSON parsing issue; Null object.";
+                    }
+                    else
+                    {
+                        if (rolePropertyList.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()))
+                        {
+                            rolePropSLM = rolePropertyList.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
+                        }
+                        else
+                        {
+                            return "Input JSON parsing issue; Null object.";
+                        }
+
+                        // Create-update user
+                        if (rolePropSLM.IsAssigned)
+                        {
+                            //Call new method and send new parameters
+                            return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups);
+                        }
+                    }
+                }
+                else
+                {
+                    return "Input JSON parsing issue; Null object.";
+                }
+            }
+            else
+            {
+                // Create-update user
+                if (productUserRolePropertiesGroups.IsAssigned)
+                {
+                    return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups);
+                }
             }
 
             // Unassign User 

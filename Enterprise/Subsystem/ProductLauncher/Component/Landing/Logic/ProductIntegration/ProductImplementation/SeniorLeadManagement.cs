@@ -64,7 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Roles = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
                 PropertyRoles = userRolePropertiesRegion.PropertyRoleList,
                 OrganizationRoles = userRolePropertiesRegion.OrganizationRoleList,
-                CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport
+                CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
+                PhoneNumbers = SubjectUserDetails.PhoneNumbers
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
@@ -264,6 +265,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             result.Add("Presets", presets.OrderBy(p=>p.Id).ToList());
 
             return result;
+        }
+
+        /// <summary>
+        /// Direct call to product to change profile including isActive (mainly used to activate-deactivate from Migration tool)
+        /// </summary>
+        /// <param name="productUserProfile">Product user information</param>
+        /// <returns>string.Empty if success else response contents.</returns>
+        public override bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
+                $"editorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
+
+            productUserProfile.PhoneNumbers = _dataCollector.GetUserDetailsByPersona(_userClaims.PersonaId, ProductId).PhoneNumbers;
+
+            // used from external source (migration tool) so no activity logging required
+            var result = ProductUserProfileChange(productUserProfile);
+
+            if (result.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            // log exception details from result
+            WriteToErrorLog(
+                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
+                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
+
+            return false;
         }
 
         #endregion 
