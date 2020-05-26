@@ -588,7 +588,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            //Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company",  MigrationStatus = "migrated", CompanyType = _organizationTypeName };//Category = "rpup"
@@ -647,19 +646,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
                 .Returns(new RepositoryResponse {Id = 1, ErrorMessage = ""});
 
-            //mockManageBlueBook
-            //    .Setup(m => m.GetCompanyCustomerInfo(
-            //        It.IsAny<long>()
-            //    ))
-            //    .Returns(customercompany);
-            //
-            //mockManageBlueBook
-            //    .Setup(m => m.GetCompanyMap(
-            //        It.IsAny<long>()
-            //    ))
-            //    .Returns(mapResource);
-            
-
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
@@ -687,7 +673,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             rPObjectCache.BustCache();
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
-            //Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
            mockRepository
@@ -723,7 +708,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             rPObjectCache.BustCache();
 
             Mock<IRepository> mockRepository = new Mock<IRepository>();
-            //Mock<IManageBlueBook> mockManageBlueBook = new Mock<IManageBlueBook>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             mockRepository
