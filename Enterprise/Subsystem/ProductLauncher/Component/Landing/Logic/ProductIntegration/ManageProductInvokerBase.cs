@@ -302,7 +302,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
-                var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
+                var propertyList = GetResultFromApi<IList<IProductProperties>>(baseUrlAndQuery);
 
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {propertyList?.Count}");
@@ -1094,7 +1094,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
         }
-        private void MergeUserProperties(IList<ProductProperties> propertyList, List<string> userProperties)
+        internal void MergeUserProperties(IList<IProductProperties> propertyList, List<string> userProperties)
         {
             if (propertyList != null && userProperties != null)
             {

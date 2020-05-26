@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
@@ -10,12 +7,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Lead2Lease;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
@@ -28,6 +23,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -3549,6 +3547,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         // Create-update user
                         if (rolePropSLM.IsAssigned)
                         {
+                            //Map from RolePropertyList to ProductUserRolePropertiesGroups
+                            productUserRolePropertiesGroups = MapPropertiesTorRolePropertiesGroups(rolePropSLM);
+
                             //Call new method and send new parameters
                             return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups);
                         }
@@ -3610,6 +3611,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
+
+        #region "Private Methods"
+
+        private ProductUserRolePropertiesGroups MapPropertiesTorRolePropertiesGroups(RolePropertyList origin)
+        {
+            ProductUserRolePropertiesGroups result = new ProductUserRolePropertiesGroups();
+
+            result.CanReceiveMonthlyReport = origin.CanReceiveMonthlyReport;
+            result.IsAssigned = origin.IsAssigned;
+            result.OrganizationRoleList = origin.OrganizationRoleList;
+            result.PropertyGroupList = origin.PropertyGroupList;
+            result.PropertyList = origin.PropertyList;
+            result.PropertyRoleList = origin.PropertyRoleList;
+            result.RoleList = origin.RoleList;
+            result.RolePropertiesList = origin.RolePropertiesList;
+            //result.RoleListString = ?
+
+            return result;
+        }
+
+        #endregion
+        
     }
+
     #endregion
 }

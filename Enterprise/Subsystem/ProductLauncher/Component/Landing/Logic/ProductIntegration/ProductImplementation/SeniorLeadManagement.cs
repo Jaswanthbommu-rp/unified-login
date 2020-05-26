@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
@@ -11,8 +12,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Le
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -65,7 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 PropertyRoles = userRolePropertiesRegion.PropertyRoleList,
                 OrganizationRoles = userRolePropertiesRegion.OrganizationRoleList,
                 CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
-                PhoneNumbers = SubjectUserDetails.PhoneNumbers
+                PhoneNumbers = SubjectUserDetails.PhoneNumbers,
+                OneSiteUserInfo = userRolePropertiesRegion.OneSiteUserInfo
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
@@ -219,6 +219,86 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        /// <summary>
+        /// Direct call to product to change profile including isActive (mainly used to activate-deactivate from Migration tool)
+        /// </summary>
+        /// <param name="productUserProfile">Product user information</param>
+        /// <returns>string.Empty if success else response contents.</returns>
+        public override bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile)
+        {
+            WriteToDiagnosticLog(
+                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
+                $"editorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
+
+            productUserProfile.PhoneNumbers = _dataCollector.GetUserDetailsByPersona(_userClaims.PersonaId, ProductId).PhoneNumbers;
+
+            // used from external source (migration tool) so no activity logging required
+            var result = ProductUserProfileChange(productUserProfile);
+
+            if (result.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            // log exception details from result
+            WriteToErrorLog(
+                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
+                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
+
+            return false;
+        }
+
+        /// <summary>
+        /// Create or update product user
+        /// Gets called from Product-Batch
+        /// </summary> 
+        public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        {
+            string result;
+
+            WriteToDiagnosticLog(
+                $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+
+            if (SubjectUserDetails.UserRoleTypeId != (int)UserRoleType.SuperUser)
+            {
+                userRolePropertiesRegion.OneSiteUserInfo = GetOneSiteUserInfo(userRolePropertiesRegion.PropertyList);
+            }
+
+            // Get product user object 
+            var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
+
+            if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+            {
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+
+                // Get User & check if already exist 
+                bool isUserExistInProduct = CheckUserExistInProduct(newProductUser.LoginName);
+                if (isUserExistInProduct)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} already exist.");
+
+                    return $"{newProductUser.LoginName} already exist in the product {ProductType}.";
+                }
+
+                // Create User
+                result = CreateUser(newProductUser);
+            }
+            else
+            {
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+                // Update user with Id/Login from product
+                newProductUser.UserId = SubjectUserDetails.ProductUserId;
+                newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+
+                result = UpdateUser(newProductUser, batchProcessType);
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region "Private Methods"
@@ -262,40 +342,151 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            result.Add("Presets", presets.OrderBy(p=>p.Id).ToList());
+            result.Add("Presets", presets.OrderBy(p => p.Id).ToList());
 
             return result;
         }
 
         /// <summary>
-        /// Direct call to product to change profile including isActive (mainly used to activate-deactivate from Migration tool)
+        /// get the information of properties
         /// </summary>
-        /// <param name="productUserProfile">Product user information</param>
-        /// <returns>string.Empty if success else response contents.</returns>
-        public override bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile)
+        /// <param name="propertyList">Property list of SLM from UI</param>
+        /// <returns>A onesiteuserinfo entity</returns>
+        private OneSiteUserInfo GetOneSiteUserInfo(List<string> propertyList)
         {
-            WriteToDiagnosticLog(
-                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
-                $"editorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
+            OneSiteUserInfo oneSiteUserInfo = new OneSiteUserInfo();
+            oneSiteUserInfo.Properties = new List<string>();
 
-            productUserProfile.PhoneNumbers = _dataCollector.GetUserDetailsByPersona(_userClaims.PersonaId, ProductId).PhoneNumbers;
+            //Override GetProductProperties 
+            IList<ProductPropertiesSLM> allPropertyList = this.GetAllProductProperties();
 
-            // used from external source (migration tool) so no activity logging required
-            var result = ProductUserProfileChange(productUserProfile);
-
-            if (result.IsSuccessStatusCode)
+            // walk the list of properties sent to be saved to the user 
+            foreach (string prptyId in propertyList)
             {
-                return true;
+                //if (isSuperUser)
+                //{
+                //    propertyListToSave.Add(new Property() { PropertyId = Convert.ToInt32(prptyId) });
+                //    continue;
+                //}
+
+                // find the property being added in the main list and see if it has a OneSite ID associated to it
+                if (allPropertyList.Any(a => a.GetPropertyId.ToString() == prptyId))
+                {
+                    ProductPropertiesSLM p = (from a in allPropertyList
+                                              where a.GetPropertyId.ToString() == prptyId
+                                              select a).FirstOrDefault();
+                    if (p != null)
+                    {
+                        //Exists
+                        if (string.IsNullOrWhiteSpace(p.OneSitePropertyId))
+                        {
+                            oneSiteUserInfo.Properties.Add(p.OneSitePropertyId);
+                        }
+
+
+
+                        //ProductPropertiesSLM toAdd = new ProductPropertiesSLM() { PropertyId = p.PropertyId, PMSystemID = p.PMSystemID };
+                        //if (!string.IsNullOrEmpty(p.PMSystemID))
+                        //{
+                        //    checkOneSiteUserInfo = true;
+                        //}
+                        //propertyListToSave.Add(toAdd);
+                    }
+                }
             }
 
-            // log exception details from result
-            WriteToErrorLog(
-                $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
-                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
 
-            return false;
+            // OneSite super users aren't assigned the Leasing Consultant right so no need to check for the right for a GB Super User
+            if (oneSiteUserInfo.Properties.Any())
+            {
+                
+                // See if the L2L user is also a OneSite user
+                ////IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(SubjectUserDetails.PersonaId, (int)ProductEnum.OneSite);
+
+                ////if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
+                ////{
+                ////    oneSiteSystemIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
+
+                ////    var _mpOneSite = new ManageProductOneSite(_userClaims);
+
+                ////    var OSUser = _mpOneSite.GetOneSiteUserInfo(oneSiteSystemIdentifier);
+
+                ////    var response = _mpOneSite.GetOneSitePropertyList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, true, null);
+                ////    osPropertyList = response.Records.Cast<ProductProperty>().ToList();
+                ////    bool isLeasingAgentInOneSite = false;
+                ////    bool didLeasingAgentOneSiteCheck = false;
+
+                ////    foreach (Property p in propertyListToSave)
+                ////    {
+                ////        if (!string.IsNullOrEmpty(p.PMSystemID))
+                ////        {
+                ////            if (osPropertyList.Any(a => a.ID == p.PMSystemID))
+                ////            {
+                ////                // the L2L system id appears to be a OneSite site id, so see if this user has the Leasing Consultant right
+                ////                if (!didLeasingAgentOneSiteCheck)
+                ////                {
+                ////                    isLeasingAgentInOneSite = _mpOneSite.UserInLeasingAgentList(EditorUserDetails.PersonaId, userPersonaId, Convert.ToInt32(p.PMSystemID));
+                ////                    didLeasingAgentOneSiteCheck = true;
+                ////                }
+                ////                if (isLeasingAgentInOneSite)
+                ////                {
+                ////                    p.PMUserId = OSUser.UserId.ToString();
+                ////                    p.PMUserName = OSUser.SystemIdentifier.Split('|')[1];
+                ////                    p.FirstName = person.FirstName;
+                ////                    p.LastName = person.LastName;
+                ////                }
+                ////                else
+                ////                {
+                ////                    p.PMSystemID = null;
+                ////                }
+                ////            }
+                ////        }
+                ////    }
+                ////}
+            }
+
+            return oneSiteUserInfo;
         }
 
-        #endregion 
+        /// <summary>
+        /// Returns Product Properties
+        /// </summary> 
+        private IList<ProductPropertiesSLM> GetAllProductProperties(string baseUrlAndQuery = null)
+        {
+            IList<ProductPropertiesSLM> propertyList = null;
+
+            try
+            {
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+
+                if (string.IsNullOrEmpty(baseUrlAndQuery))
+                {
+                    baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
+                    baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+                }
+
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+
+                propertyList = GetResultFromApi<IList<ProductPropertiesSLM>>(baseUrlAndQuery);
+
+                WriteToDiagnosticLog(
+                    $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {propertyList?.Count}");
+
+                if (propertyList == null)
+                    throw new Exception("Null Property List.");
+
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+            }
+
+            return propertyList;
+        }
+
+        #endregion
+
     }
 }
