@@ -203,11 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return response;
         }
 
-        /// <summary>
-        /// Used to get the signing secret used to validate Tibco WebHook events
-        /// </summary>
-        /// <returns>The list of settings</returns>
-        private string GetTiboWebHookSigningSecret()
+        private IList<ProductInternalSetting> GetUnifiedPlatformSettings()
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
             RPObjectCache rpcache = new RPObjectCache();
@@ -217,9 +213,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 // load from database
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             });
-            
-            string signingSecret = signingSecret = productInternalSettingList?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
-
+            return productInternalSettingList;
+        }
+        /// <summary>
+        /// Used to get the signing secret used to validate Tibco WebHook events
+        /// </summary>
+        /// <returns>The list of settings</returns>
+        private string GetTiboWebHookSigningSecret()
+        {
+            string signingSecret = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
             return signingSecret ?? "";
         }
 
@@ -230,6 +232,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // check to see if the company already exists
             var organizationList = _manageOrganization.GetOrganizationList();
             if (organizationList.Any(o => o.BooksCustomerMasterId == booksCustomerMasterId))
+            {
+                return "";
+            }
+            string ignoreEnvironment = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("UPFMOrderIgnoreEnvironment", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (!string.IsNullOrEmpty(ignoreEnvironment))
             {
                 return "";
             }
@@ -269,7 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
 
-         //return "";
+         return "";
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
 

@@ -344,7 +344,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <returns>result of sync</returns>
         /// <response code="200">Organization result</response>
-        /// <response code="400">Bad request(when Organization object has invalid entries / when Information is out of sync with the server)</response>
         /// <response code="401">Unauthorized</response>
         /// <response code="500">Internal Server Error</response>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
@@ -431,7 +430,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
 			
-            return Request.CreateResponse(HttpStatusCode.OK, processResult);
+            return Request.CreateResponse(HttpStatusCode.NoContent, processResult);
 
         }
 
