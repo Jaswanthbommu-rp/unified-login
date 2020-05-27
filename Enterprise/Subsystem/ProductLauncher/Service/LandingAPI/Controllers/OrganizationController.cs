@@ -20,6 +20,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -35,14 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         public OrganizationController()
         {
-            _repositoryResponse = new RepositoryResponse();
-            _organizationProductRepository = new OrganizationProductRepository();
-            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
-            _manageUserLogin = new ManageUserLogin();
-            _managePartyRelationship = new ManagePartyRelationship();
-            _manageOrganization = new ManageOrganization(_userClaims);
-            _manageBlueBook = new ManageBlueBook(_userClaims);
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
 
         /// <summary>
@@ -68,6 +62,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productInternalSettingRepository = null;
             _manageBlueBook = manageBlueBook;
             _userClaims = userClaims;
+        }
+
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _repositoryResponse = new RepositoryResponse();
+            _organizationProductRepository = new OrganizationProductRepository();
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
+            _manageUserLogin = new ManageUserLogin();
+            _managePartyRelationship = new ManagePartyRelationship();
+            _manageOrganization = new ManageOrganization(_userClaims);
+            _manageBlueBook = new ManageBlueBook(_userClaims);
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         #endregion
@@ -182,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     bool deleteInstance = false;
                     customerCompanyMap.CompanyInstance.ForEach(i =>
                     {
-                        if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
+                        if (i.CustomerEnvironment == null || i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
                         {
                             deleteInstance = true;
                         }
