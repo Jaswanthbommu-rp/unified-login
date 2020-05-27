@@ -179,7 +179,7 @@
             });
 
             list.push({
-                model: templateModel.isProductExists(24) ? ppModel : pmModel,
+                model: templateModel.isProductExists(24) ? ppModel : raModel,
                 key: "soln601",
                 product: "24"
             });
