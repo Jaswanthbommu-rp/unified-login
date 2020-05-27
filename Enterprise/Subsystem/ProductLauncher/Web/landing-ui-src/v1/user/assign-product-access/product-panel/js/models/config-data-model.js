@@ -224,6 +224,13 @@
                         ]
                     });
                 }
+                if (item.type === 'custom' && item.key == 'InfoIcon') {
+                    fltr.push({
+                        "key": item.key,
+                        "type": "",
+                        "value": ""
+                    });
+                }
             });
             return fltr;
         };
