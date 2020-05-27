@@ -59,10 +59,10 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (29, 181, N'Default', N'True', @UserId, @Now)
+	VALUES (30, 181, N'Default', N'True', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (30, 182, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (31, 182, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
