@@ -817,6 +817,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				resources = resources.Where(p => p.ShowInAppSwitcher).ToList();
 
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
+
+				productResult.Products.ForEach(x => x.ProductCode = ((ProductEnum)x.Id).ToEnumDescription());
+
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
 				return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
@@ -1239,6 +1242,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			/// /The status of the product, 7 errored, 8 success, 10 deleted
 			/// </summary>
 			public int Status { get; set; }
+
+			/// <summary>
+			/// Books product code
+			/// </summary>
+			public string ProductCode { get; set; }
 		}
 
 
