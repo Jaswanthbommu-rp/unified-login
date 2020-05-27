@@ -818,8 +818,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
 
-				productResult.Products.ForEach(x => x.ProductCode = ((ProductEnum)x.Id).ToEnumDescription());
-
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
 				return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
@@ -898,6 +896,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				IList<PersonaProductUserDetails> products = manageProduct.GetUserAssignedProductsByPersona(persona);
 				IList<PersonaProductUserDetails> resources = manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: security);
 				products = products.Where(p => p.ShowInAppSwitcher).ToList();
+
 				resources = resources.Where(p => p.ShowInAppSwitcher).ToList();
                 List<UserProducts> userProducts = ConvertDashboardProductsToRAULv2(products);
 				productResult.Products = new Dictionary<string, List<UserProducts>>();
@@ -910,8 +909,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						productResult.Products.Add(up.FamilyName, userProducts.Where(p => !p.IsFavorite && p.FamilyName.Equals(up.FamilyName, StringComparison.OrdinalIgnoreCase)).ToList());
 					}
 				}
-                //productResult.Resources = ConvertDashboardProductsToRAUL(resources);
-                return Request.CreateResponse(HttpStatusCode.OK, productResult);
+
+
+				//productResult.Resources = ConvertDashboardProductsToRAUL(resources);
+				return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
 
 			errorStatus.Success = false;
@@ -1060,7 +1061,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						IsFavorite = prodDetail.IsFavorite,
 						IsNewTab = prodDetail.IsNewTab,
 						IsResource = prodDetail.IsResource,
-						Status = prodDetail.ProductStatus
+						Status = prodDetail.ProductStatus,
+						ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
 					};
 					productList.Add(up);
 				}
@@ -1093,7 +1095,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						IsFavorite = prodDetail.IsFavorite,
 						IsNewTab = prodDetail.IsNewTab,
 						IsResource = prodDetail.IsResource,
-						Status = prodDetail.ProductStatus
+						Status = prodDetail.ProductStatus,
+						ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
 					};
 					productList.Add(up);
 				}
