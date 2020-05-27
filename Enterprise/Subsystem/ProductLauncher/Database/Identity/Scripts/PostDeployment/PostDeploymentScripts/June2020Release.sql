@@ -227,7 +227,7 @@ BEGIN
 			VALUES (37, 211, N'ShowSelectAll', N'True', @UserId, @Now)
 
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			VALUES (38, 216, N'ShowSelectAll', N'True', @UserId, @Now)
+			VALUES (38, 216, N'ShowSelectAll', N'False', @UserId, @Now)
 
             SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -292,7 +292,7 @@ BEGIN
 			  VALUES (39, 221, N'ShowSelectAll', N'True', @UserId, @Now)
 
 			  INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			  VALUES (40, 226, N'ShowSelectAll', N'True', @UserId, @Now)
+			  VALUES (40, 226, N'ShowSelectAll', N'False', @UserId, @Now)
 
               SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
