@@ -1,14 +1,18 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.SeniorLeadManagement;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Lead2Lease;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -96,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (isCompanyIdRequiredToQuery)
                     baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "true");
 
-                var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
+                var roleList = GetResultFromApi<IList<Model.ProductRole>>(baseUrlAndQuery);
 
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}");
@@ -160,7 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //Get all roles with the rights
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, true);
-                var rolesRights = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
+                var rolesRights = GetResultFromApi<IList<Model.ProductRole>>(baseUrlAndQuery);
 
                 WriteToDiagnosticLog(
                   $"ManageProductInvokerBase.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {rolesRights?.Count}");
@@ -172,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //Get all rights by company
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRightEndpoint);
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
-                var allRights = GetResultFromApi<IList<ProductRight>>(baseUrlAndQuery);
+                var allRights = GetResultFromApi<IList<Model.ProductRight>>(baseUrlAndQuery);
 
 
                 WriteToDiagnosticLog(
@@ -309,17 +313,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="roles">Roles collection</param>
         /// <param name="rights">Rights collection</param>
         /// <returns>A dictionary with all rolesid</returns>
-        private Dictionary<string, object> AddRolesToRights(IList<ProductRole> roles, IList<ProductRight> rights)
+        private Dictionary<string, object> AddRolesToRights(IList<Model.ProductRole> roles, IList<Model.ProductRight> rights)
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
 
             List<Preset> presets = new List<Preset>();
 
-            foreach (ProductRight right in rights)
+            foreach (Model.ProductRight right in rights)
             {
                 List<int> rolesId = new List<int>();
 
-                foreach (ProductRole rol in roles)
+                foreach (Model.ProductRole rol in roles)
                 {
                     if (rol.Rights.Any((p) => p.RightId.ToString() == right.GetRightId))
                     {
@@ -348,7 +352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// get the information of properties
+        /// Get the information of properties
         /// </summary>
         /// <param name="propertyList">Property list of SLM from UI</param>
         /// <returns>A onesiteuserinfo entity</returns>
@@ -357,17 +361,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             OneSiteUserInfo oneSiteUserInfo = new OneSiteUserInfo();
             oneSiteUserInfo.Properties = new List<string>();
 
+            IManagePerson _managePerson = new ManagePerson();
+            IManagePersona _managePersona = new ManagePersona();
+
+            Persona userPersona = _managePersona.GetPersona(SubjectUserDetails.PersonaId);
+            Guid realPageId = userPersona.RealPageId;
+
+            var person = _managePerson.GetPerson(realPageId);
+
             //Override GetProductProperties 
             IList<ProductPropertiesSLM> allPropertyList = this.GetAllProductProperties();
 
             // walk the list of properties sent to be saved to the user 
             foreach (string prptyId in propertyList)
             {
-                //if (isSuperUser)
-                //{
-                //    propertyListToSave.Add(new Property() { PropertyId = Convert.ToInt32(prptyId) });
-                //    continue;
-                //}
+                ////if (isSuperUser)
+                ////{
+                ////    propertyListToSave.Add(new Property() { PropertyId = Convert.ToInt32(prptyId) });
+                ////    continue;
+                ////}
 
                 // find the property being added in the main list and see if it has a OneSite ID associated to it
                 if (allPropertyList.Any(a => a.GetPropertyId.ToString() == prptyId))
@@ -383,8 +395,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             oneSiteUserInfo.Properties.Add(p.OneSitePropertyId);
                         }
 
-
-
                         //ProductPropertiesSLM toAdd = new ProductPropertiesSLM() { PropertyId = p.PropertyId, PMSystemID = p.PMSystemID };
                         //if (!string.IsNullOrEmpty(p.PMSystemID))
                         //{
@@ -395,54 +405,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-
             // OneSite super users aren't assigned the Leasing Consultant right so no need to check for the right for a GB Super User
             if (oneSiteUserInfo.Properties.Any())
             {
-                
+                SamlRepository _samlRepository = new SamlRepository();
+
                 // See if the L2L user is also a OneSite user
-                ////IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(SubjectUserDetails.PersonaId, (int)ProductEnum.OneSite);
+                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(SubjectUserDetails.PersonaId, (int)ProductEnum.OneSite);
 
-                ////if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
-                ////{
-                ////    oneSiteSystemIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
+                if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
+                {
+                    var oneSiteSystemIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
 
-                ////    var _mpOneSite = new ManageProductOneSite(_userClaims);
+                    var _mpOneSite = new ManageProductOneSite(_userClaims);
 
-                ////    var OSUser = _mpOneSite.GetOneSiteUserInfo(oneSiteSystemIdentifier);
+                    var OSUser = _mpOneSite.GetOneSiteUserInfo(oneSiteSystemIdentifier);
 
-                ////    var response = _mpOneSite.GetOneSitePropertyList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, true, null);
-                ////    osPropertyList = response.Records.Cast<ProductProperty>().ToList();
-                ////    bool isLeasingAgentInOneSite = false;
-                ////    bool didLeasingAgentOneSiteCheck = false;
+                    var response = _mpOneSite.GetOneSitePropertyList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, true, null);
+                    var osPropertyList = response.Records.Cast<ProductProperty>().ToList();
+                    bool isLeasingAgentInOneSite = false;
+                    bool didLeasingAgentOneSiteCheck = false;
 
-                ////    foreach (Property p in propertyListToSave)
-                ////    {
-                ////        if (!string.IsNullOrEmpty(p.PMSystemID))
-                ////        {
-                ////            if (osPropertyList.Any(a => a.ID == p.PMSystemID))
-                ////            {
-                ////                // the L2L system id appears to be a OneSite site id, so see if this user has the Leasing Consultant right
-                ////                if (!didLeasingAgentOneSiteCheck)
-                ////                {
-                ////                    isLeasingAgentInOneSite = _mpOneSite.UserInLeasingAgentList(EditorUserDetails.PersonaId, userPersonaId, Convert.ToInt32(p.PMSystemID));
-                ////                    didLeasingAgentOneSiteCheck = true;
-                ////                }
-                ////                if (isLeasingAgentInOneSite)
-                ////                {
-                ////                    p.PMUserId = OSUser.UserId.ToString();
-                ////                    p.PMUserName = OSUser.SystemIdentifier.Split('|')[1];
-                ////                    p.FirstName = person.FirstName;
-                ////                    p.LastName = person.LastName;
-                ////                }
-                ////                else
-                ////                {
-                ////                    p.PMSystemID = null;
-                ////                }
-                ////            }
-                ////        }
-                ////    }
-                ////}
+                    foreach (string p in oneSiteUserInfo.Properties)
+                    {
+                        //if (!string.IsNullOrEmpty(p.PMSystemID))
+                        //{
+                        if (osPropertyList.Any(a => a.ID == p))
+                        {
+                            // the L2L system id appears to be a OneSite site id, so see if this user has the Leasing Consultant right
+                            if (!didLeasingAgentOneSiteCheck)
+                            {
+                                isLeasingAgentInOneSite = _mpOneSite.UserInLeasingAgentList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, Convert.ToInt32(p));
+
+                                didLeasingAgentOneSiteCheck = true;
+                            }
+                            if (isLeasingAgentInOneSite)
+                            {
+                                oneSiteUserInfo.UserId = Convert.ToInt32(OSUser.UserId);
+                                oneSiteUserInfo.FirstName = person.FirstName;
+                                oneSiteUserInfo.LastName = person.LastName;
+                                break;
+                            }
+                            else
+                            {
+                                //p.PMSystemID = null;
+                            }
+                            //}
+                        }
+                    }
+                }
             }
 
             return oneSiteUserInfo;
