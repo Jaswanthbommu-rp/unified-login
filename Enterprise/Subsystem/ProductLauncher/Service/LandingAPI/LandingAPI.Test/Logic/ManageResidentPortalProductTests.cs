@@ -122,7 +122,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.GetCompanyMap(
 					It.IsAny<long>(),
 					It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
 
@@ -257,7 +258,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.GetCompanyMap(
 					It.IsAny<long>(),
 					It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
 
@@ -394,7 +396,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.GetCompanyMap(
 					It.IsAny<long>(),
 					It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
 
@@ -547,7 +550,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.GetCompanyMap(
 					It.IsAny<long>(),
 					It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
 
@@ -719,7 +723,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-                    It.IsAny<string>()
+                    It.IsAny<string>(),
+                    It.IsAny<bool>()
                  ))
                  .Returns(companyMapList);
 
@@ -844,7 +849,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-                    It.IsAny<string>()
+                    It.IsAny<string>(),
+                    It.IsAny<bool>()
                  ))
                  .Returns(companyMapList);
 
