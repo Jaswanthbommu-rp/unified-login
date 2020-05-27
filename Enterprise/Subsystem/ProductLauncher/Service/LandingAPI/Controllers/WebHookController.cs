@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -33,11 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         
         public WebHookController()
         {
-            _organizationRepository = new OrganizationRepository();
-            _propertyRepository = new PropertyRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _manageOrganization = new ManageOrganization();
-            _manageBlueBook = new ManageBlueBook(base._userClaims);
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
 
         public WebHookController(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
@@ -48,6 +45,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaim);
             _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
             _userClaims = userClaim;
+        }
+
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _organizationRepository = new OrganizationRepository();
+            _propertyRepository = new PropertyRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _manageOrganization = new ManageOrganization();
+            _manageBlueBook = new ManageBlueBook(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
