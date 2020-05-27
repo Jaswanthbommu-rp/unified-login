@@ -2012,4 +2012,8 @@ IF NOT EXISTS
 END;
 GO
 
-
+if not exists(Select top 1 1 from Enterprise.ProductSettingType where Name = 'UPFMOrderIgnoreEnvironment')
+Begin
+	Insert into Enterprise.ProductSettingType (Name, Description) Values ('UPFMOrderIgnoreEnvironment', 'Ignore environment for new company creation from UPFM Order create Tibco events')
+End
+GO

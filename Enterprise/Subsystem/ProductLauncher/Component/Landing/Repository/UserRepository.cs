@@ -52,11 +52,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
         }
 
-        public UserRepository(IRepository repository) : base(repository)
+        public UserRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
-            _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _userClaim = userClaim;//new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             _userLoginRepository = new UserLoginRepository(repository);
-            _managePersona = new ManagePersona(repository);
+            _managePersona = new ManagePersona(repository, userClaim);
             _organizationRepository = new OrganizationRepository(repository);
         }
 
