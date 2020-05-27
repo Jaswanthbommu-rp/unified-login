@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, pubsub) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -28,6 +28,7 @@
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
+            pubsub.subscribe("productroles.clearpropertygroups", vm.clearPropertyGroups);
         };
 
         vm.isActive = function () {
@@ -41,6 +42,10 @@
         vm.updateGrid = function () {
             vm.grid.updateSelected();
         };
+        vm.clearPropertyGroups = function () {
+            vm.grid.selectAll(false);
+            vm.grid.updateSelected();
+        };
 
         vm.filter = function(filterBy){
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
@@ -48,7 +53,10 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
-            syncMgr.allPropertiesSync($scope.$parent.productId, val);
+            var productId = $scope.$parent.productId;
+            if(productId != 18){
+                syncMgr.allPropertiesSync($scope.$parent.productId, val);
+            }
             vm.updateGrid();
         };
 
@@ -166,6 +174,7 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
+            "pubsub",
             ProductPropertyGroupsGridCtrl
         ]);
 })(angular);

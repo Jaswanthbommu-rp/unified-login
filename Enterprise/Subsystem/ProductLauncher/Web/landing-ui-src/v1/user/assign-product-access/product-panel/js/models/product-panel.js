@@ -112,14 +112,21 @@
                 aoFamilyProduct = false;
 
             s.batchData = angular.copy(s._batchData);
-
-            var roles = dataSyncManager.getProductRolesData(productId);
+            var roles = "";
+            if(productId == "18")
+            {
+                roles = dataSyncManager.getProductRightsData(productId);
+            }
+            else{
+                roles = dataSyncManager.getProductRolesData(productId);
+            }
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
             var bmroles = "";
             if (productId == "30") {
                 bmroles = dataSyncManager.getProductBenchMarkRolesData("34");
             }
+           
 
             s.batchData.productId = productId;
 
@@ -134,6 +141,9 @@
                     if (role.isAssigned) {
                         if (aoFamilyProduct) {
                             s.batchData.inputJson.roleList.push(role.name);
+                        }
+                        else if(productId == "18"){
+                            s.batchData.inputJson.roleList.push(role.roleName);
                         }
                         else {
                             s.batchData.inputJson.roleList.push(role.id);
@@ -179,7 +189,7 @@
 
                 propertyGroups.forEach(function (group) {
                     if (group.isAssigned) {
-                        if (aoFamilyProduct) {
+                        if (aoFamilyProduct || productId == "18") {
                             s.batchData.inputJson.propertyGroupList.push(group.id);
                         }
                         else {
@@ -228,7 +238,11 @@
                     return s.batchData;
                 }
             }
-
+            if (productId == "18") {
+                if (hasPropertySelected || hasPropertyGroupSelected) {
+                    return s.batchData;
+                }
+            }
             if (productId == "39") {
                 hasPropertySelected = true;
             }

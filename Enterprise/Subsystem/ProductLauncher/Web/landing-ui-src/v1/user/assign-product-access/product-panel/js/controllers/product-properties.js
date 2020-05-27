@@ -54,6 +54,7 @@
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
+            pubsub.subscribe("productroles.clearproperties", vm.clearProperties);
         };
 
         vm.productSelected = function (obj) {
@@ -308,7 +309,10 @@
         vm.updateGrid = function () {
             vm.propertiesGrid.updateSelected();
         };
-
+        vm.clearProperties = function () {
+            vm.propertiesGrid.selectAll(false);
+            vm.propertiesGrid.updateSelected();
+        };
         vm.resetDataModel = function () {
             //vm.clearProperties();
             vm.resetProperties();

@@ -132,6 +132,9 @@
                             if (tabName === "markets" || tabName === "messaginggroups") {
                                 tabName = "propertygroup";
                             }
+                            if (tabName === "additionalrights") {
+                                tabName = "rights";
+                            }
                             var tab = {
                                 id: tabGrp.displayName.toLowerCase(),
                                 text: tabGrp.displayName,
@@ -166,6 +169,9 @@
                             }
                             else if (tabName === "Rights") {
                                 tabName = "Roles";
+                            }
+                            else if(tabName === "AdditionalRights"){
+                                tabName = "Rights";
                             }
 
                             tabGrp.controls.forEach(function (tab) {
