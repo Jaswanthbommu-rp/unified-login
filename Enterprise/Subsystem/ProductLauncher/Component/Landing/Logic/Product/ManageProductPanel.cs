@@ -275,6 +275,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetRightsByRole(editorPersonaId, partyId, roleId);
 					break;
+				case (int)ProductEnum.UnifiedAmenities:
+					IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
+					result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
+					break;
 				default:
 					break;
 			}

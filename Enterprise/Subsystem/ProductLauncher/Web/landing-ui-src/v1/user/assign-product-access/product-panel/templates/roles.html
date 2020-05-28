@@ -1,5 +1,8 @@
 <div class="product-panel-roles-wrapper" ng-controller="ProductRolesGridCtrl as cpr">
     <div class="product-panel-roles-body" ng-if="!cpr.isDataError">
+        <div class="unified-amenities-all-props-message" ng-if="cpr.isSelectAllPropMsg2">
+            Users with this role will get access to all active properties in the PMC.
+        </div>
         <div class="product-panel-roles-select" ng-if="cpr.isSelectTypeConfigLoaded()">
             <rp-form-select-menu ng-repeat="sop in cpr.selectconfigs"
                 ng-if="!cpr.presetRoles.empty()"
