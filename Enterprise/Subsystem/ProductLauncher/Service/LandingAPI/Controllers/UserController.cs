@@ -212,7 +212,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						IsFavorite = prodDetail.IsFavorite,
 						IsNewTab = prodDetail.IsNewTab,
 						IsResource = prodDetail.IsResource,
-						Status = prodDetail.ProductStatus
+						Status = prodDetail.ProductStatus,
+						ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
 					};
 					productList.Add(up);
 				}
@@ -1038,6 +1039,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// /The status of the product, 7 errored, 8 success, 10 deleted
 		/// </summary>
 		public int Status { get; set; }
+
+		/// <summary>
+		/// Books product code
+		/// </summary>
+		public string ProductCode { get; set; }
 	}
 
 	/// <summary>
@@ -1280,7 +1286,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					FamilyName = "Resident Services",
 					IsNewTab = true,
 					IsFavorite = false,
-					IsResource = false
+					IsResource = false,
+					ProductCode = (ProductEnum.Insurance).ToEnumDescription()
 				},
 				new UserProducts()
 				{
@@ -1293,7 +1300,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					FamilyName = "Property Management",
 					IsNewTab = true,
 					IsFavorite = false,
-					IsResource = false
+					IsResource = false,
+					ProductCode = (ProductEnum.OneSite).ToEnumDescription()
 				},
 			};
 			/*
