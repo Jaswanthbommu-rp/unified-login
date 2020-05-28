@@ -59,10 +59,10 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (29, 181, N'Default', N'True', @UserId, @Now)
+	VALUES (30, 181, N'Default', N'True', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (30, 182, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (31, 182, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -1295,183 +1295,183 @@ BEGIN
 END;
 
 GO
---LRO Product
+----LRO Product is not Going in June
 
 
-/*This script is a sample script to create new prodcut in the system.*/
+--/*This script is a sample script to create new prodcut in the system.*/
 
-DECLARE @ProductId INT, 
-		@LoginURI NVARCHAR(100), 
-		@SigningCertificateThumbprint NVARCHAR(50), 
-		@ParentProductTypeId INT, 
-		@ProductName NVARCHAR(100)= 'LRO Management',  -- Produact Name
-		@LoginURL NVARCHAR(500), 
-		@ProductUrl NVARCHAR(256), 
-		@apiendpoint NVARCHAR(1000), 
-		@ServerName SYSNAME = @@SERVERNAME;
+--DECLARE @ProductId INT, 
+--		@LoginURI NVARCHAR(100), 
+--		@SigningCertificateThumbprint NVARCHAR(50), 
+--		@ParentProductTypeId INT, 
+--		@ProductName NVARCHAR(100)= 'LRO Management',  -- Produact Name
+--		@LoginURL NVARCHAR(500), 
+--		@ProductUrl NVARCHAR(256), 
+--		@apiendpoint NVARCHAR(1000), 
+--		@ServerName SYSNAME = @@SERVERNAME;
 
-DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+--DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
 
-/*Validate what product type ths new product belongs to. 'Administration' in the following block 
-need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
-*/
+--/*Validate what product type ths new product belongs to. 'Administration' in the following block 
+--need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
+--*/
 
-SELECT @ParentProductTypeId = ProductTypeId
-FROM Enterprise.ProductType
-WHERE Name = 'Asset Optimization'
-      AND ParentProductTypeId IS NULL;
-IF NOT EXISTS
-(
-    SELECT TOP 1 1
-    FROM enterprise.ProductType
-    WHERE Name = 'LRO Management'
-)
-    BEGIN
-        EXEC [Enterprise].[CreateProductType] 
-             @ProductTypeId = 407, -- Thsi value may change based on the root prodcut type
-             @ParentProductTypeId = @ParentProductTypeId, 
-             @Name = @ProductName, 
-             @Description = @ProductName, 
-             @ProductTypeGUID = 'BC77178D-3972-4236-A2CA-2E8DE104817E'; -- Use newid() to generate new uniqueidentifier.
-END;
-SET @ProductId = 51; -- Assign new product Id
+--SELECT @ParentProductTypeId = ProductTypeId
+--FROM Enterprise.ProductType
+--WHERE Name = 'Asset Optimization'
+--      AND ParentProductTypeId IS NULL;
+--IF NOT EXISTS
+--(
+--    SELECT TOP 1 1
+--    FROM enterprise.ProductType
+--    WHERE Name = 'LRO Management'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateProductType] 
+--             @ProductTypeId = 407, -- Thsi value may change based on the root prodcut type
+--             @ParentProductTypeId = @ParentProductTypeId, 
+--             @Name = @ProductName, 
+--             @Description = @ProductName, 
+--             @ProductTypeGUID = 'BC77178D-3972-4236-A2CA-2E8DE104817E'; -- Use newid() to generate new uniqueidentifier.
+--END;
+--SET @ProductId = 51; -- Assign new product Id
 
---Following block will create the new prodcut in the database
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM Enterprise.Product
-    WHERE Name = @ProductName
-)
-    BEGIN
-        EXEC Enterprise.CreateProduct 
-             @ProductId = @ProductId, 
-             @ProductGUID = '6EEC0148-D062-4CFA-907B-6FF82773E92E', -- Use newid() to generate new uniqueidentifier.
-             @Name = @ProductName, 
-             @Description = 'LRO', 
-             @ProductTypeId = 407;
+----Following block will create the new prodcut in the database
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.Product
+--    WHERE Name = @ProductName
+--)
+--    BEGIN
+--        EXEC Enterprise.CreateProduct 
+--             @ProductId = @ProductId, 
+--             @ProductGUID = '6EEC0148-D062-4CFA-907B-6FF82773E92E', -- Use newid() to generate new uniqueidentifier.
+--             @Name = @ProductName, 
+--             @Description = 'LRO', 
+--             @ProductTypeId = 407;
         
-		UPDATE Enterprise.Product
-          SET 
-              BooksProductCode = 'LRO'
-        WHERE ProductId = @ProductId;
-END;
+--		UPDATE Enterprise.Product
+--          SET 
+--              BooksProductCode = 'LRO'
+--        WHERE ProductId = @ProductId;
+--END;
 
---The following block picks up all the detail frm Enterprise.ProductSettingType table
---To set up the product, bunch of these settings are required.
-SET @apiendpoint = '';
-IF @ServerName IN ('RCDUSODBSQL001')
-BEGIN
-	SET @apiendpoint = 'https://aodev.realpage.com/ysconfig/ws/';
-END
-IF @ServerName IN ('rctusodbsql001')
-BEGIN
-	SET @apiendpoint = 'https://aoqa.realpage.com/ysconfig/ws/';
-END
-IF @ServerName IN ('RCQUSODBSQL001')
-BEGIN
-	SET @apiendpoint = 'https://aosat.realpage.com/ysconfig/ws/';
-END
-IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
-BEGIN
-	SET @apiendpoint = 'https://ao.realpage.com/ysconfig/ws/';
-END
-set nocount on
-INSERT INTO @ProductConfiguration
-(SettingName, 
- SettingDescription, 
- SettingValue
-)
-VALUES
-('ClientId','','1')
-,('ClassName','','lromanagement')
-,('ProductUrl','','/product/lromanagement')
-,('TitleId','','LRO Management')
-,('TitleUniqueId','','AA32B948-4F1E-4102-ADC9-2E041BF6E918')
-,('IsNewTab','','1')
-,('MetatagUniqueId','','Lease Rent Option Management')
-,('IsResource','','0')
-,('IsFavorite','','1')
-,('LearnMore','','https://www.realpage.com/asset-investment-management/portfolio-asset-management/')
-,('ApiEndPoint','', @apiendpoint)
-,('ApiUserName','','wsuser')
-,('ApiPassword','','cGdAIXcyM3Jn')
-,('ProductSuperUserLoginName','','amungale')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
-,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
-,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
-,('ShowInAppSwitcher','Should the product show in the application switcher','1')
-,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
-,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
-,('LockOnProductAccess', '', '0')
-,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
-,('NotificationEmailRequiredForUserWithNoEmail', '', '1')
-,('AuthenticationType','Used to determine how to log into the product','Redirect')
+----The following block picks up all the detail frm Enterprise.ProductSettingType table
+----To set up the product, bunch of these settings are required.
+--SET @apiendpoint = '';
+--IF @ServerName IN ('RCDUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = 'https://aodev.realpage.com/ysconfig/ws/';
+--END
+--IF @ServerName IN ('rctusodbsql001')
+--BEGIN
+--	SET @apiendpoint = 'https://aoqa.realpage.com/ysconfig/ws/';
+--END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = 'https://aosat.realpage.com/ysconfig/ws/';
+--END
+--IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+--BEGIN
+--	SET @apiendpoint = 'https://ao.realpage.com/ysconfig/ws/';
+--END
+--set nocount on
+--INSERT INTO @ProductConfiguration
+--(SettingName, 
+-- SettingDescription, 
+-- SettingValue
+--)
+--VALUES
+--('ClientId','','1')
+--,('ClassName','','lromanagement')
+--,('ProductUrl','','/product/lromanagement')
+--,('TitleId','','LRO Management')
+--,('TitleUniqueId','','AA32B948-4F1E-4102-ADC9-2E041BF6E918')
+--,('IsNewTab','','1')
+--,('MetatagUniqueId','','Lease Rent Option Management')
+--,('IsResource','','0')
+--,('IsFavorite','','1')
+--,('LearnMore','','https://www.realpage.com/asset-investment-management/portfolio-asset-management/')
+--,('ApiEndPoint','', @apiendpoint)
+--,('ApiUserName','','wsuser')
+--,('ApiPassword','','cGdAIXcyM3Jn')
+--,('ProductSuperUserLoginName','','amungale')
+--,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
+--,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
+--,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
+--,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
+--,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
+--,('ShowInAppSwitcher','Should the product show in the application switcher','1')
+--,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
+--,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
+--,('LockOnProductAccess', '', '0')
+--,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+--,('NotificationEmailRequiredForUserWithNoEmail', '', '1')
+--,('AuthenticationType','Used to determine how to log into the product','Redirect')
 
 
 
-SELECT * FROM @ProductConfiguration
+--SELECT * FROM @ProductConfiguration
 
-SET @LoginURL = '';
-IF @ServerName IN ('RCDUSODBSQL001')
-BEGIN
-	SET @LoginURL = 'https://aodev.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
-IF @ServerName IN ('rctusodbsql001')
-BEGIN
-	SET @LoginURL = 'https://aoqa.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
-IF @ServerName IN ('RCQUSODBSQL001')
-BEGIN
-	SET @LoginURL = 'https://aosat.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
-IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
-BEGIN
-	SET @LoginURL = 'https://ao.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
+--SET @LoginURL = '';
+--IF @ServerName IN ('RCDUSODBSQL001')
+--BEGIN
+--	SET @LoginURL = 'https://aodev.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
+--IF @ServerName IN ('rctusodbsql001')
+--BEGIN
+--	SET @LoginURL = 'https://aoqa.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @LoginURL = 'https://aosat.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
+--IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+--BEGIN
+--	SET @LoginURL = 'https://ao.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
 
-SET @LoginURI = @LoginURL;
-SET @SigningCertificateThumbprint = NULL;
+--SET @LoginURI = @LoginURL;
+--SET @SigningCertificateThumbprint = NULL;
 
---Setup the product configurations.
-if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
-begin
+----Setup the product configurations.
+--if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
+--begin
 
-	EXEC Enterprise.ProductConfigurationSetup 
-		 @ProductId, 
-		 @LoginURI, 
-		 @SigningCertificateThumbprint, 
-		 @ProductConfiguration;
-end;
+--	EXEC Enterprise.ProductConfigurationSetup 
+--		 @ProductId, 
+--		 @LoginURI, 
+--		 @SigningCertificateThumbprint, 
+--		 @ProductConfiguration;
+--end;
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM ident.SamlProductSettings
-    WHERE ProductId = @ProductId
-          AND LoginUri = @LoginURL
-)
-    BEGIN
-        INSERT INTO ident.SamlProductSettings
-        (
-        --SamlProductSettingsId - column value is auto-generated
-        ProductId, 
-        LoginUri, 
-        SigningCertificateThumbprint, 
-        SubjectIdSamlAttribute
-        )
-        VALUES
-        (
-        -- SamlProductSettingsId - int
-        @ProductId, -- ProductId - int
-        @LoginURL, -- LoginUri - nvarchar
-        N'NA', -- SigningCertificateThumbprint - nvarchar
-        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
-        );
-END;
-GO
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM ident.SamlProductSettings
+--    WHERE ProductId = @ProductId
+--          AND LoginUri = @LoginURL
+--)
+--    BEGIN
+--        INSERT INTO ident.SamlProductSettings
+--        (
+--        --SamlProductSettingsId - column value is auto-generated
+--        ProductId, 
+--        LoginUri, 
+--        SigningCertificateThumbprint, 
+--        SubjectIdSamlAttribute
+--        )
+--        VALUES
+--        (
+--        -- SamlProductSettingsId - int
+--        @ProductId, -- ProductId - int
+--        @LoginURL, -- LoginUri - nvarchar
+--        N'NA', -- SigningCertificateThumbprint - nvarchar
+--        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+--        );
+--END;
+--GO
 
 --AA Product
 
