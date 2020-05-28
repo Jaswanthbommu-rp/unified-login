@@ -289,16 +289,11 @@
                                 rpTabs.push(rpTab);
                             }
                         });
-                        if(rpRoleName == "enterprise standard"){
-                            vm.showAllPropertiesSwtich = true;
-                            vm.allProperties = false;// Set the user selected value
-                        }
-                        else{
-                            vm.showAllPropertiesSwtich = false;
-                            vm.allProperties = false;
-                        }
                         
-                        syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+                        vm.showAllPropertiesSwtich = (rpRoleName == "enterprise standard") ? true : false;
+                        vm.allProperties = ((rpRoleName == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || rpRoleName == "enterprise admin") ? true : false;
+
+                        syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                         vm.setProductTabs(rpTabs);
                     }
                     else {
@@ -336,6 +331,7 @@
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
                 if(record.productId == "17"){
                     vm.rpRoles = record;
+                    vm.allProperties = false;
                 }
                 else {
                     if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
