@@ -40,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserExistEndpoint), loginNameToCheck);
 
             var response = GetResultFromApi<SLMUserExist>(baseUrlAndQuery, false);
+            
             if (response != null && response.Message.Equals("User Not exists", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -354,9 +355,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Get the information of properties
         /// </summary>
-        /// <param name="propertyList">Property list of SLM from UI</param>
+        /// <param name="propertiesListSLM">Property list of SLM from UI</param>
         /// <returns>A onesiteuserinfo entity</returns>
-        private OneSiteUserInfo GetOneSiteUserInfo(List<string> propertyList)
+        private OneSiteUserInfo GetOneSiteUserInfo(List<string> propertiesListSLM)
         {
             OneSiteUserInfo oneSiteUserInfo = new OneSiteUserInfo();
             oneSiteUserInfo.Properties = new List<string>();
@@ -370,37 +371,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var person = _managePerson.GetPerson(realPageId);
 
             //Override GetProductProperties 
-            IList<ProductPropertiesSLM> allPropertyList = this.GetAllProductProperties();
+            IList<ProductPropertiesSLM> allPropertyListSLM = this.GetAllProductProperties();
 
             // walk the list of properties sent to be saved to the user 
-            foreach (string prptyId in propertyList)
+            foreach (string propertyIdSLM in propertiesListSLM)
             {
-                ////if (isSuperUser)
-                ////{
-                ////    propertyListToSave.Add(new Property() { PropertyId = Convert.ToInt32(prptyId) });
-                ////    continue;
-                ////}
-
                 // find the property being added in the main list and see if it has a OneSite ID associated to it
-                if (allPropertyList.Any(a => a.GetPropertyId.ToString() == prptyId))
+                if (allPropertyListSLM.Any(a => a.GetPropertyId.ToString() == propertyIdSLM))
                 {
-                    ProductPropertiesSLM p = (from a in allPropertyList
-                                              where a.GetPropertyId.ToString() == prptyId
-                                              select a).FirstOrDefault();
-                    if (p != null)
+                    ProductPropertiesSLM productPropertySLM = (from a in allPropertyListSLM
+                                                               where a.GetPropertyId.ToString() == propertyIdSLM
+                                                               select a).FirstOrDefault();
+                    if (productPropertySLM != null)
                     {
                         //Exists
-                        if (string.IsNullOrWhiteSpace(p.OneSitePropertyId))
+                        if (string.IsNullOrWhiteSpace(productPropertySLM.OneSitePropertyId))
                         {
-                            oneSiteUserInfo.Properties.Add(p.OneSitePropertyId);
+                            oneSiteUserInfo.Properties.Add(productPropertySLM.OneSitePropertyId);
                         }
-
-                        //ProductPropertiesSLM toAdd = new ProductPropertiesSLM() { PropertyId = p.PropertyId, PMSystemID = p.PMSystemID };
-                        //if (!string.IsNullOrEmpty(p.PMSystemID))
-                        //{
-                        //    checkOneSiteUserInfo = true;
-                        //}
-                        //propertyListToSave.Add(toAdd);
                     }
                 }
             }
@@ -410,7 +398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 SamlRepository _samlRepository = new SamlRepository();
 
-                // See if the L2L user is also a OneSite user
+                // 01. See if the L2L user is also a OneSite user
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(SubjectUserDetails.PersonaId, (int)ProductEnum.OneSite);
 
                 if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
@@ -421,21 +409,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     var OSUser = _mpOneSite.GetOneSiteUserInfo(oneSiteSystemIdentifier);
 
+                    //02. We get information about the OneSite user including the list of properties for that user
                     var response = _mpOneSite.GetOneSitePropertyList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, true, null);
                     var osPropertyList = response.Records.Cast<ProductProperty>().ToList();
                     bool isLeasingAgentInOneSite = false;
                     bool didLeasingAgentOneSiteCheck = false;
 
-                    foreach (string p in oneSiteUserInfo.Properties)
-                    {
-                        //if (!string.IsNullOrEmpty(p.PMSystemID))
-                        //{
-                        if (osPropertyList.Any(a => a.ID == p))
+
+                    //03. For each of the properties that we are saving for Lead2Lease
+                    //We check to see if the property has the "PMSystemID", which is the property id in OneSite 
+                    //(remember above, that Lead2Lease stores both the L2L property ID and also the OneSite property id for this purpose)
+                    foreach (string oneSiteUserInfoProperty in oneSiteUserInfo.Properties)
+                    {          
+                        if (osPropertyList.Any(a => a.ID == oneSiteUserInfoProperty))
                         {
                             // the L2L system id appears to be a OneSite site id, so see if this user has the Leasing Consultant right
                             if (!didLeasingAgentOneSiteCheck)
                             {
-                                isLeasingAgentInOneSite = _mpOneSite.UserInLeasingAgentList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, Convert.ToInt32(p));
+                                isLeasingAgentInOneSite = _mpOneSite.UserInLeasingAgentList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, Convert.ToInt32(oneSiteUserInfoProperty));
 
                                 didLeasingAgentOneSiteCheck = true;
                             }
@@ -446,11 +437,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 oneSiteUserInfo.LastName = person.LastName;
                                 break;
                             }
-                            else
-                            {
-                                //p.PMSystemID = null;
-                            }
-                            //}
                         }
                     }
                 }
