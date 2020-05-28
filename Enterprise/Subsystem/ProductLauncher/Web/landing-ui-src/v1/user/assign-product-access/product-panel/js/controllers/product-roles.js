@@ -244,12 +244,14 @@
             if (resp.data && resp.data.length > 0 && vm.roleRights.length > 0) {
                 var matchFound = false;
                 vm.roleRights.forEach(function (right) {
-                    var record = resp.data.filter(function (data) {
-                        return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
-                    })[0];
+                    if(right.rightNickName){
+                        var record = resp.data.filter(function (data) {
+                            return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
+                        })[0];
 
-                    if (record !== undefined && record) {
-                        matchFound = true;
+                        if (record !== undefined && record) {
+                            matchFound = true;
+                        }
                     }
                 });
 
@@ -281,7 +283,7 @@
         vm.updateRoleRecords = function (record) {
             //rolesGrid.busy(true);
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
-            if (record.productId === "3" || record.productId === "17" || record.productId == "18") {
+            if (record.productId == "3" || record.productId == "17" || record.productId == "18") {
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
                 if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
                     vm.roleRights = [];
