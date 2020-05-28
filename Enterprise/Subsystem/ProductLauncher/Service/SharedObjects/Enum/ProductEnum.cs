@@ -325,10 +325,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("HLP")]
 		HelpCenter = 49,
 
-		/// <summary>
-		/// RPDocumentManagement
-		/// </summary>
-		RPDocumentManagement = 20,
+        /// <summary>
+        /// RPDocumentManagement
+        /// </summary>
+        [Description("DOC")]
+        RPDocumentManagement = 20,
 
 		/// <summary>
 		/// OneSiteConversions
