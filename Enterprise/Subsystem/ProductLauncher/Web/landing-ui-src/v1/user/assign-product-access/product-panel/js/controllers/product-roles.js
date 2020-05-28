@@ -257,14 +257,13 @@
                 // logc("select config vm.roleSelect", vm.roleSelect);
             }
         };
-
         vm.setControlDependencyData = function (resp) {
             var productId = $scope.$parent.productId;
             var tabs = syncMgr.getProductInitialTabs(productId);
 
             if (resp.data && resp.data.length > 0) {
                 var matchFound = false;
-                if (productId == 3) {
+                if (vm.roleRights && vm.roleRights.length > 0) {
                     var record = "";
                     vm.roleRights.forEach(function (right) {
                         if (right.rightNickName) {
@@ -277,36 +276,35 @@
                             matchFound = true;
                         }
                     });
-                }
-                else if (productId == 17 || productId == 18 || productId == 26) {
+                }                  
+               else if (vm.rpRoleSelected && vm.rpRoleSelected !== undefined) {
                     var rpTabs = [];
-                    if (!angular.equals(vm.rpRoleSelected, {}) && vm.rpRoleSelected !== undefined) {
-                        var rpRoleName = vm.rpRoleSelected.name.toLowerCase();
-                        var releventTabs = resp.data.filter(function (data) {
-                            return data.masterControlValue.toLowerCase() == rpRoleName;
-                        });
-                        if (releventTabs.length > 0) {
-                            var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
-                            releventTabs.forEach(function (tb) {
-                                var rpTab = allTabs.find(function (item) {
-                                    return item.text === tb.displayName;
-                                });
-                                rpTabs.push(rpTab);
+                    var rpRoleName = vm.rpRoleSelected.name.toLowerCase();
+                    var releventTabs = resp.data.filter(function (data) {
+                        return data.masterControlValue.toLowerCase() == rpRoleName;
+                    });
+                    if (releventTabs.length > 0) {
+                        var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                        releventTabs.forEach(function (tb) {
+                            var rpTab = allTabs.find(function (item) {
+                                return item.text === tb.displayName;
                             });
-                            vm.setProductTabs(rpTabs);
-                        }
-                        else {
-                            vm.setProductTabs(tabs);
-                        }
-
+                            rpTabs.push(rpTab);
+                        });
+                        vm.setProductTabs(rpTabs);
+                        matchFound = true;
                     }
                     else {
                         vm.setProductTabs(tabs);
-                        
+                        matchFound = false;
                     }
+
                     if (productId == 26) {
                         vm.setAllProperties(rpTabs);
                     }
+                }
+                else {
+                    vm.setProductTabs(tabs);
                 }
 
                 //Exclude properties tab fro employee and external user company
@@ -315,7 +313,7 @@
                     matchFound = false;
                 }
 
-                if(productId == 3){
+                if(vm.roleRights.length > 0){
                     if (matchFound) {
                         tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
                         vm.setProductTabs(tabs);
