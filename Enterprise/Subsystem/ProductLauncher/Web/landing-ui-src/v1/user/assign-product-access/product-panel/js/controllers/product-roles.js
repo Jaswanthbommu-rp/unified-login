@@ -256,12 +256,14 @@
                 var matchFound = false;
                 if($scope.$parent.productId == 3){
                     vm.roleRights.forEach(function (right) {
-                        var record = resp.data.filter(function (data) {
-                            return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
-                        })[0];
-    
-                        if (record !== undefined && record) {
-                            matchFound = true;
+                        if(right.rightNickName){
+                            var record = resp.data.filter(function (data) {
+                                return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
+                            })[0];
+        
+                            if (record !== undefined && record) {
+                                matchFound = true;
+                            }
                         }
                     });
                 }
