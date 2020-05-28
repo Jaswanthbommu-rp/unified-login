@@ -3,11 +3,13 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, tabsModel, userDetailsModel, switchConfig, cntrlSvc, templateModel, menuConfig) {
+    function ProductCommonCtrl($scope, $location, $params, view, session, pubsub, security, persona, productModel, panelModel, configData, configFactory, tabsModel, userDetailsModel, switchConfig, cntrlSvc, templateModel, menuConfig, userStatus) {
         var vm = this,
             active = false,
             panelNmae = "",
             productControls = "",
+            userType = "",
+            productDisabled = false,
             tabsCnfData = [],
             gridconfigs = [],
             radioconfigs = [],
@@ -18,27 +20,46 @@
             vm.security = security;
             vm.disableContent = false;
             vm.activeTab = "";
-
+            vm.userType = "";
             vm.productId = 0;
+            vm.productDisabled = false;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
+            vm.productDisabledWatch = pubsub.subscribe("productpanel.userTypeChanged", vm.resetProductDisabled);
         };
 
         vm.productSelected = function (obj) {
             active = false;
+            vm.productDisabled = false;
+            vm.userType = "";
             var productExists = templateModel.isProductExists(obj.productId);
             if (productExists) {
                 vm.productId = obj.productId;
                 $scope.productId = obj.productId;
+
+                if ((userStatus.isRegularUserNoEmail() && (obj.productId === 14 || obj.productId === 47 || obj.productId === 48)) ||
+                    (userStatus.isExternalUser() && obj.productId === 29)) {
+                    vm.productDisabled = true;
+                    vm.userType = userStatus.isExternalUser() ? "External User" : "Regular user (no email)";
+                }
+
                 vm.loadProductControlsData(obj.productId);
             }
             //logc("productExists", productExists, obj.productId);
             //active = productExists ? true : false;
             return vm;
+        };
+
+        vm.isActive = function () {
+            return active && persona.isReady();
+        };
+
+        vm.isProductDisabled = function () {
+            return vm.productDisabled;
         };
 
         vm.loadProductControlsData = function (productId) {
@@ -61,12 +82,13 @@
             }
         };
 
-        vm.isActive = function () {
-            return active && persona.isReady();
-        };
-
         vm.getActiveUrl = function () {
             return tabsModel.getActiveUrl();
+        };
+
+        vm.resetProductDisabled = function () {
+            vm.productDisabled = false;
+            vm.userType = "";
         };
 
         vm.setChanged = function () {
@@ -369,6 +391,7 @@
             vm.destWatch();
             vm.profileWatch();
             vm.productSelectedWatch();
+            vm.productDisabledWatch();
             if (vm.dataCntrlsReq) {
                 vm.dataCntrlsReq.$cancelRequest();
             }
@@ -401,6 +424,7 @@
             "productControlsSvc",
             "productTemplateModel",
             "rpFormSelectMenuConfig",
+            "userStatusModel",
             ProductCommonCtrl
         ]);
 })(angular);
