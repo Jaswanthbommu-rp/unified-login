@@ -10,7 +10,7 @@
             roleGridPagination = gridPaginationModel(),
             genericDataErrorReason = "",
             assignedRoleId = 0,
-            roleRights,
+            roleRights = [],
             userLoginName = "",
             selectconfigs = [],
             isSelectAllPropMsg1;
