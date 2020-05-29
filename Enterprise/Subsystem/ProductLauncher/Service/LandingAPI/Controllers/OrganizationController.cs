@@ -254,6 +254,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
 
+            bool orgNameChanged = org.Name != organization.Name ? true : false;
+
             org.Name = organization.Name;
 
             var orgTypes = _manageOrganization.ListOrganizationType();
@@ -316,6 +318,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
             }
 
+            if (orgNameChanged)
+            {
+                // update the name in MDM
+                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
+                if (companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdString))
+                {
+                    var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdString);
+                    CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
+                    {
+                        CompanyInstanceId = companyMap.CompanyInstanceId,
+                        CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
+                        CompanyName = org.Name,
+                        CustomerCompanyId = companyMap.CustomerCompanyId,
+                        IsActive = companyMap.CompanyInstance[0].IsActive,
+                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                        CustomerEnvironment = org.OrganizationDomain.Name,
+                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
+                    };
+                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
+                    if (!string.IsNullOrEmpty(booksResult))
+                    {
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
+                    }
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data failed because the {ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)} company instance could not be found");
+                }
+            }
             org = _manageOrganization.GetOrganization(org.RealPageId);
 
             return Request.CreateResponse(HttpStatusCode.OK, org);
