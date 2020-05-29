@@ -22,7 +22,10 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
+using JsonApiSerializer;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -41,7 +44,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		//Mock<ICustomFieldsRepository> _mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 		Mock<IManageUserLogin> _mockManageUserLogin = new Mock<IManageUserLogin>();
 		Mock<IManagePartyRelationship> _mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
-		Mock<IManageBlueBook> _mockManageBlueBook = new Mock<IManageBlueBook>();
+		//Mock<IManageBlueBook> _mockManageBlueBook = new Mock<IManageBlueBook>();
+        Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
 		private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
 		private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
@@ -51,6 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		private static long _BooksMasterId = 2116;
 		private static long _BooksCompanyMasterId = 379;
 		private static int _organizationTypeId = 6;
+        private static int _organizationDomainId = 1;
 		private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
 
         #endregion
@@ -118,6 +123,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>()
+            {
+                new CustomerCompanyMap() {
+					CompanyInstanceId = 54321,
+                    CompanyInstanceSourceId = _RealPageId.ToString().ToUpper(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), 
+                    CompanyInstance = new List<CompanyInstance>()
+                    {
+                        new CompanyInstance() {CustomerEnvironment = "Primary", IsActive = true}
+                    }}
+            };
+
+            HttpResponseMessage responseMapResource  = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent(jsonToSave);
+
             _mockRepository
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(organizationList);
@@ -135,7 +155,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(organizationDomainList);
 
-			//_mockManageBlueBook
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes&filter[source]=UPFM", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/companyinstance/54321?modifiedBy=UPFM+Automation", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            _mockHttpMessageHandler.SetupPatch( $"http://localhost/companyinstance/C802694D-5553-4527-8616-3C0F434AE62D/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
         }
 
 		#region Controller Unit Tests
@@ -197,7 +221,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
-				, null
+                , _mockHttpMessageHandler.Object
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -245,8 +269,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
                 , _defaultUserClaim);
+
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
 
@@ -297,7 +322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -342,7 +367,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -394,7 +419,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockManageCustomFields.Object
                 , _mockManageUserLogin.Object
                 , _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
                 , _defaultUserClaim);
             organizationController.Request = new HttpRequestMessage();
             organizationController.Configuration = new HttpConfiguration();
@@ -446,7 +471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -492,7 +517,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -570,7 +595,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -631,10 +656,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				RealPageId = _RealPageId
 			};            
 
-			//_mockRepository
-			//	.Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-			//	.Returns(userLoginOnly);
-
 			_mockRepository
 				.Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
 				.Returns(repositoryResponse);
@@ -662,7 +683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, null
 				, _mockManagePartyRelationship.Object
-                , _mockManageBlueBook.Object
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -699,6 +720,87 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert
 			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
 			Assert.True(orgResult.Org.RealPageId == _RealPageId && orgResult.adminLogin == organizationCreate.AdminUser.Email);
+		}
+
+        [Fact]
+		public void UpdateOrganization_Success()
+		{
+			//Arrange
+			
+
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = "jack.doe@example.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+			Organization organization = new Organization();
+			RepositoryResponse repositoryResponse = new RepositoryResponse()
+			{
+				Id = 0,
+				ErrorMessage = "",
+				RealPageId = _RealPageId
+			};            
+
+			_mockRepository
+				.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
+				.Returns(repositoryResponse);
+			//response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, paramsList);
+
+			_mockRepository
+				.Setup(m => m.UnitOfWork)
+				.Returns(_mockUnitofWork.Object);
+
+            //_mockRepository
+            //    .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
+            //    .Returns(repositoryResponse);
+
+            _mockRepository
+                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnlyNull)
+                .Returns(userLoginOnly);
+
+            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+
+            ManageOrganization organizationLogic = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
+
+			OrganizationController organizationController = new OrganizationController(
+				organizationLogic
+				, _mockRepositoryResponse.Object
+				, _mockOrganizationProductRepository.Object
+				, _mockManageOrganizationProduct.Object
+				, _mockManageCustomFields.Object
+				, null
+				, _mockManagePartyRelationship.Object
+                , _mockHttpMessageHandler.Object
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
+
+            OrganizationUpdate organizationUpdate = new OrganizationUpdate()
+			{
+                BooksMasterId = _BooksMasterId,
+				BooksCustomerMasterId = _BooksCompanyMasterId,
+				OrganizationTypeId = _organizationTypeId,
+				OrganizationDomainId = _organizationDomainId,
+				Name = "New Company",
+			};
+			
+			//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+			HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
+            OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+			
+            //Assert
+			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+			//Assert.True(orgResult.Org.RealPageId == _RealPageId && orgResult.adminLogin == organizationUpdate.AdminUser.Email);
 		}
 
 		[Fact]
@@ -763,7 +865,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim
 				)
 			{
@@ -819,7 +921,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim
 				)
 			{
@@ -884,7 +986,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim
 				)
 			{
@@ -986,7 +1088,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, manageCustomFields
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, userClaim
 				)
 			{
@@ -1076,7 +1178,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -1112,7 +1214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim)
 			{
 				Request = new HttpRequestMessage(),
@@ -1141,7 +1243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim);
 
 			List<ProductEnum> productList = new EditableList<ProductEnum>();
@@ -1195,7 +1297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, _defaultUserClaim
 				)
 			{
@@ -1329,7 +1431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				, _mockManageCustomFields.Object
 				, _mockManageUserLogin.Object
 				, _mockManagePartyRelationship.Object
-                , null
+                , _mockHttpMessageHandler.Object
 				, userClaim
 				)
 			{

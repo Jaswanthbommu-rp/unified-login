@@ -49,8 +49,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="manageCustomFields"></param>
         /// <param name="manageUserLogin"></param>
         /// <param name="managePartyRelationship"></param>
+        /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageBlueBook manageBlueBook, DefaultUserClaim userClaims)
+        public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
         {
             _repositoryResponse = repositoryResponse;
             _organizationProductRepository = organizationProductRepository;
@@ -60,7 +61,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _managePartyRelationship = managePartyRelationship;
             _manageOrganization = manageOrganization;
             _productInternalSettingRepository = null;
-            _manageBlueBook = manageBlueBook;
+            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _messageHandler = messageHandler;
             _userClaims = userClaims;
         }
 
@@ -95,6 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
         private IProductInternalSettingRepository _productInternalSettingRepository;
+        private HttpMessageHandler _messageHandler;
 
         #endregion
 
@@ -191,13 +194,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 foreach (var customerCompanyMap in companyMapResource)
                 {
                     bool deleteInstance = false;
-                    customerCompanyMap.CompanyInstance.ForEach(i =>
+                    customerCompanyMap.CompanyInstance?.ForEach(i =>
                     {
                         if (i.CustomerEnvironment == null || i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
                         {
                             deleteInstance = true;
                         }
                     });
+
                     if (deleteInstance)
                     {
                         _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
@@ -322,7 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 // update the name in MDM
                 IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
-                if (companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdString))
+                if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdString))
                 {
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdString);
                     CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
@@ -856,62 +860,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #endregion
 
         #region Private functions
-
-        ///// <summary>
-        ///// Used to parse the list of product codes and convert them into ProductEnum
-        ///// </summary>
-        ///// <param name="productCode"></param>
-        ///// <param name="addProductList"></param>
-        ///// <returns></returns>
-        //public List<string> ParseProduct(List<string> productCode, List<ProductEnum> addProductList)
-        //{
-        //	List<string> invalidProductList = new List<string>();
-        //	if (productCode != null)
-        //	{
-        //		foreach (string product in productCode)
-        //		{
-        //			bool foundProduct = AddProductToList(product, addProductList);
-        //			if (!foundProduct)
-        //			{
-        //				invalidProductList.Add(product);
-        //			}
-        //		}
-        //	}
-        //
-        //	return invalidProductList;
-        //}
-        //
-        ///// <summary>
-        ///// Used to convert the BlueBook product name to the UnifiedUI product id
-        ///// </summary>
-        ///// <param name="product"></param>
-        ///// <param name="addProductList"></param>
-        ///// <returns></returns>
-        //private bool AddProductToList(string product, List<ProductEnum> addProductList)
-        //{
-        //	bool foundProduct = false;
-        //	foreach (var pi in typeof(BlueBookProductConstants).GetFields())
-        //	{
-        //		if (product.ToUpper() == pi.GetValue(pi).ToString())
-        //		{
-        //			// found product, so add it to the list to add to the company
-        //			// get the product id from the product enum
-        //			foreach (var pr in typeof(ProductEnum).GetFields())
-        //			{
-        //				if (pr.Name.ToUpper() == pi.Name.ToUpper())
-        //				{
-        //					foundProduct = true;
-        //					addProductList.Add((ProductEnum)Enum.Parse(typeof(ProductEnum), pr.Name));
-        //					break;
-        //				}
-        //			}
-        //			break;
-        //		}
-        //	}
-        //	return foundProduct;
-        //}
-
-
 
         /// <summary>
         /// Used to delete products from an organization
