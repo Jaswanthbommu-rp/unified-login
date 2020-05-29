@@ -1,6 +1,8 @@
 <div class="product-panel-roles-wrapper" ng-controller="ProductRolesGridCtrl as cpr">
     <div class="product-panel-roles-body" ng-if="!cpr.isDataError">
-
+        <div class="unified-amenities-all-props-message" ng-if="cpr.isSelectAllPropMsg1">
+            Users with this role will get access to all active properties in the PMC.
+        </div>
         <div  class="all-feature-properties" ng-if="cpr.isSwitchConfigLoaded() && cpr.showAllPropertiesSwtich">
             <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpr.switchconfigs"
                 config="sw.configData"
