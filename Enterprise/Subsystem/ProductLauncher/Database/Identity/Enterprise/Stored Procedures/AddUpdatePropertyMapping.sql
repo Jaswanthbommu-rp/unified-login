@@ -60,7 +60,7 @@ BEGIN
 								@Now,
 								NULL
 					FROM	Enterprise.PropertyMapping epm
-								RIGHT OUTER JOIN OPENJSON(JSON_QUERY(@PropertyJSON, '$.InputJson.PropertyList')) ap ON (epm.PropertyId = ap.[value] AND epm.PersonaId = @PersonaId AND epm.ProductId = @ProductId)
+								RIGHT OUTER JOIN OPENJSON(JSON_QUERY(@PropertyJSON, '$.InputJson.PropertyList')) ap ON (epm.PropertyId = ap.[value] AND epm.PersonaId = @PersonaId AND epm.ProductId = @ProductId AND epm.ThruDate IS NULL)
 					WHERE		epm.PropertyId IS NULL
 
 					--Reassign.  Already unassigned (ThruDate Is NOT NULL)
@@ -72,12 +72,13 @@ BEGIN
 						ThruDate
 					)
 					SELECT	@PersonaId,
-								[value] AS 'PropertyId',
+								ap.[value] AS 'PropertyId',
 								@ProductId,
 								@Now,
 								NULL
-					FROM		OPENJSON(JSON_QUERY(@PropertyJSON, '$.InputJson.PropertyList'))
-					WHERE	[value] IN (SELECT PropertyId FROM Enterprise.PropertyMapping WHERE PersonaId = @PersonaId AND ProductId = @ProductId AND ThruDate IS NOT NULL)
+					FROM		OPENJSON(JSON_QUERY(@PropertyJSON, '$.InputJson.PropertyList')) ap
+									LEFT OUTER JOIN Enterprise.PropertyMapping epm ON (epm.PropertyId = ap.[value] AND epm.PersonaId = @PersonaId AND epm.ProductId = @ProductId AND epm.ThruDate IS NULL)
+					WHERE		epm.PropertyId IS NULL
 				END
 			END
 
