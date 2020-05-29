@@ -1,31 +1,31 @@
-// 
+//
 
 (function (angular, undefined) {
     "use strict";
 
-    function ExternalUserModalCtrl($scope, $location, modal, pubsub, persona, model, formConfig, $window, chkEmailModel) {
+    function ExternalUserModalCtrl($scope, $location, modal, pubsub, persona, model, formConfig, $window, chkEmailModel, userStatus) {
         var vm = this;
 
-        vm.init = function () {            
-            
-            vm.destWatch = $scope.$on("$destroy", vm.destroy);            
+        vm.init = function () {
+            vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.model = model;
         };
 
-        vm.dismissModal = function () {                 
-            vm.setClearLoginName();                          
-            vm.setFocus();          
-            modal.hide();           
+        vm.dismissModal = function () {
+            vm.setClearLoginName();
+            vm.setFocus();
+            modal.hide();
         };
 
         vm.setFocus = function (bool) {
-           var inp = $window.document.getElementById('loginName');                   
-           inp.focus();             
+           var inp = $window.document.getElementById('loginName');
+           inp.focus();
         };
 
-        vm.selectUser = function () {   
-            chkEmailModel.setIsBusy(false);              
-            model.setUserTypeDefConfig(405);       
+        vm.selectUser = function () {
+            chkEmailModel.setIsBusy(false);
+            model.setUserTypeDefConfig(405);
+            userStatus.setStatusId(405);
 
             pubsub.publish("settings.resetUserTypeOptions");
             vm.setData();
@@ -33,7 +33,7 @@
             vm.setMiddleNameDisabled(true);
             vm.setLastNameDisabled(true);
             vm.setLoginNameDisabled(true);
-            
+
             pubsub.publish("settings.3rdParty");
             modal.hide();
         };
@@ -64,11 +64,8 @@
             model.clearLoginName();
         };
 
-        
-
-       
         vm.destroy = function () {
-            vm.destWatch();           
+            vm.destWatch();
             vm = undefined;
             $scope = undefined;
         };
@@ -81,13 +78,14 @@
         .controller("ExternalUserModalCtrl", [
             "$scope",
             "$location",
-            "externalUserModal",           
+            "externalUserModal",
             "pubsub",
             "personaDetails",
             "userDetailsModel",
             "userDetailsFormConfig",
             "$window",
             "chkEmailModel",
+            "userStatusModel",
             ExternalUserModalCtrl
         ]);
 })(angular);
