@@ -195,10 +195,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageProductLead2Lease manageProductLead2Lease = new ManageProductLead2Lease(_userClaims);
 					result = manageProductLead2Lease.GetRoles(editorPersonaId, userPersonaId, datafilter);
 					break;
-				//case (int)ProductEnum.ResidentPortal:
-				//	ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
-				//	result = manageProductResidentPortal.ListLevels(editorPersonaId, userPersonaId);
-				//	break;
+				case (int)ProductEnum.ResidentPortal:
+					ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
+					result = manageProductResidentPortal.ListLevelsResponse(editorPersonaId, userPersonaId);
+					break;
 				case (int)ProductEnum.OnSite:
 					var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
 					result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
