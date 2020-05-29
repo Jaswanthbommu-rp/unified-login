@@ -165,6 +165,7 @@ BEGIN
 	VALUES (22, 13, 190, @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+
 END
 
 SELECT @ProductId = 41
