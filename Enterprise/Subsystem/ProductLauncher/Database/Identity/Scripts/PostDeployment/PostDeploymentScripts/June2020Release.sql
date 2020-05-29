@@ -165,14 +165,6 @@ BEGIN
 	VALUES (22, 13, 190, @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
-	SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
-
-    INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-    VALUES (20, 199, 196, N'Manage Amenity No Pricing', 1, @UserId, @Now)
-    INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-    VALUES (21, 199, 196, N'Manage Amenity With Pricing', 1, @UserId, @Now)
-
-    SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
 END
 
 SELECT @ProductId = 41

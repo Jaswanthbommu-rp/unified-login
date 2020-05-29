@@ -172,3 +172,20 @@ ELSE
 BEGIN
 	UPDATE [UserManagement].[ProductPageControl] SET ControlId = 399 WHERE ProductPageId = @productPageId;
 END
+
+SELECT @ProductId = 26
+
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+	IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[ControlDependency] WHERE MasterControlValue IN ('Manage Amenity No Pricing','Manage Amenity With Pricing'))
+	BEGIN
+		SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
+
+			INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
+			VALUES (20, 199, 196, N'Manage Amenity No Pricing', 1, @UserId, @Now)
+			INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
+			VALUES (21, 199, 196, N'Manage Amenity With Pricing', 1, @UserId, @Now)
+
+		 SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
+	 END
+END
