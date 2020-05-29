@@ -1,0 +1,28 @@
+<div ng-controller="ProductNotificationGridCtrl as rpn">
+    <div class="row">
+        <div class="col-xs-10 col-sm-7">
+            <rp-switch class="label-1 theme-1"
+                config="rpn.frontDeskSwitch"
+                rp-model="rpn.frontDesk"
+                rp-label-text="::'notificationName.FrontDesk' | residentPortalsText">
+            </rp-switch>
+            <hr>
+        </div>
+        <div class="col-xs-10 col-sm-7">
+            <rp-switch class="label-1 theme-1"
+                config="rpn.amenitySwitch"
+                rp-model="rpn.amenity"
+                rp-label-text="::'notificationName.Reservation' | residentPortalsText">
+            </rp-switch>
+            <hr>
+        </div>
+        <div class="col-xs-10 col-sm-7">
+            <rp-switch class="label-1 theme-1"
+                config="rpn.serviceReqSwitch"
+                rp-model="rpn.serviceReq"
+                rp-label-text="::'notificationName.ServiceRequest' | residentPortalsText">
+            </rp-switch>
+            <hr>
+        </div>
+    </div>
+</div>
