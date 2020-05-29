@@ -1322,7 +1322,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						FamilyName = "Resident Services",
 						IsNewTab = true,
 						IsFavorite = false,
-						IsResource = false
+						IsResource = false,
+						ProductCode = ProductEnum.Insurance.ToEnumDescription()
 					},
 					new UserProducts()
 					{
@@ -1335,7 +1336,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						FamilyName = "Property Management",
 						IsNewTab = true,
 						IsFavorite = false,
-						IsResource = false
+						IsResource = false,
+						ProductCode = ProductEnum.OneSite.ToEnumDescription()
 					},
 				};
 

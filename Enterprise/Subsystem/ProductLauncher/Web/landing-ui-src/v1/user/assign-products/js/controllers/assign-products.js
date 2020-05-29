@@ -51,10 +51,10 @@
             if (userStatus.isSuperUser()) {
                 model.reset();
             }
-
+            pubsub.publish("productpanel.userTypeChanged");
             // UnCheck the products which do not support  RegularUser NoEmail
-            if(userStatus.statusId === 404){
-                 if (!angular.equals({}, model.data) ) {
+            if (userStatus.statusId === 404) {
+                if (!angular.equals({}, model.data)) {
 
                     model.data.forEach(function (family) {
                         if (family.familyId === 200 || family.familyId === 300 || family.familyId === 400 || family.familyId === 500) {
@@ -92,15 +92,28 @@
                                 family.selectAll.selected = false;
                                 model.selectSoln(soln);
                             }
-                            // if ( (soln.data.solutionId === 402 && soln.data.productId === 29) || (soln.data.solutionId === 404 && soln.data.productId === 31) || (soln.data.solutionId === 403 && soln.data.productId === 30) || (soln.data.solutionId === 401 && soln.data.productId === 32) )  {
-                            //     family.selectAll.selected = false;
-                            //     model.selectSoln(soln);
-                            // }
+                            if (soln.data.solutionId === 402 && soln.data.productId === 29 && userStatus.isExternalUser()) {
+                                family.selectAll.selected = false;
+                                model.selectSoln(soln);
+                            }
                             if (soln.data.solutionId === 206 && soln.data.productId === 48) {
                                 logc("payments");
                                 family.selectAll.selected = false;
                                 model.selectSoln(soln);
                                 pubsub.publish("settings.noEmailValidationUpdate");
+                            }
+                        });
+                    }
+                });
+            }
+
+            if (userStatus.isExternalUser() && !angular.equals({}, model.data)) {
+                model.data.forEach(function (family) {
+                    if (family.familyId === 400) {
+                        family.solutions.forEach(function (soln) {
+                            if (soln.solutionId === 402 && soln.productId === 29) {
+                                soln.isAssigned = false;
+                                soln.disabled = true;
                             }
                         });
                     }
@@ -128,6 +141,10 @@
                 return !userStatus.loginNameIsEmail();
             }
 
+            if (soln.data.solutionId === 402 && soln.data.productId === 29 && userStatus.isExternalUser()) {
+                return true;
+            }
+
             return false;
         };
 
@@ -136,11 +153,18 @@
                 data.forEach(function (family) {
                     if (family.familyId === 400) {
                         family.solutions.forEach(function (soln) {
+                            if (userStatus.isExternalUser()) {
+                                if (soln.solutionId === 402 && soln.productId === 29) {
+                                    soln.isAssigned = false;
+                                }
+                            }
+
                             if (soln.products === "Benchmarking" && soln.solutionId === 403) {
                                 aoStatus.setBenchmarkProductAccess(true);
                             }
+
                             if (userStatus.isRegularUserNoEmail()) {
-                                pubsub.publish("ao.regUserNoEmailNotAllowed",soln.productNotAvailableForRegularUserNoEmail);
+                                pubsub.publish("ao.regUserNoEmailNotAllowed", soln.productNotAvailableForRegularUserNoEmail);
                             }
                         });
                     }
