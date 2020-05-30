@@ -237,23 +237,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage UpdateOrganization([FromBody] OrganizationUpdate organization)
         {
             Organization org = null;
-            if (organization.BooksCustomerMasterId != 0)
+            if (organization != null)
             {
-                // get the organization by customer master id
-                org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId: organization.BooksCustomerMasterId);
-            }
-            else if (organization.BooksMasterId != 0)
-            {
-                // get the organization by Master Data Management (black book) master id
-                org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: organization.BooksMasterId);
+                if (organization.BooksCustomerMasterId != 0)
+                {
+                    // get the organization by customer master id
+                    org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId: organization.BooksCustomerMasterId);
+                }
+                else if (organization.BooksMasterId != 0)
+                {
+                    // get the organization by Master Data Management (black book) master id
+                    org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: organization.BooksMasterId);
+                }
+                else
+                {
+                    // get the org by UL realpageID
+                    org = _manageOrganization.GetOrganization(organization.RealPageId);
+                }
             }
             else
-            {
-                // get the org by UL realpageID
-                org = _manageOrganization.GetOrganization(organization.RealPageId);
-            }
-
-            if (org == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }

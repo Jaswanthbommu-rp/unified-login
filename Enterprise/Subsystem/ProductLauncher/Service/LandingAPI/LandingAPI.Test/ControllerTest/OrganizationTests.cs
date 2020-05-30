@@ -748,22 +748,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			_mockRepository
 				.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
 				.Returns(repositoryResponse);
-			//response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, paramsList);
 
 			_mockRepository
 				.Setup(m => m.UnitOfWork)
 				.Returns(_mockUnitofWork.Object);
-
-            //_mockRepository
-            //    .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
-            //    .Returns(repositoryResponse);
-
-            _mockRepository
-                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-                .Returns(userLoginOnlyNull)
-                .Returns(userLoginOnly);
-
-            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
 
             ManageOrganization organizationLogic = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
@@ -784,7 +772,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             OrganizationUpdate organizationUpdate = new OrganizationUpdate()
 			{
-                BooksMasterId = _BooksMasterId,
+                BooksMasterId = 0,
 				BooksCustomerMasterId = _BooksCompanyMasterId,
 				OrganizationTypeId = _organizationTypeId,
 				OrganizationDomainId = _organizationDomainId,
@@ -800,7 +788,195 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			
             //Assert
 			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-			//Assert.True(orgResult.Org.RealPageId == _RealPageId && orgResult.adminLogin == organizationUpdate.AdminUser.Email);
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = 0,
+                OrganizationTypeId = 0,
+				OrganizationTypeName = "MultiFamily",
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+			
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+				RealPageId = _RealPageId,
+                BooksMasterId = 0,
+                BooksCustomerMasterId = 0,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainId = 0,
+				OrganizationDomainName = "Primary",
+                Name = "New Company",
+            };
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+			
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+
+        [Fact]
+		public void UpdateOrganization_Errors()
+		{
+			//Arrange
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = "jack.doe@example.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+			Organization organization = new Organization();
+			RepositoryResponse repositoryResponse = new RepositoryResponse()
+			{
+				Id = 0,
+				ErrorMessage = "",
+				RealPageId = _RealPageId
+			};            
+
+			_mockRepository
+				.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
+				.Returns(repositoryResponse);
+
+			_mockRepository
+				.Setup(m => m.UnitOfWork)
+				.Returns(_mockUnitofWork.Object);
+
+            ManageOrganization organizationLogic = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
+
+			OrganizationController organizationController = new OrganizationController(
+				organizationLogic
+				, _mockRepositoryResponse.Object
+				, _mockOrganizationProductRepository.Object
+				, _mockManageOrganizationProduct.Object
+				, _mockManageCustomFields.Object
+				, null
+				, _mockManagePartyRelationship.Object
+                , _mockHttpMessageHandler.Object
+				, _defaultUserClaim)
+			{
+				Request = new HttpRequestMessage(),
+				Configuration = new HttpConfiguration()
+			};
+
+    		//Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+			HttpResponseMessage response = organizationController.UpdateOrganization(null);
+			
+            //Assert
+			Assert.True(response.StatusCode.Equals(HttpStatusCode.NotFound));
+
+			#region Invalid Org Types
+            OrganizationUpdate organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = -1,
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            string message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+			Assert.True(message == "\"Invalid organization type id\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 0,
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Missing organization type\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 0,
+				OrganizationTypeName = "Incorrect Type",
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Invalid organization type\"");
+			#endregion
+            
+            #region Invalid Domain Types
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainId = -1,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+			Assert.True(message == "\"Invalid organization domain id\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainId = 0,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Missing organization domain\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _organizationTypeId,
+				OrganizationDomainName = "Invalid domain type",
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Invalid organization domain\"");
+			#endregion
+
 		}
 
 		[Fact]
