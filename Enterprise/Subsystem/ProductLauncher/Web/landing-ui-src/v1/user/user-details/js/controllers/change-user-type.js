@@ -12,7 +12,7 @@
 
         vm.confirm = function () {
             model.publish({
-            	status: "confirmed"
+                status: "confirmed"
             });
         };
 
@@ -56,34 +56,34 @@
             model.publish({
                 status: "confirmedRegularExternal"
             });
-        };        
-        
+        };
+
 
         vm.decline = function () {
             model.publish({
-            	status: "declined"
+                status: "declined"
             });
         };
 
         vm.chgSuperToRegular = function () {
-        	return model.chgSuperToRegular();
+            return model.chgSuperToRegular();
         };
 
         vm.chgToNoEmail = function () {
-        	return model.chgToNoEmail();
+            return model.chgToNoEmail();
         };
 
         vm.chgRegularToSuper = function () {
-        	return model.chgRegularToSuper();
+            return model.chgRegularToSuper();
         };
 
         vm.chgNoEmailToRegular = function () {
-        	return model.chgNoEmailToRegular();
+            return model.chgNoEmailToRegular();
         };
 
         vm.chgNoEmailToExternal = function () {
             return model.chgNoEmailToExternal();
-        };        
+        };
 
         vm.chgNoEmailToSuper = function () {
             return model.chgNoEmailToSuper();
@@ -100,9 +100,13 @@
         vm.chgSuperToExternal = function () {
             return model.chgSuperToExternal();
         };
-        
+
         vm.chgRegularToExternal = function () {
             return model.chgRegularToExternal();
+        };
+
+        vm.isUserHasBIProductAccess = function () {
+           return model.getUserBIAccess();
         };
 
         vm.destroy = function () {
@@ -116,5 +120,10 @@
 
     angular
         .module("settings")
-        .controller("ChangeUserTypeConfirmationCtrl", ["$scope", "changeUserTypeConfirmationModel", ChangeUserTypeConfirmationCtrl]);
+        .controller(
+            "ChangeUserTypeConfirmationCtrl",
+            ["$scope",
+             "changeUserTypeConfirmationModel",
+             "userStatusModel",
+             ChangeUserTypeConfirmationCtrl]);
 })(angular);
