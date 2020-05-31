@@ -38,28 +38,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
-
+        
         /// <summary>
-        /// Used for dependency injection
+        /// Unit test constructor
         /// </summary>
-        /// <param name="manageOrganization"></param>
+        /// <param name="repository"></param>
         /// <param name="repositoryResponse"></param>
-        /// <param name="organizationProductRepository"></param>
-        /// <param name="manageOrganizationProduct"></param>
-        /// <param name="manageCustomFields"></param>
-        /// <param name="manageUserLogin"></param>
-        /// <param name="managePartyRelationship"></param>
         /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
         {
             _repositoryResponse = repositoryResponse;
-            _organizationProductRepository = organizationProductRepository;
-            _manageOrganizationProduct = manageOrganizationProduct;
-            _manageCustomFields = manageCustomFields;
-            _manageUserLogin = manageUserLogin;
-            _managePartyRelationship = managePartyRelationship;
-            _manageOrganization = manageOrganization;
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
+            _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims);
+            _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
+            _manageOrganization = new ManageOrganization(repository, userClaims);
             _productInternalSettingRepository = null;
             _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
             _messageHandler = messageHandler;
@@ -87,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #region Private variables
 
-        IRepository _repository;
+        //IRepository _repository;
         IRepositoryResponse _repositoryResponse;
         IOrganizationProductRepository _organizationProductRepository;
         IManageOrganizationProduct _manageOrganizationProduct;
