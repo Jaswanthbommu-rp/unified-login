@@ -82,7 +82,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #region Private variables
 
-        //IRepository _repository;
         IRepositoryResponse _repositoryResponse;
         IOrganizationProductRepository _organizationProductRepository;
         IManageOrganizationProduct _manageOrganizationProduct;
