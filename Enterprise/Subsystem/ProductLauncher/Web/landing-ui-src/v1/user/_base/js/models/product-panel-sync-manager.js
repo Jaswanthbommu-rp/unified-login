@@ -988,11 +988,13 @@
             s.companyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
+            s.rightMap = {};
             s.bmRoleMap = {};
             s.groupList = [];
             s.propertyList = [];
             s.propertyGroupList = [];
             s.roleList = [];
+            s.rightList = [];
             s.originalPropertyList = [];
             s.bmRoleList = [];
             s.companyGroupList = [];
