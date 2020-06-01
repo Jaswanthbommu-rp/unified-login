@@ -369,6 +369,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to update an existing company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        {
+            string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            WriteToLog(LogType.Diagnostic, "UpdateBooksGreenBookCompanyInstance - Updating info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+            var request = new HttpRequestMessage
+            {
+                Method = new HttpMethod("PATCH"),
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri( _httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && !response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return "instance not found";
+                }
+                return "an unknown error occurred. " + response.StatusCode;
+            }
+            return "";
+        }
+        
+        /// <summary>
         /// Used to get a list of company id's for the given company list
         /// </summary>
         /// <param name="companies"></param>

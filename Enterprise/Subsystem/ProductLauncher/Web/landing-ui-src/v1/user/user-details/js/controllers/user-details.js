@@ -4,7 +4,7 @@
     "use strict";
 
     function UserDetailsCtrl($scope, $q, $filter, $params, timeout, moment, model, userSvc, userTypes, formConfig, passReq, popoverConfig, tabs, tabsModel, userStatus, assignProductsModel, session, userTimeZones,
-        contactMethod, industryJobTitle, phoneTypeTitle, security, helpData, persona, impersonate, switchConfig, changeUserType, chgUserTypeModal, pubsub, externalUserModal, externalUserSvc, existingUserModal, chkEmailModel, existingNoEmailUserModal, deactivatedUserModal,existingNoEmailUserOthCompModal) {
+        contactMethod, industryJobTitle, phoneTypeTitle, security, helpData, persona, impersonate, switchConfig, changeUserType, chgUserTypeModal, pubsub, externalUserModal, externalUserSvc, existingUserModal, chkEmailModel, existingNoEmailUserModal, deactivatedUserModal, existingNoEmailUserOthCompModal) {
         var vm = this,
             lang = $filter("userDetailsText"),
             helpWidget = document.querySelector('omnibar-unified-help'),
@@ -17,9 +17,9 @@
 
         vm.init = function () {
             vm.isInit = true;
-            vm.model = model;            
+            vm.model = model;
             // vm.helpMode = helpWidget.helpPageId;
-            vm.helpMode = helpWidget.helpQuery ;
+            vm.helpMode = helpWidget.helpQuery;
             vm.security = security;
             vm.customFieldList = [];
             vm.assignProducts = assignProductsModel;
@@ -32,6 +32,7 @@
             };
             vm.newTypeId = 0;
             vm.changeUserTypeSub = angular.noop;
+            vm.userHasBIProduct = false;
 
             vm.formConfig = formConfig.setMethodsSrc(vm);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
@@ -44,23 +45,23 @@
                 disabled: vm.isExternalUser()
             });
 
-                        
+
             if (persona.isReady()) {
-                 vm.register(); //.getUserTypeOptions();
-                 vm.personaWatch = angular.noop;
-                 vm.getExternalUserData();
+                vm.register(); //.getUserTypeOptions();
+                vm.personaWatch = angular.noop;
+                vm.getExternalUserData();
             }
             else {
-                vm.personaWatch = persona.subscribe(function(){
+                vm.personaWatch = persona.subscribe(function () {
                     vm.register(); //.getUserTypeOptions();
                     vm.getExternalUserData();
                 });
             }
-            
-            if (!$params.realPageId) {                
+
+            if (!$params.realPageId) {
                 vm.getUserTypeOptions();
             }
-            chkEmailModel.setIsBusy(false);   
+            chkEmailModel.setIsBusy(false);
 
             // vm.register().getUserTypeOptions(); //.getUsertimeZoneOptions();
             vm.activeWatch = $scope.$watch(vm.isReady, vm.setControlsState);
@@ -71,24 +72,45 @@
 
             vm.cloneReadyWatch = pubsub.subscribe("settings.userDataReady", vm.onCloneReady);
             vm.ThirdPartyWatch = pubsub.subscribe("settings.3rdParty", vm.set3rdPartyIDP);
-            vm.resetUserTypeOptions = pubsub.subscribe("settings.resetUserTypeOptions",  vm.getUserTypeOptions);
+            vm.resetUserTypeOptions = pubsub.subscribe("settings.resetUserTypeOptions", vm.getUserTypeOptions);
             vm.noEmailValidation = pubsub.subscribe("settings.noEmailValidationUpdate", vm.noEmailValidationUpdate);
-
+            vm.userBIProductWatch = pubsub.subscribe("productpanel.biProductSelected", vm.setBIProductUserAccess);
+            vm.userAssignedProductsWatch = pubsub.subscribe("user.assignedproducts", vm.onGetProductsData);
             vm.formWatch = $scope.$watch("userDetails.userDetailsForm", vm.setForm);
-            
+
         };
 
-        vm.setForm = function(form) {
+        vm.onGetProductsData = function (resp) {
+            logc("onGetProductsData",resp);
+            vm.userHasBIProduct = false;
+            if (resp.data) {
+                resp.data.forEach(function (family) {
+                    if (family.familyId === 400) {
+                        family.solutions.forEach(function (soln) {
+                            if (soln.isAssigned && soln.productId === 29) {
+                                vm.userHasBIProduct = true;
+                            }
+                        });
+                    }
+                });
+            }
+        };
+
+        vm.setForm = function (form) {
             if (form) {
                 vm.form = form;
-                model.setForm(form);                
+                model.setForm(form);
                 vm.formWatch();
             }
         };
 
-        vm.noEmailValidationUpdate = function () {                    
+        vm.noEmailValidationUpdate = function () {
             vm.formConfig.notificationEmail.required = false;
             vm.userDetailsForm.notificationEmail.$validate();
+        };
+
+        vm.setBIProductUserAccess = function () {
+            vm.userHasBIProduct = true;
         };
 
         vm.onCloneReady = function () {
@@ -116,14 +138,14 @@
                 tabs.push("productAccess");
             }
 
-            if (model.userExists() && !model.isClonedUser() && !model.is3rdPartyIDP() && !vm.isExternalUser()  ) {
-                
+            if (model.userExists() && !model.isClonedUser() && !model.is3rdPartyIDP() && !vm.isExternalUser()) {
+
                 tabs.push("securityQuestions");
                 tabs.push("resetPassword");
                 tabs.push("activityLog");
             }
 
-            if (model.userExists() && !model.isClonedUser() &&  (vm.isExternalUser() && vm.getExternalUserData() === undefined) ) {
+            if (model.userExists() && !model.isClonedUser() && (vm.isExternalUser() && vm.getExternalUserData() === undefined)) {
 
                 tabs.push("securityQuestions");
                 tabs.push("resetPassword");
@@ -137,24 +159,24 @@
 
         vm.updateTabsMenuExternalUser = function (data) {
 
-            if(data){
-                if(data.restricted !== null && data.restricted !== undefined && data.restricted.tabs !== undefined){
+            if (data) {
+                if (data.restricted !== null && data.restricted !== undefined && data.restricted.tabs !== undefined) {
 
                     var tabs = [];
                     tabsModel.tabsList.forEach(function (item) {
                         tabs.push(item.id);
                     });
 
-                    if(data.restricted.tabs.indexOf('securityQuestions') !== -1 ){
-                       var i = tabs.indexOf('securityQuestions');                    
-                        if(i > 0){
+                    if (data.restricted.tabs.indexOf('securityQuestions') !== -1) {
+                        var i = tabs.indexOf('securityQuestions');
+                        if (i > 0) {
                             tabs.splice(i, 1);
                         }
                     }
 
-                    if(data.restricted.tabs.indexOf('resetPassword') !== -1 ){                    
+                    if (data.restricted.tabs.indexOf('resetPassword') !== -1) {
                         var j = tabs.indexOf('resetPassword');
-                        if(j > 0){
+                        if (j > 0) {
                             tabs.splice(j, 1);
                         }
                     }
@@ -162,11 +184,11 @@
                     tabsModel.setTabs(tabs).activateTab("userDetails");
                 }
             }
-            
-           
+
+
         };
 
-               
+
 
         // Getters
 
@@ -219,7 +241,7 @@
 
         // Actions
 
-        vm.checkLoginName = function (loginName) {                        
+        vm.checkLoginName = function (loginName) {
             if (userStatus.loginNameIsEmail()) {
                 var isValid = model.loginNameIsValidEmail();
                 vm.validateLoginNameReq[isValid ? "resolve" : "reject"]();
@@ -228,6 +250,13 @@
                 vm.validateLoginNameReq.resolve();
             }
         };
+
+        // vm.checkUserHasBIProduct = function () {
+        //     vm.userHasBIProductCheck = $q.defer();
+        //     timeout(vm.validateUserBIProduct, 10);
+        //     //logc("vm.userHasBIProducthCheck",vm.userHasBIProducthCheck);
+        //     return vm.userHasBIProducthCheck.promise;
+        // };
 
         vm.checkPasswordMatch = function () {
             vm.passMatchCheck = $q.defer();
@@ -262,10 +291,10 @@
                 vm.set3rdPartyIDP();
             }
 
-            
+
             // if(vm.isExternalUser()){
-                // vm.updateTabsMenuExternalUser();
-                // vm.setExternalUserControl(true);
+            // vm.updateTabsMenuExternalUser();
+            // vm.setExternalUserControl(true);
             // }
 
             formConfig.setUserTypeOptions(resp.data);
@@ -359,27 +388,29 @@
             var bPrompt = true;
             if ($params.realPageId && (userTypeId !== model.getOrgUserTypeId())) {
                 if (userTypeId === vm.userTypes.regularUserNoEmail) {
-                    if(model.isClonedUser()){
-                            bPrompt = false;
-                             vm.processUserTypeChange(userTypeId);
-                        }else{
-                            changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
-                     }                    
+                    if (model.isClonedUser()) {
+                        bPrompt = false;
+                        vm.processUserTypeChange(userTypeId);
+                    }
+                    else {
+                        changeUserType.setChangeMode(changeUserType.changeModes.ToNoEmail);
+                    }
                 }
                 else if (userStatus.isSuperUser()) {
                     if (userTypeId === vm.userTypes.externalUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.SuperToExternal);
                     }
-                    else if (userTypeId === vm.userTypes.regularUser) {                        
-                        changeUserType.setChangeMode(changeUserType.changeModes.SuperToRegular);                        
+                    else if (userTypeId === vm.userTypes.regularUser) {
+                        changeUserType.setChangeMode(changeUserType.changeModes.SuperToRegular);
                     }
                 }
                 else if (userStatus.isRegularUserNoEmail()) {
                     if (userTypeId === vm.userTypes.regularUser) {
-                        if(model.isClonedUser()){
+                        if (model.isClonedUser()) {
                             bPrompt = false;
                             vm.processUserTypeChange(userTypeId);
-                        }else{
+                        }
+                        else {
                             changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToRegular);
                         }
                     }
@@ -387,20 +418,22 @@
                         changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToSuper);
                     }
                     else if (userTypeId === vm.userTypes.externalUser) {
-                        if(model.isClonedUser()){
+                        if (model.isClonedUser()) {
                             bPrompt = false;
                             vm.processUserTypeChange(userTypeId);
-                        }else{
+                        }
+                        else {
                             changeUserType.setChangeMode(changeUserType.changeModes.NoEmailToExternal);
                         }
                     }
                 }
                 else if (userStatus.isRegularUser() && !userStatus.isExternalUser()) {
-                    if (userTypeId === vm.userTypes.externalUser ) {
-                        if(model.isClonedUser()){
+                    if (userTypeId === vm.userTypes.externalUser) {
+                        if (model.isClonedUser()) {
                             bPrompt = false;
                             vm.processUserTypeChange(userTypeId);
-                        }else{
+                        }
+                        else {
                             changeUserType.setChangeMode(changeUserType.changeModes.RegularToExternal);
                         }
                     }
@@ -409,20 +442,27 @@
                     }
                 }
                 else if (userStatus.isExternalUser()) {
-                    if (userTypeId === vm.userTypes.regularUser ) {
-                        if(model.isClonedUser()){
+                    if (userTypeId === vm.userTypes.regularUser) {
+                        if (model.isClonedUser()) {
                             bPrompt = false;
                             vm.processUserTypeChange(userTypeId);
-                        }else{
+                        }
+                        else {
                             changeUserType.setChangeMode(changeUserType.changeModes.ExternalToRegular);
-                        }    
+                        }
                     }
                     else if (userTypeId === vm.userTypes.superUser) {
                         changeUserType.setChangeMode(changeUserType.changeModes.ExternalToSuper);
                     }
                 }
                 vm.newTypeId = userTypeId;
-                if(bPrompt){
+                logc("vm.newTypeId",vm.newTypeId);
+                //userStatus.setStatusId(vm.newTypeId);
+                changeUserType.setUserBIAccess(false);
+                if (vm.newTypeId === 405 && vm.userHasBIProduct) {
+                    changeUserType.setUserBIAccess(true);
+                }
+                if (bPrompt) {
                     vm.promptUserTypeChange();
                 }
             }
@@ -434,36 +474,39 @@
         vm.processUserTypeChange = function (userTypeId) {
             userStatus.setStatusId(userTypeId);
             vm.updateTabsMenu();
-            
+
             if (vm.isExternalUser()) {
                 model.set3rdPartyIDP(false);
-                            
-                if(model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && vm.getExternalUserData()){
-                    if(!vm.isEditingSelf() && existingExtUser){
+
+                if (model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && vm.getExternalUserData()) {
+                    if (!vm.isEditingSelf() && existingExtUser) {
                         vm.setExternalUserControl(true);
-                    }else{
+                    }
+                    else {
                         vm.setExternalUserControl(false);
                     }
-                }else{
-                    if( model.data.realPageId === ""){
+                }
+                else {
+                    if (model.data.realPageId === "") {
                         vm.getDataOnBlur();
                     }
                 }
-            
+
             }
-            else {               
+            else {
                 model.set3rdPartyIDP(model.is3rdPartyIDP());
-            
-                
-                if(existingUserTypeId === vm.model.data.userTypeId){
+
+
+                if (existingUserTypeId === vm.model.data.userTypeId) {
                     vm.setExternalUserControlLoad(model.getExternalUserData());
-                }else{
-                    vm.setExternalUserControl(false);    
                 }
-            
+                else {
+                    vm.setExternalUserControl(false);
+                }
+
             }
 
-            
+
             vm.activeDeactiveSwitchIDP.setDisabled(vm.isExternalUser());
 
             formConfig.setLoginNameErrorReqdText(userTypeId);
@@ -487,7 +530,7 @@
                 model.setAdminResetFlag(true);
                 vm.processUserTypeChange(vm.newTypeId);
             }
-            else if (data.status === "confirmedPromoteRegular" || data.status === "confirmedRegularWithEmail" || data.status === "confirmedPromoteExternal" || data.status === "confirmedRegularExternal" || data.status === "confirmedExternalWithEmail") {
+            else if (data.status === "confirmedPromoteRegular" || data.status === "confirmedRegularWithEmail" || data.status === "confirmedPromoteExternal" || data.status === "confirmedRegularExternal" || data.status === "confirmedExternalWithEmail"){
                 vm.assignProducts.setAdminResetFlag(false);
                 model.setAdminResetFlag(false);
                 vm.processUserTypeChange(vm.newTypeId);
@@ -610,20 +653,31 @@
             userStatus.setLoginName(loginName);
             return vm.validateLoginNameReq.promise;
         };
-        
+
         vm.validatePasswordMatch = function () {
             var match = model.passwordsMatch(),
                 method = match ? "resolve" : "reject";
 
-            if (vm.passMatchCheck) {
-                vm.passMatchCheck[method]();
-                vm.passMatchCheck = undefined;
+            if (vm.userHasBIProductCheck) {
+                vm.userHasBIProductCheck[method]();
+                vm.userHasBIProductCheck = undefined;
             }
         };
 
         vm.validatePasswordCopy = function (password) {
             vm.userDetailsForm.passwordCopy.$validate();
         };
+
+        // vm.validateUserBIProduct = function () {
+        //     var isValid = false;
+        //     if (userStatus.isExternalUser() && vm.userHasBIProduct) {
+        //         isValid = true;
+        //         vm.userHasBIProductCheck[isValid ? "resolve" : "reject"]();
+        //     }
+        //     else {
+        //         vm.userHasBIProductCheck.resolve();
+        //     }
+        // };
 
         // Assertions
         vm.canAddEditCustomFields = function () {
@@ -638,7 +692,7 @@
         vm.emailIsReqd = function () {
             return model.emailIsReqd();
         };
-        
+
         vm.passwordIsReqd = function () {
             if (model.isClonedUser()) {
                 return model.passwordIsReqd();
@@ -729,30 +783,33 @@
             vm.setLoginNameDisabled(bool);
         };
 
-        vm.openExternalUserModal = function () {    
-            
-            chkEmailModel.setIsBusy(true);                     
-            
-            if(vm.userDetailsForm.loginName.$valid){                
-                 if(vm.userDetailsForm.loginName.$pristine === false ){
-                    vm.getDataOnBlur();                                   
-                 }else{
-                    chkEmailModel.setIsBusy(false);                        
-                 }
-            }else{        
-                chkEmailModel.setIsBusy(false);         
-                
+        vm.openExternalUserModal = function () {
+
+            chkEmailModel.setIsBusy(true);
+
+            if (vm.userDetailsForm.loginName.$valid) {
+                if (vm.userDetailsForm.loginName.$pristine === false) {
+                    vm.getDataOnBlur();
+                }
+                else {
+                    chkEmailModel.setIsBusy(false);
+                }
+            }
+            else {
+                chkEmailModel.setIsBusy(false);
+
                 vm.userDetailsForm.loginName.$validate();
-                vm.userDetailsForm.$setSubmitted();                
+                vm.userDetailsForm.$setSubmitted();
             }
 
         };
 
-        vm.getExternalUserData = function() {            
-            if(model.isReady()){                
+        vm.getExternalUserData = function () {
+            if (model.isReady()) {
                 vm.getData();
-                vm.modelWatch = angular.noop;     
-            }else{
+                vm.modelWatch = angular.noop;
+            }
+            else {
                 vm.modelWatch = model.subscribe(vm.getData);
             }
         };
@@ -766,100 +823,100 @@
             existingMiddleName = vm.model.data.middleName;
         };
 
-        vm.getData =function () {
-                var userRPId = "";   
-                vm.getUserTypeOptions();  
-                if(vm.isInit){ 
-                    vm.setExistingData();          
-                }
-                vm.isInit = false;
-                
-                if(model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000"){
-                    userRPId = model.data.realPageId;
-                }
+        vm.getData = function () {
+            var userRPId = "";
+            vm.getUserTypeOptions();
+            if (vm.isInit) {
+                vm.setExistingData();
+            }
+            vm.isInit = false;
 
-                var params = { 
-                    loginName : model.data.userLogin.loginName,
-                    OrganizationRealPageId : persona.getOrgRealPageID(),
-                    userRealPageId : userRPId                    
-                };
+            if (model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000") {
+                userRPId = model.data.realPageId;
+            }
 
-                if(model.data.userLogin.loginName !== null){
-                    externalUserSvc.getData(params)
+            var params = {
+                loginName: model.data.userLogin.loginName,
+                OrganizationRealPageId: persona.getOrgRealPageID(),
+                userRealPageId: userRPId
+            };
+
+            if (model.data.userLogin.loginName !== null) {
+                externalUserSvc.getData(params)
                     .then(vm.setData, vm.setDataErr);
-                }
+            }
 
-                
+
         };
 
-        vm.setData = function(resp) {       
-            model.setExternalUserData(resp.data);           
+        vm.setData = function (resp) {
+            model.setExternalUserData(resp.data);
             vm.updateTabsMenuExternalUser(resp.data);
-            vm.setExternalUserControlLoad(resp.data);            
+            vm.setExternalUserControlLoad(resp.data);
         };
 
-        vm.setExternalUserControlLoad =function (data) {
+        vm.setExternalUserControlLoad = function (data) {
 
-            if(data){
-                if(data.restricted !== null && data.restricted !== undefined  && data.restricted.fields !== undefined){
+            if (data) {
+                if (data.restricted !== null && data.restricted !== undefined && data.restricted.fields !== undefined) {
 
-                    if(data.restricted.fields.indexOf('FirstName') !== -1 ){
+                    if (data.restricted.fields.indexOf('FirstName') !== -1) {
                         vm.setFirstNameDisabled(true);
                     }
-                    if(data.restricted.fields.indexOf('MiddleName') !== -1 ){
+                    if (data.restricted.fields.indexOf('MiddleName') !== -1) {
                         vm.setMiddleNameDisabled(true);
                     }
-                    if(data.restricted.fields.indexOf('LastName') !== -1 ){
+                    if (data.restricted.fields.indexOf('LastName') !== -1) {
                         vm.setLastNameDisabled(true);
                     }
-                    if(data.restricted.fields.indexOf('LoginName') !== -1 ){
+                    if (data.restricted.fields.indexOf('LoginName') !== -1) {
                         vm.setLoginNameDisabled(true);
                     }
-                } 
-            }           
+                }
+            }
         };
 
-        vm.setDataErr = function(data) {
+        vm.setDataErr = function (data) {
             logc("Error: ", data);
         };
 
 
-        vm.getDataOnBlur =function () {
-                var userRPId = "";  
-                                    
-                if(model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000"){
-                    userRPId = model.data.realPageId;
-                }
+        vm.getDataOnBlur = function () {
+            var userRPId = "";
 
-                var params = { 
-                    loginName : model.data.userLogin.loginName,
-                    OrganizationRealPageId : persona.getOrgRealPageID(),
-                    userRealPageId : userRPId                    
-                };
+            if (model.existingUser && model.data.realPageId !== "00000000-0000-0000-0000-000000000000") {
+                userRPId = model.data.realPageId;
+            }
 
-                externalUserSvc.getData(params)
-                    .then(vm.setDataOnBlur, vm.setDataErr);
+            var params = {
+                loginName: model.data.userLogin.loginName,
+                OrganizationRealPageId: persona.getOrgRealPageID(),
+                userRealPageId: userRPId
+            };
+
+            externalUserSvc.getData(params)
+                .then(vm.setDataOnBlur, vm.setDataErr);
         };
 
-        vm.setDataOnBlur = function(resp) {  
-            if(resp.data.userExists === false ){     
+        vm.setDataOnBlur = function (resp) {
+            if (resp.data.userExists === false) {
                 vm.getUserTypeOptions();
             }
 
-           model.setExternalUserData(resp.data);
-           var isModalOpen = false;
-           
-           
-           // Not an Employee
-           if(model.data.userTypeId !== 403){
+            model.setExternalUserData(resp.data);
+            var isModalOpen = false;
 
-                if(model.data.userTypeId === 405 && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && !resp.data.userExistsInThisOrganization && !resp.data.userIsDisabledInPrimaryCompany){                
+
+            // Not an Employee
+            if (model.data.userTypeId !== 403) {
+
+                if (model.data.userTypeId === 405 && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000") && !resp.data.userExistsInThisOrganization && !resp.data.userIsDisabledInPrimaryCompany) {
                     chkEmailModel.setIsBusy(false);
-                    if(resp.data.userExists){
-                        model.setUserTypeDefConfig(405);   
-                        vm.getUserTypeOptions(); 
+                    if (resp.data.userExists) {
+                        model.setUserTypeDefConfig(405);
+                        vm.getUserTypeOptions();
                         model.data.firstName = model.externalUserData.person.firstName;
-                        model.data.lastName =  model.externalUserData.person.lastName;
+                        model.data.lastName = model.externalUserData.person.lastName;
                         model.data.middleName = model.externalUserData.person.middleName;
                         vm.setFirstNameDisabled(true);
                         vm.setMiddleNameDisabled(true);
@@ -870,106 +927,108 @@
                     return;
                 }
 
-                if((model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" ) && resp.data.userExistsAsNoEmail === false  && resp.data.userExists && resp.data.userIsDisabledInPrimaryCompany){                
+                if ((model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000") && resp.data.userExistsAsNoEmail === false && resp.data.userExists && resp.data.userIsDisabledInPrimaryCompany) {
                     isModalOpen = true;
                     deactivatedUserModal.show();
                     return;
                 }
 
-                if(model.data.userTypeId === 401 && !resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )  && resp.data.userExists && resp.data.userIsExternalEverywhere){  
-                   chkEmailModel.setIsBusy(false);
-                   model.data.firstName = model.externalUserData.person.firstName;
-                   model.data.lastName =  model.externalUserData.person.lastName;
-                   model.data.middleName = model.externalUserData.person.middleName;
-                   return;
+                if (model.data.userTypeId === 401 && !resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000") && resp.data.userExists && resp.data.userIsExternalEverywhere) {
+                    chkEmailModel.setIsBusy(false);
+                    model.data.firstName = model.externalUserData.person.firstName;
+                    model.data.lastName = model.externalUserData.person.lastName;
+                    model.data.middleName = model.externalUserData.person.middleName;
+                    return;
                 }
 
-                if(  resp.data.userExists === true && model.data.userTypeId === 404 && !resp.data.userExistsInThisOrganization && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
+                if (resp.data.userExists === true && model.data.userTypeId === 404 && !resp.data.userExistsInThisOrganization && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                     model.data.firstName = "";
-                    model.data.lastName =  "";
+                    model.data.lastName = "";
                     model.data.middleName = "";
                     existingNoEmailUserOthCompModal.show();
                     return;
                 }
 
 
-               if(resp.data.userExistsNotAvailable === true && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){
+                if (resp.data.userExistsNotAvailable === true && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                     vm.showExistingUserModal(true, resp.data.person.realPageId);
-               }else{
+                }
+                else {
 
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                  
+                    if (resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)) {
                         vm.showExistingUserModal(true, resp.data.person.realPageId);
-                   }
+                    }
 
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                   
+                    if (resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)) {
                         vm.showExistingUserModal(false, resp.data.person.realPageId);
-                   }
+                    }
 
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                   
+                    if (resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === true && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)) {
                         existingNoEmailUserModal.show();
-                   }
-                   
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
+                    }
+
+                    if (resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                         isModalOpen = true;
                         externalUserModal.show();
-                   }
+                    }
 
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                   
+                    if (resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                         vm.showExistingUserModal(true, resp.data.person.realPageId);
-                   }
+                    }
 
-                   if(resp.data.userExistsNotAvailable === true && resp.data.userExistsAsNoEmail === false && ( (resp.data.person !== null && model.data.realPageId !== resp.data.person.realPageId) || (resp.data.person === null) ) ){                                   
+                    if (resp.data.userExistsNotAvailable === true && resp.data.userExistsAsNoEmail === false && ((resp.data.person !== null && model.data.realPageId !== resp.data.person.realPageId) || (resp.data.person === null))) {
                         vm.showExistingUserModal(false, "");
-                   }
+                    }
 
-                   if(  resp.data.userExists === true && !resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                       
+                    if (resp.data.userExists === true && !resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                         existingNoEmailUserModal.show();
-                   }
+                    }
 
-                   if(resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === true && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                  
+                    if (resp.data.userExistsNotAvailable === false && resp.data.userExists === true && resp.data.userExistsInThisOrganization && resp.data.userExistsAsNoEmail === true && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                         vm.showExistingUserModal(true, resp.data.person.realPageId);
-                   }
+                    }
 
-               }                          
-               
-           }else{
+                }
 
-              if(resp.data.userExistsNotAvailable === true && resp.data.userExists === true  && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){
+            }
+            else {
+
+                if (resp.data.userExistsNotAvailable === true && resp.data.userExists === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                     vm.showExistingUserModal(true, resp.data.person.realPageId);
-               }               
+                }
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                  
+                if (resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)) {
                     vm.showExistingUserModal(true, resp.data.person.realPageId);
-               }
+                }
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)){                   
+                if (resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId !== "" && model.data.realPageId !== "00000000-0000-0000-0000-000000000000" && model.data.realPageId !== resp.data.person.realPageId)) {
                     vm.showExistingUserModal(false, resp.data.person.realPageId);
-               }
+                }
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                                   
+                if (resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === true && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                     vm.showExistingUserModal(true, resp.data.person.realPageId);
-               }
+                }
 
-               if(resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000" )){                   
+                if (resp.data.userExists === true && resp.data.userExistsAsNoEmail === false && resp.data.userExistsInThisOrganization === false && (model.data.realPageId === "" || model.data.realPageId === "00000000-0000-0000-0000-000000000000")) {
                     vm.showExistingUserModal(false, resp.data.person.realPageId);
-               }
+                }
 
-           }
-            
+            }
 
-           if(isModalOpen === false){
-                chkEmailModel.setIsBusy(false);  
-           }
-           
+
+            if (isModalOpen === false) {
+                chkEmailModel.setIsBusy(false);
+            }
+
         };
 
-         vm.showExistingUserModal = function(bool, rpId) {  
-            if(bool){
+        vm.showExistingUserModal = function (bool, rpId) {
+            if (bool) {
                 model.setExistingUserLink(rpId);
             }
             model.setShowExistingUserLink(bool);
             existingUserModal.show();
-         };
+        };
 
 
 
@@ -986,6 +1045,8 @@
             vm.ThirdPartyWatch();
             vm.resetUserTypeOptions();
             vm.noEmailValidation();
+            vm.userBIProductWatch();
+            vm.userAssignedProductsWatch();
             vm.customFieldList = [];
             passReq.reset();
             userStatus.reset();

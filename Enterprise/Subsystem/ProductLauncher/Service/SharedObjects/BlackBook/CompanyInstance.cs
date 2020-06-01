@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
 {
@@ -45,36 +46,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		/// <summary>
         /// Phone number
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string PhoneNumber { get; set; }
         
 		/// <summary>
         /// Type of company
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CompanyType { get; set; }
         
 		/// <summary>
         /// Is the Company active
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool IsActive { get; set; }
         
 		/// <summary>
         /// Who created the original record
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CreatedBy { get; set; }
         
 		/// <summary>
         /// Who last modified the record
-        /// </summary>
+        /// </summary
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string ModifiedBy { get; set; }
 
 		/// <summary>
 		/// List of attributes
 		/// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<InstanceAttribute> Attributes { get; set; }
 
         /// <summary>
         /// used to store the customer domain
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomerEnvironment { get; set; }
 	}
 }
