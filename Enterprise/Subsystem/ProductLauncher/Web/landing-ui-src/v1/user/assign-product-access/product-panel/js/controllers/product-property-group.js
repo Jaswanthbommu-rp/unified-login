@@ -28,7 +28,6 @@
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
-            pubsub.subscribe("productroles.clearpropertygroups", vm.clearPropertyGroups);
         };
 
         vm.isActive = function () {
@@ -40,10 +39,6 @@
         };
 
         vm.updateGrid = function () {
-            vm.grid.updateSelected();
-        };
-        vm.clearPropertyGroups = function () {
-            vm.grid.selectAll(false);
             vm.grid.updateSelected();
         };
 

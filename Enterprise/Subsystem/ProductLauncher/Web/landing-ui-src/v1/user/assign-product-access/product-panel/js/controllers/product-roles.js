@@ -13,7 +13,7 @@
             roleRights = [],
             userLoginName = "",
             selectconfigs = [],
-            isSelectAllPropMsg1;
+            isSelectAllPropMsg1,
             isSelectAllPropMsg2;
 
         vm.init = function () {
@@ -202,19 +202,6 @@
         vm.selectionAll = function (bool) {
             var data = syncMgr.allRolesSync($scope.$parent.productId, bool);
         };
-        vm.setAllProperties = function (record) {
-            var productId = $scope.$parent.productId;
-            var bool = false;
-            if (productId == 18 && record.name.toLowerCase() === "portfolio manager") {
-                bool = true;
-                vm.isSelectAllPropMsg1 = true;
-
-            } else if (productId == 26 && record.length == 1 && record[0].text == "Roles") {
-                bool = true;
-                vm.isSelectAllPropMsg2 = true;
-            }
-            syncMgr.updateProductAllProperties($scope.$parent.productId, bool);
-        };
 
         vm.setRolesData = function (resp) {
             rolesGrid.busy(false);
@@ -284,7 +271,7 @@
                         }
                     });
                 }
-                else if(productId == 17 || productId == 26){
+                else if(productId == 17 || productId == 26 || productId == 18){
                     var releventTabs = [];
                     var rpTabs = [];
                     var rpRoleName = "";
@@ -323,7 +310,7 @@
                             syncMgr.updateProductAllProperties(productId, false);
                         }
                     }
-                    else if (productId == 18 && vm.rpRoleSelected) {
+                    if (productId == 18 && vm.rpRoleSelected) {
                         vm.setAllProperties(vm.rpRoleSelected);
                     }
                 }              
@@ -375,17 +362,20 @@
                     vm.rpRoleSelected = record;
                 }
                 else if(record.productId == "18"){
+                    if(vm.rpRoleSelected){  
+                        if(record.name.toLowerCase() === "property manager"){
+                            syncMgr.setAllPropertyGroupSync(record.productId, false);
+                        }
+                        else if(record.name.toLowerCase() === "group manager"){
+                            syncMgr.allPropertiesSync(record.productId, false);
+                        }
+                        else{
+                            syncMgr.setAllPropertyGroupSync(record.productId, false);
+                            syncMgr.allPropertiesSync(record.productId, false);
+                        }
+                    }
                     vm.rpRoleSelected = record;
-                    if(record.name.toLowerCase() === "property manager"){
-                        pubsub.publish("productroles.clearpropertygroups");
-                    }
-                    else if(record.name.toLowerCase() === "group manager"){
-                        pubsub.publish("productroles.clearproperties");
-                    }
-                    else{
-                        pubsub.publish("productroles.clearproperties");
-                        pubsub.publish("productroles.clearpropertygroups");
-                    }
+                    
                 }
                 else {
                     if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
@@ -447,6 +437,15 @@
             else if(productId == 26 && record.length == 1 && record[0].text == "Roles"){
                 vm.isSelectAllPropMsg1 = true;
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+            }
+            else if (productId == 18 ) {
+                if(record.name.toLowerCase() === "portfolio manager"){
+                    vm.isSelectAllPropMsg2 = true;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                }else{
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+
+                }
             }
            
         };

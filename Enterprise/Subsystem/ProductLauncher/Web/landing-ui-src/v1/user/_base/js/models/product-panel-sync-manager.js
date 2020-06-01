@@ -640,6 +640,18 @@
             pubsub.publish("pplpropertygroup.updateGrids");
             return s;
         };
+        p.setAllPropertyGroupSync = function (productId, bool) {
+            var s = this,
+                propertyGroupList;
+            if(!angular.equals({}, s.propertyGroupMap)){
+                propertyGroupList = s.propertyGroupMap['product' + productId].propertyGroup;
+                propertyGroupList.forEach(function (item) {
+                    item["isAssigned"] = bool;
+                });
+            }
+               
+            return s;
+        };
 
         p.allRolesSync = function (productId, selected) {
             var s = this,
