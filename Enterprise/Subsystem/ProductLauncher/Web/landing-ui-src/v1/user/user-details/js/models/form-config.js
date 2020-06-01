@@ -87,7 +87,7 @@
             ],
             maxlength: 255,
             onBlur: model.getMethod("openExternalUserModal"),
-            
+
         });
 
         model.password = textConfig({

@@ -98,7 +98,7 @@
 
                 s.roles.forEach(function (role) {
                     if (role.isAssigned) {
-                        s.data.inputJson.roleList.push(role.id);
+                        s.data.inputJson.roleList.push(role.level);
                     }
                 });
 

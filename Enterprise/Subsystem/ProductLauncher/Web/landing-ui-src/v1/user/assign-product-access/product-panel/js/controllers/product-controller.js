@@ -47,6 +47,11 @@
                     vm.userType = userStatus.isExternalUser() ? "External User" : "Regular user (no email)";
                 }
 
+                if (obj.productId == 29) {
+                    logc("published");
+                    pubsub.publish("productpanel.biProductSelected");
+                }
+
                 vm.loadProductControlsData(obj.productId);
             }
             //logc("productExists", productExists, obj.productId);
@@ -89,6 +94,10 @@
         vm.resetProductDisabled = function () {
             vm.productDisabled = false;
             vm.userType = "";
+            if (userStatus.isExternalUser() && $scope.productId == 29) {
+                vm.productDisabled = true;
+                vm.userType = "External User";
+            }
         };
 
         vm.setChanged = function () {
