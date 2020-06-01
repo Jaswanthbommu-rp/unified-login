@@ -1181,7 +1181,6 @@ BEGIN
             SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
-
 -- New API in MT for Resident Portals
  SELECT  @ProductId = 17;
 
