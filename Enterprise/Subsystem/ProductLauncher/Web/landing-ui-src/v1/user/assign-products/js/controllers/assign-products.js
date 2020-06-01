@@ -43,8 +43,10 @@
         };
 
         vm.onDataReady = function () {
-            var soln = model.getDefaultSoln();
-            vm.selectSoln(soln);
+            if (!userStatus.isSuperUser()) {
+                var soln = model.getDefaultSoln();
+                vm.selectSoln(soln);
+            }
         };
 
         vm.onUserStatusChange = function () {
