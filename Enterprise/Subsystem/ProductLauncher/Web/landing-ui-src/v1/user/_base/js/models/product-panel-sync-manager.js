@@ -19,6 +19,7 @@
             s.productControlsMap = {};
             s.propertyGroupMap = {};
             s.propertyMap = {};
+            s.companyMap = {};
             s.roleMap = {};
             s.benchMarkRoleMap = {};
             s.sidePanelDataMap = {};
@@ -41,6 +42,7 @@
             //s.productControlsList = [];
             s.groupList = [];
             s.propertyList = [];
+            s.companyList = [];
             s.propertyGroupList = [];
             s.productsTouched = [];
             s.originalPropertyList = [];
@@ -221,6 +223,15 @@
             return productPropertiesList;
         };
 
+        p.getProductCompaniesData = function (product) {
+            var s = this,
+                productCompaniesList;
+            if (s.companiesMap['product' + product] !== undefined) {
+                productCompaniesList = s.companiesMap['product' + product].companies;
+            }
+            return productCompaniesList;
+        };
+
         p.getProductPropertyGroupData = function (product) {
             var s = this,
                 productPropertyGroupList;
@@ -283,6 +294,13 @@
             var s = this;
             s.propertyList = list;
             s.renderPropertyMap(key);
+            return s;
+        };
+
+        p.setCompanyList = function (list, key) {
+            var s = this;
+            s.companyList = list;
+            s.renderCompanyMap(key);
             return s;
         };
 
@@ -369,6 +387,15 @@
             }
         };
 
+        p.updateCompanyAllProperties = function (product, value) {
+            var s = this,
+                productCompaniesList;
+
+            if (s.companyMap['product' + product] !== undefined) {
+                s.companyMap['product' + product].allProperties = value;
+            }
+        };
+
         p.updateProductNewPropertyByDefault = function (product, value) {
             var s = this,
                 productPropertiesList;
@@ -385,6 +412,16 @@
             if (s.propertyMap['product' + productId] !== undefined &&
                 productId !== 9) {
                 return s.propertyMap['product' + productId].allProperties;
+            }
+
+            return false;
+        };
+
+        p.isProductAllCompanies = function (productId) {
+            var s = this;
+
+            if (s.companyMap['product' + productId] !== undefined && productId !== 9) {
+                return s.companyMap['product' + productId].allProperties;
             }
 
             return false;
@@ -520,6 +557,19 @@
             return s;
         };
 
+        p.selectedCompanySync = function (key, record) {
+            var s = this,
+                companyData;
+
+            companyData = s.companyMap['product' + key].companies;
+            companyData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            return s;
+        };
+
         p.multiSelectedPropertySync = function (key, record) {
             var s = this,
                 propertyData;
@@ -527,6 +577,22 @@
             propertyData = s.propertyMap['product' + key].properties;
 
             propertyData.forEach(function (item) {
+                if (item.id == record.id) {
+                    item.isAssigned = record.isAssigned;
+                }
+
+            });
+
+            return s;
+        };
+
+        p.multiSelectedCompanySync = function (key, record) {
+            var s = this,
+                companyData;
+
+            companyData = s.companyMap['product' + key].companies;
+
+            companyData.forEach(function (item) {
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
                 }
@@ -544,6 +610,26 @@
 
             records.forEach(function (item) {
                 var record = propertyData.filter(function (data) {
+                    return item.id === data.id;
+                })[0];
+
+                if (item.id == record.id) {
+                    record.isAssigned = item.isAssigned;
+                }
+
+            });
+
+            return s;
+        };
+
+        p.updateAllCompanies = function (key, records) {
+            var s = this,
+                companyData;
+
+            companyData = s.companyMap['product' + key].companies;
+
+            records.forEach(function (item) {
+                var record = companyData.filter(function (data) {
                     return item.id === data.id;
                 })[0];
 
@@ -734,6 +820,17 @@
             }
         };
 
+        p.renderCompanyMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.companyList)) {
+                s.companiesMap['product' + key] = {
+                    companies: s.companyList,
+                    allProperties: false,
+                    newPropertyByDefault: false
+                };
+            }
+        };
+
         p.renderPropertyGroupMap = function (key) {
             var s = this;
             if (!angular.equals({}, s.propertyGroupList)) {
@@ -892,6 +989,7 @@
             s.companyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
+            s.companyMap = {};
             s.bmRoleMap = {};
             s.groupList = [];
             s.propertyList = [];
@@ -904,6 +1002,7 @@
             s.productControlsMap = {};
             s.productPresetRolesMap ={};
             s.notificationsMap = {};
+            s.companyList = [];
         };
 
         return new ProductDataSyncManager();

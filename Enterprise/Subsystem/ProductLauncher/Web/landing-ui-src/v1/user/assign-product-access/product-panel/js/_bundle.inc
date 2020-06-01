@@ -10,6 +10,7 @@
 {{{ include("controllers/product-property-group.js") }}}
 {{{ include("controllers/product-benchmark-roles.js") }}}
 {{{ include("controllers/product-notifications.js") }}}
+{{{ include("controllers/product-companies.js") }}}
 
 {{{ include("models/product-panel.js") }}}
 {{{ include("models/config-data-model.js") }}}
@@ -26,3 +27,4 @@
 {{{ include("services/product-control-dependency-data.js") }}}
 {{{ include("services/property-group-data.js") }}}
 {{{ include("services/group-properties-data.js") }}}
+{{{ include("services/companies-data.js") }}}

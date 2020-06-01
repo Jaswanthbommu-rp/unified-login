@@ -16,6 +16,7 @@
             s.active = false;
             s.roleGridActive = false;
             s.propertyGridActive = false;
+            s.companyGridActive = false;
             s.changed = false;
 
             s.data = {
@@ -109,6 +110,16 @@
             return s.propertyGridActive;
         };
 
+        p.setCompanyGridActive = function (bool) {
+            var s = this;
+            s.companyGridActive = bool;
+            return s;
+        };
+
+        p.isCompanyGridActive = function () {
+            var s = this;
+            return s.companyGridActive;
+        };
 
         p.getData = function (productId) {
             var s = this,
@@ -270,6 +281,7 @@
             s.isAllProperties = false;
             s.roleGridActive = false;
             s.propertyGridActive = false;
+            s.companyGridActive = false;
         };
 
         p.reset = function () {
@@ -280,6 +292,7 @@
             s.isAllProperties = false;
             s.roleGridActive = false;
             s.propertyGridActive = false;
+            s.companyGridActive = false;
             s.active = false;
             s.changed = false;
             s.data = angular.copy(s._data);

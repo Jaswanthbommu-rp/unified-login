@@ -9,6 +9,37 @@
         This product cannot be assigned when User Type is {{cpactrl.userType}}.
     </div>
 
+    <div class="row" ng-show="cpactrl.isFinancialSuiteProduct()">
+        <div class="col-md-2">
+           <div class="options" > Options: </div>
+        </div>
+        <div class="col-md-5">
+            <rp-switch class="inline label-1"
+                config="apa.acessSiteSpndMgmtOnlySwitch"
+                rp-model="apa.acessSiteSpndMgmtOnly"
+                rp-label-text="'Access to Site Spend Management only'">
+            </rp-switch>
+        </div>
+        <div class="col-md-5">
+            <rp-switch class="inline label-1"
+                config="apa.allPropSwitch"
+                rp-model="apa.allProperties"
+                rp-label-text="'Allow access to all current and future entities'">
+            </rp-switch>
+        </div>        
+    </div>
+    <div class="row" ng-show="cpactrl.isFinancialSuiteProduct()">
+        <div class="col-md-2">            
+        </div>
+        <div class="col-md-5">            
+            <rp-switch class="inline label-1"
+                config="apa.accountingAdminSwitch"
+                rp-model="apa.accountingAdmin"
+                rp-label-text="'Accounting Admin'">
+            </rp-switch>
+        </div>
+    </div>
+
      <rp-scrolling-tabs-menu model="cpactrl.tabsMenu">
         </rp-scrolling-tabs-menu>
         <ng-include

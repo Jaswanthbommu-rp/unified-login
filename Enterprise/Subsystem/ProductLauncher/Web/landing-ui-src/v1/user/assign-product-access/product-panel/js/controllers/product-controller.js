@@ -62,6 +62,10 @@
             return vm.productDisabled;
         };
 
+        vm.isFinancialSuiteProduct = function(){
+            return vm.panelName == "Financial Suite Product Access";
+        };
+
         vm.loadProductControlsData = function (productId) {
             tabsModel.reset();
             //Check data in model for product
@@ -132,40 +136,45 @@
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
-                            var activeTab = false;
-                            var hideTab = false;
-                            if (tabGrp.attributes !== null && tabGrp.type === "Tab") {
-                                tabGrp.attributes.forEach(function (item) {
-                                    if (item.key === "Default" && item.value === "True") {
-                                        vm.activeTab = tabGrp.displayName.toLowerCase();
-                                        activeTab = true;
-                                    }
-                                    if (item.key === "Hide" && item.value === "True") {
-                                        hideTab = true;
-                                    }
-                                });
-                            }
+                            if(tabGrp.type === "Tab"){
+                                var activeTab = false;
+                                var hideTab = false;
+                                if (tabGrp.attributes !== null && tabGrp.type === "Tab") {
+                                    tabGrp.attributes.forEach(function (item) {
+                                        if (item.key === "Default" && item.value === "True") {
+                                            vm.activeTab = tabGrp.displayName.toLowerCase();
+                                            activeTab = true;
+                                        }
+                                        if (item.key === "Hide" && item.value === "True") {
+                                            hideTab = true;
+                                        }
+                                    });
+                                }
 
-                            var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
-                            logc(tabName);
-                            if (tabName === "rights") {
-                                tabName = "roles";
-                            }
-                            if (tabName === "markets" || tabName === "messaginggroups") {
-                                tabName = "propertygroup";
-                            }
-                            var tab = {
-                                id: tabGrp.displayName.toLowerCase(),
-                                text: tabGrp.displayName,
-                                isActive: activeTab,
-                                incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
-                            };
+                                var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
+                                logc(tabName);
+                                if (tabName === "rights") {
+                                    tabName = "roles";
+                                }
+                                if (tabName === "markets" || tabName === "messaginggroups") {
+                                    tabName = "propertygroup";
+                                }
+                                if (tabName === "entities") {
+                                    tabName = "properties";
+                                }
+                                var tab = {
+                                    id: tabGrp.displayName.toLowerCase(),
+                                    text: tabGrp.displayName,
+                                    isActive: activeTab,
+                                    incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
+                                };
 
-                            allTabs.push(tab);
-                            if (!hideTab) {
-                                initialTabs.push(tab);
+                                allTabs.push(tab);
+                                if (!hideTab) {
+                                    initialTabs.push(tab);
+                                }
+                                logc("tabsdata", allTabs);
                             }
-                            logc("tabsdata", allTabs);
                         });
                     }
                 });
@@ -182,63 +191,65 @@
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
-                            var tabName = tabGrp.displayName.replace(/ /g, "");
-                            if (tabName === "Markets" || tabName === "MessagingGroups") {
-                                tabName = "PropertyGroup";
-                            }
-                            else if (tabName === "Rights") {
-                                tabName = "Roles";
-                            }
-
-                            tabGrp.controls.forEach(function (tab) {
-                                if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
-                                    //Check and Set Grid Config Types
-                                    var showSelectAll = false;
-                                    if (tab.attributes !== null) {
-                                        tab.attributes.forEach(function (item) {
-                                            logc("attributes", item);
-                                            if (item.key === "ShowSelectAll" && item.value === "True") {
-                                                showSelectAll = true;
-                                            }
-                                        });
-                                    }
-
-                                    if (tabName === "BenchmarkingRole") {
-                                        if (productModel.getProductGridConfig(bmProductId, tabName) === undefined) {
-                                            var bmcnfg = configData.getGridConfigTypes(tab, tabName);
-                                            var bmgridConfig = vm.getGridConfig(bmcnfg, showSelectAll);
-
-                                            productModel.renderProductGridConfigMap(bmProductId, tabName, bmgridConfig);
-                                        }
-                                    }
-                                    else {
-                                        if (productModel.getProductGridConfig(productId, tabName) === undefined) {
-                                            var cnfg = configData.getGridConfigTypes(tab, tabName);
-                                            var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
-
-                                            productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
-                                            vm.setProductDependency(tab, productId);
-                                        }
-                                    }
-
-                                    //Check and Set any Aside List Grid
-                                    if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
-                                        var listAsideconfigs = configData.getListAsideConfig(tab);
-
-                                        if (listAsideconfigs !== undefined &&
-                                            listAsideconfigs.config.length > 0) {
-                                            var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, showSelectAll);
-                                            logc("asideGridConfig", asideGridConfig);
-                                            productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
-                                        }
-                                    }
+                            if(tabGrp.controls){
+                                var tabName = tabGrp.displayName.replace(/ /g, "");
+                                if (tabName === "Markets" || tabName === "MessagingGroups") {
+                                    tabName = "PropertyGroup";
                                 }
-                            });
+                                else if (tabName === "Rights") {
+                                    tabName = "Roles";
+                                }
 
-                            //Check and Set any radio data
-                            if (productModel.getProductRadioConfig(productId, tabName) === undefined) {
-                                var radioCnfg = configData.getRadioConfig(tabGrp);
-                                productModel.renderProductRadioConfigMap(productId, tabName, radioCnfg);
+                                tabGrp.controls.forEach(function (tab) {
+                                    if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
+                                        //Check and Set Grid Config Types
+                                        var showSelectAll = false;
+                                        if (tab.attributes !== null) {
+                                            tab.attributes.forEach(function (item) {
+                                                logc("attributes", item);
+                                                if (item.key === "ShowSelectAll" && item.value === "True") {
+                                                    showSelectAll = true;
+                                                }
+                                            });
+                                        }
+
+                                        if (tabName === "BenchmarkingRole") {
+                                            if (productModel.getProductGridConfig(bmProductId, tabName) === undefined) {
+                                                var bmcnfg = configData.getGridConfigTypes(tab, tabName);
+                                                var bmgridConfig = vm.getGridConfig(bmcnfg, showSelectAll);
+
+                                                productModel.renderProductGridConfigMap(bmProductId, tabName, bmgridConfig);
+                                            }
+                                        }
+                                        else {
+                                            if (productModel.getProductGridConfig(productId, tabName) === undefined) {
+                                                var cnfg = configData.getGridConfigTypes(tab, tabName);
+                                                var gridConfig = vm.getGridConfig(cnfg, showSelectAll);
+
+                                                productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
+                                                vm.setProductDependency(tab, productId);
+                                            }
+                                        }
+
+                                        //Check and Set any Aside List Grid
+                                        if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
+                                            var listAsideconfigs = configData.getListAsideConfig(tab);
+
+                                            if (listAsideconfigs !== undefined &&
+                                                listAsideconfigs.config.length > 0) {
+                                                var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, showSelectAll);
+                                                logc("asideGridConfig", asideGridConfig);
+                                                productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
+                                            }
+                                        }
+                                    }
+                                });
+
+                                //Check and Set any radio data
+                                if (productModel.getProductRadioConfig(productId, tabName) === undefined) {
+                                    var radioCnfg = configData.getRadioConfig(tabGrp);
+                                    productModel.renderProductRadioConfigMap(productId, tabName, radioCnfg);
+                                }
                             }
                         });
                     }
@@ -297,20 +308,22 @@
                             aSwitch = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
-                                tabGrp.controls.forEach(function (ctrl) {
-                                    if (ctrl.type === 'Switch') {
-                                        var c = {
-                                            id: ctrl.id,
-                                            text: ctrl.displayName,
-                                            key: ctrl.dataSource,
-                                            configData: switchConfig({
-                                                onChange: vm.noop,
-                                                disabled: false
-                                            })
-                                        };
-                                        aSwitch.push(c);
-                                    }
-                                });
+                                if(tabGrp.controls){
+                                    tabGrp.controls.forEach(function (ctrl) {
+                                        if (ctrl.type === 'Switch') {
+                                            var c = {
+                                                id: ctrl.id,
+                                                text: ctrl.displayName,
+                                                key: ctrl.dataSource,
+                                                configData: switchConfig({
+                                                    onChange: vm.noop,
+                                                    disabled: false
+                                                })
+                                            };
+                                            aSwitch.push(c);
+                                        }
+                                    });
+                                }
 
                                 if (aSwitch.length > 0) {
                                     productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
@@ -335,23 +348,25 @@
                                 tabName = "Roles";
                             }
                             if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
-                                tabGrp.controls.forEach(function (ctrl) {
-                                    if (ctrl.type === 'Select') {
-                                        var c = {
-                                            id: ctrl.id,
-                                            text: ctrl.displayName,
-                                            key: ctrl.dataSource,
-                                            configData: menuConfig({
-                                                nameKey: "name",
-                                                valueKey: "id",
-                                                fieldName: "roleSelect",
-                                                onChange: vm.noop,
-                                                disabled: false
-                                            })
-                                        };
-                                        aSelect.push(c);
-                                    }
-                                });
+                                if(tabGrp.controls){
+                                    tabGrp.controls.forEach(function (ctrl) {
+                                        if (ctrl.type === 'Select') {
+                                            var c = {
+                                                id: ctrl.id,
+                                                text: ctrl.displayName,
+                                                key: ctrl.dataSource,
+                                                configData: menuConfig({
+                                                    nameKey: "name",
+                                                    valueKey: "id",
+                                                    fieldName: "roleSelect",
+                                                    onChange: vm.noop,
+                                                    disabled: false
+                                                })
+                                            };
+                                            aSelect.push(c);
+                                        }
+                                    });
+                                }
 
                                 if (aSelect.length > 0) {
                                     logc("aSelect config", aSelect, tabName);
