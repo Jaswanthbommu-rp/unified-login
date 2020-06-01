@@ -168,7 +168,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true)
         {
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
-            Dictionary<string, object> logData;
 
             if (source == null)
             {
@@ -195,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     uri += "&include=" + IncludeExtra;
                 }
 
-                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogType.Diagnostic, "GetCompanyMap - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
@@ -236,13 +235,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<CompanyPropertyInstanceMap> GetCompanyPropertyInstanceMap(long companyInstanceId)
         {
             IList<CompanyPropertyInstanceMap> companyPropertyInstanceMap = new List<CompanyPropertyInstanceMap>();
-            Dictionary<string, object> logData = new Dictionary<string, object>();
 
-            companyPropertyInstanceMap = _manageBlueBookCache[$"getCompanyPropertyInstanceMap_{companyInstanceId.ToString()}"] as List<CompanyPropertyInstanceMap>;
+            companyPropertyInstanceMap = _manageBlueBookCache[$"getCompanyPropertyInstanceMap_{companyInstanceId}"] as List<CompanyPropertyInstanceMap>;
             if (companyPropertyInstanceMap == null)
             {
-                string uri = $"companypropertyinstancemap?filter[propertyInstance.greenBookCares]=true&filter[companyInstanceId]={companyInstanceId.ToString()}&include=propertyInstance&fields[propertyInstance]=propertyInstanceSourceId,propertyInstanceId,source,propertyName,isActive";
-                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                string uri = $"companypropertyinstancemap?filter[propertyInstance.greenBookCares]=true&filter[companyInstanceId]={companyInstanceId}&include=propertyInstance&fields[propertyInstance]=propertyInstanceSourceId,propertyInstanceId,source,propertyName,isActive";
+                var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - Getting info.", logData);
                 var response = GetAsync(uri).Result;
 
@@ -254,7 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyPropertyInstanceMap_{companyInstanceId.ToString()}", companyPropertyInstanceMap, policy);
+                    _manageBlueBookCache.Set($"getCompanyPropertyInstanceMap_{companyInstanceId}", companyPropertyInstanceMap, policy);
                 }
                 else
                 {
@@ -275,55 +273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return companyPropertyInstanceMap;
         }
-
-        /// <summary>
-        /// Get a list of property instances under the given company instance in the BlueBook system
-        /// </summary>
-        /// <param name="companyInstanceId"></param>
-        /// <returns></returns>
-        public IList<PropertyInstance> GetPropertyInstance(long companyInstanceId)
-        {
-            IList<PropertyInstance> propertyInstance = new List<PropertyInstance>();
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-
-            propertyInstance = _manageBlueBookCache[$"getPropertyInstance_{companyInstanceId.ToString()}"] as List<PropertyInstance>;
-            if (propertyInstance == null)
-            {
-                string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId.ToString()}";
-                //string uri = $"propertyinstance?filter[greenBookCares]=true&filter[companyPropertyInstanceMap.companyInstanceId]={companyInstanceId.ToString()}&sort=PropertyName&page[size]=3000";
-                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogType.Diagnostic, "GetPropertyInstance - Getting info.", logData);
-                var response = GetAsync(uri).Result;
-                if (response.IsSuccessStatusCode)
-                {
-                    //propertyInstance = response.Content.ReadAsJsonApiManyAsync<PropertyInstanceResource>(_contractResolver, _cache).Result;
-                    propertyInstance = JsonConvert.DeserializeObject<List<PropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
-                    logData = new Dictionary<string, object>() { { "propertyInstanceResource", propertyInstance } };
-                    WriteToLog(LogType.Diagnostic, "GetPropertyInstance - Got info.", logData);
-                    CacheItemPolicy policy = new CacheItemPolicy();
-                    policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getPropertyInstance_{companyInstanceId.ToString()}", propertyInstance, policy);
-                }
-                else
-                {
-                    logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogType.Diagnostic, "GetPropertyInstance - No info found.", logData);
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    {
-                        // return an empty CompanyMapResource because it wasn't found
-                        return propertyInstance;
-                    }
-                    else
-                    {
-                        response.EnsureSuccessStatusCode();
-                        return null;
-                    }
-                }
-            }
-
-            return propertyInstance;
-        }
-
+        
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system
         /// </summary>
@@ -333,12 +283,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             CompanyPropertyRootObject companyPropertyInstanceResource = new CompanyPropertyRootObject();
             Dictionary<string, object> logData = new Dictionary<string, object>();
-
-            companyPropertyInstanceResource = _manageBlueBookCache[$"getCompanyPropertyInstance_{companyInstanceId.ToString()}"] as CompanyPropertyRootObject;
+        
+            companyPropertyInstanceResource = _manageBlueBookCache[$"getCompanyPropertyInstance_{companyInstanceId}"] as CompanyPropertyRootObject;
             if (companyPropertyInstanceResource == null)
             {
-                string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId.ToString()}";
-                //string uri = $"propertyinstance?filter[greenBookCares]=true&filter[companyPropertyInstanceMap.companyInstanceId]={companyInstanceId.ToString()}&sort=PropertyName&page[size]=3000";
+                string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId}";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstance - Getting info.", logData);
                 var response = GetAsync(uri).Result;
@@ -369,7 +318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-
+        
             return companyPropertyInstanceResource;
         }
 

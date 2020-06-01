@@ -357,70 +357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			return listResponse;
 		}
-
-		/// <summary>
-		/// Used to list Renters Insurance properties by PMCId
-		/// </summary>
-		/// <param name="editorPersonaId">The persona id of the user making the request</param>
-		/// <param name="userPersonaId">The persona id of the user being changed</param>
-		/// <returns>ListResponse object</returns>
-		public ObjectListOutput<PropertyInstance, IErrorData> ListPropertiesByPMCID(long editorPersonaId, long userPersonaId)
-		{
-			ListResponse listResponse = new ListResponse();
-			ListPropertyByPMCIDResponse listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
-			ObjectListOutput<PropertyInstance, IErrorData> outputList = new ObjectListOutput<PropertyInstance, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			outputList.Status = errorStatus;
-			WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID - at begining of method for user with editorPersona id - {editorPersonaId}");
-
-			try
-			{
-				listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (listResponse.IsError)
-				{
-					WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {listResponse.ErrorReason}");
-					errorStatus.Success = false;
-					errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails - Error " + listResponse.ErrorReason;
-					outputList.Status = errorStatus;
-					return outputList;
-				}
-
-				int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
-				if (companyInstanceId == 0)
-				{
-					WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-					errorStatus.Success = false;
-					errorStatus.ErrorMsg = "Company Setup Error: Please Contact Support.";
-					outputList.Status = errorStatus;
-					return outputList;
-				}
-				WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
-
-				IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
-				WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
-
-				listPropertyByPMCIDResponse = _insuranceService.GetListPropertyByPMCID(companyInstanceId);
-
-				if (listPropertyByPMCIDResponse?.PropertyList != null)
-				{
-					propertyList.ToList().ForEach(blueBook => blueBook.IsActive = listPropertyByPMCIDResponse.PropertyList.Any(rentersInsurance => rentersInsurance.PropertyID.ToString() == blueBook.PropertyInstanceSourceId));
-				}
-				errorStatus.Success = true;
-				errorStatus.ErrorMsg = "";
-				outputList.Status = errorStatus;
-				outputList.list = propertyList;
-				return outputList;
-			}
-			catch (Exception ex)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID - Error " + ex.Message;
-				outputList.Status = errorStatus;
-				WriteToDiagnosticLog(errorStatus.ErrorMsg);
-				return outputList;
-			}
-		}
-
+		
 		/// <summary>
 		/// List Roles
 		/// </summary>

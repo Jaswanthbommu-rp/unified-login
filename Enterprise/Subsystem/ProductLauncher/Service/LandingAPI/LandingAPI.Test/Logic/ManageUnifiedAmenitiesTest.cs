@@ -166,13 +166,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(_mapCompany);
 
 			_mockManageBlueBook
-				.Setup(m => m.GetPropertyInstance(
-					It.IsAny<long>()
-				))
-				.Returns(_propertyInstanceList);
-
-			//GetVCompanyPropertyMap
-			_mockManageBlueBook
 				.Setup(m => m.GetVCompanyPropertyMap(
 					It.IsAny<long>(),
 					It.IsAny<string>()

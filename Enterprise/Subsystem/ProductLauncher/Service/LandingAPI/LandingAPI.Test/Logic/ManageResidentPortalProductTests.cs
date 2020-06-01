@@ -630,11 +630,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					}
 				}
 			};
-			mockManageBlueBook
-				.Setup(m => m.GetPropertyInstance(
-					It.IsAny<long>()
-				 ))
-				 .Returns(propertyInstanceList);
 
 			mockProductInternalSettingRepository
 				.Setup(m => m.GetProductInternalSettings(

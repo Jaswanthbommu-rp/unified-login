@@ -40,14 +40,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		ListResponse ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
 
 		/// <summary>
-		/// Used to list Renters Insurance properties by PMCId
-		/// </summary>
-		/// <param name="editorPersonaId">The persona id of the user making the request</param>
-		/// <param name="userPersonaId">The persona id of the user being changed</param>
-		/// <returns>ListResponse object</returns>
-		ObjectListOutput<PropertyInstance, IErrorData> ListPropertiesByPMCID(long editorPersonaId, long userPersonaId);
-
-		/// <summary>
 		/// List Level
 		/// </summary>
 		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
