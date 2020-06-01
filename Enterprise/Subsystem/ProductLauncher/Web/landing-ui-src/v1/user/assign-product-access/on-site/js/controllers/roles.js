@@ -90,7 +90,7 @@
             var roleList = dataModel.getRoles();
 
             roleList.forEach(function (item) {
-                item.isAssigned = item.id == record.id;
+                item.isAssigned = item.level == record.level;
             });
         };
 
