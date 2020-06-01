@@ -15,7 +15,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		[JsonProperty(PropertyName = "realPageId")]
 		public Guid RealPageId { get; set; }
 
-		/// <summary>
+        /// <summary>
+        /// The unique id in uppercase for the Organization stored in BlueBook
+        /// </summary>
+        [JsonProperty(PropertyName = "realPageIdString")]
+        public string RealPageIdString => RealPageId.ToString().ToUpper();
+
+        /// <summary>
 		/// The unique id for the Organization in GreenBook
 		/// </summary>
 		public long PartyId { get; set; }
