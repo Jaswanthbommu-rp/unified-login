@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, pubsub) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -169,7 +169,6 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
-            "pubsub",
             ProductPropertyGroupsGridCtrl
         ]);
 })(angular);

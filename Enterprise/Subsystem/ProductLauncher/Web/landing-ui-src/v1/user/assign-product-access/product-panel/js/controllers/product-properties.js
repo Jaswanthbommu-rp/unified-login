@@ -308,6 +308,7 @@
         vm.updateGrid = function () {
             vm.propertiesGrid.updateSelected();
         };
+        
         vm.resetDataModel = function () {
             //vm.clearProperties();
             vm.resetProperties();
