@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else
                 {
-                    productPropertyList = blueBookPropertyList.Where(b => productPropertyList.All(p => p.ID.Equals(b.ID))).ToList();
+                    productPropertyList = blueBookPropertyList.ToList().FindAll(b => productPropertyList.Any(p => p.ID.Equals(b.ID))).ToList();
                 }
             }
 

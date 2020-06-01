@@ -32,6 +32,12 @@
                     regionList: [],
                     propertyGroupList: [],
                     removedPropertyList: [],
+                    messageGroups: [],
+                    Notifications: {
+                        managerFdiViaEmail: false,
+                        amenitiesViaEmail: false,
+                        managerMrViaEmail: false,
+                    },
                     isAssignedNewPropertyByDefault: false
                 }
             };
@@ -122,6 +128,12 @@
             }
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
+            
+            var notifications = "";
+            if(productId == "17"){
+                notifications = dataSyncManager.getProductNotificationsData(productId);
+            }
+            
             var bmroles = "";
             if (productId == "30") {
                 bmroles = dataSyncManager.getProductBenchMarkRolesData("34");
@@ -192,13 +204,26 @@
                         if (aoFamilyProduct || productId == "18") {
                             s.batchData.inputJson.propertyGroupList.push(group.id);
                         }
-                        else {
+                        else if(productId == "17"){
+                            s.batchData.inputJson.messageGroups.push(group.id);
+                        }
+                        else{
                             s.batchData.inputJson.regionList.push(group.id);
                         }
                     }
                 });
+                if(productId == "17"){
+                    hasPropertyGroupSelected = s.batchData.inputJson.messageGroups.length > 0;
+                }
+                else{
+                    hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
+                }                
+            }
 
-                hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
+            if(productId == "17" && notifications !== undefined){
+                s.batchData.inputJson.Notifications.managerFdiViaEmail = notifications.managerFdiViaEmail;
+                s.batchData.inputJson.Notifications.amenitiesViaEmail = notifications.amenitiesViaEmail;
+                s.batchData.inputJson.Notifications.managerMrViaEmail = notifications.managerMrViaEmail;
             }
 
             if (productId == "30" && bmroles !== undefined && bmroles.length > 0) {

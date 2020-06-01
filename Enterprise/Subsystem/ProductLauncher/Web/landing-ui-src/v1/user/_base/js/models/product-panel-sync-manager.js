@@ -33,7 +33,7 @@
             s.productSelectTypeConfigMap = {};
             s.productDependencyDataMap = {};
             s.productPresetRolesMap = {};
-
+            s.notificationsMap={};
             s.originalPropertyListMap = {};
 
             s.productControlsList = {
@@ -213,6 +213,15 @@
             return productRolesList;
         };
 
+        p.getProductNotificationsData = function (product) {
+            var s = this,
+                productNotificationsList;
+            if (s.notificationsMap['product' + product] !== undefined) {
+                productNotificationsList = s.notificationsMap['product' + product].notifications;
+            }
+            return productNotificationsList;
+        };
+
         p.getProductPropertiesData = function (product) {
             var s = this,
                 productPropertiesList;
@@ -359,6 +368,13 @@
 
             s.productDependencyDataMap['product' + key] = {
                 dependencyData: bool
+            };
+        };
+
+        p.setProductAllNotifications = function (product, value) {
+            var s = this;
+            s.notificationsMap['product' + product] = {
+                notifications: value
             };
         };
 
@@ -971,6 +987,7 @@
             s.productControlsList = [];
             s.productControlsMap = {};
             s.productPresetRolesMap = {};
+            s.notificationsMap = {};
         };
 
         return new ProductDataSyncManager();
