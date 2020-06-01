@@ -938,6 +938,8 @@
     <Build Include="Enterprise\Tables\OrganizationDomain.sql" />
     <Build Include="Enterprise\Stored Procedures\ListOrganizationDomain.sql" />
     <Build Include="Enterprise\Stored Procedures\ListULMappingPersonaIdForProductUserId.sql" />
+    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\July2020Release.sql" />
+    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\June2020Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
