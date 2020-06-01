@@ -38,29 +38,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
-
+        
         /// <summary>
-        /// Used for dependency injection
+        /// Unit test constructor
         /// </summary>
-        /// <param name="manageOrganization"></param>
+        /// <param name="repository"></param>
         /// <param name="repositoryResponse"></param>
-        /// <param name="organizationProductRepository"></param>
-        /// <param name="manageOrganizationProduct"></param>
-        /// <param name="manageCustomFields"></param>
-        /// <param name="manageUserLogin"></param>
-        /// <param name="managePartyRelationship"></param>
+        /// <param name="messageHandler"></param>
         /// <param name="userClaims"></param>
-        public OrganizationController(IManageOrganization manageOrganization, IRepositoryResponse repositoryResponse, IOrganizationProductRepository organizationProductRepository, IManageOrganizationProduct manageOrganizationProduct, IManageCustomFields manageCustomFields, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageBlueBook manageBlueBook, DefaultUserClaim userClaims)
+        public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
         {
             _repositoryResponse = repositoryResponse;
-            _organizationProductRepository = organizationProductRepository;
-            _manageOrganizationProduct = manageOrganizationProduct;
-            _manageCustomFields = manageCustomFields;
-            _manageUserLogin = manageUserLogin;
-            _managePartyRelationship = managePartyRelationship;
-            _manageOrganization = manageOrganization;
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
+            _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims);
+            _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
+            _manageOrganization = new ManageOrganization(repository, userClaims);
             _productInternalSettingRepository = null;
-            _manageBlueBook = manageBlueBook;
+            _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _messageHandler = messageHandler;
             _userClaims = userClaims;
         }
 
@@ -85,7 +82,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #region Private variables
 
-        IRepository _repository;
         IRepositoryResponse _repositoryResponse;
         IOrganizationProductRepository _organizationProductRepository;
         IManageOrganizationProduct _manageOrganizationProduct;
@@ -95,6 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
         private IProductInternalSettingRepository _productInternalSettingRepository;
+        private HttpMessageHandler _messageHandler;
 
         #endregion
 
@@ -191,13 +188,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 foreach (var customerCompanyMap in companyMapResource)
                 {
                     bool deleteInstance = false;
-                    customerCompanyMap.CompanyInstance.ForEach(i =>
+                    customerCompanyMap.CompanyInstance?.ForEach(i =>
                     {
                         if (i.CustomerEnvironment == null || i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
                         {
                             deleteInstance = true;
                         }
                     });
+
                     if (deleteInstance)
                     {
                         _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
@@ -233,26 +231,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage UpdateOrganization([FromBody] OrganizationUpdate organization)
         {
             Organization org = null;
-            if (organization.BooksCustomerMasterId != 0)
+            if (organization != null)
             {
-                // get the organization by customer master id
-                org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId: organization.BooksCustomerMasterId);
-            }
-            else if (organization.BooksMasterId != 0)
-            {
-                // get the organization by Master Data Management (black book) master id
-                org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: organization.BooksMasterId);
+                if (organization.BooksCustomerMasterId != 0)
+                {
+                    // get the organization by customer master id
+                    org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId: organization.BooksCustomerMasterId);
+                }
+                else if (organization.BooksMasterId != 0)
+                {
+                    // get the organization by Master Data Management (black book) master id
+                    org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: organization.BooksMasterId);
+                }
+                else
+                {
+                    // get the org by UL realpageID
+                    org = _manageOrganization.GetOrganization(organization.RealPageId);
+                }
             }
             else
             {
-                // get the org by UL realpageID
-                org = _manageOrganization.GetOrganization(organization.RealPageId);
-            }
-
-            if (org == null)
-            {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
+
+            bool orgNameChanged = org.Name != organization.Name ? true : false;
 
             org.Name = organization.Name;
 
@@ -316,6 +318,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
             }
 
+            if (orgNameChanged)
+            {
+                // update the name in MDM
+                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false);
+                if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdString))
+                {
+                    var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdString);
+                    CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
+                    {
+                        CompanyInstanceId = companyMap.CompanyInstanceId,
+                        CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
+                        CompanyName = org.Name,
+                        CustomerCompanyId = companyMap.CustomerCompanyId,
+                        IsActive = companyMap.CompanyInstance[0].IsActive,
+                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                        CustomerEnvironment = org.OrganizationDomain.Name,
+                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
+                    };
+                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
+                    if (!string.IsNullOrEmpty(booksResult))
+                    {
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
+                    }
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data failed because the {ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)} company instance could not be found");
+                }
+            }
             org = _manageOrganization.GetOrganization(org.RealPageId);
 
             return Request.CreateResponse(HttpStatusCode.OK, org);
@@ -825,62 +856,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #endregion
 
         #region Private functions
-
-        ///// <summary>
-        ///// Used to parse the list of product codes and convert them into ProductEnum
-        ///// </summary>
-        ///// <param name="productCode"></param>
-        ///// <param name="addProductList"></param>
-        ///// <returns></returns>
-        //public List<string> ParseProduct(List<string> productCode, List<ProductEnum> addProductList)
-        //{
-        //	List<string> invalidProductList = new List<string>();
-        //	if (productCode != null)
-        //	{
-        //		foreach (string product in productCode)
-        //		{
-        //			bool foundProduct = AddProductToList(product, addProductList);
-        //			if (!foundProduct)
-        //			{
-        //				invalidProductList.Add(product);
-        //			}
-        //		}
-        //	}
-        //
-        //	return invalidProductList;
-        //}
-        //
-        ///// <summary>
-        ///// Used to convert the BlueBook product name to the UnifiedUI product id
-        ///// </summary>
-        ///// <param name="product"></param>
-        ///// <param name="addProductList"></param>
-        ///// <returns></returns>
-        //private bool AddProductToList(string product, List<ProductEnum> addProductList)
-        //{
-        //	bool foundProduct = false;
-        //	foreach (var pi in typeof(BlueBookProductConstants).GetFields())
-        //	{
-        //		if (product.ToUpper() == pi.GetValue(pi).ToString())
-        //		{
-        //			// found product, so add it to the list to add to the company
-        //			// get the product id from the product enum
-        //			foreach (var pr in typeof(ProductEnum).GetFields())
-        //			{
-        //				if (pr.Name.ToUpper() == pi.Name.ToUpper())
-        //				{
-        //					foundProduct = true;
-        //					addProductList.Add((ProductEnum)Enum.Parse(typeof(ProductEnum), pr.Name));
-        //					break;
-        //				}
-        //			}
-        //			break;
-        //		}
-        //	}
-        //	return foundProduct;
-        //}
-
-
 
         /// <summary>
         /// Used to delete products from an organization

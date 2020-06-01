@@ -27,5 +27,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions
                   Assert.Equal(method, r.Method);
               });
         }
+
+        public static void SetupPatch(this Mock<HttpMessageHandler> messageHander, string url, HttpResponseMessage response)
+        {
+            messageHander.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync"
+                    , ItExpr.Is<HttpRequestMessage>(message =>
+                        string.Equals(message.RequestUri.ToString(), url, StringComparison.OrdinalIgnoreCase) && message.Method.ToString() == "PATCH")
+                    , ItExpr.IsAny<CancellationToken>()
+                )
+                .Returns(Task.FromResult(response))
+                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
+                {
+                    Assert.Equal("PATCH", r.Method.ToString());
+                });
+        }
+
     }
 }

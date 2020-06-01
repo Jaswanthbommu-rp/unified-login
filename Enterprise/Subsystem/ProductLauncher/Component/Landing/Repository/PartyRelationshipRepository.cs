@@ -13,13 +13,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 	/// Party Relationship Repository
 	/// </summary>
 	public class PartyRelationshipRepository : BaseRepository, IPartyRelationshipRepository
-	{
+    {
+        private IRoleTypeRepository _roleTypeRepository;
+        private IRelationshipTypeRepository _relationshipTypeRepository;
+
 		#region Constructor
 		/// <summary>
 		/// Party Relationship Repository base Constructor
 		/// </summary>
 		public PartyRelationshipRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _roleTypeRepository = new RoleTypeRepository();
+            _relationshipTypeRepository = new RelationshipTypeRepository();
 		}
 
 		/// <summary>
@@ -28,7 +33,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="repository"></param>
 		public PartyRelationshipRepository(IRepository repository) : base(repository)
 		{
-		}
+            _roleTypeRepository = new RoleTypeRepository(repository);
+            _relationshipTypeRepository = new RelationshipTypeRepository(repository);
+        }
 		#endregion
 
 		#region public PartyRelationshipRepository methods
@@ -46,8 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             RoleType roleType = new RoleType();
             RelationshipType relationshipType = new RelationshipType();
-            RoleTypeRepository roleTypeRepository = new RoleTypeRepository();
-            RelationshipTypeRepository relationshipTypeRepository = new RelationshipTypeRepository();
+            
             PartyRelationship partyRelationshipResult = new PartyRelationship();
 
             using (var repository = GetRepository())
@@ -93,11 +99,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 partyRelationshipResult = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, param);
             }
 
-            IList<RelationshipType> relationshipTypeList = relationshipTypeRepository.GetRelationshipType(relationshipTypeName);
+            IList<RelationshipType> relationshipTypeList = _relationshipTypeRepository.GetRelationshipType(relationshipTypeName);
             if (partyRelationshipResult != null)
             {
                 //RoleType From
-                IList<RoleType> roleTypeList = roleTypeRepository.GetRoleType(roleTypeName: roleTypeNameFrom, partyId: null);
+                IList<RoleType> roleTypeList = _roleTypeRepository.GetRoleType(roleTypeName: roleTypeNameFrom, partyId: null);
                 roleType = roleTypeList.First(i => i.PartyRoleTypeId == partyRelationshipResult.RoleTypeIdFrom);
                 if (roleType != null)
                 {
@@ -105,7 +111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 //RoleType To
-                roleTypeList = roleTypeRepository.GetRoleType(roleTypeName: roleTypeNameTo, partyId: null);
+                roleTypeList = _roleTypeRepository.GetRoleType(roleTypeName: roleTypeNameTo, partyId: null);
                 roleType = roleTypeList.First(i => i.PartyRoleTypeId == partyRelationshipResult.RoleTypeIdTo);
                 if (roleType != null)
                 {
