@@ -87,6 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.AoAmenityOptimization: return "amenity-analytics";
 				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
 				case ProductEnum.AoRentControl: return "rent-control";
+				case ProductEnum.RenovationManager: return "renovation-manager";
 			}
 			return null;
 		}
@@ -516,7 +517,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// AO Rent Control
 		/// </summary>
 		[Description("RC")]
-		AoRentControl = 54
+		AoRentControl = 54,
+		/// <summary>
+		///Renovation Manager
+		/// </summary>
+		[Description("RENO")]
+		RenovationManager = 55
 	}
 
 	/// <summary>
@@ -730,6 +736,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Manage Settings Template
 		/// </summary>
 		ManageSettingsTemplates = 50,
+		/// <summary>
+		/// Renovation Manager
+		/// </summary>
+		[Description("RENO")]
+		ManageRenovationManagerProductAccess = 55,
 	}	
 }
 
