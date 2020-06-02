@@ -193,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (!string.IsNullOrEmpty(domain) && useDomains)
             {
                 includeGreenBookCares = false;
-                domainFilter = $"filter[companyInstance.domain]={domain}";
+                domainFilter = $"filter[companyInstance.domain]={domain}&";
             }
 
             companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
