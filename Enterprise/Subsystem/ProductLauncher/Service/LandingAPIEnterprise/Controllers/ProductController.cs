@@ -3,6 +3,8 @@ using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -12,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseOb
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -125,6 +128,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company and product codess", Type = typeof(ProductUsers))]
+        [SwaggerResponseExamples(typeof(ProductUsers), typeof(UserCompanyProductCodeExample))]
+
         [Route("users")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
@@ -229,6 +234,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
             IProductRepository productRepository = new ProductRepository();
             return productRepository.GetUsersByCompanyorProducts(companyId, products , version.Value , rowsPerPage.Value , pageNumber.Value);
+        }
+        #endregion
+
+        #region Examples
+
+        /// <summary>
+        /// Used to document examples of the UserCompanyProductCode result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class UserCompanyProductCodeExample : IProvideExamples
+        {
+            public object GetExamples()
+            {
+                PagedResponse response = new PagedResponse() { Meta = new Meta() };
+                IList<ProductUsers> productUsers = new List<ProductUsers>()
+                {
+                    new ProductUsers
+                    {
+                        UserId= 2659,
+                        LoginName = "notificationsuser@test.com",
+                        FirstName = "Notifications",
+                        LastName = "User",
+                        PersonaId = 2649
+                    },
+                    new ProductUsers
+                    {
+                        UserId= 2660,
+                        LoginName = "multiuser1@test.com",
+                        FirstName = "multi",
+                        LastName = "user1",
+                        PersonaId = 2657
+                    }
+                };
+
+                response.Data = productUsers.Cast<object>().ToList();
+                response.Meta.CurrentPage = 1;
+                response.Meta.TotalRows = 2;
+                response.Meta.RowsPerPage = 5000;
+                response.IsError = false;
+                response.ErrorReason = null;
+
+                return response;
+            }
         }
         #endregion
     }
