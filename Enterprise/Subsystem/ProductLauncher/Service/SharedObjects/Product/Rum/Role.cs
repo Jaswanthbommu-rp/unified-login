@@ -4,6 +4,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 {
     public class Role
     {
+        public int Id { get; set; }
         /// <summary>
         /// Used to store the name of the role
         /// </summary>
