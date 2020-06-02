@@ -52,6 +52,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         readonly AuthTokenData _authTokenInfo = new AuthTokenData();
 
+        private bool useDomains = false;
+
         ObjectCache _manageBlueBookCache = MemoryCache.Default;
 
         /// <summary>
@@ -77,6 +79,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             #endregion
 
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)))
+            {
+                useDomains = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value);
+            }
+            
 
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
             //_authTokenInfo.Data.Password = "P>qx3g6MEkt(G:-";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIPASSWORD").Value;
@@ -151,10 +158,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Filter Company Map
         /// </summary>
         /// <param name="booksCompanyMasterId">Master Company Id - RPUP</param>
+        /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId)
+        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string domain)
         {
-            return GetCompanyMap(booksCompanyMasterId, source: null);
+            return GetCompanyMap(booksCompanyMasterId, source: null, domain: domain);
         }
 
         /// <summary>
@@ -164,10 +172,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="source">A filter on source if given</param>
         /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
+        /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true)
+        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "")
         {
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
+            string domainFilter = "";
 
             if (source == null)
             {
@@ -180,10 +190,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return null;
             }
 
-            companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId.ToString()}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
+            if (!string.IsNullOrEmpty(domain) && useDomains)
+            {
+                includeGreenBookCares = false;
+                domainFilter = $"filter[companyInstance.domain]={domain}";
+            }
+
+            companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
+
             if (companyMap == null)
             {
-                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + $"filter[customerCompanyId]={booksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes";
+                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + domainFilter + $"filter[customerCompanyId]={booksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes";
                 if (!string.IsNullOrEmpty(source))
                 {
                     uri += "&filter[source]=" + source;
@@ -232,47 +249,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="companyInstanceId">Ids of the company instances element</param>
         /// <returns>List of CompanyPropertyInstanceMapResource</returns>
-        public IList<CompanyPropertyInstanceMap> GetCompanyPropertyInstanceMap(long companyInstanceId)
-        {
-            IList<CompanyPropertyInstanceMap> companyPropertyInstanceMap = new List<CompanyPropertyInstanceMap>();
-
-            companyPropertyInstanceMap = _manageBlueBookCache[$"getCompanyPropertyInstanceMap_{companyInstanceId}"] as List<CompanyPropertyInstanceMap>;
-            if (companyPropertyInstanceMap == null)
-            {
-                string uri = $"companypropertyinstancemap?filter[propertyInstance.greenBookCares]=true&filter[companyInstanceId]={companyInstanceId}&include=propertyInstance&fields[propertyInstance]=propertyInstanceSourceId,propertyInstanceId,source,propertyName,isActive";
-                var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - Getting info.", logData);
-                var response = GetAsync(uri).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    //companyPropertyInstanceMap = response.Content.ReadAsJsonApiManyAsync<CompanyPropertyInstanceMapResource>(_contractResolver, _cache).Result;
-                    companyPropertyInstanceMap = JsonConvert.DeserializeObject<List<CompanyPropertyInstanceMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
-                    logData = new Dictionary<string, object>() { { "companyPropertyInstanceMapResource", companyPropertyInstanceMap } };
-                    WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - Got info.", logData);
-                    CacheItemPolicy policy = new CacheItemPolicy();
-                    policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyPropertyInstanceMap_{companyInstanceId}", companyPropertyInstanceMap, policy);
-                }
-                else
-                {
-                    logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - No info found.", logData);
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    {
-                        // return an empty CompanyMapResource because it wasn't found
-                        return companyPropertyInstanceMap;
-                    }
-                    else
-                    {
-                        response.EnsureSuccessStatusCode();
-                        return null;
-                    }
-                }
-            }
-
-            return companyPropertyInstanceMap;
-        }
+        //public IList<CompanyPropertyInstanceMap> GetCompanyPropertyInstanceMap(long companyInstanceId)
+        //{
+        //    IList<CompanyPropertyInstanceMap> companyPropertyInstanceMap = new List<CompanyPropertyInstanceMap>();
+        //
+        //    companyPropertyInstanceMap = _manageBlueBookCache[$"getCompanyPropertyInstanceMap_{companyInstanceId}"] as List<CompanyPropertyInstanceMap>;
+        //    if (companyPropertyInstanceMap == null)
+        //    {
+        //        string uri = $"companypropertyinstancemap?filter[propertyInstance.greenBookCares]=true&filter[companyInstanceId]={companyInstanceId}&include=propertyInstance&fields[propertyInstance]=propertyInstanceSourceId,propertyInstanceId,source,propertyName,isActive";
+        //        var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+        //        WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - Getting info.", logData);
+        //        var response = GetAsync(uri).Result;
+        //
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            //companyPropertyInstanceMap = response.Content.ReadAsJsonApiManyAsync<CompanyPropertyInstanceMapResource>(_contractResolver, _cache).Result;
+        //            companyPropertyInstanceMap = JsonConvert.DeserializeObject<List<CompanyPropertyInstanceMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+        //            logData = new Dictionary<string, object>() { { "companyPropertyInstanceMapResource", companyPropertyInstanceMap } };
+        //            WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - Got info.", logData);
+        //            CacheItemPolicy policy = new CacheItemPolicy();
+        //            policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
+        //            _manageBlueBookCache.Set($"getCompanyPropertyInstanceMap_{companyInstanceId}", companyPropertyInstanceMap, policy);
+        //        }
+        //        else
+        //        {
+        //            logData = new Dictionary<string, object>() { { "response", response } };
+        //            WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstanceMap - No info found.", logData);
+        //            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        //            {
+        //                // return an empty CompanyMapResource because it wasn't found
+        //                return companyPropertyInstanceMap;
+        //            }
+        //            else
+        //            {
+        //                response.EnsureSuccessStatusCode();
+        //                return null;
+        //            }
+        //        }
+        //    }
+        //
+        //    return companyPropertyInstanceMap;
+        //}
         
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system

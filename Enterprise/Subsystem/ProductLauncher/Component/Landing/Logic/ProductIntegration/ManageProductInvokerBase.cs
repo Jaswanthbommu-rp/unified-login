@@ -1077,7 +1077,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (subjectPersonaId != 0)
 					userBooksMasterId = SubjectUserDetails.BooksCustomerMasterId;
 				CompanyInstanceSourceId =
-					_dataCollector.GetProductCompanyMap(BlueBookGbProductMap.BooksProductCode, userBooksMasterId, _userClaims).CompanyInstanceSourceId;
+					_dataCollector.GetProductCompanyMap(BlueBookGbProductMap.BooksProductCode, userBooksMasterId, _userClaims, EditorUserDetails.OrganizationDomain).CompanyInstanceSourceId;
 
 				if (string.IsNullOrEmpty(CompanyInstanceSourceId))
 				{

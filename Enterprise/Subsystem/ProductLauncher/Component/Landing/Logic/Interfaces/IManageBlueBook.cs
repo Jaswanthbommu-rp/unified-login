@@ -19,8 +19,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Filter Company Map
         /// </summary>
         /// <param name="booksCompanyMasterId">Master Company Id RPUP</param>
+        /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMap</returns>
-        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId);
+        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string domain);
 
         /// <summary>
         /// Used to get the information about the given company from the BlackBook system
@@ -30,14 +31,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <returns>List of CompanyMap</returns>
-        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true);
+        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "");
 
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system
         /// </summary>
         /// <param name="companyInstanceId">Ids of the company instances element</param>
         /// <returns>List of CompanyPropertyInstanceMap</returns>
-        IList<CompanyPropertyInstanceMap> GetCompanyPropertyInstanceMap(long companyInstanceId);
+        //IList<CompanyPropertyInstanceMap> GetCompanyPropertyInstanceMap(long companyInstanceId);
 
         /// <summary>
         /// Used to get property information from the books
