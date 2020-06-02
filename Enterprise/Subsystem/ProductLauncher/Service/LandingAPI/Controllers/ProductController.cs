@@ -370,7 +370,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             try
             {
-                ProductEnum productEnum = GetProductEnumByProductCode(productCode);
+                ProductEnum productEnum = ProductEnumHelper.GetProductEnumByProductCode(productCode);
                 return GetProductLoginDetails((int)productEnum, personaId);
             }
             catch (Exception ex)
@@ -380,35 +380,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         #endregion
-
-        private ProductEnum GetProductEnumByProductCode(string productCode)
-        {   
-            var ProductEnumsList = Enum.GetValues(typeof(ProductEnum));
-
-            foreach (object pEnum in ProductEnumsList)
-            {
-                string result;
-                FieldInfo fi = typeof(ProductEnum).GetField(pEnum.ToString());
-                if (fi != null)
-                {
-                    try
-                    {
-                        object[] descriptionAttrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
-                        DescriptionAttribute description = (DescriptionAttribute)descriptionAttrs[0];
-                        result = (description.Description);
-                        if (result == productCode)
-                            return (ProductEnum)pEnum;
-                    }
-                    catch
-                    {
-                        result = null;
-                    }
-                }
-            }
-
-            //If Code reach here that means product code did not match with any Product Enum Description value. So raise an exception
-            throw new Exception("Invalid product code");            
-        }
 
         /// <summary>
         /// Used to log a user into an OAuth client
