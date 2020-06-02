@@ -68,6 +68,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
             var result = GetUsersByCompanyorProductsDetails(companyId , products);
+
+            if (result == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
+            }
+
             var logData = new Dictionary<string, object>();
             logData.Add("result", result);
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
@@ -221,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
         }
 
-        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId , IList<int?> products = null , int? version = 1, int? rowsPerPage = 1, int? pageNumber = 1)
+        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId , IList<int?> products = null , int? version = 1, int? rowsPerPage = 0, int? pageNumber = 1)
         {
             if (string.IsNullOrEmpty(companyId) && products == null)
             {
