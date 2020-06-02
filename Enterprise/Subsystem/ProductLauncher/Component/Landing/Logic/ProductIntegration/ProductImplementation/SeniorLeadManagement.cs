@@ -171,47 +171,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                   $"SeniorLeadManagement.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {rolesRights?.Count}");
 
-
-                WriteToDiagnosticLog(
-                    $"SeniorLeadManagement.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Get All Rights method.");
-
-                //Get all rights by company
-                baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRightEndpoint);
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
-                var allRights = GetResultFromApi<IList<Model.ProductRight>>(baseUrlAndQuery);
-
-
-                WriteToDiagnosticLog(
-                  $"SeniorLeadManagement.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received all the rights with count = {allRights?.Count}");
-
-
-                if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
-                {
-                    WriteToDiagnosticLog(
-                        $"SeniorLeadManagement.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
-                    var user = GetProductUser();
-
-                    // map user roles
-                    if (user != null)
-                    {
-                        WriteToDiagnosticLog(
-                            $"SeniorLeadManagement.GetAllRights - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
-
-                        var userRoles = user.Roles;
-                    }
-                }
-
-                if (allRights == null)
+                if (rolesRights == null)
                     throw new Exception("Null Right List.");
+
+                Dictionary<string, object> additional = AddRolesToRights(rolesRights);
 
                 return new ListResponse
                 {
-                    Records = allRights.Cast<object>().ToList(),
-                    TotalRows = allRights.Count,
+                    Records = rolesRights.Cast<object>().ToList(),
+                    TotalRows = rolesRights.Count,
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
                     TotalPages = 1,
-                    Additional = AddRolesToRights(rolesRights, allRights)
+                    Additional = additional
                 };
             }
             catch (Exception ex)
@@ -334,21 +306,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Assign the rolesid to the rights
         /// </summary>
         /// <param name="roles">Roles collection</param>
-        /// <param name="rights">Rights collection</param>
         /// <returns>A dictionary with all rolesid</returns>
-        private Dictionary<string, object> AddRolesToRights(IList<Model.ProductRole> roles, IList<Model.ProductRight> rights)
+        private Dictionary<string, object> AddRolesToRights(IList<Model.ProductRole> roles)
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
 
             List<Preset> presets = new List<Preset>();
+            List<Right> finalRights = new List<Right>();
 
-            foreach (Model.ProductRight right in rights)
+            foreach (Model.ProductRole rol in roles)
+            {
+                foreach (Right right in rol.Rights)
+                {
+                    if (!finalRights.Any(p => p.RightId == right.RightId))
+                    {
+                        finalRights.Add(right);
+                    }
+                }
+            }
+
+            foreach (Right right in finalRights)
             {
                 List<int> rolesId = new List<int>();
 
                 foreach (Model.ProductRole rol in roles)
                 {
-                    if (rol.Rights.Any((p) => p.RightId.ToString() == right.GetRightId))
+                    if (rol.Rights.Any((p) => p.RightId == right.RightId))
                     {
                         if (!rolesId.Contains(Convert.ToInt32(rol.GetRoleId)))
                         {
@@ -357,12 +340,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                if (!presets.Any(p => p.Id == Convert.ToInt32(right.GetRightId)))
+                if (!presets.Any(p => p.Id == Convert.ToInt32(right.RightId)))
                 {
                     Preset preset = new Preset();
 
-                    preset.Id = Convert.ToInt32(right.GetRightId);
-                    preset.Name = right.GetName;
+                    preset.Id = right.RightId;
+                    preset.Name = right.RightName;
                     preset.RoleIds = rolesId;
 
                     presets.Add(preset);
