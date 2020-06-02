@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -62,17 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         public HttpResponseMessage GetUsersByCompanyorProducts(string companyId = null, [FromUri] IList<int?> products = null)
         {
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
-            if(string.IsNullOrEmpty(companyId) && products == null)
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
-            }
-            int compId;
-            if (!int.TryParse(companyId, out compId) && products == null)
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
-            }
-            IProductRepository productRepository = new ProductRepository();
-            var result = productRepository.GetUsersByCompanyorProducts(companyId, products);
+
+            var result = GetUsersByCompanyorProductsDetails(companyId , products);
             var logData = new Dictionary<string, object>();
             logData.Add("result", result);
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
@@ -125,7 +117,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, mappedUnifiedLoginUserDetails);
         }
 
+        /// <summary>
+        /// Get list of users by companyid or productcodes
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company and product codess", Type = typeof(ProductUsers))]
+        [Route("users")]
+        [AuthorizeScope("userinfoapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUsersByCompanyorProductCodess(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1)
+        {
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
+            PagedResponse response = new PagedResponse() { Meta = new Meta() };
+
+            IList<int?> productIds = new List<int?>();
+
+            productcode.ForEach(x => productIds.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
+
+            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, 2, rowsPerPage, pageNumber);
+
+            if (result == null)
+            {
+                IList<ProductUsers> productUsers = new List<ProductUsers>();
+
+                response.Data = productUsers.Cast<object>().ToList();
+                response.Meta.CurrentPage = pageNumber.Value;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = rowsPerPage.Value;
+                response.IsError = true;
+                response.ErrorReason = "BadRequest";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
+
+            response.Data = result.Cast<object>().ToList();
+            response.Meta.CurrentPage = pageNumber.Value;
+            response.Meta.TotalRows = result[0].TotalRecords;
+            response.Meta.RowsPerPage = rowsPerPage.Value;
+
+            var logData = new Dictionary<string, object>
+            {
+                { "result", response }
+            };
+
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
+
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+
+        }
         #endregion
 
         #region Private methods
@@ -172,6 +214,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 /*ignored*/
             }
+        }
+
+        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId , IList<int?> products = null , int? version = 1, int? rowsPerPage = 1, int? pageNumber = 1)
+        {
+            if (string.IsNullOrEmpty(companyId) && products == null)
+            {
+                return null;
+            }
+            int compId;
+            if (!int.TryParse(companyId, out compId) && products == null)
+            {
+                return null;
+            }
+            IProductRepository productRepository = new ProductRepository();
+            return productRepository.GetUsersByCompanyorProducts(companyId, products , version.Value , rowsPerPage.Value , pageNumber.Value);
         }
         #endregion
     }
