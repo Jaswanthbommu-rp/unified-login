@@ -479,8 +479,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 globalRoles.Add(new ProductRole
                 {
                     ID = "PM",
-                    Name = "Property Manager",
-                    Description = "Property Manager",
+                    Name = "Portfolio Manager",
+                    Description = "Portfolio Manager",
                     IsAssigned = false
                 });
 
@@ -1078,11 +1078,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog($"ManageProductRum.GetRumRoles - Base Uri - {baseUrlAndQuery}");
             if (result != null)
             {
-                foreach (var x in result)
+                foreach (var x in result.Select((x, i) => new { Item = x, Index = i }))
                 {
-                    if (!x.InternalOnly.Value)
+                    if (!x.Item.InternalOnly.Value)
                     {
-                        roles.Add(new Role { Description = x.RoleDescription.Value, Name = x.RoleName.Value, IsAssigned = false });
+                        roles.Add(new Role { Id = x.Index + 101, Description = x.Item.RoleDescription.Value, Name = x.Item.RoleName.Value, IsAssigned = false });
                     }
                 }
             }

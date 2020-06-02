@@ -1,5 +1,8 @@
 <div class="product-panel-roles-wrapper" ng-controller="ProductRolesGridCtrl as cpr">
     <div class="product-panel-roles-body" ng-if="!cpr.isDataError">
+        <div class="product-panel-all-properties" ng-if="cpr.isSelectAllPropMsg2">
+            This user will be assigned to all properties.
+        </div>
         <div class="unified-amenities-all-props-message" ng-if="cpr.isSelectAllPropMsg1">
             Users with this role will get access to all active properties in the PMC.
         </div>

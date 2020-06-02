@@ -323,6 +323,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var manageProductAo = new ManageProductAssetOptimization(_userClaims);
 					result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
 					break;
+				case (int)ProductEnum.UtilityManagement:
+					var manageProductRum = new ManageProductRum(_userClaims);
+					result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+					break;
 				default:
 					break;
 			}

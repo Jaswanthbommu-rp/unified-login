@@ -115,7 +115,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
-		[Route("product/rights")]
+		[Route("product/productrights")]
 		[HttpGet]
 		public HttpResponseMessage GetRights(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromUri]RequestParameter datafilter)
 		{

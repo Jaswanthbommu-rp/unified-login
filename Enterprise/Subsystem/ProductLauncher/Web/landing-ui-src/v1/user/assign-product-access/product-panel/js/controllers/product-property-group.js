@@ -48,7 +48,10 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
-            syncMgr.allPropertiesSync($scope.$parent.productId, val);
+            var productId = $scope.$parent.productId;
+            if(productId != 18){
+                syncMgr.allPropertiesSync($scope.$parent.productId, val);
+            }
             vm.updateGrid();
         };
 
