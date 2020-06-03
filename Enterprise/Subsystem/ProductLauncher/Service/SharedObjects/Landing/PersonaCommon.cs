@@ -45,5 +45,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty("Role", NullValueHandling = NullValueHandling.Ignore)]
 		public IList<Role> Role { get; set; } = new List<Role>();
+
+        /// <summary>
+        /// Organization Domain
+        /// </summary>
+        public string OrganizationDomain { get; set; }
 	}
 }

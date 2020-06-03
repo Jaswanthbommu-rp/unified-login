@@ -66,14 +66,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #region GetSettings
 
-            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + LandingProductID.ToString()] as List<ProductInternalSetting>;
+            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + LandingProductID] as List<ProductInternalSetting>;
             if (productInternalSettingList == null)
             {
                 _productInternalSettingRepository = new ProductInternalSettingRepository();
                 productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(LandingProductID);
                 CacheItemPolicy policy = new CacheItemPolicy();
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageBlueBookCache.Set("productInternalSetting_" + LandingProductID.ToString(), productInternalSettingList, policy);
+                _manageBlueBookCache.Set("productInternalSetting_" + LandingProductID, productInternalSettingList, policy);
             }
 
             #endregion
@@ -83,7 +83,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 useDomains = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value);
             }
-            
 
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
             //_authTokenInfo.Data.Password = "P>qx3g6MEkt(G:-";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIPASSWORD").Value;
@@ -101,19 +100,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #region GetSettings
 
-            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + LandingProductID.ToString()] as List<ProductInternalSetting>;
+            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + LandingProductID] as List<ProductInternalSetting>;
             if (productInternalSettingList == null)
             {
                 _productInternalSettingRepository = new ProductInternalSettingRepository();
                 productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(LandingProductID);
                 CacheItemPolicy policy = new CacheItemPolicy();
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageBlueBookCache.Set("productInternalSetting_" + LandingProductID.ToString(), productInternalSettingList, policy);
+                _manageBlueBookCache.Set("productInternalSetting_" + LandingProductID, productInternalSettingList, policy);
             }
 
             #endregion
 
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)))
+            {
+                useDomains = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value);
+            }
+
             //bbUri = "https://booksapi.realpage.com";
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
             //_authTokenInfo.Data.Password = "P>qx3g6MEkt(G:-";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIPASSWORD").Value;
