@@ -13,7 +13,8 @@
             roleRights = [],
             userLoginName = "",
             selectconfigs = [],
-            isSelectAllPropMsg1;
+            isSelectAllPropMsg1,
+            isSelectAllPropMsg2;
 
         vm.init = function () {
             vm = this;
@@ -25,6 +26,7 @@
             vm.rpRoleSelected = "";
             vm.selectconfigs = [];
             vm.isSelectAllPropMsg1 = false;
+            vm.isSelectAllPropMsg2 = false;
             vm.allProperties = false;
             vm.showAllPropertiesSwtich = false;
 
@@ -101,7 +103,7 @@
             //var productId = $scope.$parent.productId;
             rolesGrid.busy(false);
             var roleData = syncMgr.getProductRolesData(productId);
-            if(productId == 17 || productId == 26){
+            if(productId == 17 || productId == 26 ||  productId == 18){
                 vm.rpRoleSelected = roleData.find(function (item) {
                     return item.isAssigned === true;
                 });
@@ -269,7 +271,7 @@
                         }
                     });
                 }
-                else if(productId == 17 || productId == 26){
+                else if(productId == 17 || productId == 26 || productId == 18){
                     var releventTabs = [];
                     var rpTabs = [];
                     var rpRoleName = "";
@@ -307,6 +309,9 @@
                         } else{
                             syncMgr.updateProductAllProperties(productId, false);
                         }
+                    }
+                    if (productId == 18 && vm.rpRoleSelected) {
+                        vm.setAllProperties(vm.rpRoleSelected);
                     }
                 }              
 
@@ -346,6 +351,7 @@
         vm.updateRoleRecords = function (record) {
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
             vm.isSelectAllPropMsg1 = false;
+            vm.isSelectAllPropMsg2 = false;
             if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26") {
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
                 if(record.productId == "17"){
@@ -354,6 +360,22 @@
                 }
                  else if( record.productId == "26"){
                     vm.rpRoleSelected = record;
+                }
+                else if(record.productId == "18"){
+                    if(vm.rpRoleSelected){  
+                        if(record.name.toLowerCase() === "property manager"){
+                            syncMgr.setAllPropertyGroupSync(record.productId, false);
+                        }
+                        else if(record.name.toLowerCase() === "group manager"){
+                            syncMgr.allPropertiesSync(record.productId, false);
+                        }
+                        else{
+                            syncMgr.setAllPropertyGroupSync(record.productId, false);
+                            syncMgr.allPropertiesSync(record.productId, false);
+                        }
+                    }
+                    vm.rpRoleSelected = record;
+                    
                 }
                 else {
                     if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
@@ -415,6 +437,15 @@
             else if(productId == 26 && record.length == 1 && record[0].text == "Roles"){
                 vm.isSelectAllPropMsg1 = true;
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+            }
+            else if (productId == 18 ) {
+                if(record.name.toLowerCase() === "portfolio manager"){
+                    vm.isSelectAllPropMsg2 = true;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                }else{
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+
+                }
             }
            
         };
