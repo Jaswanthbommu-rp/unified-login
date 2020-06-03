@@ -200,6 +200,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 
 			throw new Exception($"AO product with Id - {productCode} is not supported in green book.");
 		}
+
+		/// <summary>
+		/// GetProductEnumByProductCode
+		/// </summary>
+		/// <param name="productCode">Product Code</param>
+		/// <returns>ProductEnum</returns>
+		public static ProductEnum GetProductEnumByProductCode(string productCode)
+		{
+			var ProductEnumsList = System.Enum.GetValues(typeof(ProductEnum));
+
+			foreach (object pEnum in ProductEnumsList)
+			{
+				string result;
+				FieldInfo fi = typeof(ProductEnum).GetField(pEnum.ToString());
+				if (fi != null)
+				{
+					try
+					{
+						object[] descriptionAttrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+						DescriptionAttribute description = (DescriptionAttribute)descriptionAttrs[0];
+						result = (description.Description);
+						if (result == productCode)
+							return (ProductEnum)pEnum;
+					}
+					catch
+					{
+						result = null;
+					}
+				}
+			}
+
+			//If Code reach here that means product code did not match with any Product Enum Description value. So raise an exception
+			throw new Exception("Invalid product code");
+		}
 	}
 
 	/// <summary>

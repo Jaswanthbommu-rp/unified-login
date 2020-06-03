@@ -7,7 +7,7 @@ SELECT	@UserId = UserId
 FROM	Ident.UserLogin
 WHERE	LoginName LIKE 'realpagead@%'
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 399 )
 BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[Control] ON 
