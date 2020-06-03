@@ -25,6 +25,13 @@
             vm.productDisabled = false;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
+            
+            //Below flag in use for Financial Suite
+            vm.hasAccessToSiteSpendManagementOnly = false;
+            vm.hasAccessToAllCurrentFutureProperties = false;
+            vm.isAccountingAdmin = false;
+            vm.isSiteSpendManagementAssignedToCompany = false;
+            vm.isMConsolePMC = false;
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
@@ -204,7 +211,7 @@
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             var tabName = tabGrp.displayName.replace(/ /g, "");
-                            if (tabName === "Markets" || tabName === "MessagingGroups") {
+                            if (tabName === "Markets" || tabName === "MessagingGroups" || tabName === "Companies") {
                                 tabName = "PropertyGroup";
                             }
                             else if (tabName === "Rights") {
@@ -212,6 +219,9 @@
                             }
                             else if(tabName === "AdditionalRights"){
                                 tabName = "Rights";
+                            }
+                            if (tabName === "Entities") {
+                                tabName = "Properties";
                             }
                             if(tabGrp.controls){
                                 tabGrp.controls.forEach(function (tab) {
@@ -311,6 +321,10 @@
             return cnfgs;
         };
 
+        vm.hasViewOnlyAccess = function () {
+            return security.isAllowed("viewUser") || productModel.isUserHasManageProductAccess($scope.productId);
+        };
+
         vm.setSwitchConfigs = function (data) {
             var aSwitch = [];
             //Check and Set any Switch
@@ -321,7 +335,21 @@
                             aSwitch = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
-                                if(tabGrp.controls){
+                                if($scope.productId == 17){
+                                    if (ctrl.type === 'Switch') {
+                                        var c = {
+                                            id: tabGrp.id,
+                                            text: tabGrp.displayName,
+                                            key: tabGrp.dataSource,
+                                            configData: switchConfig({
+                                                onChange: vm.selectionAll,
+                                                disabled: vm.hasViewOnlyAccess()
+                                            })
+                                        };
+                                        aSwitch.push(c);
+                                    }
+                                }
+                                else if(tabGrp.controls){
                                     tabGrp.controls.forEach(function (ctrl) {
                                         if (ctrl.type === 'Switch') {
                                             var c = {
@@ -329,8 +357,8 @@
                                                 text: ctrl.displayName,
                                                 key: ctrl.dataSource,
                                                 configData: switchConfig({
-                                                    onChange: vm.noop,
-                                                    disabled: false
+                                                    onChange: vm.selectionAll,
+                                                    disabled: vm.hasViewOnlyAccess()
                                                 })
                                             };
                                             aSwitch.push(c);
@@ -392,6 +420,23 @@
 
         vm.setState = function (value) {
             vm.disableContent = value;
+        };
+
+        vm.selectionAll = function (bool) {
+            logc('selectionall',bool);
+            // vm.propertySelect = "property";
+            // if (bool) {
+            //     vm.propertySelect = 'allProperties';
+            // }
+
+            // if ($scope.$parent.productId == 9) {
+            //     syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, bool);
+            // }
+            // else {
+            //     syncMgr.allPropertiesSync($scope.$parent.productId, bool);
+            // }
+            // vm.propertiesGrid.updateSelected();
+            // vm.resetProperties();
         };
 
         // Assertions
