@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
@@ -18,20 +19,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Filter Company Map
         /// </summary>
-        /// <param name="booksCompanyMasterId">Master Company Id RPUP</param>
+        /// <param name="companyRealPageId">The guid for the company</param>
+        /// <param name="booksCompanyMasterId">Master Company Id - RPUP</param>
         /// <param name="domain">The domain to query for the company</param>
-        /// <returns>List of CompanyMap</returns>
-        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string domain);
+        /// <returns>List of CompanyMapResource</returns>
+        IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string domain);
 
         /// <summary>
         /// Used to get the information about the given company from the BlackBook system
         /// </summary>
+        /// <param name="companyRealPageId">The guid for the company</param>
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
         /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
-        /// <returns>List of CompanyMap</returns>
-        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "");
+        /// <param name="domain">The domain to query for the company</param>
+        /// <returns>List of CompanyMapResource</returns>
+        IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "");
 
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system

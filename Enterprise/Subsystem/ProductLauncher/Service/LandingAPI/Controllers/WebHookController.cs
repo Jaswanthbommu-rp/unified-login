@@ -278,7 +278,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             organization.Products = new List<string>();
 
             // get a list of products from blue
-            var productList = _manageBlueBook.GetCompanyMap(booksCustomerMasterId, domain: domain);
+            var productList = _manageBlueBook.GetCompanyMap(Guid.NewGuid(), booksCustomerMasterId, domain: domain);
             if (productList != null)
             {
                 foreach (var customerCompanyMap in productList)

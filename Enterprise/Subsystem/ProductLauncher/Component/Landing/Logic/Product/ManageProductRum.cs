@@ -221,7 +221,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// get the PMCID from BlueBook because the user doesn't have the PMCID for Marketing Center yet
 				WriteToDiagnosticLog("GetRUMPMCIDFromPersona - Getting info from BlueBook.GetCompanyMap");
                 //IList<CompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.UtilityManagement);
-                IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.UtilityManagement, domain: _editorPersona.OrganizationDomain);
+                IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.UtilityManagement, domain: _editorPersona.OrganizationDomain);
                 WriteToDiagnosticLog("GetRUMPMCIDFromPersona - Done getting info from BlueBook.GetCompanyMap");
 				if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.ToUpper() == BlueBookProductConstants.UtilityManagement))
 				{

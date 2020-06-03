@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			IManageBlueBook blueBook = new ManageBlueBook(userClaims);
 
-			IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(booksMasterId, source: blueBookProductCode.ToUpper(), domain: domain);
+			IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(userClaims.OrganizationRealPageGuid, booksMasterId, source: blueBookProductCode.ToUpper(), domain: domain);
 			if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
 
 			CustomerCompanyMap company = new CustomerCompanyMap();

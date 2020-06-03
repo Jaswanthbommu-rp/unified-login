@@ -53,6 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         readonly AuthTokenData _authTokenInfo = new AuthTokenData();
 
         private bool useDomains = false;
+        private bool useRPFMId = false;
 
         ObjectCache _manageBlueBookCache = MemoryCache.Default;
 
@@ -82,6 +83,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)))
             {
                 useDomains = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value);
+            }
+
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)))
+            {
+                useRPFMId = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)).Value);
             }
 
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
@@ -116,6 +122,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)))
             {
                 useDomains = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value);
+            }
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)))
+            {
+                useRPFMId = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)).Value);
             }
 
             //bbUri = "https://booksapi.realpage.com";
@@ -161,24 +171,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Filter Company Map
         /// </summary>
+        /// <param name="companyRealPageId">The guid for the company</param>
         /// <param name="booksCompanyMasterId">Master Company Id - RPUP</param>
         /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string domain)
+        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string domain)
         {
-            return GetCompanyMap(booksCompanyMasterId, source: null, domain: domain);
+            return GetCompanyMap(companyRealPageId, booksCompanyMasterId, source: null, domain: domain);
         }
 
         /// <summary>
         /// Used to get the information about the given company from the BlackBook system
         /// </summary>
+        /// <param name="companyRealPageId">The guid for the company</param>
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
         /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "")
+        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "")
         {
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
             string domainFilter = "";
@@ -200,11 +212,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 domainFilter = $"filter[companyInstance.domain]={domain}&";
             }
 
+            string companyFilter = $"filter[customerCompanyId]={booksCompanyMasterId}&";
+
+            if (useRPFMId & companyRealPageId != Guid.Empty)
+            {
+                companyFilter = $"filter[customerCompanyId]={booksCompanyMasterId}&";
+            }
+
             companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
 
             if (companyMap == null)
             {
-                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + domainFilter + $"filter[customerCompanyId]={booksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes";
+                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + domainFilter + companyFilter + $"include=companyInstance&include=companyInstance.attributes";
                 if (!string.IsNullOrEmpty(source))
                 {
                     uri += "&filter[source]=" + source;
