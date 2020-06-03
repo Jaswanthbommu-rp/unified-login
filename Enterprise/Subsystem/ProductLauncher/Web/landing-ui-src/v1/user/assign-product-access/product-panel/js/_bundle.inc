@@ -5,6 +5,7 @@
 {{{ include("controllers/product-roles.js") }}}
 {{{ include("controllers/product-roles-radio.js") }}}
 {{{ include("controllers/product-properties-radio.js") }}}
+{{{ include("controllers/product-property-group-radio.js") }}}
 {{{ include("controllers/product-info-icon.js") }}}
 {{{ include("controllers/product-list-aside.js") }}}
 {{{ include("controllers/product-property-group.js") }}}

@@ -307,6 +307,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						result.Additional = null;
 					}
 					break;
+				case (int)ProductEnum.VendorServices:
+					IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
+					result = manageProductVendorServices.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+					break;
 				case (int)ProductEnum.AoBusinessIntelligence:
 				case (int)ProductEnum.AoInvestmentAnalytics:
 				case (int)ProductEnum.AoPerformanceAnalytics:

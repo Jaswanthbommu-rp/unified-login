@@ -173,6 +173,14 @@
                 product: "54"
             });
         }
+
+        if (templateModel.isProductExists(16)) {
+            productAccess.register({
+                model: model,
+                key: "soln105",
+                product: "16"
+            });
+        }
         logc("productAccess", productAccess);
     }
 

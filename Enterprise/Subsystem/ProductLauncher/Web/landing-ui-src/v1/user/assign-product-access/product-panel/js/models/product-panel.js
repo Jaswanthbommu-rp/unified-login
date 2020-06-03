@@ -27,10 +27,14 @@
                 statusTypeId: 5,
                 retryCount: 0,
                 inputJson: {
+                    IsVendorRecommendationChanges : false,
+                    isInsuranceExpired : false,
+                    isVendorNotLinkedToAnyProperty : false,
                     roleList: [],
                     propertyList: [],
                     regionList: [],
                     propertyGroupList: [],
+                    propertyGroup: [],
                     removedPropertyList: [],
                     messageGroups: [],
                     Notifications: {
@@ -127,6 +131,9 @@
             if(productId == "17"){
                 notifications = dataSyncManager.getProductNotificationsData(productId);
             }
+            if(productId == "16"){
+                notifications = dataSyncManager.getProductNotificationsData(productId);
+            }
             
             var bmroles = "";
             if (productId == "30") {
@@ -160,8 +167,11 @@
                 s.batchData.inputJson.propertyList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14" || productId == "3" || productId == "23") {
+                    if (productId == "14" || productId == "3" || productId == "23" ) {
                         s.batchData.inputJson.propertyList.push("-1");
+                    }
+                    else if(productId == "16") {
+                        s.batchData.inputJson.propertyList.push(-1);
                     }
                     else {
                         s.batchData.inputJson.propertyList.push("all");
@@ -197,6 +207,13 @@
                         else if(productId == "17"){
                             s.batchData.inputJson.messageGroups.push(group.id);
                         }
+                        else if(productId == "16"){
+                            var newGroup = {
+                                Id: group.propertyGroupId,
+                                Type: group.accessLevel
+                            };
+                            s.batchData.inputJson.propertyGroup.push(newGroup);
+                        }
                         else{
                             s.batchData.inputJson.regionList.push(group.id);
                         }
@@ -204,6 +221,9 @@
                 });
                 if(productId == "17"){
                     hasPropertyGroupSelected = s.batchData.inputJson.messageGroups.length > 0;
+                }
+                else if(productId == "16"){
+                    hasPropertyGroupSelected = s.batchData.inputJson.propertyGroup.length > 0;
                 }
                 else{
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
@@ -214,6 +234,12 @@
                 s.batchData.inputJson.Notifications.managerFdiViaEmail = notifications.managerFdiViaEmail;
                 s.batchData.inputJson.Notifications.amenitiesViaEmail = notifications.amenitiesViaEmail;
                 s.batchData.inputJson.Notifications.managerMrViaEmail = notifications.managerMrViaEmail;
+            }
+            if(productId == "16" && notifications !== undefined){
+                s.batchData.inputJson.Notifications = [];
+                s.batchData.inputJson.IsVendorRecommendationChanges = notifications.isVendorRecommendationChanges;
+                s.batchData.inputJson.isInsuranceExpired = notifications.isInsuranceExpired;
+                s.batchData.inputJson.isVendorNotLinkedToAnyProperty = notifications.isVendorNotLinkedToAnyProperty;
             }
 
             if (productId == "30" && bmroles !== undefined && bmroles.length > 0) {
@@ -258,6 +284,9 @@
                 hasPropertySelected = true;
             }
 
+            if(productId == "16" && hasPropertyGroupSelected) {
+                hasPropertySelected = true;
+            }
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;
             }
