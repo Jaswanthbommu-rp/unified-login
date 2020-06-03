@@ -147,6 +147,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
 					break;
+				case (int)ProductEnum.RenovationManager:
+					var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
+					result = productRMLogic.GetProductProperties(datafilter);
+					break;
 				default:
 					break;
 			}
@@ -253,6 +257,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
+					break;
+				case (int)ProductEnum.RenovationManager:
+					var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
+					result = productRMLogic.GetProductRoles(datafilter);
 					break;
 				default:
 					break;

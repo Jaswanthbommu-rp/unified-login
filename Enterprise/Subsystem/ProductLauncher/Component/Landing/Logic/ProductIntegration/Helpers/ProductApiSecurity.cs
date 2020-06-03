@@ -38,7 +38,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch (_productType)
             {
                 case ProductEnum.VendorServices:
-                    UnityOAuthApiSecurity(httpClient);
+				case ProductEnum.RenovationManager:
+					UnityOAuthApiSecurity(httpClient);
                     break;
                 case ProductEnum.LeadManagement: //ILM-LM
                 case ProductEnum.LeadAnalytics: //ILM-LA
@@ -52,11 +53,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		            break;
 	            case ProductEnum.ClickPay:
 		            ClickPayApiSecurity(httpClient);
-		            break;
+		            break;				
 			}
-        }
+        }			
 
-	    private void ClickPayApiSecurity(HttpClient httpClient)
+		private void ClickPayApiSecurity(HttpClient httpClient)
 	    {
 			string apiUser = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIUSERNAME").Value;
 		    string apiPassword = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;
@@ -74,9 +75,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			httpClient.DefaultRequestHeaders.Clear();
 		    httpClient.SetBasicAuthentication(apiUser, apiPassword);
-		}
-
-	    #endregion
+		}	
+		#endregion
 
 		#region Private Methods - Portfolio Management
 		/// <summary>
