@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductPropertyGroupsGridCtrl($scope, $rootScope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, tabsModel) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -119,8 +119,30 @@
         };
 
         vm.setPropertyGroupData = function (resp) {
+            //$scope.$parent.hasAccessToSiteSpendManagementOnly = true;
             pgGrid.busy(false);
-            if (resp.records && resp.records.length) {
+            if($scope.$parent.productId == 8 && resp.additional && !resp.additional.isMConsolePMC){
+                //hide companies tab and show entities tab for financial suite
+                var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                var initialTab = [];
+                var filteredAllTabs = allTabs.filter(function(tb){
+                    if(tb.text != "Companies"){
+                        if(tb.text == "Entities"){
+                            tb.isActive = true;
+                            initialTab.push(tb);
+                        }
+                        return tb;
+                    }
+                });
+
+                logc("filteredAllTabs",filteredAllTabs);
+                logc("initialTab",initialTab);
+                
+                syncMgr.renderProductTabsMap($scope.$parent.productId, filteredAllTabs, initialTab);
+                syncMgr.renderProductActiveTabMap($scope.$parent.productId, initialTab);
+                vm.setProductTabs(filteredAllTabs);
+            }
+            else if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
                 vm.loadGridData($scope.$parent.productId);
             }
@@ -130,7 +152,12 @@
             }
         };
 
-
+        vm.setProductTabs = function (tabs) {
+            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+            tabsModel.setTabs(tabs);
+            tabsModel.setTabMenuData(tabs);
+            tabsModel.activateTab(activeTab).initActiveTab();
+        };
 
         vm.destroy = function () {
             vm.destWatch();
@@ -159,6 +186,7 @@
         .module("settings")
         .controller("ProductPropertyGroupsGridCtrl", [
             "$scope",
+            "$rootScope",
             "$filter",
             "productPropertyGroupSvc",
             "rpGridModel",
@@ -169,6 +197,7 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
+            "productPanelTabsModel",
             ProductPropertyGroupsGridCtrl
         ]);
 })(angular);

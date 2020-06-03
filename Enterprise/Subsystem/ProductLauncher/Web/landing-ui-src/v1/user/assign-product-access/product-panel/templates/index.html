@@ -16,14 +16,14 @@
         <div class="col-md-5">
             <rp-switch class="inline label-1"
                 config="apa.acessSiteSpndMgmtOnlySwitch"
-                rp-model="apa.acessSiteSpndMgmtOnly"
+                rp-model="apa.hasAccessToSiteSpendManagementOnly"
                 rp-label-text="'Access to Site Spend Management only'">
             </rp-switch>
         </div>
         <div class="col-md-5">
             <rp-switch class="inline label-1"
                 config="apa.allPropSwitch"
-                rp-model="apa.allProperties"
+                rp-model="apa.hasAccessToAllCurrentFutureProperties"
                 rp-label-text="'Allow access to all current and future entities'">
             </rp-switch>
         </div>        
@@ -34,7 +34,7 @@
         <div class="col-md-5">            
             <rp-switch class="inline label-1"
                 config="apa.accountingAdminSwitch"
-                rp-model="apa.accountingAdmin"
+                rp-model="apa.isAccountingAdmin"
                 rp-label-text="'Accounting Admin'">
             </rp-switch>
         </div>

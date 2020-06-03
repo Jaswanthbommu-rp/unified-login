@@ -335,8 +335,8 @@
                             aSwitch = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
-                                if($scope.productId == 17){
-                                    if (ctrl.type === 'Switch') {
+                                if($scope.productId == 8){
+                                    if (tabGrp.type === 'Switch') {
                                         var c = {
                                             id: tabGrp.id,
                                             text: tabGrp.displayName,
@@ -357,7 +357,7 @@
                                                 text: ctrl.displayName,
                                                 key: ctrl.dataSource,
                                                 configData: switchConfig({
-                                                    onChange: vm.selectionAll,
+                                                    onChange: vm.noop,
                                                     disabled: vm.hasViewOnlyAccess()
                                                 })
                                             };

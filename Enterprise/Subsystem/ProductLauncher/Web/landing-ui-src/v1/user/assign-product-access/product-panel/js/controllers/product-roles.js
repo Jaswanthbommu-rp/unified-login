@@ -353,8 +353,8 @@
                 if(record.productId == "17"){
                     vm.rpRoleSelected = record;
                     //vm.allProperties = false;
-                    vm.showAllPropertiesSwtich = (rpRoleName == "enterprise standard") ? true : false;
-                    vm.allProperties = ((rpRoleName == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || rpRoleName == "enterprise admin") ? true : false;
+                    vm.showAllPropertiesSwtich = (record.name.toLowerCase() == "enterprise standard") ? true : false;
+                    vm.allProperties = ((record.name.toLowerCase() == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || record.name.toLowerCase() == "enterprise admin") ? true : false;
                     syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                     
                 }
