@@ -10,7 +10,6 @@
             vm.active = {};
             vm.list = templates.getList();
             if (productTemplateModel.isReady()) {
-                logc("panelTemplateModel00", productTemplateModel);
                 vm.registerModels();
             }
             else {
@@ -21,7 +20,7 @@
 
         vm.registerModels = function () {
             var listModels = productModelsSvc.getProductModels();
-            logc("listModels", listModels);
+            //logc("listModels", listModels);
             angular.forEach(listModels, function (data) {
               model.register(data);
             });

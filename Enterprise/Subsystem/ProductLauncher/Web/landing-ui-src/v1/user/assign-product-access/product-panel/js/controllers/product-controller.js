@@ -47,6 +47,11 @@
                     vm.userType = userStatus.isExternalUser() ? "External User" : "Regular user (no email)";
                 }
 
+                if (obj.productId == 29) {
+                    logc("published");
+                    pubsub.publish("productpanel.biProductSelected");
+                }
+
                 vm.loadProductControlsData(obj.productId);
             }
             //logc("productExists", productExists, obj.productId);
@@ -89,6 +94,10 @@
         vm.resetProductDisabled = function () {
             vm.productDisabled = false;
             vm.userType = "";
+            if (userStatus.isExternalUser() && $scope.productId == 29) {
+                vm.productDisabled = true;
+                vm.userType = "External User";
+            }
         };
 
         vm.setChanged = function () {
@@ -154,9 +163,13 @@
                             if (tabName === "markets" || tabName === "messaginggroups") {
                                 tabName = "propertygroup";
                             }
+                            if (tabName === "additionalrights") {
+                                tabName = "rights";
+                            }
                             if(tabName === "propertygroup" && $scope.productId == 13){
                                 tabName = "properties";
                             }
+                            
                             var tab = {
                                 id: tabGrp.displayName.toLowerCase(),
                                 text: tabGrp.displayName,
@@ -194,6 +207,9 @@
                             } 
                             else if(tabName === "PropertyGroup" && productId == 13){
                                 tabName = "Properties";
+                            }
+                            else if(tabName === "AdditionalRights"){
+                                tabName = "Rights";
                             }
 
                             tabGrp.controls.forEach(function (tab) {

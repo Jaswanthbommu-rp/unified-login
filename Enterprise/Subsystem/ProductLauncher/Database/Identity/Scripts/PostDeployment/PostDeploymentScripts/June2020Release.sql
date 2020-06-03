@@ -20,6 +20,34 @@ SELECT	@UserId = UserId
 FROM	Ident.UserLogin
 WHERE	LoginName LIKE 'realpagead@%'
 
+	SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
+	
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 16)
+  BEGIN
+	  INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	  VALUES (16, 139, 145, N'ManageCIMPLQuestions', 1, @UserId, @Now)
+  END
+
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 17)
+  BEGIN
+	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	VALUES (17, 139, 145, N'CIMPLManagePII', 1, @UserId, @Now)
+  END
+ 
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 18)
+  BEGIN
+  	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	VALUES (18, 139, 145, N'CIMPLManageSensitiveFinancialData', 1, @UserId, @Now)
+  END
+  
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 19)
+  BEGIN  
+	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	VALUES (19, 139, 145, N'ViewCIMPLQuestions', 1, @UserId, @Now)
+  END
+
+	SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
+
 IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
 BEGIN
 	SET IDENTITY_INSERT [UserManagement].[Control] ON 
