@@ -1,4 +1,4 @@
-//  Client Portal Properties Radio Controller
+//  Product Panel Property Group Radio Controller
 
 (function (angular, undefined) {
     "use strict";

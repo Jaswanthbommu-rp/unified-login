@@ -1,7 +1,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductNotificationGridCtrl($scope, $filter, vendCompDataModel, dataSvc, notificationSvc, security, persona, syncMgr, productDataModel, userDetailsModel, switchConfig) {
+    function ProductNotificationGridCtrl($scope, $filter, dataSvc, notificationSvc, security, persona, syncMgr, productDataModel, userDetailsModel, switchConfig) {
         var vm = this;
 
         vm.init = function () {
@@ -9,9 +9,8 @@
             vm.amenity = false;
             vm.serviceReq = false;
             vm.isInsuranceExpired = false;
-            vm.isVendorRecommendationChanges = false;
+            vm.IsVendorRecommendationChanges = false;
             vm.isVendorNotLinkedToAnyProperty = false;
-            vm.vendCompDataModel = vendCompDataModel;
 
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
@@ -64,6 +63,9 @@
             }
             if(productId === 16) {
                 syncMgr.setProductAllNotifications(productId, notificationData);
+                vm.isInsuranceExpired = notificationData.isInsuranceExpired;
+                vm.IsVendorRecommendationChanges = notificationData.isVendorRecommendationChanges;
+                vm.isVendorNotLinkedToAnyProperty = notificationData.isVendorNotLinkedToAnyProperty;
             }
             
         };
@@ -167,7 +169,6 @@
         .controller("ProductNotificationGridCtrl", [
             "$scope",
             "$filter",
-            "vendorComplianceDataModel",
             "resPortNotificationsSvc",
             "vendCompNotificationsSvc",
             "routeSecurity",

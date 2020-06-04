@@ -836,15 +836,26 @@
             return s;
         };
 
-        p.setHidepropertiesgrid = function(bool){
+        p.setHidepropertiesgrid = function(productId, bool){
             var s = this;
             s.hidepropertiesgrid = bool;
-            pubsub.publish("ppanel.access-type-change");
+            pubsub.publish("ppanel.access-type-change", productId);
         };
 
         p.getHidepropertiesgrid = function(){
             var s = this;
             return s.hidepropertiesgrid;
+        };
+
+        p.clearPropertyGroupData = function(key) {
+            var s = this;
+
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
         };
         // Assertions
 

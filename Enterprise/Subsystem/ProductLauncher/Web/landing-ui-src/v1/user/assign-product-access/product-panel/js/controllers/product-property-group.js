@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, pubsub, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -11,6 +11,7 @@
             pgGridPagination = gridPaginationModel();
 
         vm.init = function () {
+            vm.propertySelect = "property";
             vm.grid = pgGrid;
             vm.propertyGroupsError = $filter("productPanelText")("panelError.generic");
             vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "PropertyGroup");
@@ -22,7 +23,7 @@
             pgGridPagination.setConfig({
                 recordsPerPage: 25
             });
-
+            pubsub.subscribe("ppanel.clearPropertyGroup", vm.clearPropertyGroup);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
@@ -44,6 +45,11 @@
 
         vm.filter = function(filterBy){
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
+        vm.clearPropertyGroup = function(productId) {
+            syncMgr.allPropertiesSync(productId, false);
+            vm.updateGrid();
         };
 
         vm.selectAllPropertyGroup = function (val) {
@@ -116,6 +122,22 @@
         };
 
         vm.setPropertyGroupData = function (resp) {
+            // if(resp.additional) {
+                // var accessType = "propertyGroup";//resp.additional.accessType;
+
+                // if (accessType == "allProperties") {
+                //     vm.propertySelect = "all";
+                // }
+                // else if (accessType == "propertyGroup") {
+                //     vm.propertySelect = "group";
+                // }
+                // else {
+                //     vm.propertySelect = "property";
+                // }
+                // vm.propertySelect = accessType;
+                // syncMgr.setAccessType(vm.propertySelect);
+                // pubsub.publish("ppanel.accesstypechange", $scope.$parent.productId);
+            // }
             pgGrid.busy(false);
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
@@ -158,6 +180,7 @@
             "$scope",
             "$filter",
             "productPropertyGroupSvc",
+            "pubsub",
             "rpGridModel",
             "rpGridTransform",
             "rpGridPaginationModel",

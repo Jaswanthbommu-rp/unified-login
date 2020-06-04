@@ -62,10 +62,13 @@
             $scope.productId = obj.productId;
         };
 
-        vm.accessTypeChanged = function () {
+        vm.accessTypeChanged = function (productId) {
             vm.propertySelect = syncMgr.getAccessType();
             if(vm.propertySelect === 'allProperties'){
                 vm.allProperties = true;
+            }
+            if(vm.propertySelect === 'propertyGroup'){
+                syncMgr.allPropertiesSync(productId, false);
             }
         };
 

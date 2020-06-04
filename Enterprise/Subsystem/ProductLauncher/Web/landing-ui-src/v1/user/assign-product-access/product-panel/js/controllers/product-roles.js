@@ -49,6 +49,7 @@
             vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
 
+            // pubsub.subscribe("ppanel.accesstypechange", vm.accessTypechange);
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
@@ -58,6 +59,11 @@
             return productDataModel.isRoleGridActive();
         };
 
+        // vm.accessTypechange = function (productId) {
+        //    var accessType = syncMgr.getAccessType();
+        //    vm.propertySelect = accessType; //property
+        //    //vm.resetDataModel();
+        // };
         vm.isVendorCredentialing = function () {
             if($scope.$parent.productId === 16){
                 return true;
@@ -69,13 +75,18 @@
         };
 
         vm.resetDataModel = function () {
-            vm.loadGridData($scope.$parent.productId);
             syncMgr.setAccessType(vm.propertySelect);
+            vm.loadGridData($scope.$parent.productId);
+            
             if(vm.propertySelect === 'allProperties') {
-                syncMgr.setHidepropertiesgrid(true);
+                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
             }
-            else {
-                syncMgr.setHidepropertiesgrid(false);
+            else if(vm.propertySelect === 'propertyGroup') {
+                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+            }
+            else if(vm.propertySelect === 'property') {
+                syncMgr.setHidepropertiesgrid($scope.$parent.productId, false);
+                syncMgr.clearPropertyGroupData($scope.$parent.productId);
             }
         };
         vm.isSelectTypeConfigLoaded = function () {

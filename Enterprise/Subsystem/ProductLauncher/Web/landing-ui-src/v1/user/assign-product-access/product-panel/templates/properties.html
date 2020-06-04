@@ -48,11 +48,11 @@
         </div>
 
 
-        <div class="product-panel-all-properties">
-            <div ng-if="cpp.hidePropertiesGrid() && !cpp.isVendorCredentialing()">
+        <div class="product-panel-all-properties" ng-if="cpp.hidePropertiesGrid()">
+            <div ng-if="!cpp.isVendorCredentialing()">
                 This user will be provided access to all current and future properties.
             </div>
-            <div ng-if="cpp.hidePropertiesGrid() && cpp.isVendorCredentialing()">
+            <div ng-if="cpp.isVendorCredentialing()">
                 This user will be assigned current and new properties automatically.
             </div>
         </div>
