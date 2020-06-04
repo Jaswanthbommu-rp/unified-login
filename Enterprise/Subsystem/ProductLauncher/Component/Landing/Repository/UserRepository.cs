@@ -3194,7 +3194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             IsVendorNotLinkedToAnyProperty =
                                                 batchRecord.InputJson.IsVendorNotLinkedToAnyProperty,
                                             MessageGroups = batchRecord.InputJson.MessageGroups,
-                                            IsAssigned = true,
+                                            IsAssigned = batchRecord.InputJson.IsAssigned,
                                             CompaniesList = batchRecord.InputJson.CompaniesList,
                                             HasAccessToAllCurrentFutureProperties = batchRecord.InputJson.HasAccessToAllCurrentFutureProperties,
                                             HasAccessToSiteSpendManagementOnly = batchRecord.InputJson.HasAccessToSiteSpendManagementOnly,
