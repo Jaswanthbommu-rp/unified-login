@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, pubsub, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -11,6 +11,7 @@
             pgGridPagination = gridPaginationModel();
 
         vm.init = function () {
+            vm.propertySelect = "property";
             vm.grid = pgGrid;
             vm.propertyGroupsError = $filter("productPanelText")("panelError.generic");
             vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "PropertyGroup");
@@ -23,6 +24,7 @@
                 recordsPerPage: 25
             });
 
+            pubsub.subscribe("ppanel.clearPropertyGroup", vm.clearPropertyGroup);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
@@ -44,6 +46,11 @@
 
         vm.filter = function(filterBy){
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
+        vm.clearPropertyGroup = function(productId) {
+            syncMgr.allPropertiesSync(productId, false);
+            vm.updateGrid();
         };
 
         vm.selectAllPropertyGroup = function (val) {
@@ -120,6 +127,8 @@
 
         vm.setPropertyGroupData = function (resp) {
             pgGrid.busy(false);
+            var accesstype = resp.additional.accessType;
+            
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
                 vm.loadGridData($scope.$parent.productId);
@@ -127,6 +136,9 @@
 
             if (resp.isError) {
                 vm.isPropertyGroupsError = true;
+            }
+            if(accesstype) {
+                pubsub.publish("ppanel.accessTypeChange", accesstype);
             }
         };
 
@@ -161,6 +173,7 @@
             "$scope",
             "$filter",
             "productPropertyGroupSvc",
+            "pubsub",
             "rpGridModel",
             "rpGridTransform",
             "rpGridPaginationModel",
