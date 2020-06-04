@@ -127,6 +127,8 @@
 
         vm.setPropertyGroupData = function (resp) {
             pgGrid.busy(false);
+            var accesstype = resp.additional.accessType;
+            
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
                 vm.loadGridData($scope.$parent.productId);
@@ -135,10 +137,9 @@
             if (resp.isError) {
                 vm.isPropertyGroupsError = true;
             }
-            // if(propertySelect == "propertyGroup") {
-            //     syncMgr.setAccessType(propertySelect);
-            //     pubsub.publish("ppanel.accessTypeChange", $scope.$parent.productId);                
-            // }
+            if(accesstype) {
+                pubsub.publish("ppanel.accessTypeChange", accesstype);
+            }
         };
 
 

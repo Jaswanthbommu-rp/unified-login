@@ -31,7 +31,7 @@
             vm.showAllPropertiesSwtich = false;
             vm.accessLevel = {};
             vm.propertySelect = "property"; //property
-
+            
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -75,9 +75,23 @@
             return false;
         };
 
-        vm.accessTypeChange = function (productId) {
-            // vm.propertySelect = 'propertyGroup';//syncMgr.getAccessType();
-            // vm.resetDataModel();
+        vm.accessTypeChange = function (accessType) {
+            if(accessType === 'specificProperties') {
+                vm.propertySelect = 'property';
+            }
+            else if(accessType === 'propertyGroup') {
+                vm.propertySelect = 'propertyGroup';
+            }
+            else {
+                vm.propertySelect = 'allProperties';
+                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+            }
+            vm.rpRoleSelected = vm.propertySelect;
+            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, vm.propertySelect);
+                
+            if (dependencyControlId > 0) {
+                vm.loadProductControlDependencyData(dependencyControlId);
+            }
         };
         vm.resetDataModel = function () {
             syncMgr.setAccessType(vm.propertySelect);
@@ -175,11 +189,8 @@
                     }
                 });
 
-                var dependencyControlId = syncMgr.getProductDependencyControlId(productId, 'role');
-
-                if(productId === 16) {
-                    dependencyControlId = syncMgr.getProductDependencyControlId(productId, vm.propertySelect);
-                }
+                var controlDependencyValue = (productId === 16) ? vm.propertySelect : 'role' ;
+                var dependencyControlId = syncMgr.getProductDependencyControlId(productId, controlDependencyValue);
                 
                 if (dependencyControlId > 0) {
                     vm.loadProductControlDependencyData(dependencyControlId);
