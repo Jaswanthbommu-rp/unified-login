@@ -27,7 +27,7 @@
             $scope.rightsGridPagination = rightsGridPagination;
 
             rightsGridPagination.setConfig({
-                recordsPerPage: 5
+                recordsPerPage: 25
             });
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);

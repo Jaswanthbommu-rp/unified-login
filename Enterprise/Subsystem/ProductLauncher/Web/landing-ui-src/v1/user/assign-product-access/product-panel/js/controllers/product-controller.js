@@ -166,6 +166,10 @@
                             if (tabName === "additionalrights") {
                                 tabName = "rights";
                             }
+                            if(tabName === "propertygroup" && $scope.productId == 13){
+                                tabName = "properties";
+                            }
+                            
                             var tab = {
                                 id: tabGrp.displayName.toLowerCase(),
                                 text: tabGrp.displayName,
@@ -200,6 +204,9 @@
                             }
                             else if (tabName === "Rights") {
                                 tabName = "Roles";
+                            } 
+                            else if(tabName === "PropertyGroup" && productId == 13){
+                                tabName = "Properties";
                             }
                             else if(tabName === "AdditionalRights"){
                                 tabName = "Rights";
