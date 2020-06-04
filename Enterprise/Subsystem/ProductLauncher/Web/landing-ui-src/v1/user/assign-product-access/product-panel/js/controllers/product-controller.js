@@ -216,14 +216,11 @@
                             else if (tabName === "Rights") {
                                 tabName = "Roles";
                             } 
-                            else if(tabName === "PropertyGroup" && productId == 13){
+                            else if((tabName === "PropertyGroup" && productId == 13) || tabName === "Entities"){
                                 tabName = "Properties";
                             }
                             else if(tabName === "AdditionalRights"){
                                 tabName = "Rights";
-                            }
-                            if (tabName === "Entities") {
-                                tabName = "Properties";
                             }
                             if(tabGrp.controls){
                                 tabGrp.controls.forEach(function (tab) {
