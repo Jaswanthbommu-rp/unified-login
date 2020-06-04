@@ -1236,4 +1236,18 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="FromDate" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="e76f3261-2c68-4d26-b134-c37e28c7c0be" ChangeDateTime="06/03/2020 19:06:00">
+    <Property Name="ElementName" Value="[Enterprise].[PersonaConfiguration].[StatusId]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[Enterprise].[PersonaConfiguration]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="StatusTypeId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="5280611b-b4ee-4948-88e5-c803640e009c" ChangeDateTime="06/03/2020 21:09:01">
+    <Property Name="ElementName" Value="[Enterprise].[PersonaConfiguration].[isFavourite]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[Enterprise].[PersonaConfiguration]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="IsFavorite" />
+  </Operation>
 </Operations>

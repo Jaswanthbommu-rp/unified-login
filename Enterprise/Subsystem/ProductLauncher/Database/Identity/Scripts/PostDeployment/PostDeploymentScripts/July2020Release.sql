@@ -353,3 +353,70 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF    
 
 END
+
+GO
+declare @now datetime = getutcdate()
+;with personastatus (personaid, productid, statusid, rownumber )
+as (
+ SELECT	p.PersonaID,
+			pec.ProductId,
+			ps.value,
+			Row_Number() Over(Partition by prc.configurationid Order by productconfigurationid DESC) As RN
+		FROM	
+			Person.Persona p
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId
+			INNER JOIN Enterprise.ProductSettingType pst ON ps.ProductSettingTypeId = pst.ProductSettingTypeId AND pst.name = 'ProductStatus'
+		WHERE
+		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+)
+
+--update pc
+--set pc.statustypeid = ps.statusid
+select *
+from enterprise.PersonaConfiguration pc
+inner join personastatus ps on pc.personaid = ps.personaid and ps.productid = pc.ProductId
+where
+rownumber = 1
+and pc.statustypeid != ps.statusid
+and ps.statusid in ( select statustypeid from enterprise.StatusType )
+
+GO
+
+declare @now datetime = getutcdate()
+;with personaproductfavourite (personaid, productid, isfav, rownumber )
+as (
+ SELECT	p.PersonaID,
+			pec.ProductId,
+			ps.value,
+			Row_Number() Over(Partition by prc.configurationid Order by productconfigurationid DESC) As RN
+		FROM	
+			Person.Persona p
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId
+			INNER JOIN Enterprise.ProductSettingType pst ON ps.ProductSettingTypeId = pst.ProductSettingTypeId AND pst.name = 'IsFavorite'
+		WHERE
+		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+)
+
+--update pc
+--set pc.statustypeid = ps.statusid
+select *
+from enterprise.PersonaConfiguration pc
+inner join personaproductfavourite ps on pc.personaid = ps.personaid and ps.productid = pc.ProductId
+where
+rownumber = 1
+and pc.isfavorite != ps.isfav
+
+GO
+
