@@ -7,7 +7,7 @@ SELECT	@UserId = UserId
 FROM	Ident.UserLogin
 WHERE	LoginName LIKE 'realpagead@%'
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 399 )
 BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[Control] ON 
@@ -284,7 +284,71 @@ SET IDENTITY_INSERT [UserManagement].[Control] ON
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
 
 	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
-	VALUES (34, 17, 380, @UserId, @Now)
+	VALUES (34, 25, 380, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF    
+
+END
+
+SELECT @ProductId = 13
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+    SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (418, NULL, 8, N'SpendManagementProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (419, 418, 9, N'SpendManagementProductAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (420, 419, 2, N'SpendManagementProductAccessRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (421, 420, 7, N'SpendManagementProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (422, 420, 5, N'SpendManagementProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (423, 418, 9, N'SpendManagementProductAccessPropertyGroupsTabUIId', N'Property Group', NULL, 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (424, 423, 2, N'SpendManagementProductAccessPropertyGroupsSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (425, 424, 7, N'SpendManagementProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (426, 424, 5, N'SpendManagementProductAccessPropertyGroupLabelUIId', N'Property Group', N'name', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (95, 420, N'ShowSelectAll', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (96, 424, N'ShowSelectAll', N'False', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (97, 419, N'Default', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+	VALUES (26, 13, N'Spend Management Product Access', @UserId, @Now, 1)
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+	VALUES (35, 26, 418, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF    
 

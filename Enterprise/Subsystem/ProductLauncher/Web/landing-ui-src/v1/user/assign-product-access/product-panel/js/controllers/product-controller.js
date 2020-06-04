@@ -167,32 +167,31 @@
                                     });
                                 }
 
-                                var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
-                                logc(tabName);
-                                if (tabName === "rights") {
-                                    tabName = "roles";
-                                }
-                                if (tabName === "markets" || tabName === "messaginggroups" || tabName === "companies") {
-                                    tabName = "propertygroup";
-                                }
-                                if (tabName === "entities" ) {
-                                    tabName = "properties";
-                                }
-                                if (tabName === "additionalrights") {
-                                    tabName = "rights";
-                                }
-                                var tab = {
-                                    id: tabGrp.displayName.toLowerCase(),
-                                    text: tabGrp.displayName,
-                                    isActive: activeTab,
-                                    incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
-                                };
+                            var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
+                            logc(tabName);
+                            if (tabName === "rights") {
+                                tabName = "roles";
+                            }
+                            if (tabName === "markets" || tabName === "messaginggroups"  || tabName === "companies") {
+                                tabName = "propertygroup";
+                            }
+                            if (tabName === "additionalrights") {
+                                tabName = "rights";
+                            }
+                            if((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entities"){
+                                tabName = "properties";
+                            }
+                            
+                            var tab = {
+                                id: tabGrp.displayName.toLowerCase(),
+                                text: tabGrp.displayName,
+                                isActive: activeTab,
+                                incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
+                            };
 
-                                allTabs.push(tab);
-                                if (!hideTab) {
-                                    initialTabs.push(tab);
-                                }
-                                logc("tabsdata", allTabs);
+                            allTabs.push(tab);
+                            if (!hideTab) {
+                                initialTabs.push(tab);
                             }
                         });
                     }
@@ -216,6 +215,9 @@
                             }
                             else if (tabName === "Rights") {
                                 tabName = "Roles";
+                            } 
+                            else if(tabName === "PropertyGroup" && productId == 13){
+                                tabName = "Properties";
                             }
                             else if(tabName === "AdditionalRights"){
                                 tabName = "Rights";
