@@ -124,6 +124,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 					baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);
 
+				bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+				if (isCompanyIdRequiredToQuery)
+					baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
+
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 

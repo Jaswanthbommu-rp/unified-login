@@ -38,8 +38,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch (_productType)
             {
                 case ProductEnum.VendorServices:
-				case ProductEnum.RenovationManager:
 					UnityOAuthApiSecurity(httpClient);
+					break;
+				case ProductEnum.RenovationManager:
+					RenoOAuthApiSecurity(httpClient);
                     break;
                 case ProductEnum.LeadManagement: //ILM-LM
                 case ProductEnum.LeadAnalytics: //ILM-LA
@@ -150,7 +152,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        private string GetToken(string tokenIssueUri, string clientId, string apiSecret)
+		private void RenoOAuthApiSecurity(HttpClient httpClient)
+		{
+			var apiSecret = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APISECRET").Value;
+			var clientId = _productIntegrationDetails.First(a => a.Name.ToUpper() == "CLIENTID").Value;
+			var tokenIssueUri = _productIntegrationDetails.First(a => a.Name.ToUpper() == "TOKENENDPOINT").Value;
+
+			//var token = GetToken(tokenIssueUri, clientId, apiSecret);
+			httpClient.DefaultRequestHeaders.Clear();
+			httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", "5b0fcd3596946df5fb88d45f68a5a9ecf85625a0");
+		}
+		private string GetToken(string tokenIssueUri, string clientId, string apiSecret)
         {
             try
             {
