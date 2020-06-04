@@ -54,6 +54,25 @@
                 model.reset();
             }
             pubsub.publish("productpanel.userTypeChanged");
+
+            if (model.adminResetFlag && (userStatus.statusId === 401 || userStatus.statusId === 405)) {
+                if (!angular.equals({}, model.data)) {
+                    logc("model data`", model);
+                    model.families.forEach(function (family) {
+                        family.selectAll.selected = false;
+                    });
+
+                    model.data.forEach(function (family) {
+                        family.solutions.forEach(function (soln) {
+                            soln.isAssigned = false;
+                            if (soln.solutionId === 503 && soln.productId === 3) {
+                                soln.isAssigned = true;
+                            }
+                        });
+                    });
+                }
+            }
+
             // UnCheck the products which do not support  RegularUser NoEmail
             if (userStatus.statusId === 404) {
                 if (!angular.equals({}, model.data)) {
