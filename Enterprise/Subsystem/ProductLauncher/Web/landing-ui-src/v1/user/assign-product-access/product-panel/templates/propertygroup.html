@@ -1,5 +1,5 @@
 <div class="property-groups-wrapper" ng-controller="ProductPropertyGroupsGridCtrl as ppg">
-    <div class="property-groups-body" ng-if="!ppg.isPropertyGroupsError">
+    <div class="property-groups-body" ng-if="!ppg.isPropertyGroupsError && ppg.showPGGrid">
         <div class="grid-controls">
             <div class="grid-control-item">
                 <rp-toggle model="ppg.grid.filtersModel.state.active" options="{

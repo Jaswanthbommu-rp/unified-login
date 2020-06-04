@@ -18,6 +18,7 @@
             pgGrid.setConfig(vm.config);
             pgGridPagination.setGrid(pgGrid);
             $scope.pgGridPagination = pgGridPagination;
+            vm.showPGGrid = true;
 
             pgGridPagination.setConfig({
                 recordsPerPage: 25
@@ -123,6 +124,7 @@
             pgGrid.busy(false);
             if($scope.$parent.productId == 8 && resp.additional && !resp.additional.isMConsolePMC){
                 //hide companies tab and show entities tab for financial suite
+                vm.showPGGrid = false;
                 var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
                 var initialTab = [];
                 var filteredAllTabs = allTabs.filter(function(tb){

@@ -166,34 +166,35 @@
                                         }
                                     });
                                 }
+                                
+                                var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
+                                logc(tabName);
+                                if (tabName === "rights") {
+                                    tabName = "roles";
+                                }
+                                if (tabName === "markets" || tabName === "messaginggroups"  || tabName === "companies") {
+                                    tabName = "propertygroup";
+                                }
+                                if (tabName === "additionalrights") {
+                                    tabName = "rights";
+                                }
+                                if((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entities"){
+                                    tabName = "properties";
+                                }
+                                
+                                var tab = {
+                                    id: tabGrp.displayName.toLowerCase(),
+                                    text: tabGrp.displayName,
+                                    isActive: activeTab,
+                                    incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
+                                };
 
-                            var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
-                            logc(tabName);
-                            if (tabName === "rights") {
-                                tabName = "roles";
+                                allTabs.push(tab);
+                                if (!hideTab) {
+                                    initialTabs.push(tab);
+                                }
                             }
-                            if (tabName === "markets" || tabName === "messaginggroups"  || tabName === "companies") {
-                                tabName = "propertygroup";
-                            }
-                            if (tabName === "additionalrights") {
-                                tabName = "rights";
-                            }
-                            if((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entities"){
-                                tabName = "properties";
-                            }
-                            
-                            var tab = {
-                                id: tabGrp.displayName.toLowerCase(),
-                                text: tabGrp.displayName,
-                                isActive: activeTab,
-                                incUrl: "user/assign-product-access/product-panel/templates/" + tabName + ".html"
-                            };
-
-                            allTabs.push(tab);
-                            if (!hideTab) {
-                                initialTabs.push(tab);
-                            }
-                        });
+                        });                        
                     }
                 });
                 productModel.renderProductTabsMap($scope.productId, allTabs, initialTabs);
