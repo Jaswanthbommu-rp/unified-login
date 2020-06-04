@@ -727,6 +727,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			return GetUserProductDetails(realPageId);
 		}
 
+        /// <summary>
+        /// Get the products for the given personaid 
+        /// </summary>
+        /// <param name="personaId">User unique identifier</param>
+        /// <returns>Profile object</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Profile object have invalid entries)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get a profile for a Person (User)", Type = typeof(UserProducts))]
+        //[SwaggerResponseExamples(typeof(UserProducts), typeof(GetUserProductsExample))]
+        [Route("user/products")]
+        [AuthorizeScope("userinfoapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUserProductsByPersonaId(long personaId)
+        {
+            ObjectOutput<IProfileDetail, IErrorData> output = new ObjectOutput<IProfileDetail, IErrorData>();
+            UserProductOutputResult productResult = new UserProductOutputResult();
+
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            IManagePersona managePersona = new ManagePersona(_userClaims);
+            IManagePerson personLogic = new ManagePerson();
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+
+            Persona persona = managePersona.GetPersona(personaId);
+            if (persona != null)
+            {
+                var person = personLogic.GetPerson(persona.RealPageId);
+
+                if (person != null)
+                {                
+
+                    productResult.User = new User()
+                    {
+                        FullName = $"{person.FirstName} {person.LastName}",
+                        RealPageId = person.RealPageId,
+						CompanyName = persona.Organization.Name,
+						PersonaId = persona.PersonaId,
+						Title = persona.Name,
+					};
+
+                    var productList = manageProduct.GetAllProductsByPersona(personaId, ProductBatchStatusType.Success);
+					ConvertPersonaProductsToRAUL(productResult, productList);
+                }
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, productResult);
+		}
+
+
+
 		/// <summary>
 		/// Get the user details for the OmniBar
 		/// </summary>
@@ -1069,6 +1120,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			}
 
 			return productList.OrderBy(p => p.FamilyName).ThenBy(p => p.Name).ToList();
+		}
+
+        private void ConvertPersonaProductsToRAUL(UserProductOutputResult productResult, IList<PersonaProduct> products)
+        {
+            productResult.Products = new List<UserProducts>();
+
+            foreach (PersonaProduct prodDetail in products)
+            {
+                if (prodDetail.IsResource && productResult.Resources == null)
+                {
+					productResult.Resources = new List<UserProducts>();
+                }
+
+                //if (!string.IsNullOrEmpty(prodDetail.ProductUrl))
+                {
+                    UserProducts up = new UserProducts()
+                    {
+                        Id = prodDetail.ProductId,
+                        Name = prodDetail.Name,
+                        Description = prodDetail.Description,
+                        Url = prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + prodDetail.Url,
+                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        FamilyId = prodDetail?.FamilyId,
+                        FamilyName = prodDetail.FamilyName,
+                        IsFavorite = prodDetail.isFavorite,
+                        IsNewTab = prodDetail.IsNewTab,
+                        IsResource = prodDetail.IsResource,
+                        Status = prodDetail.StatusTypeId,
+                        ProductCode = prodDetail.BooksProductCode
+                    };
+                    if (prodDetail.IsResource)
+                    {
+						productResult.Resources.Add(up);
+                    }
+                    else
+                    {
+						productResult.Products.Add(up);
+                    }
+                }
+			}
 		}
 
 		/// <summary>

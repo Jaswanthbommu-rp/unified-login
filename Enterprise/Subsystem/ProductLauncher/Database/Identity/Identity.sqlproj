@@ -940,6 +940,8 @@
     <Build Include="Enterprise\Stored Procedures\ListULMappingPersonaIdForProductUserId.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\July2020Release.sql" />
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId_Ver2.sql" />
+    <Build Include="Person\Stored Procedures\GetProductsByPersonaId.sql" />
+    <Build Include="Enterprise\Tables\ProductRight.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

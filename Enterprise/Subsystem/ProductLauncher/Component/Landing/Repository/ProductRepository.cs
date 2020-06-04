@@ -64,10 +64,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #endregion
 
+        /// <summary>
+        /// Used to get a list of products for the given persona id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
+        {
+            dynamic param = new
+            {
+                PersonaId = personaId,
+                StatusTypeId = (int)statusType
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetMany<PersonaProduct>(StoredProcNameConstants.SP_GetProductsByPersonaId, param);
+                return result;
+            }
+        }
+
         #region Public Methods
 
         /// <summary>
-        /// Returns a list of products user has access to, filterable by favorites and resouce only
+        /// Returns a list of products user has access to, filterable by favorites and resource only
         /// </summary>
         /// <param name="persona">persona</param>       
         /// <param name="productSelectType">productSelectType</param>
@@ -93,13 +114,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductSettingList> productSettings = GetProductSettingsByPersona(persona.PersonaId).ToList();
             IList<ProductType> productTypeList = GetProductTypes();
 
-            // is EasyLMS a favourite product?
+            // is EasyLMS a favorite product?
             CheckUserFavouriteProducts(productSettings, ProductEnum.EasyLMS, isFavouriteProducts);
 
-            // is PropertyPhotos a favourite product?
+            // is PropertyPhotos a favorite product?
             CheckUserFavouriteProducts(productSettings, ProductEnum.PropertyPhotos, isFavouriteProducts);
 
-            // is VendorMarketplace a favourite product?
+            // is VendorMarketplace a favorite product?
             CheckUserFavouriteProducts(productSettings, ProductEnum.VendorMarketplace, isFavouriteProducts);
 
             //List of Products By Persona

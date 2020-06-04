@@ -420,3 +420,107 @@ and pc.isfavorite != ps.isfav
 
 GO
 
+
+-- SPECIAL!
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 9 AND RIghtShortName = 'AccessPropertyPhotos' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 9, 'AccessPropertyPhotos' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 21 AND RIghtShortName = 'AccessOneSiteConversions' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 21, 'AccessOneSiteConversions' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 19 AND RIghtShortName = 'ProductLearningPortal' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 19, 'ProductLearningPortal' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 9 AND RIghtShortName = 'AccessHelpCenter' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 9, 'AccessHelpCenter' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 9 AND RIghtShortName = 'MigrationTool' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 27, 'MigrationTool' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 35 AND RIghtShortName = 'AccessToUnifiedPlatform' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 35, 'AccessToUnifiedPlatform' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 35 AND RIghtShortName = 'AccessToUnifiedSettings' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 35, 'AccessToUnifiedSettings' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 35 AND RIghtShortName = 'ViewOnlySupportToolAccess' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 35, 'ViewOnlySupportToolAccess' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'ViewCIMPLQuestions' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'ViewCIMPLQuestions' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLESubmitQuestionnaires' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLESubmitQuestionnaires' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLManagePII' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLManagePII' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLManageSensitiveFinancialData' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLManageSensitiveFinancialData' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLStandardImplementationAccess' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLStandardImplementationAccess' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'ManageCIMPLQuestions' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'ManageCIMPLQuestions' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'AccessSettingMGMTConsole' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 43, 'AccessSettingMGMTConsole' )
+end
+
+---- EASY LMS????
+---- EASY LMS????
+---- EASY LMS????
+-- REMOVE CLIENT PORTAL FOR SUPPORT TOOL USERS???
+
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 38 AND RIghtShortName = 'AccessVendorMarketplace' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 38, 'AccessVendorMarketplace' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 38 AND RIghtShortName = 'EmployeeAccessVendorMarketPlace' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 38, 'EmployeeAccessVendorMarketPlace' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 28 AND RIghtShortName = 'ProductLearningPortal' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 28, 'ProductLearningPortal' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 28 AND RIghtShortName = 'EditOwnProfile' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 28, 'EditOwnProfile' )
+end
+
+GO

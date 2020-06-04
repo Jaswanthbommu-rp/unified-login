@@ -187,6 +187,8 @@
         public const string SP_ListProductsByPersonaId = "Enterprise.ListProductsByPersonaId";
         public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
 
+        public const string SP_GetProductsByPersonaId = "Person.GetProductsByPersonaId";
+
         //Remove
         public const string SP_ListProductTypes = "Enterprise.ListProductTypes";
 
