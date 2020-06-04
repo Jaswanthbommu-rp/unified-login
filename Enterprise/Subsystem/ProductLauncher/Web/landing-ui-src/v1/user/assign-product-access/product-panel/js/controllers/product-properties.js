@@ -47,6 +47,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
+            pubsub.subscribe("ppanel.access-type-change", vm.accessTypeChanged);
+
 
 
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
@@ -61,6 +63,21 @@
             $scope.productId = obj.productId;
         };
 
+        vm.accessTypeChanged = function (productId) {
+            vm.propertySelect = syncMgr.getAccessType();
+            if(vm.propertySelect === 'allProperties'){
+                vm.allProperties = true;
+            }
+            if(vm.propertySelect === 'propertyGroup'){
+                syncMgr.allPropertiesSync(productId, false);
+            }
+        };
+        vm.isVendorCredentialing = function() {
+            if($scope.$parent.productId === 16) {
+                return true;
+            }
+            return false;
+        };
 
         vm.hasViewOnlyAccess = function () {
             return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
@@ -96,6 +113,9 @@
 
         vm.hidePropertiesGrid = function () {
             if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
+                return true;
+            }
+            else if(syncMgr.getAccessType() === 'allProperties' && $scope.$parent.productId === 16) {
                 return true;
             }
             return false;
@@ -210,7 +230,7 @@
                     }
                 });
 
-                if (syncMgr.isProductAllProperties(productId)) {
+                if (syncMgr.isProductAllProperties(productId) || syncMgr.getHidepropertiesgrid()) {
                     propertySelect = "allProperties";
                     vm.allProperties = true;
                 }

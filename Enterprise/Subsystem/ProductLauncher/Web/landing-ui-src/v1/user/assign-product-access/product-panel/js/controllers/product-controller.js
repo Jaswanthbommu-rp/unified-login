@@ -213,7 +213,7 @@
                             }
 
                             tabGrp.controls.forEach(function (tab) {
-                                if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
+                                if (tab.type === "Multi Select Grid" || tab.type === "Select Grid"  || (tab.type === "Radio" && productId === 16)) {
                                     //Check and Set Grid Config Types
                                     var showSelectAll = false;
                                     if (tab.attributes !== null) {
@@ -232,6 +232,12 @@
 
                                             productModel.renderProductGridConfigMap(bmProductId, tabName, bmgridConfig);
                                         }
+                                    }
+                                    if (tabName === 'Roles' && productId === 16 && tab.type === 'Radio') {
+                                        var acctypecnfg = configData.getGridConfigTypes(tab, tab.dataSource);
+                                        var acctypegridConfig = vm.getGridConfig(acctypecnfg, showSelectAll);
+                                        productModel.renderProductGridConfigMap(productId, "property", acctypegridConfig);
+                                        vm.setProductDependency(tab, productId);
                                     }
                                     else {
                                         if (productModel.getProductGridConfig(productId, tabName) === undefined) {
@@ -276,6 +282,11 @@
                         productModel.renderProductDependencyMap(productId, item.displayName.toLowerCase(), item.id);
                     }
                 });
+            }
+            if (gridData.type === "Radio" && productId === 16) {
+                if (gridData.dependency !== null && gridData.dependency) {
+                    productModel.renderProductDependencyMap(productId, gridData.dataSource, gridData.id);
+                }
             }
         };
 
