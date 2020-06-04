@@ -769,7 +769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					};
 
                     var productList = manageProduct.GetAllProductsByPersona(personaId, ProductBatchStatusType.Success);
-					ConvertPersonaProductsToRAUL(productResult, productList);
+					ConvertPersonaProductsToRAUL(productResult, productList, personaId);
                 }
             }
 
@@ -792,10 +792,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		[HttpGet]
 		public HttpResponseMessage GetOmnibarInfo()
 		{
-            return GetUserProductDetails_v2(_userClaims.UserRealPageGuid);
+            return GetUserProductDetails_v2(_userClaims.UserRealPageGuid, null);
 		}
 
+		[Route("user/omnibar2")]
+		[AuthorizeScope("userinfoapi")]
+		[HttpGet]
+		public HttpResponseMessage GetOmnibarInfoTest(long personaId)
+		{
+            return GetUserProductDetails_v2(Guid.Empty, personaId);
+		}
+
+
 		#region Private Methods
+
+
 		private HttpResponseMessage GetUserProductDetails(Guid realPageId)
 		{
 			ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
@@ -880,7 +891,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 
-		private HttpResponseMessage GetUserProductDetails_v2(Guid realPageId)
+		private HttpResponseMessage GetUserProductDetails_v2(Guid realPageId, long? personaId)
 		{
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
 			if (!currentClaimPrincipal.Identity.IsAuthenticated)
@@ -894,7 +905,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
 			IPerson person = new Person();
 
-			if (realPageId == Guid.Empty)
+			if (!personaId.HasValue && realPageId == Guid.Empty)
 			{
 				errorStatus.Success = false;
 				errorStatus.ErrorCode = "User.GetUserProducts.1";
@@ -906,7 +917,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			}
 
 			IManagePerson personLogic = new ManagePerson();
-			person = personLogic.GetPerson(realPageId);
+			IManagePersona managePersona = new ManagePersona();
+			Persona persona = null;
+
+			if (!personaId.HasValue){
+				person = personLogic.GetPerson(realPageId);
+				persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
+			}
+            else
+            {
+				persona = managePersona.GetPersona(personaId.Value);
+				person = personLogic.GetPerson(persona.RealPageId);
+				realPageId = persona.RealPageId;
+			}
+
             if (person != null)
 			{
 				UserProductOutputResultv2 productResult = new UserProductOutputResultv2();
@@ -917,16 +941,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					RealPageId = person.RealPageId
 				};
 
-				IManagePersona managePersona = new ManagePersona();
+				
                 //Active Persona is linked to one organization
                 //Persona persona = managePersona.GetActivePersona(realPageId);
-                Persona persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
+                
 
                 //Verify if same company
                 //IManageOrganization manageOrganization = new ManageOrganization();
                 //bool isValidOrganization = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, persona.Organization.RealPageId);
                 //if (!isValidOrganization)
-                if (persona == null || persona.OrganizationPartyId != _orgPartyId)
+                if (persona == null)// || persona.OrganizationPartyId != _orgPartyId)
                 {
 					errorStatus.Success = false;
 					errorStatus.ErrorCode = "User.GetProfile.3";
@@ -1122,7 +1146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			return productList.OrderBy(p => p.FamilyName).ThenBy(p => p.Name).ToList();
 		}
 
-        private void ConvertPersonaProductsToRAUL(UserProductOutputResult productResult, IList<PersonaProduct> products)
+        private void ConvertPersonaProductsToRAUL(UserProductOutputResult productResult, IList<PersonaProduct> products, long personaId)
         {
             productResult.Products = new List<UserProducts>();
 
@@ -1140,7 +1164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Id = prodDetail.ProductId,
                         Name = prodDetail.Name,
                         Description = prodDetail.Description,
-                        Url = prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + prodDetail.Url,
+                        Url = prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
                         Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.FamilyName,
