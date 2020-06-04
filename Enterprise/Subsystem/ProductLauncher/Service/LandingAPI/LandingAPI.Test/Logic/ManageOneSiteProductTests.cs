@@ -104,6 +104,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private string _pmcUrl = "someurl.onesite.realpage.com";
 
+        IList<IC.ProductInternalSetting> _productInternalSettings = new List<IC.ProductInternalSetting>();
+
         public ManageOneSiteProductTests() : base((int)ProductEnum.OneSite)
         {
 
