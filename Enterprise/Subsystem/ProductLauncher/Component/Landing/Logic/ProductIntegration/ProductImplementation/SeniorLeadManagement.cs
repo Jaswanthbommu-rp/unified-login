@@ -463,6 +463,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
+            if (string.IsNullOrEmpty(oneSiteUserInfo.FirstName))
+            {
+                return null;
+            }
+
             return oneSiteUserInfo;
         }
 

@@ -3516,8 +3516,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //Try to cast as ProductUserRolePropertiesGroups
             var productUserRolePropertiesGroups = rolePropList as ProductUserRolePropertiesGroups;
 
-            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, this.UserClaim);
 
             if (productUserRolePropertiesGroups == null)
             {
