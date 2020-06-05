@@ -174,12 +174,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (rolesRights == null)
                     throw new Exception("Null Right List.");
 
+                List<ProductRightRole> records = AddRightsRole(rolesRights);
                 Dictionary<string, object> additional = AddRolesToRights(rolesRights);
 
                 return new ListResponse
                 {
-                    Records = rolesRights.Cast<object>().ToList(),
-                    TotalRows = rolesRights.Count,
+                    Records = records.Cast<object>().ToList(),
+                    TotalRows = records.Count,
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
                     TotalPages = 1,
@@ -256,7 +257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string lastNameNoWhiteSpace = SubjectUserDetails.LastName.TrimWhiteSpace();
                 string newproductUsername = (SubjectUserDetails.FirstName.TrimWhiteSpace().Substring(0, 1) + lastNameNoWhiteSpace.Substring(0, (lastNameNoWhiteSpace.Length >= 19 ? 19 : lastNameNoWhiteSpace.Length))).ToLower();
                 string accountingLoginName = newproductUsername;
-              
+
                 // give up after 10 tries
                 while (!foundUserName)
                 {
@@ -279,7 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToErrorLog($"SeniorLeadManagement - Error checking for username in use {accountingLoginName}");
                         return "An error occurred. Unable to get username.";
                     }
-                  }
+                }
 
                 // Create User
                 result = CreateUser(newProductUser);
@@ -316,37 +317,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             foreach (Model.ProductRole rol in roles)
             {
-                foreach (Right right in rol.Rights)
-                {
-                    if (!finalRights.Any(p => p.RightId == right.RightId))
-                    {
-                        finalRights.Add(right);
-                    }
-                }
-            }
-
-            foreach (Right right in finalRights)
-            {
-                List<int> rolesId = new List<int>();
-
-                foreach (Model.ProductRole rol in roles)
-                {
-                    if (rol.Rights.Any((p) => p.RightId == right.RightId))
-                    {
-                        if (!rolesId.Contains(Convert.ToInt32(rol.GetRoleId)))
-                        {
-                            rolesId.Add(Convert.ToInt32(rol.GetRoleId));
-                        }
-                    }
-                }
-
-                if (!presets.Any(p => p.Id == Convert.ToInt32(right.RightId)))
+                if (!presets.Any(p => p.Id == Convert.ToInt32(rol.GetRoleId)))
                 {
                     Preset preset = new Preset();
+                    List<int> rolesId = new List<int>();
 
-                    preset.Id = right.RightId;
-                    preset.Name = right.RightName;
-                    preset.RoleIds = rolesId;
+                    preset.Id = Convert.ToInt32(rol.GetRoleId);
+                    preset.Name = rol.GetName;
+                    
+                    foreach (Right right in rol.Rights)
+                    {
+                        if (!rolesId.Contains(right.RightId))
+                        {
+                            rolesId.Add(right.RightId);
+                        }
+                    }
+
+                    preset.RoleIds = rolesId.OrderBy(p=>p).ToList();
 
                     presets.Add(preset);
                 }
@@ -356,6 +343,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return result;
         }
+
+        /// <summary>
+        /// Add the info to rigths depending of roles
+        /// </summary>
+        /// <param name="roles">Product role data</param>
+        /// <returns>A right role list</returns>
+        private List<ProductRightRole> AddRightsRole(IList<Model.ProductRole> roles)
+        {
+            List<ProductRightRole> result = new List<ProductRightRole>();
+
+            foreach (Model.ProductRole rol in roles)
+            {
+                foreach (Right right in rol.Rights)
+                {
+                    if (!result.Any(p => p.RightId == right.RightId.ToString()))
+                    {
+                        result.Add(new ProductRightRole()
+                        {
+                            RightId = right.RightId.ToString(),
+                            RightName = right.RightName,
+                            RoleType = ""
+                        });
+                    }
+                }
+            }
+
+            return result.OrderBy(p=> p.RightName).ToList();
+        }
+
 
         /// <summary>
         /// Get the information of properties
@@ -390,7 +406,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (productPropertySLM != null)
                     {
                         //Exists
-                        if (string.IsNullOrWhiteSpace(productPropertySLM.OneSitePropertyId))
+                        if (!string.IsNullOrWhiteSpace(productPropertySLM.OneSitePropertyId))
                         {
                             oneSiteUserInfo.Properties.Add(productPropertySLM.OneSitePropertyId);
                         }

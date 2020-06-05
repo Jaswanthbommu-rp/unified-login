@@ -1088,10 +1088,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Input JSON parsing issue; Null object.";
             }
 
-            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            //base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var os = new ManageProductOneSite(base.UserClaim);
 
-            // assign user
+            //OneSite
             if (roleProp.IsAssigned)
             {
                 productResult = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, false);
@@ -1131,12 +1131,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var productSeniorLeadManagement = new SeniorLeadManagementProduct(base.UserClaim, ProductEnum.SeniorLeadManagement);
 
-                RolePropertyList seniorLeadManagement = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
-
                 // assign user
                 if (roleProp.IsAssigned)
                 {
-                    productResult = productSeniorLeadManagement.CreateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, seniorLeadManagement);
+                    productResult = productSeniorLeadManagement.CreateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
                 }
                 else
                 {
