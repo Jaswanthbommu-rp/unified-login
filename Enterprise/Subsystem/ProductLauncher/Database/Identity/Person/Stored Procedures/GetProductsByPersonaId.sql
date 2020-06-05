@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Person].[GetProductsByPersonaId]
+﻿CREATE or alter PROCEDURE [Person].[GetProductsByPersonaId]
 	@PersonaId int = 0,
 	@StatusTypeId int = 8
 AS
@@ -70,7 +70,7 @@ BEGIN
         INNER JOIN Enterprise.Role r ON R.RoleID = ppv.RoleID
         INNER JOIN Enterprise.[Right] r2 ON r.RoleID = r2.RoleID
         INNER JOIN Enterprise.RightValueType rvt ON r2.RightValueTypeId = rvt.RightValueTypeId
-		INNER JOIN Enterprise.ProductRight PR on PR.RightShortName = rvt.ShortName
+		INNER JOIN Enterprise.ProductRight PR on PR.RightShortName = rvt.ShortName AND ( PR.DependantProductId is null OR PR.DependantProductId in ( SELECT ProductId FROM Enterprise.PersonaConfiguration WHERE PersonaId = PPV.PersonaId AND StatusTypeId = 8 ))
 		INNER JOIN Enterprise.Product P  ON PR.ProductId = P.ProductId
 		LEFT OUTER JOIN enterprise.producttype pt on p.ProductTypeId = pt.ProductTypeId
 		LEFT OUTER JOIN Enterprise.ProductType PT2 on PT.ParentProductTypeId = PT2.ProductTypeId
@@ -81,6 +81,7 @@ BEGIN
 		LEFT OUTER JOIN ProductSettings ps4 on ps4.ProductId = p.ProductId and ps4.name = 'ShowInAppSwitcher'
 	WHERE 
 		ppv.PersonaId = @personaid
+		
 	ORDER BY IsResource, FamilyName, P.Name
 END
 --select ps.productid, pst.name, ps.value from enterprise.ProductSetting ps inner join enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId where pst.name in ( 'isresource', 'isnewtab' )

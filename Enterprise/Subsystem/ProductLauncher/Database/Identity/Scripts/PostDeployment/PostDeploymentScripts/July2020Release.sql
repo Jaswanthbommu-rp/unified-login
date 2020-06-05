@@ -422,14 +422,14 @@ GO
 
 
 -- SPECIAL!
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 37 AND RIghtShortName = 'AccessPropertyPhotos' )
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 37 AND RIghtShortName = 'AccessPropertyPhotos' AND DependantProductId = 9 )
 begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 37, 'AccessPropertyPhotos' )
+	insert into Enterprise.ProductRight ( productid, rightshortname, DependantProductId ) values ( 37, 'AccessPropertyPhotos', 9 )
 end
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 21 AND RIghtShortName = 'AccessOneSiteConversions' )
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 21 AND RIghtShortName = 'AccessOneSiteConversions' and DependantProductId = 1 )
 begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 21, 'AccessOneSiteConversions' )
+	insert into Enterprise.ProductRight ( productid, rightshortname, DependantProductId ) values ( 21, 'AccessOneSiteConversions', 1 )
 end
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 19 AND RIghtShortName = 'ProductLearningPortal' )
