@@ -533,12 +533,7 @@
 goto :exit
 
 :debug
-del "$(ProjectDir)4.*"
-del "$(ProjectDir)5.*"
-del "$(ProjectDir)6.*"
-del "$(ProjectDir)7.*"
-del "$(ProjectDir)8.*"
-del "$(ProjectDir)9.*"
+powershell -Command "del $(ProjectDir)[0-9]*"
 del "$(ProjectDir)main.*"
 del "$(ProjectDir)map-bg.*"
 del "$(ProjectDir)polyfills.*"
@@ -546,6 +541,7 @@ del "$(ProjectDir)runtime.*"
 del "$(ProjectDir)scripts.*"
 del "$(ProjectDir)styles.*"
 del "$(ProjectDir)summernote.*"
+del "$(ProjectDir)common.*"
 robocopy /MIR /S /MT /Z \\RCDUSOWEB001.Corp.Realpage.com\BuildDrops\unity-ci-local\ "$(ProjectDir)unityui\." *.*
 xcopy "$(ProjectDir)unityui\*.*" "$(ProjectDir)" /Y /E
 
