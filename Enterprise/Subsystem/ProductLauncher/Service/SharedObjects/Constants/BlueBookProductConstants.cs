@@ -244,5 +244,9 @@
 		/// LRO
 		/// </summary>
 		public const string AoLeaseRentOption = "LRO";
+		/// <summary>
+		/// Renovation Manager
+		/// </summary>
+		public const string RenovationManager = "RENO";
 	}
 }

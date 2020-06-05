@@ -211,6 +211,12 @@
                 product: "16"
             });
 
+            list.push({
+                model: templateModel.isProductExists(55) ? ppModel : vcModel,
+                key: "soln112",
+                product: "55"
+            });
+
              list.push({
                 model: cmsModel,
                 key: "default"
