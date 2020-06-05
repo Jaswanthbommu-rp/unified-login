@@ -412,16 +412,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(personaId), "Null personaId");
             }
 
-            int? productSettingTypeId = _productRepository.GetProductSettingType(productSetting.Name.Trim());
+            var productSettingTypeId = _productRepository.GetProductSettingType(productSetting.Name.Trim());
             RepositoryResponse response = new RepositoryResponse();
 
-            if (productSettingTypeId.HasValue && productSettingTypeId > 0)
+            if (productSettingTypeId > 0)
             {
-                response = _productRepository.CreateProductSetting(personaId.Value, productSetting.ProductId, productSettingTypeId.Value, productSetting.Value);
+                response = _productRepository.CreateProductSetting(personaId.Value, productSetting.ProductId, productSettingTypeId, productSetting.Value);
             }
             else
             {
-                response.ErrorMessage = string.Format("Unable to get productSettingTypeId for {0}", productSetting.Name);
+                response.ErrorMessage = $"Unable to get productSettingTypeId for {productSetting.Name}";
                 response.Id = 0;
             }
 

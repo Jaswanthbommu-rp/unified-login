@@ -180,6 +180,7 @@
         public const string SP_ListGlobalSettingsForProduct = "Enterprise.ListGlobalSettingsForProduct";
         public const string SP_CreateProductSetting = "Enterprise.CreateProductSetting";
         public const string SP_CreateProductConfigurationbyPersonaId = "Enterprise.CreateProductConfigurationbyPersonaId";
+        public const string SP_UpdatePersonaConfiguration = "Enterprise.UpdatePersonaConfiguration";
         public const string SP_ListProductBatchStatusesByRealPageId = "Enterprise.ListProductBatchByRealPageId";
         public const string SP_GetProductSettingType = "Enterprise.GetProductSettingType";
         public const string SP_ListProductFamilies = "Enterprise.ListProductFamilies";

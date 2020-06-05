@@ -376,9 +376,9 @@ as (
         AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
 )
 
---update pc
---set pc.statustypeid = ps.statusid
-select *
+update pc
+set pc.statustypeid = ps.statusid
+--select *
 from enterprise.PersonaConfiguration pc
 inner join personastatus ps on pc.personaid = ps.personaid and ps.productid = pc.ProductId
 where
@@ -409,9 +409,9 @@ as (
         AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
 )
 
---update pc
---set pc.statustypeid = ps.statusid
-select *
+update pc
+set pc.IsFavorite = ps.isfav
+--select *
 from enterprise.PersonaConfiguration pc
 inner join personaproductfavourite ps on pc.personaid = ps.personaid and ps.productid = pc.ProductId
 where
@@ -422,9 +422,9 @@ GO
 
 
 -- SPECIAL!
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 9 AND RIghtShortName = 'AccessPropertyPhotos' )
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 37 AND RIghtShortName = 'AccessPropertyPhotos' )
 begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 9, 'AccessPropertyPhotos' )
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 37, 'AccessPropertyPhotos' )
 end
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 21 AND RIghtShortName = 'AccessOneSiteConversions' )
@@ -437,9 +437,9 @@ begin
 	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 19, 'ProductLearningPortal' )
 end
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 9 AND RIghtShortName = 'AccessHelpCenter' )
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 49 AND RIghtShortName = 'AccessHelpCenter' )
 begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 9, 'AccessHelpCenter' )
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 49, 'AccessHelpCenter' )
 end
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 9 AND RIghtShortName = 'MigrationTool' )

@@ -942,6 +942,7 @@
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId_Ver2.sql" />
     <Build Include="Person\Stored Procedures\GetProductsByPersonaId.sql" />
     <Build Include="Enterprise\Tables\ProductRight.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdatePersonaConfiguration.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

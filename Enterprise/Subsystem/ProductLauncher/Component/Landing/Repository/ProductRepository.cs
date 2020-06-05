@@ -929,6 +929,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 repositoryResponse.ErrorMessage = "CreateProductSetting Error: CreateProductConfigurationbyPersonaId failed.";
                                 WriteToLog(LogType.Error, repositoryResponse.ErrorMessage);
                             }
+                            else
+                            {
+                                // update the persona configuration with the latest setting result
+                                param = new
+                                {
+                                    PersonaId = PersonaId,
+                                    ProductId = ProductId,
+                                    ProductSettingID = ProductSettingId
+                                };
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonaConfiguration, param);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "CreateProductSetting Error: UpdatePersonaConfiguration failed.";
+                                    WriteToLog(LogType.Error, repositoryResponse.ErrorMessage);
+                                }
+                            }
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-﻿CREATE OR ALTER PROCEDURE [Person].[GetProductsByPersonaId]
+﻿CREATE PROCEDURE [Person].[GetProductsByPersonaId]
 	@PersonaId int = 0,
 	@StatusTypeId int = 8
 AS
@@ -9,12 +9,10 @@ BEGIN
 	DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT ) 
 		 
 	INSERT INTO @CompanyOrganizationProduct ( ProductId )
-	SELECT ProductId from Enterprise.OrganizationProduct OP 
+	SELECT DISTINCT ProductId from Enterprise.OrganizationProduct OP 
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = OP.PartyId
 		INNER JOIN Person.Persona per ON (ULP.UserLoginPersonaId = per.UserLoginPersonaId and per.PersonaId = @PersonaId)
-			AND ((@NOW BETWEEN op.FromDate AND op.ThruDate)
-			OR (@NOW >= op.FromDate
-			AND op.ThruDate IS NULL))
+			AND ((@NOW BETWEEN op.FromDate AND op.ThruDate) OR (@NOW >= op.FromDate AND op.ThruDate IS NULL))
 
 	IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )
 	BEGIN
@@ -23,7 +21,7 @@ BEGIN
 	END	
 
 	;with ProductSettings AS (
-		select ps.productid, pst.name, ps.value from enterprise.ProductSetting ps inner join enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId where pst.name in ( 'isresource', 'isnewtab', 'ProductUrl' )
+		select ps.productid, pst.name, ps.value from enterprise.ProductSetting ps inner join enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId where pst.name in ( 'isresource', 'isnewtab', 'ProductUrl', 'ShowInAppSwitcher' )
 	)
 	SELECT 
 		PC.ProductId
@@ -37,6 +35,7 @@ BEGIN
 		,CONVERT(TINYINT,ISNULL(ps1.value,0)) as IsNewTab
 		,CONVERT(TINYINT,ISNULL(ps2.value,0)) as IsResource
 		,PS3.Value as Url
+		,CONVERT(TINYINT,ISNULL(ps4.value,0)) as ShowInAppSwitcher
 		--,*
 	FROM
 		Enterprise.PersonaConfiguration PC
@@ -47,11 +46,12 @@ BEGIN
 		LEFT OUTER JOIN ProductSettings ps1 on ps1.ProductId = p.ProductId and ps1.name = 'IsNewTab'
 		LEFT OUTER JOIN ProductSettings ps2 on ps2.ProductId = p.ProductId and ps2.name = 'IsResource'
 		LEFT OUTER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'
+		LEFT OUTER JOIN ProductSettings ps4 on ps4.ProductId = p.ProductId and ps4.name = 'ShowInAppSwitcher'
 	where 
 		PC.PersonaId = @PersonaId
 		AND PC.ThruDate IS NULL
 		AND PC.StatusTypeId = @StatusTypeId
-	UNION	
+	UNION
 	SELECT
 		pr.ProductId
 		,P.Name
@@ -64,22 +64,24 @@ BEGIN
 		,CONVERT(TINYINT,ISNULL(ps1.value,0)) as IsNewTab
 		,CONVERT(TINYINT,ISNULL(ps2.value,0)) as IsResource
 		,PS3.Value as Url
+		,CONVERT(TINYINT,ISNULL(ps4.value,0)) as ShowInAppSwitcher
 	FROM 
 		Enterprise.PersonaPrivilege ppv
         INNER JOIN Enterprise.Role r ON R.RoleID = ppv.RoleID
         INNER JOIN Enterprise.[Right] r2 ON r.RoleID = r2.RoleID
         INNER JOIN Enterprise.RightValueType rvt ON r2.RightValueTypeId = rvt.RightValueTypeId
-		INNER JOIN Enterprise.ProductRight PR on PR.RIghtShortName = rvt.ShortName
+		INNER JOIN Enterprise.ProductRight PR on PR.RightShortName = rvt.ShortName
 		INNER JOIN Enterprise.Product P  ON PR.ProductId = P.ProductId
 		LEFT OUTER JOIN enterprise.producttype pt on p.ProductTypeId = pt.ProductTypeId
 		LEFT OUTER JOIN Enterprise.ProductType PT2 on PT.ParentProductTypeId = PT2.ProductTypeId
-		
 		INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId
 		LEFT OUTER JOIN ProductSettings ps1 on ps1.ProductId = p.ProductId and ps1.name = 'IsNewTab'
 		LEFT OUTER JOIN ProductSettings ps2 on ps2.ProductId = p.ProductId and ps2.name = 'IsResource'
 		LEFT OUTER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'
-	where ppv.PersonaId = @personaid
-	ORDER BY IsResource, FamilyName, Name
+		LEFT OUTER JOIN ProductSettings ps4 on ps4.ProductId = p.ProductId and ps4.name = 'ShowInAppSwitcher'
+	WHERE 
+		ppv.PersonaId = @personaid
+	ORDER BY IsResource, FamilyName, P.Name
 END
 --select ps.productid, pst.name, ps.value from enterprise.ProductSetting ps inner join enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId where pst.name in ( 'isresource', 'isnewtab' )
 

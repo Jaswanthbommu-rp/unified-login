@@ -34,6 +34,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
+using Castle.Components.DictionaryAdapter;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -742,8 +743,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long personaId)
         {
-            ObjectOutput<IProfileDetail, IErrorData> output = new ObjectOutput<IProfileDetail, IErrorData>();
-            UserProductOutputResult productResult = new UserProductOutputResult();
+            UserProductOutputResultv2 productResult = new UserProductOutputResultv2();
+            productResult.Products = new Dictionary<string, List<UserProducts>>();
 
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
@@ -769,8 +770,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					};
 
                     var productList = manageProduct.GetAllProductsByPersona(personaId, ProductBatchStatusType.Success);
-					ConvertPersonaProductsToRAUL(productResult, productList, personaId);
-                }
+
+					List<UserProducts> userProducts = ConvertPersonaProductsToRAUL(productList, personaId);
+
+					productResult.Products.Add("Favorites", userProducts.Where(p => p.IsFavorite).ToList());
+					foreach (UserProducts up in userProducts)
+					{
+						string familyName = up.FamilyName ?? "None";
+						if (!up.IsResource && !productResult.Products.ContainsKey(familyName))
+						{
+							productResult.Products.Add(familyName, userProducts.Where(p => !p.IsFavorite && !p.IsResource && (p.FamilyName ?? "None").Equals(familyName, StringComparison.OrdinalIgnoreCase)).ToList());
+						}
+                        if (up.IsResource)
+                        {
+                            if (productResult.Resources == null)
+                            {
+                                productResult.Resources = new List<UserProducts>();
+                            }
+
+                            productResult.Resources.Add(up);
+                        }
+
+					}
+				}
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, productResult);
@@ -986,7 +1008,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				}
 
 
-				//productResult.Resources = ConvertDashboardProductsToRAUL(resources);
+				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
 				return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
 
@@ -1146,17 +1168,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			return productList.OrderBy(p => p.FamilyName).ThenBy(p => p.Name).ToList();
 		}
 
-        private void ConvertPersonaProductsToRAUL(UserProductOutputResult productResult, IList<PersonaProduct> products, long personaId)
+        private List<UserProducts> ConvertPersonaProductsToRAUL(IList<PersonaProduct> products, long personaId)
         {
-            productResult.Products = new List<UserProducts>();
+            List<UserProducts> productList = new List<UserProducts>();
 
             foreach (PersonaProduct prodDetail in products)
             {
-                if (prodDetail.IsResource && productResult.Resources == null)
-                {
-					productResult.Resources = new List<UserProducts>();
-                }
-
                 //if (!string.IsNullOrEmpty(prodDetail.ProductUrl))
                 {
                     UserProducts up = new UserProducts()
@@ -1172,18 +1189,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         IsNewTab = prodDetail.IsNewTab,
                         IsResource = prodDetail.IsResource,
                         Status = prodDetail.StatusTypeId,
-                        ProductCode = prodDetail.BooksProductCode
+                        ProductCode = prodDetail.BooksProductCode,
+						ShowInAppSwitcher = prodDetail.ShowInAppSwitcher
                     };
-                    if (prodDetail.IsResource)
-                    {
-						productResult.Resources.Add(up);
-                    }
-                    else
-                    {
-						productResult.Products.Add(up);
-                    }
-                }
+					productList.Add(up);
+				}
 			}
+			return productList;
 		}
 
 		/// <summary>
@@ -1365,8 +1377,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			/// Books product code
 			/// </summary>
 			public string ProductCode { get; set; }
-		}
 
+			/// <summary>
+			/// Should the application show in the app switcher
+			/// </summary>
+			[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+			public bool? ShowInAppSwitcher { get;set; }
+		}
 
 		/// <summary>
 		/// Output result for newly created user

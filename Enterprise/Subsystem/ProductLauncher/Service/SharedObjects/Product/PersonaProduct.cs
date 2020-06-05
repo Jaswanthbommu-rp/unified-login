@@ -13,6 +13,7 @@
         public bool IsNewTab { get; set; }
         public bool IsResource { get; set; }
         public string Url { get; set; }
-        
+        public bool ShowInAppSwitcher { get;set; }
+
     }
 }
