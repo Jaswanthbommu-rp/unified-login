@@ -54,6 +54,7 @@
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
+            vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllPropertiesSet",vm.accountingAllPropertiesSet);
         };
 
         vm.productSelected = function (obj) {
@@ -92,6 +93,13 @@
 
         vm.isSwitchConfigLoaded = function () {
             return syncMgr.isSwitchConfigLoaded();
+        };
+
+        vm.accountingAllPropertiesSet = function(bool){
+            vm.propertySelect = "";
+            if(bool){
+                vm.propertySelect = 'allProperties';
+            }
         };
 
         vm.hidePropertiesGrid = function () {

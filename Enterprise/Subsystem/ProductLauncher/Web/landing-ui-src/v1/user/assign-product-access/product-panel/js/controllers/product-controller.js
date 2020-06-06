@@ -12,8 +12,7 @@
             productDisabled = false,
             tabsCnfData = [],
             gridconfigs = [],
-            radioconfigs = [],
-            switchconfigs = [];
+            radioconfigs = [];
 
         vm.init = function () {
             vm.view = view;
@@ -32,6 +31,7 @@
             vm.isAccountingAdmin = false;
             vm.isSiteSpendManagementAssignedToCompany = false;
             vm.isMConsolePMC = false;
+            vm.switchconfigs = undefined;
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
@@ -66,16 +66,21 @@
             return vm;
         };
 
+        vm.isSwitchConfigLoaded = function () {
+            return productModel.isSwitchConfigLoaded();
+        };
+
+        vm.setAllProperties = function (record) {
+            var productId = $scope.$parent.productId;
+           logc("setAllProperties", productId);
+        };
+
         vm.isActive = function () {
             return active && persona.isReady();
         };
 
         vm.isProductDisabled = function () {
             return vm.productDisabled;
-        };
-
-        vm.isFinancialSuiteProduct = function(){
-            return vm.panelName == "Financial Suite Product Access";
         };
 
         vm.loadProductControlsData = function (productId) {
@@ -134,6 +139,13 @@
 
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
+            if($scope.productId == 8 && vm.switchconfigs == undefined){
+                vm.switchconfigs = [];
+                vm.switchconfigs.push(productModel.getProductSwitchConfig($scope.productId,"AccesstoSiteSpendManagementonly")[0]);
+                vm.switchconfigs.push(productModel.getProductSwitchConfig($scope.productId,"Allowaccesstoallcurrentandfutureentities")[0]);
+                vm.switchconfigs.push(productModel.getProductSwitchConfig($scope.productId,"AccountingAdmin")[0]);
+                logc(vm.switchconfigs);
+            }
 
             vm.tabsList = tabs.tabsList;
             //logc("vm.tabsList", vm.tabsList);
@@ -337,13 +349,28 @@
                             if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
                                 if($scope.productId == 8){
                                     if (tabGrp.type === 'Switch') {
+                                        var eventName = "";
+                                        var modelName = "";
+                                        if(tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly"){
+                                            eventName = vm.acessSiteSpndMgmtOnlySwitchWatch;
+                                            modelName = "vm.hasAccessToSiteSpendManagementOnly";
+                                        }
+                                        else if(tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties"){
+                                            eventName = vm.allPropertiesSwitchWatch;
+                                            modelName = "vm.hasAccessToAllCurrentFutureProperties";
+                                        }
+                                        else if(tabGrp.dataSource == "isAccountingAdmin"){
+                                            eventName = vm.accountingAdminSwitchWatch;
+                                            modelName = "vm.isAccountingAdmin";
+                                        }
+
                                         var c = {
                                             id: tabGrp.id,
                                             text: tabGrp.displayName,
-                                            key: tabGrp.dataSource,
+                                            key: modelName,
                                             configData: switchConfig({
-                                                onChange: vm.selectionAll,
-                                                disabled: vm.hasViewOnlyAccess()
+                                                disabled: vm.hasViewOnlyAccess(),
+                                                onChange: eventName
                                             })
                                         };
                                         aSwitch.push(c);
@@ -373,6 +400,19 @@
                     }
                 });
             }
+        };
+
+        vm.accountingAdminSwitchWatch = function (val) {  
+            vm.isAccountingAdmin = val;
+        };
+
+        vm.acessSiteSpndMgmtOnlySwitchWatch = function (val) {
+           vm.hasAccessToSiteSpendManagementOnly = val;
+        };
+
+        vm.allPropertiesSwitchWatch = function (val) {     
+            pubsub.publish("acct.accountingAllPropertiesSet",val);   
+            vm.hasAccessToAllCurrentFutureProperties = val;
         };
 
         vm.setSelectConfigs = function (data) {
@@ -459,6 +499,7 @@
         vm.destroy = function () {
             logc("vm.destroy called");
             active = false;
+            vm.switchconfigs = undefined;
             vm.destWatch();
             vm.profileWatch();
             vm.productSelectedWatch();

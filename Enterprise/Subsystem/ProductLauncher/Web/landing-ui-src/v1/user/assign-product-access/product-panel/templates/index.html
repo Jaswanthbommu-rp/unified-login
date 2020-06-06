@@ -9,35 +9,15 @@
         This product is not available when User Type is {{cpactrl.userType}}.
     </div>
 
-    <div class="row" ng-show="cpactrl.isFinancialSuiteProduct()">
+    <div  class="all-feature-properties" ng-if="cpactrl.switchconfigs && cpactrl.isSwitchConfigLoaded()">
         <div class="col-md-2">
-           <div class="options" > Options: </div>
-        </div>
-        <div class="col-md-5">
-            <rp-switch class="inline label-1"
-                config="apa.acessSiteSpndMgmtOnlySwitch"
-                rp-model="apa.hasAccessToSiteSpendManagementOnly"
-                rp-label-text="'Access to Site Spend Management only'">
-            </rp-switch>
-        </div>
-        <div class="col-md-5">
-            <rp-switch class="inline label-1"
-                config="apa.allPropSwitch"
-                rp-model="apa.hasAccessToAllCurrentFutureProperties"
-                rp-label-text="'Allow access to all current and future entities'">
-            </rp-switch>
-        </div>        
-    </div>
-    <div class="row" ng-show="cpactrl.isFinancialSuiteProduct()">
-        <div class="col-md-2">            
-        </div>
-        <div class="col-md-5">            
-            <rp-switch class="inline label-1"
-                config="apa.accountingAdminSwitch"
-                rp-model="apa.isAccountingAdmin"
-                rp-label-text="'Accounting Admin'">
-            </rp-switch>
-        </div>
+            <div class="options"> Options: </div>
+         </div>
+        <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpactrl.switchconfigs"
+            config="sw.configData"
+            rp-model="sw.key"
+            rp-label-text="sw.text">
+        </rp-switch>
     </div>
     
      <rp-scrolling-tabs-menu model="cpactrl.tabsMenu">
