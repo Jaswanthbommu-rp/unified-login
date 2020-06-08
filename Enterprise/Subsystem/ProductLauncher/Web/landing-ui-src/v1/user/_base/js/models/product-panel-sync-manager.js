@@ -50,8 +50,6 @@
             s.rightList = [];
             s.presetRoleList = [];
             s.sidePanelDataList = [];
-            s.accesstype = "";
-            s.hidepropertiesgrid = false;
 
         };
 

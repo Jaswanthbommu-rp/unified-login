@@ -107,7 +107,7 @@
         };
 
         vm.hidePropertiesGrid = function () {
-            if ((vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9)) {
+            if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
                 return true;
             }
             return false;
