@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertiesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, pubsub, persona, productDataModel, userDetailsModel, security, syncMgr, propertiesSvc, switchConfig) {
+    function ProductPropertiesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, pubsub, persona, productDataModel, userDetailsModel, security, syncMgr, propertiesSvc, switchConfig, dmDataSvc) {
         var vm = this,
             hasViewUserAccess,
             allProperties,
@@ -28,7 +28,7 @@
             propertiesGridTransform.watch(propertiesGrid);
 
             vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "Properties"); //configModel.getGridConfig()[0];
-
+            logc("vm.config", vm.config, $scope.$parent.productId);
             propertiesGrid.setConfig(vm.config);
             propertiesGridPagination.setGrid(propertiesGrid);
             $scope.propertiesGridPagination = propertiesGridPagination;
@@ -48,12 +48,12 @@
             vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
 
-
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
+            pubsub.subscribe("dd.loadproperties", vm.loadDMPropertiesData);
         };
 
         vm.productSelected = function (obj) {
@@ -120,20 +120,61 @@
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
 
+            if (productId !== 20) {
+                propertiesGrid.busy(true);
+                if (persona.isReady() && vm.isActive()) {
+                    var propertyData = syncMgr.getProductPropertiesData(productId);
+
+                    if (propertyData === undefined) {
+                        // propertiesGrid.busy(false);
+                        var params = {
+                            userPersonaId: userDetailsModel.getPersonaId(),
+                            editorPersonaId: persona.getId(),
+                            productId: productId,
+                            userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
+                        };
+
+                        vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
+                    }
+                    else {
+                        vm.loadGridData(productId);
+                    }
+                }
+            }
+        };
+
+        vm.loadDMPropertiesData = function (roleId) {
+            var productId = 20;
+            logc("loaddmdataproperties", roleId, propertiesGrid);
+            if (propertiesGrid == undefined) {
+                propertiesGrid = gridModel();
+                propertiesGridTransform = gridTransformSvc();
+                propertiesGridPagination = gridPaginationModel();
+                vm.propertiesGrid = propertiesGrid;
+                propertiesGridTransform.watch(propertiesGrid);
+
+                var config = syncMgr.getProductGridConfig(productId, "Properties"); //configModel.getGridConfig()[0];
+                logc("vm.config", config, productId);
+                propertiesGrid.setConfig(config);
+                propertiesGridPagination.setGrid(propertiesGrid);
+                $scope.propertiesGridPagination = propertiesGridPagination;
+                propertiesGridPagination.setConfig({
+                    recordsPerPage: 25
+                });
+            }
+
             propertiesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var propertyData = syncMgr.getProductPropertiesData(productId);
 
                 if (propertyData === undefined) {
-                    // propertiesGrid.busy(false);
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
-                        productId: productId,
-                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
+                        roleId: roleId
                     };
 
-                    vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
+                    vm.dmdataPropReq = dmDataSvc.get(params, vm.setPropertyData);
                 }
                 else {
                     vm.loadGridData(productId);
@@ -308,7 +349,7 @@
         vm.updateGrid = function () {
             vm.propertiesGrid.updateSelected();
         };
-        
+
         vm.resetDataModel = function () {
             //vm.clearProperties();
             vm.resetProperties();
@@ -349,6 +390,11 @@
             if (vm.dataPropReq) {
                 vm.dataPropReq.$cancelRequest();
             }
+
+            if (vm.dmdataPropReq) {
+                vm.dmdataPropReq.$cancelRequest();
+            }
+
             propertiesGrid.destroy();
             propertiesGridTransform.destroy();
             propertiesGridPagination.destroy();
@@ -357,7 +403,7 @@
             propertiesGridPagination = undefined;
             vm.filteredPropertiesArray = [];
             //vm = undefined;
-            $scope = undefined;
+            //$scope = undefined;
         };
 
         vm.init();
@@ -379,6 +425,7 @@
             "productDataSyncManager",
             "productPropertiesSvc",
             "rpSwitchConfig",
+            "DMAdditionalDataSvc",
             ProductPropertiesGridCtrl
         ]);
 })(angular);

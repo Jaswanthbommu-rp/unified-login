@@ -31,6 +31,7 @@
                     propertyList: [],
                     regionList: [],
                     propertyGroupList: [],
+                    departmentList: [],
                     removedPropertyList: [],
                     messageGroups: [],
                     Notifications: {
@@ -115,30 +116,33 @@
                 hasRoleSelected = false,
                 hasPropertySelected = false,
                 hasPropertyGroupSelected = false,
-                aoFamilyProduct = false;
+                aoFamilyProduct = false,
+                needsProperties = false,
+                hasProperties = false,
+                needsDepartments = false,
+                hasDepartments = false;
 
             s.batchData = angular.copy(s._batchData);
             var roles = "";
-            if(productId == "18")
-            {
+            if (productId == "18") {
                 roles = dataSyncManager.getProductRightsData(productId);
             }
-            else{
+            else {
                 roles = dataSyncManager.getProductRolesData(productId);
             }
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
-            
+
             var notifications = "";
-            if(productId == "17"){
+            if (productId == "17") {
                 notifications = dataSyncManager.getProductNotificationsData(productId);
             }
-            
+
             var bmroles = "";
             if (productId == "30") {
                 bmroles = dataSyncManager.getProductBenchMarkRolesData("34");
             }
-           
+
 
             s.batchData.productId = productId;
 
@@ -154,11 +158,18 @@
                         if (aoFamilyProduct) {
                             s.batchData.inputJson.roleList.push(role.name);
                         }
-                        else if(productId == "18"){
+                        else if (productId == "18") {
                             s.batchData.inputJson.roleList.push(role.roleName);
                         }
                         else {
                             s.batchData.inputJson.roleList.push(role.id);
+                        }
+
+                        if (role.roletype == "Site Name") {
+                            needsProperties = true;
+                        }
+                        else if (role.roletype == "Department") {
+                            needsDepartments = true;
                         }
                     }
                 });
@@ -198,29 +209,37 @@
             if (propertyGroups !== undefined && propertyGroups.length) {
                 s.batchData.inputJson.regionList = [];
                 s.batchData.inputJson.propertyGroupList = [];
+                s.batchData.inputJson.departmentList = [];
 
                 propertyGroups.forEach(function (group) {
                     if (group.isAssigned) {
                         if (aoFamilyProduct || productId == "18") {
                             s.batchData.inputJson.propertyGroupList.push(group.id);
                         }
-                        else if(productId == "17"){
+                        else if (productId == "17") {
                             s.batchData.inputJson.messageGroups.push(group.id);
                         }
-                        else{
+                        else if (productId == "20") {
+                            s.batchData.inputJson.departmentList.push(group.id);
+                        }
+                        else {
                             s.batchData.inputJson.regionList.push(group.id);
                         }
                     }
                 });
-                if(productId == "17"){
+
+                if (productId == "17") {
                     hasPropertyGroupSelected = s.batchData.inputJson.messageGroups.length > 0;
                 }
-                else{
+                else if (productId == "20") {
+                    hasPropertyGroupSelected = s.batchData.inputJson.departmentList.length > 0;
+                }
+                else {
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
-                }                
+                }
             }
 
-            if(productId == "17" && notifications !== undefined){
+            if (productId == "17" && notifications !== undefined) {
                 s.batchData.inputJson.Notifications.managerFdiViaEmail = notifications.managerFdiViaEmail;
                 s.batchData.inputJson.Notifications.amenitiesViaEmail = notifications.amenitiesViaEmail;
                 s.batchData.inputJson.Notifications.managerMrViaEmail = notifications.managerMrViaEmail;
@@ -263,11 +282,24 @@
                     return s.batchData;
                 }
             }
+
             if (productId == "18") {
                 if (hasPropertySelected || hasPropertyGroupSelected) {
                     return s.batchData;
                 }
             }
+
+            if (productId == "20") {
+                if (hasRoleSelected && !needsProperties && !needsDepartments) {
+                    return s.batchData;
+                }
+                else if (hasRoleSelected &&
+                        (needsProperties && hasPropertySelected) ||
+                        (needsDepartments && hasPropertyGroupSelected)) {
+                    return s.batchData;
+                }
+            }
+
             if (productId == "39") {
                 hasPropertySelected = true;
             }

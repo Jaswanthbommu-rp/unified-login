@@ -495,8 +495,16 @@
             roleData = s.roleMap['product' + key].roles;
 
             roleData.forEach(function (item) {
+
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
+                }
+
+                if (record.productId == 20 &&
+                    item.roletype === record.roletype &&
+                    item.id !== record.id)
+                {
+                    item.disableSelection = record.isAssigned;
                 }
             });
 
@@ -510,7 +518,6 @@
                 selectState = false;
 
             roleData = s.benchMarkRoleMap['product' + key].roles;
-
             roleData.forEach(function (item) {
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
@@ -649,7 +656,7 @@
                     item["isAssigned"] = bool;
                 });
             }
-               
+
             return s;
         };
 

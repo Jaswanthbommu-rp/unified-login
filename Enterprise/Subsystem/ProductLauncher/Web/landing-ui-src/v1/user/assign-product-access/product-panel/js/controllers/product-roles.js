@@ -33,7 +33,7 @@
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
-            logc("syncMgr.getProductGridConfig", syncMgr.getProductGridConfig($scope.$parent.productId, "Roles"));
+            //logc("syncMgr.getProductGridConfig", syncMgr.getProductGridConfig($scope.$parent.productId, "Roles"));
             vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             rolesGrid.setConfig(syncMgr.getProductGridConfig($scope.$parent.productId, "Roles"));
 
@@ -103,28 +103,19 @@
             //var productId = $scope.$parent.productId;
             rolesGrid.busy(false);
             var roleData = syncMgr.getProductRolesData(productId);
-            if(productId == 17 || productId == 26 ||  productId == 18){
+            if (productId == 17 || productId == 26 || productId == 18) {
                 vm.rpRoleSelected = roleData.find(function (item) {
                     return item.isAssigned === true;
                 });
-                logc("vm.rpRoleSelected",vm.rpRoleSelected);
+                logc("vm.rpRoleSelected", vm.rpRoleSelected);
             }
             var presetroleData = syncMgr.getProductPresetRolesData(productId);
             //vm.setSelectTypeConfig();
             //logc("l2lroledata", roleData, presetroleData, rolesGrid);
             if (roleData && roleData.length > 0) {
-                if (vm.hasViewOnlyAccess()) {
-                    roleData.forEach(function (item) {
-                        angular.extend(item, {
-                            disabled: false,
-                            radname: "role"
-                        });
-                        item.disabled = true;
-                    });
-                }
-
                 roleData.forEach(function (item) {
                     angular.extend(item, {
+                        disableSelection: vm.hasViewOnlyAccess(),
                         radname: "role",
                         productId: productId
                     });
@@ -133,7 +124,35 @@
                         vm.assignedRoleId = item.roleId;
                         vm.roleRights = item.userRights;
                     }
+
+                    if (productId == 20 && item.roletype === undefined) {
+                        angular.extend(item, {
+                            roletype: item.name
+                        });
+                    }
                 });
+
+                // if (vm.hasViewOnlyAccess()) {
+                //     roleData.forEach(function (item) {
+                //         // angular.extend(item, {
+                //         //     disabled: false,
+                //         //     radname: "role"
+                //         // });
+                //         item.disabled = true;
+                //     });
+                // }
+
+                // roleData.forEach(function (item) {
+                //     // angular.extend(item, {
+                //     //     radname: "role",
+                //     //     productId: productId
+                //     // });
+
+                //     if (item.isAssigned && item.userRights !== undefined) {
+                //         vm.assignedRoleId = item.roleId;
+                //         vm.roleRights = item.userRights;
+                //     }
+                // });
 
                 var dependencyControlId = syncMgr.getProductDependencyControlId(productId, 'role');
 
@@ -157,29 +176,22 @@
                     presetroleData.forEach(function (option) {
                         vm.presetRoles.push(option);
                     });
-                    logc("vm.presetRoles data", vm.presetRoles);
-                    //vm.roleSelect.setOptions(vm.presetRoles);
-                    // logc("vm.selectconfigs data", vm.selectconfigs);
+
                     vm.selectconfigs.forEach(function (item) {
                         item.configData.setOptions(vm.presetRoles);
-                        logc("item.configData", item.configData);
                     });
-                    // vm.selectconfigs[0].configData.setOptions(vm.presetRoles);
-                    logc("presetroleData", vm.selectconfigs);
+
                 }
 
                 roleGridPagination.setData(roleData).goToPage({
                     number: 0
                 });
-
             }
 
             return vm;
         };
 
         vm.roleSelectedChange = function (val) {
-            logc("presetroleselected", val);
-            //var roleData = syncMgr.getProductRolesData(productId);
             var roleSelected = vm.presetRoles.find(function (item) {
                 return item.id === val;
             });
@@ -231,14 +243,6 @@
             //logc("vm.selectconfigs from model", vm.selectconfigs);
             if (configs !== undefined && configs.length > 0) {
                 configs.forEach(function (item) {
-                    // logc("select config item", item);
-                    // vm.roleSelect = menuConfig({
-                    //     nameKey: "name",
-                    //     valueKey: "id",
-                    //     fieldName: "roleSelect",
-                    //     onChange: vm.roleSelectedChange,
-                    //     disabled: vm.hasViewOnlyAccess()
-                    // });
                     item.configData = menuConfig({
                         nameKey: "name",
                         valueKey: "id",
@@ -248,96 +252,151 @@
                     });
                     vm.selectconfigs.push(item);
                 });
-                //vm.roleSelect = vm.selectconfigs[0].configData;
-                // logc("select config vm.roleSelect", vm.roleSelect);
             }
         };
+
         vm.setControlDependencyData = function (resp) {
             var productId = $scope.$parent.productId;
             var tabs = syncMgr.getProductInitialTabs(productId);
 
             if (resp.data && resp.data.length > 0) {
                 var matchFound = false;
-                if(productId == 3){
+                if (productId == 3) {
                     vm.roleRights.forEach(function (right) {
-                        if(right.rightNickName){
+                        if (right.rightNickName) {
                             var record = resp.data.filter(function (data) {
                                 return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
                             })[0];
-        
+
                             if (record !== undefined && record) {
                                 matchFound = true;
                             }
                         }
                     });
                 }
-                else if(productId == 17 || productId == 26 || productId == 18){
+                else if (productId == 20) {
+                    vm.setDocumentDirectorDynamicTabs(tabs, resp);
+                }
+                else if (productId == 17 || productId == 26 || productId == 18) {
                     var releventTabs = [];
                     var rpTabs = [];
                     var rpRoleName = "";
-                    if(vm.rpRoleSelected){
+
+                    if (vm.rpRoleSelected) {
                         rpRoleName = vm.rpRoleSelected.name.toLowerCase();
                         releventTabs = resp.data.filter(function (data) {
                             return data.masterControlValue.toLowerCase() == rpRoleName;
                         });
-                    }                 
+                    }
+
                     if (releventTabs.length > 0) {
                         var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
                         releventTabs.forEach(function (tb) {
-                            var rpTab =  allTabs.find(function (item) {
+                            var rpTab = allTabs.find(function (item) {
                                 return item.text === tb.displayName;
                             });
-                            if(rpTab != undefined){
+                            if (rpTab != undefined) {
                                 rpTabs.push(rpTab);
                             }
                         });
                         vm.setProductTabs(rpTabs);
                         matchFound = true;
-                    
+
                     }
                     else {
                         vm.setProductTabs(tabs);
                     }
-                    if(productId == 17){
+
+                    if (productId == 17) {
                         vm.showAllPropertiesSwtich = (rpRoleName == "enterprise standard") ? true : false;
                         vm.allProperties = ((rpRoleName == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || rpRoleName == "enterprise admin") ? true : false;
                         syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                     }
+
                     if (productId == 26) {
-                        if(rpTabs.length > 0){
+                        if (rpTabs.length > 0) {
                             vm.setAllProperties(rpTabs);
-                        } else{
+                        }
+                        else {
                             syncMgr.updateProductAllProperties(productId, false);
                         }
                     }
                     if (productId == 18 && vm.rpRoleSelected) {
                         vm.setAllProperties(vm.rpRoleSelected);
                     }
-                }              
+                }
 
                 //Exclude properties tab fro employee and external user company
                 var compId = persona.getBooksMasterId();
-                // if (compId === -1 || compId === -2) {
-                //     matchFound = false;
-                // }
-                if(compId === -1 || compId === -2)
-                { 
+                if (compId === -1 || compId === -2) {
                     matchFound = false;
                     vm.setProductTabs(tabs);
-                    
-                }else if(productId == 3 ){
-                    if(matchFound){
+
+                }
+                else if (productId == 3) {
+                    if (matchFound) {
                         tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
                         vm.setProductTabs(tabs);
-                    }else{
+                    }
+                    else {
                         vm.setProductTabs(tabs);
-                    }  
-                }         
-                
-                syncMgr.setProductDependencyDataMap($scope.$parent.productId, matchFound);  
+                    }
+                }
+
+                syncMgr.setProductDependencyDataMap($scope.$parent.productId, matchFound);
             }
             else {
                 vm.setProductTabs(tabs);
+            }
+        };
+
+        vm.setDocumentDirectorDynamicTabs = function (intialTabs, resp) {
+            var productId = 20;
+            var ddTabs = [];
+            var ddreleventTabs = [];
+            var ddtabName = [];
+            var rolesData = syncMgr.getProductRolesData(productId);
+
+            if (rolesData !== undefined && rolesData.length) {
+                ddreleventTabs.push("roles");
+                rolesData.forEach(function (role) {
+                    if (role.isAssigned) {
+                        var ddRoleType = role.roletype;
+
+                        if (ddRoleType !== undefined) {
+                            ddtabName = resp.data.filter(function (data) {
+                                return data.masterControlValue.toLowerCase() == ddRoleType.toLowerCase();
+                            });
+
+                            if (ddtabName !== undefined) {
+                                var record = ddreleventTabs.filter(function (data) {
+                                    return ddtabName[0].displayName.toLowerCase() === data;
+                                })[0];
+
+                                if (record === undefined) {
+                                    ddreleventTabs.push(ddtabName[0].displayName.toLowerCase());
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if (ddreleventTabs.length > 0) {
+                    var allDDTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                    ddreleventTabs.forEach(function (tb) {
+                        var ddTab = allDDTabs.find(function (item) {
+                            return item.text.toLowerCase() === tb;
+                        });
+                        if (ddTab != undefined) {
+                            ddTabs.push(ddTab);
+                        }
+                    });
+
+                    vm.setDMProductTabs(ddTabs, vm.rpRoleSelected.id);
+                }
+                else {
+                    vm.setProductTabs(intialTabs);
+                }
             }
         };
 
@@ -348,34 +407,50 @@
             tabsModel.activateTab(activeTab).initActiveTab();
         };
 
+        vm.setDMProductTabs = function (tabs, roleId) {
+            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+            tabsModel.setTabs(tabs);
+            tabsModel.setTabMenuData(tabs);
+            tabsModel.activateTab(activeTab).initActiveTab();
+
+            tabs.forEach(function (tab) {
+                if (tab.id === "departments") {
+                    pubsub.publish("dd.loaddepartments", vm.rpRoleSelected.id);
+                }
+                else if (tab.id === "properties") {
+                    pubsub.publish("dd.loadproperties", vm.rpRoleSelected.id);
+                }
+            });
+        };
+
         vm.updateRoleRecords = function (record) {
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
             vm.isSelectAllPropMsg1 = false;
             vm.isSelectAllPropMsg2 = false;
             if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26") {
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
-                if(record.productId == "17"){
+                if (record.productId == "17") {
                     vm.rpRoleSelected = record;
                     vm.allProperties = false;
                 }
-                 else if( record.productId == "26"){
+                else if (record.productId == "26") {
                     vm.rpRoleSelected = record;
                 }
-                else if(record.productId == "18"){
-                    if(vm.rpRoleSelected){  
-                        if(record.name.toLowerCase() === "property manager"){
+                else if (record.productId == "18") {
+                    if (vm.rpRoleSelected) {
+                        if (record.name.toLowerCase() === "property manager") {
                             syncMgr.setAllPropertyGroupSync(record.productId, false);
                         }
-                        else if(record.name.toLowerCase() === "group manager"){
+                        else if (record.name.toLowerCase() === "group manager") {
                             syncMgr.allPropertiesSync(record.productId, false);
                         }
-                        else{
+                        else {
                             syncMgr.setAllPropertyGroupSync(record.productId, false);
                             syncMgr.allPropertiesSync(record.productId, false);
                         }
                     }
                     vm.rpRoleSelected = record;
-                    
+
                 }
                 else {
                     if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
@@ -385,7 +460,7 @@
                         }
                     }
                 }
-                if(dependencyControlId > 0){
+                if (dependencyControlId > 0) {
                     vm.loadProductControlDependencyData(dependencyControlId);
                 }
             }
@@ -394,6 +469,14 @@
         vm.updateMultiSelectRoleRecords = function (record) {
             if (record) {
                 syncMgr.multiSelectedRoleSync(record.productId, record);
+                logc("dd record", record);
+                if (record.productId == 20) {
+                    vm.rpRoleSelected = record;
+                    var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
+                    if (dependencyControlId > 0) {
+                        vm.loadProductControlDependencyData(dependencyControlId);
+                    }
+                }
             }
         };
 
@@ -417,37 +500,38 @@
 
         vm.setAllProperties = function (record) {
             var productId = $scope.$parent.productId;
-            if(productId == 17){
+            if (productId == 17) {
                 var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
                 var releventTabs = [];
-                if(record){
+                if (record) {
                     releventTabs = tabs.filter(function (data) {
                         return data.text.toLowerCase() == "roles";
                     });
                 }
-                if(releventTabs != undefined && releventTabs.length >0){
+                if (releventTabs != undefined && releventTabs.length > 0) {
                     vm.setProductTabs(releventTabs);
                 }
-                else{
+                else {
                     vm.setProductTabs(tabs);
                 }
                 vm.allProperties = record;
                 syncMgr.updateProductAllProperties($scope.$parent.productId, record);
             }
-            else if(productId == 26 && record.length == 1 && record[0].text == "Roles"){
+            else if (productId == 26 && record.length == 1 && record[0].text == "Roles") {
                 vm.isSelectAllPropMsg1 = true;
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
             }
-            else if (productId == 18 ) {
-                if(record.name.toLowerCase() === "portfolio manager"){
+            else if (productId == 18) {
+                if (record.name.toLowerCase() === "portfolio manager") {
                     vm.isSelectAllPropMsg2 = true;
                     syncMgr.updateProductAllProperties($scope.$parent.productId, true);
-                }else{
+                }
+                else {
                     syncMgr.updateProductAllProperties($scope.$parent.productId, false);
 
                 }
             }
-           
+
         };
 
         vm.destroy = function () {

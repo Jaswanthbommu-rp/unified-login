@@ -160,16 +160,22 @@
                             if (tabName === "rights") {
                                 tabName = "roles";
                             }
-                            if (tabName === "markets" || tabName === "messaginggroups") {
+
+                            if (tabName === "markets" ||
+                                tabName === "messaginggroups" ||
+                                tabName === "departments" ||
+                                tabName === "regions") {
                                 tabName = "propertygroup";
                             }
+
                             if (tabName === "additionalrights") {
                                 tabName = "rights";
                             }
+
                             if(tabName === "propertygroup" && $scope.productId == 13){
                                 tabName = "properties";
                             }
-                            
+
                             var tab = {
                                 id: tabGrp.displayName.toLowerCase(),
                                 text: tabGrp.displayName,
@@ -188,6 +194,10 @@
                 productModel.renderProductTabsMap($scope.productId, allTabs, initialTabs);
                 productModel.renderProductActiveTabMap($scope.productId, vm.activeTab);
             }
+
+            // if ($scope.productId == 20){
+            //     return initialTabs;
+            // }
             return allTabs;
         };
 
@@ -199,12 +209,16 @@
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             var tabName = tabGrp.displayName.replace(/ /g, "");
-                            if (tabName === "Markets" || tabName === "MessagingGroups") {
+
+                            if (tabName === "Markets" ||
+                                tabName === "MessagingGroups"||
+                                tabName === "Departments" ||
+                                tabName === "Regions") {
                                 tabName = "PropertyGroup";
                             }
                             else if (tabName === "Rights") {
                                 tabName = "Roles";
-                            } 
+                            }
                             else if(tabName === "PropertyGroup" && productId == 13){
                                 tabName = "Properties";
                             }

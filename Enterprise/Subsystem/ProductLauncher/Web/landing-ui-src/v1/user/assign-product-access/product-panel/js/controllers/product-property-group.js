@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, dmDataSvc, pubsub) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -28,6 +28,7 @@
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
+            pubsub.subscribe("dd.loaddepartments", vm.loadDMData);
         };
 
         vm.isActive = function () {
@@ -42,42 +43,83 @@
             vm.grid.updateSelected();
         };
 
-        vm.filter = function(filterBy){
+        vm.filter = function (filterBy) {
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
             var productId = $scope.$parent.productId;
-            if(productId != 18){
+            if (productId != 18 || productId != 20) {
                 syncMgr.allPropertiesSync($scope.$parent.productId, val);
             }
             vm.updateGrid();
         };
 
         vm.selectionChange = function (record) {
-            if (record) {
+            if (record && $scope.$parent.productId != 20) {
                 syncMgr.groupToPropertySync($scope.$parent.productId, record);
             }
         };
 
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
+            if (productId !== 20) {
+                pgGrid.busy(true);
+                if (persona.isReady() && vm.isActive()) {
+                    var propertyGrpData = syncMgr.getProductPropertyGroupData(productId);
 
+                    if (propertyGrpData === undefined) {
+
+                        var params = {
+                            userPersonaId: userDetailsModel.getPersonaId(),
+                            editorPersonaId: persona.getId(),
+                            productId: productId,
+                            userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
+                        };
+
+                        vm.dataPropReq = dataSvc.get(params, vm.setPropertyGroupData);
+                    }
+                    else {
+                        vm.loadGridData(productId);
+                    }
+                }
+            }
+
+        };
+
+        vm.loadDMData = function (roleId) {
+            var productId = 20;
+            logc("pgGrid vm", vm, pgGrid, roleId);
+            if (pgGrid === undefined) {
+                pgGrid = gridModel();
+                pgGridTransform = gridTransformSvc();
+                pgGridPagination = gridPaginationModel();
+                vm.grid = pgGrid;
+                var config = syncMgr.getProductGridConfig(productId, "PropertyGroup");
+                pgGridTransform.watch(pgGrid);
+                pgGrid.setConfig(config);
+                pgGridPagination.setGrid(pgGrid);
+                //$scope.pgGridPagination = pgGridPagination;
+
+                pgGridPagination.setConfig({
+                    recordsPerPage: 25
+                });
+            }
+            logc("pgGrid", pgGrid, vm);
             pgGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
-                var propertyData = syncMgr.getProductPropertiesData(productId);
+                var propertyData = syncMgr.getProductPropertyGroupData(productId);
 
                 if (propertyData === undefined) {
 
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
-                        productId: productId,
-                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
+                        roleId: roleId
                     };
 
-                    vm.dataPropReq = dataSvc.get(params, vm.setPropertyGroupData);
+                    vm.dmdataPropReq = dmDataSvc.get(params, vm.setPropertyGroupData);
                 }
                 else {
                     vm.loadGridData(productId);
@@ -143,13 +185,17 @@
                 vm.dataPropReq.$cancelRequest();
             }
 
+            if (vm.dmdataPropReq) {
+                vm.dmdataPropReq.$cancelRequest();
+            }
+
             pgGridTransform.destroy();
             pgGridPagination.destroy();
             pgGrid = undefined;
             pgGridTransform = undefined;
             pgGridPagination = undefined;
             //vm = undefined;
-            $scope = undefined;
+            //$scope = undefined;
         };
 
         vm.init();
@@ -169,6 +215,8 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
+            "DMAdditionalDataSvc",
+            "pubsub",
             ProductPropertyGroupsGridCtrl
         ]);
 })(angular);
