@@ -33,12 +33,16 @@
                     propertyGroupList: [],
                     removedPropertyList: [],
                     messageGroups: [],
+                    companiesList: [],
                     Notifications: {
                         managerFdiViaEmail: false,
                         amenitiesViaEmail: false,
                         managerMrViaEmail: false,
                     },
-                    isAssignedNewPropertyByDefault: false
+                    isAssignedNewPropertyByDefault: false,
+                    hasAccessToSiteSpendManagementOnly: false,
+                    hasAccessToAllCurrentFutureProperties: false,
+                    isAccountingAdmin: false
                 }
             };
 
@@ -207,6 +211,9 @@
                         else if(productId == "17"){
                             s.batchData.inputJson.messageGroups.push(group.id);
                         }
+                        else if(productId == "17"){
+                            s.batchData.inputJson.companiesList.push(group.id);
+                        }
                         else{
                             s.batchData.inputJson.regionList.push(group.id);
                         }
@@ -214,6 +221,9 @@
                 });
                 if(productId == "17"){
                     hasPropertyGroupSelected = s.batchData.inputJson.messageGroups.length > 0;
+                }
+                else if(productId == "8"){
+                    hasPropertyGroupSelected = s.batchData.inputJson.companiesList.length > 0;
                 }
                 else{
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;

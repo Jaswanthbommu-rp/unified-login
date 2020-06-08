@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $rootScope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, tabsModel) {
+    function ProductPropertyGroupsGridCtrl($scope, $rootScope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, tabsModel, pubsub) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -29,6 +29,7 @@
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
+            vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllCompaniesSet",vm.accountingAllCompaniesSet);
         };
 
         vm.isActive = function () {
@@ -45,6 +46,11 @@
 
         vm.filter = function(filterBy){
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
+        vm.accountingAllCompaniesSet = function(bool){
+            logc("accountingAllCompaniesSet", bool);
+            vm.showPGGrid = !bool;
         };
 
         vm.selectAllPropertyGroup = function (val) {
@@ -122,27 +128,40 @@
         vm.setPropertyGroupData = function (resp) {
             //$scope.$parent.hasAccessToSiteSpendManagementOnly = true;
             pgGrid.busy(false);
-            if($scope.$parent.productId == 8 && resp.additional && !resp.additional.isMConsolePMC){
-                //hide companies tab and show entities tab for financial suite
-                vm.showPGGrid = false;
-                var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
-                var initialTab = [];
-                var filteredAllTabs = allTabs.filter(function(tb){
-                    if(tb.text != "Companies"){
-                        if(tb.text == "Entities"){
-                            tb.isActive = true;
-                            initialTab.push(tb);
+            if($scope.$parent.productId == 8){
+                if(resp.additional && !resp.additional.isMConsolePMC){
+                    //hide companies tab and show entities tab for financial suite
+                    vm.showPGGrid = false;
+                    var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                    var initialTab = [];
+                    var filteredAllTabs = allTabs.filter(function(tb){
+                        if(tb.text != "Companies"){
+                            if(tb.text == "Entities"){
+                                tb.isActive = true;
+                                initialTab.push(tb);
+                            }
+                            return tb;
                         }
-                        return tb;
-                    }
-                });
+                    });
 
-                logc("filteredAllTabs",filteredAllTabs);
-                logc("initialTab",initialTab);
-                
-                syncMgr.renderProductTabsMap($scope.$parent.productId, filteredAllTabs, initialTab);
-                syncMgr.renderProductActiveTabMap($scope.$parent.productId, initialTab);
-                vm.setProductTabs(filteredAllTabs);
+                    logc("filteredAllTabs",filteredAllTabs);
+                    logc("initialTab",initialTab);
+                    
+                    syncMgr.renderProductTabsMap($scope.$parent.productId, filteredAllTabs, initialTab);
+                    syncMgr.renderProductActiveTabMap($scope.$parent.productId, initialTab);
+                    vm.setProductTabs(filteredAllTabs);
+                }
+
+                if(resp.additional.hasAccessToAllCurrentFutureProperties){
+                    pubsub.publish("acct.accountingAllPropertiesSet",false);
+                    vm.accountingAllCompaniesSet(false);
+                    $scope.$parent.hasAccessToSiteSpendManagementOnly = resp.additional.hasAccessToSiteSpendManagementOnly;
+                    $scope.$parent.hasAccessToAllCurrentFutureProperties = resp.additional.hasAccessToAllCurrentFutureProperties;
+                    $scope.$parent.isAccountingAdmin = resp.additional.isAccountingAdmin;
+                    $scope.$parent.isSiteSpendManagementAssignedToCompany = resp.additional.isSiteSpendManagementAssignedToCompany;
+                    $scope.$parent.isMConsolePMC = resp.additional.isMConsolePMC;                    
+                }
+
             }
             else if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
@@ -200,6 +219,7 @@
             "productPanelDataModel",
             "userDetailsModel",
             "productPanelTabsModel",
+            "pubsub",
             ProductPropertyGroupsGridCtrl
         ]);
 })(angular);

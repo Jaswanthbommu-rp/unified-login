@@ -353,11 +353,11 @@
                                         var modelName = "";
                                         if(tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly"){
                                             eventName = vm.acessSiteSpndMgmtOnlySwitchWatch;
-                                            modelName = "vm.hasAccessToSiteSpendManagementOnly";
+                                            modelName = "vm.hasAccessToSiteSpendManagementOnlyModel";
                                         }
                                         else if(tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties"){
                                             eventName = vm.allPropertiesSwitchWatch;
-                                            modelName = "vm.hasAccessToAllCurrentFutureProperties";
+                                            modelName = "vm.hasAccessToAllCurrentFuturePropertiesModel";
                                         }
                                         else if(tabGrp.dataSource == "isAccountingAdmin"){
                                             eventName = vm.accountingAdminSwitchWatch;
@@ -373,6 +373,7 @@
                                                 onChange: eventName
                                             })
                                         };
+                                        logc("switchc",c);
                                         aSwitch.push(c);
                                     }
                                 }
@@ -402,17 +403,27 @@
             }
         };
 
-        vm.accountingAdminSwitchWatch = function (val) {  
-            vm.isAccountingAdmin = val;
-        };
-
         vm.acessSiteSpndMgmtOnlySwitchWatch = function (val) {
+           logc("acessSiteSpndMgmtOnlySwitchWatch",val);
            vm.hasAccessToSiteSpendManagementOnly = val;
+           if(vm.hasAccessToSiteSpendManagementOnly){
+                vm.isAccountingAdmin = false;
+           }
         };
 
-        vm.allPropertiesSwitchWatch = function (val) {     
-            pubsub.publish("acct.accountingAllPropertiesSet",val);   
+        vm.allPropertiesSwitchWatch = function (val) {
+            logc("allPropertiesSwitchWatch",val);
+            pubsub.publish("acct.accountingAllPropertiesSet",val);
+            pubsub.publish("acct.accountingAllCompaniesSet",val);
             vm.hasAccessToAllCurrentFutureProperties = val;
+        };
+
+        vm.accountingAdminSwitchWatch = function (val) { 
+            logc("accountingAdminSwitchWatch",val); 
+            vm.isAccountingAdmin = val;
+            if(vm.isAccountingAdmin){
+                vm.hasAccessToSiteSpendManagementOnly = false;
+            }
         };
 
         vm.setSelectConfigs = function (data) {

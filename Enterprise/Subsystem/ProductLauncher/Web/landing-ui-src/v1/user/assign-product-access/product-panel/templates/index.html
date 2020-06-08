@@ -9,15 +9,19 @@
         This product is not available when User Type is {{cpactrl.userType}}.
     </div>
 
-    <div  class="all-feature-properties" ng-if="cpactrl.switchconfigs && cpactrl.isSwitchConfigLoaded()">
-        <div class="col-md-2">
+    <div  class="row" ng-if="cpactrl.switchconfigs && cpactrl.isSwitchConfigLoaded()">
+        <div class="col-md-3 marg-l">
             <div class="options"> Options: </div>
-         </div>
-        <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpactrl.switchconfigs"
-            config="sw.configData"
-            rp-model="sw.key"
-            rp-label-text="sw.text">
-        </rp-switch>
+        </div>
+        <br/>
+        <div class="col-md-9 marg-l" ng-repeat="sw in cpactrl.switchconfigs">
+            <rp-switch  class="col-md-12 inline label-1"
+                config="sw.configData"
+                rp-model="sw.key"
+                rp-label-text="sw.text">
+            </rp-switch>
+        </div>
+        <br/>
     </div>
     
      <rp-scrolling-tabs-menu model="cpactrl.tabsMenu">
