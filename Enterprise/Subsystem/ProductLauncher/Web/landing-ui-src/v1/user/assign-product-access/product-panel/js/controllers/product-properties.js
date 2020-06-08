@@ -63,13 +63,12 @@
             $scope.productId = obj.productId;
         };
 
-        vm.accessTypeChanged = function (productId) {
-            vm.propertySelect = syncMgr.getAccessType();
+        vm.accessTypeChanged = function (value) {
             if(vm.propertySelect === 'allProperties'){
                 vm.allProperties = true;
             }
             if(vm.propertySelect === 'propertyGroup'){
-                syncMgr.allPropertiesSync(productId, false);
+                syncMgr.allPropertiesSync($scope.productId, false);
             }
         };
         vm.isVendorCredentialing = function() {
@@ -112,10 +111,7 @@
         };
 
         vm.hidePropertiesGrid = function () {
-            if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
-                return true;
-            }
-            else if(syncMgr.getAccessType() === 'allProperties' && $scope.$parent.productId === 16) {
+            if ((vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) || syncMgr.getHidepropertiesgrid()) {
                 return true;
             }
             return false;
@@ -230,7 +226,7 @@
                     }
                 });
 
-                if (syncMgr.isProductAllProperties(productId) || syncMgr.getHidepropertiesgrid()) {
+                if (syncMgr.isProductAllProperties(productId)) {
                     propertySelect = "allProperties";
                     vm.allProperties = true;
                 }

@@ -174,12 +174,9 @@
                 s.batchData.inputJson.propertyList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14" || productId == "3" || productId == "23") {
+                    if (productId == "14" || productId == "3" || productId == "23" || productId == "16") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
-                    else if(productId == "16") {
-                        s.batchData.inputJson.propertyList.push(-1);
-                    }                    
                     else {
                         s.batchData.inputJson.propertyList.push("all");
                     }

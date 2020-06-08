@@ -127,8 +127,6 @@
 
         vm.setPropertyGroupData = function (resp) {
             pgGrid.busy(false);
-            var accesstype = resp.additional.accessType;
-            
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
                 vm.loadGridData($scope.$parent.productId);
@@ -137,7 +135,8 @@
             if (resp.isError) {
                 vm.isPropertyGroupsError = true;
             }
-            if(accesstype) {
+            if(resp.additional) {
+                var accesstype = resp.additional.accessType;
                 pubsub.publish("ppanel.accessTypeChange", accesstype);
             }
         };

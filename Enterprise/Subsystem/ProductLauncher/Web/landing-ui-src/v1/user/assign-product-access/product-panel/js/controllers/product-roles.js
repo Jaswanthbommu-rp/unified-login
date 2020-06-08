@@ -30,7 +30,7 @@
             vm.allProperties = false;
             vm.showAllPropertiesSwtich = false;
             vm.accessLevel = {};
-            vm.propertySelect = "property"; //property
+            vm.propertySelect =  ''; //property
             
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
@@ -76,36 +76,43 @@
         };
 
         vm.accessTypeChange = function (accessType) {
-            if(accessType === 'specificProperties') {
-                vm.propertySelect = 'property';
-            }
-            else if(accessType === 'propertyGroup') {
-                vm.propertySelect = 'propertyGroup';
-            }
-            else {
-                vm.propertySelect = 'allProperties';
-                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
-            }
-            vm.rpRoleSelected = vm.propertySelect;
-            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, vm.propertySelect);
+            // if(accessType === 'specificProperties') {
+            //     vm.propertySelect = 'property';
+            // }
+            // else if(accessType === 'propertyGroup') {
+            //     vm.propertySelect = 'propertyGroup';
+            // }
+            // else {
+            //     vm.propertySelect = 'allProperties';
+            //     syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+            // }
+            // vm.rpRoleSelected = vm.propertySelect;
+            // var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, vm.propertySelect);
                 
-            if (dependencyControlId > 0) {
-                vm.loadProductControlDependencyData(dependencyControlId);
-            }
+            // if (dependencyControlId > 0) {
+            //     vm.loadProductControlDependencyData(dependencyControlId);
+            // }
         };
-        vm.resetDataModel = function () {
-            syncMgr.setAccessType(vm.propertySelect);
+        vm.resetDataModel = function (record) {
+            //syncMgr.setAccessType(vm.propertySelect);
             if(vm.propertySelect === 'allProperties') {
                 syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+                //pubsub.publish("ppanel.access-type-change", vm.propertySelect);
             }
-            else if(vm.propertySelect === 'propertyGroup') {
-                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+            if(record.key === 'propertyGroup') {
+                //syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
             }
-            else if(vm.propertySelect === 'property') {
+            else if(record.key === 'property') {
                 syncMgr.setHidepropertiesgrid($scope.$parent.productId, false);
                 syncMgr.clearPropertyGroupData($scope.$parent.productId);
             }
-            vm.loadGridData($scope.$parent.productId);
+            vm.propertySelect = record.key;
+            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, record.key);
+            if(dependencyControlId > 0){
+                vm.loadProductControlDependencyData(dependencyControlId);
+            }
+            //vm.loadGridData($scope.$parent.productId);
         };
 
         vm.isSelectTypeConfigLoaded = function () {
@@ -189,7 +196,7 @@
                     }
                 });
 
-                var controlDependencyValue = (productId === 16) ? vm.propertySelect : 'role' ;
+                var controlDependencyValue = (productId === 16 && vm.propertySelect == '') ? 'property' : 'role' ;
                 var dependencyControlId = syncMgr.getProductDependencyControlId(productId, controlDependencyValue);
                 
                 if (dependencyControlId > 0) {
@@ -326,14 +333,34 @@
                         }
                     });
                 }
-                else if(productId == 17 || productId == 26 || productId == 18 || productId == 16){
+                else if(productId == 16) {
+                    var irreleventTab = resp.data[0];
+                    var relevantTab = [];
+                    var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
+                    relevantTab = allTab.filter(function (data) {
+                            return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
+                    });
+                    if(vm.propertySelect == '') {
+                        relevantTab = relevantTab.filter(function (data) {
+                            return data.id.toLowerCase() !== 'properties';
+                        });  
+                    }
+                    vm.setProductTabs(relevantTab);
+                    matchFound = true;
+                }
+                else if(productId == 17 || productId == 26 || productId == 18) {
                     var releventTabs = [];
                     var rpTabs = [];
                     var rpRoleName = "";
                     if(vm.rpRoleSelected){
                         if(productId == 16) {
-                            rpRoleName = vm.rpRoleSelected.toLowerCase(); 
-                            releventTabs = resp.data;
+                            // rpRoleName = vm.rpRoleSelected.toLowerCase();
+                            // //releventTabs = resp.data;
+                            // var irreleventTab = resp.data[0];
+                            // var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
+                            // releventTabs = allTab.filter(function (data) {
+                            //     return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
+                            // });
                         }
                         else {
                             rpRoleName = vm.rpRoleSelected.name.toLowerCase();
@@ -360,7 +387,7 @@
                     else {
                         vm.setProductTabs(tabs);
                     }
-                    if(productId == 17){
+                    if(productId == 17 || productId == 16){
                         vm.showAllPropertiesSwtich = (rpRoleName == "enterprise standard") ? true : false;
                         vm.allProperties = ((rpRoleName == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || rpRoleName == "enterprise admin" || rpRoleName == "allproperties") ? true : false;
                         syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
