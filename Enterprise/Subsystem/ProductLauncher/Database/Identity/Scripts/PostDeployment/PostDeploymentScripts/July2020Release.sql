@@ -462,13 +462,13 @@ BEGIN
 		SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
 
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (44, 430, 442, N'Specific Property', 1, @UserId, @Now)
+		VALUES (54, 430, 442, N'Specific Property', 1, @UserId, @Now)
 
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (45, 431, 437, N'Property Group', 1, @UserId, @Now)
+		VALUES (55, 431, 437, N'Property Group', 1, @UserId, @Now)
 
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (46, 432, 442, N'All Properties', 1, @UserId, @Now)
+		VALUES (56, 432, 442, N'All Properties', 1, @UserId, @Now)
 
 		SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
 		
