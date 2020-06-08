@@ -920,6 +920,16 @@
             return s;
         };
 
+        p.clearPropertyGroupData = function(key) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
+        };
+
         // Assertions
 
         p.allSelected = function (list, selectKey) {
