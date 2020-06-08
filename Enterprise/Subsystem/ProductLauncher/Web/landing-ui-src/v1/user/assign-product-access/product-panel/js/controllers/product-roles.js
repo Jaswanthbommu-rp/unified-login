@@ -43,9 +43,9 @@
             roleGridPagination.setConfig({
                 recordsPerPage: 25
             });
-            var radioconfig = syncMgr.getProductSelectTypeConfig($scope.$parent.productId, "Roles");
+            var radioconfig = syncMgr.getProductPageLevelRadioConfig($scope.$parent.productId, "Roles");
             if (radioconfig !== undefined) {
-                vm.radioconfig = syncMgr.getProductSelectTypeConfig($scope.$parent.productId, "Roles");
+                vm.radioconfig = syncMgr.getProductPageLevelRadioConfig($scope.$parent.productId, "Roles");
             }
 
             vm.personaWatch = angular.noop;

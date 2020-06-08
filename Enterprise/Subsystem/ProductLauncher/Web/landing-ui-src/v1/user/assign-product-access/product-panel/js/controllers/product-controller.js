@@ -120,6 +120,7 @@
             vm.setTabsConfigData(data);
             vm.setSwitchConfigs(data);
             vm.setSelectConfigs(data);
+            vm.setSelectPageLevelRadioConfigs(data);
 
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
@@ -345,21 +346,19 @@
             }
         };
 
-        vm.setSelectConfigs = function (data) {
-            var aSelect = [];
+        vm.setSelectPageLevelRadioConfigs = function (data) {
             var aRadio = [];
             //Check and Set any Switch
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
-                            aSelect = [];
                             aRadio = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if (tabName === "Rights") {
                                 tabName = "Roles";
                             }
-                            if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
+                            if (productModel.getProductPageLevelRadioConfig($scope.productId, tabName) === undefined) {
                                 if($scope.productId == 16){
                                     tabGrp.controls.forEach(function (ctrl) {
                                     if (ctrl.type === 'Radio') {
@@ -380,12 +379,33 @@
                                                 productModel.renderProductDependencyMap($scope.productId, ctrl.dataSource, ctrl.id);
                                             }
                                         }
-                                        if (aRadio.length > 0) {
-                                            logc("aRadio config", aRadio, tabName);
-                                            productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aRadio);
-                                        }
+                                        
                                     });
+                                    if (aRadio.length > 0) {
+                                        logc("aRadio config", aRadio, tabName);
+                                        productModel.renderPageLevelRadioConfigMap($scope.productId, tabName, aRadio);
+                                    }
                                 }
+                            }
+                        });
+                    }
+                });
+            }
+        };
+
+        vm.setSelectConfigs = function (data) {
+            var aSelect = [];
+            //Check and Set any Switch
+            if (data && data.controls) {
+                data.controls.forEach(function (tabControl) {
+                    if (tabControl.type === 'Tab Group') {
+                        tabControl.controls.forEach(function (tabGrp) {
+                            aSelect = [];
+                            var tabName = tabGrp.displayName.replace(/ /g, "");
+                            if (tabName === "Rights") {
+                                tabName = "Roles";
+                            }
+                            if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
                                 if(tabGrp.controls){
                                     tabGrp.controls.forEach(function (ctrl) {
                                         if (ctrl.type === 'Select') {
