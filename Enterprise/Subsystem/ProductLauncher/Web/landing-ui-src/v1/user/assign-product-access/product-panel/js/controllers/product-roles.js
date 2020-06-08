@@ -29,7 +29,8 @@
             vm.isSelectAllPropMsg2 = false;
             vm.allProperties = false;
             vm.showAllPropertiesSwtich = false;
-
+            vm.propertySelect =  '';
+            
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -42,12 +43,17 @@
             roleGridPagination.setConfig({
                 recordsPerPage: 25
             });
+            var radioconfig = syncMgr.getProductRadioConfig($scope.$parent.productId, "Roles");
+            if (radioconfig !== undefined) {
+                vm.radioconfig = syncMgr.getProductRadioConfig($scope.$parent.productId, "Roles");
+            }
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
 
+            pubsub.subscribe("ppanel.accessTypeChange", vm.accessTypeChange);
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
@@ -59,6 +65,32 @@
 
         vm.isReady = function () {
             return productDataModel.isRoleGridActive(); //productDataModel.isActive();
+        };
+
+        vm.accessTypeChange = function (accessType) {
+            if(accessType === 'specificProperties') {
+                vm.propertySelect = 'property';
+            }
+            else {
+                vm.propertySelect = accessType;
+            }
+            vm.rpRoleSelected = vm.propertySelect;
+            vm.resetDataModel(vm.propertySelect);
+        };
+
+        vm.resetDataModel = function (accessType) {
+            if(accessType === 'propertyGroup') {
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
+            }
+            else if(accessType === 'property') {
+                syncMgr.clearPropertyGroupData($scope.$parent.productId);
+            }
+            vm.propertySelect = accessType;
+            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, accessType);
+            if(dependencyControlId > 0){
+                vm.loadProductControlDependencyData(dependencyControlId);
+            }
+            pubsub.publish("ppanel.access-type-change", accessType);
         };
 
         vm.isSelectTypeConfigLoaded = function () {
@@ -109,6 +141,10 @@
                 });
                 logc("vm.rpRoleSelected",vm.rpRoleSelected);
             }
+
+            if(productId == 16 && vm.propertySelect !== undefined) {
+                vm.rpRoleSelected = vm.propertySelect;
+            }
             var presetroleData = syncMgr.getProductPresetRolesData(productId);
             //vm.setSelectTypeConfig();
             //logc("l2lroledata", roleData, presetroleData, rolesGrid);
@@ -135,8 +171,9 @@
                     }
                 });
 
-                var dependencyControlId = syncMgr.getProductDependencyControlId(productId, 'role');
-
+                var controlDependencyValue = (productId === 16 && vm.propertySelect == '') ? 'property' : 'role' ;
+                var dependencyControlId = syncMgr.getProductDependencyControlId(productId, controlDependencyValue);
+                
                 if (dependencyControlId > 0) {
                     vm.loadProductControlDependencyData(dependencyControlId);
                 }
@@ -271,15 +308,35 @@
                         }
                     });
                 }
-                else if(productId == 17 || productId == 26 || productId == 18){
+                else if(productId == 16) {
+                    var irreleventTab = resp.data[0];
+                    var relevantTab = [];
+                    var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
+                    var rpPropertySelect = vm.rpRoleSelected.toLowerCase();
+
+                    relevantTab = allTab.filter(function (data) {
+                            return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
+                    });
+                    if(vm.propertySelect == '') {
+                        relevantTab = relevantTab.filter(function (data) {
+                            return data.id.toLowerCase() !== 'properties';
+                        });  
+                    }
+                    vm.setProductTabs(relevantTab);
+                    matchFound = true;
+                    vm.allProperties = (rpPropertySelect == "allproperties") ? true : false;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
+                }
+                else if(productId == 17 || productId == 26 || productId == 18) {
                     var releventTabs = [];
                     var rpTabs = [];
                     var rpRoleName = "";
                     if(vm.rpRoleSelected){
-                        rpRoleName = vm.rpRoleSelected.name.toLowerCase();
-                        releventTabs = resp.data.filter(function (data) {
-                            return data.masterControlValue.toLowerCase() == rpRoleName;
-                        });
+                            rpRoleName = vm.rpRoleSelected.name.toLowerCase();
+                            releventTabs = resp.data.filter(function (data) {
+                                return data.masterControlValue.toLowerCase() == rpRoleName;
+                            });
+                        
                     }                 
                     if (releventTabs.length > 0) {
                         var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
