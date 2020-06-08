@@ -380,15 +380,6 @@
             };
         };
 
-        p.getAccessType = function() {
-            var s = this;
-            return s.accesstype;
-        };
-        p.setAccessType = function(value) {
-            var s = this;
-            s.accesstype = value;
-        };
-
         p.updateProductAllProperties = function (product, value) {
             var s = this,
                 productPropertiesList;

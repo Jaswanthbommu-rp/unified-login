@@ -29,7 +29,6 @@
             vm.isSelectAllPropMsg2 = false;
             vm.allProperties = false;
             vm.showAllPropertiesSwtich = false;
-            vm.accessLevel = {};
             vm.propertySelect =  '';
             
 
@@ -347,21 +346,10 @@
                     var rpTabs = [];
                     var rpRoleName = "";
                     if(vm.rpRoleSelected){
-                        if(productId == 16) {
-                            // rpRoleName = vm.rpRoleSelected.toLowerCase();
-                            // //releventTabs = resp.data;
-                            // var irreleventTab = resp.data[0];
-                            // var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
-                            // releventTabs = allTab.filter(function (data) {
-                            //     return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
-                            // });
-                        }
-                        else {
                             rpRoleName = vm.rpRoleSelected.name.toLowerCase();
                             releventTabs = resp.data.filter(function (data) {
                                 return data.masterControlValue.toLowerCase() == rpRoleName;
                             });
-                        }
                         
                     }                 
                     if (releventTabs.length > 0) {
@@ -381,9 +369,9 @@
                     else {
                         vm.setProductTabs(tabs);
                     }
-                    if(productId == 17 || productId == 16){
+                    if(productId == 17){
                         vm.showAllPropertiesSwtich = (rpRoleName == "enterprise standard") ? true : false;
-                        vm.allProperties = ((rpRoleName == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || rpRoleName == "enterprise admin" || rpRoleName == "allproperties") ? true : false;
+                        vm.allProperties = ((rpRoleName == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || rpRoleName == "enterprise admin") ? true : false;
                         syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                     }
                     if (productId == 26) {
@@ -435,7 +423,7 @@
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
             vm.isSelectAllPropMsg1 = false;
             vm.isSelectAllPropMsg2 = false;
-            if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26" || record.productId == "16") {
+            if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26") {
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
                 if(record.productId == "17"){
                     vm.rpRoleSelected = record;

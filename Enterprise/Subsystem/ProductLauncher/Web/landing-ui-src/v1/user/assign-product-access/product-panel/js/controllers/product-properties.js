@@ -47,10 +47,8 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
+
             pubsub.subscribe("ppanel.access-type-change", vm.accessTypeChanged);
-
-
-
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
@@ -70,12 +68,6 @@
             if(vm.propertySelect === 'propertyGroup'){
                 syncMgr.allPropertiesSync($scope.productId, false);
             }
-        };
-        vm.isVendorCredentialing = function() {
-            if($scope.$parent.productId === 16) {
-                return true;
-            }
-            return false;
         };
 
         vm.hasViewOnlyAccess = function () {
