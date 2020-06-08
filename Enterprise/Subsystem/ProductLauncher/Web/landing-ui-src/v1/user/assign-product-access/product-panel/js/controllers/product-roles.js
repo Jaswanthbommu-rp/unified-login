@@ -71,43 +71,29 @@
             if(accessType === 'specificProperties') {
                 vm.propertySelect = 'property';
             }
-            else if(accessType === 'propertyGroup') {
-                vm.propertySelect = 'propertyGroup';
-            }
             else {
-                vm.propertySelect = 'allProperties';
-                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+                vm.propertySelect = accessType;
             }
             vm.rpRoleSelected = vm.propertySelect;
-            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, vm.propertySelect);
-                
-            if (dependencyControlId > 0) {
-                vm.loadProductControlDependencyData(dependencyControlId);
-            }
+            vm.resetDataModel(vm.propertySelect);
         };
 
-        vm.resetDataModel = function (record) {
-            if(vm.propertySelect === 'allProperties') {
-                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
-            }
-            if(record.key === 'propertyGroup') {
+        vm.resetDataModel = function (accessType) {
+            if(accessType === 'propertyGroup') {
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
             }
-            else if(record.key === 'property') {
-                syncMgr.setHidepropertiesgrid($scope.$parent.productId, false);
+            else if(accessType === 'property') {
                 syncMgr.clearPropertyGroupData($scope.$parent.productId);
             }
-            vm.propertySelect = record.key;
-            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, record.key);
+            vm.propertySelect = accessType;
+            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, accessType);
             if(dependencyControlId > 0){
                 vm.loadProductControlDependencyData(dependencyControlId);
             }
+            pubsub.publish("ppanel.access-type-change", accessType);
         };
 
         vm.isSelectTypeConfigLoaded = function () {
-            if($scope.$parent.productId === 16){
-                vm.rpRoleSelected = vm.propertySelect;
-            }
             return syncMgr.isSelectTypeConfigLoaded() && vm.isReady();
         };
 

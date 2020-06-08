@@ -62,10 +62,14 @@
         };
 
         vm.accessTypeChanged = function (value) {
+            vm.propertySelect = value;
             if(vm.propertySelect === 'allProperties'){
                 vm.allProperties = true;
             }
-            if(vm.propertySelect === 'propertyGroup'){
+            else if(vm.propertySelect === 'property'){
+                vm.allProperties = false;
+            }
+            else if(vm.propertySelect === 'propertyGroup'){
                 syncMgr.allPropertiesSync($scope.productId, false);
             }
         };
@@ -103,7 +107,7 @@
         };
 
         vm.hidePropertiesGrid = function () {
-            if ((vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) || syncMgr.getHidepropertiesgrid()) {
+            if ((vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9)) {
                 return true;
             }
             return false;

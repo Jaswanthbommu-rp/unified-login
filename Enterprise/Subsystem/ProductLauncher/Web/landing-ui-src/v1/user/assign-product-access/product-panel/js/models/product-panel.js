@@ -288,12 +288,10 @@
                     return s.batchData;
                 }
             }
-            if (productId == "39") {
+            if (productId == "39" || (productId == "16" && hasPropertyGroupSelected)) {
                 hasPropertySelected = true;
             }
-            if(productId == "16" && hasPropertyGroupSelected) {
-                hasPropertySelected = true;
-            }
+            
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;
             }

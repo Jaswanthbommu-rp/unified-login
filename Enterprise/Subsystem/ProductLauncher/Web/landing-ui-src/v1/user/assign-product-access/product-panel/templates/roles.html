@@ -6,7 +6,7 @@
             </div>
             <div>
                 <div>
-                    <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpr.radioconfig" rp-value="rad.key" rp-on-change="cpr.resetDataModel(rad)" rp-model="cpr.propertySelect" rp-disabled="cpr.hasViewUserAccess" rp-label-text="rad.text">
+                    <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpr.radioconfig" rp-value="rad.key" rp-on-change="cpr.resetDataModel(rad.key)" rp-model="cpr.propertySelect" rp-disabled="cpr.hasViewUserAccess" rp-label-text="rad.text">
                     </rp-form-input-radio>
                 </div>
             </div>

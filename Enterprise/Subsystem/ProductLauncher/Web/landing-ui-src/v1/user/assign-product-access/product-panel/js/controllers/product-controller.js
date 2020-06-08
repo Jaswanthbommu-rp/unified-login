@@ -347,14 +347,12 @@
 
         vm.setSelectConfigs = function (data) {
             var aSelect = [];
-            var aRadio = [];
             //Check and Set any Switch
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             aSelect = [];
-                            aRadio = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if (tabName === "Rights") {
                                 tabName = "Roles";
@@ -375,16 +373,11 @@
                                                 disabled: false
                                             })
                                             };
-                                            aRadio.push(c);
                                             if(ctrl.dependency) {
                                                 productModel.renderProductDependencyMap($scope.productId, ctrl.dataSource, ctrl.id);
                                             }
                                         }
                                     });
-                                    if (aRadio.length > 0) {
-                                            logc("aSelect config", aRadio, tabName);
-                                            productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aRadio);
-                                    }
                                 }
                                 if(tabGrp.controls){
                                     tabGrp.controls.forEach(function (ctrl) {
