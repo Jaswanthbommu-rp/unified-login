@@ -25,7 +25,7 @@
             vm.productDisabled = false;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
-
+            
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
@@ -241,6 +241,7 @@
                                             productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
                                             vm.setProductDependency(tab, productId);
                                         }
+                                        
                                     }
 
                                     //Check and Set any Aside List Grid
@@ -357,8 +358,9 @@
                                 tabName = "Roles";
                             }
                             if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
-                                tabGrp.controls.forEach(function (ctrl) {
-                                    if (ctrl.type === 'Select') {
+                                if($scope.productId == 16){
+                                    tabGrp.controls.forEach(function (ctrl) {
+                                    if (ctrl.type === 'Radio') {
                                         var c = {
                                             id: ctrl.id,
                                             text: ctrl.displayName,
@@ -366,19 +368,43 @@
                                             configData: menuConfig({
                                                 nameKey: "name",
                                                 valueKey: "id",
-                                                fieldName: "roleSelect",
-                                                onChange: vm.noop,
+                                                fieldName: "accessTypeSelect",
+                                                onChange: vm.resetDataModel,
                                                 disabled: false
                                             })
-                                        };
-                                        aSelect.push(c);
-                                    }
-                                });
-
-                                if (aSelect.length > 0) {
-                                    logc("aSelect config", aSelect, tabName);
-                                    productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aSelect);
+                                            };
+                                            if(ctrl.dependency) {
+                                                productModel.renderProductDependencyMap($scope.productId, ctrl.dataSource, ctrl.id);
+                                            }
+                                        }
+                                    });
                                 }
+                                if(tabGrp.controls){
+                                    tabGrp.controls.forEach(function (ctrl) {
+                                        if (ctrl.type === 'Select') {
+                                            var c = {
+                                                id: ctrl.id,
+                                                text: ctrl.displayName,
+                                                key: ctrl.dataSource,
+                                                configData: menuConfig({
+                                                    nameKey: "name",
+                                                    valueKey: "id",
+                                                    fieldName: "roleSelect",
+                                                    onChange: vm.noop,
+                                                    disabled: false
+                                                })
+                                            };
+                                            aSelect.push(c);
+                                        }
+                                    });
+
+                                    if (aSelect.length > 0) {
+                                        logc("aSelect config", aSelect, tabName);
+                                        productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aSelect);
+                                    }
+                                }
+
+                                
                             }
                         });
                     }
