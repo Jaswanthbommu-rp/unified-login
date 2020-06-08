@@ -297,6 +297,7 @@
 
             if($scope.$parent.productId == 8 && val){
                 syncMgr.setAllPropertyGroupSync($scope.$parent.productId, val);
+                pubsub.publish("acct.updateGridWatchSet");
             }
         };
 

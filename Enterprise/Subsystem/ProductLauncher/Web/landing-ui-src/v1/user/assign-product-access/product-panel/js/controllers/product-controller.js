@@ -37,6 +37,7 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
             vm.productDisabledWatch = pubsub.subscribe("productpanel.userTypeChanged", vm.resetProductDisabled);
+            vm.accountingAdditionalSetWatch = pubsub.subscribe("acct.accountingAdditionalDataSet",vm.accountingAdditionalDataSet);
         };
 
         vm.productSelected = function (obj) {
@@ -64,6 +65,15 @@
             //logc("productExists", productExists, obj.productId);
             //active = productExists ? true : false;
             return vm;
+        };
+
+        vm.accountingAdditionalDataSet = function(obj){
+            logc("accountingAdditionalDataSet",obj);
+            vm.hasAccessToSiteSpendManagementOnly = obj["hasAccessToSiteSpendManagementOnly"];
+            vm.hasAccessToAllCurrentFutureProperties = obj["hasAccessToAllCurrentFutureProperties"];
+            vm.isAccountingAdmin = obj["isAccountingAdmin"];
+            vm.isSiteSpendManagementAssignedToCompany = obj["isSiteSpendManagementAssignedToCompany"];
+            vm.isMConsolePMC = obj["isMConsolePMC"];
         };
 
         vm.isSwitchConfigLoaded = function () {
@@ -373,7 +383,6 @@
                                                 onChange: eventName
                                             })
                                         };
-                                        logc("switchc",c);
                                         aSwitch.push(c);
                                     }
                                 }

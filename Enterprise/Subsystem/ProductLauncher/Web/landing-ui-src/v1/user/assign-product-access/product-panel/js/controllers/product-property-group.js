@@ -31,6 +31,7 @@
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllCompaniesSet",vm.accountingAllCompaniesSet);
+            vm.updateGridWatch = pubsub.subscribe("acct.updateGridWatchSet",vm.updateGrid);
         };
 
         vm.isActive = function () {
@@ -104,6 +105,7 @@
                 // $scope.$parent.isAccountingAdmin = additionalData["isAccountingAdmin"];
                 // $scope.$parent.isSiteSpendManagementAssignedToCompany = additionalData["isSiteSpendManagementAssignedToCompany"];
                 // $scope.$parent.isMConsolePMC = additionalData["isMConsolePMC"];
+                pubsub.publish("acct.accountingAdditionalDataSet",additionalData);
                 if(additionalData["isMConsolePMC"] == false){
                     //hide companies tab and show entities tab for financial suite
                     //vm.showPGGrid = false;
