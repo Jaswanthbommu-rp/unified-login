@@ -11,7 +11,6 @@
             pgGridPagination = gridPaginationModel();
 
         vm.init = function () {
-            vm.propertySelect = "property";
             vm.grid = pgGrid;
             vm.propertyGroupsError = $filter("productPanelText")("panelError.generic");
             vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "PropertyGroup");

@@ -462,31 +462,13 @@ BEGIN
 		SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
 
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (44, 430, 428, N'Specific Property', 1, @UserId, @Now)
+		VALUES (44, 430, 442, N'Specific Property', 1, @UserId, @Now)
 
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (45, 430, 437, N'Specific Property', 1, @UserId, @Now)
+		VALUES (45, 431, 437, N'Property Group', 1, @UserId, @Now)
 
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (46, 430, 446, N'Specific Property', 1, @UserId, @Now)
-
-		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (47, 431, 428, N'Property Group', 1, @UserId, @Now)
-
-		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (48, 431, 442, N'Property Group', 1, @UserId, @Now)
-
-		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (49, 431, 446, N'Property Group', 1, @UserId, @Now)
-
-		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (50, 432, 428, N'All Properties', 1, @UserId, @Now)
-
-		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (51, 432, 437, N'All Properties', 1, @UserId, @Now)
-
-		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
-		VALUES (52, 432, 446, N'All Properties', 1, @UserId, @Now)
+		VALUES (46, 432, 442, N'All Properties', 1, @UserId, @Now)
 
 		SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
 		

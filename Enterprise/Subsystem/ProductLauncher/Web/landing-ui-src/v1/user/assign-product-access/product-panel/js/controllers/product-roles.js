@@ -30,7 +30,7 @@
             vm.allProperties = false;
             vm.showAllPropertiesSwtich = false;
             vm.accessLevel = {};
-            vm.propertySelect =  ''; //property
+            vm.propertySelect =  '';
             
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
@@ -68,39 +68,30 @@
             return productDataModel.isRoleGridActive(); //productDataModel.isActive();
         };
 
-        vm.isVendorCredentialing = function () {
-            if($scope.$parent.productId === 16){
-                return true;
+        vm.accessTypeChange = function (accessType) {
+            if(accessType === 'specificProperties') {
+                vm.propertySelect = 'property';
             }
-            return false;
+            else if(accessType === 'propertyGroup') {
+                vm.propertySelect = 'propertyGroup';
+            }
+            else {
+                vm.propertySelect = 'allProperties';
+                syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
+            }
+            vm.rpRoleSelected = vm.propertySelect;
+            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, vm.propertySelect);
+                
+            if (dependencyControlId > 0) {
+                vm.loadProductControlDependencyData(dependencyControlId);
+            }
         };
 
-        vm.accessTypeChange = function (accessType) {
-            // if(accessType === 'specificProperties') {
-            //     vm.propertySelect = 'property';
-            // }
-            // else if(accessType === 'propertyGroup') {
-            //     vm.propertySelect = 'propertyGroup';
-            // }
-            // else {
-            //     vm.propertySelect = 'allProperties';
-            //     syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
-            // }
-            // vm.rpRoleSelected = vm.propertySelect;
-            // var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, vm.propertySelect);
-                
-            // if (dependencyControlId > 0) {
-            //     vm.loadProductControlDependencyData(dependencyControlId);
-            // }
-        };
         vm.resetDataModel = function (record) {
-            //syncMgr.setAccessType(vm.propertySelect);
             if(vm.propertySelect === 'allProperties') {
                 syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
-                //pubsub.publish("ppanel.access-type-change", vm.propertySelect);
             }
             if(record.key === 'propertyGroup') {
-                //syncMgr.setHidepropertiesgrid($scope.$parent.productId, true);
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
             }
             else if(record.key === 'property') {
@@ -112,7 +103,6 @@
             if(dependencyControlId > 0){
                 vm.loadProductControlDependencyData(dependencyControlId);
             }
-            //vm.loadGridData($scope.$parent.productId);
         };
 
         vm.isSelectTypeConfigLoaded = function () {
@@ -337,6 +327,8 @@
                     var irreleventTab = resp.data[0];
                     var relevantTab = [];
                     var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
+                    var rpPropertySelect = vm.rpRoleSelected.toLowerCase();
+
                     relevantTab = allTab.filter(function (data) {
                             return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
                     });
@@ -347,6 +339,8 @@
                     }
                     vm.setProductTabs(relevantTab);
                     matchFound = true;
+                    vm.allProperties = (rpPropertySelect == "allproperties") ? true : false;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                 }
                 else if(productId == 17 || productId == 26 || productId == 18) {
                     var releventTabs = [];
