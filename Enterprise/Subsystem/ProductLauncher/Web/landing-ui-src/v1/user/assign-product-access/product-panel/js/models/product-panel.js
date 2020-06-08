@@ -21,6 +21,10 @@
             s.data = {
                 "records": []
             };
+            s.propertyRoleListData = {
+                "PropertyIds": [],
+                "RoleId": ""
+            };
 
             s.batchData = {
                 productId: 0,
@@ -31,6 +35,7 @@
                     propertyList: [],
                     regionList: [],
                     propertyGroupList: [],
+                    RolePropertiesList: [],
                     removedPropertyList: [],
                     messageGroups: [],
                     Notifications: {
@@ -63,6 +68,7 @@
             s._batchData = angular.copy(s.batchData);
             s._batchBMData = angular.copy(s.batchBMData);
             s._data = angular.copy(s.data);
+            s._propertyRoleListData = angular.copy(s.propertyRoleListData);
         };
 
         p.setChanged = function () {
@@ -115,7 +121,8 @@
                 hasRoleSelected = false,
                 hasPropertySelected = false,
                 hasPropertyGroupSelected = false,
-                aoFamilyProduct = false;
+                aoFamilyProduct = false,
+                hasPropertyRoles = false;
 
             s.batchData = angular.copy(s._batchData);
             var roles = "";
@@ -168,6 +175,7 @@
 
             if (properties !== undefined && properties.length) {
                 s.batchData.inputJson.propertyList = [];
+                s.batchData.inputJson.RolePropertiesList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
                     if (productId == "14" || productId == "3" || productId == "23") {
@@ -178,14 +186,32 @@
                     }
                 }
                 else {
-                    properties.forEach(function (prop) {
-                        if (prop.isAssigned) {
-                            s.batchData.inputJson.propertyList.push(prop.id);
-                        }
-                        if (!prop.isAssigned && prop.originalProperty) {
-                            s.batchData.inputJson.removedPropertyList.push(prop.id);
-                        }
-                    });
+                    if(productId == "44"){
+                        properties.forEach(function(propRole){
+                            if(propRole.isAssigned){
+                                s.propertyRoleListData = angular.copy(s._propertyRoleListData);
+                                s.propertyRoleListData.RoleId = propRole.id;
+                                propRole.propertiesList.forEach(function(prop){
+                                    if(prop.isAssigned){
+                                        s.propertyRoleListData.PropertyIds.push(prop.id);
+                                    }
+                                });
+                                if(s.propertyRoleListData.PropertyIds.length > 0){
+                                    s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
+                                }
+                            }
+                        });
+
+                    }else{
+                        properties.forEach(function (prop) {
+                            if (prop.isAssigned) {
+                                s.batchData.inputJson.propertyList.push(prop.id);
+                            }
+                            if (!prop.isAssigned && prop.originalProperty) {
+                                s.batchData.inputJson.removedPropertyList.push(prop.id);
+                            }
+                        });
+                    }
 
                     if (productId == "9") {
                         s.batchData.inputJson.isAssignedNewPropertyByDefault = dataSyncManager.isProductNewPropertyByDefault(productId);
@@ -193,6 +219,7 @@
                 }
 
                 hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;
+                hasPropertyRoles = s.batchData.inputJson.RolePropertiesList.length > 0;
             }
 
             if (propertyGroups !== undefined && propertyGroups.length) {
@@ -265,6 +292,11 @@
             }
             if (productId == "18") {
                 if (hasPropertySelected || hasPropertyGroupSelected) {
+                    return s.batchData;
+                }
+            }
+            if(productId == "44"){
+                if (hasPropertyRoles) {
                     return s.batchData;
                 }
             }
