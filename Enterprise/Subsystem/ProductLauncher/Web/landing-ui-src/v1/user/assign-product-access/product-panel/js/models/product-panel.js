@@ -137,12 +137,18 @@
             if(productId == "17"){
                 notifications = dataSyncManager.getProductNotificationsData(productId);
             }
+
+            if(productId == "8"){
+                var additionalData = dataSyncManager.getProductAdditionalData(productId);
+                s.batchData.inputJson.hasAccessToAllCurrentFutureProperties = additionalData['hasAccessToAllCurrentFutureProperties'];
+                s.batchData.inputJson.hasAccessToSiteSpendManagementOnly = additionalData['hasAccessToSiteSpendManagementOnly'];
+                s.batchData.inputJson.isAccountingAdmin = additionalData['isAccountingAdmin'];
+            }
             
             var bmroles = "";
             if (productId == "30") {
                 bmroles = dataSyncManager.getProductBenchMarkRolesData("34");
             }
-           
 
             s.batchData.productId = productId;
 
@@ -211,8 +217,13 @@
                         else if(productId == "17"){
                             s.batchData.inputJson.messageGroups.push(group.id);
                         }
-                        else if(productId == "17"){
-                            s.batchData.inputJson.companiesList.push(group.id);
+                        else if(productId == "8"){
+                            if(s.batchData.inputJson.hasAccessToAllCurrentFutureProperties){
+                                s.batchData.inputJson.companiesList.push("all");
+                            }
+                            else{
+                                s.batchData.inputJson.companiesList.push(group.id);
+                            }
                         }
                         else{
                             s.batchData.inputJson.regionList.push(group.id);

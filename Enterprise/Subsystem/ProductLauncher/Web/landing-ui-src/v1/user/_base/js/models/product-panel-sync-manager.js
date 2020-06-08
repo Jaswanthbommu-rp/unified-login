@@ -51,6 +51,7 @@
             s.presetRoleList = [];
             s.sidePanelDataList = [];
 
+            s.productAdditionalMap = [];
         };
 
         // Getters
@@ -920,6 +921,22 @@
             return s;
         };
 
+        p.getProductAdditionalData = function (product) {
+            var s = this,
+                additionalData;
+            if (s.productAdditionalMap['product' + product] !== undefined) {
+                additionalData = s.productAdditionalMap['product' + product].additional;
+            }
+            return additionalData;
+        };
+
+        p.setProductAdditionalData = function (product, value) {
+            var s = this;
+            s.productAdditionalMap['product' + product] = {
+                additional: value
+            };
+        };
+
         // Assertions
 
         p.allSelected = function (list, selectKey) {
@@ -1002,6 +1019,7 @@
             s.productControlsMap = {};
             s.productPresetRolesMap = {};
             s.notificationsMap = {};
+            s.productAdditionalMap = [];
         };
 
         return new ProductDataSyncManager();

@@ -353,11 +353,11 @@
                                         var modelName = "";
                                         if(tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly"){
                                             eventName = vm.acessSiteSpndMgmtOnlySwitchWatch;
-                                            modelName = "vm.hasAccessToSiteSpendManagementOnlyModel";
+                                            modelName = "vm.hasAccessToSiteSpendManagementOnly";
                                         }
                                         else if(tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties"){
                                             eventName = vm.allPropertiesSwitchWatch;
-                                            modelName = "vm.hasAccessToAllCurrentFuturePropertiesModel";
+                                            modelName = "vm.hasAccessToAllCurrentFutureProperties";
                                         }
                                         else if(tabGrp.dataSource == "isAccountingAdmin"){
                                             eventName = vm.accountingAdminSwitchWatch;

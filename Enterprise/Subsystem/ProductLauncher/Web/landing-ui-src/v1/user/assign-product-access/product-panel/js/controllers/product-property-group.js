@@ -19,6 +19,7 @@
             pgGridPagination.setGrid(pgGrid);
             $scope.pgGridPagination = pgGridPagination;
             vm.showPGGrid = true;
+            vm.hideTab = false;
 
             pgGridPagination.setConfig({
                 recordsPerPage: 25
@@ -96,6 +97,39 @@
             pgGrid.busy(false);
 
             var propData = syncMgr.getProductPropertyGroupData(productId);
+            if(productId == 8){
+                var additionalData = syncMgr.getProductAdditionalData(productId);
+                // $scope.$parent.hasAccessToSiteSpendManagementOnly = additionalData["hasAccessToSiteSpendManagementOnlyVal"];
+                // $scope.$parent.hasAccessToAllCurrentFutureProperties = additionalData["hasAccessToAllCurrentFutureProperties"];
+                // $scope.$parent.isAccountingAdmin = additionalData["isAccountingAdmin"];
+                // $scope.$parent.isSiteSpendManagementAssignedToCompany = additionalData["isSiteSpendManagementAssignedToCompany"];
+                // $scope.$parent.isMConsolePMC = additionalData["isMConsolePMC"];
+                if(additionalData["isMConsolePMC"] == false){
+                    //hide companies tab and show entities tab for financial suite
+                    //vm.showPGGrid = false;
+                    vm.hideTab = true;
+                    var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                    var initialTab = [];
+                    var filteredAllTabs = allTabs.filter(function(tb){
+                        if(tb.text != "Companies"){
+                            if(tb.text == "Entities"){
+                                tb.isActive = true;
+                                initialTab.push(tb);
+                            }
+                            return tb;
+                        }
+                    });
+                    
+                    syncMgr.renderProductTabsMap($scope.$parent.productId, filteredAllTabs, initialTab);
+                    syncMgr.renderProductActiveTabMap($scope.$parent.productId, initialTab);
+                    vm.setProductTabs(filteredAllTabs);
+                }
+
+                if(additionalData["hasAccessToAllCurrentFutureProperties"]){
+                    pubsub.publish("acct.accountingAllPropertiesSet",false);
+                    vm.accountingAllCompaniesSet(false);
+                }
+            }
 
             if (propData && propData.length > 0) {
                 if (vm.hasViewOnlyAccess()) {
@@ -126,45 +160,12 @@
         };
 
         vm.setPropertyGroupData = function (resp) {
-            //$scope.$parent.hasAccessToSiteSpendManagementOnly = true;
             pgGrid.busy(false);
-            if($scope.$parent.productId == 8){
-                if(resp.additional && !resp.additional.isMConsolePMC){
-                    //hide companies tab and show entities tab for financial suite
-                    vm.showPGGrid = false;
-                    var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
-                    var initialTab = [];
-                    var filteredAllTabs = allTabs.filter(function(tb){
-                        if(tb.text != "Companies"){
-                            if(tb.text == "Entities"){
-                                tb.isActive = true;
-                                initialTab.push(tb);
-                            }
-                            return tb;
-                        }
-                    });
-
-                    logc("filteredAllTabs",filteredAllTabs);
-                    logc("initialTab",initialTab);
-                    
-                    syncMgr.renderProductTabsMap($scope.$parent.productId, filteredAllTabs, initialTab);
-                    syncMgr.renderProductActiveTabMap($scope.$parent.productId, initialTab);
-                    vm.setProductTabs(filteredAllTabs);
-                }
-
-                if(resp.additional.hasAccessToAllCurrentFutureProperties){
-                    pubsub.publish("acct.accountingAllPropertiesSet",false);
-                    vm.accountingAllCompaniesSet(false);
-                    $scope.$parent.hasAccessToSiteSpendManagementOnly = resp.additional.hasAccessToSiteSpendManagementOnly;
-                    $scope.$parent.hasAccessToAllCurrentFutureProperties = resp.additional.hasAccessToAllCurrentFutureProperties;
-                    $scope.$parent.isAccountingAdmin = resp.additional.isAccountingAdmin;
-                    $scope.$parent.isSiteSpendManagementAssignedToCompany = resp.additional.isSiteSpendManagementAssignedToCompany;
-                    $scope.$parent.isMConsolePMC = resp.additional.isMConsolePMC;                    
-                }
-
-            }
-            else if (resp.records && resp.records.length) {
+            if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
+                if($scope.$parent.productId == 8){
+                    syncMgr.setProductAdditionalData($scope.$parent.productId, resp.additional);
+                }
                 vm.loadGridData($scope.$parent.productId);
             }
 
@@ -185,6 +186,7 @@
             vm.activeWatch();
             vm.gridSelectionWatch();
             vm.gridSelectAllWatch();
+            vm.hideTab = false;
             pgGrid.destroy();
 
             if (vm.dataPropReq) {
