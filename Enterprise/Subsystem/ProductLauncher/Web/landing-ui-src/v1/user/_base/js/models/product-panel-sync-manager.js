@@ -31,6 +31,7 @@
             s.productTabsMap = {};
             s.productActiveTabMap = {};
             s.productSelectTypeConfigMap = {};
+            s.productPageLevelRadioConfigMap = {};
             s.productDependencyDataMap = {};
             s.productPresetRolesMap = {};
             s.notificationsMap={};
@@ -134,6 +135,15 @@
                 config;
             if (s.productSelectTypeConfigMap['product' + productId + tabName] !== undefined) {
                 config = s.productSelectTypeConfigMap['product' + productId + tabName].selectCtrlConfig;
+            }
+            return config;
+        };
+
+        p.getProductPageLevelRadioConfig = function (productId, tabName) {
+            var s = this,
+                config;
+            if (s.productPageLevelRadioConfigMap['product' + productId + tabName] !== undefined) {
+                config = s.productPageLevelRadioConfigMap['product' + productId + tabName].selectCtrlConfig;
             }
             return config;
         };
@@ -765,6 +775,13 @@
             s.selectTypeConfigLoaded = true;
         };
 
+        p.renderPageLevelRadioConfigMap = function (productId, tabName, config) {
+            var s = this;
+            s.productPageLevelRadioConfigMap['product' + productId + tabName] = {
+                selectCtrlConfig: config
+            };
+        };
+
         p.renderProductRadioConfigMap = function (productId, tabName, config) {
             var s = this;
             s.productRadioConfigMap['product' + productId + tabName] = {
@@ -918,6 +935,16 @@
             });
 
             return s;
+        };
+
+        p.clearPropertyGroupData = function(key) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
         };
 
         // Assertions
