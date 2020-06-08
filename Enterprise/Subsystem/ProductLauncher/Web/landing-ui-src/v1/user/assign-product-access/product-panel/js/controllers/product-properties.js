@@ -259,7 +259,6 @@
             return vm;
         };
 
-
         vm.showNotification = function () {
             return productDataModel.isPropertyGridActive() && $scope.$parent.productId === 3;
         };
@@ -294,6 +293,10 @@
                 });
 
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.allPropertiesData);
+            }
+
+            if($scope.$parent.productId == 8 && val){
+                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, val);
             }
         };
 
