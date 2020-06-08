@@ -424,7 +424,7 @@ BEGIN
 		VALUES (447, 427, 9, N'VendorCredentialiProductAccessNotificationsTabUIId', N'Notifications', NULL, 4, @UserId, @Now)
 
 		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-		VALUES (448, 446, 12, N'VendorCredentialiProductAccessNotificationsGridUIId', NULL, NULL, 1, @UserId, @Now)
+		VALUES (448, 447, 12, N'VendorCredentialiProductAccessNotificationsGridUIId', NULL, NULL, 1, @UserId, @Now)
 
 		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
 		VALUES (449, 448, 1, N'VendorCredentialiProductAccessNotifybyemailwhenanyvendor''sinsuranceisabouttoexpireSwitchUIId', N'Notify by email when any vendor''s insurance is about to expire', N'isInsuranceExpired', 1, @UserId, @Now)
