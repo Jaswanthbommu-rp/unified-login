@@ -136,7 +136,7 @@
             }
             if(resp.additional) {
                 var accesstype = resp.additional.accessType;
-                pubsub.publish("ppanel.accessTypeChange", accesstype);
+                pubsub.publish("ppanel.assign-accessType", accesstype);
             }
         };
 

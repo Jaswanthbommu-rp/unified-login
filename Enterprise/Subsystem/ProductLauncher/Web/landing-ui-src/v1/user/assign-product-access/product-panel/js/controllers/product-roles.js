@@ -53,7 +53,7 @@
             vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
 
-            pubsub.subscribe("ppanel.accessTypeChange", vm.accessTypeChange);
+            pubsub.subscribe("ppanel.assign-accessType", vm.accessTypeChange);
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
@@ -81,9 +81,14 @@
         vm.resetDataModel = function (accessType) {
             if(accessType === 'propertyGroup') {
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
             else if(accessType === 'property') {
                 syncMgr.clearPropertyGroupData($scope.$parent.productId);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+            }
+            else if(accessType === 'allProperties') {
+                syncMgr.updateProductAllProperties($scope.$parent.productId, true);
             }
             vm.propertySelect = accessType;
             var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, accessType);
@@ -312,7 +317,6 @@
                     var irreleventTab = resp.data[0];
                     var relevantTab = [];
                     var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
-                    var rpPropertySelect = vm.rpRoleSelected.toLowerCase();
 
                     relevantTab = allTab.filter(function (data) {
                             return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
@@ -324,8 +328,6 @@
                     }
                     vm.setProductTabs(relevantTab);
                     matchFound = true;
-                    vm.allProperties = (rpPropertySelect == "allproperties") ? true : false;
-                    syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                 }
                 else if(productId == 17 || productId == 26 || productId == 18) {
                     var releventTabs = [];
