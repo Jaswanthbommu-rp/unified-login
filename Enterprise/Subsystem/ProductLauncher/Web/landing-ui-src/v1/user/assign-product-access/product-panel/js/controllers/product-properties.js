@@ -48,7 +48,7 @@
             vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
 
-
+            pubsub.subscribe("ppanel.access-type-change", vm.accessTypeChanged);
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
@@ -61,6 +61,14 @@
             $scope.productId = obj.productId;
         };
 
+        vm.accessTypeChanged = function (value) {
+            if(vm.propertySelect === 'allProperties'){
+                vm.allProperties = true;
+            }
+            if(vm.propertySelect === 'propertyGroup'){
+                syncMgr.allPropertiesSync($scope.productId, false);
+            }
+        };
 
         vm.hasViewOnlyAccess = function () {
             return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
@@ -95,7 +103,7 @@
         };
 
         vm.hidePropertiesGrid = function () {
-            if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
+            if ((vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) || syncMgr.getHidepropertiesgrid()) {
                 return true;
             }
             return false;

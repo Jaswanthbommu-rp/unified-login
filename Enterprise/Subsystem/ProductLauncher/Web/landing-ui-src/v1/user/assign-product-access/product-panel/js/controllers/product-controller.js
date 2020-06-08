@@ -25,7 +25,7 @@
             vm.productDisabled = false;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
-
+            
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
@@ -241,6 +241,7 @@
                                             productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
                                             vm.setProductDependency(tab, productId);
                                         }
+                                        
                                     }
 
                                     //Check and Set any Aside List Grid
@@ -346,19 +347,22 @@
 
         vm.setSelectConfigs = function (data) {
             var aSelect = [];
+            var aRadio = [];
             //Check and Set any Switch
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             aSelect = [];
+                            aRadio = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if (tabName === "Rights") {
                                 tabName = "Roles";
                             }
                             if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
-                                tabGrp.controls.forEach(function (ctrl) {
-                                    if (ctrl.type === 'Select') {
+                                if($scope.productId == 16){
+                                    tabGrp.controls.forEach(function (ctrl) {
+                                    if (ctrl.type === 'Radio') {
                                         var c = {
                                             id: ctrl.id,
                                             text: ctrl.displayName,
@@ -366,19 +370,48 @@
                                             configData: menuConfig({
                                                 nameKey: "name",
                                                 valueKey: "id",
-                                                fieldName: "roleSelect",
-                                                onChange: vm.noop,
+                                                fieldName: "accessTypeSelect",
+                                                onChange: vm.resetDataModel,
                                                 disabled: false
                                             })
-                                        };
-                                        aSelect.push(c);
+                                            };
+                                            aRadio.push(c);
+                                            if(ctrl.dependency) {
+                                                productModel.renderProductDependencyMap($scope.productId, ctrl.dataSource, ctrl.id);
+                                            }
+                                        }
+                                    });
+                                    if (aRadio.length > 0) {
+                                            logc("aSelect config", aRadio, tabName);
+                                            productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aRadio);
                                     }
-                                });
-
-                                if (aSelect.length > 0) {
-                                    logc("aSelect config", aSelect, tabName);
-                                    productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aSelect);
                                 }
+                                if(tabGrp.controls){
+                                    tabGrp.controls.forEach(function (ctrl) {
+                                        if (ctrl.type === 'Select') {
+                                            var c = {
+                                                id: ctrl.id,
+                                                text: ctrl.displayName,
+                                                key: ctrl.dataSource,
+                                                configData: menuConfig({
+                                                    nameKey: "name",
+                                                    valueKey: "id",
+                                                    fieldName: "roleSelect",
+                                                    onChange: vm.noop,
+                                                    disabled: false
+                                                })
+                                            };
+                                            aSelect.push(c);
+                                        }
+                                    });
+
+                                    if (aSelect.length > 0) {
+                                        logc("aSelect config", aSelect, tabName);
+                                        productModel.renderProductSelectTypeConfigMap($scope.productId, tabName, aSelect);
+                                    }
+                                }
+
+                                
                             }
                         });
                     }
