@@ -8,6 +8,7 @@
 {{{ include("controllers/product-info-icon.js") }}}
 {{{ include("controllers/product-list-aside.js") }}}
 {{{ include("controllers/product-property-group.js") }}}
+{{{ include("controllers/product-property-group-radio.js") }}}
 {{{ include("controllers/product-benchmark-roles.js") }}}
 {{{ include("controllers/product-rights.js") }}}
 {{{ include("controllers/product-notifications.js") }}}

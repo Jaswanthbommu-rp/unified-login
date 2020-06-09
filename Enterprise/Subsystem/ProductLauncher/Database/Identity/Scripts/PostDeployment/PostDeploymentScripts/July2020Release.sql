@@ -443,4 +443,136 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 
+SELECT @ProductId = 16
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+    	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (427, NULL, 8, N'VendorCredentialiProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (428, 427, 9, N'VendorCredentialiProductAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (429, 428, 5, N'VendorCredentialiProductAccessAccessTypeRolesLabelUIId', N'Access Type', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (430, 428, 7, N'VendorCredentialiProductAccessSpecificPropertyRolesRadioUIId', N'Specific Property', N'property', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (431, 428, 7, N'VendorCredentialiProductAccessPropertyGroupRolesRadioUIId', N'Property Group', N'propertyGroup', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (432, 428, 7, N'VendorCredentialiProductAccessAllPropertiesRolesRadioUIId', N'All Properties', N'allProperties', 4, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (433, 428, 3, N'VendorCredentialiProductAccessRolesMultiSelectGridUIId', NULL, NULL, 5, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (434, 433, 10, N'VendorCredentialiProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (435, 433, 5, N'VendorCredentialiProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (436, 433, 5, N'VendorCredentialiProductAccessDescriptionLabelUIId', N'Description', N'description', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (437, 427, 9, N'VendorCredentialiProductAccessPropertiesTabUIId', N'Properties', NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (438, 437, 3, N'VendorCredentialiProductAccessPropertiesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (439, 438, 10, N'VendorCredentialiProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (440, 438, 5, N'VendorCredentialiProductAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (441, 438, 5, N'VendorCredentialiProductAccessStateLabelUIId', N'State', N'state', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (442, 427, 9, N'VendorCredentialiProductAccessPropertyGroupTabUIId', N'Property Group', NULL, 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (443, 442, 2, N'VendorCredentialiProductAccessPropertyGroupSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (444, 443, 7, N'VendorCredentialiProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (445, 443, 5, N'VendorCredentialiProductAccessPropertyGroupLabelUIId', N'Property Group', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (446, 443, 5, N'VendorCredentialiProductAccessGroupTypeLabelUIId', N'Group Type', N'accessLevel', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (447, 427, 9, N'VendorCredentialiProductAccessNotificationsTabUIId', N'Notifications', NULL, 4, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (448, 447, 12, N'VendorCredentialiProductAccessNotificationsGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (449, 448, 1, N'VendorCredentialiProductAccessNotifybyemailwhenanyvendor''sinsuranceisabouttoexpireSwitchUIId', N'Notify by email when any vendor''s insurance is about to expire', N'isInsuranceExpired', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (450, 448, 1, N'VendorCredentialiProductAccessNotifybyemailwhenanyvendor''srecommendationchangesSwitchUIId', N'Notify by email when any vendor''s recommendation changes', N'isVendorRecommendationChanges', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (451, 448, 1, N'VendorCredentialiProductAccessNotifybyemailwhenavendorisnotlinkedtoanyproperties.SwitchUIId', N'Notify by email when a vendor is not linked to any properties.', N'isVendorNotLinkedToAnyProperty', 3, @UserId, @Now)
+
+
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (98, 428, N'Default', N'True', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (99, 433, N'ShowSelectAll', N'False', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (100, 437, N'Default', N'False', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (101, 438, N'ShowSelectAll', N'True', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (102, 448, N'ShowSelectAll', N'False', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (103, 442, N'Hide', N'True', @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+		SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
+
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
+		VALUES (54, 430, 442, N'Specific Property', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
+		VALUES (55, 431, 437, N'Property Group', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate]) 
+		VALUES (56, 432, 442, N'All Properties', 1, @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
+		
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+		VALUES (27, 16, N'Vendor Credentialing Product Access', @UserId, @Now, 1)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+
+		INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+		VALUES (36, 27, 427, @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF    
+
 END
