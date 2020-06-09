@@ -924,6 +924,27 @@ AS
                                 @TargetProductId = @TargetProductId, 
                                 @VisibilityStatusId = @VisibilityStatusId;
                         SELECT @RightID;
+                        EXECUTE Enterprise.CreateRight 
+                                @RoleID = @RoleId, 
+                                @PartyId = @OrganizationId, 
+                                @ProductId = 3, 
+                                @RightName = 'Ability to answer company-level questionnaires in CIMPL', 
+                                @RightCategoryId = @Status_Right, 
+                                @RightID = @RightID OUTPUT, 
+                                @Description = '', 
+                                @TargetProductId = @TargetProductId, 
+                                @VisibilityStatusId = @VisibilityStatusId;
+                        SELECT @RightID;
+                        EXECUTE Enterprise.CreateRight 
+                                @RoleID = @RoleId, 
+                                @PartyId = @OrganizationId, 
+                                @ProductId = 3, 
+                                @RightName = 'Manage CIMPL Templates', 
+                                @RightCategoryId = @Status_Right, 
+                                @RightID = @RightID OUTPUT, 
+                                @Description = '', 
+                                @TargetProductId = @TargetProductId, 
+                                @VisibilityStatusId = @VisibilityStatusId;
 
                         --EXECUTE Enterprise.CreateRight 
                         --        @RoleID = @RoleId, 
