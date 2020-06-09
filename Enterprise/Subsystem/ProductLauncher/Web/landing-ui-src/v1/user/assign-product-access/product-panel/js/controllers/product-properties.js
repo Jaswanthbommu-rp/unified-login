@@ -220,6 +220,12 @@
                             }
                         }
                     }
+                    if(productId == "44" && item.propertiesList){
+                        var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
+                            return prop.isAssigned === true;
+                        });    
+                        item.assignedProperties = assignedPropertiesCount.length +" of "+ item.propertiesList.length;                    
+                    }
                 });
 
                 if (syncMgr.isProductAllProperties(productId)) {
