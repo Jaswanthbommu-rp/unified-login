@@ -372,7 +372,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result.OrderBy(p=> p.RightName).ToList();
         }
 
-
         /// <summary>
         /// Get the information of properties
         /// </summary>
@@ -436,15 +435,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     bool isLeasingAgentInOneSite = false;
                     bool didLeasingAgentOneSiteCheck = false;
 
-
-                    //03. For each of the properties that we are saving for Lead2Lease
-                    //We check to see if the property has the "PMSystemID", which is the property id in OneSite 
-                    //(remember above, that Lead2Lease stores both the L2L property ID and also the OneSite property id for this purpose)
+                    //03. For each of the properties that we are saving for SLM
+                    //We check to see if the property has the "PMSystemID", which is the property id in OneSite                    
                     foreach (string oneSiteUserInfoProperty in oneSiteUserInfo.Properties)
                     {
                         if (osPropertyList.Any(a => a.ID == oneSiteUserInfoProperty))
                         {
-                            // the L2L system id appears to be a OneSite site id, so see if this user has the Leasing Consultant right
+                            // the SLM system id appears to be a OneSite site id, so see if this user has the Leasing Consultant right
                             if (!didLeasingAgentOneSiteCheck)
                             {
                                 isLeasingAgentInOneSite = _mpOneSite.UserInLeasingAgentList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, Convert.ToInt32(oneSiteUserInfoProperty));
