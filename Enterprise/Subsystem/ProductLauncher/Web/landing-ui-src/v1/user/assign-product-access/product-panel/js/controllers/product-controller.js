@@ -68,12 +68,14 @@
         };
 
         vm.accountingAdditionalDataSet = function(obj){
-            logc("accountingAdditionalDataSet",obj);
-            vm.hasAccessToSiteSpendManagementOnly = obj["hasAccessToSiteSpendManagementOnly"];
-            vm.hasAccessToAllCurrentFutureProperties = obj["hasAccessToAllCurrentFutureProperties"];
-            vm.isAccountingAdmin = obj["isAccountingAdmin"];
-            vm.isSiteSpendManagementAssignedToCompany = obj["isSiteSpendManagementAssignedToCompany"];
-            vm.isMConsolePMC = obj["isMConsolePMC"];
+            if(vm.productId == 8 && obj != undefined){
+                logc("accountingAdditionalDataSet",obj);
+                vm.hasAccessToSiteSpendManagementOnly = obj["hasAccessToSiteSpendManagementOnly"];
+                vm.hasAccessToAllCurrentFutureProperties = obj["hasAccessToAllCurrentFutureProperties"];
+                vm.isAccountingAdmin = obj["isAccountingAdmin"];
+                vm.isSiteSpendManagementAssignedToCompany = obj["isSiteSpendManagementAssignedToCompany"];
+                vm.isMConsolePMC = obj["isMConsolePMC"];
+            }
         };
 
         vm.isSwitchConfigLoaded = function () {
