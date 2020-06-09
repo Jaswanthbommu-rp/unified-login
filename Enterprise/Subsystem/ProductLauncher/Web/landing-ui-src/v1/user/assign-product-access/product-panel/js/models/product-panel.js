@@ -329,7 +329,7 @@
                 if(!isMConsole && hasRoleSelected && hasPropertySelected){
                     return s.batchData;
                 }
-                else if (hasPropertyGroupSelected && hasRoleSelected && hasPropertySelected && companySelectedWithProp) { // No need to check hasCompanies - not mandatory
+                else if (hasPropertyGroupSelected && hasRoleSelected && hasPropertySelected && companySelectedWithProp) {
                     return s.batchData;
                  }
             }
