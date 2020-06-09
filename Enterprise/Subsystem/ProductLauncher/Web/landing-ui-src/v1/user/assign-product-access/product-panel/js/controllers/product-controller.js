@@ -368,15 +368,15 @@
                                         var modelName = "";
                                         if(tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly"){
                                             eventName = vm.acessSiteSpndMgmtOnlySwitchWatch;
-                                            modelName = "vm.hasAccessToSiteSpendManagementOnly";
+                                            modelName = "'vm.hasAccessToSiteSpendManagementOnly'";
                                         }
                                         else if(tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties"){
                                             eventName = vm.allPropertiesSwitchWatch;
-                                            modelName = "vm.hasAccessToAllCurrentFutureProperties";
+                                            modelName = "'vm.hasAccessToAllCurrentFutureProperties'";
                                         }
                                         else if(tabGrp.dataSource == "isAccountingAdmin"){
                                             eventName = vm.accountingAdminSwitchWatch;
-                                            modelName = "vm.isAccountingAdmin";
+                                            modelName = "'vm.isAccountingAdmin'";
                                         }
 
                                         var c = {
@@ -438,7 +438,7 @@
             logc("accountingAdminSwitchWatch",val); 
             vm.isAccountingAdmin = val;
             if(vm.isAccountingAdmin){
-                vm.hasAccessToSiteSpendManagementOnly = false;
+                vm.acessSiteSpndMgmtOnlySwitchWatch(!val);
             }
         };
 

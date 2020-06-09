@@ -19,6 +19,7 @@
 
  <!-- rp-model="cpp.propertySelect" -->
         <div  class="all-feature-properties" ng-if="cpp.isSwitchConfigLoaded()">
+            {{cpp.switchconfigs}}
             <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpp.switchconfigs"
                 config="sw.configData"
                 rp-model="cpp.allProperties"
