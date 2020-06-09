@@ -119,7 +119,8 @@
                 hasRoleSelected = false,
                 hasPropertySelected = false,
                 hasPropertyGroupSelected = false,
-                aoFamilyProduct = false;
+                aoFamilyProduct = false,
+                isMConsole = false;
 
             s.batchData = angular.copy(s._batchData);
             var roles = "";
@@ -143,6 +144,12 @@
                 s.batchData.inputJson.hasAccessToAllCurrentFutureProperties = additionalData['hasAccessToAllCurrentFutureProperties'];
                 s.batchData.inputJson.hasAccessToSiteSpendManagementOnly = additionalData['hasAccessToSiteSpendManagementOnly'];
                 s.batchData.inputJson.isAccountingAdmin = additionalData['isAccountingAdmin'];
+                isMConsole = additionalData["isMConsolePMC"];
+                if (s.batchData.inputJson.hasAccessToAllCurrentFutureProperties || properties.length === 0) {
+                    s.batchData.inputJson.propertyList.push("all");
+                    s.batchData.inputJson.companiesList.push("all");
+                    dataSyncManager.updateProductAllProperties(productId,true);
+                }
             }
             
             var bmroles = "";
@@ -190,7 +197,17 @@
                 else {
                     properties.forEach(function (prop) {
                         if (prop.isAssigned) {
-                            s.batchData.inputJson.propertyList.push(prop.id);
+                            if(productId == 8){
+                                if(prop.propertyId !== "") {
+                                    s.batchData.inputJson.propertyList.push(prop.companyId + "|" + prop.propertyId);
+                                }
+                                else{
+                                    s.batchData.inputJson.propertyList.push(prop.companyId);
+                                }
+                            }
+                            else{
+                                s.batchData.inputJson.propertyList.push(prop.id);
+                            }
                         }
                         if (!prop.isAssigned && prop.originalProperty) {
                             s.batchData.inputJson.removedPropertyList.push(prop.id);
@@ -218,10 +235,7 @@
                             s.batchData.inputJson.messageGroups.push(group.id);
                         }
                         else if(productId == "8"){
-                            if(s.batchData.inputJson.hasAccessToAllCurrentFutureProperties){
-                                s.batchData.inputJson.companiesList.push("all");
-                            }
-                            else{
+                            if(isMConsole && s.batchData.inputJson.companiesList[0] != "all"){
                                 s.batchData.inputJson.companiesList.push(group.id);
                             }
                         }
@@ -284,13 +298,40 @@
                     return s.batchData;
                 }
             }
+
             if (productId == "18") {
                 if (hasPropertySelected || hasPropertyGroupSelected) {
                     return s.batchData;
                 }
             }
+
             if (productId == "39") {
                 hasPropertySelected = true;
+            }
+
+            if(productId == "8"){
+                var companySelectedWithProp = true;
+                if(!isMConsole){
+                    s.propertyGroups.forEach(function(comp){
+                        if (comp.isAssigned === false){
+                            properties.forEach(function(prop){
+                                if (prop.companyId === comp.id) {
+                                    if (prop.isAssigned) {
+                                        companySelectedWithProp = false;
+                                        return;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+
+                if(!isMConsole && hasRoleSelected && hasPropertySelected){
+                    return s.batchData;
+                }
+                else if (hasPropertyGroupSelected && hasRoleSelected && hasPropertySelected && companySelectedWithProp) { // No need to check hasCompanies - not mandatory
+                    return s.batchData;
+                 }
             }
 
             if (hasRoleSelected && hasPropertySelected) {
