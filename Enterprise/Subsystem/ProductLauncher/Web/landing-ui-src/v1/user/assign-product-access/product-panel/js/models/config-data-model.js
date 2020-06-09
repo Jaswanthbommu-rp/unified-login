@@ -286,7 +286,7 @@
                 url = "user/assign-product-access/product-panel/templates/product-panel-info-icon.html";
             }
             else if (type === 'link') {
-                url = "user/assign-product-access/product-panel/templates/entities-assigned.html";
+                url = "user/assign-product-access/product-panel/templates/product-panel-label-link.html";
             }
 
 
