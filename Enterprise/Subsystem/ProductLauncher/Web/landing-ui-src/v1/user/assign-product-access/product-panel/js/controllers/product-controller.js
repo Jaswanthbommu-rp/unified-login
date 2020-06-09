@@ -156,6 +156,9 @@
                 vm.switchconfigs.push(productModel.getProductSwitchConfig($scope.productId,"AccountingAdmin")[0]);
                 logc(vm.switchconfigs);
             }
+            else {
+                vm.switchconfigs = undefined;
+            }
 
             vm.tabsList = tabs.tabsList;
             //logc("vm.tabsList", vm.tabsList);
@@ -363,15 +366,15 @@
                                         var modelName = "";
                                         if(tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly"){
                                             eventName = vm.acessSiteSpndMgmtOnlySwitchWatch;
-                                            modelName = "vm.hasAccessToSiteSpendManagementOnly";
+                                            modelName = "hasAccessToSiteSpendManagementOnly";
                                         }
                                         else if(tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties"){
                                             eventName = vm.allPropertiesSwitchWatch;
-                                            modelName = "vm.hasAccessToAllCurrentFutureProperties";
+                                            modelName = "hasAccessToAllCurrentFutureProperties";
                                         }
                                         else if(tabGrp.dataSource == "isAccountingAdmin"){
                                             eventName = vm.accountingAdminSwitchWatch;
-                                            modelName = "vm.isAccountingAdmin";
+                                            modelName = "isAccountingAdmin";
                                         }
 
                                         var c = {
@@ -383,6 +386,7 @@
                                                 onChange: eventName
                                             })
                                         };
+                                        logc("Switchc",c);
                                         aSwitch.push(c);
                                     }
                                 }
@@ -398,6 +402,7 @@
                                                     disabled: vm.hasViewOnlyAccess()
                                                 })
                                             };
+                                            logc('other Switch',c);
                                             aSwitch.push(c);
                                         }
                                     });
@@ -480,23 +485,6 @@
 
         vm.setState = function (value) {
             vm.disableContent = value;
-        };
-
-        vm.selectionAll = function (bool) {
-            logc('selectionall',bool);
-            // vm.propertySelect = "property";
-            // if (bool) {
-            //     vm.propertySelect = 'allProperties';
-            // }
-
-            // if ($scope.$parent.productId == 9) {
-            //     syncMgr.updateProductNewPropertyByDefault($scope.$parent.productId, bool);
-            // }
-            // else {
-            //     syncMgr.allPropertiesSync($scope.$parent.productId, bool);
-            // }
-            // vm.propertiesGrid.updateSelected();
-            // vm.resetProperties();
         };
 
         // Assertions

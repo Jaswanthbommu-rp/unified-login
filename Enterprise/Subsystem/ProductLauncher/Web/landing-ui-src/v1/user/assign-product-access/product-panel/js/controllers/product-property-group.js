@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $rootScope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, tabsModel, pubsub) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, tabsModel, pubsub) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -100,15 +100,9 @@
             var propData = syncMgr.getProductPropertyGroupData(productId);
             if(productId == 8){
                 var additionalData = syncMgr.getProductAdditionalData(productId);
-                // $scope.$parent.hasAccessToSiteSpendManagementOnly = additionalData["hasAccessToSiteSpendManagementOnlyVal"];
-                // $scope.$parent.hasAccessToAllCurrentFutureProperties = additionalData["hasAccessToAllCurrentFutureProperties"];
-                // $scope.$parent.isAccountingAdmin = additionalData["isAccountingAdmin"];
-                // $scope.$parent.isSiteSpendManagementAssignedToCompany = additionalData["isSiteSpendManagementAssignedToCompany"];
-                // $scope.$parent.isMConsolePMC = additionalData["isMConsolePMC"];
                 pubsub.publish("acct.accountingAdditionalDataSet",additionalData);
                 if(additionalData["isMConsolePMC"] == false){
                     //hide companies tab and show entities tab for financial suite
-                    //vm.showPGGrid = false;
                     vm.hideTab = true;
                     var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
                     var initialTab = [];
@@ -211,7 +205,6 @@
         .module("settings")
         .controller("ProductPropertyGroupsGridCtrl", [
             "$scope",
-            "$rootScope",
             "$filter",
             "productPropertyGroupSvc",
             "rpGridModel",
