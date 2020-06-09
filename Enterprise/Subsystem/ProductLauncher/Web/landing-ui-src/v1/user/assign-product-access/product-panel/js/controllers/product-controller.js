@@ -158,7 +158,7 @@
 
                             var tabName = tabGrp.displayName.replace(/ /g, "").toLowerCase();
                             logc(tabName);
-                            if (tabName === "rights") {
+                            if (tabName === "rights" || tabName === "globalroles") {
                                 tabName = "roles";
                             }
                             if (tabName === "markets" || tabName === "messaginggroups") {
@@ -167,7 +167,7 @@
                             if (tabName === "additionalrights") {
                                 tabName = "rights";
                             }
-                            if(tabName === "propertygroup" && $scope.productId == 13){
+                            if((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entityroles"){
                                 tabName = "properties";
                             }
                             
@@ -203,10 +203,10 @@
                             if (tabName === "Markets" || tabName === "MessagingGroups") {
                                 tabName = "PropertyGroup";
                             }
-                            else if (tabName === "Rights") {
+                            else if (tabName === "Rights" || tabName === "GlobalRoles") {
                                 tabName = "Roles";
                             } 
-                            else if(tabName === "PropertyGroup" && productId == 13){
+                            else if((tabName === "PropertyGroup" && productId == 13) || tabName === "EntityRoles"){
                                 tabName = "Properties";
                             }
                             else if(tabName === "AdditionalRights"){
@@ -247,11 +247,27 @@
 
                                     //Check and Set any Aside List Grid
                                     if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
+                                        var asideShowSelectAll = false;
+                                        if (tab.controls) {                                        
+                                            tab.controls.forEach(function (ctrl) {
+                                                if(ctrl.controls){
+                                                    ctrl.controls.forEach(function (attr) {
+                                                        if (attr.attributes !== null) {
+                                                            attr.attributes.forEach(function (item) {
+                                                                if (item.key === "ShowSelectAll" && item.value === "True") {
+                                                                    asideShowSelectAll = true;
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
                                         var listAsideconfigs = configData.getListAsideConfig(tab);
 
                                         if (listAsideconfigs !== undefined &&
                                             listAsideconfigs.config.length > 0) {
-                                            var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, showSelectAll);
+                                            var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
                                             logc("asideGridConfig", asideGridConfig);
                                             productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
                                         }
