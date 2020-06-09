@@ -321,7 +321,7 @@
                 }
             }
             
-            if (productId == "39" || (productId == "16" && hasPropertyGroupSelected)) {
+            if (productId == "39" || productId == "24" || (productId == "16" && hasPropertyGroupSelected)) {
                 hasPropertySelected = true;
             }
             
