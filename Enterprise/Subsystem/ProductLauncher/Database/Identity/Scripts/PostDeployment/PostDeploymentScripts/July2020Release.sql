@@ -353,7 +353,6 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF    
 
 END
-GO
 
 SELECT @ProductId = 16
 
