@@ -628,3 +628,374 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
+GO
+
+--Add Unified Settings Product
+DECLARE @ProductID int = 56,
+	@ProductTypeID int = 702,
+	@ProductName nvarchar(50) = N'Unified Settings',
+	@ProductGUID nvarchar(50) = N'62E1BA40-5ECD-4F11-9936-7327D6B5F7BB',
+	@ProductTypeGUID nvarchar(50) = N'8068DCF5-443A-4E48-8C86-CAAA765B0ADA',
+	@ParentProductTypeId int
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM	Enterprise.ProductType
+WHERE	Name = 'Administration'
+AND		ParentProductTypeId IS NULL;
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM enterprise.ProductType WHERE Name = @ProductName)
+BEGIN
+	EXEC [Enterprise].[CreateProductType] 
+		@ProductTypeId = @ProductTypeID,
+		@ParentProductTypeId = @ParentProductTypeId, 
+		@Name = @ProductName, 
+		@Description = @ProductName, 
+		@ProductTypeGUID = @ProductTypeGUID
+END;
+
+--Following block will create the new prodcut in the database
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.Product WHERE Name = @ProductName)
+BEGIN
+	EXEC Enterprise.CreateProduct 
+		@ProductId = @ProductId, 
+		@ProductGUID = @ProductGUID,
+		@Name = @ProductName, 
+		@Description = @ProductName,
+		@ProductTypeId = @ProductTypeID,
+		@BooksProductCode = N'SET';
+END
+GO
+
+DECLARE @Now DATETIME = GETUTCDATE(),
+	@OrganizationPartyId bigint,
+	@ProductId int,
+	@TargetProductId int,
+	@ActionId int,
+	@RoleId int,
+	@OutputRightId int,
+	@UserActionId int,
+	@RightValueTypeValue nvarchar(200),
+	@DetaulRightName nvarchar(200),
+	@RightShortName nvarchar(50),
+	@RightCategory int,
+	@VisibilityStatusTypeId int,
+	@ConfigurationId int,
+	@RoleName nvarchar(200) = N'User Administrator'
+
+DECLARE @NewRightValueType TABLE (
+	Value nvarchar(200)
+)
+
+SELECT @RightCategory = TypeId
+FROM	Enterprise.RoleRightStatus
+WHERE	CategoryName = 'Right Type'
+AND			TypeName = 'System'
+
+SELECT	@VisibilityStatusTypeId = TypeId
+FROM	Enterprise.RoleRightStatus AS rrs
+WHERE	TypeName = 'ALL'
+AND			CategoryType = 'Security'
+
+INSERT INTO @NewRightValueType (
+	Value
+)
+VALUES (
+	'View all Unified Settings'
+),
+(
+	'Manage company-level settings'
+),
+(
+	'Manage property-level settings'
+),
+(
+	'View all company-level settings'
+),
+(
+	'View all property- level settings'
+)
+
+SELECT	@OrganizationPartyId = PartyId
+FROM	Enterprise.Organization
+WHERE	Name = N'RealPage Employee'
+
+SELECT	@ProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'Unified Platform'
+
+SELECT	@TargetProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'Unified Settings'
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.GlobalProductConfiguration WHERE ProductId = @TargetProductId)
+BEGIN
+	EXEC Enterprise.CreateProductConfiguration @ConfigurationId OUTPUT
+
+	EXEC Enterprise.LinkGlobalConfigurationToProduct
+		@ConfigurationId = @ConfigurationId,
+		@ProductId = @TargetProductId,
+		@FromDate = @Now,
+		@ThruDate = NULL		
+
+	EXEC Enterprise.CreateOrganizationProduct
+		@PartyId = @OrganizationPartyId,
+		@ConfigurationID = @ConfigurationId,
+		@ProductId = @TargetProductId,
+		@FromDate = @Now,
+		@ThruDate = NULL
+END
+
+DECLARE curNewRightValueType CURSOR FOR
+SELECT Value
+FROM @NewRightValueType
+
+OPEN curNewRightValueType
+FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ACTION WHERE ObjectValue = @RightValueTypeValue AND ParentActionId IS NULL)
+	BEGIN
+		EXEC Enterprise.CreateAction
+			@ProductID = @ProductId, 
+			@Action = @RightValueTypeValue, 
+			@ActionTarget = N'Right', 
+			@ActionbValueTypeId = 1, 
+			@Description = '', 
+			@ActionID = @ActionId OUTPUT;
+	END;
+	FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+END
+CLOSE curNewRightValueType
+DEALLOCATE curNewRightValueType
+
+DECLARE curOrganizationRight CURSOR FOR
+SELECT eo.PartyId,
+			x.Value
+FROM	Enterprise.Organization eo
+			CROSS JOIN (
+				SELECT Value
+				FROM @NewRightValueType
+			) x
+WHERE	Name = N'RealPage Employee'
+
+OPEN curOrganizationRight
+FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SET @ActionID = NULL
+
+	SELECT @RoleId = RoleId
+	FROM	Enterprise.Role ero
+				INNER JOIN Enterprise.RoleValueType AS erovt 	ON (ero.RoleValueTypeId = erovt.RoleValueTypeId)
+	WHERE	erovt.Value = @RoleName
+	AND			ero.PartyId = @OrganizationPartyId;
+
+	SELECT @DetaulRightName = 'Default_' + @RightValueTypeValue,
+		@RightShortName = REPLACE(REPLACE(@RightValueTypeValue, ' ', ''), '-', '')
+
+	EXEC Enterprise.CreateRight
+		@RoleId = -1,
+		@RightName = @DetaulRightName,
+		@ShortName = @RightShortName,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Description = '',
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	SELECT @ActionID = ActionId
+	FROM	Enterprise.Action
+	WHERE	ParentActionId IS NULL 
+	AND		ObjectValue = @RightValueTypeValue
+	AND		ObjectType = 'Right'
+
+	EXEC [Enterprise].[LinkActionToRights]
+		@ActionID = @ActionID,
+		@RightId = @OutputRightId,
+		@StatusId = @VisibilityStatusTypeId,
+		@UserActionId = @UserActionId OUTPUT;
+
+	EXEC Enterprise.CreateRight
+		@RoleId = @RoleId,
+		@RightName = @RightValueTypeValue,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Shortname = @RightShortName,
+		@Description = @RightValueTypeValue,
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+END
+CLOSE curOrganizationRight
+DEALLOCATE curOrganizationRight
+
+UPDATE	Enterprise.RightValueType
+SET			TargetProductId = @TargetProductId
+WHERE		Value = 'View all Unified Settings'
+AND			TargetProductId = @ProductId
+GO
+
+--Add 2 additional CIMPL Rights and Assign to Unified Platform
+DECLARE @Now DATETIME = GETUTCDATE(),
+	@RoleValueTypeId int,
+	@OrganizationPartyId bigint,
+	@ProductId int,
+	@TargetProductId int,
+	@ActionId int,
+	@RoleId int,
+	@OutputRightId int,
+	@UserActionId int,
+	@RightValueTypeValue nvarchar(200),
+	@DetaulRightName nvarchar(200),
+	@RightShortName nvarchar(50),
+	@RightCategory int,
+	@VisibilityStatusTypeId int,
+	@ConfigurationId int,
+	@RoleName nvarchar(200) = N'User Administrator'
+
+DECLARE @NewRightValueType TABLE (
+	Value nvarchar(200)
+)
+
+DECLARE @Organization TABLE (
+	PartyId bigint
+)
+
+SELECT @RightCategory = TypeId
+FROM	Enterprise.RoleRightStatus
+WHERE	CategoryName = 'Right Type'
+AND			TypeName = 'System'
+
+SELECT	@VisibilityStatusTypeId = TypeId
+FROM	Enterprise.RoleRightStatus AS rrs
+WHERE	TypeName = 'ALL'
+AND			CategoryType = 'Security'
+
+INSERT INTO @NewRightValueType (
+	Value
+)
+VALUES (
+	'Ability to answer company-level questionnaires in CIMPL'
+),
+(
+	'Manage CIMPL Templates'
+)
+
+SELECT	@ProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'Unified Platform'
+
+SELECT	@TargetProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'CIMPL'
+
+SELECT	@RoleValueTypeId = RoleValueTypeId
+FROM	Enterprise.RoleValueType
+WHERE	Value = @RoleName
+
+DECLARE curNewRightValueType CURSOR FOR
+SELECT Value
+FROM @NewRightValueType
+
+OPEN curNewRightValueType
+FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ACTION WHERE ObjectValue = @RightValueTypeValue AND ParentActionId IS NULL)
+	BEGIN
+		EXEC Enterprise.CreateAction
+			@ProductID = @ProductId, 
+			@Action = @RightValueTypeValue, 
+			@ActionTarget = N'Right', 
+			@ActionbValueTypeId = 1, 
+			@Description = '', 
+			@ActionID = @ActionId OUTPUT;
+	END;
+	FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+END
+CLOSE curNewRightValueType
+DEALLOCATE curNewRightValueType
+
+--Companies CIMPL Enabled
+INSERT INTO @Organization (
+	PartyId
+)
+SELECT	eo.PartyId
+FROM	Enterprise.OrganizationProduct eop
+			INNER JOIN Enterprise.Organization eo ON (eop.PartyId = eo.PartyId)
+WHERE	eop.ProductId = @TargetProductId
+AND			((@NOW >= eop.FromDate AND eop.ThruDate IS NULL) OR (@NOW BETWEEN eop.FromDate AND eop.ThruDate))
+
+DECLARE curOrganizationRight CURSOR FOR
+SELECT o.PartyId,
+			x.Value
+FROM	@Organization o
+			CROSS JOIN (
+				SELECT Value
+				FROM @NewRightValueType
+				WHERE Value IN ('Ability to answer company-level questionnaires in CIMPL', 'Manage CIMPL Templates')
+			) x
+
+OPEN curOrganizationRight
+FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SELECT @RoleId = RoleId
+	FROM	Enterprise.Role ero
+				INNER JOIN Enterprise.RoleValueType AS erovt 	ON (ero.RoleValueTypeId = erovt.RoleValueTypeId)
+	WHERE	erovt.Value = @RoleName
+	AND			ero.PartyId = @OrganizationPartyId;
+
+	SELECT @DetaulRightName = 'Default_' + @RightValueTypeValue,
+		@RightShortName = REPLACE(REPLACE(@RightValueTypeValue, ' ', ''), '-', '')
+
+	EXEC Enterprise.CreateRight
+		@RoleId = -1,
+		@RightName = @DetaulRightName,
+		@ShortName = @RightShortName,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Description = '',
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	SELECT @ActionID = ActionId
+	FROM	Enterprise.Action
+	WHERE	ParentActionId IS NULL 
+	AND		ObjectValue = @RightValueTypeValue
+	AND		ObjectType = 'Right'
+
+	EXEC [Enterprise].[LinkActionToRights]
+		@ActionID = @ActionID,
+		@RightId = @OutputRightId,
+		@StatusId = @VisibilityStatusTypeId,
+		@UserActionId = @UserActionId OUTPUT;
+
+	EXEC Enterprise.CreateRight
+		@RoleId = @RoleId,
+		@RightName = @RightValueTypeValue,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Shortname = @RightShortName,
+		@Description = @RightValueTypeValue,
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+END
+CLOSE curOrganizationRight
+DEALLOCATE curOrganizationRight
+GO
