@@ -419,7 +419,9 @@ rownumber = 1
 and pc.isfavorite != ps.isfav
 
 GO
+update enterprise.product set assigntoallusers where productid in ( 3, 19, 27, 28, 21, 43, 45, 38, 49 )
 
+GO
 
 -- SPECIAL!
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 37 AND RIghtShortName = 'AccessPropertyPhotos' AND DependantProductId = 9 )

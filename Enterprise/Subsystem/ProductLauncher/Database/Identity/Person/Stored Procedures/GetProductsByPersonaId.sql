@@ -1,4 +1,4 @@
-﻿CREATE or alter PROCEDURE [Person].[GetProductsByPersonaId]
+﻿CREATE PROCEDURE [Person].[GetProductsByPersonaId]
 	@PersonaId int = 0,
 	@StatusTypeId int = 8
 AS
@@ -13,6 +13,8 @@ BEGIN
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = OP.PartyId
 		INNER JOIN Person.Persona per ON (ULP.UserLoginPersonaId = per.UserLoginPersonaId and per.PersonaId = @PersonaId)
 			AND ((@NOW BETWEEN op.FromDate AND op.ThruDate) OR (@NOW >= op.FromDate AND op.ThruDate IS NULL))
+	UNION
+	SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1
 
 	IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )
 	BEGIN
