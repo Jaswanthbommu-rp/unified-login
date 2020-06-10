@@ -413,6 +413,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
+            bool isLeasingAgentInOneSite = false;
+
             // OneSite super users aren't assigned the Leasing Consultant right so no need to check for the right for a GB Super User
             if (oneSiteUserInfo.Properties.Any())
             {
@@ -432,7 +434,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //02. We get information about the OneSite user including the list of properties for that user
                     var response = _mpOneSite.GetOneSitePropertyList(EditorUserDetails.PersonaId, SubjectUserDetails.PersonaId, true, null);
                     var osPropertyList = response.Records.Cast<ProductProperty>().ToList();
-                    bool isLeasingAgentInOneSite = false;
                     bool didLeasingAgentOneSiteCheck = false;
 
                     //03. For each of the properties that we are saving for SLM
@@ -460,7 +461,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            if (string.IsNullOrEmpty(oneSiteUserInfo.FirstName))
+            if (!isLeasingAgentInOneSite)
             {
                 return null;
             }

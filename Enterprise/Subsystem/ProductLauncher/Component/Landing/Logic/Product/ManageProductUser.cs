@@ -1088,7 +1088,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Input JSON parsing issue; Null object.";
             }
 
-            //base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var os = new ManageProductOneSite(base.UserClaim);
 
             //OneSite
@@ -1124,6 +1124,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // Unassign User
                     productResult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
                 }
+            }
+
+            if (!string.IsNullOrEmpty(productResult))
+            {
+                return productResult;
             }
 
             //SeniorLeadManagement
