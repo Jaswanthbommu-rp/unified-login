@@ -31,7 +31,10 @@
             vm.isAccountingAdmin = false;
             vm.isSiteSpendManagementAssignedToCompany = false;
             vm.isMConsolePMC = false;
-            vm.switchconfigs = undefined;
+
+            vm.accountingSMSwitchModel = {};
+            vm.accountingAllPropertiesSwitchModel = {};
+            vm.accountingAdminSwitchModel = {};
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
@@ -75,6 +78,10 @@
                 vm.isAccountingAdmin = obj["isAccountingAdmin"];
                 vm.isSiteSpendManagementAssignedToCompany = obj["isSiteSpendManagementAssignedToCompany"];
                 vm.isMConsolePMC = obj["isMConsolePMC"];
+                if(vm.hasAccessToAllCurrentFutureProperties){
+                    pubsub.publish("acct.accountingAllPropertiesSet", !vm.hasAccessToAllCurrentFutureProperties);
+                    pubsub.publish("acct.accountingAllCompaniesSet", !vm.hasAccessToAllCurrentFutureProperties);
+                }
             }
         };
 
@@ -115,6 +122,10 @@
             }
         };
 
+        vm.isAccountingProduct = function(){
+            return vm.productId == 8;
+        };
+
         vm.getActiveUrl = function () {
             return tabsModel.getActiveUrl();
         };
@@ -151,15 +162,10 @@
 
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
-            if($scope.productId == 8 && vm.switchconfigs == undefined){
-                vm.switchconfigs = [];
-                vm.switchconfigs.push(productModel.getProductSwitchConfig($scope.productId,"AccesstoSiteSpendManagementonly")[0]);
-                vm.switchconfigs.push(productModel.getProductSwitchConfig($scope.productId,"Allowaccesstoallcurrentandfutureentities")[0]);
-                vm.switchconfigs.push(productModel.getProductSwitchConfig($scope.productId,"AccountingAdmin")[0]);
-                logc(vm.switchconfigs);
-            }
-            else {
-                vm.switchconfigs = undefined;
+            if($scope.productId == 8){
+                vm.accountingSMSwitchModel = productModel.getProductSwitchConfig($scope.productId,"AccesstoSiteSpendManagementonly")[0];
+                vm.accountingAllPropertiesSwitchModel = productModel.getProductSwitchConfig($scope.productId,"Allowaccesstoallcurrentandfutureentities")[0];
+                vm.accountingAdminSwitchModel = productModel.getProductSwitchConfig($scope.productId,"AccountingAdmin")[0];
             }
 
             vm.tabsList = tabs.tabsList;
@@ -364,31 +370,44 @@
                             if (productModel.getProductSwitchConfig($scope.productId, tabName) === undefined) {
                                 if($scope.productId == 8){
                                     if (tabGrp.type === 'Switch') {
-                                        var eventName = "";
-                                        var modelName = "";
+                                        var c = {};
                                         if(tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly"){
-                                            eventName = vm.acessSiteSpndMgmtOnlySwitchWatch;
-                                            modelName = "'vm.hasAccessToSiteSpendManagementOnly'";
+                                            c = {
+                                                id: tabGrp.id,
+                                                text: tabGrp.displayName,
+                                                key: tabGrp.dataSource,
+                                                configData: switchConfig({
+                                                    disabled: vm.hasViewOnlyAccess(),
+                                                    onChange: vm.acessSiteSpndMgmtOnlySwitchWatch
+                                                })
+                                            };
+                                            vm.accountingSMSwitchModel = c;
                                         }
                                         else if(tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties"){
-                                            eventName = vm.allPropertiesSwitchWatch;
-                                            modelName = "'vm.hasAccessToAllCurrentFutureProperties'";
+                                            c = {
+                                                id: tabGrp.id,
+                                                text: tabGrp.displayName,
+                                                key: tabGrp.dataSource,
+                                                configData: switchConfig({
+                                                    disabled: vm.hasViewOnlyAccess(),
+                                                    onChange: vm.allPropertiesSwitchWatch
+                                                })
+                                            };
+                                            vm.accountingAllPropertiesSwitchModel = c;
                                         }
                                         else if(tabGrp.dataSource == "isAccountingAdmin"){
-                                            eventName = vm.accountingAdminSwitchWatch;
-                                            modelName = "'vm.isAccountingAdmin'";
+                                            c = {
+                                                id: tabGrp.id,
+                                                text: tabGrp.displayName,
+                                                key: tabGrp.dataSource,
+                                                configData: switchConfig({
+                                                    disabled: vm.hasViewOnlyAccess(),
+                                                    onChange: vm.accountingAdminSwitchWatch
+                                                })
+                                            };
+                                            vm.accountingAdminSwitchModel = c;
                                         }
-
-                                        var c = {
-                                            id: tabGrp.id,
-                                            text: tabGrp.displayName,
-                                            key: modelName,
-                                            configData: switchConfig({
-                                                disabled: vm.hasViewOnlyAccess(),
-                                                onChange: eventName
-                                            })
-                                        };
-                                        logc("Switchc",c);
+                                        logc("Switchc",c);                                        
                                         aSwitch.push(c);
                                     }
                                 }
@@ -422,8 +441,10 @@
         vm.acessSiteSpndMgmtOnlySwitchWatch = function (val) {
            logc("acessSiteSpndMgmtOnlySwitchWatch",val);
            vm.hasAccessToSiteSpendManagementOnly = val;
+           productModel.updateProductAdditionalData($scope.productId, "hasAccessToSiteSpendManagementOnly", val);
            if(vm.hasAccessToSiteSpendManagementOnly){
                 vm.isAccountingAdmin = false;
+                productModel.updateProductAdditionalData($scope.productId, "isAccountingAdmin", !val);
            }
         };
 
@@ -437,8 +458,10 @@
         vm.accountingAdminSwitchWatch = function (val) { 
             logc("accountingAdminSwitchWatch",val); 
             vm.isAccountingAdmin = val;
+            productModel.updateProductAdditionalData($scope.productId, "isAccountingAdmin", val);
             if(vm.isAccountingAdmin){
-                vm.acessSiteSpndMgmtOnlySwitchWatch(!val);
+                vm.hasAccessToSiteSpendManagementOnly = !val;
+                productModel.updateProductAdditionalData($scope.productId, "hasAccessToSiteSpendManagementOnly", !val);
             }
         };
 
@@ -509,7 +532,9 @@
         vm.destroy = function () {
             logc("vm.destroy called");
             active = false;
-            vm.switchconfigs = undefined;
+            vm.accountingSMSwitchModel = {};
+            vm.accountingAllPropertiesSwitchModel = {};
+            vm.accountingAdminSwitchModel = {};
             vm.destWatch();
             vm.profileWatch();
             vm.productSelectedWatch();

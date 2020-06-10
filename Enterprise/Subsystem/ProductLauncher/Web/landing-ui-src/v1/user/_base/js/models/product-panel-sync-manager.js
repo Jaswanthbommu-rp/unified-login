@@ -943,6 +943,13 @@
             };
         };
 
+        p.updateProductAdditionalData = function (product, tabName, value) {
+            var s = this,
+            additionalData = s.getProductAdditionalData(product);
+            additionalData[tabName] = value;
+            s.setProductAdditionalData(product, additionalData);
+        };
+
         // Assertions
 
         p.allSelected = function (list, selectKey) {

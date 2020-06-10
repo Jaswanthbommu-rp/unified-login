@@ -9,27 +9,44 @@
         This product is not available when User Type is {{cpactrl.userType}}.
     </div>
 
-    <div  class="row" ng-if="cpactrl.switchconfigs && cpactrl.isSwitchConfigLoaded()">
-        <div class="col-md-3 marg-l">
-            <div class="options"> Options: </div>
+    <div  class="row" ng-if="cpactrl.isAccountingProduct()">
+        <div class="row marg-r">
+            <div class="col-md-2">
+                <div class="options"> Options: </div>
+            </div>
+            <div class="col-md-5">
+                <rp-switch class="col-md-12 inline label-1"
+                    config="cpactrl.accountingSMSwitchModel.configData"
+                    rp-model="cpactrl.hasAccessToSiteSpendManagementOnly"
+                    rp-label-text="cpactrl.accountingSMSwitchModel.text">
+                </rp-switch>
+            </div>
+            <div class="col-md-5">
+                <rp-switch class="col-md-12 inline label-1"
+                    config="cpactrl.accountingAllPropertiesSwitchModel.configData"
+                    rp-model="cpactrl.hasAccessToAllCurrentFutureProperties"
+                    rp-label-text="cpactrl.accountingAllPropertiesSwitchModel.text">
+                </rp-switch>
+            </div>
         </div>
-        <br/>
-        <div class="col-md-9 marg-l" ng-repeat="sw in cpactrl.switchconfigs">
-            {{sw}}
-            <rp-switch  class="col-md-12 inline label-1"
-                config="sw.configData"
-                rp-model="sw.key"
-                rp-label-text="sw.text">
-            </rp-switch>
+        <div class="row marg-r">
+            <div class="col-md-2">            
+            </div>
+            <div class="col-md-5">
+                <rp-switch class="col-md-12 inline label-1"
+                    config="cpactrl.accountingAdminSwitchModel.configData"
+                    rp-model="cpactrl.isAccountingAdmin"
+                    rp-label-text="cpactrl.accountingAdminSwitchModel.text">
+                </rp-switch>
+            </div>
         </div>
-        <br/>
     </div>
     
-     <rp-scrolling-tabs-menu model="cpactrl.tabsMenu">
-        </rp-scrolling-tabs-menu>
-        <ng-include
-            src="tab.incUrl"
-            ng-show="tab.isActive"
-            ng-repeat="tab in cpactrl.tabsList">
-        </ng-include>
+    <rp-scrolling-tabs-menu model="cpactrl.tabsMenu">
+    </rp-scrolling-tabs-menu>
+    <ng-include
+        src="tab.incUrl"
+        ng-show="tab.isActive"
+        ng-repeat="tab in cpactrl.tabsList">
+    </ng-include>
 </div>
