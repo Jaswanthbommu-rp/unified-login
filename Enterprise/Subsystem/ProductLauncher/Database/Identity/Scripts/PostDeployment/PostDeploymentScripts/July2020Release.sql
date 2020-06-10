@@ -579,6 +579,57 @@ BEGIN
 END
 GO
 
+SELECT @ProductId = 24
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+
+
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (510, NULL, 8, N'MasterDataManagementProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (511, 510, 9, N'MasterDataManagementProductAccessRolesTabUIId', N'Roles', NULL, 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (512, 511, 2, N'MasterDataManagementProductAccessRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (513, 512, 7, N'MasterDataManagementProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (514, 512, 5, N'MasterDataManagementProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (515, 512, 5, N'MasterDataManagementProductAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+	
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (127, 511, N'Default', N'True', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+	VALUES (32, 24, N'Master Data Management Product Access', @UserId, @Now, 1)
+	
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+	VALUES (41, 32, 510, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+
+END
+
 --Add Unified Settings Product
 DECLARE @ProductID int = 56,
 	@ProductTypeID int = 702,

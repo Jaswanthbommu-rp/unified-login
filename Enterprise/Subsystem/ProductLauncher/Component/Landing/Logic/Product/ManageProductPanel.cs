@@ -215,6 +215,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
 					result = manageUnifiedAmenities.GetRoles(editorPersonaId, userPersonaId, partyId);
 					break;
+				case (int)ProductEnum.ResearchApplication:
+					ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
+					result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
+					break;
+
 				case (int)ProductEnum.AoBusinessIntelligence:
 				case (int)ProductEnum.AoInvestmentAnalytics:
 				case (int)ProductEnum.AoPerformanceAnalytics:
