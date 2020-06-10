@@ -630,6 +630,20 @@ BEGIN
 
 END
 
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 179)
+BEGIN
+	UPDATE [UserManagement].[Control] SET DataSource = 'title' WHERE ControlId = 179
+END
+ELSE
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (179, 177, 5, N'On-SiteProductAccessRoleLabelUIId', N'Role', N'title', 2, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+
 Go
 --Add Unified Settings Product
 DECLARE @ProductID int = 56,
