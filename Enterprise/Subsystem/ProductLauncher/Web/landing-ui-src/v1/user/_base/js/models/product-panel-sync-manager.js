@@ -477,7 +477,13 @@
 
             roleData.forEach(function (item) {
                 item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == "23") {
+                    item.isAssigned = item.level == record.level;
+                }
+                else{
+                    item.isAssigned = item.id == record.id;
+                }
+
             });
 
             return s;
