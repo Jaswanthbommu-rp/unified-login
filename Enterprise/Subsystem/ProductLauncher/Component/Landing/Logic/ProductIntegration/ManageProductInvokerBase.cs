@@ -1094,7 +1094,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
         }
-        private void MergeUserProperties(IList<ProductProperties> propertyList, List<string> userProperties)
+        internal void MergeUserProperties(IList<ProductProperties> propertyList, List<string> userProperties)
         {
             if (propertyList != null && userProperties != null)
             {

@@ -36,6 +36,7 @@
             "text.solnTitle.308": "ILM Lead Management",
             "text.solnTitle.309": "ILM Leasing Analytics",
             "text.solnTitle.310": "Deposit Alternative",
+            "text.solnTitle.311": "Senior Lead Management",
             "text.solnTitle.401": "YieldStar",
             "text.solnTitle.402": "Business Intelligence",
             "text.solnTitle.403": "Performance Analytics",
