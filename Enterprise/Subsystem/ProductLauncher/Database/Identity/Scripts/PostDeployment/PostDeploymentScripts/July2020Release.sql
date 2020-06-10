@@ -577,7 +577,7 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
-GO
+
 
 SELECT @ProductId = 24
 
@@ -630,6 +630,7 @@ BEGIN
 
 END
 
+Go
 --Add Unified Settings Product
 DECLARE @ProductID int = 56,
 	@ProductTypeID int = 702,
