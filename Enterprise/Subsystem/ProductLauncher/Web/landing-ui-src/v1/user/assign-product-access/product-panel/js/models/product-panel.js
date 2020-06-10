@@ -21,17 +21,26 @@
             s.data = {
                 "records": []
             };
+            s.propertyRoleListData = {
+                "PropertyIds": [],
+                "RoleId": ""
+            };
 
             s.batchData = {
                 productId: 0,
                 statusTypeId: 5,
                 retryCount: 0,
                 inputJson: {
+                    IsVendorRecommendationChanges : false,
+                    isInsuranceExpired : false,
+                    isVendorNotLinkedToAnyProperty : false,
                     roleList: [],
                     propertyList: [],
                     regionList: [],
                     propertyGroupList: [],
                     departmentList: [],
+                    RolePropertiesList: [],
+                    propertyGroup: [],
                     removedPropertyList: [],
                     messageGroups: [],
                     Notifications: {
@@ -64,6 +73,7 @@
             s._batchData = angular.copy(s.batchData);
             s._batchBMData = angular.copy(s.batchBMData);
             s._data = angular.copy(s.data);
+            s._propertyRoleListData = angular.copy(s.propertyRoleListData);
         };
 
         p.setChanged = function () {
@@ -120,7 +130,8 @@
                 needsProperties = false,
                 hasProperties = false,
                 needsDepartments = false,
-                hasDepartments = false;
+                hasDepartments = false,
+                hasPropertyRoles = false;
 
             s.batchData = angular.copy(s._batchData);
             var roles = "";
@@ -134,7 +145,8 @@
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
 
             var notifications = "";
-            if (productId == "17") {
+
+            if(productId == "17" || productId == "16"){
                 notifications = dataSyncManager.getProductNotificationsData(productId);
             }
 
@@ -179,9 +191,10 @@
 
             if (properties !== undefined && properties.length) {
                 s.batchData.inputJson.propertyList = [];
+                s.batchData.inputJson.RolePropertiesList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14" || productId == "3" || productId == "23") {
+                    if (productId == "14" || productId == "3" || productId == "23" || productId == "16") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
                     else {
@@ -189,14 +202,32 @@
                     }
                 }
                 else {
-                    properties.forEach(function (prop) {
-                        if (prop.isAssigned) {
-                            s.batchData.inputJson.propertyList.push(prop.id);
-                        }
-                        if (!prop.isAssigned && prop.originalProperty) {
-                            s.batchData.inputJson.removedPropertyList.push(prop.id);
-                        }
-                    });
+                    if(productId == "44"){
+                        properties.forEach(function(propRole){
+                            if(propRole.isAssigned){
+                                s.propertyRoleListData = angular.copy(s._propertyRoleListData);
+                                s.propertyRoleListData.RoleId = propRole.id;
+                                propRole.propertiesList.forEach(function(prop){
+                                    if(prop.isAssigned){
+                                        s.propertyRoleListData.PropertyIds.push(prop.id);
+                                    }
+                                });
+                                if(s.propertyRoleListData.PropertyIds.length > 0){
+                                    s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
+                                }
+                            }
+                        });
+
+                    }else{
+                        properties.forEach(function (prop) {
+                            if (prop.isAssigned) {
+                                s.batchData.inputJson.propertyList.push(prop.id);
+                            }
+                            if (!prop.isAssigned && prop.originalProperty) {
+                                s.batchData.inputJson.removedPropertyList.push(prop.id);
+                            }
+                        });
+                    }
 
                     if (productId == "9") {
                         s.batchData.inputJson.isAssignedNewPropertyByDefault = dataSyncManager.isProductNewPropertyByDefault(productId);
@@ -204,6 +235,7 @@
                 }
 
                 hasPropertySelected = s.batchData.inputJson.propertyList.length > 0;
+                hasPropertyRoles = s.batchData.inputJson.RolePropertiesList.length > 0;
             }
 
             if (propertyGroups !== undefined && propertyGroups.length) {
@@ -222,7 +254,14 @@
                         else if (productId == "20") {
                             s.batchData.inputJson.departmentList.push(group.id);
                         }
-                        else {
+                        else if(productId == "16"){
+                            var newGroup = {
+                                Id: group.propertyGroupId,
+                                Type: group.accessLevel
+                            };
+                            s.batchData.inputJson.propertyGroup.push(newGroup);
+                        }
+                        else{
                             s.batchData.inputJson.regionList.push(group.id);
                         }
                     }
@@ -234,7 +273,10 @@
                 else if (productId == "20") {
                     hasPropertyGroupSelected = s.batchData.inputJson.departmentList.length > 0;
                 }
-                else {
+                else if(productId == "16"){
+                    hasPropertyGroupSelected = s.batchData.inputJson.propertyGroup.length > 0;
+                }
+                else{
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
                 }
             }
@@ -243,6 +285,12 @@
                 s.batchData.inputJson.Notifications.managerFdiViaEmail = notifications.managerFdiViaEmail;
                 s.batchData.inputJson.Notifications.amenitiesViaEmail = notifications.amenitiesViaEmail;
                 s.batchData.inputJson.Notifications.managerMrViaEmail = notifications.managerMrViaEmail;
+            }
+            if(productId == "16" && notifications !== undefined){
+                s.batchData.inputJson.Notifications = [];
+                s.batchData.inputJson.IsVendorRecommendationChanges = notifications.isVendorRecommendationChanges;
+                s.batchData.inputJson.isInsuranceExpired = notifications.isInsuranceExpired;
+                s.batchData.inputJson.isVendorNotLinkedToAnyProperty = notifications.isVendorNotLinkedToAnyProperty;
             }
 
             if (productId == "30" && bmroles !== undefined && bmroles.length > 0) {
@@ -300,7 +348,13 @@
                 }
             }
 
-            if (productId == "39") {
+            if(productId == "44"){
+                if (hasPropertyRoles) {
+                    return s.batchData;
+                }
+            }
+
+            if (productId == "39" || (productId == "16" && hasPropertyGroupSelected)) {
                 hasPropertySelected = true;
             }
 

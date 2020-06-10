@@ -312,6 +312,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						result.Additional = null;
 					}
 					break;
+				case (int)ProductEnum.VendorServices:
+					IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
+					result = manageProductVendorServices.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+					break;
 				case (int)ProductEnum.AoBusinessIntelligence:
 				case (int)ProductEnum.AoInvestmentAnalytics:
 				case (int)ProductEnum.AoPerformanceAnalytics:
@@ -327,6 +331,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);
 					result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+					break;
+				case (int)ProductEnum.DepositAlternative:
+					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
+					result = productDALogic.GetProductPropertyGroups(datafilter);
 					break;
 				default:
 					break;

@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPanelListAsideCtrl($scope, aside, dataSvc, groupSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
+    function ProductPanelListAsideCtrl($scope, $filter, aside, dataSvc, groupSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
         var vm = this,
             asideGrid = gridModel(),
             asidegridTransform = gridTransformSvc(),
@@ -15,13 +15,21 @@
             vm.tabName = listAsideModel.getTabName();
             vm.productId = listAsideModel.getProductID();
             vm.asideGrid = asideGrid;
+            vm.properteiesData = {};
+            vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData().propertiesList;
             asidegridTransform.watch(asideGrid);
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
-
+            syncMgr.setAsidePropertyList(listAsideModel.getSelectedPropertyRoleData(), vm.productId);
             var configTab = "";
             if (vm.tabName.toLowerCase() === "property") {
-                configTab = "Properties";
-                vm.title = "Property Details";
+                if(vm.productId == 44){
+                    configTab = "Properties";
+                    vm.title = "Assigned Entities";
+                    vm.subtitle= persona.data.organization.name;
+                }else{
+                    configTab = "Properties";
+                    vm.title = "Property Details";
+                }              
             }
             else if (vm.tabName.toLowerCase() === "propertygroup") {
                 configTab = "PropertyGroup";
@@ -55,7 +63,14 @@
             }
 
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
+            vm.gridAllWatch = asideGrid.subscribe("selectAll", vm.selectAllProperties);
+            vm.gridSelectionWatch = asideGrid.subscribe("selectChange", vm.selectionChange);
+            vm.filterData = asideGrid.subscribe("filterBy", vm.filter.bind(vm));
             return vm;
+        };
+
+        vm.filter = function(filterBy){
+            vm.filteredRecords = $filter("filter")(vm.propertyRecords, filterBy);
         };
 
         vm.loadData = function () {
@@ -82,6 +97,9 @@
                 };
 
                 vm.dataReq = groupSvc.get(params, vm.setData);
+            }else if(productId == "44"){
+                vm.properteiesData.records = vm.propertyRecords;
+                vm.setData(vm.properteiesData);
             }
             else {
                 params = {
@@ -107,6 +125,24 @@
         vm.cancel = function () {
             aside.hide();
         };
+        
+        vm.update = function(){
+            aside.hide();
+        };
+
+        vm.selectAllProperties = function (val) {
+            if(vm.filteredRecords !== undefined){
+                syncMgr.updateAllFilterAsideProperties(vm.productId, vm.filteredRecords, val);
+            }
+            else{
+                syncMgr.updateAllFilterAsideProperties(vm.productId, vm.propertyRecords, val);
+            }
+        };
+        vm.selectionChange = function (record) {
+            if (record) {
+                syncMgr.selectedAsidePropertySync(vm.productId);
+            }
+        };
 
         vm.destroy = function () {
             vm.destWatch();
@@ -131,6 +167,7 @@
         .module("settings")
         .controller("ProductPanelListAsideCtrl", [
             "$scope",
+            "$filter",
             "productPanelListAside",
             "productRoleRightsSvc",
             "productGroupPropertiesSvc",
