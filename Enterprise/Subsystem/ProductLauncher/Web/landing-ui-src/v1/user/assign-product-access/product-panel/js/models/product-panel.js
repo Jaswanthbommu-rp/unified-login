@@ -168,6 +168,9 @@
                         else if(productId == "18"){
                             s.batchData.inputJson.roleList.push(role.roleName);
                         }
+                        else if(productId == "23"){
+                            s.batchData.inputJson.roleList.push(role.level);
+                        }
                         else {
                             s.batchData.inputJson.roleList.push(role.id);
                         }
