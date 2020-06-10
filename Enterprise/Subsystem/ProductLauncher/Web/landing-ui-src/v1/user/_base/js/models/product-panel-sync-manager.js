@@ -31,10 +31,12 @@
             s.productTabsMap = {};
             s.productActiveTabMap = {};
             s.productSelectTypeConfigMap = {};
+            s.productPageLevelRadioConfigMap = {};
             s.productDependencyDataMap = {};
             s.productPresetRolesMap = {};
             s.notificationsMap={};
             s.originalPropertyListMap = {};
+            s.asidePropertyMap = {};
 
             s.productControlsList = {
                 products: []
@@ -50,6 +52,7 @@
             s.rightList = [];
             s.presetRoleList = [];
             s.sidePanelDataList = [];
+            s.asidePropertyList = [];
 
         };
 
@@ -134,6 +137,15 @@
                 config;
             if (s.productSelectTypeConfigMap['product' + productId + tabName] !== undefined) {
                 config = s.productSelectTypeConfigMap['product' + productId + tabName].selectCtrlConfig;
+            }
+            return config;
+        };
+
+        p.getProductPageLevelRadioConfig = function (productId, tabName) {
+            var s = this,
+                config;
+            if (s.productPageLevelRadioConfigMap['product' + productId + tabName] !== undefined) {
+                config = s.productPageLevelRadioConfigMap['product' + productId + tabName].selectCtrlConfig;
             }
             return config;
         };
@@ -233,6 +245,15 @@
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
         };
+        p.getProductAsidePropertyData = function (product) {
+            var s = this,
+                asidePropertyList;
+
+            if (s.asidePropertyMap['product' + product] !== undefined) {
+                asidePropertyList = s.asidePropertyMap['product' + product].asideProperties;
+            }
+            return asidePropertyList;
+        };
 
         p.getProductPropertyGroupData = function (product) {
             var s = this,
@@ -296,6 +317,13 @@
             var s = this;
             s.propertyList = list;
             s.renderPropertyMap(key);
+            return s;
+        };
+
+        p.setAsidePropertyList = function (list, key) {
+            var s = this;
+            s.asidePropertyList = list;
+            s.renderAsidePropertyMap(key);
             return s;
         };
 
@@ -449,7 +477,13 @@
 
             roleData.forEach(function (item) {
                 item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == "23") {
+                    item.isAssigned = item.level == record.level;
+                }
+                else{
+                    item.isAssigned = item.id == record.id;
+                }
+
             });
 
             return s;
@@ -565,6 +599,18 @@
 
             return s;
         };
+        p.selectedAsidePropertySync = function (productId) {
+            var s = this,
+            propertyData;
+
+            propertyData = s.asidePropertyMap['product' + productId].asideProperties;
+            var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
+                return data.isAssigned === true;
+            });
+
+            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length; 
+            return s;
+        };
 
         p.multiSelectedPropertySync = function (key, record) {
             var s = this,
@@ -638,6 +684,22 @@
 
             propertyList.assignedProperties = assignedCount + " of " + totalCount;
             pubsub.publish("pplpropertygroup.updateGrids");
+            return s;
+        };
+        p.updateAllFilterAsideProperties = function (productId, record, bool) {
+            var s = this,
+                propertyList,
+                assignedCount = 0,
+                matchRecord;
+
+            propertyList = s.asidePropertyMap['product' + productId].asideProperties;
+            record.forEach(function (item) {
+                item.isAssigned = bool;                
+            });
+            if(bool){
+                assignedCount = record.length;
+            }
+            propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
             return s;
         };
         p.setAllPropertyGroupSync = function (productId, bool) {
@@ -765,6 +827,13 @@
             s.selectTypeConfigLoaded = true;
         };
 
+        p.renderPageLevelRadioConfigMap = function (productId, tabName, config) {
+            var s = this;
+            s.productPageLevelRadioConfigMap['product' + productId + tabName] = {
+                selectCtrlConfig: config
+            };
+        };
+
         p.renderProductRadioConfigMap = function (productId, tabName, config) {
             var s = this;
             s.productRadioConfigMap['product' + productId + tabName] = {
@@ -818,6 +887,14 @@
                     properties: s.propertyList,
                     allProperties: false,
                     newPropertyByDefault: false
+                };
+            }
+        };
+        p.renderAsidePropertyMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.asidePropertyList)) {
+                s.asidePropertyMap['product' + key] = {
+                    asideProperties: s.asidePropertyList,
                 };
             }
         };
@@ -918,6 +995,16 @@
             });
 
             return s;
+        };
+
+        p.clearPropertyGroupData = function(key) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
         };
 
         // Assertions

@@ -215,6 +215,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
 					result = manageUnifiedAmenities.GetRoles(editorPersonaId, userPersonaId, partyId);
 					break;
+				case (int)ProductEnum.ResearchApplication:
+					ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
+					result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
+					break;
+
 				case (int)ProductEnum.AoBusinessIntelligence:
 				case (int)ProductEnum.AoInvestmentAnalytics:
 				case (int)ProductEnum.AoPerformanceAnalytics:
@@ -310,6 +315,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						result.ErrorReason = string.Empty;
 						result.Additional = null;
 					}
+					break;
+				case (int)ProductEnum.VendorServices:
+					IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
+					result = manageProductVendorServices.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
 					break;
 				case (int)ProductEnum.AoBusinessIntelligence:
 				case (int)ProductEnum.AoInvestmentAnalytics:

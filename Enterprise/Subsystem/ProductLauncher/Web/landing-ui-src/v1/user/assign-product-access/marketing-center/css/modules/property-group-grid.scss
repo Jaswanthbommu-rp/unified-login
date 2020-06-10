@@ -1,12 +1,14 @@
 .marketing-center-property-groups-grid {
 
 	.is-assigned {
-        min-width: 125px;
-        max-width: 125px;
-        white-space: nowrap;
+        width: 5%;
 	}
 	.name {
-		width: 90%;
+		width: 50%;
+	}
+	.type {
+		width: 40%;
+
 	}
 	.info-tooltip {
 		width: 5%;
