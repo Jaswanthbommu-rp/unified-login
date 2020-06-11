@@ -336,6 +336,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var manageProductRum = new ManageProductRum(_userClaims);
 					result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
 					break;
+				case (int)ProductEnum.FinancialSuite:
+					var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+					result = manageProductOneSiteAccounting.GetUserCompanies(editorPersonaId, userPersonaId, datafilter);
+					break;
 				default:
 					break;
 			}
