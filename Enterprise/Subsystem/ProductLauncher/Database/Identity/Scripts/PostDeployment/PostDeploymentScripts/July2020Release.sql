@@ -419,7 +419,7 @@ rownumber = 1
 and pc.isfavorite != ps.isfav
 
 GO
-update enterprise.product set assigntoallusers where productid in ( 3, 19, 27, 28, 21, 43, 45, 38, 49 )
+update enterprise.product set assigntoallusers where productid in ( 3, 19, 27, 28, 21, 49 )
 
 GO
 
@@ -469,32 +469,12 @@ begin
 	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'ViewCIMPLQuestions' )
 end
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLESubmitQuestionnaires' )
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'EmployeeViewCIMPLQuestions' )
 begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLESubmitQuestionnaires' )
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'EmployeeViewCIMPLQuestions' )
 end
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLManagePII' )
-begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLManagePII' )
-end
-
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLManageSensitiveFinancialData' )
-begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLManageSensitiveFinancialData' )
-end
-
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'CIMPLStandardImplementationAccess' )
-begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'CIMPLStandardImplementationAccess' )
-end
-
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'ManageCIMPLQuestions' )
-begin
-	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'ManageCIMPLQuestions' )
-end
-
-IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'AccessSettingMGMTConsole' )
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 43 AND RIghtShortName = 'AccessSettingMGMTConsole' )
 begin
 	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 43, 'AccessSettingMGMTConsole' )
 end

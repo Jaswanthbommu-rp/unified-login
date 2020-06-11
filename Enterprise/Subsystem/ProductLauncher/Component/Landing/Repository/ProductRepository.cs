@@ -200,7 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 //Is the Product enabled to be a Favorite?
                 productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("IsFavorite", StringComparison.OrdinalIgnoreCase));
-                p.IsAllowFavorite = (productInternalSetting != null) && ((productInternalSetting.Value.Trim() == "1"));
+                p.IsAllowFavorite = productInternalSetting != null && productInternalSetting.Value.Trim() == "1";
                 //If enabled then, is the product a favorite in persona?
                 p.IsFavorite = p.IsAllowFavorite && IsFavorite;
 
