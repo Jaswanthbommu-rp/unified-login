@@ -766,7 +766,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Email = SubjectUserDetails.Email,
                 PhoneNumbers = SubjectUserDetails.PhoneNumbers,
                 Phone = SubjectUserDetails.PhoneNumber,
-                IsActive = true,
+                IsActive = Convert.ToBoolean(SubjectUserDetails.IsActive),
                 //Title = SubjectUserDetails.Title,
                 UserId = SubjectUserDetails.ProductUserId,
                 CompanyId = CompanyInstanceSourceId

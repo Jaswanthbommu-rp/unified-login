@@ -1089,17 +1089,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
-            var os = new ManageProductOneSite(base.UserClaim);
+            var oneSite = new ManageProductOneSite(base.UserClaim);
 
             //OneSite
             if (roleProp.IsAssigned)
             {
-                productResult = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, false);
+                productResult = oneSite.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, false);
             }
             else
             {
                 //Unassign Usr
-                productResult = os.UnassignUser(createUserPersonaId, assignUserPersonaId);
+                productResult = oneSite.UnassignUser(createUserPersonaId, assignUserPersonaId);
             }
 
             if (!string.IsNullOrEmpty(productResult))
@@ -3554,6 +3554,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                             //Call new method and send new parameters
                             return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups);
+                        }
+                        else
+                        {
+                            return productLogic.UnassignUser();
                         }
                     }
                 }
