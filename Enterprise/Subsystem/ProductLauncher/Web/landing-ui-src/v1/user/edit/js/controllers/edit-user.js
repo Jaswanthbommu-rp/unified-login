@@ -72,6 +72,9 @@
             if (security.isAllowed("viewAuditTrailUserData")) {
                 tabs.push("activityLog");
             }
+            if (session.getRealPageId() === $params.realPageId) {
+                tabs.push("userPreference");
+            }
 
             tabsModel.setTabs(tabs).activateTab("userDetails");
 

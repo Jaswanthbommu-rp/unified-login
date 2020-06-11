@@ -20,6 +20,7 @@
             "user.assign-products": [],
             "user.assign-product-access.bundle": [],
             "user.security-questions": [],
+            "user.user-preference": ["css","js"],
 
             "error.base": ["css", "js"],
 

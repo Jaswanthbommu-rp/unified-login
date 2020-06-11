@@ -55,7 +55,8 @@
                     "settings.user.reset-password",
                     "settings.user.security-questions",
                     "settings.user.assign-products",
-                    "settings.user.assign-product-access.bundle"
+                    "settings.user.assign-product-access.bundle",
+                    "settings.user.user-preference",
                 ])
             }]
         };
