@@ -644,6 +644,119 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 END
 
+--Financial Suite Product Access panel
+SELECT @ProductId = 8
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (516, NULL, 8, N'FinancialSuiteProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (517, 516, 5, N'FinancialSuiteProductAccessOptions:LabelUIId', N'Options:', N'', 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (518, 516, 1, N'FinancialSuiteProductAccessAccesstoSiteSpendManagementonlySwitchUIId', N'Access to Site Spend Management only', N'hasAccessToSiteSpendManagementOnly', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (519, 516, 1, N'FinancialSuiteProductAccessAllowaccesstoallcurrentandfutureentitiesSwitchUIId', N'Allow access to all current and future entities', N'hasAccessToAllCurrentFutureProperties', 3, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (520, 516, 1, N'FinancialSuiteProductAccessAccountingAdminSwitchUIId', N'Accounting Admin', N'isAccountingAdmin', 4, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (521, 516, 9, N'FinancialSuiteProductAccessCompaniesTabUIId', N'Companies', NULL, 5, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (522, 521, 3, N'FinancialSuiteProductAccessCompaniesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (523, 522, 10, N'FinancialSuiteProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (524, 522, 5, N'FinancialSuiteProductAccessIDLabelUIId', N'ID', N'id', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (525, 522, 5, N'FinancialSuiteProductAccessNameLabelUIId', N'Name', N'name', 3, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (526, 516, 9, N'FinancialSuiteProductAccessEntitiesTabUIId', N'Entities', NULL, 6, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (527, 526, 3, N'FinancialSuiteProductAccessEntitiesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (528, 527, 10, N'FinancialSuiteProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (529, 527, 5, N'FinancialSuiteProductAccessEntityIDLabelUIId', N'Entity ID', N'propertyId', 2, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (530, 527, 5, N'FinancialSuiteProductAccessEntityNameLabelUIId', N'Entity Name', N'propertyName', 3, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (531, 527, 5, N'FinancialSuiteProductAccessCompanyIDLabelUIId', N'Company ID', N'companyId', 4, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (532, 527, 5, N'FinancialSuiteProductAccessCompanyNameLabelUIId', N'Company Name', N'companyName', 5, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (533, 516, 9, N'FinancialSuiteProductAccessRolesTabUIId', N'Roles', NULL, 7, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (534, 533, 3, N'FinancialSuiteProductAccessRolesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (535, 534, 10, N'FinancialSuiteProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (536, 534, 5, N'FinancialSuiteProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+	
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 	
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (128, 518, N'Default', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (129, 519, N'Default', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (130, 520, N'Default', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (131, 521, N'Default', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (132, 522, N'ShowSelectAll', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (133, 527, N'ShowSelectAll', N'True', @UserId, @Now)
+	
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (134, 534, N'ShowSelectAll', N'False', @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+	
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+	VALUES (33, 8, N'Financial Suite Product Access', @UserId, @Now, 1)
+	
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+	
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+	VALUES (42, 33, 516, @UserId, @Now)
+	
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+	
+END
+
 Go
 --Add Unified Settings Product
 DECLARE @ProductID int = 56,

@@ -53,7 +53,7 @@
             s.presetRoleList = [];
             s.sidePanelDataList = [];
             s.asidePropertyList = [];
-
+            s.productAdditionalMap = [];
         };
 
         // Getters
@@ -593,8 +593,13 @@
             propertyData = s.propertyMap['product' + key].properties;
 
             propertyData.forEach(function (item) {
-                item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == 8){
+                    item.isAssigned = item.propertyId == record.propertyId;
+                }
+                else{
+                    item.isAssigned = false;
+                    item.isAssigned = item.id == record.id;
+                }
             });
 
             return s;
@@ -1007,6 +1012,29 @@
             s.renderPropertyGroupMap(key);
         };
 
+        p.getProductAdditionalData = function (product) {
+            var s = this,
+                additionalData;
+            if (s.productAdditionalMap['product' + product] !== undefined) {
+                additionalData = s.productAdditionalMap['product' + product].additional;
+            }
+            return additionalData;
+        };
+
+        p.setProductAdditionalData = function (product, value) {
+            var s = this;
+            s.productAdditionalMap['product' + product] = {
+                additional: value
+            };
+        };
+
+        p.updateProductAdditionalData = function (product, tabName, value) {
+            var s = this,
+            additionalData = s.getProductAdditionalData(product);
+            additionalData[tabName] = value;
+            s.setProductAdditionalData(product, additionalData);
+        };
+
         // Assertions
 
         p.allSelected = function (list, selectKey) {
@@ -1089,6 +1117,7 @@
             s.productControlsMap = {};
             s.productPresetRolesMap = {};
             s.notificationsMap = {};
+            s.productAdditionalMap = [];
         };
 
         return new ProductDataSyncManager();
