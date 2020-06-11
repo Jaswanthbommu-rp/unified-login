@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertiesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, pubsub, persona, productDataModel, userDetailsModel, security, syncMgr, propertiesSvc, switchConfig, dmDataSvc) {
+    function ProductPropertiesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, pubsub, persona, productDataModel, userDetailsModel, security, syncMgr, propertiesSvc, switchConfig) {
         var vm = this,
             hasViewUserAccess,
             allProperties,
@@ -54,7 +54,6 @@
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
-            pubsub.subscribe("dd.loadproperties", vm.loadDMPropertiesData);
         };
 
         vm.productSelected = function (obj) {
@@ -64,13 +63,13 @@
 
         vm.accessTypeChanged = function (value) {
             vm.propertySelect = value;
-            if(vm.propertySelect === 'allProperties'){
+            if (vm.propertySelect === 'allProperties') {
                 vm.allProperties = true;
             }
-            else if(vm.propertySelect === 'property'){
+            else if (vm.propertySelect === 'property') {
                 vm.allProperties = false;
             }
-            else if(vm.propertySelect === 'propertyGroup'){
+            else if (vm.propertySelect === 'propertyGroup') {
                 syncMgr.allPropertiesSync($scope.productId, false);
             }
         };
@@ -132,68 +131,28 @@
 
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
-
-            if (productId !== 20) {
-                propertiesGrid.busy(true);
-                if (persona.isReady() && vm.isActive()) {
-                    var propertyData = syncMgr.getProductPropertiesData(productId);
-
-                    if (propertyData === undefined) {
-                        // propertiesGrid.busy(false);
-                        var params = {
-                            userPersonaId: userDetailsModel.getPersonaId(),
-                            editorPersonaId: persona.getId(),
-                            productId: productId,
-                            userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
-                        };
-
-                        vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
-                    }
-                    else {
-                        vm.loadGridData(productId);
-                    }
-                }
-            }
-        };
-
-        vm.loadDMPropertiesData = function (roleId) {
-            var productId = 20;
-            logc("loaddmdataproperties", roleId, propertiesGrid);
-            if (propertiesGrid == undefined) {
-                propertiesGrid = gridModel();
-                propertiesGridTransform = gridTransformSvc();
-                propertiesGridPagination = gridPaginationModel();
-                vm.propertiesGrid = propertiesGrid;
-                propertiesGridTransform.watch(propertiesGrid);
-
-                var config = syncMgr.getProductGridConfig(productId, "Properties"); //configModel.getGridConfig()[0];
-                logc("vm.config", config, productId);
-                propertiesGrid.setConfig(config);
-                propertiesGridPagination.setGrid(propertiesGrid);
-                $scope.propertiesGridPagination = propertiesGridPagination;
-                propertiesGridPagination.setConfig({
-                    recordsPerPage: 25
-                });
-            }
-
             propertiesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var propertyData = syncMgr.getProductPropertiesData(productId);
 
                 if (propertyData === undefined) {
+                    // propertiesGrid.busy(false);
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
-                        roleId: roleId
+                        productId: productId,
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
                     };
 
-                    vm.dmdataPropReq = dmDataSvc.get(params, vm.setPropertyData);
+                    vm.dataPropReq = propertiesSvc.get(params, vm.setPropertyData);
                 }
                 else {
                     vm.loadGridData(productId);
                 }
             }
         };
+
+
 
         vm.setPropertyData = function (resp) {
             propertiesGrid.busy(false);
@@ -231,18 +190,9 @@
             var propData = syncMgr.getProductPropertiesData(productId);
 
             if (propData && propData.length > 0) {
-                if (vm.hasViewOnlyAccess()) {
-                    propData.forEach(function (item) {
-                        angular.extend(item, {
-                            disabled: false,
-                            radname: "property"
-                        });
-                        item.disabled = true;
-                    });
-                }
-
                 propData.forEach(function (item) {
                     angular.extend(item, {
+                        disableSelection: vm.hasViewOnlyAccess(),
                         radname: "property",
                         productId: productId,
                         originalProperty: item.isAssigned
@@ -262,11 +212,11 @@
                             }
                         }
                     }
-                    if(productId == "44" && item.propertiesList){
+                    if (productId == "44" && item.propertiesList) {
                         var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
                             return prop.isAssigned === true;
                         });
-                        item.assignedProperties = assignedPropertiesCount.length +" of "+ item.propertiesList.length;
+                        item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
                     }
                 });
 
@@ -410,10 +360,6 @@
                 vm.dataPropReq.$cancelRequest();
             }
 
-            if (vm.dmdataPropReq) {
-                vm.dmdataPropReq.$cancelRequest();
-            }
-
             propertiesGrid.destroy();
             propertiesGridTransform.destroy();
             propertiesGridPagination.destroy();
@@ -444,7 +390,6 @@
             "productDataSyncManager",
             "productPropertiesSvc",
             "rpSwitchConfig",
-            "DMAdditionalDataSvc",
             ProductPropertiesGridCtrl
         ]);
 })(angular);

@@ -55,6 +55,7 @@
             s.presetRoleList = [];
             s.sidePanelDataList = [];
             s.asidePropertyList = [];
+            s.canReceiveMonthlyReport = false;
 
         };
 
@@ -323,8 +324,18 @@
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return activeTab;
         };
+
+        p.getCanReceiveMonthlyReport = function() {
+            var s = this;
+            return s.canReceiveMonthlyReport;
+        };
         // Setters
 
+        p.setCanReceiveMonthlyReport = function(bool) {
+            var s = this;
+            s.canReceiveMonthlyReport = bool;
+            pubsub.publish("diq.canReceiveMonthlyReport",bool);
+        };
 
         p.setPropertyList = function (list, key) {
             var s = this;

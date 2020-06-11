@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, dmDataSvc, pubsub) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, pubsub) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -29,7 +29,6 @@
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
-            pubsub.subscribe("dd.loaddepartments", vm.loadDMData);
         };
 
         vm.isActive = function () {
@@ -70,8 +69,7 @@
 
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
-            if (productId !== 20) {
-                pgGrid.busy(true);
+            pgGrid.busy(true);
                 if (persona.isReady() && vm.isActive()) {
                     var propertyGrpData = syncMgr.getProductPropertyGroupData(productId);
 
@@ -90,47 +88,6 @@
                         vm.loadGridData(productId);
                     }
                 }
-            }
-
-        };
-
-        vm.loadDMData = function (roleId) {
-            var productId = 20;
-            logc("pgGrid vm", vm, pgGrid, roleId);
-            if (pgGrid === undefined) {
-                pgGrid = gridModel();
-                pgGridTransform = gridTransformSvc();
-                pgGridPagination = gridPaginationModel();
-                vm.grid = pgGrid;
-                var config = syncMgr.getProductGridConfig(productId, "PropertyGroup");
-                pgGridTransform.watch(pgGrid);
-                pgGrid.setConfig(config);
-                pgGridPagination.setGrid(pgGrid);
-                //$scope.pgGridPagination = pgGridPagination;
-
-                pgGridPagination.setConfig({
-                    recordsPerPage: 25
-                });
-            }
-            logc("pgGrid", pgGrid, vm);
-            pgGrid.busy(true);
-            if (persona.isReady() && vm.isActive()) {
-                var propertyData = syncMgr.getProductPropertyGroupData(productId);
-
-                if (propertyData === undefined) {
-
-                    var params = {
-                        userPersonaId: userDetailsModel.getPersonaId(),
-                        editorPersonaId: persona.getId(),
-                        roleId: roleId
-                    };
-
-                    vm.dmdataPropReq = dmDataSvc.get(params, vm.setPropertyGroupData);
-                }
-                else {
-                    vm.loadGridData(productId);
-                }
-            }
         };
 
         vm.loadGridData = function (productId) {
@@ -139,18 +96,9 @@
             var propData = syncMgr.getProductPropertyGroupData(productId);
 
             if (propData && propData.length > 0) {
-                if (vm.hasViewOnlyAccess()) {
-                    propData.forEach(function (item) {
-                        angular.extend(item, {
-                            disabled: false,
-                            radname: "propertyGroup"
-                        });
-                        item.disabled = true;
-                    });
-                }
-
                 propData.forEach(function (item) {
                     angular.extend(item, {
+                        disableSelection: vm.hasViewOnlyAccess(),
                         radname: "propertyGroup",
                         productId: productId,
                         originalProperty: item.isAssigned
@@ -195,10 +143,6 @@
                 vm.dataPropReq.$cancelRequest();
             }
 
-            if (vm.dmdataPropReq) {
-                vm.dmdataPropReq.$cancelRequest();
-            }
-
             pgGridTransform.destroy();
             pgGridPagination.destroy();
             pgGrid = undefined;
@@ -225,7 +169,6 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
-            "DMAdditionalDataSvc",
             "pubsub",
             ProductPropertyGroupsGridCtrl
         ]);

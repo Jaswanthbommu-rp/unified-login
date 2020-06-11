@@ -29,7 +29,7 @@
             vm.isSelectAllPropMsg2 = false;
             vm.allProperties = false;
             vm.showAllPropertiesSwtich = false;
-            vm.propertySelect =  '';
+            vm.propertySelect = '';
 
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
@@ -68,7 +68,7 @@
         };
 
         vm.accessTypeChange = function (accessType) {
-            if(accessType === 'specificProperties') {
+            if (accessType === 'specificProperties') {
                 vm.propertySelect = 'property';
             }
             else {
@@ -79,20 +79,20 @@
         };
 
         vm.resetDataModel = function (accessType) {
-            if(accessType === 'propertyGroup') {
+            if (accessType === 'propertyGroup') {
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
-            else if(accessType === 'property') {
+            else if (accessType === 'property') {
                 syncMgr.clearPropertyGroupData($scope.$parent.productId);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
-            else if(accessType === 'allProperties') {
+            else if (accessType === 'allProperties') {
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
             }
             vm.propertySelect = accessType;
             var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, accessType);
-            if(dependencyControlId > 0){
+            if (dependencyControlId > 0) {
                 vm.loadProductControlDependencyData(dependencyControlId);
             }
             pubsub.publish("ppanel.access-type-change", accessType);
@@ -147,12 +147,11 @@
                 logc("vm.rpRoleSelected", vm.rpRoleSelected);
             }
 
-            if(productId == 16 && vm.propertySelect !== undefined) {
+            if (productId == 16 && vm.propertySelect !== undefined) {
                 vm.rpRoleSelected = vm.propertySelect;
             }
             var presetroleData = syncMgr.getProductPresetRolesData(productId);
-            //vm.setSelectTypeConfig();
-            //logc("l2lroledata", roleData, presetroleData, rolesGrid);
+
             if (roleData && roleData.length > 0) {
                 roleData.forEach(function (item) {
                     angular.extend(item, {
@@ -173,7 +172,7 @@
                     }
                 });
 
-                var controlDependencyValue = (productId === 16 && vm.propertySelect == '') ? 'property' : 'role' ;
+                var controlDependencyValue = (productId === 16 && vm.propertySelect == '') ? 'property' : 'role';
                 var dependencyControlId = syncMgr.getProductDependencyControlId(productId, controlDependencyValue);
 
                 if (dependencyControlId > 0) {
@@ -238,10 +237,27 @@
         vm.setRolesData = function (resp) {
             rolesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
+                if ($scope.$parent.productId == 47) {
+                    var userPersonaId = userDetailsModel.getPersonaId();
+                    if (userPersonaId === 0) {
+                        resp.records.forEach(function (role) {
+                            if (role.id === 'agent') {
+                                role.isAssigned = true;
+                            }
+                        });
+                    }
+
+                    var reportValue = userPersonaId === 0 ? true : resp.additional.canReceiveMonthlyReport;
+                    syncMgr.setCanReceiveMonthlyReport(reportValue);
+                }
+
                 var rdata = syncMgr.setRoleList(resp.records, $scope.$parent.productId);
                 if (resp.additional && resp.additional.presets) {
                     syncMgr.setPresetRoleList(resp.additional.presets, $scope.$parent.productId);
                 }
+
+
+
                 vm.loadGridData($scope.$parent.productId);
             }
 
@@ -294,18 +310,15 @@
                         }
                     });
                 }
-                else if (productId == 20) {
-                    vm.setDocumentDirectorDynamicTabs(tabs, resp);
-                }
-                else if(productId == 16) {
+                else if (productId == 16) {
                     var irreleventTab = resp.data[0];
                     var relevantTab = [];
                     var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
 
                     relevantTab = allTab.filter(function (data) {
-                            return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
+                        return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
                     });
-                    if(vm.propertySelect == '') {
+                    if (vm.propertySelect == '') {
                         relevantTab = relevantTab.filter(function (data) {
                             return data.id.toLowerCase() !== 'properties';
                         });
@@ -313,20 +326,27 @@
                     vm.setProductTabs(relevantTab);
                     matchFound = true;
                 }
-                else if(productId == 17 || productId == 26 || productId == 18) {
+                else if (productId == 17 || productId == 26 || productId == 18 || productId == 47) {
                     var releventTabs = [];
                     var rpTabs = [];
                     var rpRoleName = "";
-                    if(vm.rpRoleSelected){
-                            rpRoleName = vm.rpRoleSelected.name.toLowerCase();
-                            releventTabs = resp.data.filter(function (data) {
-                                return data.masterControlValue.toLowerCase() == rpRoleName;
-                            });
-
+                    if (vm.rpRoleSelected) {
+                        rpRoleName = vm.rpRoleSelected.name.toLowerCase();
+                        var tabsData = $filter("orderBy")(resp.data, "slaveControlId");
+                        releventTabs = tabsData.filter(function (data) {
+                            return data.masterControlValue.toLowerCase() == rpRoleName;
+                        });
                     }
 
                     if (releventTabs.length > 0) {
                         var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                        logc("allTabs", releventTabs, allTabs, $scope.$parent.productId);
+                        // if (productId == 47) {
+                        //     var roleTab = allTabs.find(function (item) {
+                        //         return item.text === "Roles";
+                        //     });
+                        //     rpTabs.push(roleTab);
+                        // }
                         releventTabs.forEach(function (tb) {
                             var rpTab = allTabs.find(function (item) {
                                 return item.text === tb.displayName;
@@ -337,7 +357,6 @@
                         });
                         vm.setProductTabs(rpTabs);
                         matchFound = true;
-
                     }
                     else {
                         vm.setProductTabs(tabs);
@@ -386,56 +405,6 @@
             }
         };
 
-        vm.setDocumentDirectorDynamicTabs = function (intialTabs, resp) {
-            var productId = 20;
-            var ddTabs = [];
-            var ddreleventTabs = [];
-            var ddtabName = [];
-            var rolesData = syncMgr.getProductRolesData(productId);
-
-            if (rolesData !== undefined && rolesData.length) {
-                ddreleventTabs.push("roles");
-                rolesData.forEach(function (role) {
-                    if (role.isAssigned) {
-                        var ddRoleType = role.roletype;
-
-                        if (ddRoleType !== undefined) {
-                            ddtabName = resp.data.filter(function (data) {
-                                return data.masterControlValue.toLowerCase() == ddRoleType.toLowerCase();
-                            });
-
-                            if (ddtabName !== undefined) {
-                                var record = ddreleventTabs.filter(function (data) {
-                                    return ddtabName[0].displayName.toLowerCase() === data;
-                                })[0];
-
-                                if (record === undefined) {
-                                    ddreleventTabs.push(ddtabName[0].displayName.toLowerCase());
-                                }
-                            }
-                        }
-                    }
-                });
-
-                if (ddreleventTabs.length > 0) {
-                    var allDDTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
-                    ddreleventTabs.forEach(function (tb) {
-                        var ddTab = allDDTabs.find(function (item) {
-                            return item.text.toLowerCase() === tb;
-                        });
-                        if (ddTab != undefined) {
-                            ddTabs.push(ddTab);
-                        }
-                    });
-
-                    vm.setDMProductTabs(ddTabs, vm.rpRoleSelected.id);
-                }
-                else {
-                    vm.setProductTabs(intialTabs);
-                }
-            }
-        };
-
         vm.setProductTabs = function (tabs) {
             var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
             tabsModel.setTabs(tabs);
@@ -443,33 +412,17 @@
             tabsModel.activateTab(activeTab).initActiveTab();
         };
 
-        vm.setDMProductTabs = function (tabs, roleId) {
-            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
-            tabsModel.setTabs(tabs);
-            tabsModel.setTabMenuData(tabs);
-            tabsModel.activateTab(activeTab).initActiveTab();
-
-            tabs.forEach(function (tab) {
-                if (tab.id === "departments") {
-                    pubsub.publish("dd.loaddepartments", vm.rpRoleSelected.id);
-                }
-                else if (tab.id === "properties") {
-                    pubsub.publish("dd.loadproperties", vm.rpRoleSelected.id);
-                }
-            });
-        };
-
         vm.updateRoleRecords = function (record) {
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
             vm.isSelectAllPropMsg1 = false;
             vm.isSelectAllPropMsg2 = false;
-            if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26") {
+            if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26" || record.productId == "47") {
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
                 if (record.productId == "17") {
                     vm.rpRoleSelected = record;
                     vm.allProperties = false;
                 }
-                else if (record.productId == "26") {
+                else if (record.productId == "26" || record.productId == "47") {
                     vm.rpRoleSelected = record;
                 }
                 else if (record.productId == "18") {
@@ -486,7 +439,6 @@
                         }
                     }
                     vm.rpRoleSelected = record;
-
                 }
                 else {
                     if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
@@ -505,14 +457,6 @@
         vm.updateMultiSelectRoleRecords = function (record) {
             if (record) {
                 syncMgr.multiSelectedRoleSync(record.productId, record);
-                logc("dd record", record);
-                if (record.productId == 20) {
-                    vm.rpRoleSelected = record;
-                    var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
-                    if (dependencyControlId > 0) {
-                        vm.loadProductControlDependencyData(dependencyControlId);
-                    }
-                }
             }
         };
 

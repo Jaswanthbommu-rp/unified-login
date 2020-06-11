@@ -231,9 +231,6 @@
                             else if(tabName === "AdditionalRights"){
                                 tabName = "Rights";
                             }
-                            // else if (tabName === "BenchmarkingRole" || tabName === "Areas") {
-                            //     tabName = "ProductTab6";
-                            // }
 
                             tabGrp.controls.forEach(function (tab) {
                                 if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
