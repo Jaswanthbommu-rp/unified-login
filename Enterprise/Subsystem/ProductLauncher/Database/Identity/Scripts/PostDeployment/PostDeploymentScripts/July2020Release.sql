@@ -719,28 +719,25 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 	
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (129, 219, N'Default', N'True', @UserId, @Now)
+	VALUES (128, 518, N'Default', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (130, 518, N'Default', N'True', @UserId, @Now)
+	VALUES (129, 519, N'Default', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (131, 519, N'Default', N'True', @UserId, @Now)
+	VALUES (130, 520, N'Default', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (132, 520, N'Default', N'True', @UserId, @Now)
+	VALUES (131, 521, N'Default', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (133, 521, N'Default', N'True', @UserId, @Now)
+	VALUES (132, 522, N'ShowSelectAll', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (134, 522, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (133, 527, N'ShowSelectAll', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (135, 527, N'ShowSelectAll', N'True', @UserId, @Now)
-	
-	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (136, 534, N'ShowSelectAll', N'False', @UserId, @Now)
+	VALUES (134, 534, N'ShowSelectAll', N'False', @UserId, @Now)
 	
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 	
