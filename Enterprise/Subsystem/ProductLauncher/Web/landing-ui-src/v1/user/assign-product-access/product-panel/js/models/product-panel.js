@@ -42,12 +42,16 @@
                     propertyGroup: [],
                     removedPropertyList: [],
                     messageGroups: [],
+                    companiesList: [],
                     Notifications: {
                         managerFdiViaEmail: false,
                         amenitiesViaEmail: false,
                         managerMrViaEmail: false,
                     },
-                    isAssignedNewPropertyByDefault: false
+                    isAssignedNewPropertyByDefault: false,
+                    hasAccessToSiteSpendManagementOnly: false,
+                    hasAccessToAllCurrentFutureProperties: false,
+                    isAccountingAdmin: false
                 }
             };
 
@@ -126,7 +130,8 @@
                 hasPropertySelected = false,
                 hasPropertyGroupSelected = false,
                 aoFamilyProduct = false,
-                hasPropertyRoles = false;
+                hasPropertyRoles = false,
+                isMConsole = false;
 
             s.batchData = angular.copy(s._batchData);
             var roles = "";
@@ -143,6 +148,19 @@
             var notifications = "";
             if(productId == "17" || productId == "16"){
                 notifications = dataSyncManager.getProductNotificationsData(productId);
+            }
+
+            if(productId == "8"){
+                var additionalData = dataSyncManager.getProductAdditionalData(productId);
+                s.batchData.inputJson.hasAccessToAllCurrentFutureProperties = additionalData['hasAccessToAllCurrentFutureProperties'];
+                s.batchData.inputJson.hasAccessToSiteSpendManagementOnly = additionalData['hasAccessToSiteSpendManagementOnly'];
+                s.batchData.inputJson.isAccountingAdmin = additionalData['isAccountingAdmin'];
+                isMConsole = additionalData["isMConsolePMC"];
+                if (s.batchData.inputJson.hasAccessToAllCurrentFutureProperties || properties.length === 0) {
+                    s.batchData.inputJson.propertyList.push("all");
+                    s.batchData.inputJson.companiesList.push("all");
+                    dataSyncManager.updateProductAllProperties(productId,true);
+                }
             }
             
             var bmroles = "";
@@ -209,10 +227,21 @@
                             }
                         });
 
-                    }else{
+                    }
+                    else{
                         properties.forEach(function (prop) {
                             if (prop.isAssigned) {
-                                s.batchData.inputJson.propertyList.push(prop.id);
+                                if(productId == 8){
+                                    if(prop.propertyId !== "") {
+                                        s.batchData.inputJson.propertyList.push(prop.companyId + "|" + prop.propertyId);
+                                    }
+                                    else{
+                                        s.batchData.inputJson.propertyList.push(prop.companyId);
+                                    }
+                                }
+                                else{
+                                    s.batchData.inputJson.propertyList.push(prop.id);
+                                }
                             }
                             if (!prop.isAssigned && prop.originalProperty) {
                                 s.batchData.inputJson.removedPropertyList.push(prop.id);
@@ -248,6 +277,11 @@
                             };
                             s.batchData.inputJson.propertyGroup.push(newGroup);
                         }
+                        else if(productId == "8"){
+                            if(isMConsole && s.batchData.inputJson.companiesList[0] != "all"){
+                                s.batchData.inputJson.companiesList.push(group.id);
+                            }
+                        }
                         else{
                             s.batchData.inputJson.regionList.push(group.id);
                         }
@@ -258,6 +292,9 @@
                 }
                 else if(productId == "16"){
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroup.length > 0;
+                }
+                else if(productId == "8"){
+                    hasPropertyGroupSelected = s.batchData.inputJson.companiesList.length > 0;
                 }
                 else{
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
@@ -326,6 +363,30 @@
             
             if (productId == "39" || productId == "24" || (productId == "16" && hasPropertyGroupSelected)) {
                 hasPropertySelected = true;
+            }
+
+            if(productId == "8"){
+                var companySelectedWithProp = true;
+                if(!isMConsole){
+                    s.propertyGroups.forEach(function(comp){
+                        if (comp.isAssigned === false){
+                            properties.forEach(function(prop){
+                                if (prop.companyId === comp.id) {
+                                    if (prop.isAssigned) {
+                                        companySelectedWithProp = false;
+                                        return;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+                if(!isMConsole && hasRoleSelected && hasPropertySelected){
+                    return s.batchData;
+                }
+                else if (hasPropertyGroupSelected && hasRoleSelected && hasPropertySelected && companySelectedWithProp) {
+                    return s.batchData;
+                 }
             }
             
             if (hasRoleSelected && hasPropertySelected) {
