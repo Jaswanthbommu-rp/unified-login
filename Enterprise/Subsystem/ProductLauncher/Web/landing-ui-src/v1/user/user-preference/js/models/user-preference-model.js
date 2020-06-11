@@ -23,10 +23,9 @@
     p.bindCategories = function (categories, products) {
       var s = this;
       var productInfo = products.products.concat(products.resources);
-      // var result = categories.filter(function(n) {
-      //   return productInfo.find(function(item){ return item.productCode === n.productCode;});
-      // });
-      var result = categories;
+      var result = categories.filter(function(n) {
+        return productInfo.find(function(item){ return item.productCode === n.productCode;});
+      });
       s.data.masterData = result;
       var uniqueData = _.uniq(result, "productTileId");
       var productsData = [];
