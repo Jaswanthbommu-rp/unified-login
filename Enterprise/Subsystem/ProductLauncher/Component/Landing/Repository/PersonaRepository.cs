@@ -124,6 +124,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona = repository.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, param);
             }
 
+            //IList<Organization> organizationList = _organizationRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
+            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
+            Organization organization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
+            if (organization != null)
+            {
+                persona.Organization = organization;
+            }
+
             if (withRights)
             {
                 persona = AddRightsToPersona(persona);
@@ -137,13 +145,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (persona == null) return null;
 
             persona.hasViewOnlySupportToolAccess = false;
-            //IList<Organization> organizationList = _organizationRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
-            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
-            Organization organization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
-            if (organization != null)
-            {
-                persona.Organization = organization;
-            }
 
             System.Security.Claims.ClaimsPrincipal currentClaimPrincipal = System.Security.Claims.ClaimsPrincipal.Current;
             DefaultUserClaim userClaim = new DefaultUserClaim(currentClaimPrincipal);

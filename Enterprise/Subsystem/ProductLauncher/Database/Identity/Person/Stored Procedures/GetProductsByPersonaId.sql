@@ -16,6 +16,11 @@ BEGIN
 	UNION
 	SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1
 
+	if 2 = ( select count(1) from @CompanyOrganizationProduct WHERE ProductId in ( 19, 36 ) )
+	begin
+		delete from @CompanyOrganizationProduct where ProductId = 19
+	end
+
 	IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )
 	BEGIN
 		INSERT INTO @CompanyOrganizationProduct ( ProductId )

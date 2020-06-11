@@ -27,6 +27,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         Persona GetPersona(long personaId);
 
         /// <summary>
+        /// Get Persona by Persona Id but only include rights if needed
+        /// </summary>
+        /// <param name="personaId">Persona Id</param>
+        /// <param name="withRights">Should the rights also be included</param>
+        /// <returns>Persona Object</returns>
+        Persona GetPersonaWithRightsToggle(long personaId, bool withRights = false);
+
+        /// <summary>
         /// List Persona by Enterprise UserId
         /// </summary>
         /// <param name="realPageId">Person Enterprise Id</param>

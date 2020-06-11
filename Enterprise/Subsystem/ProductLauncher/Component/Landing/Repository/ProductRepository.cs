@@ -403,7 +403,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             AddAdditionalProduct(persona, listProductUI, userProducts, ProductEnum.PropertyPhotos, isFavouriteProducts.Any(p => p == ProductEnum.PropertyPhotos));
                         }
                     }
-
                 }
             }
 

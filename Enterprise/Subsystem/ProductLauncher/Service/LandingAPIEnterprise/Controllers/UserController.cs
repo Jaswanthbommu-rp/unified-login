@@ -752,7 +752,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             IManagePerson personLogic = new ManagePerson();
             IManageProduct manageProduct = new ManageProduct(_userClaims);
 
-            Persona persona = managePersona.GetPersona(personaId);
+            if (personaId == 0)
+            {
+                personaId = _userClaims.PersonaId;
+            }
+
+            Persona persona = managePersona.GetPersonaWithRightsToggle(personaId, false);
             if (persona != null)
             {
                 var person = personLogic.GetPerson(persona.RealPageId);
