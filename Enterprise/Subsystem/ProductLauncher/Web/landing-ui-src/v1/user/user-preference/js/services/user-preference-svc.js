@@ -6,7 +6,7 @@
 
     svc.getCategories = function () {
      return http.get(ENV.notificationsApiRoot + "/User/preferences/categories");
-        
+
     };
 
     svc.getLookupData = function () {
@@ -23,7 +23,7 @@
 
     svc.getUserProducts = function (realPageId) {
 
-        var url = ENV.landingAPI + "user/" + realPageId + "/products",
+        var url = ENV.landingAPI + "api/user/" + realPageId + "/products",
         actions = {
           get: {
             method: "GET",
@@ -34,16 +34,20 @@
       return $resource(url, {}, actions);
     };
 
-    svc.updatePeferences = function (request) {
-      return $resource(
-        ENV.notificationsApiRoot + "/User/preferences",
-        request,
-        {
-          update: {
-            method: "PUT",
-          },
-        }
-      );
+    svc.updatePeferences = function () {
+      var url, defaults, actions;
+
+       defaults = {};
+
+       url = ENV.notificationsApiRoot + "/User/preferences";
+       actions = {
+            update: {
+                method: "PUT",
+                cancellable: true
+            }
+        };
+
+        return $resource(url, defaults, actions);
     };
   }
 

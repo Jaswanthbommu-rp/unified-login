@@ -9,7 +9,10 @@
     border-bottom: 1px solid lightgray;
     border-bottom-width: 1px;
 }
-.product-type:hover {background: #e5f4ff}
+
+.product-type:hover {
+    background: #e5f4ff
+}
 
 .font-medium {
     font-weight: 500;
@@ -37,6 +40,11 @@
 
 .icon-color {
     color: #c9cdcf;
+}
+
+.form-label {
+    @include form-label;
+    display: block;
 }
 
 .product-list {

@@ -76,7 +76,7 @@
       vm.saveReq = $q.defer();
       var request = [];
       if(model.data.masterData && model.data.masterData.length){
-          model.data.updateMasterData();
+          model.updateMasterData();
           model.data.masterData.forEach(function (item) {
             item.userPreferences.forEach(function (preference) {
               request.push({
