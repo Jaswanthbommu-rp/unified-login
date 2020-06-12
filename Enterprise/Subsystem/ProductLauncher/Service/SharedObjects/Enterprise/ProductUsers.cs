@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise
 {
@@ -31,5 +27,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
         /// </summary>
         public string LastName { get; set; }
 
+        /// <summary>
+        /// PersonaId
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? PersonaId { get; set; }
+        [JsonIgnore]
+        public int TotalRecords { get; set; }
     }
 }
