@@ -189,14 +189,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 	    /// </summary>
 	    IList<GbProductMap> GetAllProducts();
 
-        /// <summary>
-        /// Search by company and product ids and returns userlist
-        /// </summary>
         /// <param name="datafilter"></param>
         /// <param name="companyId"></param>
         /// <param name="products"></param>
+        /// <param name="version"></param>
+        /// <param name="rowsPerPage"></param>
+        /// <param name="pageNumber"></param>
         /// <returns>List of Users by product or company</returns>
-        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products);
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, int version, int rowsPerPage, int pageNumber);
 
         /// <summary>
         /// Get Unified Login mapping PersonaId for Product UserId by company and product id
