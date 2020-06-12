@@ -36,13 +36,7 @@ Enterprise/Subsystem/ProductLauncher/Web/landing-ui-src/v1/lib/
 Enterprise/Subsystem/ProductLauncher/Web/landing-ui-src/v1/user/lib/
 Enterprise/Subsystem/ProductLauncher/Web/landing-ui-src/new-user/lib/
 
-Enterprise/Subsystem/ProductLauncher/Web/landing/3rdparty*
-Enterprise/Subsystem/ProductLauncher/Web/landing/4*
-Enterprise/Subsystem/ProductLauncher/Web/landing/5*
-Enterprise/Subsystem/ProductLauncher/Web/landing/6*
-Enterprise/Subsystem/ProductLauncher/Web/landing/7*
-Enterprise/Subsystem/ProductLauncher/Web/landing/8*
-Enterprise/Subsystem/ProductLauncher/Web/landing/9*
+Enterprise/Subsystem/ProductLauncher/Web/landing/[0-9]*
 Enterprise/Subsystem/ProductLauncher/Web/landing/index.html
 Enterprise/Subsystem/ProductLauncher/Web/landing/main.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/oidc-*
@@ -50,6 +44,7 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/polyfills.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/runtime.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/scripts.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/styles.*
+Enterprise/Subsystem/ProductLauncher/Web/landing/common.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/summernote.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/omnibar-silent-refresh.html
 
