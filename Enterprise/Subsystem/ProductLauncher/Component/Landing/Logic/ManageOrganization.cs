@@ -511,28 +511,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private static bool AddProductToList(string product, List<ProductEnum> addProductList)
         {
             bool foundProduct = false;
-            foreach (var pi in typeof(BlueBookProductConstants).GetFields())
+            try
             {
-                if (product.ToUpper() == pi.GetValue(pi).ToString())
-                {
-                    // found product, so add it to the list to add to the company
-                    // get the product id from the product enum
-                    foreach (var pr in typeof(ProductEnum).GetFields())
-                    {
-                        if (pr.Name.ToUpper() == pi.Name.ToUpper())
-                        {
-                            foundProduct = true;
-                            addProductList.Add((ProductEnum)Enum.Parse(typeof(ProductEnum), pr.Name));
-                            break;
-                        }
-                    }
-                    break;
-                }
+                ProductEnum productEnum = ProductEnumHelper.GetProductEnumByProductCode(product);
+
+                foundProduct = true;
+                addProductList.Add(productEnum);
             }
+            catch (Exception ex)
+            {
+            }
+
             return foundProduct;
         }
 
-        		/// <summary>
+        /// <summary>
 		/// Used to add a product to an organization
 		/// </summary>
 		/// <param name="addProductList">Product List</param>

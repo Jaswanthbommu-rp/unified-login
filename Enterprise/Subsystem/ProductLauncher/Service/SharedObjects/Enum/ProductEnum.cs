@@ -280,6 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Yieldstar - THIS IS NOT REQUIRED
 		/// </summary>
+		[Description("YS")]
 		Yieldstar = 7, //TODO: This can be replaced with some other products
 
 		/// <summary>
@@ -303,6 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Social
 		/// </summary>
+		[Description("??")]
 		Social = 11,
 
 		/// <summary>
@@ -368,6 +370,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// OneSiteConversions
 		/// </summary>
+		[Description("OSC")]
 		OneSiteConversions = 21,
 
 		/// <summary>
