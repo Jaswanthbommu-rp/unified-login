@@ -20,6 +20,11 @@
       return s.data;
     };
 
+    p.isDirty = function () {
+        var s = this;
+        return !angular.equals(s.data, s._data);
+    };
+
     p.bindCategories = function (categories, products) {
       var s = this;
       var productInfo = products.products.concat(products.resources);
@@ -43,7 +48,7 @@
         items: productsData,
       });
 
-      s.getTypeListData(productsData.length > 0 ? productsData[0].name : "");
+      s.getTypeListData(productsData.length > 0 ? productsData[0].name : "", true);
       return s;
     };
 
@@ -59,7 +64,7 @@
       return s;
     };
 
-    p.getTypeListData = function (name) {
+    p.getTypeListData = function (name, flag) {
       var s = this;
       if (s.data.typeData && s.data.typeData.length > 0) {
         s.data.typeData.forEach(function (typeData) {
@@ -130,6 +135,9 @@
           });
         }
       });
+      if(flag){
+          s._data = angular.copy(s.data);
+      }
       return s;
     };
 

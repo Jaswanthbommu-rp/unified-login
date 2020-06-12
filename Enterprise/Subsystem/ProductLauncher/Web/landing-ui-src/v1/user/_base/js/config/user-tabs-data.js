@@ -43,7 +43,7 @@
             isActive: false,
             id: "userPreference",
             text: "User Preference",
-            templateUrl: "user/user-preference/index.html"
+            templateUrl: "user/user-preference/templates/index.html"
         }
     };
 
