@@ -1,19 +1,12 @@
 (function (angular, undefined) {
   "use strict";
 
-  function UserPreferenceSvc(ENV, $resource) {
+  function UserPreferenceSvc(ENV, $resource, http) {
     var svc = this;
 
     svc.getCategories = function () {
-      var url = ENV.notificationsApiRoot + "/User/preferences/categories",
-        actions = {
-          get: {
-            method: "GET",
-            cancellable: true,
-          },
-        };
-
-      return $resource(url, {}, actions);
+     return http.get(ENV.notificationsApiRoot + "/User/preferences/categories");
+        
     };
 
     svc.getLookupData = function () {
@@ -56,5 +49,5 @@
 
   angular
     .module("settings")
-    .service("UserPreferenceSvc", ["ENV", "$resource", UserPreferenceSvc]);
+    .service("UserPreferenceSvc", ["ENV", "$resource","$http", UserPreferenceSvc]);
 })(angular);

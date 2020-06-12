@@ -49,8 +49,7 @@
 
 
     vm.getCategories = function () {
-      svc.getLookupData().then(vm.bindLookUpData);
-
+      svc.getLookupData().get(vm.bindLookUpData);
       svc.getCategories().then(vm.bindCategries);
     };
 
@@ -61,7 +60,7 @@
 
     vm.bindCategries = function (resp) {
       var realPageId = session.getRealPageId();
-      svc.getUserProducts(realPageId).then(function (products) {
+      svc.getUserProducts(realPageId).get(function (products) {
         model.bindCategories(resp, products);
       });
     };
@@ -86,7 +85,7 @@
               });
             });
           });
-          svc.updatePeferences(request).then(vm.onSaveSuccess, vm.onSaveError);
+          svc.updatePeferences(request).update(vm.onSaveSuccess, vm.onSaveError);
       }
       return vm.saveReq.promise;
     };
