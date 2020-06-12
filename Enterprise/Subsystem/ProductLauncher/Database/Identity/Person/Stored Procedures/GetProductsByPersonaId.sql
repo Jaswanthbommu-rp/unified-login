@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Person].[GetProductsByPersonaId]
+﻿CREATE or alter PROCEDURE [Person].[GetProductsByPersonaId]
 	@PersonaId int = 0,
 	@StatusTypeId int = 8
 AS
@@ -16,19 +16,28 @@ BEGIN
 	UNION
 	SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1
 
-	if 2 = ( select count(1) from @CompanyOrganizationProduct WHERE ProductId in ( 19, 36 ) )
-	begin
-		delete from @CompanyOrganizationProduct where ProductId = 19
-	end
+	IF 2 = ( select count(1) from @CompanyOrganizationProduct WHERE ProductId in ( 19, 36 ) )
+	BEGIN
+		DELETE FROM @CompanyOrganizationProduct where ProductId = 19
+	END
 
 	IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )
 	BEGIN
 		INSERT INTO @CompanyOrganizationProduct ( ProductId )
 			Select ProductId from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )
+		DELETE FROM @CompanyOrganizationProduct WHERE ProductId = 4
 	END	
 
 	;with ProductSettings AS (
-		select ps.productid, pst.name, ps.value from enterprise.ProductSetting ps inner join enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId where pst.name in ( 'isresource', 'isnewtab', 'ProductUrl', 'ShowInAppSwitcher' )
+		SELECT ps.productid, pst.name, ps.value from enterprise.GlobalProductConfiguration GPC 
+			INNER JOIN Enterprise.ProductConfiguration PC on GPC.ConfigurationId = PC.ConfigurationId
+			INNER JOIN enterprise.ProductSetting ps ON PC.ProductSettingId = PS.ProductSettingId
+			INNER JOIN enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId 
+		WHERE
+			pst.name in ( 'isresource', 'isnewtab', 'ProductUrl', 'ShowInAppSwitcher' )
+			AND gpc.ThruDate is null
+			AND pc.ThruDate is null
+			AND ps.ThruDate is null
 	)
 	SELECT 
 		PC.ProductId
@@ -52,12 +61,13 @@ BEGIN
 		INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId
 		LEFT OUTER JOIN ProductSettings ps1 on ps1.ProductId = p.ProductId and ps1.name = 'IsNewTab'
 		LEFT OUTER JOIN ProductSettings ps2 on ps2.ProductId = p.ProductId and ps2.name = 'IsResource'
-		LEFT OUTER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'
+		INNER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'
 		LEFT OUTER JOIN ProductSettings ps4 on ps4.ProductId = p.ProductId and ps4.name = 'ShowInAppSwitcher'
 	where 
 		PC.PersonaId = @PersonaId
 		AND PC.ThruDate IS NULL
 		AND PC.StatusTypeId = @StatusTypeId
+		--AND ps3.Value IS NOT NULL
 	UNION
 	SELECT
 		pr.ProductId

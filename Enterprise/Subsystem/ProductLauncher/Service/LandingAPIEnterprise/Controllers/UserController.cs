@@ -1186,7 +1186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Id = prodDetail.ProductId,
                         Name = prodDetail.Name,
                         Description = prodDetail.Description,
-                        Url = prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
+                        Url = prodDetail.Url != null && prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
                         Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.FamilyName,
