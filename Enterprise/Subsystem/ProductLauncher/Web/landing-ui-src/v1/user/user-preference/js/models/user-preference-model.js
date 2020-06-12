@@ -64,25 +64,32 @@
       return s;
     };
 
+    p.updateMasterData=function(){
+        var s = this;
+        if (s.data.typeData && s.data.typeData.length > 0) {
+            s.data.typeData.forEach(function (typeData) {
+                typeData.catArray.forEach(function (item) {
+                var index = s.data.masterData.findIndex(function (masterdata) {
+                  return masterdata.id === item.id;
+                });
+                if(index>-1){
+                s.data.masterData[index].userPreferences.forEach(function (pref) {
+                pref.isEnabled =
+                    pref.preferenceId === 1 ? item.preferenceInfo === 2 || item.preferenceInfo === 1
+                    : pref.preferenceId === 2?  item.preferenceInfo === 2
+                    : false;
+                });
+               // s.data.masterData[index] = angular.copy(item);
+                }
+              });
+            });
+          }
+    }
+
     p.getTypeListData = function (name, flag) {
       var s = this;
       if (s.data.typeData && s.data.typeData.length > 0) {
-        s.data.typeData.forEach(function (typeData) {
-            typeData.catArray.forEach(function (item) {
-            var index = s.data.masterData.findIndex(function (masterdata) {
-              return masterdata.id === item.id;
-            });
-            if(index>-1){
-            s.data.masterData[index].userPreferences.forEach(function (pref) {
-            pref.isEnabled =
-                pref.preferenceId === 1 ? item.preferenceInfo === 2 || item.preferenceInfo === 1
-                : pref.preferenceId === 2?  item.preferenceInfo === 2
-                : false;
-            });
-           // s.data.masterData[index] = angular.copy(item);
-            }
-          });
-        });
+        s.updateMasterData();
       }
       s.data.typeData = [];
       var selectedProductInfo = s.data.masterData.filter(function (item) {

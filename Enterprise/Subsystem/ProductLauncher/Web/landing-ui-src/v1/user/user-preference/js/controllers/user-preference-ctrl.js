@@ -76,6 +76,7 @@
       vm.saveReq = $q.defer();
       var request = [];
       if(model.data.masterData && model.data.masterData.length){
+          model.data.updateMasterData();
           model.data.masterData.forEach(function (item) {
             item.userPreferences.forEach(function (preference) {
               request.push({
@@ -85,7 +86,7 @@
               });
             });
           });
-          svc.updatePeferences(request).update(vm.onSaveSuccess, vm.onSaveError);
+          svc.updatePeferences().update(request,vm.onSaveSuccess, vm.onSaveError);
       }
       return vm.saveReq.promise;
     };
