@@ -13,7 +13,7 @@
           },
         };
 
-      return $resource(url, {}, actions).get();
+      return $resource(url, {}, actions);
     };
 
     svc.getLookupData = function () {
@@ -25,7 +25,7 @@
           },
         };
 
-      return $resource(url, {}, actions).get();
+      return $resource(url, {}, actions);
     };
 
     svc.getUserProducts = function (realPageId) {
@@ -38,7 +38,7 @@
           },
         };
 
-      return $resource(url, {}, actions).get();
+      return $resource(url, {}, actions);
     };
 
     svc.updatePeferences = function (request) {
