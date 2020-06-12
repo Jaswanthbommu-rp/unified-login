@@ -1452,6 +1452,7 @@ AS
                              @StatusId = @Status_Right, 
                              @UserActionId = @UserActionID OUTPUT;
                 END;
+
                 SET @RoleId = NULL;
                 SET @PersonaId = NULL;
                 SELECT @RoleId = R.RoleID
@@ -1459,13 +1460,16 @@ AS
                      INNER JOIN Enterprise.RoleValueType RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
                 WHERE RVT.Value = 'User Administrator'
                       AND R.PartyID = @OrganizationId;
+
                 SELECT @PersonaId = P.PersonaId
                 FROM Ident.UserLogin UL
                      INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId
                      INNER JOIN Person.Persona P ON P.UserLoginPersonaId = ULP.UserLoginPersonaId--P.UserId = UL.UserId
                 WHERE UL.LoginName = @Email;
+
                 SELECT @PersonaId, 
                        @RoleId;
+
                 IF NOT EXISTS
                 (
                     SELECT 1
@@ -1473,12 +1477,37 @@ AS
                     WHERE PersonaId = @PersonaId
                           AND RoleID = @RoleId
                 )
-                    BEGIN
+                BEGIN
                         EXEC Enterprise.LinkPersonaToRole 
                              @PersonaID = @PersonaId, 
                              @RoleID = @RoleId, 
                              @PersonaPrivilgeID = @PerPriv OUTPUT;
                 END;
+				--INSERT all properties indicator for UPFM
+				IF NOT EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.PropertyMapping
+					WHERE PersonaId = @PersonaId
+					AND ProductId = 3
+				)
+				BEGIN
+					INSERT INTO Enterprise.PropertyMapping (
+						PersonaId,
+						PropertyId,
+						ProductId,
+						FromDate,
+						ThruDate
+					)
+					VALUES (
+						@PersonaId,
+						-1,
+						3,
+						@NOW,
+						NULL
+					)
+				END
+
                 UPDATE #HoldOrgs
                   SET 
                       PStatus = 1
