@@ -419,7 +419,7 @@ rownumber = 1
 and pc.isfavorite != ps.isfav
 
 GO
-update enterprise.product set assigntoallusers where productid in ( 3, 19, 27, 28, 21, 49 )
+update enterprise.product set assigntoallusers = 1 where productid in ( 3, 19, 28, 21, 49 )
 
 GO
 
