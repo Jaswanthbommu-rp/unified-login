@@ -1477,7 +1477,7 @@ AS
                     WHERE PersonaId = @PersonaId
                           AND RoleID = @RoleId
                 )
-                    BEGIN
+                BEGIN
                         EXEC Enterprise.LinkPersonaToRole 
                              @PersonaID = @PersonaId, 
                              @RoleID = @RoleId, 
