@@ -162,11 +162,18 @@
             var rpId = persona.getPersonaRealPageID();
             var compId = persona.getBooksMasterId();
             var notifications = {
-                            title: "Platform Notifications",
-                            pageId: "notifications",
-                            icon: "alarm-timeout",
-                            url: "../notifications/platform",                           
-                        };
+                title: "Configurations",
+                icon: "wrench-screwdriver",
+                pageId: "Configurations",
+                classname: "menu-3",
+                items: [
+                {
+                    linkId: "Notifications",
+                    title: "Notifications",
+                    url: "/home/notifications/configuration",
+                },
+                ]
+              };
 
              if (  (persona.hasnotificationsAccess()  ) ) {
 

@@ -23,7 +23,7 @@
 
     svc.getUserProducts = function (realPageId) {
 
-        var url = ENV.landingAPI + "/user/" + realPageId + "/products",
+        var url = ENV.landingAPI + "user/" + realPageId + "/products",
         actions = {
           get: {
             method: "GET",

@@ -54,8 +54,8 @@
 
     p.updatePreferenceList = function (resp) {
       var s = this;
+      s.data.userPreferencesList = [];
       resp.preferences.forEach(function (item) {
-        s.data.userPreferencesList = [];
         s.data.userPreferencesList.push({
           text: item.name,
           value: item.id.toString(),

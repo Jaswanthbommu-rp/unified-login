@@ -61,7 +61,7 @@
     vm.bindCategries = function (resp) {
       var realPageId = session.getRealPageId();
       svc.getUserProducts(realPageId).get(function (products) {
-        model.bindCategories(resp, products);
+        model.bindCategories(resp.data, products);
       });
     };
 
