@@ -2,23 +2,43 @@
   "use strict";
 
   function UserPreferenceSvc(ENV, $resource) {
-   
     var svc = this;
 
     svc.getCategories = function () {
-      return $resource(
-        ENV.notificationsApiRoot + "/User/preferences/categories"
-      ).get().$promise;
+      var url = ENV.notificationsApiRoot + "/User/preferences/categories",
+        actions = {
+          get: {
+            method: "GET",
+            cancellable: true,
+          },
+        };
+
+      return $resource(url, {}, actions).get();
     };
 
     svc.getLookupData = function () {
-      return $resource(ENV.notificationsApiRoot + "/Lookup").get().$promise;
+      var url = ENV.notificationsApiRoot + "/Lookup",
+        actions = {
+          get: {
+            method: "GET",
+            cancellable: true,
+          },
+        };
+
+      return $resource(url, {}, actions).get();
     };
 
     svc.getUserProducts = function (realPageId) {
-      return $resource(
-        ENV.landingAPI + "/user/" + realPageId + "/products"
-      ).get().$promise;
+
+        var url = ENV.landingAPI + "/user/" + realPageId + "/products",
+        actions = {
+          get: {
+            method: "GET",
+            cancellable: true,
+          },
+        };
+
+      return $resource(url, {}, actions).get();
     };
 
     svc.updatePeferences = function (request) {
