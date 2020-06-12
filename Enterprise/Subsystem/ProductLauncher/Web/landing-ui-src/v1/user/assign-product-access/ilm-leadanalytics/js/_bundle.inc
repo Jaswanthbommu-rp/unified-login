@@ -4,7 +4,6 @@
 
 // Config
 
-{{{ include("config/ilm-leadanalytics.js") }}}
 
 // Controllers
 

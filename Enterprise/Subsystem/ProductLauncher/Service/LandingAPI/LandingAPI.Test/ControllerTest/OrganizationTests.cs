@@ -1,5 +1,7 @@
 ﻿using Castle.Components.DictionaryAdapter;
+using JsonApiSerializer;
 using Moq;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -7,10 +9,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
@@ -26,45 +30,36 @@ using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
-	[ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public class OrganizationTests
     {
-		#region Private Variables
-		Mock<IRepository> _mockRepository = new Mock<IRepository>();
-		Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
-		Mock<IManageOrganization> _mockManageOrganization = new Mock<IManageOrganization>();
-		Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
-		Mock<IOrganizationProductRepository> _mockOrganizationProductRepository = new Mock<IOrganizationProductRepository>();
-		Mock<IManageOrganizationProduct> _mockManageOrganizationProduct = new Mock<IManageOrganizationProduct>();
-		Mock<IUserLoginRepository> _mockUserLoginRepository = new Mock<IUserLoginRepository>();
-		Mock<IPersonaRepository> _mockPersonaRepository = new Mock<IPersonaRepository>();
-		Mock<ICredentialRepository> _mockObjectCredential = new Mock<ICredentialRepository>();
-		Mock<IManageCustomFields> _mockManageCustomFields = new Mock<IManageCustomFields>();
-		Mock<ICustomFieldsRepository> _mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
-		Mock<IManageUserLogin> _mockManageUserLogin = new Mock<IManageUserLogin>();
-		Mock<IManagePartyRelationship> _mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
-		Mock<ICredentialRepository> _mockCredentialRepository = new Mock<ICredentialRepository>();
-		Mock<DefaultUserClaim> _mockDefaultUserClaim = new Mock<DefaultUserClaim>();
+        #region Private Variables
 
-		Mock<IUserRepository> _mockUserRepository = new Mock<IUserRepository>();
-		Mock<IProductRepository> _mockProductRepository = new Mock<IProductRepository>();
-		Mock<IPersonRepository> _mockPersonRepository = new Mock<IPersonRepository>();
+        Mock<IRepository> _mockRepository = new Mock<IRepository>();
+        Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
+        Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
+        Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-		private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
-		private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
-		private static string _CompanyName = "CF Real Estate Services";
-		private static DateTime _CreateDate = DateTime.MaxValue.ToUniversalTime();
-		private static int _PartyId = 54321;
-		private static long _BooksMasterId = 2116;
-		private static long _BooksCompanyMasterId = 379;
-		private static int _organizationTypeId = 6;
+        private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
+        private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
+        private static Guid _invalidRealPageId = new Guid("11111111-1111-2222-3333-3C0F434AE62D");
+        private static string _CompanyName = "CF Real Estate Services";
+        private static DateTime _CreateDate = DateTime.MaxValue.ToUniversalTime();
+        private static int _PartyId = 54321;
+        private static long _BooksMasterId = 2116;
+        private static long _BooksCompanyMasterId = 379;
+        private static int _organizationTypeId = 6;
+        private static int _organizationDomainId = 1;
+        private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
 
-        private static List<OrganizationType> _organizationTypeList;
         #endregion
 
         public OrganizationTests()
-        { 
-            _organizationTypeList = new List<OrganizationType>()
+        {
+            _defaultUserClaim.CorrelationId = new Guid();
+            _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
+
+            var organizationTypeList = new List<OrganizationType>()
             {
                 new OrganizationType()
                 {
@@ -86,14 +81,145 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
+            var organizationDomainList = new List<OrganizationDomain>()
+            {
+                new OrganizationDomain()
+                {
+                    OrganizationDomainId = 1,
+                    Name = "Primary",
+                    CreateDate = new DateTime()
+                }
+            };
+
+            var organizationList = new List<Organization>()
+            {
+                new Organization()
+                {
+                    RealPageId = _RealPageId,
+                    CreateDate = _CreateDate,
+                    Name = _CompanyName,
+                    PartyId = _PartyId,
+                    BooksMasterId = _BooksMasterId,
+                    BooksCustomerMasterId = _BooksCompanyMasterId,
+                    organizationType = new OrganizationType()
+                    {
+                        OrganizationTypeId = _organizationTypeId,
+                        Name = "Multifamily",
+                        CreateDate = new DateTime()
+                    },
+                    OrganizationTypeId = _organizationTypeId,
+                    OrganizationDomainId = 1,
+                    OrganizationDomain = new OrganizationDomain()
+                    {
+                        OrganizationDomainId = 1,
+                        Name = "Primary",
+                        CreateDate = new DateTime()
+                    },
+                }
+            };
+
+            Organization nullOrganization = null;
+
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>()
+            {
+                new CustomerCompanyMap()
+                {
+                    CompanyInstanceId = 54321,
+                    CompanyInstanceSourceId = _RealPageId.ToString().ToUpper(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    CompanyInstance = new List<CompanyInstance>()
+                    {
+                        new CompanyInstance() {CustomerEnvironment = "Primary", IsActive = true}
+                    }
+                }
+            };
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent(jsonToSave);
+
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => testIsRealPageIdNull(d))))
+                .Returns(nullOrganization);
+
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => testIsRealPageId(d, _RealPageId))))
+                .Returns(organizationList[0]);
+
+            _mockRepository
+                .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => testIsRealPageId(d, null))))
+                .Returns(organizationList);
+
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => testIsBooksCompanyMasterId(d, _BooksCompanyMasterId))))
+                .Returns(organizationList[0]);
+
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => testIsBooksMasterId(d, _BooksMasterId))))
+                .Returns(organizationList[0]);
+
+            _mockRepository
+                .Setup(m => m.UnitOfWork)
+                .Returns(_mockUnitofWork.Object);
+
             // THIS RESULT IS CACHED SO WE CANT REALLY TEST IT HAVING MULTIPLE RESULTS!
             _mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
+                .Returns(organizationTypeList);
+
+            _mockRepository
+                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(organizationDomainList);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes&filter[source]=UPFM", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/companyinstance/54321?modifiedBy=UPFM+Automation", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            _mockHttpMessageHandler.SetupPatch($"http://localhost/companyinstance/C802694D-5553-4527-8616-3C0F434AE62D/UPFM", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
         }
 
-		#region Controller Unit Tests
-		[Fact]
+        #region Controller Unit Tests
+
+        private bool testIsRealPageIdNull(object obj)
+        {
+            return obj.ToString().Contains($"RealPageId = {_invalidRealPageId}");
+        }
+
+        private bool testIsRealPageId(object obj, Guid? realPageId)
+        {
+            if (obj == null && realPageId == null)
+            {
+                return true;
+            }
+
+            if (obj == null)
+            {
+                return false;
+            }
+
+            return obj.ToString().Contains($"RealPageId = {realPageId}");
+        }
+
+        private bool testIsBooksCompanyMasterId(object obj, long booksCompanyMasterId)
+        {
+            return obj.ToString().Contains($"BlueBookId = {booksCompanyMasterId}");
+        }
+
+        private bool testIsBooksMasterId(object obj, long booksMasterId)
+        {
+            return obj.ToString().Contains($"BlackBookId = {booksMasterId}");
+        }
+
+        [Fact]
         public void InsertOrganization_VerifyRouteToAction_ReturnAction()
         {
             //Arrange
@@ -107,513 +233,690 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Assert
             Assert.True("InsertOrganization" == baseTest.VerifyRouteToAction(
-                HttpMethod.Post,
-                "http://localhost/api/organization"
+                    HttpMethod.Post,
+                    "http://localhost/api/organization"
                 )
             );
         }
 
-		[Fact]
-		public void InsertOrganization_DuplicateBookMasterId_BadRequest()
-		{
-			//Arrange
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+        [Fact]
+        public void InsertOrganization_DuplicateBookMasterId_BadRequest()
+        {
+            //Arrange
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksCompanyMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 1,
+                Name = "CF Real Estate Services",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
 
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksCompanyMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 1,
-				Name = "CF Real Estate Services",
-				Products = new List<string>()
-				{
-					"AB"
-				},
-				AdminUser = new OrganizationAdminUser()
-				{
-					FirstName = "Jack",
-					LastName = "Doe",
-					Email = "jack.doe@example.com",
-					Suffix = string.Empty,
-					Title = string.Empty
-				}
-			};
-
-			//Act
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"Duplicate master ids\"}";
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
-
-		[Fact]
-		public void InsertOrganization_InvalidOrganizationType_BadRequest()
-		{
-			//Arrange
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 0,
-				Name = "CF Real Estate Services",
-				Products = new List<string>()
-				{
-					"AB"
-				},
-				AdminUser = new OrganizationAdminUser()
-				{
-					FirstName = "Jack",
-					LastName = "Doe",
-					Email = "jack.doe@example.com",
-					Suffix = string.Empty,
-					Title = string.Empty
-				}
-			};
-
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"An invalid Organization Type id was given: 0\"}";
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
-
-		[Fact]
-		public void InsertOrganization_InvalidProducts_BadRequest()
-		{
-			//Arrange
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 1,
-				Name = "CF Real Estate Services",
-				Products = new List<string>()
-				{
-					"XX"
-				},
-				AdminUser = new OrganizationAdminUser()
-				{
-					FirstName = "Jack",
-					LastName = "Doe",
-					Email = "jack.doe@example.com",
-					Suffix = string.Empty,
-					Title = string.Empty
-				}
-			};
-
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"An invalid product was given : XX\"}";
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
-
-		[Fact]
-		public void InsertOrganization_InvalidAdminUser_BadRequest()
-		{
-			//Arrange
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 1,
-				Name = "CF Real Estate Services",
-				Products = new List<string>()
-				{
-					"AB"
-				},
-				AdminUser = null
-			};
-
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"No admin user information provided\"}";
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
-
-		[Fact]
-		public void InsertOrganization_CompanyExits_BadRequest()
-		{
-			//Arrange
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 1,
-				Name = "CF Real Estate Services",
-				Products = new List<string>()
-				{
-					"AB"
-				},
-				AdminUser = new OrganizationAdminUser()
-				{
-					FirstName = "Jack",
-					LastName = "Doe",
-					Email = "jack.doe@example.com",
-					Suffix = string.Empty,
-					Title = string.Empty
-				}
-			};
-
-			IList<Organization> organizationList = new List<Organization>()
-			{
-				new Organization()
-				{
-					RealPageId = _RealPageId,
-					CreateDate = _CreateDate,
-					Name = _CompanyName,
-					PartyId = _PartyId,
-					BooksMasterId = _BooksMasterId,
-					BooksCustomerMasterId = _BooksCompanyMasterId,
-					OrganizationTypeId = _organizationTypeId,
-					organizationType = new OrganizationType()
-					{
-						OrganizationTypeId = _organizationTypeId
-					}
-				}
-			};
-
-			_mockRepository
-				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-				.Returns(organizationList);
-
-			//IOrganizationRepository organizationRepository = new OrganizationRepository(_mockRepository.Object);
-
-			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
-			_mockManageOrganization
-				.Setup(m => m.GetOrganizationList())
-				.Returns(organizationList);
-
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate, true);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"MessageHandler.Handle - Company: CF Real Estate Services with BlueBookId: " + _BooksCompanyMasterId.ToString() + " already exists!\"}";
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
-
-		[Fact]
-		public void InsertOrganization_CustomerMasterBookIdExits_BadRequest()
-		{
-			//Arrange
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 1,
-				Name = "New Company",
-				Products = new List<string>()
-				{
-					"AB"
-				},
-				AdminUser = new OrganizationAdminUser()
-				{
-					FirstName = "Jack",
-					LastName = "Doe",
-					Email = "jack.doe@example.com",
-					Suffix = string.Empty,
-					Title = string.Empty
-				}
-			};
-
-			IList<Organization> organizationList = new List<Organization>()
-			{
-				new Organization()
-				{
-					RealPageId = _RealPageId,
-					CreateDate = _CreateDate,
-					Name = _CompanyName,
-					PartyId = _PartyId,
-					BooksMasterId = _BooksMasterId,
-					BooksCustomerMasterId = _BooksCompanyMasterId,
-					OrganizationTypeId = _organizationTypeId,
-					organizationType = new OrganizationType()
-					{
-						OrganizationTypeId = _organizationTypeId
-					}
-				}
-			};
-
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-			_mockRepository
-				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-				.Returns(organizationList);
-
-			//IOrganizationRepository organizationRepository = new OrganizationRepository(_mockRepository.Object);
-
-			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
-			_mockManageOrganization
-				.Setup(m => m.GetOrganizationList())
-				.Returns(organizationList);
-
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate, true);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"MessageHandler.Handle - Bluebook customer master id " + _BooksCompanyMasterId.ToString() + " already in use!\"}";
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
-
-		[Fact]
-		public void InsertOrganization_AdminExits_BadRequest()
-		{
-			//Arrange
-			UserLoginOnly userLoginOnly = new UserLoginOnly()
-			{
-				UserId = 3,
-				PartyId = 1,
-				LoginName = "jack.doe@example.com",
-				PasswordHash = ""
-			};
-
-			_mockRepository
-				.Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-				.Returns(userLoginOnly);
-
-			IUserLoginRepository userLoginRepository = new UserLoginRepository(_mockRepository.Object);
-
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, userLoginRepository
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 1,
-				Name = "New Company",
-				Products = new List<string>()
-				{
-					"AB"
-				},
-				AdminUser = new OrganizationAdminUser()
-				{
-					FirstName = "Jack",
-					LastName = "Doe",
-					Email = "jack.doe@example.com",
-					Suffix = string.Empty,
-					Title = string.Empty
-				}
-			};
-
-			//Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"Admin email already exists\"}";
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
-
-		[Fact]
-		public void InsertOrganization_ErrorInsertOrganization_BadRequest()
-		{
-			//Arrange
-			UserLoginOnly userLoginOnly = new UserLoginOnly();
-			userLoginOnly = null;
-			Organization organization = new Organization();
-			RepositoryResponse repositoryResponse = new RepositoryResponse()
-			{
-				Id = 0,
-				ErrorMessage = "Failed to create organization",
-				RealPageId = Guid.Empty
-			};            
-
-			_mockRepository
-				.Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-				.Returns(userLoginOnly);
-
-			_mockRepository
-				.Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
-				.Returns(repositoryResponse);
-
-			_mockRepository
-				.Setup(m => m.UnitOfWork)
-				.Returns(_mockUnitofWork.Object);
-
-            IUserLoginRepository userLoginRepository = new UserLoginRepository(_mockRepository.Object);
-
-            ManageOrganization organizationLogic = new ManageOrganization(_mockRepository.Object);
 
             OrganizationController organizationController = new OrganizationController(
-                organizationLogic
+                _mockRepository.Object
                 , _mockRepositoryResponse.Object
-                , _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, userLoginRepository
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
 
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"Duplicate master ids\"}";
 
-			OrganizationCreate organizationCreate = new OrganizationCreate()
-			{
-				BooksCompanyId = _BooksMasterId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				OrganizationTypeId = 1,
-				Name = "New Company",
-				Products = new List<string>()
-				{
-					"AB"
-				},
-				AdminUser = new OrganizationAdminUser()
-				{
-					FirstName = "Jack",
-					LastName = "Doe",
-					Email = "jack.doe@example.com",
-					Suffix = string.Empty,
-					Title = string.Empty
-				}
-			};
-			
-			//Act
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void InsertOrganization_InvalidOrganizationType_BadRequest()
+        {
+            //Arrange
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 0,
+                Name = "CF Real Estate Services",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-			HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "{\"Message\":\"Failed to create organization\"}";
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"An invalid Organization Type id was given: 0\"}";
 
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
 
-		[Fact]
+        [Fact]
+        public void InsertOrganization_InvalidProducts_BadRequest()
+        {
+            //Arrange
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 1,
+                Name = "CF Real Estate Services",
+                Products = new List<string>()
+                {
+                    "XX"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"An invalid product was given : XX\"}";
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void InsertOrganization_InvalidAdminUser_BadRequest()
+        {
+            //Arrange
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 1,
+                Name = "CF Real Estate Services",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = null
+            };
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"No admin user information provided\"}";
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void InsertOrganization_CompanyExits_BadRequest()
+        {
+            //Arrange
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 1,
+                Name = "CF Real Estate Services",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate, true);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"MessageHandler.Handle - Company: CF Real Estate Services with BlueBookId: " + _BooksCompanyMasterId.ToString() + " already exists!\"}";
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void InsertOrganization_CustomerMasterBookIdExits_BadRequest()
+        {
+            //Arrange
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 1,
+                Name = "New Company",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate, true);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"MessageHandler.Handle - Bluebook customer master id " + _BooksCompanyMasterId.ToString() + " already in use!\"}";
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void InsertOrganization_AdminExits_BadRequest()
+        {
+            //Arrange
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = "jack.doe@example.com",
+                PasswordHash = ""
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnly);
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 1,
+                Name = "New Company",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"Admin email already exists\"}";
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void InsertOrganization_ErrorInsertOrganization_BadRequest()
+        {
+            //Arrange
+            UserLoginOnly userLoginOnly = new UserLoginOnly();
+            userLoginOnly = null;
+            Organization organization = new Organization();
+            RepositoryResponse repositoryResponse = new RepositoryResponse()
+            {
+                Id = 0,
+                ErrorMessage = "Failed to create organization",
+                RealPageId = Guid.Empty
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnly);
+
+            _mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
+                .Returns(repositoryResponse);
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 1,
+                Name = "New Company",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "{\"Message\":\"Failed to create organization\"}";
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void InsertOrganization_Success()
+        {
+            //Arrange
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = "jack.doe@example.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+            RepositoryResponse repositoryResponse = new RepositoryResponse()
+            {
+                Id = 0,
+                ErrorMessage = "",
+                RealPageId = _RealPageId
+            };
+
+            _mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
+                .Returns(repositoryResponse);
+
+            _mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
+                .Returns(repositoryResponse);
+
+            _mockRepository
+                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnlyNull)
+                .Returns(userLoginOnly);
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            OrganizationCreate organizationCreate = new OrganizationCreate()
+            {
+                BooksCompanyId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 6,
+                Name = "New Company",
+                Products = new List<string>()
+                {
+                    "AB"
+                },
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "Jack",
+                    LastName = "Doe",
+                    Email = "jack.doe@example.com",
+                    Suffix = string.Empty,
+                    Title = string.Empty
+                }
+            };
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.InsertOrganization(organizationCreate);
+            OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(orgResult.Org.RealPageId == _RealPageId && orgResult.adminLogin == organizationCreate.AdminUser.Email);
+        }
+
+        [Fact]
+        public void UpdateOrganization_Success()
+        {
+            //Arrange
+            //UserLoginOnly userLoginOnly = new UserLoginOnly()
+            //{
+            //    UserId = 3,
+            //    PartyId = 1,
+            //    LoginName = "jack.doe@example.com",
+            //    PasswordHash = ""
+            //};
+            UserLoginOnly userLoginOnlyNull = null;
+
+            Organization organization = new Organization();
+            RepositoryResponse repositoryResponse = new RepositoryResponse()
+            {
+                Id = 0,
+                ErrorMessage = "",
+                RealPageId = _RealPageId
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
+                .Returns(repositoryResponse);
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            OrganizationUpdate organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = 0,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
+            OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = 0,
+                OrganizationTypeId = 0,
+                OrganizationTypeName = "MultiFamily",
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                RealPageId = _RealPageId,
+                BooksMasterId = 0,
+                BooksCustomerMasterId = 0,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainId = 0,
+                OrganizationDomainName = "Primary",
+                Name = "New Company",
+            };
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+
+        [Fact]
+        public void UpdateOrganization_Errors()
+        {
+            //Arrange
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = "jack.doe@example.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+            //Organization organization = new Organization();
+            RepositoryResponse repositoryResponse = new RepositoryResponse()
+            {
+                Id = 0,
+                ErrorMessage = "",
+                RealPageId = _RealPageId
+            };
+
+            _mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, It.IsAny<object>()))
+                .Returns(repositoryResponse);
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.UpdateOrganization(null);
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.NotFound));
+
+            #region Invalid Org Types
+
+            OrganizationUpdate organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = -1,
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            string message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Invalid organization type id\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 0,
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Missing organization type\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = 0,
+                OrganizationTypeName = "Incorrect Type",
+                OrganizationDomainId = _organizationDomainId,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Invalid organization type\"");
+
+            #endregion
+
+            #region Invalid Domain Types
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainId = -1,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Invalid organization domain id\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainId = 0,
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Missing organization domain\"");
+
+            organizationUpdate = new OrganizationUpdate()
+            {
+                BooksMasterId = _BooksMasterId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                OrganizationTypeId = _organizationTypeId,
+                OrganizationDomainName = "Invalid domain type",
+                Name = "New Company",
+            };
+
+            response = organizationController.UpdateOrganization(organizationUpdate);
+            message = response.Content.ReadAsStringAsync().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(message == "\"Invalid organization domain\"");
+
+            #endregion
+        }
+
+        [Fact]
         public void UpdateOrganization_VerifyRouteToAction_ReturnAction()
         {
             //Arrange
@@ -627,9 +930,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Assert
             Assert.True("UpdateOrganization" == baseTest.VerifyRouteToAction(
-                HttpMethod.Put,
-				"http://localhost/api/organization"
-				)
+                    HttpMethod.Put,
+                    "http://localhost/api/organization"
+                )
             );
         }
 
@@ -647,279 +950,237 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Assert
             Assert.True("GetOrganization" == baseTest.VerifyRouteToAction(
-                HttpMethod.Get,
-                "http://localhost/api/organization/C802694D-5553-4527-8616-3C0F434AE62D"
+                    HttpMethod.Get,
+                    "http://localhost/api/organization/C802694D-5553-4527-8616-3C0F434AE62D"
                 )
             );
         }
 
-		[Fact]
-		public void GetOrganization_InvalidRealPageId_ReturnNotFound()
-		{
-			//Arrange
-			Guid realPageId = Guid.NewGuid();
+        [Fact]
+        public void GetOrganization_InvalidRealPageId_ReturnNotFound()
+        {
+            //Arrange
 
-			Organization organization = new Organization();
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            )
+            {
+                Request = new HttpRequestMessage(),
+                Configuration = new HttpConfiguration()
+            };
 
-			organization = null;
-
-			_mockManageOrganization
-				.Setup(m => m.GetOrganization(realPageId, null, null, null))
-				.Returns(organization);
-
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			//Act
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "\"Not found\"";
+            HttpResponseMessage response = organizationController.GetOrganization(_invalidRealPageId);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "\"Not found\"";
 
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.NotFound));
-			Assert.True(expectedValue == message);
-		}
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.NotFound));
+            Assert.True(expectedValue == message);
+        }
 
-		[Fact]
-		public void GetOrganization_ValidRealPageId_ReturnOrganization()
-		{
-			//Arrange
-			Guid realPageId = Guid.NewGuid();
+        [Fact]
+        public void GetOrganization_ValidRealPageId_ReturnOrganization()
+        {
+            //Arrange
+            Guid realPageId = Guid.NewGuid();
 
-			Organization organization = new Organization()
-			{
-				Name = "Company",
-				RealPageId = realPageId,
-				BooksCustomerMasterId = _BooksCompanyMasterId,
-				BooksMasterId = _BooksMasterId,
-				organizationType = new OrganizationType()
-				{
-					OrganizationTypeId = 1,
-					Name = "Multifamily",
-					CreateDate = new DateTime()
-				},
-				OrganizationTypeId = 1,
-				PartyId = 1,
-				PrimaryOrganization = true
-			};
+            Organization organization = new Organization()
+            {
+                Name = "Company",
+                RealPageId = realPageId,
+                BooksCustomerMasterId = _BooksCompanyMasterId,
+                BooksMasterId = _BooksMasterId,
+                organizationType = new OrganizationType()
+                {
+                    OrganizationTypeId = 1,
+                    Name = "Multifamily",
+                    CreateDate = new DateTime()
+                },
+                OrganizationTypeId = 1,
+                PartyId = 1,
+                PrimaryOrganization = true
+            };
 
-			_mockManageOrganization
-				.Setup(m => m.GetOrganization(realPageId, null, null, null))
-				.Returns(organization);
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    It.Is<object>(
+                        d => testIsRealPageId(d, realPageId))))
+                .Returns(organization);
 
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
 
-			//Act
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
-			Organization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
+            HttpResponseMessage response = organizationController.GetOrganization(realPageId);
+            Organization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
 
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-			Assert.True(resultOrganization == organization);
-		}
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(resultOrganization == organization);
+        }
 
-		[Fact]
-		public void GetOrganization_ValidRealPageId_ReturnOrganizationList()
-		{
-			//Arrange
-			Guid? realPageId = null;
+        [Fact]
+        public void GetOrganization_ValidRealPageId_ReturnOrganizationList()
+        {
+            //Arrange
+            Guid? realPageId = null;
 
-			IList<Organization> organizationList = new List<Organization>()
-			{
-				new Organization()
-				{
-					Name = "Company",
-					RealPageId = Guid.NewGuid(),
-					BooksCustomerMasterId = _BooksCompanyMasterId,
-					BooksMasterId = _BooksMasterId,
-					organizationType = new OrganizationType()
-					{
-						OrganizationTypeId = 1,
-						Name = "Multifamily",
-						CreateDate = new DateTime()
-					},
-					OrganizationTypeId = 1,
-					OrganizationDomainId = 1,
-					OrganizationDomain = new OrganizationDomain()
+            IList<Organization> organizationList = new List<Organization>()
+            {
+                new Organization()
+                {
+                    Name = "Company",
+                    RealPageId = Guid.NewGuid(),
+                    BooksCustomerMasterId = _BooksCompanyMasterId,
+                    BooksMasterId = _BooksMasterId,
+                    organizationType = new OrganizationType()
                     {
-						OrganizationDomainId = 1,
-						Name = "Primary",
-						CreateDate = new DateTime()
+                        OrganizationTypeId = 1,
+                        Name = "Multifamily",
+                        CreateDate = new DateTime()
                     },
-					PartyId = 1,
-					PrimaryOrganization = true
-				}
-			};
+                    OrganizationTypeId = 1,
+                    OrganizationDomainId = 1,
+                    OrganizationDomain = new OrganizationDomain()
+                    {
+                        OrganizationDomainId = 1,
+                        Name = "Primary",
+                        CreateDate = new DateTime()
+                    },
+                    PartyId = 1,
+                    PrimaryOrganization = true
+                }
+            };
 
-			_mockManageOrganization
-				.Setup(m => m.GetOrganizationList())
-				.Returns(organizationList);
+            _mockRepository
+                .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization,
+                    null))
+                .Returns(organizationList);
 
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
 
-			//Act
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-			HttpResponseMessage response = organizationController.GetOrganization(realPageId);
-			IList<Organization> resultOrganizationList = response.Content.ReadAsAsync<IList<Organization>>().Result;
+            HttpResponseMessage response = organizationController.GetOrganization(realPageId);
+            IList<Organization> resultOrganizationList = response.Content.ReadAsAsync<IList<Organization>>().Result;
 
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-			Assert.True(resultOrganizationList == organizationList);
-		}
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(resultOrganizationList == organizationList);
+        }
 
-		[Fact]
-		public void OrganizationCustomFields_VerifyRouteToAction_ReturnAction()
-		{
-			//Arrange
-			HttpConfiguration Config = new HttpConfiguration();
+        [Fact]
+        public void OrganizationCustomFields_VerifyRouteToAction_ReturnAction()
+        {
+            //Arrange
+            HttpConfiguration Config = new HttpConfiguration();
 
-			//Act
-			WebApiConfig.Register(Config);
-			Config.EnsureInitialized();
-			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
-			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
+            //Act
+            WebApiConfig.Register(Config);
+            Config.EnsureInitialized();
+            DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
+            RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
 
-			//Assert
-			Assert.True("OrganizationCustomFields" == baseTest.VerifyRouteToAction(
-				HttpMethod.Get,
-				"http://localhost/api/organization/customfields"
-				)
-			);
-		}
+            //Assert
+            Assert.True("OrganizationCustomFields" == baseTest.VerifyRouteToAction(
+                    HttpMethod.Get,
+                    "http://localhost/api/organization/customfields"
+                )
+            );
+        }
 
-		[Fact]
-		public void OrganizationCustomFields_ValidData_OKRequest()
-		{
-			//Arrange
-			RequestParameter datafilter = new RequestParameter();
-			datafilter.Pages.ResultsPerPage = 0;
-			datafilter.Pages.StartRow = 1;
-			IDictionary<object, object> globals = new Dictionary<object, object>();
-			globals.Add(BaseType.RequestParameter, datafilter);
-			int bookMasterTypeId = (int)BookMasterType.CustomerMasterId;
-			Type type = typeof(IList<CustomField>);
+        [Fact]
+        public void OrganizationCustomFields_ValidData_OKRequest()
+        {
+            //Arrange
+            RequestParameter datafilter = new RequestParameter();
+            datafilter.Pages.ResultsPerPage = 0;
+            datafilter.Pages.StartRow = 1;
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            globals.Add(BaseType.RequestParameter, datafilter);
+            int bookMasterTypeId = (int) BookMasterType.CustomerMasterId;
+            Type type = typeof(IList<CustomField>);
 
-			DefaultUserClaim userClaim = new DefaultUserClaim()
-			{
-				PersonaId = 1234,
-				OrganizationRealPageGuid = new Guid(),
-				UserRealPageGuid = new Guid(),
-				CustomerMasterId = _BooksCompanyMasterId
-			};
+            DefaultUserClaim userClaim = new DefaultUserClaim()
+            {
+                PersonaId = 1234,
+                OrganizationRealPageGuid = new Guid(),
+                UserRealPageGuid = new Guid(),
+                CustomerMasterId = _BooksCompanyMasterId
+            };
 
-			IList<CustomField> customFieldList = new List<CustomField>()
-			{
-				new CustomField()
-				{
-					FieldId = 15,
-					OrganizationId = 350,
-					Enabled = true,
-					Name = "Employee ID",
-					Description = null,
-					FieldTypeId = 1,
-					FieldTypeName = "Alphanumeric",
-					Required = false,
-					ReadOnly = false,
-					DefaultValue = null,
-					SyncField = null,
-					Sequence = 1,
-					HelpText = null,
-					MinCharLength = 1,
-					MaxCharLength = 10
-				}
-			};
+            IList<CustomField> customFieldList = new List<CustomField>()
+            {
+                new CustomField()
+                {
+                    FieldId = 15,
+                    OrganizationId = 350,
+                    Enabled = true,
+                    Name = "Employee ID",
+                    Description = null,
+                    FieldTypeId = 1,
+                    FieldTypeName = "Alphanumeric",
+                    Required = false,
+                    ReadOnly = false,
+                    DefaultValue = null,
+                    SyncField = null,
+                    Sequence = 1,
+                    HelpText = null,
+                    MinCharLength = 1,
+                    MaxCharLength = 10
+                }
+            };
 
-			_mockRepository
-				.Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByMasterId, It.IsAny<object>()))
-				.Returns(customFieldList);
+            _mockRepository
+                .Setup(m => m.GetMany<CustomField>(StoredProcNameConstants.SP_GetFieldsByMasterId, It.IsAny<object>()))
+                .Returns(customFieldList);
 
-			ICustomFieldsRepository customFieldsRepository = new CustomFieldsRepository(_mockRepository.Object);
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
 
-			ManageCustomFields manageCustomFields = new ManageCustomFields(customFieldsRepository, userClaim);
-
-			_mockManageCustomFields
-				.Setup(m => m.GetCustomField(globals, _BooksCompanyMasterId, bookMasterTypeId))
-				.Returns(customFieldList);
-
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, manageCustomFields
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, userClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			//Act
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-			int NumberOfProperties = type.GetProperties().Length;
-			HttpResponseMessage response = organizationController.OrganizationCustomFields(datafilter: null);
+            int NumberOfProperties = type.GetProperties().Length;
+            HttpResponseMessage response = organizationController.OrganizationCustomFields(datafilter: null);
 
-			//Assert
-			Assert.True(
-				customFieldList.Count == customFieldList.Count
-				&&
-				customFieldList.SequenceEqual(customFieldList)
-				&&
-				NumberOfProperties == 1
-			);
-		}
+            //Assert
+            Assert.True(
+                customFieldList.Count == customFieldList.Count
+                &&
+                customFieldList.SequenceEqual(customFieldList)
+                &&
+                NumberOfProperties == 1
+            );
+        }
 
-		[Fact]
+        [Fact]
         public void GetProductsByOrganization_VerifyRouteToAction_ReturnAction()
         {
             //Arrange
@@ -933,217 +1194,184 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Assert
             Assert.True("GetProductsByOrganization" == baseTest.VerifyRouteToAction(
-                HttpMethod.Get,
-				"http://localhost/api/organization/C802694D-5553-4527-8616-3C0F434AE62D/products?mergePersonaAccess=false&allProducts=false"
-				)
+                    HttpMethod.Get,
+                    "http://localhost/api/organization/C802694D-5553-4527-8616-3C0F434AE62D/products?mergePersonaAccess=false&allProducts=false"
+                )
             );
         }
 
-		[Fact]
-		public void OrganizationType_VerifyRouteToAction_ReturnAction()
-		{
-			//Arrange
-			HttpConfiguration Config = new HttpConfiguration();
+        [Fact]
+        public void OrganizationType_VerifyRouteToAction_ReturnAction()
+        {
+            //Arrange
+            HttpConfiguration Config = new HttpConfiguration();
 
-			//Act
-			WebApiConfig.Register(Config);
-			Config.EnsureInitialized();
-			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
-			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
+            //Act
+            WebApiConfig.Register(Config);
+            Config.EnsureInitialized();
+            DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
+            RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
 
-			//Assert
-			Assert.True("OrganizationType" == baseTest.VerifyRouteToAction(
-				HttpMethod.Get,
-				"http://localhost/api/OrganizationType"
-				)
-			);
-		}
+            //Assert
+            Assert.True("OrganizationType" == baseTest.VerifyRouteToAction(
+                    HttpMethod.Get,
+                    "http://localhost/api/OrganizationType"
+                )
+            );
+        }
 
-		[Fact]
-		public void OrganizationType_NoData_OKRequest()
-		{
-			//Arrange
-			ObjectListOutput<OrganizationType, IErrorData> output = new ObjectListOutput<OrganizationType, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+        [Fact]
+        public void OrganizationType_NoData_OKRequest()
+        {
+            //Arrange
+            ObjectListOutput<OrganizationType, IErrorData> output = new ObjectListOutput<OrganizationType, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			_organizationTypeList = null;
+            List<OrganizationType> organizationTypeList = null;
 
-			Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
 
-			mockRepository
-				.Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-				.Returns(_organizationTypeList);
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
+                .Returns(organizationTypeList);
 
-			ManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object);
-
-			OrganizationController organizationController = new OrganizationController(
-                manageOrganization
+            OrganizationController organizationController = new OrganizationController(
+                mockRepository.Object
                 , _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
 
-			//Act
-			RPObjectCache rPObjectCache = new RPObjectCache();
-			rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.OrganizationType();
-			output = response.Content.ReadAsAsync<ObjectListOutput<OrganizationType, IErrorData>>().Result;
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-			Assert.True(output.list == null);
-		}
-
-		[Fact]
-		public void OrganizationType_ValidData_OKRequest()
-		{
-			//Arrange
-			ObjectListOutput<OrganizationType, IErrorData> output = new ObjectListOutput<OrganizationType, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-
-			IManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object);
-
-			OrganizationController organizationController = new OrganizationController(
-				manageOrganization
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			//Act
-			RPObjectCache rPObjectCache = new RPObjectCache();
-			rPObjectCache.BustCache();
-
-			HttpResponseMessage response = organizationController.OrganizationType();
-			output = response.Content.ReadAsAsync<ObjectListOutput<OrganizationType, IErrorData>>().Result;
-
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-			Assert.True(output.list.Count.Equals(3));
-		}
-
-		[Fact]
-		public void OrganizationProductTest()
-		{
-			OrganizationController orgCont = new OrganizationController(_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object);
-
-			List<ProductEnum> productList = new EditableList<ProductEnum>();
-			List<string> blueBookProductList = new List<string>();
-
-			// verify all blue book enums match a product
-			foreach (var pi in typeof(BlueBookProductConstants).GetFields())
-			{
-				blueBookProductList.Add(pi.GetValue(pi).ToString());
-			}
-
-			List<string> invalidProductList = orgCont.ParseProduct(blueBookProductList, productList);
-			Assert.True(invalidProductList.Count == 0 && productList.Count == blueBookProductList.Count);
-
-			// list of products to exclude from Bluebook to product integration
-			var ignoreProductList = new List<ProductEnum>()
-			{
-				ProductEnum.UnifiedUI
-				, ProductEnum.SelfProvisioningPortal
-				, ProductEnum.SalesForce
-				, ProductEnum.SettingsManagement
-			};
-			
-			foreach (var pr in typeof(ProductEnum).GetFields())
-			{
-				if (pr.Name != "value__")
-				{
-					ProductEnum current = (ProductEnum) Enum.Parse(typeof(ProductEnum), pr.Name);
-					if (!ignoreProductList.Contains(current))
-					{
-						// if this fails, then you didn't add the product to the BlueBookProductConstants.cs file!
-						Assert.True(productList.Contains(current), $"Missing product {pr.Name} in BlueBookProductConstants.cs");
-					}
-				}
-			}
-		}
-
-		[Fact]
-		public void ListOrganizationByEnterpriseUserId_InvalidRealPageId_ReturnBadRequest()
-		{
-			//Arrange
-			ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			Guid realPageId = Guid.Empty;
-
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, _mockUserLoginRepository.Object
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				, _mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, _mockDefaultUserClaim.Object
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
-
-			//Act
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
-			
-			HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
-			string message = response.Content.ReadAsStringAsync().Result;
-			string expectedValue = "\"Invalid parameter: realPageId\"";
 
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-			Assert.True(expectedValue == message);
-		}
+            HttpResponseMessage response = organizationController.OrganizationType();
+            output = response.Content.ReadAsAsync<ObjectListOutput<OrganizationType, IErrorData>>().Result;
 
-		[Fact]
-		public void ListOrganizationByEnterpriseUserId_ValidRealPageId_ReturnData()
-		{
-			//Arrange
-			ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			Guid realPageId = Guid.NewGuid();
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(output.list == null);
+        }
 
-			DefaultUserClaim userClaim = new DefaultUserClaim()
-			{
-				PersonaId = 1234,
-				OrganizationRealPageGuid = realPageId,
-				UserRealPageGuid = new Guid(),
-				CustomerMasterId = _BooksCompanyMasterId
-			};
+        [Fact]
+        public void OrganizationType_ValidData_OKRequest()
+        {
+            //Arrange
+            ObjectListOutput<OrganizationType, IErrorData> output = new ObjectListOutput<OrganizationType, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			OrganizationType organizationType = new OrganizationType()
-			{
-				OrganizationTypeId = 1,
-				Name = "Multifamily",
-				CreateDate = new DateTime()
-			};
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.OrganizationType();
+            output = response.Content.ReadAsAsync<ObjectListOutput<OrganizationType, IErrorData>>().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(output.list.Count.Equals(3));
+        }
+
+        [Fact]
+        public void OrganizationProductTest()
+        {
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            List<ProductEnum> productList = new EditableList<ProductEnum>();
+            List<string> blueBookProductList = new List<string>();
+
+            // verify all blue book enums match a product
+            foreach (var pi in typeof(BlueBookProductConstants).GetFields())
+            {
+                blueBookProductList.Add(pi.GetValue(pi).ToString());
+            }
+
+            List<string> invalidProductList = ManageOrganization.ParseProduct(blueBookProductList, productList);
+            Assert.True(invalidProductList.Count == 0 && productList.Count == blueBookProductList.Count);
+
+            // list of products to exclude from Bluebook to product integration
+            var ignoreProductList = new List<ProductEnum>()
+            {
+                ProductEnum.UnifiedUI, ProductEnum.SelfProvisioningPortal, ProductEnum.SalesForce, ProductEnum.SettingsManagement
+            };
+
+            foreach (var pr in typeof(ProductEnum).GetFields())
+            {
+                if ((!pr.Name.Equals("value__", StringComparison.OrdinalIgnoreCase))&& (!pr.Name.Equals("UnifiedSettings", StringComparison.OrdinalIgnoreCase)))
+                {
+                    ProductEnum current = (ProductEnum) Enum.Parse(typeof(ProductEnum), pr.Name);
+                    if (!ignoreProductList.Contains(current))
+                    {
+                        // if this fails, then you didn't add the product to the BlueBookProductConstants.cs file!
+                        Assert.True(productList.Contains(current), $"Missing product {pr.Name} in BlueBookProductConstants.cs");
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void ListOrganizationByEnterpriseUserId_InvalidRealPageId_ReturnBadRequest()
+        {
+            //Arrange
+            ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            Guid realPageId = Guid.Empty;
+
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
+            string message = response.Content.ReadAsStringAsync().Result;
+            string expectedValue = "\"Invalid parameter: realPageId\"";
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
+            Assert.True(expectedValue == message);
+        }
+
+        [Fact]
+        public void ListOrganizationByEnterpriseUserId_ValidRealPageId_ReturnData()
+        {
+            //Arrange
+            ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            Guid realPageId = Guid.NewGuid();
+
+            DefaultUserClaim userClaim = new DefaultUserClaim()
+            {
+                PersonaId = 1234,
+                OrganizationRealPageGuid = realPageId,
+                UserRealPageGuid = new Guid(),
+                CustomerMasterId = _BooksCompanyMasterId
+            };
+
+            OrganizationType organizationType = new OrganizationType()
+            {
+                OrganizationTypeId = 1,
+                Name = "Multifamily",
+                CreateDate = new DateTime()
+            };
 
             OrganizationDomain organizationDomain = new OrganizationDomain()
             {
@@ -1152,107 +1380,109 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 CreateDate = new DateTime()
             };
 
-			RoleType roleTypeFrom = new RoleType()
-			{
-				PartyRoleTypeId = (int)UserRoleType.User,
-				ParentPartyRoleTypeId = 400,
-				Name = "User"
-			};
+            RoleType roleTypeFrom = new RoleType()
+            {
+                PartyRoleTypeId = (int) UserRoleType.User,
+                ParentPartyRoleTypeId = 400,
+                Name = "User"
+            };
 
-			RoleType roleTypeTo = new RoleType()
-			{
-				PartyRoleTypeId = 202,
-				ParentPartyRoleTypeId = 200,
-				Name = "Property Management Company"
-			};
+            RoleType roleTypeTo = new RoleType()
+            {
+                PartyRoleTypeId = 202,
+                ParentPartyRoleTypeId = 200,
+                Name = "Property Management Company"
+            };
 
-			RelationshipType relationshipType = new RelationshipType()
-			{
-				RelationshipTypeId = 44,
-				RoleTypeIdValidFrom = (int)UserRoleType.User,
-				RoleTypeIdValidTo = 202,
-				Name = "User Relationship",
-				Description = ""
-			};
+            RelationshipType relationshipType = new RelationshipType()
+            {
+                RelationshipTypeId = 44,
+                RoleTypeIdValidFrom = (int) UserRoleType.User,
+                RoleTypeIdValidTo = 202,
+                Name = "User Relationship",
+                Description = ""
+            };
 
-			PartyRelationship partyRelationship = new PartyRelationship()
-			{
-				PartyRelationshipId = 3,
-				PartyIdFrom = 19,
-				RealPageIdFrom = new Guid("8946d26d-8ede-40d1-b6c3-d52bc903f202"),
-				PartyIdTo = 6,
-				RealPageIdTo = new Guid("724DE532-7969-42B5-9E71-2955167179BA"),
-				RoleTypeIdFrom = (int)UserRoleType.User,
-				RoleTypeFrom = roleTypeFrom,
-				RoleTypeIdTo = 202,
-				RoleTypeTo = roleTypeTo,
-				PartyRelationshipTypeId = 44,
-				PartyRelationshipType = relationshipType,
-				FromDate = DateTime.UtcNow,
-				ThruDate = DateTime.MaxValue.ToUniversalTime()
-			};
+            PartyRelationship partyRelationship = new PartyRelationship()
+            {
+                PartyRelationshipId = 3,
+                PartyIdFrom = 19,
+                RealPageIdFrom = new Guid("8946d26d-8ede-40d1-b6c3-d52bc903f202"),
+                PartyIdTo = 6,
+                RealPageIdTo = new Guid("724DE532-7969-42B5-9E71-2955167179BA"),
+                RoleTypeIdFrom = (int) UserRoleType.User,
+                RoleTypeFrom = roleTypeFrom,
+                RoleTypeIdTo = 202,
+                RoleTypeTo = roleTypeTo,
+                PartyRelationshipTypeId = 44,
+                PartyRelationshipType = relationshipType,
+                FromDate = DateTime.UtcNow,
+                ThruDate = DateTime.MaxValue.ToUniversalTime()
+            };
 
-			IList<Organization> organizationList = new List<Organization>()
-			{
-				new Organization()
-				{
-					Name = "Company",
-					RealPageId = Guid.NewGuid(),
-					BooksCustomerMasterId = _BooksCompanyMasterId,
-					BooksMasterId = _BooksMasterId,
-					organizationType = organizationType,
-					OrganizationTypeId = 1,
-					OrganizationDomain = organizationDomain,
-					OrganizationDomainId = 1,
-					PartyId = 1,
-					PrimaryOrganization = true,
-					partyRelationship = partyRelationship
-				}
-			};
+            IList<Organization> organizationList = new List<Organization>()
+            {
+                new Organization()
+                {
+                    Name = "Company",
+                    RealPageId = Guid.NewGuid(),
+                    BooksCustomerMasterId = _BooksCompanyMasterId,
+                    BooksMasterId = _BooksMasterId,
+                    organizationType = organizationType,
+                    OrganizationTypeId = 1,
+                    OrganizationDomain = organizationDomain,
+                    OrganizationDomainId = 1,
+                    PartyId = 1,
+                    PrimaryOrganization = true,
+                    partyRelationship = partyRelationship
+                }
+            };
 
             IList<OrganizationType> organizationTypeList = new List<OrganizationType>() {organizationType};
+            IList<RelationshipType> relationshipTypeList = new List<RelationshipType>();
+            relationshipTypeList.Add(new RelationshipType() {RelationshipTypeId = 44, Name = "test"});
+            IList<RoleType> roleTypeList = new List<RoleType>();
+            roleTypeList.Add(new RoleType() {Name = "User", PartyRoleTypeId = 401, ParentPartyRoleTypeId = 400});
+            roleTypeList.Add(new RoleType() {Name = "Property Management Company", PartyRoleTypeId = 202, ParentPartyRoleTypeId = 200});
 
-			_mockRepository
-				.Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_ListOrganizationByRealPageId, It.IsAny<object>()))
-				.Returns(organizationList);
+            _mockRepository
+                .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_ListOrganizationByRealPageId, It.IsAny<object>()))
+                .Returns(organizationList);
 
-			IUserLoginRepository userLoginRepository = new UserLoginRepository(_mockRepository.Object);
+            IUserLoginRepository userLoginRepository = new UserLoginRepository(_mockRepository.Object);
+            ManageOrganization manageOrganization = new ManageOrganization(_mockRepository.Object, _defaultUserClaim);
 
-			_mockManageUserLogin
-				.Setup(m => m.ListOrganizationByEnterpriseUserId(realPageId, null))
-				.Returns(organizationList);
+            _mockRepository
+                .Setup(m => m.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, It.IsAny<object>()))
+                .Returns(partyRelationship);
 
-			_mockManagePartyRelationship
-				.Setup(m => m.GetPartyRelationship(realPageId, partyRelationship.RealPageIdTo, null, null, null))
-				.Returns(partyRelationship);
+            _mockRepository
+                .Setup(m => m.GetMany<RelationshipType>(StoredProcNameConstants.SP_ListRelationshipType, It.IsAny<object>()))
+                .Returns(relationshipTypeList);
 
-			OrganizationController organizationController = new OrganizationController(
-				_mockManageOrganization.Object
-				, _mockRepositoryResponse.Object
-				, _mockOrganizationProductRepository.Object
-				, _mockManageOrganizationProduct.Object
-				, userLoginRepository
-				, _mockPersonaRepository.Object
-				, _mockManageCustomFields.Object
-				,_mockManageUserLogin.Object
-				, _mockManagePartyRelationship.Object
-				, userClaim
-				);
-			organizationController.Request = new HttpRequestMessage();
-			organizationController.Configuration = new HttpConfiguration();
+            _mockRepository
+                .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
+                .Returns(roleTypeList);
 
-			//Act
+            OrganizationController organizationController = new OrganizationController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            //Act
             RPObjectCache rPObjectCache = new RPObjectCache();
             rPObjectCache.BustCache();
 
-			HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
-			output = response.Content.ReadAsAsync<ObjectListOutput<Organization, IErrorData>>().Result;
+            HttpResponseMessage response = organizationController.ListOrganizationByEnterpriseUserId(realPageId);
+            output = response.Content.ReadAsAsync<ObjectListOutput<Organization, IErrorData>>().Result;
 
-			//Assert
-			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-			Assert.True(output.list.Count.Equals(1));
-		}
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(output.list.Count.Equals(1));
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

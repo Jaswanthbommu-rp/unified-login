@@ -89,13 +89,15 @@
 
                     }
                     else {
-                        prodData = {
-                            inputJson: {
-                                isAssigned: false,
-                            },
+                        if (!products.adminResetFlag) {
+                            prodData = {
+                                inputJson: {
+                                    isAssigned: false,
+                                },
 
-                            productId: soln.getProductId()
-                        };
+                                productId: soln.getProductId()
+                            };
+                        }
                     }
 
                     //data.productBatch.push(prodData);

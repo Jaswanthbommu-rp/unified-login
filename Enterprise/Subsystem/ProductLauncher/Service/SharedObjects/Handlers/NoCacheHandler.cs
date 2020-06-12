@@ -17,15 +17,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Handle
         {
             // add the no-cache header to the response
             var response = await base.SendAsync(request, cancellationToken);
-            System.Net.Http.Headers.CacheControlHeaderValue cache =
-                new System.Net.Http.Headers.CacheControlHeaderValue
+                System.Net.Http.Headers.CacheControlHeaderValue cache =
+                    new System.Net.Http.Headers.CacheControlHeaderValue
+                    {
+                        NoCache = true,
+                        NoStore = true
+                    };
+                if (response != null)
                 {
-                    NoCache = true,
-                    NoStore = true
-                };
-            response.Headers.CacheControl = cache;
+                    response.Headers.CacheControl = cache;
+                }
 
-            return response;
+                return response;
         }
     }
 }

@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <returns></returns>
 		public IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, List<ProductEnum> productList)
 		{
-			IRepositoryResponse response = new RepositoryResponse();
+            IRepositoryResponse response = new RepositoryResponse();
 			foreach (ProductEnum product in productList)
 			{
 				response = InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null);

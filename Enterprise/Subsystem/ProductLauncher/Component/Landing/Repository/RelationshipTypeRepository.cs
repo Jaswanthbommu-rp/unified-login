@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -15,6 +16,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		public RelationshipTypeRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
 		}
+
+		/// <summary>
+		/// Unit test constructor
+		/// </summary>
+		/// <param name="repository"></param>
+        public RelationshipTypeRepository(IRepository repository) : base(repository)
+        {
+        }
+
 		#endregion
 
 		#region public RelationshipTypeRepository methods

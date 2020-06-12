@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel) {
+    function ProductPropertyGroupsGridCtrl($scope, $filter, dataSvc, pubsub, gridModel, gridTransformSvc, gridPaginationModel, security, persona, syncMgr, productDataModel, userDetailsModel, tabsModel) {
         var vm = this,
             userLoginName = "",
             pgGrid = gridModel(),
@@ -18,16 +18,21 @@
             pgGrid.setConfig(vm.config);
             pgGridPagination.setGrid(pgGrid);
             $scope.pgGridPagination = pgGridPagination;
+            vm.showPGGrid = true;
+            vm.hideTab = false;
 
             pgGridPagination.setConfig({
                 recordsPerPage: 25
             });
 
+            pubsub.subscribe("ppanel.clearPropertyGroup", vm.clearPropertyGroup);
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
+            vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllCompaniesSet",vm.accountingAllCompaniesSet);
+            vm.updateGridWatch = pubsub.subscribe("acct.updateGridWatchSet",vm.updateGrid);
         };
 
         vm.isActive = function () {
@@ -46,9 +51,21 @@
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
+        vm.clearPropertyGroup = function(productId) {
+            syncMgr.allPropertiesSync(productId, false);
+            vm.updateGrid();
+        };
+
+        vm.accountingAllCompaniesSet = function(bool){
+            vm.showPGGrid = !bool;
+        };
+
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
-            syncMgr.allPropertiesSync($scope.$parent.productId, val);
+            var productId = $scope.$parent.productId;
+            if(productId != 18){
+                syncMgr.allPropertiesSync($scope.$parent.productId, val);
+            }
             vm.updateGrid();
         };
 
@@ -86,7 +103,33 @@
             pgGrid.busy(false);
 
             var propData = syncMgr.getProductPropertyGroupData(productId);
-
+            if(productId == 8){
+                var additionalData = syncMgr.getProductAdditionalData(productId);
+                pubsub.publish("acct.accountingAdditionalDataSet",additionalData);
+                if(additionalData["isMConsolePMC"] == false){
+                    //hide companies tab and show entities tab for financial suite
+                    vm.hideTab = true;
+                    var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                    var initialTab = [];
+                    var filteredAllTabs = allTabs.filter(function(tb){
+                        if(tb.text != "Companies"){
+                            if(tb.text == "Entities"){
+                                tb.isActive = true;
+                                initialTab.push(tb);
+                            }
+                            return tb;
+                        }
+                    });
+                    
+                    syncMgr.renderProductTabsMap($scope.$parent.productId, filteredAllTabs, initialTab);
+                    syncMgr.renderProductActiveTabMap($scope.$parent.productId, initialTab);
+                    vm.setProductTabs(filteredAllTabs);
+                }
+                if(additionalData["hasAccessToAllCurrentFutureProperties"]){
+                    pubsub.publish("acct.accountingAllPropertiesSet",false);
+                    vm.accountingAllCompaniesSet(false);
+                }
+            }
             if (propData && propData.length > 0) {
                 if (vm.hasViewOnlyAccess()) {
                     propData.forEach(function (item) {
@@ -119,21 +162,34 @@
             pgGrid.busy(false);
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
+                if($scope.$parent.productId == 8){
+                    syncMgr.setProductAdditionalData($scope.$parent.productId, resp.additional);
+                }
                 vm.loadGridData($scope.$parent.productId);
             }
 
             if (resp.isError) {
                 vm.isPropertyGroupsError = true;
             }
+            if(resp.additional) {
+                var accesstype = resp.additional.accessType;
+                pubsub.publish("ppanel.assign-accessType", accesstype);
+            }
         };
 
-
+        vm.setProductTabs = function (tabs) {
+            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+            tabsModel.setTabs(tabs);
+            tabsModel.setTabMenuData(tabs);
+            tabsModel.activateTab(activeTab).initActiveTab();
+        };
 
         vm.destroy = function () {
             vm.destWatch();
             vm.activeWatch();
             vm.gridSelectionWatch();
             vm.gridSelectAllWatch();
+            vm.hideTab = false;
             pgGrid.destroy();
 
             if (vm.dataPropReq) {
@@ -158,6 +214,7 @@
             "$scope",
             "$filter",
             "productPropertyGroupSvc",
+            "pubsub",
             "rpGridModel",
             "rpGridTransform",
             "rpGridPaginationModel",
@@ -166,6 +223,7 @@
             "productDataSyncManager",
             "productPanelDataModel",
             "userDetailsModel",
+            "productPanelTabsModel",
             ProductPropertyGroupsGridCtrl
         ]);
 })(angular);

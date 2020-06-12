@@ -20,6 +20,34 @@ SELECT	@UserId = UserId
 FROM	Ident.UserLogin
 WHERE	LoginName LIKE 'realpagead@%'
 
+	SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
+	
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 16)
+  BEGIN
+	  INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	  VALUES (16, 139, 145, N'ManageCIMPLQuestions', 1, @UserId, @Now)
+  END
+
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 17)
+  BEGIN
+	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	VALUES (17, 139, 145, N'CIMPLManagePII', 1, @UserId, @Now)
+  END
+ 
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 18)
+  BEGIN
+  	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	VALUES (18, 139, 145, N'CIMPLManageSensitiveFinancialData', 1, @UserId, @Now)
+  END
+  
+  IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlDependency]  WHERE ControlDependencyId = 19)
+  BEGIN  
+	INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+	VALUES (19, 139, 145, N'ViewCIMPLQuestions', 1, @UserId, @Now)
+  END
+
+	SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
+
 IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
 BEGIN
 	SET IDENTITY_INSERT [UserManagement].[Control] ON 
@@ -59,10 +87,10 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (29, 181, N'Default', N'True', @UserId, @Now)
+	VALUES (30, 181, N'Default', N'True', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-	VALUES (30, 182, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (31, 182, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -227,7 +255,7 @@ BEGIN
 			VALUES (37, 211, N'ShowSelectAll', N'True', @UserId, @Now)
 
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			VALUES (38, 216, N'ShowSelectAll', N'True', @UserId, @Now)
+			VALUES (38, 216, N'ShowSelectAll', N'False', @UserId, @Now)
 
             SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -292,7 +320,7 @@ BEGIN
 			  VALUES (39, 221, N'ShowSelectAll', N'True', @UserId, @Now)
 
 			  INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			  VALUES (40, 226, N'ShowSelectAll', N'True', @UserId, @Now)
+			  VALUES (40, 226, N'ShowSelectAll', N'False', @UserId, @Now)
 
               SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -804,13 +832,13 @@ BEGIN
 			--VALUES (61, 303, N'ShowSelectAll', N'True', @UserId, @Now)
     
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
-			VALUES (62, 307, N'ShowSelectAll', N'True', @UserId, @Now)
+			VALUES (62, 306, N'ShowSelectAll', N'True', @UserId, @Now)
 
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
 			VALUES (63, 309, N'InfoIcon', N'Slide', @UserId, @Now)			
 
 			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-			VALUES (64, 316, N'ShowSelectAll', N'True', @UserId, @Now)
+			VALUES (64, 315, N'ShowSelectAll', N'True', @UserId, @Now)
 
             SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -1295,361 +1323,183 @@ BEGIN
 END;
 
 GO
---LRO Product
+----LRO Product is not Going in June
 
 
-/*This script is a sample script to create new prodcut in the system.*/
+--/*This script is a sample script to create new prodcut in the system.*/
 
-DECLARE @ProductId INT, 
-		@LoginURI NVARCHAR(100), 
-		@SigningCertificateThumbprint NVARCHAR(50), 
-		@ParentProductTypeId INT, 
-		@ProductName NVARCHAR(100)= 'LRO Management',  -- Produact Name
-		@LoginURL NVARCHAR(500), 
-		@ProductUrl NVARCHAR(256), 
-		@apiendpoint NVARCHAR(1000), 
-		@ServerName SYSNAME = @@SERVERNAME;
+--DECLARE @ProductId INT, 
+--		@LoginURI NVARCHAR(100), 
+--		@SigningCertificateThumbprint NVARCHAR(50), 
+--		@ParentProductTypeId INT, 
+--		@ProductName NVARCHAR(100)= 'LRO Management',  -- Produact Name
+--		@LoginURL NVARCHAR(500), 
+--		@ProductUrl NVARCHAR(256), 
+--		@apiendpoint NVARCHAR(1000), 
+--		@ServerName SYSNAME = @@SERVERNAME;
 
-DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+--DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
 
-/*Validate what product type ths new product belongs to. 'Administration' in the following block 
-need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
-*/
+--/*Validate what product type ths new product belongs to. 'Administration' in the following block 
+--need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
+--*/
 
-SELECT @ParentProductTypeId = ProductTypeId
-FROM Enterprise.ProductType
-WHERE Name = 'Asset Optimization'
-      AND ParentProductTypeId IS NULL;
-IF NOT EXISTS
-(
-    SELECT TOP 1 1
-    FROM enterprise.ProductType
-    WHERE Name = 'LRO Management'
-)
-    BEGIN
-        EXEC [Enterprise].[CreateProductType] 
-             @ProductTypeId = 407, -- Thsi value may change based on the root prodcut type
-             @ParentProductTypeId = @ParentProductTypeId, 
-             @Name = @ProductName, 
-             @Description = @ProductName, 
-             @ProductTypeGUID = 'BC77178D-3972-4236-A2CA-2E8DE104817E'; -- Use newid() to generate new uniqueidentifier.
-END;
-SET @ProductId = 51; -- Assign new product Id
+--SELECT @ParentProductTypeId = ProductTypeId
+--FROM Enterprise.ProductType
+--WHERE Name = 'Asset Optimization'
+--      AND ParentProductTypeId IS NULL;
+--IF NOT EXISTS
+--(
+--    SELECT TOP 1 1
+--    FROM enterprise.ProductType
+--    WHERE Name = 'LRO Management'
+--)
+--    BEGIN
+--        EXEC [Enterprise].[CreateProductType] 
+--             @ProductTypeId = 407, -- Thsi value may change based on the root prodcut type
+--             @ParentProductTypeId = @ParentProductTypeId, 
+--             @Name = @ProductName, 
+--             @Description = @ProductName, 
+--             @ProductTypeGUID = 'BC77178D-3972-4236-A2CA-2E8DE104817E'; -- Use newid() to generate new uniqueidentifier.
+--END;
+--SET @ProductId = 51; -- Assign new product Id
 
---Following block will create the new prodcut in the database
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM Enterprise.Product
-    WHERE Name = @ProductName
-)
-    BEGIN
-        EXEC Enterprise.CreateProduct 
-             @ProductId = @ProductId, 
-             @ProductGUID = '6EEC0148-D062-4CFA-907B-6FF82773E92E', -- Use newid() to generate new uniqueidentifier.
-             @Name = @ProductName, 
-             @Description = 'LRO', 
-             @ProductTypeId = 407;
+----Following block will create the new prodcut in the database
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM Enterprise.Product
+--    WHERE Name = @ProductName
+--)
+--    BEGIN
+--        EXEC Enterprise.CreateProduct 
+--             @ProductId = @ProductId, 
+--             @ProductGUID = '6EEC0148-D062-4CFA-907B-6FF82773E92E', -- Use newid() to generate new uniqueidentifier.
+--             @Name = @ProductName, 
+--             @Description = 'LRO', 
+--             @ProductTypeId = 407;
         
-		UPDATE Enterprise.Product
-          SET 
-              BooksProductCode = 'LRO'
-        WHERE ProductId = @ProductId;
-END;
+--		UPDATE Enterprise.Product
+--          SET 
+--              BooksProductCode = 'LRO'
+--        WHERE ProductId = @ProductId;
+--END;
 
---The following block picks up all the detail frm Enterprise.ProductSettingType table
---To set up the product, bunch of these settings are required.
-SET @apiendpoint = '';
-IF @ServerName IN ('RCDUSODBSQL001')
-BEGIN
-	SET @apiendpoint = 'https://aodev.realpage.com/ysconfig/ws/';
-END
-IF @ServerName IN ('rctusodbsql001')
-BEGIN
-	SET @apiendpoint = 'https://aoqa.realpage.com/ysconfig/ws/';
-END
-IF @ServerName IN ('RCQUSODBSQL001')
-BEGIN
-	SET @apiendpoint = 'https://aosat.realpage.com/ysconfig/ws/';
-END
-IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
-BEGIN
-	SET @apiendpoint = 'https://ao.realpage.com/ysconfig/ws/';
-END
-set nocount on
-INSERT INTO @ProductConfiguration
-(SettingName, 
- SettingDescription, 
- SettingValue
-)
-VALUES
-('ClientId','','1')
-,('ClassName','','lromanagement')
-,('ProductUrl','','/product/lromanagement')
-,('TitleId','','LRO Management')
-,('TitleUniqueId','','AA32B948-4F1E-4102-ADC9-2E041BF6E918')
-,('IsNewTab','','1')
-,('MetatagUniqueId','','Lease Rent Option Management')
-,('IsResource','','0')
-,('IsFavorite','','1')
-,('LearnMore','','https://www.realpage.com/asset-investment-management/portfolio-asset-management/')
-,('ApiEndPoint','', @apiendpoint)
-,('ApiUserName','','wsuser')
-,('ApiPassword','','cGdAIXcyM3Jn')
-,('ProductSuperUserLoginName','','amungale')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
-,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
-,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
-,('ShowInAppSwitcher','Should the product show in the application switcher','1')
-,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
-,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
-,('LockOnProductAccess', '', '0')
-,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
-,('NotificationEmailRequiredForUserWithNoEmail', '', '1')
-,('AuthenticationType','Used to determine how to log into the product','Redirect')
-
-
-
-SELECT * FROM @ProductConfiguration
-
-SET @LoginURL = '';
-IF @ServerName IN ('RCDUSODBSQL001')
-BEGIN
-	SET @LoginURL = 'https://aodev.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
-IF @ServerName IN ('rctusodbsql001')
-BEGIN
-	SET @LoginURL = 'https://aoqa.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
-IF @ServerName IN ('RCQUSODBSQL001')
-BEGIN
-	SET @LoginURL = 'https://aosat.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
-IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
-BEGIN
-	SET @LoginURL = 'https://ao.realpage.com/ysconfig/sso/oauth?Product=LRO';
-END
-
-SET @LoginURI = @LoginURL;
-SET @SigningCertificateThumbprint = NULL;
-
---Setup the product configurations.
-if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
-begin
-
-	EXEC Enterprise.ProductConfigurationSetup 
-		 @ProductId, 
-		 @LoginURI, 
-		 @SigningCertificateThumbprint, 
-		 @ProductConfiguration;
-end;
-
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM ident.SamlProductSettings
-    WHERE ProductId = @ProductId
-          AND LoginUri = @LoginURL
-)
-    BEGIN
-        INSERT INTO ident.SamlProductSettings
-        (
-        --SamlProductSettingsId - column value is auto-generated
-        ProductId, 
-        LoginUri, 
-        SigningCertificateThumbprint, 
-        SubjectIdSamlAttribute
-        )
-        VALUES
-        (
-        -- SamlProductSettingsId - int
-        @ProductId, -- ProductId - int
-        @LoginURL, -- LoginUri - nvarchar
-        N'NA', -- SigningCertificateThumbprint - nvarchar
-        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
-        );
-END;
-GO
+----The following block picks up all the detail frm Enterprise.ProductSettingType table
+----To set up the product, bunch of these settings are required.
+--SET @apiendpoint = '';
+--IF @ServerName IN ('RCDUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = 'https://aodev.realpage.com/ysconfig/ws/';
+--END
+--IF @ServerName IN ('rctusodbsql001')
+--BEGIN
+--	SET @apiendpoint = 'https://aoqa.realpage.com/ysconfig/ws/';
+--END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = 'https://aosat.realpage.com/ysconfig/ws/';
+--END
+--IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+--BEGIN
+--	SET @apiendpoint = 'https://ao.realpage.com/ysconfig/ws/';
+--END
+--set nocount on
+--INSERT INTO @ProductConfiguration
+--(SettingName, 
+-- SettingDescription, 
+-- SettingValue
+--)
+--VALUES
+--('ClientId','','1')
+--,('ClassName','','lromanagement')
+--,('ProductUrl','','/product/lromanagement')
+--,('TitleId','','LRO Management')
+--,('TitleUniqueId','','AA32B948-4F1E-4102-ADC9-2E041BF6E918')
+--,('IsNewTab','','1')
+--,('MetatagUniqueId','','Lease Rent Option Management')
+--,('IsResource','','0')
+--,('IsFavorite','','1')
+--,('LearnMore','','https://www.realpage.com/asset-investment-management/portfolio-asset-management/')
+--,('ApiEndPoint','', @apiendpoint)
+--,('ApiUserName','','wsuser')
+--,('ApiPassword','','cGdAIXcyM3Jn')
+--,('ProductSuperUserLoginName','','amungale')
+--,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
+--,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
+--,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
+--,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
+--,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
+--,('ShowInAppSwitcher','Should the product show in the application switcher','1')
+--,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
+--,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
+--,('LockOnProductAccess', '', '0')
+--,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+--,('NotificationEmailRequiredForUserWithNoEmail', '', '1')
+--,('AuthenticationType','Used to determine how to log into the product','Redirect')
 
 
-/*ASSIGN VALUES*/
 
-DECLARE @OrganizationId int;
-DECLARE @PartyRowNum int;
-DECLARE @RightName nvarchar(200);
-DECLARE @RightDescription nvarchar(200);
-DECLARE @RightShortName nvarchar(200);
-DECLARE @ActionName nvarchar(100);
-DECLARE @ActionRouteTarget nvarchar(100);
-DECLARE @ActionValueId int;
-DECLARE @SourceProductId int;
-DECLARE @TargetProductId int;
-DECLARE @RoleCategory int;
-DECLARE @RightCategory int;
-DECLARE @VisibilityStatusId int;
-DECLARE @ActionId int;
-DECLARE @ParentActionId int;
-DECLARE @DetaulRightName nvarchar(200);
-DECLARE @TargetRoleName nvarchar(100);
-DECLARE @RoleId int;
-DECLARE @OutputRightId int;
-DECLARE @UserActionId int;
-DECLARE @RightValueTypeId int;
-DECLARE @DependentRightValueTypeId int;
+--SELECT * FROM @ProductConfiguration
 
-/*SET BLOCK*/
-SET @TargetRoleName = 'User Administrator'; --- Role to which the new right will be assinged by default.
-SET @RightName = 'Manage LRO Management Product Access'; -- Name of the right 
-SET @RightDescription = 'Manage LRO Management Product Access'; --Description of the right as stated in story.
-SET @RightShortName = 'ManageLROManagement'; --Short name of the right that is being used by the application
-SET @ActionName = 'Manage LRO Management'; -- This specifically pertains to actions used for routing purposes. 
-SET @ActionRouteTarget = 'SideMenu'; -- Where you want this right to show up. other variation is DashBoard.
-SET @ActionValueID = 1;
-SET @DetaulRightName = 'Default_' + @RightShortName; -- This is used internally for creating right dependency in RightDependency table.
+--SET @LoginURL = '';
+--IF @ServerName IN ('RCDUSODBSQL001')
+--BEGIN
+--	SET @LoginURL = 'https://aodev.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
+--IF @ServerName IN ('rctusodbsql001')
+--BEGIN
+--	SET @LoginURL = 'https://aoqa.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @LoginURL = 'https://aosat.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
+--IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+--BEGIN
+--	SET @LoginURL = 'https://ao.realpage.com/ysconfig/sso/oauth?Product=LRO';
+--END
 
-/*CLEANUP  AND LOAD TEMPORARY TABLE FOR ORG LIST*/
+--SET @LoginURI = @LoginURL;
+--SET @SigningCertificateThumbprint = NULL;
 
-IF OBJECT_ID('tempdb..#HoldParty') IS NOT NULL
-BEGIN
-	DROP TABLE #HoldParty;
-END;
+----Setup the product configurations.
+--if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
+--begin
 
-SELECT DISTINCT 
-	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId AS OrganizationPartyID, 0 AS PStatus
-INTO #HoldParty
-FROM Enterprise.Organization AS o
-	 INNER JOIN
-	 Enterprise.Party AS p
-	 ON P.partyid = O.PartyId
-WHERE O.Name <> 'RealPage Employee'; 
---1. If rigths need in all organization then no condition 
---2. If needed in all except RP Employee company then O.Name <> 'RealPage Employee'
---3. If needed in just RP Employee and not in any other company, then  O.Name = 'RealPage Employee'
+--	EXEC Enterprise.ProductConfigurationSetup 
+--		 @ProductId, 
+--		 @LoginURI, 
+--		 @SigningCertificateThumbprint, 
+--		 @ProductConfiguration;
+--end;
 
-/*SELECT REQUIRED ATTRIBUTES FOR ROLE, RIGHT, AND ACTIONS*/
-SELECT @SourceProductId = ProductId
-FROM Enterprise.Product
-WHERE name = 'Unified Platform';
-
-SELECT @TargetProductId = ProductId
-FROM Enterprise.Product
-WHERE Name = 'LRO Management';
-
-SELECT @RoleCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Role Type' AND 
-	  TypeName = 'System';
-
-SELECT @RightCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Right Type' AND 
-	  TypeName = 'System';
-
-SELECT @VisibilityStatusId = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE TypeName = 'ALL' AND 
-	  CategoryType = 'Security';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionId IS NULL
-)
-BEGIN
-	EXEC Enterprise.CreateAction 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ParentActionId = ActionId
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionRouteTarget AND 
-	  ObjectType = 'Route' AND 
-	  Description = 'SuperUser';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionID = @ParentActionId
-)
-BEGIN
-EXEC [Enterprise].[CreateAction] 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ParentActionID = @ParentActionId, 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ActionID = ActionID
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionName AND 
-	  ObjectType = 'Right' AND 
-	  ParentActionId IS NULL;
-
-WHILE EXISTS
-(
-	SELECT 1
-	FROM #HoldParty
-	WHERE PStatus = 0
-)
-BEGIN
-	SELECT TOP 1 @PartyRowNum = Rownumber, @OrganizationId = OrganizationPartyID
-	FROM #HoldParty
-	WHERE PStatus = 0;
-	SELECT @RoleId = RoleId
-	FROM Enterprise.Role AS R
-		 INNER JOIN
-		 Enterprise.RoleValueType AS RR
-		 ON RR.RoleValueTypeId = R.RoleValueTypeId
-	WHERE RR.Value = @TargetRoleName AND 
-		  R.PartyId = @OrganizationId;
-	EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = @DetaulRightName, @ShortName = @RightShortName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Description = '', @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @RightName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Shortname = @RightShortName, @Description = @RightDescription, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	UPDATE #HoldParty
-	  SET PStatus = 1
-	WHERE RowNumber = @PartyRowNum;
-END;
-
-/*Setup Dependencies for custom roles*/
-
-SELECT @DependentRightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @DetaulRightName;
-
-SELECT @RightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @RightName;
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.RightDependency
-	WHERE RightValueTypeId = @RightValueTypeId AND 
-		  DependentRightValueTypeId = @DependentRightValueTypeId
-)
-BEGIN
-	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
-	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
-END;
-
-GO
+--IF NOT EXISTS
+--(
+--    SELECT 1
+--    FROM ident.SamlProductSettings
+--    WHERE ProductId = @ProductId
+--          AND LoginUri = @LoginURL
+--)
+--    BEGIN
+--        INSERT INTO ident.SamlProductSettings
+--        (
+--        --SamlProductSettingsId - column value is auto-generated
+--        ProductId, 
+--        LoginUri, 
+--        SigningCertificateThumbprint, 
+--        SubjectIdSamlAttribute
+--        )
+--        VALUES
+--        (
+--        -- SamlProductSettingsId - int
+--        @ProductId, -- ProductId - int
+--        @LoginURL, -- LoginUri - nvarchar
+--        N'NA', -- SigningCertificateThumbprint - nvarchar
+--        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+--        );
+--END;
+--GO
 
 --AA Product
 
@@ -1827,184 +1677,6 @@ IF NOT EXISTS
         N'productUserName' -- SubjectIdSamlAttribute - nvarchar
         );
 END;
-GO
-
-
-/*ASSIGN VALUES*/
-
-DECLARE @OrganizationId int;
-DECLARE @PartyRowNum int;
-DECLARE @RightName nvarchar(200);
-DECLARE @RightDescription nvarchar(200);
-DECLARE @RightShortName nvarchar(200);
-DECLARE @ActionName nvarchar(100);
-DECLARE @ActionRouteTarget nvarchar(100);
-DECLARE @ActionValueId int;
-DECLARE @SourceProductId int;
-DECLARE @TargetProductId int;
-DECLARE @RoleCategory int;
-DECLARE @RightCategory int;
-DECLARE @VisibilityStatusId int;
-DECLARE @ActionId int;
-DECLARE @ParentActionId int;
-DECLARE @DetaulRightName nvarchar(200);
-DECLARE @TargetRoleName nvarchar(100);
-DECLARE @RoleId int;
-DECLARE @OutputRightId int;
-DECLARE @UserActionId int;
-DECLARE @RightValueTypeId int;
-DECLARE @DependentRightValueTypeId int;
-
-/*SET BLOCK*/
-SET @TargetRoleName = 'User Administrator'; --- Role to which the new right will be assinged by default.
-SET @RightName = 'Manage Amenity Optimization Product Access'; -- Name of the right 
-SET @RightDescription = 'Manage Amenity Optimization Product Access'; --Description of the right as stated in story.
-SET @RightShortName = 'ManageAmenityOptimization'; --Short name of the right that is being used by the application
-SET @ActionName = 'Manage Amenity Optimization'; -- This specifically pertains to actions used for routing purposes. 
-SET @ActionRouteTarget = 'SideMenu'; -- Where you want this right to show up. other variation is DashBoard.
-SET @ActionValueID = 1;
-SET @DetaulRightName = 'Default_' + @RightShortName; -- This is used internally for creating right dependency in RightDependency table.
-
-/*CLEANUP  AND LOAD TEMPORARY TABLE FOR ORG LIST*/
-
-IF OBJECT_ID('tempdb..#HoldParty') IS NOT NULL
-BEGIN
-	DROP TABLE #HoldParty;
-END;
-
-SELECT DISTINCT 
-	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId AS OrganizationPartyID, 0 AS PStatus
-INTO #HoldParty
-FROM Enterprise.Organization AS o
-	 INNER JOIN
-	 Enterprise.Party AS p
-	 ON P.partyid = O.PartyId
-WHERE O.Name <> 'RealPage Employee'; 
---1. If rigths need in all organization then no condition 
---2. If needed in all except RP Employee company then O.Name <> 'RealPage Employee'
---3. If needed in just RP Employee and not in any other company, then  O.Name = 'RealPage Employee'
-
-/*SELECT REQUIRED ATTRIBUTES FOR ROLE, RIGHT, AND ACTIONS*/
-SELECT @SourceProductId = ProductId
-FROM Enterprise.Product
-WHERE name = 'Unified Platform';
-
-SELECT @TargetProductId = ProductId
-FROM Enterprise.Product
-WHERE Name = 'Amenity Optimization';
-
-SELECT @RoleCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Role Type' AND 
-	  TypeName = 'System';
-
-SELECT @RightCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Right Type' AND 
-	  TypeName = 'System';
-
-SELECT @VisibilityStatusId = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE TypeName = 'ALL' AND 
-	  CategoryType = 'Security';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionId IS NULL
-)
-BEGIN
-	EXEC Enterprise.CreateAction 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ParentActionId = ActionId
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionRouteTarget AND 
-	  ObjectType = 'Route' AND 
-	  Description = 'SuperUser';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionID = @ParentActionId
-)
-BEGIN
-EXEC [Enterprise].[CreateAction] 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ParentActionID = @ParentActionId, 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ActionID = ActionID
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionName AND 
-	  ObjectType = 'Right' AND 
-	  ParentActionId IS NULL;
-
-WHILE EXISTS
-(
-	SELECT 1
-	FROM #HoldParty
-	WHERE PStatus = 0
-)
-BEGIN
-	SELECT TOP 1 @PartyRowNum = Rownumber, @OrganizationId = OrganizationPartyID
-	FROM #HoldParty
-	WHERE PStatus = 0;
-	SELECT @RoleId = RoleId
-	FROM Enterprise.Role AS R
-		 INNER JOIN
-		 Enterprise.RoleValueType AS RR
-		 ON RR.RoleValueTypeId = R.RoleValueTypeId
-	WHERE RR.Value = @TargetRoleName AND 
-		  R.PartyId = @OrganizationId;
-	EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = @DetaulRightName, @ShortName = @RightShortName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Description = '', @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @RightName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Shortname = @RightShortName, @Description = @RightDescription, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	UPDATE #HoldParty
-	  SET PStatus = 1
-	WHERE RowNumber = @PartyRowNum;
-END;
-
-/*Setup Dependencies for custom roles*/
-
-SELECT @DependentRightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @DetaulRightName;
-
-SELECT @RightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @RightName;
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.RightDependency
-	WHERE RightValueTypeId = @RightValueTypeId AND 
-		  DependentRightValueTypeId = @DependentRightValueTypeId
-)
-BEGIN
-	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
-	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
-END;
-
 GO
 
 --AIRM Product 
@@ -2186,182 +1858,7 @@ END;
 GO
 
 
-/*ASSIGN VALUES*/
 
-DECLARE @OrganizationId int;
-DECLARE @PartyRowNum int;
-DECLARE @RightName nvarchar(200);
-DECLARE @RightDescription nvarchar(200);
-DECLARE @RightShortName nvarchar(200);
-DECLARE @ActionName nvarchar(100);
-DECLARE @ActionRouteTarget nvarchar(100);
-DECLARE @ActionValueId int;
-DECLARE @SourceProductId int;
-DECLARE @TargetProductId int;
-DECLARE @RoleCategory int;
-DECLARE @RightCategory int;
-DECLARE @VisibilityStatusId int;
-DECLARE @ActionId int;
-DECLARE @ParentActionId int;
-DECLARE @DetaulRightName nvarchar(200);
-DECLARE @TargetRoleName nvarchar(100);
-DECLARE @RoleId int;
-DECLARE @OutputRightId int;
-DECLARE @UserActionId int;
-DECLARE @RightValueTypeId int;
-DECLARE @DependentRightValueTypeId int;
-
-/*SET BLOCK*/
-SET @TargetRoleName = 'User Administrator'; --- Role to which the new right will be assinged by default.
-SET @RightName = 'Manage AI Revenue Management Product Access'; -- Name of the right 
-SET @RightDescription = 'Manage AI Revenue Management Product Access'; --Description of the right as stated in story.
-SET @RightShortName = 'ManageAIRevenueManagement'; --Short name of the right that is being used by the application
-SET @ActionName = 'Manage AI Revenue Management'; -- This specifically pertains to actions used for routing purposes. 
-SET @ActionRouteTarget = 'SideMenu'; -- Where you want this right to show up. other variation is DashBoard.
-SET @ActionValueID = 1;
-SET @DetaulRightName = 'Default_' + @RightShortName; -- This is used internally for creating right dependency in RightDependency table.
-
-/*CLEANUP  AND LOAD TEMPORARY TABLE FOR ORG LIST*/
-
-IF OBJECT_ID('tempdb..#HoldParty') IS NOT NULL
-BEGIN
-	DROP TABLE #HoldParty;
-END;
-
-SELECT DISTINCT 
-	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId AS OrganizationPartyID, 0 AS PStatus
-INTO #HoldParty
-FROM Enterprise.Organization AS o
-	 INNER JOIN
-	 Enterprise.Party AS p
-	 ON P.partyid = O.PartyId
-WHERE O.Name <> 'RealPage Employee'; 
---1. If rigths need in all organization then no condition 
---2. If needed in all except RP Employee company then O.Name <> 'RealPage Employee'
---3. If needed in just RP Employee and not in any other company, then  O.Name = 'RealPage Employee'
-
-/*SELECT REQUIRED ATTRIBUTES FOR ROLE, RIGHT, AND ACTIONS*/
-SELECT @SourceProductId = ProductId
-FROM Enterprise.Product
-WHERE name = 'Unified Platform';
-
-SELECT @TargetProductId = ProductId
-FROM Enterprise.Product
-WHERE Name = 'AI Revenue Management';
-
-SELECT @RoleCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Role Type' AND 
-	  TypeName = 'System';
-
-SELECT @RightCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Right Type' AND 
-	  TypeName = 'System';
-
-SELECT @VisibilityStatusId = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE TypeName = 'ALL' AND 
-	  CategoryType = 'Security';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionId IS NULL
-)
-BEGIN
-	EXEC Enterprise.CreateAction 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ParentActionId = ActionId
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionRouteTarget AND 
-	  ObjectType = 'Route' AND 
-	  Description = 'SuperUser';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionID = @ParentActionId
-)
-BEGIN
-EXEC [Enterprise].[CreateAction] 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ParentActionID = @ParentActionId, 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ActionID = ActionID
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionName AND 
-	  ObjectType = 'Right' AND 
-	  ParentActionId IS NULL;
-
-WHILE EXISTS
-(
-	SELECT 1
-	FROM #HoldParty
-	WHERE PStatus = 0
-)
-BEGIN
-	SELECT TOP 1 @PartyRowNum = Rownumber, @OrganizationId = OrganizationPartyID
-	FROM #HoldParty
-	WHERE PStatus = 0;
-	SELECT @RoleId = RoleId
-	FROM Enterprise.Role AS R
-		 INNER JOIN
-		 Enterprise.RoleValueType AS RR
-		 ON RR.RoleValueTypeId = R.RoleValueTypeId
-	WHERE RR.Value = @TargetRoleName AND 
-		  R.PartyId = @OrganizationId;
-	EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = @DetaulRightName, @ShortName = @RightShortName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Description = '', @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @RightName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Shortname = @RightShortName, @Description = @RightDescription, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	UPDATE #HoldParty
-	  SET PStatus = 1
-	WHERE RowNumber = @PartyRowNum;
-END;
-
-/*Setup Dependencies for custom roles*/
-
-SELECT @DependentRightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @DetaulRightName;
-
-SELECT @RightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @RightName;
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.RightDependency
-	WHERE RightValueTypeId = @RightValueTypeId AND 
-		  DependentRightValueTypeId = @DependentRightValueTypeId
-)
-BEGIN
-	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
-	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
-END;
-
-GO
 -- RC Product
 
 
@@ -2543,182 +2040,10 @@ IF NOT EXISTS
 END;
 GO
 
-
-/*ASSIGN VALUES*/
-
-DECLARE @OrganizationId int;
-DECLARE @PartyRowNum int;
-DECLARE @RightName nvarchar(200);
-DECLARE @RightDescription nvarchar(200);
-DECLARE @RightShortName nvarchar(200);
-DECLARE @ActionName nvarchar(100);
-DECLARE @ActionRouteTarget nvarchar(100);
-DECLARE @ActionValueId int;
-DECLARE @SourceProductId int;
-DECLARE @TargetProductId int;
-DECLARE @RoleCategory int;
-DECLARE @RightCategory int;
-DECLARE @VisibilityStatusId int;
-DECLARE @ActionId int;
-DECLARE @ParentActionId int;
-DECLARE @DetaulRightName nvarchar(200);
-DECLARE @TargetRoleName nvarchar(100);
-DECLARE @RoleId int;
-DECLARE @OutputRightId int;
-DECLARE @UserActionId int;
-DECLARE @RightValueTypeId int;
-DECLARE @DependentRightValueTypeId int;
-
-/*SET BLOCK*/
-SET @TargetRoleName = 'User Administrator'; --- Role to which the new right will be assinged by default.
-SET @RightName = 'Manage Rent Control Product Access'; -- Name of the right 
-SET @RightDescription = 'Manage Rent Control Product Access'; --Description of the right as stated in story.
-SET @RightShortName = 'ManageRentControl'; --Short name of the right that is being used by the application
-SET @ActionName = 'Manage Rent Control'; -- This specifically pertains to actions used for routing purposes. 
-SET @ActionRouteTarget = 'SideMenu'; -- Where you want this right to show up. other variation is DashBoard.
-SET @ActionValueID = 1;
-SET @DetaulRightName = 'Default_' + @RightShortName; -- This is used internally for creating right dependency in RightDependency table.
-
-/*CLEANUP  AND LOAD TEMPORARY TABLE FOR ORG LIST*/
-
-IF OBJECT_ID('tempdb..#HoldParty') IS NOT NULL
-BEGIN
-	DROP TABLE #HoldParty;
-END;
-
-SELECT DISTINCT 
-	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId AS OrganizationPartyID, 0 AS PStatus
-INTO #HoldParty
-FROM Enterprise.Organization AS o
-	 INNER JOIN
-	 Enterprise.Party AS p
-	 ON P.partyid = O.PartyId
-WHERE O.Name <> 'RealPage Employee'; 
---1. If rigths need in all organization then no condition 
---2. If needed in all except RP Employee company then O.Name <> 'RealPage Employee'
---3. If needed in just RP Employee and not in any other company, then  O.Name = 'RealPage Employee'
-
-/*SELECT REQUIRED ATTRIBUTES FOR ROLE, RIGHT, AND ACTIONS*/
-SELECT @SourceProductId = ProductId
-FROM Enterprise.Product
-WHERE name = 'Unified Platform';
-
-SELECT @TargetProductId = ProductId
-FROM Enterprise.Product
-WHERE Name = 'Rent Control';
-
-SELECT @RoleCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Role Type' AND 
-	  TypeName = 'System';
-
-SELECT @RightCategory = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE CategoryName = 'Right Type' AND 
-	  TypeName = 'System';
-
-SELECT @VisibilityStatusId = TypeId
-FROM Enterprise.RoleRightStatus AS rrs
-WHERE TypeName = 'ALL' AND 
-	  CategoryType = 'Security';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionId IS NULL
-)
-BEGIN
-	EXEC Enterprise.CreateAction 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ParentActionId = ActionId
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionRouteTarget AND 
-	  ObjectType = 'Route' AND 
-	  Description = 'SuperUser';
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.ACTION
-	WHERE ObjectValue = @ActionName AND 
-		  ParentActionID = @ParentActionId
-)
-BEGIN
-EXEC [Enterprise].[CreateAction] 
-     @ProductID = @SourceProductId, 
-     @Action = @ActionName, 
-     @ActionTarget = N'Right', 
-     @ActionbValueTypeId = 1, 
-     @Description = '', 
-     @ParentActionID = @ParentActionId, 
-     @ActionID = @ActionID OUTPUT;
-SELECT @ActionID AS N'@ActionID';
-END;
-
-SELECT @ActionID = ActionID
-FROM Enterprise.ACTION
-WHERE ObjectValue = @ActionName AND 
-	  ObjectType = 'Right' AND 
-	  ParentActionId IS NULL;
-
-WHILE EXISTS
-(
-	SELECT 1
-	FROM #HoldParty
-	WHERE PStatus = 0
-)
-BEGIN
-	SELECT TOP 1 @PartyRowNum = Rownumber, @OrganizationId = OrganizationPartyID
-	FROM #HoldParty
-	WHERE PStatus = 0;
-	SELECT @RoleId = RoleId
-	FROM Enterprise.Role AS R
-		 INNER JOIN
-		 Enterprise.RoleValueType AS RR
-		 ON RR.RoleValueTypeId = R.RoleValueTypeId
-	WHERE RR.Value = @TargetRoleName AND 
-		  R.PartyId = @OrganizationId;
-	EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = @DetaulRightName, @ShortName = @RightShortName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Description = '', @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @RightName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Shortname = @RightShortName, @Description = @RightDescription, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
-	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
-	UPDATE #HoldParty
-	  SET PStatus = 1
-	WHERE RowNumber = @PartyRowNum;
-END;
-
-/*Setup Dependencies for custom roles*/
-
-SELECT @DependentRightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @DetaulRightName;
-
-SELECT @RightValueTypeId = RightValueTypeId
-FROM Enterprise.RightValueType
-WHERE value = @RightName;
-
-IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.RightDependency
-	WHERE RightValueTypeId = @RightValueTypeId AND 
-		  DependentRightValueTypeId = @DependentRightValueTypeId
-)
-BEGIN
-	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
-	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
-END;
-
+if not exists(Select top 1 1 from Enterprise.ProductSettingType where Name = 'UPFMOrderIgnoreEnvironment')
+Begin
+	Insert into Enterprise.ProductSettingType (Name, Description) Values ('UPFMOrderIgnoreEnvironment', 'Ignore environment for new company creation from UPFM Order create Tibco events')
+End
 GO
 
 ---- 99688 [GB-6736] Unified Login integration with Senior Lead Management

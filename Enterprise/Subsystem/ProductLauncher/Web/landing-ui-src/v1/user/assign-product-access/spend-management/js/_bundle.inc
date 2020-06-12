@@ -1,7 +1,5 @@
 // Config
 
-{{{ include("config/spend-management.js") }}}
-
 // Controllers
 
 {{{ include("controllers/product-access.js") }}}

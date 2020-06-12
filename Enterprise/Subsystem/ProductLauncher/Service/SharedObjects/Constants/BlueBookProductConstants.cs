@@ -99,6 +99,7 @@
 		/// RPDocumentManagement
 		/// </summary>
 		public const string RPDocumentManagement = "DOC";
+
 		/// <summary>
 		/// iDoc
 		/// </summary>
@@ -229,11 +230,6 @@
 		/// </summary>
 		public const string HelpCenter = "HLP";
 
-        /// <summary>
-		/// Senior Lead Management
-		/// </summary>
-		public const string SeniorLeadManagement = "SLM";
-
 		/// <summary>
 		/// AoAIRevenueManagement
 		/// </summary>
@@ -248,10 +244,15 @@
 		/// AoRentControl
 		/// </summary>
 		public const string AoRentControl = "RC";
-		
+
 		/// <summary>
 		/// LRO
 		/// </summary>
 		public const string AoLeaseRentOption = "LRO";
+
+		/// <summary>
+		/// UnifiedSettings
+		/// </summary>
+		public const string UnifiedSettings = "SET";
 	}
 }

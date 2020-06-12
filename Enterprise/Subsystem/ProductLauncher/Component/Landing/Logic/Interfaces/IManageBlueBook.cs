@@ -28,8 +28,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
         /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
+        /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <returns>List of CompanyMap</returns>
-        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "");
+        IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true);
 
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system
@@ -56,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Used to get the information about the company for RPUP
         /// </summary>
-        /// <param name="companyId">Master Company Id</param>
+        /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <returns>Company object</returns>
         CustomerCompany GetCompanyCustomerInfo(long booksCompanyMasterId);
 
@@ -75,5 +76,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList);
 
         IList<ProductProperty> GetCustomerProperty(long booksCompanyMasterId = 0, string include = null, string filter = null);
+
+        /// <summary>
+        /// Used to add a new company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        bool AddBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
+
+        /// <summary>
+        /// Used to delete an existing company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
+
+        /// <summary>
+        /// Used to update an existing company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
     }
 }

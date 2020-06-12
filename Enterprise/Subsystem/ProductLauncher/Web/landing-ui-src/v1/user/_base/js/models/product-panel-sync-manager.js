@@ -21,6 +21,7 @@
             s.propertyMap = {};
             s.roleMap = {};
             s.benchMarkRoleMap = {};
+            s.rightMap = {};
             s.sidePanelDataMap = {};
             s.productGridConfigMap = {};
             s.productAsideGridConfigMap = {};
@@ -30,10 +31,12 @@
             s.productTabsMap = {};
             s.productActiveTabMap = {};
             s.productSelectTypeConfigMap = {};
+            s.productPageLevelRadioConfigMap = {};
             s.productDependencyDataMap = {};
             s.productPresetRolesMap = {};
-
+            s.notificationsMap={};
             s.originalPropertyListMap = {};
+            s.asidePropertyMap = {};
 
             s.productControlsList = {
                 products: []
@@ -46,9 +49,11 @@
             s.originalPropertyList = [];
             s.roleList = [];
             s.benchMarkRoleList = [];
+            s.rightList = [];
             s.presetRoleList = [];
             s.sidePanelDataList = [];
-
+            s.asidePropertyList = [];
+            s.productAdditionalMap = [];
         };
 
         // Getters
@@ -136,6 +141,15 @@
             return config;
         };
 
+        p.getProductPageLevelRadioConfig = function (productId, tabName) {
+            var s = this,
+                config;
+            if (s.productPageLevelRadioConfigMap['product' + productId + tabName] !== undefined) {
+                config = s.productPageLevelRadioConfigMap['product' + productId + tabName].selectCtrlConfig;
+            }
+            return config;
+        };
+
         p.getProductRadioConfig = function (productId, tabName) {
             var s = this,
                 config;
@@ -178,7 +192,7 @@
             return productRolesList;
         };
 
-         p.getProductBenchMarkRolesData = function (product) {
+        p.getProductBenchMarkRolesData = function (product) {
             var s = this,
                 productBMRolesList;
 
@@ -187,6 +201,17 @@
             }
 
             return productBMRolesList;
+        };
+
+        p.getProductRightsData = function (product) {
+            var s = this,
+                productRightsList;
+
+            if (s.rightMap['product' + product] !== undefined) {
+                productRightsList = s.rightMap['product' + product].rights;
+            }
+
+            return productRightsList;
         };
 
         p.getProductPresetRolesData = function (product) {
@@ -200,6 +225,15 @@
             return productRolesList;
         };
 
+        p.getProductNotificationsData = function (product) {
+            var s = this,
+                productNotificationsList;
+            if (s.notificationsMap['product' + product] !== undefined) {
+                productNotificationsList = s.notificationsMap['product' + product].notifications;
+            }
+            return productNotificationsList;
+        };
+
         p.getProductPropertiesData = function (product) {
             var s = this,
                 productPropertiesList;
@@ -210,6 +244,15 @@
             }
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
+        };
+        p.getProductAsidePropertyData = function (product) {
+            var s = this,
+                asidePropertyList;
+
+            if (s.asidePropertyMap['product' + product] !== undefined) {
+                asidePropertyList = s.asidePropertyMap['product' + product].asideProperties;
+            }
+            return asidePropertyList;
         };
 
         p.getProductPropertyGroupData = function (product) {
@@ -277,6 +320,13 @@
             return s;
         };
 
+        p.setAsidePropertyList = function (list, key) {
+            var s = this;
+            s.asidePropertyList = list;
+            s.renderAsidePropertyMap(key);
+            return s;
+        };
+
         p.setPropertyGroupList = function (list, key) {
             var s = this;
             s.propertyGroupList = list;
@@ -322,7 +372,12 @@
             s.renderBenchMarkRoleMap(key);
             return s;
         };
-
+        p.setRightList = function (list, key) {
+            var s = this;
+            s.rightList = list;
+            s.renderRightMap(key);
+            return s;
+        };
         p.setPresetRoleList = function (list, key) {
             var s = this;
             s.presetRoleList = list;
@@ -341,6 +396,13 @@
 
             s.productDependencyDataMap['product' + key] = {
                 dependencyData: bool
+            };
+        };
+
+        p.setProductAllNotifications = function (product, value) {
+            var s = this;
+            s.notificationsMap['product' + product] = {
+                notifications: value
             };
         };
 
@@ -415,13 +477,19 @@
 
             roleData.forEach(function (item) {
                 item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == "23") {
+                    item.isAssigned = item.level == record.level;
+                }
+                else{
+                    item.isAssigned = item.id == record.id;
+                }
+
             });
 
             return s;
         };
 
-         p.selectedBenchMarkRoleSync = function (key, record) {
+        p.selectedBenchMarkRoleSync = function (key, record) {
             var s = this,
                 roleData,
                 selectedRole,
@@ -436,7 +504,21 @@
 
             return s;
         };
+        p.selectedRightSync = function (key, record) {
+            var s = this,
+                rightData,
+                selectedRole,
+                selectState = false;
 
+            rightData = s.rightMap['product' + key].rights;
+
+            rightData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            return s;
+        };
 
         p.multiSelectedRoleSync = function (key, record) {
             var s = this,
@@ -455,7 +537,7 @@
             return s;
         };
 
-         p.multiSelectBenchMarkRoleSync = function (key, record) {
+        p.multiSelectBenchMarkRoleSync = function (key, record) {
             var s = this,
                 roleData,
                 selectedRole,
@@ -464,6 +546,20 @@
             roleData = s.benchMarkRoleMap['product' + key].roles;
 
             roleData.forEach(function (item) {
+                if (item.id == record.id) {
+                    item.isAssigned = record.isAssigned;
+                }
+            });
+
+            return s;
+        };
+        p.multiSelectRightSync = function (key, record) {
+            var s = this,
+                rightData,
+                selectedRight,
+                selectState = false;
+            rightData = s.rightMap['product' + key].rights;
+            rightData.forEach(function (item) {
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
                 }
@@ -497,10 +593,27 @@
             propertyData = s.propertyMap['product' + key].properties;
 
             propertyData.forEach(function (item) {
-                item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == 8){
+                    item.isAssigned = item.propertyId == record.propertyId;
+                }
+                else{
+                    item.isAssigned = false;
+                    item.isAssigned = item.id == record.id;
+                }
             });
 
+            return s;
+        };
+        p.selectedAsidePropertySync = function (productId) {
+            var s = this,
+            propertyData;
+
+            propertyData = s.asidePropertyMap['product' + productId].asideProperties;
+            var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
+                return data.isAssigned === true;
+            });
+
+            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length; 
             return s;
         };
 
@@ -549,8 +662,8 @@
 
             propertyList.forEach(function (item) {
                 if (parseInt(item.region_id) == parseInt(group.id)) {
-                     item["isAssigned"] = group.isAssigned;
-                 }
+                    item["isAssigned"] = group.isAssigned;
+                }
             });
 
             pubsub.publish("pplpropertygroup.updateGrids");
@@ -578,6 +691,34 @@
             pubsub.publish("pplpropertygroup.updateGrids");
             return s;
         };
+        p.updateAllFilterAsideProperties = function (productId, record, bool) {
+            var s = this,
+                propertyList,
+                assignedCount = 0,
+                matchRecord;
+
+            propertyList = s.asidePropertyMap['product' + productId].asideProperties;
+            record.forEach(function (item) {
+                item.isAssigned = bool;                
+            });
+            if(bool){
+                assignedCount = record.length;
+            }
+            propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
+            return s;
+        };
+        p.setAllPropertyGroupSync = function (productId, bool) {
+            var s = this,
+                propertyGroupList;
+            if(!angular.equals({}, s.propertyGroupMap)){
+                propertyGroupList = s.propertyGroupMap['product' + productId].propertyGroup;
+                propertyGroupList.forEach(function (item) {
+                    item["isAssigned"] = bool;
+                });
+            }
+               
+            return s;
+        };
 
         p.allRolesSync = function (productId, selected) {
             var s = this,
@@ -600,7 +741,7 @@
             return s;
         };
 
-         p.allBenchMarkRolesSync = function (productId, selected) {
+        p.allBenchMarkRolesSync = function (productId, selected) {
             var s = this,
                 roleList,
                 selectState = false,
@@ -613,6 +754,36 @@
                 item["isAssigned"] = selected;
             });
 
+            return s;
+        };
+        p.allRightsSync = function (productId, selected) {
+            var s = this,
+                rightList,
+                selectState = false,
+                assignedCount = 0,
+                totalCount = 0;
+
+            rightList = s.rightMap['product' + productId].rights;
+
+            rightList.forEach(function (item) {
+                item["isAssigned"] = selected;
+            });
+
+            return s;
+        };
+        p.updateAllFilterRights = function (key, records, bool) {
+            var s = this,
+            rightData;
+            rightData = s.rightMap['product' + key].rights;
+            records.forEach(function (item) {
+                var record = rightData.filter(function (data) {
+                    return item.id === data.id;
+                })[0];
+
+                if (item.id == record.id) {
+                    record.isAssigned =bool;
+                }
+            });
             return s;
         };
 
@@ -659,6 +830,13 @@
             };
 
             s.selectTypeConfigLoaded = true;
+        };
+
+        p.renderPageLevelRadioConfigMap = function (productId, tabName, config) {
+            var s = this;
+            s.productPageLevelRadioConfigMap['product' + productId + tabName] = {
+                selectCtrlConfig: config
+            };
         };
 
         p.renderProductRadioConfigMap = function (productId, tabName, config) {
@@ -717,6 +895,14 @@
                 };
             }
         };
+        p.renderAsidePropertyMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.asidePropertyList)) {
+                s.asidePropertyMap['product' + key] = {
+                    asideProperties: s.asidePropertyList,
+                };
+            }
+        };
 
         p.renderPropertyGroupMap = function (key) {
             var s = this;
@@ -763,7 +949,15 @@
                 };
             }
         };
+        p.renderRightMap = function (key) {
+            var s = this;
 
+            if (!angular.equals({}, s.rightList)) {
+                s.rightMap['product' + key] = {
+                    rights: s.rightList
+                };
+            }
+        };
         p.renderPresetRoleMap = function (key) {
             var s = this;
 
@@ -808,6 +1002,39 @@
             return s;
         };
 
+        p.clearPropertyGroupData = function(key) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
+        };
+
+        p.getProductAdditionalData = function (product) {
+            var s = this,
+                additionalData;
+            if (s.productAdditionalMap['product' + product] !== undefined) {
+                additionalData = s.productAdditionalMap['product' + product].additional;
+            }
+            return additionalData;
+        };
+
+        p.setProductAdditionalData = function (product, value) {
+            var s = this;
+            s.productAdditionalMap['product' + product] = {
+                additional: value
+            };
+        };
+
+        p.updateProductAdditionalData = function (product, tabName, value) {
+            var s = this,
+            additionalData = s.getProductAdditionalData(product);
+            additionalData[tabName] = value;
+            s.setProductAdditionalData(product, additionalData);
+        };
+
         // Assertions
 
         p.allSelected = function (list, selectKey) {
@@ -823,50 +1050,50 @@
             //logc("test", persona.data.hasProspectContactCenterProductAccess);
             var s = this;
             switch (productId) {
-            case "1":
-                return persona.data.hasManageOneSiteProductAccess;
-            case "4":
-                return persona.data.hasManageAssetOptimizationProductAccess;
-            case "6":
-                return persona.data.hasManageLead2LeaseProductAccess;
-            case "8":
-                return persona.data.hasManageAccountingProductAccess;
-            case "9":
-                return persona.data.hasManageMarketingCenterProductAccess;
-            case "10":
-                return persona.data.hasProspectContactCenterProductAccess;
-            case "13":
-                return persona.data.hasManageSpendManagementProductAccess;
-            case "14":
-                return persona.data.hasManageClientPortalProductAccess;
-            case "15":
-                return persona.data.hasManageRentersInsuranceProductAccess;
-            case "16":
-                return persona.data.hasManageVendorComplianceProductAccess;
-            case "17":
-                return persona.data.hasResidentPortalUserAccess;
-            case "18":
-                return persona.data.hasManageUtilityManagementProductAccess;
-            case "20":
-                return persona.data.hasManageDocumentManagementProductAccess;
-            case "23":
-                return persona.data.hasManageOnSiteProductAccess;
-            case "26":
-                return persona.data.hasManageUnifiedAmenitiesProductAccess;
-            case "39":
-                return persona.data.hasManageIntegrationMarketplaceProductAccess;
-            case "40":
-                return persona.data.hasManageILMLeadManagemementProductAccess;
-            case "41":
-                return persona.data.hasManageILMLeasingAnalyticsProductAccess;
-            case "44":
-                return persona.data.hasManagePortfolioManagementProductAccess;
-            case "47":
-                return persona.data.hasManageDepositAlternativeProductAccess;
-            case "48":
-                return persona.data.hasManageClickPayProductAccess;
-            default:
-                return false;
+                case "1":
+                    return persona.data.hasManageOneSiteProductAccess;
+                case "4":
+                    return persona.data.hasManageAssetOptimizationProductAccess;
+                case "6":
+                    return persona.data.hasManageLead2LeaseProductAccess;
+                case "8":
+                    return persona.data.hasManageAccountingProductAccess;
+                case "9":
+                    return persona.data.hasManageMarketingCenterProductAccess;
+                case "10":
+                    return persona.data.hasProspectContactCenterProductAccess;
+                case "13":
+                    return persona.data.hasManageSpendManagementProductAccess;
+                case "14":
+                    return persona.data.hasManageClientPortalProductAccess;
+                case "15":
+                    return persona.data.hasManageRentersInsuranceProductAccess;
+                case "16":
+                    return persona.data.hasManageVendorComplianceProductAccess;
+                case "17":
+                    return persona.data.hasResidentPortalUserAccess;
+                case "18":
+                    return persona.data.hasManageUtilityManagementProductAccess;
+                case "20":
+                    return persona.data.hasManageDocumentManagementProductAccess;
+                case "23":
+                    return persona.data.hasManageOnSiteProductAccess;
+                case "26":
+                    return persona.data.hasManageUnifiedAmenitiesProductAccess;
+                case "39":
+                    return persona.data.hasManageIntegrationMarketplaceProductAccess;
+                case "40":
+                    return persona.data.hasManageILMLeadManagemementProductAccess;
+                case "41":
+                    return persona.data.hasManageILMLeasingAnalyticsProductAccess;
+                case "44":
+                    return persona.data.hasManagePortfolioManagementProductAccess;
+                case "47":
+                    return persona.data.hasManageDepositAlternativeProductAccess;
+                case "48":
+                    return persona.data.hasManageClickPayProductAccess;
+                default:
+                    return false;
             }
         };
 
@@ -876,17 +1103,21 @@
             s.companyGroupMap = {};
             s.propertyMap = {};
             s.roleMap = {};
+            s.rightMap = {};
             s.bmRoleMap = {};
             s.groupList = [];
             s.propertyList = [];
             s.propertyGroupList = [];
             s.roleList = [];
+            s.rightList = [];
             s.originalPropertyList = [];
             s.bmRoleList = [];
             s.companyGroupList = [];
             s.productControlsList = [];
             s.productControlsMap = {};
-            s.productPresetRolesMap ={};
+            s.productPresetRolesMap = {};
+            s.notificationsMap = {};
+            s.productAdditionalMap = [];
         };
 
         return new ProductDataSyncManager();

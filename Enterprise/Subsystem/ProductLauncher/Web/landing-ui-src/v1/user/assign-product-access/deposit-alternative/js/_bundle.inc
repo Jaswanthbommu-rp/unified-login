@@ -1,5 +1,4 @@
 {{{ include("config/tabs.js") }}}
-{{{ include("config/deposit-alternative.js") }}}
 
 {{{ include("controllers/product-access.js") }}}
 {{{ include("controllers/properties-grid.js") }}}

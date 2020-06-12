@@ -15,6 +15,7 @@
             var s = this;
             s.stream = eventStream();
             s.changeMode = "none";
+            s.userHasBIAccess = false;
             s.changeModes = {
             	ToNoEmail: "ToNoEmail",
             	SuperToRegular: "SuperToRegular",
@@ -27,7 +28,7 @@
                 ExternalToSuper: "ExternalToSuper",
                 ExternalToRegular: "ExternalToRegular",
                 RegularToExternal: "RegularToExternal",
-                
+
             };
         };
 
@@ -45,6 +46,17 @@
         p.setChangeMode = function (changeMode) {
         	var s = this;
         	s.changeMode = changeMode;
+        };
+
+        p.setUserBIAccess = function (value) {
+            var s = this;
+            s.userHasBIAccess = value;
+        };
+
+        p.getUserBIAccess = function () {
+            var s = this;
+            logc("getUserBIAccess", s);
+            return  s.userHasBIAccess;
         };
 
         p.chgSuperToRegular = function () {
@@ -70,7 +82,7 @@
         p.chgNoEmailToExternal = function () {
             var s = this;
             return (s.changeMode === s.changeModes.NoEmailToExternal);
-        };        
+        };
 
         p.chgNoEmailToSuper = function () {
             var s = this;
@@ -97,7 +109,7 @@
             return (s.changeMode === s.changeModes.SuperToExternal);
         };
 
-                        
+
         p.destroy = function () {
             var s = this;
             s.stream.destroy();

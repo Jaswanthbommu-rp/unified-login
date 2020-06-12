@@ -1711,8 +1711,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="companyId"></param>
         /// <param name="products"></param>
+        /// <param name="version"></param>
+        /// <param name="rowsPerPage"></param>
+        /// <param name="pageNumber"></param>
         /// <returns>List of Users by product or company</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products)
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products , int version, int rowsPerPage, int pageNumber)
         {
             //Ignoring filter and Sort
             IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
@@ -1721,16 +1724,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 CompanyId = companyId,
                 ProductId = products.Count > 0 ? string.Join(",", products) : null,
-                RowsPerPage = 0,
-                PageNumber = 1
+                RowsPerPage = rowsPerPage,
+                PageNumber = pageNumber
             };
 
             using (var repository = GetRepository())
             {
-                productUsers = repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
-            }
+                switch (version)
+                {
+                    case 2:
+                        return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver2, param);
+                    default:
+                        return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
 
-            return productUsers;
+                }
+            }
         }
 
         /// <summary>

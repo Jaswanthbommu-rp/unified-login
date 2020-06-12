@@ -1,6 +1,5 @@
 {{{ include("templates/templates.inc.js") }}}
 
-{{{ include("config/product-panel.js") }}}
 {{{ include("controllers/product-controller.js") }}}
 {{{ include("controllers/product-properties.js") }}}
 {{{ include("controllers/product-roles.js") }}}
@@ -9,7 +8,10 @@
 {{{ include("controllers/product-info-icon.js") }}}
 {{{ include("controllers/product-list-aside.js") }}}
 {{{ include("controllers/product-property-group.js") }}}
+{{{ include("controllers/product-property-group-radio.js") }}}
 {{{ include("controllers/product-benchmark-roles.js") }}}
+{{{ include("controllers/product-rights.js") }}}
+{{{ include("controllers/product-notifications.js") }}}
 
 {{{ include("models/product-panel.js") }}}
 {{{ include("models/config-data-model.js") }}}

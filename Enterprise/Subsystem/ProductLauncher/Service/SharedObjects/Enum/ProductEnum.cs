@@ -23,6 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				return value.ToString();
 			}
 		}
+
 		/// <summary>
 		/// Get ProductName by Product Id
 		/// </summary>
@@ -200,6 +201,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 
 			throw new Exception($"AO product with Id - {productCode} is not supported in green book.");
 		}
+
+		/// <summary>
+		/// GetProductEnumByProductCode
+		/// </summary>
+		/// <param name="productCode">Product Code</param>
+		/// <returns>ProductEnum</returns>
+		public static ProductEnum GetProductEnumByProductCode(string productCode)
+		{
+			var ProductEnumsList = System.Enum.GetValues(typeof(ProductEnum));
+
+			foreach (object pEnum in ProductEnumsList)
+			{
+				string result;
+				FieldInfo fi = typeof(ProductEnum).GetField(pEnum.ToString());
+				if (fi != null)
+				{
+					try
+					{
+						object[] descriptionAttrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+						DescriptionAttribute description = (DescriptionAttribute)descriptionAttrs[0];
+						result = (description.Description);
+						if (result == productCode)
+							return (ProductEnum)pEnum;
+					}
+					catch
+					{
+						result = null;
+					}
+				}
+			}
+
+			//If Code reach here that means product code did not match with any Product Enum Description value. So raise an exception
+			throw new Exception("Invalid product code");
+		}
 	}
 
 	/// <summary>
@@ -246,6 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Yieldstar - THIS IS NOT REQUIRED
 		/// </summary>
+		[Description("YS")]
 		Yieldstar = 7, //TODO: This can be replaced with some other products
 
 		/// <summary>
@@ -269,6 +305,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Social
 		/// </summary>
+		[Description("??")]
 		Social = 11,
 
 		/// <summary>
@@ -327,6 +364,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// OneSiteConversions
 		/// </summary>
+		[Description("OSC")]
 		OneSiteConversions = 21,
 
 		/// <summary>
@@ -508,21 +546,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("LRO")]
 		AoLeaseRentOption = 51,
+
 		/// <summary>
 		/// AO Amenity Optimization
 		/// </summary>
 		[Description("AA")]
 		AoAmenityOptimization = 52,
+
 		/// <summary>
 		/// AO AI Revenue Management
 		/// </summary>
 		[Description("AIRM")]
 		AoAIRevenueManagement = 53,
+
 		/// <summary>
 		/// AO Rent Control
 		/// </summary>
 		[Description("RC")]
-		AoRentControl = 54
+		AoRentControl = 54,
+
+		/// <summary>
+		/// AO Rent Control
+		/// </summary>
+		[Description("SET")]
+		UnifiedSettings = 56
 	}
 
 	/// <summary>
@@ -536,20 +583,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("OS")]
 		ManageOneSiteProductAccess = 1,
 
-
 		/// <summary>
 		/// Asset Optimizer - Umbrella for all AO products
 		/// </summary>
 		[Description("AO")]
 		ManageAssetOptimizationProductAccess = 4,
 
-
 		/// <summary>
 		/// Lead2Lease
 		/// </summary>
 		[Description("L2L")]
 		ManageLead2LeaseProductAccess = 6,
-
 
 		/// <summary>
 		/// Accounting
@@ -574,7 +618,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("OPS")]
 		ManageSpendManagementProductAccess = 13,
-
 
 		/// <summary>
 		/// SalesForce ClientPortal
@@ -670,11 +713,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("AA")]
 		AoAmenityOptimization = 52,
+
 		/// <summary>
 		/// AO AI Revenue Management
 		/// </summary>
 		[Description("AIRM")]
 		AoAIRevenueManagement = 53,
+
 		/// <summary>
 		/// AO Rent Control
 		/// </summary>

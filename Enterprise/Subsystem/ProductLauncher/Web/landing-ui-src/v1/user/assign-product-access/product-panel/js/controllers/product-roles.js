@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, syncMgr, roleSvc, dependencySvc, tabsModel, menuConfig) {
+    function ProductRolesGridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, syncMgr, roleSvc, dependencySvc, tabsModel, menuConfig, switchConfig) {
         var vm = this,
             rolesGrid = gridModel(),
             rolesGridTransform = gridTransformSvc(),
@@ -12,7 +12,9 @@
             assignedRoleId = 0,
             roleRights = [],
             userLoginName = "",
-            selectconfigs = [];
+            selectconfigs = [],
+            isSelectAllPropMsg1,
+            isSelectAllPropMsg2;
 
         vm.init = function () {
             vm = this;
@@ -20,12 +22,20 @@
             vm.assignedRoleId = 0;
             vm.roleRights = [];
             vm.presetRoles = [];
-            vm.roleSelected = "";
+            vm.roleSelected = {};
+            vm.rpRoleSelected = "";
             vm.selectconfigs = [];
+            vm.isSelectAllPropMsg1 = false;
+            vm.isSelectAllPropMsg2 = false;
+            vm.allProperties = false;
+            vm.showAllPropertiesSwtich = false;
+            vm.propertySelect =  '';
+            
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
             logc("syncMgr.getProductGridConfig", syncMgr.getProductGridConfig($scope.$parent.productId, "Roles"));
+            vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             rolesGrid.setConfig(syncMgr.getProductGridConfig($scope.$parent.productId, "Roles"));
 
             roleGridPagination.setGrid(rolesGrid);
@@ -33,12 +43,17 @@
             roleGridPagination.setConfig({
                 recordsPerPage: 25
             });
+            var radioconfig = syncMgr.getProductPageLevelRadioConfig($scope.$parent.productId, "Roles");
+            if (radioconfig !== undefined) {
+                vm.radioconfig = syncMgr.getProductPageLevelRadioConfig($scope.$parent.productId, "Roles");
+            }
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
 
+            pubsub.subscribe("ppanel.assign-accessType", vm.accessTypeChange);
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
@@ -50,6 +65,38 @@
 
         vm.isReady = function () {
             return productDataModel.isRoleGridActive(); //productDataModel.isActive();
+        };
+
+        vm.accessTypeChange = function (accessType) {
+            if(accessType === 'specificProperties') {
+                vm.propertySelect = 'property';
+            }
+            else {
+                vm.propertySelect = accessType;
+            }
+            vm.rpRoleSelected = vm.propertySelect;
+            vm.resetDataModel(vm.propertySelect);
+        };
+
+        vm.resetDataModel = function (accessType) {
+            if(accessType === 'propertyGroup') {
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+            }
+            else if(accessType === 'property') {
+                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, false);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+            }
+            else if(accessType === 'allProperties') {
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+            }
+            vm.propertySelect = accessType;
+            var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, accessType);
+            if(dependencyControlId > 0){
+                vm.loadProductControlDependencyData(dependencyControlId);
+            }
+            pubsub.publish("ppanel.access-type-change", accessType);
         };
 
         vm.isSelectTypeConfigLoaded = function () {
@@ -94,6 +141,16 @@
             //var productId = $scope.$parent.productId;
             rolesGrid.busy(false);
             var roleData = syncMgr.getProductRolesData(productId);
+            if(productId == 17 || productId == 26 ||  productId == 18){
+                vm.rpRoleSelected = roleData.find(function (item) {
+                    return item.isAssigned === true;
+                });
+                logc("vm.rpRoleSelected",vm.rpRoleSelected);
+            }
+
+            if(productId == 16 && vm.propertySelect !== undefined) {
+                vm.rpRoleSelected = vm.propertySelect;
+            }
             var presetroleData = syncMgr.getProductPresetRolesData(productId);
             //vm.setSelectTypeConfig();
             //logc("l2lroledata", roleData, presetroleData, rolesGrid);
@@ -120,8 +177,9 @@
                     }
                 });
 
-                var dependencyControlId = syncMgr.getProductDependencyControlId(productId, 'role');
-
+                var controlDependencyValue = (productId === 16 && vm.propertySelect == '') ? 'property' : 'role' ;
+                var dependencyControlId = syncMgr.getProductDependencyControlId(productId, controlDependencyValue);
+                
                 if (dependencyControlId > 0) {
                     vm.loadProductControlDependencyData(dependencyControlId);
                 }
@@ -237,34 +295,102 @@
                 // logc("select config vm.roleSelect", vm.roleSelect);
             }
         };
-
         vm.setControlDependencyData = function (resp) {
-            var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
+            var productId = $scope.$parent.productId;
+            var tabs = syncMgr.getProductInitialTabs(productId);
 
-            if (resp.data && resp.data.length > 0 && vm.roleRights.length > 0) {
+            if (resp.data && resp.data.length > 0) {
                 var matchFound = false;
-                vm.roleRights.forEach(function (right) {
-                    var record = resp.data.filter(function (data) {
-                        return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
-                    })[0];
+                if(productId == 3){
+                    vm.roleRights.forEach(function (right) {
+                        if(right.rightNickName){
+                            var record = resp.data.filter(function (data) {
+                                return right.rightNickName.toLowerCase() === data.masterControlValue.toLowerCase();
+                            })[0];
+        
+                            if (record !== undefined && record) {
+                                matchFound = true;
+                            }
+                        }
+                    });
+                }
+                else if(productId == 16) {
+                    var irreleventTab = resp.data[0];
+                    var relevantTab = [];
+                    var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
 
-                    if (record !== undefined && record) {
-                        matchFound = true;
+                    relevantTab = allTab.filter(function (data) {
+                            return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
+                    });
+                    if(vm.propertySelect == '') {
+                        relevantTab = relevantTab.filter(function (data) {
+                            return data.id.toLowerCase() !== 'properties';
+                        });  
                     }
-                });
+                    vm.setProductTabs(relevantTab);
+                    matchFound = true;
+                }
+                else if(productId == 17 || productId == 26 || productId == 18) {
+                    var releventTabs = [];
+                    var rpTabs = [];
+                    var rpRoleName = "";
+                    if(vm.rpRoleSelected){
+                            rpRoleName = vm.rpRoleSelected.name.toLowerCase();
+                            releventTabs = resp.data.filter(function (data) {
+                                return data.masterControlValue.toLowerCase() == rpRoleName;
+                            });
+                        
+                    }                 
+                    if (releventTabs.length > 0) {
+                        var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                        releventTabs.forEach(function (tb) {
+                            var rpTab =  allTabs.find(function (item) {
+                                return item.text === tb.displayName;
+                            });
+                            if(rpTab != undefined){
+                                rpTabs.push(rpTab);
+                            }
+                        });
+                        vm.setProductTabs(rpTabs);
+                        matchFound = true;
+                    
+                    }
+                    else {
+                        vm.setProductTabs(tabs);
+                    }
+                    
+                    if (productId == 26) {
+                        if(rpTabs.length > 0){
+                            vm.setAllProperties(rpTabs);
+                        } else{
+                            syncMgr.updateProductAllProperties(productId, false);
+                        }
+                    }
+                    if (productId == 18 && vm.rpRoleSelected) {
+                        vm.setAllProperties(vm.rpRoleSelected);
+                    }
+                }              
 
                 //Exclude properties tab fro employee and external user company
                 var compId = persona.getBooksMasterId();
-                if (compId === -1 || compId === -2) {
+                // if (compId === -1 || compId === -2) {
+                //     matchFound = false;
+                // }
+                if(compId === -1 || compId === -2)
+                { 
                     matchFound = false;
-                }
-
-                if (matchFound) {
-                    tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
-                }
-
-                syncMgr.setProductDependencyDataMap($scope.$parent.productId, matchFound);
-                vm.setProductTabs(tabs);
+                    vm.setProductTabs(tabs);
+                    
+                }else if(productId == 3 ){
+                    if(matchFound){
+                        tabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+                        vm.setProductTabs(tabs);
+                    }else{
+                        vm.setProductTabs(tabs);
+                    }  
+                }         
+                
+                syncMgr.setProductDependencyDataMap($scope.$parent.productId, matchFound);  
             }
             else {
                 vm.setProductTabs(tabs);
@@ -279,26 +405,108 @@
         };
 
         vm.updateRoleRecords = function (record) {
-            //rolesGrid.busy(true);
             var rolesData = syncMgr.selectedRoleSync(record.productId, record);
-            if (record.productId === "3" || record.productId === "17" || record.productId == "18") {
+            vm.isSelectAllPropMsg1 = false;
+            vm.isSelectAllPropMsg2 = false;
+            if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26") {
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
-                if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
-                    vm.roleRights = [];
-                    if (record.userRights !== undefined) {
-                        vm.roleRights = record.userRights;
+                if(record.productId == "17"){
+                    vm.rpRoleSelected = record;
+                    //vm.allProperties = false;
+                    vm.showAllPropertiesSwtich = (record.name.toLowerCase() == "enterprise standard") ? true : false;
+                    vm.allProperties = ((record.name.toLowerCase() == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || record.name.toLowerCase() == "enterprise admin") ? true : false;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);                    
+                }
+                 else if( record.productId == "26"){
+                    vm.rpRoleSelected = record;
+                }
+                else if(record.productId == "18"){
+                    if(vm.rpRoleSelected){  
+                        if(record.name.toLowerCase() === "property manager"){
+                            syncMgr.setAllPropertyGroupSync(record.productId, false);
+                        }
+                        else if(record.name.toLowerCase() === "group manager"){
+                            syncMgr.allPropertiesSync(record.productId, false);
+                        }
+                        else{
+                            syncMgr.setAllPropertyGroupSync(record.productId, false);
+                            syncMgr.allPropertiesSync(record.productId, false);
+                        }
                     }
-
+                    vm.rpRoleSelected = record;
+                    
+                }
+                else {
+                    if (record.isAssigned && record.userRights !== undefined && dependencyControlId > 0) {
+                        vm.roleRights = [];
+                        if (record.userRights !== undefined) {
+                            vm.roleRights = record.userRights;
+                        }
+                    }
+                }
+                if(dependencyControlId > 0){
                     vm.loadProductControlDependencyData(dependencyControlId);
                 }
             }
-            //rolesGrid.busy(false);
         };
 
         vm.updateMultiSelectRoleRecords = function (record) {
             if (record) {
                 syncMgr.multiSelectedRoleSync(record.productId, record);
             }
+        };
+
+        vm.isSwitchConfigLoaded = function () {
+            return syncMgr.isSwitchConfigLoaded();
+        };
+
+        vm.setSwitchConfig = function () {
+            var productId = $scope.$parent.productId;
+            vm.switchconfigs = syncMgr.getProductSwitchConfig(productId, "Roles");
+
+            if (vm.switchconfigs !== undefined && vm.switchconfigs.length > 0) {
+                vm.switchconfigs.forEach(function (item) {
+                    item.configData = switchConfig({
+                        onChange: vm.setAllProperties,
+                        disabled: vm.hasViewOnlyAccess()
+                    });
+                });
+            }
+        };
+
+        vm.setAllProperties = function (record) {
+            var productId = $scope.$parent.productId;
+            if(productId == 17){
+                var tabs = syncMgr.getProductInitialTabs($scope.$parent.productId);
+                var releventTabs = [];
+                if(record){
+                    releventTabs = tabs.filter(function (data) {
+                        return data.text.toLowerCase() == "roles";
+                    });
+                }
+                if(releventTabs != undefined && releventTabs.length >0){
+                    vm.setProductTabs(releventTabs);
+                }
+                else{
+                    vm.setProductTabs(tabs);
+                }
+                vm.allProperties = record;
+                syncMgr.updateProductAllProperties($scope.$parent.productId, record);
+            }
+            else if(productId == 26 && record.length == 1 && record[0].text == "Roles"){
+                vm.isSelectAllPropMsg1 = true;
+                syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+            }
+            else if (productId == 18 ) {
+                if(record.name.toLowerCase() === "portfolio manager"){
+                    vm.isSelectAllPropMsg2 = true;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                }else{
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+
+                }
+            }
+           
         };
 
         vm.destroy = function () {
@@ -323,6 +531,9 @@
             rolesGridTransform = undefined;
             roleGridPagination = undefined;
             vm.roleRights = [];
+            vm.rpRoleSelected = "";
+            vm.allProperties = false;
+            vm.showAllPropertiesSwtich = false;
             // vm.productRoleSelectedWatch();
             //vm = undefined;
             //$scope = undefined;
@@ -349,6 +560,7 @@
             "productControlDependencySvc",
             "productPanelTabsModel",
             "rpFormSelectMenuConfig",
+            "rpSwitchConfig",
             ProductRolesGridCtrl
         ]);
 })(angular);

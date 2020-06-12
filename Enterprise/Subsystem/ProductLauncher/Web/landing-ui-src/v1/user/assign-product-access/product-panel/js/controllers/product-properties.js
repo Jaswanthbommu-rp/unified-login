@@ -48,12 +48,20 @@
             vm.productPropertySwitchWatch = $scope.$watch(vm.isSwitchConfigLoaded, vm.setSwitchConfig);
             vm.productPropertyWatch = $scope.$watch(vm.isActive, vm.loadData);
 
-
+            pubsub.subscribe("ppanel.access-type-change", vm.accessTypeChanged);
             pubsub.subscribe("ppanel.property-radio", vm.updatePropertyRecords);
             vm.gridAllWatch = propertiesGrid.subscribe("selectAll", vm.selectAllProperties);
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
+            vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllPropertiesSet",vm.accountingAllPropertiesSet);
+        };
+
+        vm.accountingAllPropertiesSet = function(bool){
+            vm.propertySelect = "";
+            if(bool){
+                vm.propertySelect = 'allProperties';
+            }
         };
 
         vm.productSelected = function (obj) {
@@ -61,6 +69,18 @@
             $scope.productId = obj.productId;
         };
 
+        vm.accessTypeChanged = function (value) {
+            vm.propertySelect = value;
+            if(vm.propertySelect === 'allProperties'){
+                vm.allProperties = true;
+            }
+            else if(vm.propertySelect === 'property'){
+                vm.allProperties = false;
+            }
+            else if(vm.propertySelect === 'propertyGroup'){
+                syncMgr.allPropertiesSync($scope.productId, false);
+            }
+        };
 
         vm.hasViewOnlyAccess = function () {
             return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
@@ -208,6 +228,12 @@
                             }
                         }
                     }
+                    if(productId == "44" && item.propertiesList){
+                        var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
+                            return prop.isAssigned === true;
+                        });    
+                        item.assignedProperties = assignedPropertiesCount.length +" of "+ item.propertiesList.length;                    
+                    }
                 });
 
                 if (syncMgr.isProductAllProperties(productId)) {
@@ -287,6 +313,11 @@
 
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.allPropertiesData);
             }
+
+            if($scope.$parent.productId == 8 && val){
+                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, val);
+                pubsub.publish("acct.updateGridWatchSet");
+            }
         };
 
         vm.updatePropertyRecords = function (record) {
@@ -308,7 +339,7 @@
         vm.updateGrid = function () {
             vm.propertiesGrid.updateSelected();
         };
-
+        
         vm.resetDataModel = function () {
             //vm.clearProperties();
             vm.resetProperties();
