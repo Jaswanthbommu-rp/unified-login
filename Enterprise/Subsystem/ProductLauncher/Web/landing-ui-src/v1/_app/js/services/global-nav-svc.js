@@ -168,7 +168,7 @@
                 items: [{
                     linkId: "Notifications",
                     title: "Notifications",
-                    url: "/notifications/configuration"
+                    url: "/home/notifications/configuration"
                 }]
             };
 
