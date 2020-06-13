@@ -20,6 +20,7 @@
             "user.assign-products": [],
             "user.assign-product-access.bundle": [],
             "user.security-questions": [],
+            "user.user-preference": ["css","js"],
 
             "error.base": ["css", "js"],
 
@@ -72,7 +73,7 @@
             "roles-and-rights.roles.bundle": ["css", "js"],
             "roles-and-rights.enterprise-roles.bundle": ["css", "js"],
 
-            "employee-access.base": ["css", "js"],            
+            "employee-access.base": ["css", "js"],
         };
 
         appConfig = {
