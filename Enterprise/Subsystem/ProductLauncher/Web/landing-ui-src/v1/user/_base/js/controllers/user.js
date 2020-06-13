@@ -39,6 +39,11 @@
 
         vm.save = function () {
             if(!chkEmailModel.getIsBusy()){
+                //Editing self then remove product access panel
+                if ((session.getRealPageId() === $params.realPageId)){
+                    tabsManager.remove("productAccess");
+                    logc("tabsManager",tabsManager);
+                }
                 tabsManager.processData();
             }
         };
