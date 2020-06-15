@@ -28,9 +28,8 @@
             vm.isSelectAllPropMsg1 = false;
             vm.isSelectAllPropMsg2 = false;
             vm.allProperties = false;
-            vm.showAllPropertiesSwtich = false;
-            vm.propertySelect = '';
-
+            vm.showAllPropertiesSwitch = false;
+            vm.propertySelect =  '';
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -57,6 +56,8 @@
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
+
+            vm.updateGridWatch = pubsub.subscribe("rp.updateAllPropertiesSwitchSet",vm.updateAllPropertiesSwitch);
         };
 
         vm.isActive = function () {
@@ -76,6 +77,21 @@
             }
             vm.rpRoleSelected = vm.propertySelect;
             vm.resetDataModel(vm.propertySelect);
+        };
+
+        vm.updateAllPropertiesSwitch = function(bool){
+            vm.allProperties = bool;
+            vm.showAllPropertiesSwitch = bool;
+
+            var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
+            if(bool){
+                var tb = allTabs.find(function (item) {
+                    return item.text === 'Roles';
+                });
+                if(tb != undefined){
+                    vm.setProductTabs([tb]);
+                }
+            }
         };
 
         vm.resetDataModel = function (accessType) {
@@ -331,12 +347,18 @@
                     var releventTabs = [];
                     var rpTabs = [];
                     var rpRoleName = "";
+
                     if (vm.rpRoleSelected) {
                         rpRoleName = vm.rpRoleSelected.name.toLowerCase();
                         var tabsData = $filter("orderBy")(resp.data, "slaveControlId");
                         releventTabs = tabsData.filter(function (data) {
                             return data.masterControlValue.toLowerCase() == rpRoleName;
                         });
+
+                        if(productId == 17 && vm.rpRoleSelected.name.toLowerCase() == "enterprise standard"){
+                            vm.showAllPropertiesSwitch = true;
+                            vm.allProperties = syncMgr.isProductAllProperties(productId);
+                        }
                     }
 
                     if (releventTabs.length > 0) {
@@ -356,6 +378,14 @@
                                 rpTabs.push(rpTab);
                             }
                         });
+
+                        if(productId == 17 && syncMgr.isProductAllProperties(productId)){
+                            var filterTabs = rpTabs.find(function(tb){
+                                return tb.text == "Roles";
+                            });
+                            rpTabs = [filterTabs];
+                        }
+
                         vm.setProductTabs(rpTabs);
                         matchFound = true;
                     }
@@ -416,8 +446,8 @@
                 if (record.productId == "17") {
                     vm.rpRoleSelected = record;
                     //vm.allProperties = false;
-                    vm.showAllPropertiesSwtich = (record.name.toLowerCase() == "enterprise standard") ? true : false;
-                    vm.allProperties = ((record.name.toLowerCase() == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || record.name.toLowerCase() == "enterprise admin") ? true : false;
+                    vm.showAllPropertiesSwitch = (record.name.toLowerCase() == "enterprise standard") ? true : false;
+                    vm.allProperties = (record.name.toLowerCase() == "enterprise admin") ? true : false;
                     syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                 }
                 else if (record.productId == "26" || record.productId == "47") {
@@ -486,7 +516,11 @@
                         return data.text.toLowerCase() == "roles";
                     });
                 }
-                if (releventTabs != undefined && releventTabs.length > 0) {
+                else{
+                    pubsub.publish("rp.residentPortalAllPropertiesSet","property");
+                }
+
+                if(releventTabs != undefined && releventTabs.length >0){
                     vm.setProductTabs(releventTabs);
                 }
                 else {
@@ -536,7 +570,7 @@
             vm.roleRights = [];
             vm.rpRoleSelected = "";
             vm.allProperties = false;
-            vm.showAllPropertiesSwtich = false;
+            vm.showAllPropertiesSwitch = false;
             // vm.productRoleSelectedWatch();
             //vm = undefined;
             //$scope = undefined;

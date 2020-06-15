@@ -1262,17 +1262,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			//if logged-in user is NOT a Unified Login Administrator
 			if (!isSuperUser)
 			{
-				if (string.IsNullOrWhiteSpace(sLevel))
+				if (_residentPortalEditorUser.Levels == null)
 				{
-					if (_residentPortalEditorUser.Levels == null)
+					if (!string.IsNullOrWhiteSpace(_editorProductUsername))
 					{
-						if (!string.IsNullOrWhiteSpace(_editorProductUsername))
-						{
 							_residentPortalEditorUser = GetUserDetails(editorPersonaId, userPersonaId, _editorProductUsername, 0);
-						}
 					}
-					sLevel = string.Concat(_residentPortalEditorUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", _residentPortalEditorUser.Level);
 				}
+					sLevel = string.Concat(_residentPortalEditorUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", _residentPortalEditorUser.Level);
 				//Disable the Resident Portal Enterprise Admin role if the user has the Enterprise Standard role
 				if (sLevel.Equals("ENTERPRISESTANDARD"))
 				{

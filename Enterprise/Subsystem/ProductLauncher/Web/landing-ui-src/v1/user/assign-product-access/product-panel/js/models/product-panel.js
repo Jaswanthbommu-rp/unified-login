@@ -49,6 +49,7 @@
                         amenitiesViaEmail: false,
                         managerMrViaEmail: false,
                     },
+                    canReceiveMonthlyReport: true,
                     isAssignedNewPropertyByDefault: false,
                     hasAccessToSiteSpendManagementOnly: false,
                     hasAccessToAllCurrentFutureProperties: false,
@@ -173,7 +174,7 @@
             }
 
             var bmroles = "";
-            var diqAreas = ""
+            var diqAreas = "";
             if (productId == "30") {
                 bmroles = dataSyncManager.getTab6ProductData("34");
             }
@@ -459,6 +460,7 @@
             }
 
             if (productId == "47"){
+                s.batchData.inputJson.canReceiveMonthlyReport = dataSyncManager.getCanReceiveMonthlyReport();
                 if (hasRoleSelected && roleWithoutPropTabs){
                     return s.batchData;
                 }

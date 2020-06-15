@@ -12,7 +12,7 @@
             vm.IsVendorRecommendationChanges = false;
             vm.isVendorNotLinkedToAnyProperty = false;
             vm.canReceiveMonthlyReport = false;
-logc("notificationsData");
+
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             pubsub.subscribe("diq.canReceiveMonthlyReport", vm.updateReportVlaue);
