@@ -427,10 +427,9 @@
                                         aSwitch.push(c);
                                     }
                                 });
-
-                                if (aSwitch.length > 0) {
-                                    productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
-                                }
+                            }
+                            if (aSwitch.length > 0) {
+                                productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
                             }
                         });
                     }
