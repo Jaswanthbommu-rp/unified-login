@@ -12,3 +12,4 @@
 {{{ include("resolve-modules.js") }}}
 {{{ include("routes.js") }}}
 {{{ include("ga.js") }}}
+{{{ include("pace-websockets.js") }}}
