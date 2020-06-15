@@ -55,6 +55,7 @@
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
             vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllPropertiesSet",vm.accountingAllPropertiesSet);
+            vm.residentPortalAllPropertiesSetWatch = pubsub.subscribe("rp.residentPortalAllPropertiesSet",vm.setPropertySelect);
         };
 
         vm.accountingAllPropertiesSet = function(bool){
@@ -114,6 +115,10 @@
             return syncMgr.isSwitchConfigLoaded();
         };
 
+        vm.setPropertySelect = function(val){
+            vm.propertySelect = val;
+        };
+
         vm.hidePropertiesGrid = function () {
             if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
                 return true;
@@ -139,7 +144,6 @@
 
         vm.loadData = function () {
             var productId = $scope.$parent.productId;
-
             propertiesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var propertyData = syncMgr.getProductPropertiesData(productId);
@@ -239,6 +243,11 @@
                 if (syncMgr.isProductAllProperties(productId)) {
                     propertySelect = "allProperties";
                     vm.allProperties = true;
+
+                    if(productId == 17){
+                        //emit an event to enable switch in roles tab
+                        pubsub.publish("rp.updateAllPropertiesSwitchSet", vm.allProperties);
+                    }
                 }
 
                 if (syncMgr.isProductNewPropertyByDefault(productId)) {

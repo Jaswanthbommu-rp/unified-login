@@ -1127,3 +1127,8 @@ END
 CLOSE curOrganizationRight
 DEALLOCATE curOrganizationRight
 GO
+
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 409)
+BEGIN
+	UPDATE [usermanagement].[control] SET displayname = 'Assign current and new properties automatically' WHERE ControlId =409
+END
