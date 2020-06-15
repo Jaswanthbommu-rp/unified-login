@@ -20,7 +20,7 @@
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             tab6GridTransform.watch(tab6Grid);
-            logc("syncMgr",syncMgr);
+            logc("syncMgr", syncMgr);
             if ($scope.$parent.productId == 30) {
                 tab6Grid.setConfig(syncMgr.getProductGridConfig(34, "BenchmarkingRole"));
             }
@@ -98,6 +98,7 @@
 
         vm.loadGridData = function (productId) {
             //var productId = $scope.$parent.productId;
+            var diqAreas = [];
             tab6Grid.busy(false);
             var data = syncMgr.getTab6ProductData(productId);
             logc("syncMgr", syncMgr, data);
@@ -110,10 +111,21 @@
                     });
                 });
 
-
-                tab6GridPagination.setData(data).goToPage({
-                    number: 0
-                });
+                if (productId == 47) {
+                    data.map(function (area) {
+                        if (area.groupType === 'area') {
+                            diqAreas.push(area);
+                        }
+                    });
+                    tab6GridPagination.setData(diqAreas).goToPage({
+                        number: 0
+                    });
+                }
+                else {
+                    tab6GridPagination.setData(data).goToPage({
+                        number: 0
+                    });
+                }
 
             }
 

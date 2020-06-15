@@ -215,6 +215,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
 					result = manageUnifiedAmenities.GetRoles(editorPersonaId, userPersonaId, partyId);
 					break;
+				case (int)ProductEnum.ResearchApplication:
+					ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
+					result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
+					break;
+
 				case (int)ProductEnum.AoBusinessIntelligence:
 				case (int)ProductEnum.AoInvestmentAnalytics:
 				case (int)ProductEnum.AoPerformanceAnalytics:
@@ -335,6 +340,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.DepositAlternative:
 					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
 					result = productDALogic.GetProductPropertyGroups(datafilter);
+					break;
+				case (int)ProductEnum.FinancialSuite:
+					var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+					result = manageProductOneSiteAccounting.GetUserCompanies(editorPersonaId, userPersonaId, datafilter);
 					break;
 				default:
 					break;

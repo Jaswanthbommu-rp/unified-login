@@ -56,7 +56,7 @@
             s.sidePanelDataList = [];
             s.asidePropertyList = [];
             s.canReceiveMonthlyReport = false;
-
+            s.productAdditionalMap = [];
         };
 
         // Getters
@@ -509,7 +509,13 @@
 
             roleData.forEach(function (item) {
                 item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == "23") {
+                    item.isAssigned = item.level == record.level;
+                }
+                else{
+                    item.isAssigned = item.id == record.id;
+                }
+
             });
 
             return s;
@@ -660,8 +666,13 @@
             propertyData = s.propertyMap['product' + key].properties;
 
             propertyData.forEach(function (item) {
-                item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == 8){
+                    item.isAssigned = item.propertyId == record.propertyId;
+                }
+                else{
+                    item.isAssigned = false;
+                    item.isAssigned = item.id == record.id;
+                }
             });
 
             return s;
@@ -1102,6 +1113,29 @@
             s.renderPropertyGroupMap(key);
         };
 
+        p.getProductAdditionalData = function (product) {
+            var s = this,
+                additionalData;
+            if (s.productAdditionalMap['product' + product] !== undefined) {
+                additionalData = s.productAdditionalMap['product' + product].additional;
+            }
+            return additionalData;
+        };
+
+        p.setProductAdditionalData = function (product, value) {
+            var s = this;
+            s.productAdditionalMap['product' + product] = {
+                additional: value
+            };
+        };
+
+        p.updateProductAdditionalData = function (product, tabName, value) {
+            var s = this,
+            additionalData = s.getProductAdditionalData(product);
+            additionalData[tabName] = value;
+            s.setProductAdditionalData(product, additionalData);
+        };
+
         // Assertions
 
         p.allSelected = function (list, selectKey) {
@@ -1109,12 +1143,7 @@
             return s.getSelectedCount(list) === list.length;
         };
 
-        // p.isUserHasManageProductAccess = function () {
-        //     return !persona.data.hasManageAssetOptimizationProductAccess;
-        // };
         p.isUserHasManageProductAccess = function (productId) {
-            //var productId = $scope.$parent.productId;
-            //logc("test", persona.data.hasProspectContactCenterProductAccess);
             var s = this;
             switch (productId) {
                 case "1":
@@ -1184,6 +1213,7 @@
             s.productControlsMap = {};
             s.productPresetRolesMap = {};
             s.notificationsMap = {};
+            s.productAdditionalMap = [];
         };
 
         return new ProductDataSyncManager();

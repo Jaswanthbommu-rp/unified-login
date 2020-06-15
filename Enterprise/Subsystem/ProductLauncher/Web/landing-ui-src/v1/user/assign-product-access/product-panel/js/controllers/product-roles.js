@@ -83,11 +83,12 @@
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
-            else if (accessType === 'property') {
-                syncMgr.clearPropertyGroupData($scope.$parent.productId);
+            else if(accessType === 'property') {
+                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
-            else if (accessType === 'allProperties') {
+            else if(accessType === 'allProperties') {
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
             }
             vm.propertySelect = accessType;
@@ -362,12 +363,6 @@
                         vm.setProductTabs(tabs);
                     }
 
-                    if (productId == 17) {
-                        vm.showAllPropertiesSwtich = (rpRoleName == "enterprise standard") ? true : false;
-                        vm.allProperties = ((rpRoleName == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || rpRoleName == "enterprise admin") ? true : false;
-                        syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
-                    }
-
                     if (productId == 26) {
                         if (rpTabs.length > 0) {
                             vm.setAllProperties(rpTabs);
@@ -420,7 +415,10 @@
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
                 if (record.productId == "17") {
                     vm.rpRoleSelected = record;
-                    vm.allProperties = false;
+                    //vm.allProperties = false;
+                    vm.showAllPropertiesSwtich = (record.name.toLowerCase() == "enterprise standard") ? true : false;
+                    vm.allProperties = ((record.name.toLowerCase() == "enterprise standard" && syncMgr.isProductAllProperties($scope.$parent.productId)) || record.name.toLowerCase() == "enterprise admin") ? true : false;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
                 }
                 else if (record.productId == "26" || record.productId == "47") {
                     vm.rpRoleSelected = record;

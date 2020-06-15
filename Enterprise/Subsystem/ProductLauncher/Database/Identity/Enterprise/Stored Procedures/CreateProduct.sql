@@ -4,29 +4,34 @@
     @Name NVARCHAR(50) ,
     @Description NVARCHAR(1000) ,
     @ProductTypeID INT = NULL,
-	@BooksProductCode NVARCHAR(10) = NULL
+	@BooksProductCode NVARCHAR(20) = NULL
 AS
     BEGIN
         BEGIN TRY
             BEGIN TRAN;
-            INSERT INTO Enterprise.Product (   ProductId ,
+			INSERT INTO Enterprise.Product (
+				ProductId ,
                                                ProductGUID ,
                                                Name ,
                                                Description ,
-                                               ProductTypeId
+				ProductTypeId,
+				BooksProductCode
                                            )
 			OUTPUT Inserted.ProductId AS Id, '' AS ErrorMessage
-            VALUES ( @ProductId ,
+			VALUES (
+				@ProductId ,
                      ISNULL(@ProductGUID, NEWID()),
                      @Name ,
                      @Description ,
-                     @ProductTypeID
+				@ProductTypeID,
+				@BooksProductCode
                    );
             COMMIT;
         END TRY
         BEGIN CATCH
             DECLARE @ErrorLogID INT;
-            EXEC dbo.LogError @ErrorLogID = @ErrorLogID OUTPUT;
+        EXEC dbo.LogError
+			@ErrorLogID = @ErrorLogID OUTPUT;
 
             SELECT 0 AS Id ,
                    ErrorMessage

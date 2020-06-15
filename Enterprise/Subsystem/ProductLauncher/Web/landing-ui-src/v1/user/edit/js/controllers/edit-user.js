@@ -73,6 +73,10 @@
                 tabs.push("activityLog");
             }
 
+            if (session.getRealPageId() === $params.realPageId) {
+                tabs.push("userPreference");
+            }
+
             tabsModel.setTabs(tabs).activateTab("userDetails");
 
             return vm;

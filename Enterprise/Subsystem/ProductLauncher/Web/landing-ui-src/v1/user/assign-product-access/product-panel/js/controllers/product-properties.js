@@ -54,6 +54,14 @@
             vm.gridSelectionWatch = propertiesGrid.subscribe("selectChange", vm.updateMultiSelectPropertyRecords);
             vm.filterData = propertiesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("pplpropertygroup.updateGrids", vm.updateGrid);
+            vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllPropertiesSet",vm.accountingAllPropertiesSet);
+        };
+
+        vm.accountingAllPropertiesSet = function(bool){
+            vm.propertySelect = "";
+            if(bool){
+                vm.propertySelect = 'allProperties';
+            }
         };
 
         vm.productSelected = function (obj) {
@@ -296,6 +304,11 @@
                 });
 
                 syncMgr.updateAllProperties($scope.$parent.productId, vm.allPropertiesData);
+            }
+
+            if($scope.$parent.productId == 8 && val){
+                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, val);
+                pubsub.publish("acct.updateGridWatchSet");
             }
         };
 
