@@ -757,6 +757,20 @@ BEGIN
 	
 END
 
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 104)
+BEGIN
+	UPDATE [UserManagement].[Control] SET DisplayName = 'Assign current and new properties automatically' WHERE ControlId = 104
+END
+ELSE
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[Control] ON
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+	VALUES (104, 103, 1, N'OneSiteProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId', N'Assign current and new properties automatically', N'allProperties', 1, @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+END
+
 Go
 --Add Unified Settings Product
 DECLARE @ProductID int = 56,
