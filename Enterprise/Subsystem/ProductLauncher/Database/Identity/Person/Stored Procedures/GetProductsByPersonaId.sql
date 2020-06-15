@@ -63,11 +63,10 @@ BEGIN
 		LEFT OUTER JOIN ProductSettings ps2 on ps2.ProductId = p.ProductId and ps2.name = 'IsResource'
 		INNER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'
 		LEFT OUTER JOIN ProductSettings ps4 on ps4.ProductId = p.ProductId and ps4.name = 'ShowInAppSwitcher'
-	where 
+	WHERE
 		PC.PersonaId = @PersonaId
 		AND PC.ThruDate IS NULL
-		AND PC.StatusTypeId = @StatusTypeId
-		--AND ps3.Value IS NOT NULL
+		AND ( PC.StatusTypeId = @StatusTypeId )-- OR ( PC.StatusTypeId = 0 AND PC.ProductId = 36 ) )
 	UNION
 	SELECT
 		pr.ProductId
@@ -98,31 +97,7 @@ BEGIN
 		LEFT OUTER JOIN ProductSettings ps4 on ps4.ProductId = p.ProductId and ps4.name = 'ShowInAppSwitcher'
 	WHERE 
 		ppv.PersonaId = @personaid
-		
+
 	ORDER BY IsResource, FamilyName, P.Name
+	
 END
---select ps.productid, pst.name, ps.value from enterprise.ProductSetting ps inner join enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId where pst.name in ( 'isresource', 'isnewtab' )
-
---select * from enterprise.product p inner join enterprise.ProductType pt on p.ProductTypeId = pt.ProductTypeId where productid = 29
---select * from enterprise.product where productid = 28
-/*
-select * from enterprise.ProductType
-select * from enterprise.productsetting ps inner join enterprise.ProductSettingType pst on ps.ProductSettingTypeId = pst.ProductSettingTypeId
-where ps.ProductId = 29
-
-and pst.name in ( '
-*/
-/*
---"id": 29,
---"name": "Business Intelligence",
-"url": "https://www-sat.realpage.com/home/product-redirect.html?prod=29&persona=21260",
-"description": "Business Intelligence provides portfolio reporting spanning multiple source systems which serves up key business metrics with a front end business analytics tool.  Data has been normalized into business models to improve reporting quality.",
-"label": "business-intelligence",
---"familyId": 400,
-"familyName": "Asset Optimization",
-"isNewTab": true,
---"isFavorite": false,
-"isResource": false,
---"status": 8,
---"productCode": "BI"
-*/
