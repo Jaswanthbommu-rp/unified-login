@@ -37,6 +37,7 @@
                         "type": s.isType(item.type),
                         "text": item.displayName,
                         "idKey": "id",
+                        "disabledKey": "disableSelection",
                         "filterType": filterType,
                         "templateUrl": s.getTemplate(s.isControl(item.type), tabName)
                     });
@@ -253,7 +254,7 @@
                 if (item.type === 'text') {
                     main.push({
                         "key": item.key,
-                        "type": item.type,
+                        "type": item.type
                     });
                 }
                 if (item.type === 'custom') {
@@ -261,14 +262,16 @@
                         "key": item.key,
                         "type": item.type,
                         "templateUrl": item.templateUrl,
-                        "idKey": item.idKey
+                        "idKey": item.idKey,
+                        "disabledKey": item.disabledKey
                     });
                 }
                 else if (item.type === 'select') {
                     main.push({
                         "key": item.key,
                         "type": item.type,
-                        "idKey": item.idKey
+                        "idKey": item.idKey,
+                        "disabledKey": item.disabledKey
                     });
                 }
             });
