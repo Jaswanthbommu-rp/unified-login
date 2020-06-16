@@ -1,7 +1,5 @@
 // Config
 
-{{{ include("config/lead-2-lease.js") }}}
-
 // Controllers
 
 {{{ include("controllers/product-access.js") }}}

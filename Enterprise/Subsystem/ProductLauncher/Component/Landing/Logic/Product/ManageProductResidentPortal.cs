@@ -1262,17 +1262,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			//if logged-in user is NOT a Unified Login Administrator
 			if (!isSuperUser)
 			{
-				if (string.IsNullOrWhiteSpace(sLevel))
+				if (_residentPortalEditorUser.Levels == null)
 				{
-					if (_residentPortalEditorUser.Levels == null)
+					if (!string.IsNullOrWhiteSpace(_editorProductUsername))
 					{
-						if (!string.IsNullOrWhiteSpace(_editorProductUsername))
-						{
 							_residentPortalEditorUser = GetUserDetails(editorPersonaId, userPersonaId, _editorProductUsername, 0);
-						}
 					}
-					sLevel = string.Concat(_residentPortalEditorUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", _residentPortalEditorUser.Level);
 				}
+					sLevel = string.Concat(_residentPortalEditorUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", _residentPortalEditorUser.Level);
 				//Disable the Resident Portal Enterprise Admin role if the user has the Enterprise Standard role
 				if (sLevel.Equals("ENTERPRISESTANDARD"))
 				{
@@ -1310,6 +1307,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			return _levelList;
+		}
+
+		/// <summary>
+		/// Calls List levels internally but returns ListResponse type object
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		public ListResponse ListLevelsResponse(long editorPersonaId, long userPersonaId)
+		{
+			List<ILevel> listLevels = ListLevels(editorPersonaId, userPersonaId);
+			return new ListResponse()
+			{
+				Records = listLevels.Cast<object>().ToList(),
+				TotalRows = listLevels.Count,
+				RowsPerPage = 9999,
+				TotalPages = 1,
+				ErrorReason = ""
+			};
 		}
 
 		/// <summary>

@@ -132,7 +132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
-            IManageOrganization manageOrganization = new ManageOrganization();
+            IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
             var organization = manageOrganization.GetOrganization(orgRealPageId);
             var userLogin = userLoginLogic.GetUserLogin(realPageId, organization.PartyId); // keep for now, used by ui, need to investigate how
 

@@ -104,6 +104,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private string _pmcUrl = "someurl.onesite.realpage.com";
 
+        IList<IC.ProductInternalSetting> _productInternalSettingsOneSite = new List<IC.ProductInternalSetting>();
+
         public ManageOneSiteProductTests() : base((int)ProductEnum.OneSite)
         {
 
@@ -132,10 +134,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _repositoryResponseProductStatus.ErrorMessage = "";
 
-            _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "MTAPiEndPoint", Value = _mtApiEndPoint });
-            _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "MTTokenEndPoint", Value = _mtTokenUrl });
-            _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "MTClientId", Value = _mtClientId });
-            _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "MTClientSECRET", Value = _mtClientSecret });
+            _productInternalSettingsOneSite.Add(new IC.ProductInternalSetting() { Name = "MTAPiEndPoint", Value = _mtApiEndPoint });
+            _productInternalSettingsOneSite.Add(new IC.ProductInternalSetting() { Name = "MTTokenEndPoint", Value = _mtTokenUrl });
+            _productInternalSettingsOneSite.Add(new IC.ProductInternalSetting() { Name = "MTClientId", Value = _mtClientId });
+            _productInternalSettingsOneSite.Add(new IC.ProductInternalSetting() { Name = "MTClientSECRET", Value = _mtClientSecret });
 
             HttpResponseMessage tokenResponse = new HttpResponseMessage(HttpStatusCode.OK);
             tokenResponse.Content = new StringContent(JsonConvert.SerializeObject(new { access_token = "mocked access token" }));
@@ -339,7 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.GetProductInternalSettings(
 					It.IsAny<int>()
 				))
-				.Returns(_productInternalSettings);
+				.Returns(_productInternalSettingsOneSite);
 
 			_mockManageElectronicAddress
 				.Setup(m => m.ListElectronicAddressForPerson(
@@ -386,7 +388,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
                  .Returns(mapResource);
 
@@ -412,7 +415,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 			
             //Act
 	        IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockHttpMessageHandler.Object);
@@ -470,7 +473,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
@@ -495,7 +498,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
@@ -531,7 +534,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
@@ -574,7 +577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePersona
                 .Setup(m => m.GetPersona(
@@ -617,7 +620,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, managePersona, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
@@ -1184,7 +1187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
@@ -1256,7 +1259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
@@ -1444,7 +1447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -1586,7 +1589,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
                  .Returns(companyMapList);
 
@@ -1606,7 +1610,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -1813,7 +1817,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -1936,7 +1940,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -2036,7 +2040,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        .Setup(m => m.GetProductInternalSettings(
 			        It.IsAny<int>()
 		        ))
-		        .Returns(_productInternalSettings);
+		        .Returns(_productInternalSettingsOneSite);
 
 			//Assert
 	        IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
@@ -2288,7 +2292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -2384,7 +2388,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -2641,7 +2645,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -2771,7 +2775,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -2978,7 +2982,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -3100,7 +3104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockManagePartyRelationship
                 .Setup(m => m.GetPartyRelationship(
@@ -3411,7 +3415,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
 	        IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 		        editorRealPageId: _editorRealPageId,
@@ -3742,7 +3746,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
 			mockManageUserLogin
 				.Setup(m => m.GetUserLoginOnly(
@@ -3815,7 +3819,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
@@ -3873,7 +3877,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
@@ -3946,7 +3950,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
@@ -4022,7 +4026,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
                  .Returns(mapResource);
             
@@ -4036,7 +4041,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
@@ -4120,7 +4125,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetCompanyMap(
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>()
+					It.IsAny<string>(),
+                    It.IsAny<bool>()
 				 ))
                  .Returns(mapResource);
 
@@ -4134,7 +4140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
@@ -4196,7 +4202,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
               .Setup(m => m.GetCompanyMap(
                   It.IsAny<long>(),
                   It.IsAny<string>(),
-                  It.IsAny<string>()
+                  It.IsAny<string>(),
+                  It.IsAny<bool>()
                ))
                .Returns(mapResource);
 
@@ -4210,7 +4217,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockSamlRepository
                .Setup(m => m.GetProductSamlDetails(
@@ -4264,7 +4271,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
               .Setup(m => m.GetCompanyMap(
                   It.IsAny<long>(),
                   It.IsAny<string>(),
-                  It.IsAny<string>()
+                  It.IsAny<string>(),
+                  It.IsAny<bool>()
                ))
                .Returns(mapResource);
 
@@ -4278,7 +4286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
                 ))
-                .Returns(_productInternalSettings);
+                .Returns(_productInternalSettingsOneSite);
 
             mockSamlRepository
                .Setup(m => m.GetProductSamlDetails(

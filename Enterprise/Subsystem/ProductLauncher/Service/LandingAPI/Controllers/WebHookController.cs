@@ -15,7 +15,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Controllers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
@@ -25,20 +29,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IOrganizationRepository _organizationRepository;
         private IPropertyRepository _propertyRepository;
         private ProductInternalSettingRepository _productInternalSettingRepository;
+        private IManageOrganization _manageOrganization;
+        private IManageBlueBook _manageBlueBook;
         
         public WebHookController()
         {
-            _organizationRepository = new OrganizationRepository();
-            _propertyRepository = new PropertyRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
 
-        public WebHookController(IRepository repository, DefaultUserClaim userClaim)
+        public WebHookController(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
             _organizationRepository = new OrganizationRepository(repository);
             _propertyRepository = new PropertyRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _manageOrganization = new ManageOrganization(repository, userClaim);
+            _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
             _userClaims = userClaim;
+        }
+
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _organizationRepository = new OrganizationRepository();
+            _propertyRepository = new PropertyRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _manageOrganization = new ManageOrganization();
+            _manageBlueBook = new ManageBlueBook(_userClaims);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -152,6 +172,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var customerCompanyIdUpdated = thinEvent.Payload["payload"]["customerCompanyId"];
                             break;
 
+                        case "provisioning.upfmorder.create":
+                            // get the company info
+                            var customerCompanyId = Convert.ToInt64(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
+                            var customerDomain = thinEvent.Payload?["customerEnvironment"].ToString();
+                            if (string.IsNullOrEmpty(customerDomain))
+                            {
+                                response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing customerEnvironment");
+                                WriteToLog(LogType.Error, "Missing customerEnvironment");
+                                return response;
+                            }
+
+                            if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
+                            {
+                                string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain);
+                                if (!string.IsNullOrEmpty(createResult) )
+                                {
+                                    logData = new Dictionary<string, object> {{"error", createResult}};
+
+                                    WriteToLog(LogType.Error, "Error", logData);
+                                    if (!createResult.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
+                                    }
+                                }
+                            }
+
+                            break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
                     }
@@ -167,11 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return response;
         }
 
-        /// <summary>
-        /// Used to get the signing secret used to validate Tibco WebHook events
-        /// </summary>
-        /// <returns>The list of settings</returns>
-        public string GetTiboWebHookSigningSecret()
+        private IList<ProductInternalSetting> GetUnifiedPlatformSettings()
         {
             IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
             RPObjectCache rpcache = new RPObjectCache();
@@ -181,11 +224,92 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 // load from database
                 return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             });
-            
-            string signingSecret = signingSecret = productInternalSettingList?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
-
+            return productInternalSettingList;
+        }
+        /// <summary>
+        /// Used to get the signing secret used to validate Tibco WebHook events
+        /// </summary>
+        /// <returns>The list of settings</returns>
+        private string GetTiboWebHookSigningSecret()
+        {
+            string signingSecret = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("TiboWebHookSigningSecret", StringComparison.OrdinalIgnoreCase))?.Value;
             return signingSecret ?? "";
         }
+
+        private string CreateCompanyFromBooks(long booksCustomerMasterId, string domain)
+        {
+            bool processBlueBookMessage = false;
+
+            // check to see if the company already exists
+            var organizationList = _manageOrganization.GetOrganizationList();
+            if (organizationList.Any(o => o.BooksCustomerMasterId == booksCustomerMasterId))
+            {
+                return "";
+            }
+            string ignoreEnvironment = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("UPFMOrderIgnoreEnvironment", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (!string.IsNullOrEmpty(ignoreEnvironment))
+            {
+                return "";
+            }
+
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(booksCustomerMasterId);
+            if (customerCompany == null){ return "Company not found in books environment"; }
+            
+            OrganizationCreate organization = new OrganizationCreate()
+            {
+                Name = customerCompany.CompanyName,
+                BooksCompanyId = customerCompany.MasterCompanyId,
+                BooksCustomerMasterId = customerCompany.CustomerCompanyId,
+                AdminUser = new OrganizationAdminUser()
+                {
+                    FirstName = "RealPage",
+                    LastName = "Access",
+                    Suffix = "",
+                    Title = "",
+                    Email = $"{customerCompany.CustomerCompanyId}admin@realpage.com"
+                }
+            };
+            var organizationTypeList = _manageOrganization.ListOrganizationType();
+            var organizationDomainList = _manageOrganization.ListOrganizationDomain();
+            
+            organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+            organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+
+            organization.Products = new List<string>();
+
+            // get a list of products from blue
+            var productList = _manageBlueBook.GetCompanyMap(booksCustomerMasterId);
+            if (productList != null)
+            {
+                foreach (var customerCompanyMap in productList)
+                {
+                    organization.Products.Add(customerCompanyMap.Source);
+                }
+            }
+
+            var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
+
+            if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
+            {
+                return result.Status.ErrorMsg;
+            }
+            var companyInstance= new CompanyInstanceAdd()
+            {
+                CustomerCompanyId = booksCustomerMasterId,
+                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
+                CompanyName = result.obj.Org.Name,
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                IsActive = true,
+                CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                CustomerEnvironment = domain
+            };
+
+            // add the new company data back to books
+            var booksResult = _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+
+            return "";
+        }
+
 
         private static string ResultErrorMessage(RepositoryResponse result)
         {

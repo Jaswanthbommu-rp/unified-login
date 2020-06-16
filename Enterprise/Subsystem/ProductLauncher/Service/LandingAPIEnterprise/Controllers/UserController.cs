@@ -817,6 +817,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				resources = resources.Where(p => p.ShowInAppSwitcher).ToList();
 
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
+
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
 				return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
@@ -895,6 +896,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				IList<PersonaProductUserDetails> products = manageProduct.GetUserAssignedProductsByPersona(persona);
 				IList<PersonaProductUserDetails> resources = manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: security);
 				products = products.Where(p => p.ShowInAppSwitcher).ToList();
+
 				resources = resources.Where(p => p.ShowInAppSwitcher).ToList();
                 List<UserProducts> userProducts = ConvertDashboardProductsToRAULv2(products);
 				productResult.Products = new Dictionary<string, List<UserProducts>>();
@@ -907,8 +909,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						productResult.Products.Add(up.FamilyName, userProducts.Where(p => !p.IsFavorite && p.FamilyName.Equals(up.FamilyName, StringComparison.OrdinalIgnoreCase)).ToList());
 					}
 				}
-                //productResult.Resources = ConvertDashboardProductsToRAUL(resources);
-                return Request.CreateResponse(HttpStatusCode.OK, productResult);
+
+
+				//productResult.Resources = ConvertDashboardProductsToRAUL(resources);
+				return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
 
 			errorStatus.Success = false;
@@ -1057,7 +1061,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						IsFavorite = prodDetail.IsFavorite,
 						IsNewTab = prodDetail.IsNewTab,
 						IsResource = prodDetail.IsResource,
-						Status = prodDetail.ProductStatus
+						Status = prodDetail.ProductStatus,
+						ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
 					};
 					productList.Add(up);
 				}
@@ -1090,7 +1095,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						IsFavorite = prodDetail.IsFavorite,
 						IsNewTab = prodDetail.IsNewTab,
 						IsResource = prodDetail.IsResource,
-						Status = prodDetail.ProductStatus
+						Status = prodDetail.ProductStatus,
+						ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
 					};
 					productList.Add(up);
 				}
@@ -1239,6 +1245,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			/// /The status of the product, 7 errored, 8 success, 10 deleted
 			/// </summary>
 			public int Status { get; set; }
+
+			/// <summary>
+			/// Books product code
+			/// </summary>
+			public string ProductCode { get; set; }
 		}
 
 
@@ -1311,7 +1322,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						FamilyName = "Resident Services",
 						IsNewTab = true,
 						IsFavorite = false,
-						IsResource = false
+						IsResource = false,
+						ProductCode = ProductEnum.Insurance.ToEnumDescription()
 					},
 					new UserProducts()
 					{
@@ -1324,7 +1336,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						FamilyName = "Property Management",
 						IsNewTab = true,
 						IsFavorite = false,
-						IsResource = false
+						IsResource = false,
+						ProductCode = ProductEnum.OneSite.ToEnumDescription()
 					},
 				};
 

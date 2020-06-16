@@ -1,5 +1,30 @@
 <div class="product-panel-roles-wrapper" ng-controller="ProductRolesGridCtrl as cpr">
-    <div class="product-panel-roles-body" ng-if="!cpr.isDataError">
+<div class="product-panel-roles-body" ng-if="!cpr.isDataError">
+        <div class="product-panel-roles-access-type" ng-if="cpr.radioconfig">
+            <div class="vendor-compliance-access-type-label">
+                Access Type
+            </div>
+            <div>
+                <div>
+                    <rp-form-input-radio class="inline marg-r" ng-repeat="rad in cpr.radioconfig" rp-value="rad.key" rp-on-change="cpr.resetDataModel(rad.key)" rp-model="cpr.propertySelect" rp-disabled="cpr.hasViewUserAccess" rp-label-text="rad.text">
+                    </rp-form-input-radio>
+                </div>
+            </div>
+        </div>
+        <div class="product-panel-all-properties" ng-if="cpr.isSelectAllPropMsg2">
+            This user will be assigned to all properties.
+        </div>
+        <div class="unified-amenities-all-props-message" ng-if="cpr.isSelectAllPropMsg1">
+            Users with this role will get access to all active properties in the PMC.
+        </div>
+        <div  class="all-feature-properties" ng-if="cpr.isSwitchConfigLoaded() && cpr.showAllPropertiesSwitch">
+            <rp-switch  class="inline label-1 marg-r" ng-repeat="sw in cpr.switchconfigs"
+                config="sw.configData"
+                rp-model="cpr.allProperties"
+                rp-label-text="sw.text">
+            </rp-switch>
+        </div>
+
         <div class="product-panel-roles-select" ng-if="cpr.isSelectTypeConfigLoaded()">
             <rp-form-select-menu ng-repeat="sop in cpr.selectconfigs"
                 ng-if="!cpr.presetRoles.empty()"

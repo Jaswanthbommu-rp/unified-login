@@ -3,8 +3,6 @@
 
 // Config
 
-{{{ include("config/utility-management.js") }}}
-
 // Controllers
 {{{ include("controllers/product-access.js") }}}
 {{{ include("controllers/properties.js") }}}

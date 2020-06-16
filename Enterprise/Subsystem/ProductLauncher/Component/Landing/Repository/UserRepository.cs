@@ -52,11 +52,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
         }
 
-        public UserRepository(IRepository repository) : base(repository)
+        public UserRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
-            _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _userClaim = userClaim;//new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             _userLoginRepository = new UserLoginRepository(repository);
-            _managePersona = new ManagePersona(repository);
+            _managePersona = new ManagePersona(repository, userClaim);
             _organizationRepository = new OrganizationRepository(repository);
         }
 
@@ -180,6 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<OrganizationPrimary> orgnanizationList = new List<OrganizationPrimary>();
             IList<UserOrganization> userPersonaOrganizationList = new List<UserOrganization>();
             OrganizationStatus currentPrimaryOrgStatus = null;
+            ProductBatch gbProductBatch = new ProductBatch();
 
             long organizationPartyId = 0;
             long userId = 0;
@@ -1010,7 +1011,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, param);
 
                         int greenBookRole = 0;
-                        ProductBatch gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
+                        gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
                         if (currentOrg.OrganizationPartyId.Equals(organizationExternalUser.PartyId))
                         {
                             greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
@@ -1073,6 +1074,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
+                            if ((SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                            {
+                                gbProductBatch = new ProductBatch()
+                                {
+                                    InputJson = new RolePropertyList()
+                                    {
+                                        PropertyList = new List<string>()
+                                            { "-1"}
+                                    }
+                                };
+                            }
+
                             if ((gbProductBatch != null) && ((gbProductBatch.InputJson?.PropertyList?.Count > 0) || (gbProductBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(gbProductBatch);

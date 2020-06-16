@@ -12,6 +12,7 @@
             vm.disableContent = false;
             vm.tabsList = userTabs.getTabsList();
             vm.tabsMenu = userTabs.getTabsMenu();
+
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.profileWatch = pubsub.subscribe("up.user-details-disable", vm.setState);
         };
@@ -25,13 +26,24 @@
             }
             else {
                 //$location.path("/people/users");
+                panelTemplateModel.reset();
 				window.location.href = "../people/users";
             }
 
         };
 
+        // vm.loadTabs = function () {
+        //     vm.tabsList = userTabs.getTabsList();
+        //     vm.tabsMenu = userTabs.getTabsMenu();
+        // };
+
         vm.save = function () {
             if(!chkEmailModel.getIsBusy()){
+                //Editing self then remove product access panel
+                if ((session.getRealPageId() === $params.realPageId)){
+                    tabsManager.remove("productAccess");
+                    logc("tabsManager",tabsManager);
+                }
                 tabsManager.processData();
             }
         };
@@ -67,6 +79,7 @@
         vm.destroy = function () {
             vm.destWatch();
             vm.profileWatch();
+            vm.productPanelWatch();
             tabsManager.reset();
             productDataSync.reset();
             panelTemplateModel.reset();

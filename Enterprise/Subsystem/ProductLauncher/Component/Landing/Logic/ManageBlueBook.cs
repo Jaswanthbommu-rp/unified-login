@@ -20,6 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -119,6 +120,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _defaultUserClaim = userClaim;
         }
 
+        public ManageBlueBook(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
+        {
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _httpClient = new HttpClient(messageHandler){ BaseAddress = new Uri("http://localhost")};
+            _defaultUserClaim = userClaim;
+        }
+
         /// <summary>
         /// Used to get the product id for the given BlueBook source code
         /// </summary>
@@ -155,8 +163,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
         /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
+        /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "")
+        public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true)
         {
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
             Dictionary<string, object> logData;
@@ -175,8 +184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId.ToString()}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
             if (companyMap == null)
             {
-                //string uri = $"companymap?filter[companyInstance.greenBookCares]=true&filter[companyId]={companyId.ToString()}";
-                string uri = $"customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={booksCompanyMasterId.ToString()}&include=companyInstance&include=companyInstance.attributes";
+                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + $"filter[customerCompanyId]={booksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes";
                 if (!string.IsNullOrEmpty(source))
                 {
                     uri += "&filter[source]=" + source;
@@ -198,13 +206,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId.ToString()}_{source}_{IncludeExtra}", companyMap, policy);
+                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{IncludeExtra}", companyMap, policy);
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - No info found.", logData);
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
                         return companyMap;
@@ -343,7 +351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstance - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyPropertyInstance_{companyInstanceId.ToString()}", companyPropertyInstanceResource, policy);
+                    _manageBlueBookCache.Set($"getCompanyPropertyInstance_{companyInstanceId}", companyPropertyInstanceResource, policy);
                 }
                 else
                 {
@@ -365,6 +373,83 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return companyPropertyInstanceResource;
         }
 
+        /// <summary>
+        /// Used to add a new company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public bool AddBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        {
+            string uri = $"companyinstance";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri( _httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Used to delete an existing company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public bool DeleteBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        {
+            string uri = $"companyinstance/{companyInstance.CompanyInstanceId}?modifiedBy={WebUtility.UrlEncode(companyInstance.ModifiedBy)}";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            WriteToLog(LogType.Diagnostic, $"DeleteBooksGreenBookCompanyInstance - deleting instance {companyInstance.CompanyInstanceId}.", logData);
+            var response = _httpClient.DeleteAsync(uri).Result;
+            logData = new Dictionary<string, object>() {{"StatusCode", response.StatusCode}};
+            WriteToLog(LogType.Diagnostic, $"DeleteBooksGreenBookCompanyInstance - deleted instance {companyInstance.CompanyInstanceId}.", logData);
+            return response.IsSuccessStatusCode;
+        }
+
+        /// <summary>
+        /// Used to update an existing company instance
+        /// </summary>
+        /// <param name="companyInstance"></param>
+        /// <returns></returns>
+        public string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance)
+        {
+            string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            WriteToLog(LogType.Diagnostic, "UpdateBooksGreenBookCompanyInstance - Updating info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+            var request = new HttpRequestMessage
+            {
+                Method = new HttpMethod("PATCH"),
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri( _httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && !response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return "instance not found";
+                }
+                return "an unknown error occurred. " + response.StatusCode;
+            }
+            return "";
+        }
+        
         /// <summary>
         /// Used to get a list of company id's for the given company list
         /// </summary>
@@ -662,7 +747,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return response;
         }
-
+        
         /// <summary>
         /// Used to add the token header for Books
         /// </summary>

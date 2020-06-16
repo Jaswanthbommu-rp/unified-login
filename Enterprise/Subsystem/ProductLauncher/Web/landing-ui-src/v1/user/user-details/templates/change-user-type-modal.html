@@ -1,5 +1,5 @@
 <div class="rp-modal-wrap top am-fade-and-slide-top" ng-controller="ChangeUserTypeConfirmationCtrl as ctrl">
-	<div class="rp-modal" ng-if="ctrl.chgSuperToRegular()">
+    <div class="rp-modal" ng-if="ctrl.chgSuperToRegular()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="ctrl.decline()"></span>
@@ -20,8 +20,7 @@
             </div>
         </div>
     </div>
-
-	<div class="rp-modal" ng-if="ctrl.chgToNoEmail()">
+    <div class="rp-modal" ng-if="ctrl.chgToNoEmail()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="ctrl.decline()"></span>
@@ -39,7 +38,6 @@
             </div>
         </div>
     </div>
-
     <div class="rp-modal" ng-if="ctrl.chgNoEmailToSuper()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
@@ -58,8 +56,7 @@
             </div>
         </div>
     </div>
-
-	<div class="rp-modal" ng-if="ctrl.chgRegularToSuper()">
+    <div class="rp-modal" ng-if="ctrl.chgRegularToSuper()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="ctrl.decline()"></span>
@@ -80,8 +77,7 @@
             </div>
         </div>
     </div>
-
-	<div class="rp-modal" ng-if="ctrl.chgNoEmailToRegular()">
+    <div class="rp-modal" ng-if="ctrl.chgNoEmailToRegular()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="ctrl.decline()"></span>
@@ -102,7 +98,6 @@
             </div>
         </div>
     </div>
-
     <div class="rp-modal" ng-if="ctrl.chgNoEmailToExternal()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
@@ -124,8 +119,6 @@
             </div>
         </div>
     </div>
-
-
     <div class="rp-modal" ng-if="ctrl.chgExternalToSuper()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
@@ -147,7 +140,6 @@
             </div>
         </div>
     </div>
-
     <div class="rp-modal" ng-if="ctrl.chgExternalToRegular()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
@@ -155,7 +147,7 @@
                 <h2 class="rp-modal-header-title">Change User Type</h2>
             </div>
             <div class="rp-modal-content">
-                <p>Are you sure you want to change this user to a Regular User?  The Regular User type is intended for employees of your company. </p>
+                <p>Are you sure you want to change this user to a Regular User? The Regular User type is intended for employees of your company. </p>
             </div>
             <div class="rp-modal-footer">
                 <div class="rp-modal-footer-btns">
@@ -169,8 +161,7 @@
             </div>
         </div>
     </div>
-
-    <div class="rp-modal"  ng-if="ctrl.chgSuperToExternal()">
+    <div class="rp-modal" ng-if="ctrl.chgSuperToExternal()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="ctrl.decline()"></span>
@@ -178,6 +169,9 @@
             </div>
             <div class="rp-modal-content">
                 <p>Are you sure you want to demote this user to External User?  You will need to specify and configure all products that should be accessible to the end user and click the Update User button to complete this process.</p>
+                <div ng-if="ctrl.isUserHasBIProductAccess()">
+                    <p>At this time, the External user type is not available for Business Intelligence. Selecting "confirm" will remove this product from the user's portfolio.</p>
+                </div>
             </div>
             <div class="rp-modal-footer">
                 <div class="rp-modal-footer-btns">
@@ -191,7 +185,6 @@
             </div>
         </div>
     </div>
-
     <div class="rp-modal" ng-if="ctrl.chgRegularToExternal()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
@@ -199,7 +192,10 @@
                 <h2 class="rp-modal-header-title">Change User Type</h2>
             </div>
             <div class="rp-modal-content">
-                <p>Are you sure you want to change this user to an External User?  The External User type is intended for users who have access to your products, but are not your employees. </p>
+                <p>Are you sure you want to change to an External User? The External User type is intended for users who have access to your products who are not your employees. </p>
+                <div ng-if="ctrl.isUserHasBIProductAccess()">
+                    <p>At this time, the External user type is not available for Business Intelligence. Selecting "confirm" will remove this product from the user's portfolio.</p>
+                </div>
             </div>
             <div class="rp-modal-footer">
                 <div class="rp-modal-footer-btns">
@@ -213,8 +209,7 @@
             </div>
         </div>
     </div>
-
-   <!--  <div class="rp-modal" ng-if="ctrl.chgExternalToSuper()">
+    <!--  <div class="rp-modal" ng-if="ctrl.chgExternalToSuper()">
         <div class="rp-modal-dialog change-user-type-modal">
             <div class="rp-modal-header">
                 <span class="rp-modal-close" ng-click="ctrl.decline()"></span>

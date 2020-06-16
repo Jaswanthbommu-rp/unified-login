@@ -99,6 +99,7 @@
 		/// RPDocumentManagement
 		/// </summary>
 		public const string RPDocumentManagement = "DOC";
+
 		/// <summary>
 		/// iDoc
 		/// </summary>
@@ -253,5 +254,10 @@
 		/// LRO
 		/// </summary>
 		public const string AoLeaseRentOption = "LRO";
+
+		/// <summary>
+		/// UnifiedSettings
+		/// </summary>
+		public const string UnifiedSettings = "SET";
 	}
 }

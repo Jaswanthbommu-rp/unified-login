@@ -73,6 +73,10 @@
                 tabs.push("activityLog");
             }
 
+            if (session.getRealPageId() === $params.realPageId) {
+                tabs.push("userPreference");
+            }
+
             tabsModel.setTabs(tabs).activateTab("userDetails");
 
             return vm;
@@ -114,9 +118,10 @@
 
                 tabsManager.init();
                 timeout(vm.setDateMinLimit, 100);
-                if (data.userTypeId === 404){
-                    vm.setProductsData(data.realPageId);
-                }
+                vm.setProductsData(data.realPageId);
+                // if (data.userTypeId === 404){
+                //     vm.setProductsData(data.realPageId);
+                // }
             }
             else {
                 vm.invalidateEdit(resp.status);
@@ -147,7 +152,7 @@
                 });
             }
 
-            if (products.length > 0) {
+            if (products.length > 0 && userStatus.isRegularUserNoEmail()) {
                 message = products.join();
                 formConfig.setNotificationEmailRequired(true, message);
             }
