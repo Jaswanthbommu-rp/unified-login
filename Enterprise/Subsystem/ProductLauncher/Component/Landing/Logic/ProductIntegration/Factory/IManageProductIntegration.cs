@@ -18,10 +18,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		ListResponse GetProductRoles(RequestParameter datafilter, string baseUrlAndQuery = null);
 
-		/// <summary>
-		/// Get Product Properties
+        /// <summary>
+		/// Get Roles based Rights
 		/// </summary>
-		ListResponse GetProductProperties(RequestParameter datafilter, string baseUrlAndQuery = null);
+        ListResponse GetProductRightsForRole(RequestParameter dataFilter, long roleId, string baseUrlAndQuery = null);
+
+        /// <summary>
+        /// Get Product Properties
+        /// </summary>
+        ListResponse GetProductProperties(RequestParameter datafilter, string baseUrlAndQuery = null);
 
 		/// <summary>
 		/// Get Product Regions
@@ -89,5 +94,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productUserProfile">Product user information</param>
 		/// <returns>string.Empty if success else response contents.</returns>
 		bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile);
+
+		/// <summary>
+		/// Returns Product Rights for a Company
+		/// </summary>
+		/// <param name="dataFilter">Request parameters</param>
+		/// <param name="baseUrlAndQuery">Base url</param>
+		/// <returns>A response list</returns>
+		ListResponse GetAllRights(RequestParameter dataFilter, string baseUrlAndQuery = null);
 	}
 }

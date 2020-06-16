@@ -56,7 +56,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.ResidentPortal: return "resident-portals";
 				case ProductEnum.UtilityManagement: return "utility-management";
 				case ProductEnum.ProductLearningPortal: return "learning-portal";
-				case ProductEnum.HelpCenter: return "help-center";
 				case ProductEnum.RPDocumentManagement: return "realpage-document-management";
 				case ProductEnum.OneSiteConversions: return "leasing-and-rent-conversion-tool";
 				case ProductEnum.OmniChannel: return "rentjoy";
@@ -83,6 +82,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.LeadAnalytics: return "ilm-leasing-analytics";
 				case ProductEnum.DepositAlternative: return "deposit-iq";
 				case ProductEnum.ClickPay: return "payments";
+                case ProductEnum.HelpCenter: return "help-center";
+                case ProductEnum.SeniorLeadManagement: return "help-center"; // Need this value replaced with actual based on the CDN value
 				case ProductEnum.AoLeaseRentOption: return "lro";
 				case ProductEnum.AoAmenityOptimization: return "amenity-analytics";
 				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
@@ -354,17 +355,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("LP")]
 		ProductLearningPortal = 19,
-
+        		
 		/// <summary>
-		/// Help Center
+		/// RPDocumentManagement
 		/// </summary>
-		[Description("HLP")]
-		HelpCenter = 49,
-
-        /// <summary>
-        /// RPDocumentManagement
-        /// </summary>
-        [Description("DOC")]
+        [Description("DOC")]		
         RPDocumentManagement = 20,
 
 		/// <summary>
@@ -534,6 +529,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("CPAY")]
 		ClickPay = 48,
+
+        /// <summary>
+		/// Help Center
+		/// </summary>
+		[Description("HLP")]
+        HelpCenter = 49,
+
+        /// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		[Description("SLM")]
+        SeniorLeadManagement = 50,
 
 		/// <summary>
 		/// AO LeaseRentOption
@@ -775,7 +782,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Manage Settings Template
 		/// </summary>
 		ManageSettingsTemplates = 50,
-	}	
+
+        /// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		[Description("SLM")]
+        ManageSeniorLeadManagement = 51
+    }
 }
 
 //public static class EnumHelper

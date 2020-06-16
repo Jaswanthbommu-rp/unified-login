@@ -1,33 +1,33 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
 {
-    /// <summary>
-    /// Class which binds with product response
-    /// </summary>
-    public class ProductRole
+    public class ProductRight
     {
         private string _name = string.Empty;
-        private string _roleId;
+        private string _rightId;
 
         /// <summary>
         /// Get RoleId
         /// </summary>
         [JsonProperty(PropertyName = "id")]
-        public string GetRoleId
+        public string GetRightId
         {
-            get { return _roleId; }
+            get { return _rightId; }
         }
 
         /// <summary>
         /// Set RoleId
         /// </summary>
-        [JsonProperty(PropertyName = "RoleId")]
-        public string SetRoleId
+        [JsonProperty(PropertyName = "RightId")]
+        public string SetRightId
         {
-            set { this._roleId = value; }
+            set { this._rightId = value; }
         }
 
         [JsonProperty(PropertyName = "name")]
@@ -36,7 +36,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Role Name
         /// </summary>
-        [JsonProperty(PropertyName = "RoleName")]
+        [JsonProperty(PropertyName = "RightName")]
         public string SetName
         {
             set { this._name = value; }
@@ -49,17 +49,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public bool IsAssigned { get; set; }
 
         /// <summary>
-        /// RoleType 
+        /// RightType 
         /// </summary>
-        [JsonProperty(PropertyName = "RoleType", NullValueHandling = NullValueHandling.Ignore)]
-        public string RoleType { get; set; }
-
-        /// <summary>
-        /// List of rights for every role
-        /// </summary>
-        [JsonProperty(PropertyName = "Rights", NullValueHandling = NullValueHandling.Ignore)]
-        public List<Right> Rights { get; set; }
-
+        [JsonProperty(PropertyName = "RightType", NullValueHandling = NullValueHandling.Ignore)]
+        public string RightType { get; set; }
     }
-
 }

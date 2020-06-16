@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.SeniorLeadManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
@@ -34,5 +35,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public bool CanReceiveMonthlyReport { get; set; } // used in DIQ
 
 		public bool IsAssigned { get; set; }
+
+        [JsonProperty(PropertyName = "oneSiteUserInfo", NullValueHandling = NullValueHandling.Ignore)]
+        public OneSiteUserInfo OneSiteUserInfo { get; set; } //SLM
     }
 }
