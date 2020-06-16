@@ -600,7 +600,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				case (int)ProductRightEnum.ManageClickPayProductAccess:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString());
 					break;
-				default:
+                case (int)ProductRightEnum.ManageSeniorLeadManagement:
+                    hasAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
+                    break;
+                default:
 					hasAccess = true; // Some products will have default acess - ex UnifiedLogin
 					break;
 			}
