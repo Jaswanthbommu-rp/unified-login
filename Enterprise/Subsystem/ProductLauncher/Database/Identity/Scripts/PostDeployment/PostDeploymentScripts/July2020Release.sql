@@ -1045,6 +1045,7 @@ END
 --	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 --END
 
+
 IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 104)
 BEGIN
 	UPDATE [UserManagement].[Control] SET DisplayName = 'Assign current and new properties automatically' WHERE ControlId = 104
