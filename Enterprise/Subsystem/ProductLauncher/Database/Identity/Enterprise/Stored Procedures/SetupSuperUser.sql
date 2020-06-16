@@ -924,6 +924,27 @@ AS
                                 @TargetProductId = @TargetProductId, 
                                 @VisibilityStatusId = @VisibilityStatusId;
                         SELECT @RightID;
+                        EXECUTE Enterprise.CreateRight 
+                                @RoleID = @RoleId, 
+                                @PartyId = @OrganizationId, 
+                                @ProductId = 3, 
+                                @RightName = 'Ability to answer company-level questionnaires in CIMPL', 
+                                @RightCategoryId = @Status_Right, 
+                                @RightID = @RightID OUTPUT, 
+                                @Description = '', 
+                                @TargetProductId = @TargetProductId, 
+                                @VisibilityStatusId = @VisibilityStatusId;
+                        SELECT @RightID;
+                        EXECUTE Enterprise.CreateRight 
+                                @RoleID = @RoleId, 
+                                @PartyId = @OrganizationId, 
+                                @ProductId = 3, 
+                                @RightName = 'Manage CIMPL Templates', 
+                                @RightCategoryId = @Status_Right, 
+                                @RightID = @RightID OUTPUT, 
+                                @Description = '', 
+                                @TargetProductId = @TargetProductId, 
+                                @VisibilityStatusId = @VisibilityStatusId;
 
                         --EXECUTE Enterprise.CreateRight 
                         --        @RoleID = @RoleId, 
@@ -1479,6 +1500,34 @@ AS
                              @RoleID = @RoleId, 
                              @PersonaPrivilgeID = @PerPriv OUTPUT;
                 END;
+				
+								--INSERT all properties indicator for UPFM
+				IF NOT EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.PropertyMapping
+					WHERE PersonaId = @PersonaId
+					AND ProductId = 3
+					AND PropertyId = -1
+					AND ThruDate IS NULL
+				)
+				BEGIN
+					INSERT INTO Enterprise.PropertyMapping (
+						PersonaId,
+						PropertyId,
+						ProductId,
+						FromDate,
+						ThruDate
+					)
+					VALUES (
+						@PersonaId,
+						-1,
+						3,
+						@NOW,
+						NULL
+					)
+				END
+
                 UPDATE #HoldOrgs
                   SET 
                       PStatus = 1

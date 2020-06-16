@@ -1,5 +1,16 @@
 <div ng-controller="ProductNotificationGridCtrl as rpn">
     <div class="row">
+      <div ng-if="rpn.isDepositIQ()" class="row">
+          <div class="col-xs-10 col-sm-7" ng-repeat ="swc in rpn.dIQswitchconfigs">
+            <rp-switch class="label-1 theme-1"
+                config="swc.configData"
+                rp-model="rpn.canReceiveMonthlyReport"
+                rp-label-text="swc.text">
+            </rp-switch>
+            <hr>
+        </div>
+      </div>
+      <div ng-if="rpn.isResidentPortal()" class="row">
         <div class="col-xs-10 col-sm-7">
             <rp-switch class="label-1 theme-1"
                 config="rpn.frontDeskSwitch"
@@ -24,5 +35,33 @@
             </rp-switch>
             <hr>
         </div>
+     </div>
+     <div ng-if="rpn.isVendorCredentialing()" class="row">
+		<div class="col-xs-10 col-sm-7">
+			<rp-switch class="label-1 theme-1"
+				rp-model="rpn.isInsuranceExpired"
+                config="rpn.venIsInsuranceExpired"
+				rp-label-text="'Notify by email when any vendor\'s insurance is about to expire'">
+			</rp-switch>
+			<hr>
+		</div>
+		<div class="col-xs-10 col-sm-7">
+			<rp-switch class="label-1 theme-1"
+				rp-model="rpn.IsVendorRecommendationChanges"
+                config="rpn.venIsVendorRecommendationChanges"
+				rp-label-text="'Notify by email when any vendor\'s recommendation changes'">
+			</rp-switch>
+			<hr>
+		</div>
+		<div class="col-xs-10 col-sm-7">
+			<rp-switch class="label-1 theme-1"
+				rp-model="rpn.isVendorNotLinkedToAnyProperty"
+                config="rpn.venIsVendorNotLinkedToAnyProperty"
+				rp-label-text="'Notify by email when a vendor is not linked to any properties.'">
+			</rp-switch>
+			<hr>
+		</div>
+	</div>
+
     </div>
 </div>

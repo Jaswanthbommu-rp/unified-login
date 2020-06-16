@@ -89,24 +89,17 @@
             var rightData = syncMgr.getProductRightsData(productId);
             if (rightData && rightData.length > 0) {
                 vm.allRightsData = rightData;
-                if (vm.hasViewOnlyAccess()) {
-                    rightData.forEach(function (item) {
-                        angular.extend(item, {
-                            disabled: false,
-                            radname: "right"
-                        });
-                        item.disabled = true;
-                    });
-                }
 
                 rightData.forEach(function (item) {
                     angular.extend(item, {
+                        disableSelection: vm.hasViewOnlyAccess(),
                         radname: "right",
                         productId: productId,
                         originalProperty: item.isAssigned
                     });
 
                 });
+
                 rightsGridPagination.setData(rightData).goToPage({
                     number: 0
                 });

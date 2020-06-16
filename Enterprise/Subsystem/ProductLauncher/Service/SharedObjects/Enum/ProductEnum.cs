@@ -281,6 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Yieldstar - THIS IS NOT REQUIRED
 		/// </summary>
+		[Description("YS")]
 		Yieldstar = 7, //TODO: This can be replaced with some other products
 
 		/// <summary>
@@ -304,6 +305,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Social
 		/// </summary>
+		[Description("??")]
 		Social = 11,
 
 		/// <summary>
@@ -369,6 +371,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// OneSiteConversions
 		/// </summary>
+		[Description("OSC")]
 		OneSiteConversions = 21,
 
 		/// <summary>
@@ -532,21 +535,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("CPAY")]
 		ClickPay = 48,
+
 		/// <summary>
 		/// AO LeaseRentOption
 		/// </summary>
 		[Description("LRO")]
 		AoLeaseRentOption = 51,
+
 		/// <summary>
 		/// AO Amenity Optimization
 		/// </summary>
 		[Description("AA")]
 		AoAmenityOptimization = 52,
+
 		/// <summary>
 		/// AO AI Revenue Management
 		/// </summary>
 		[Description("AIRM")]
 		AoAIRevenueManagement = 53,
+
 		/// <summary>
 		/// AO Rent Control
 		/// </summary>
@@ -556,7 +563,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		///Renovation Manager
 		/// </summary>
 		[Description("RENO")]
-		RenovationManager = 55
+		RenovationManager = 55,
+		/// <summary>
+		/// UnifiedSettings
+		/// </summary>
+		[Description("SET")]
+		UnifiedSettings = 56
+
 	}
 
 	/// <summary>
@@ -570,20 +583,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("OS")]
 		ManageOneSiteProductAccess = 1,
 
-
 		/// <summary>
 		/// Asset Optimizer - Umbrella for all AO products
 		/// </summary>
 		[Description("AO")]
 		ManageAssetOptimizationProductAccess = 4,
 
-
 		/// <summary>
 		/// Lead2Lease
 		/// </summary>
 		[Description("L2L")]
 		ManageLead2LeaseProductAccess = 6,
-
 
 		/// <summary>
 		/// Accounting
@@ -608,7 +618,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("OPS")]
 		ManageSpendManagementProductAccess = 13,
-
 
 		/// <summary>
 		/// SalesForce ClientPortal
@@ -704,11 +713,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("AA")]
 		AoAmenityOptimization = 52,
+
 		/// <summary>
 		/// AO AI Revenue Management
 		/// </summary>
 		[Description("AIRM")]
 		AoAIRevenueManagement = 53,
+
 		/// <summary>
 		/// AO Rent Control
 		/// </summary>

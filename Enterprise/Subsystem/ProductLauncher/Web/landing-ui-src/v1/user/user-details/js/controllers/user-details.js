@@ -658,10 +658,14 @@
             var match = model.passwordsMatch(),
                 method = match ? "resolve" : "reject";
 
-            if (vm.userHasBIProductCheck) {
-                vm.userHasBIProductCheck[method]();
-                vm.userHasBIProductCheck = undefined;
-            }
+             if(vm.passMatchCheck) {
+                vm.passMatchCheck[method]();
+                vm.passMatchCheck = undefined;
+             }
+            //if (vm.userHasBIProductCheck) {
+            //     vm.userHasBIProductCheck[method]();
+            //     vm.userHasBIProductCheck = undefined;
+            // }
         };
 
         vm.validatePasswordCopy = function (password) {

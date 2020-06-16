@@ -22,6 +22,10 @@
             return model.tabName;
         };
 
+        model.getSelectedPropertyRoleData = function () {
+            return model.propertyData;
+        };
+
         model.setName = function (name) {
             model.Name = name;
         };
@@ -37,7 +41,11 @@
         model.setTabName = function (name) {
             model.tabName = name;
         };
-
+        
+        model.setSelectedPropertyRoleData = function (data) {
+            model.propertyData = data;
+        };
+      
         model.FooterRequired = function (productId){
             var flag = false;
             productLists.forEach(function (id) {

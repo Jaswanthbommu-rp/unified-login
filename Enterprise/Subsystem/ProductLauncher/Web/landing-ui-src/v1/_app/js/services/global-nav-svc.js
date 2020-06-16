@@ -56,7 +56,7 @@
             personaReady = true;
             svc.updateSettings();
         };
-        
+
         svc.updateNavListReady = function () {
             navListReady = true;
             svc.updateSettings();
@@ -81,11 +81,10 @@
         };
 
         svc.updateSettings = function (data) {
-            if (personaReady && navListReady)
-            {
+            if (personaReady && navListReady) {
                 svc.updateNotificationsLink();
                 svc.updateSettingsLink();
-                
+
                 var leftNav = document.querySelector('omnibar-navigation');
                 leftNav.items = navModel.data;
             }
@@ -96,38 +95,38 @@
                 var compName = persona.getCompanyName();
                 var rpId = persona.getPersonaRealPageID();
                 var compId = persona.getBooksMasterId();
-                
+
                 var setting = {
-                            title: "Settings",
-                            pageId: "settings",
-                            icon: "cog-gear-settings",
-                            items: [
-                                {
-                                    linkId: "manage settings",
-                                    title: "Manage Settings",
-                                    url: "/settings"
-                                },                                
-                                {
-                                    linkId: "settings activity log",
-                                    title: "Settings Activity Log",
-                                    url: "../settings/activity-log"
+                    title: "Settings",
+                    pageId: "settings",
+                    icon: "cog-gear-settings",
+                    items: [
+                        {
+                            linkId: "manage settings",
+                            title: "Manage Settings",
+                            url: "/settings"
+                                },
+                        {
+                            linkId: "settings activity log",
+                            title: "Settings Activity Log",
+                            url: "../settings/activity-log"
                                 }
                             ]
-                        };
+                };
 
-                if ( !(compId === -1 || compId === -2) && (persona.hasViewOnlySettingsAccess() || persona.hasManagePlatFormSecurity() || persona.hasManageCustomFields() || persona.hasManageUnifiedSettings() ) ) {
+                if (!(compId === -1 || compId === -2) && (persona.hasViewOnlySettingsAccess() || persona.hasManagePlatFormSecurity() || persona.hasManageCustomFields() || persona.hasManageUnifiedSettings())) {
 
                     if (navModel.data !== undefined && (navModel.data.length > 0) && !settingsAdded) {
 
-                        
 
-                        if(persona.hasManageSettingsTemplates()){
-                            
-                           setting.items.splice(1,0,{
-                                   linkId: "Manage Templates",
-                                   title: "Manage Templates",
-                                   url: "../settings/templates" 
-                               });
+
+                        if (persona.hasManageSettingsTemplates()) {
+
+                            setting.items.splice(1, 0, {
+                                linkId: "Manage Templates",
+                                title: "Manage Templates",
+                                url: "../settings/templates"
+                            });
                         }
 
                         navModel.data.push(setting);
@@ -136,18 +135,18 @@
                     }
                 }
 
-                
+
 
                 // Cog for Employee Company ONLY
-                if ( (compId === -1 ) && (persona.hasAccessSettingsAdmin()  ) ) {
+                if ((compId === -1) && (persona.hasAccessSettingsAdmin())) {
 
                     if (navModel.data !== undefined && (navModel.data.length > 0) && !settingsAdded) {
-                              var tmpl = {
-                                   linkId: "Manage Templates",
-                                   title: "Manage Templates",
-                                   url: "../settings/templates" 
-                               };
-                        setting.items.push(tmpl);                        
+                        var tmpl = {
+                            linkId: "Manage Templates",
+                            title: "Manage Templates",
+                            url: "../settings/templates"
+                        };
+                        setting.items.push(tmpl);
                         navModel.data.push(setting);
                         settingsAdded = true;
                         svc.personaWatch();
@@ -162,20 +161,25 @@
             var rpId = persona.getPersonaRealPageID();
             var compId = persona.getBooksMasterId();
             var notifications = {
-                            title: "Platform Notifications",
-                            pageId: "notifications",
-                            icon: "alarm-timeout",
-                            url: "../notifications/platform",                           
-                        };
+                title: "Configurations",
+                icon: "wrench-screwdriver",
+                pageId: "Configurations",
+                classname: "menu-3",
+                items: [{
+                    linkId: "Notifications",
+                    title: "Notifications",
+                    url: "/home/notifications/configuration"
+                }]
+            };
 
-             if (  (persona.hasnotificationsAccess()  ) ) {
+            if ((persona.hasnotificationsAccess())) {
 
-                    if (navModel.data !== undefined && (navModel.data.length > 0) ) {
-                        
-                        navModel.data.push(notifications);                        
-                        svc.personaWatch();
-                    }
+                if (navModel.data !== undefined && (navModel.data.length > 0)) {
+
+                    navModel.data.push(notifications);
+                    svc.personaWatch();
                 }
+            }
         };
 
         svc.reset = function () {
