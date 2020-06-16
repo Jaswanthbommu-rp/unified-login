@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
@@ -10,12 +7,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Lead2Lease;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
@@ -28,6 +23,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -1091,17 +1089,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
-            var os = new ManageProductOneSite(base.UserClaim);
+            var oneSite = new ManageProductOneSite(base.UserClaim);
 
-            // assign user
+            //OneSite
             if (roleProp.IsAssigned)
             {
-                productResult = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, false);
+                productResult = oneSite.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, false);
             }
             else
             {
                 //Unassign Usr
-                productResult = os.UnassignUser(createUserPersonaId, assignUserPersonaId);
+                productResult = oneSite.UnassignUser(createUserPersonaId, assignUserPersonaId);
             }
 
             if (!string.IsNullOrEmpty(productResult))
@@ -1128,17 +1126,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
+            if (!string.IsNullOrEmpty(productResult))
+            {
+                return productResult;
+            }
+
             //SeniorLeadManagement
             if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()) && string.IsNullOrEmpty(productResult))
             {
                 var productSeniorLeadManagement = new SeniorLeadManagementProduct(base.UserClaim, ProductEnum.SeniorLeadManagement);
 
-                RolePropertyList seniorLeadManagement = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
-
                 // assign user
                 if (roleProp.IsAssigned)
                 {
-                    productResult = productSeniorLeadManagement.CreateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, seniorLeadManagement);
+                    productResult = productSeniorLeadManagement.CreateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
                 }
                 else
                 {
@@ -3520,8 +3521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //Try to cast as ProductUserRolePropertiesGroups
             var productUserRolePropertiesGroups = rolePropList as ProductUserRolePropertiesGroups;
 
-            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, this.UserClaim);
 
             if (productUserRolePropertiesGroups == null)
             {
@@ -3549,8 +3549,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         // Create-update user
                         if (rolePropSLM.IsAssigned)
                         {
+                            //Map from RolePropertyList to ProductUserRolePropertiesGroups
+                            productUserRolePropertiesGroups = MapPropertiesTorRolePropertiesGroups(rolePropSLM);
+
                             //Call new method and send new parameters
                             return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups);
+                        }
+                        else
+                        {
+                            return productLogic.UnassignUser();
                         }
                     }
                 }
@@ -3578,7 +3585,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Senior Lead Management Product Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
@@ -3610,6 +3616,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
+
+        #region "Private Methods"
+
+        private ProductUserRolePropertiesGroups MapPropertiesTorRolePropertiesGroups(RolePropertyList origin)
+        {
+            ProductUserRolePropertiesGroups result = new ProductUserRolePropertiesGroups();
+
+            result.CanReceiveMonthlyReport = origin.CanReceiveMonthlyReport;
+            result.IsAssigned = origin.IsAssigned;
+            result.OrganizationRoleList = origin.OrganizationRoleList;
+            result.PropertyGroupList = origin.PropertyGroupList;
+            result.PropertyList = origin.PropertyList;
+            result.PropertyRoleList = origin.PropertyRoleList;
+            result.RoleList = origin.RoleList;
+            result.RolePropertiesList = origin.RolePropertiesList;
+            //result.RoleListString = ?
+
+            return result;
+        }
+
+        #endregion
+        
     }
+
     #endregion
 }

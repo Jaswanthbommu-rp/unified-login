@@ -1,11 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.SeniorLeadManagement
 {
-    /// <summary>
-    /// Class which binds with product response
-    /// </summary>
-    public class ProductProperties : IProductProperties
+    internal class ProductPropertiesSLM : IProductProperties
     {
         private string _name = string.Empty;
         private string _propertyId;
@@ -23,7 +20,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         [JsonProperty(PropertyName = "name")]
-        public string GetName 
+        public string GetName
         {
             get { return _name; }
         }
@@ -43,7 +40,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string PropertyType { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string State { get; set; }
-
+        public string State
+        {
+            get; set;
+        }
+        [JsonProperty(PropertyName = "OneSitePropertyId", NullValueHandling = NullValueHandling.Ignore)]
+        public string OneSitePropertyId { get; set; }
     }
 }
