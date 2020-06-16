@@ -31,13 +31,14 @@
                 statusTypeId: 5,
                 retryCount: 0,
                 inputJson: {
-                    IsVendorRecommendationChanges : false,
-                    isInsuranceExpired : false,
-                    isVendorNotLinkedToAnyProperty : false,
+                    IsVendorRecommendationChanges: false,
+                    isInsuranceExpired: false,
+                    isVendorNotLinkedToAnyProperty: false,
                     roleList: [],
                     propertyList: [],
                     regionList: [],
                     propertyGroupList: [],
+                    departmentList: [],
                     RolePropertiesList: [],
                     propertyGroup: [],
                     removedPropertyList: [],
@@ -48,6 +49,7 @@
                         amenitiesViaEmail: false,
                         managerMrViaEmail: false,
                     },
+                    canReceiveMonthlyReport: true,
                     isAssignedNewPropertyByDefault: false,
                     hasAccessToSiteSpendManagementOnly: false,
                     hasAccessToAllCurrentFutureProperties: false,
@@ -130,27 +132,35 @@
                 hasPropertySelected = false,
                 hasPropertyGroupSelected = false,
                 aoFamilyProduct = false,
+                needsProperties = false,
+                hasProperties = false,
+                needsDepartments = false,
+                hasDepartments = false,
                 hasPropertyRoles = false,
+                needAreas = false,
+                needRegions = false,
+                roleWithoutPropTabs = false,
                 isMConsole = false;
+
 
             s.batchData = angular.copy(s._batchData);
             var roles = "";
-            if(productId == "18")
-            {
+            if (productId == "18") {
                 roles = dataSyncManager.getProductRightsData(productId);
             }
-            else{
+            else {
                 roles = dataSyncManager.getProductRolesData(productId);
             }
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
-            
+
             var notifications = "";
-            if(productId == "17" || productId == "16"){
+
+            if (productId == "17" || productId == "16") {
                 notifications = dataSyncManager.getProductNotificationsData(productId);
             }
 
-            if(productId == "8"){
+            if (productId == "8") {
                 var additionalData = dataSyncManager.getProductAdditionalData(productId);
                 s.batchData.inputJson.hasAccessToAllCurrentFutureProperties = additionalData['hasAccessToAllCurrentFutureProperties'];
                 s.batchData.inputJson.hasAccessToSiteSpendManagementOnly = additionalData['hasAccessToSiteSpendManagementOnly'];
@@ -159,15 +169,19 @@
                 if (s.batchData.inputJson.hasAccessToAllCurrentFutureProperties || properties.length === 0) {
                     s.batchData.inputJson.propertyList.push("all");
                     s.batchData.inputJson.companiesList.push("all");
-                    dataSyncManager.updateProductAllProperties(productId,true);
+                    dataSyncManager.updateProductAllProperties(productId, true);
                 }
             }
-            
+
             var bmroles = "";
+            var diqAreas = "";
             if (productId == "30") {
-                bmroles = dataSyncManager.getProductBenchMarkRolesData("34");
+                bmroles = dataSyncManager.getTab6ProductData("34");
             }
-           
+
+            if (productId == "47") {
+                diqAreas = dataSyncManager.getTab6ProductData("47");
+            }
 
             s.batchData.productId = productId;
 
@@ -183,14 +197,29 @@
                         if (aoFamilyProduct) {
                             s.batchData.inputJson.roleList.push(role.name);
                         }
-                        else if(productId == "18"){
+                        else if (productId == "18") {
                             s.batchData.inputJson.roleList.push(role.roleName);
                         }
-                        else if(productId == "23"){
+                        else if (productId == "23") {
                             s.batchData.inputJson.roleList.push(role.level);
                         }
                         else {
                             s.batchData.inputJson.roleList.push(role.id);
+                        }
+
+                        if (productId == "47") {
+                            if (role.id === 'agent' || role.id === 'property_manager') {
+                                needsProperties = true;
+                            }
+                            else if (role.id === 'area') {
+                                needAreas = true;
+                            }
+                            else if (role.id === 'region') {
+                                needRegions = true;
+                            }
+                            else if (role.id === 'company') {
+                                roleWithoutPropTabs = true;
+                            }
                         }
                     }
                 });
@@ -211,35 +240,35 @@
                     }
                 }
                 else {
-                    if(productId == "44"){
-                        properties.forEach(function(propRole){
-                            if(propRole.isAssigned){
+                    if (productId == "44") {
+                        properties.forEach(function (propRole) {
+                            if (propRole.isAssigned) {
                                 s.propertyRoleListData = angular.copy(s._propertyRoleListData);
                                 s.propertyRoleListData.RoleId = propRole.id;
-                                propRole.propertiesList.forEach(function(prop){
-                                    if(prop.isAssigned){
+                                propRole.propertiesList.forEach(function (prop) {
+                                    if (prop.isAssigned) {
                                         s.propertyRoleListData.PropertyIds.push(prop.id);
                                     }
                                 });
-                                if(s.propertyRoleListData.PropertyIds.length > 0){
+                                if (s.propertyRoleListData.PropertyIds.length > 0) {
                                     s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
                                 }
                             }
                         });
 
                     }
-                    else{
+                    else {
                         properties.forEach(function (prop) {
                             if (prop.isAssigned) {
-                                if(productId == 8){
-                                    if(prop.propertyId !== "") {
+                                if (productId == 8) {
+                                    if (prop.propertyId !== "") {
                                         s.batchData.inputJson.propertyList.push(prop.companyId + "|" + prop.propertyId);
                                     }
-                                    else{
+                                    else {
                                         s.batchData.inputJson.propertyList.push(prop.companyId);
                                     }
                                 }
-                                else{
+                                else {
                                     s.batchData.inputJson.propertyList.push(prop.id);
                                 }
                             }
@@ -249,6 +278,9 @@
                         });
                     }
 
+                    if (productId == 47 && !needsProperties) {
+                        s.batchData.inputJson.propertyList = [];
+                    }
                     if (productId == "9") {
                         s.batchData.inputJson.isAssignedNewPropertyByDefault = dataSyncManager.isProductNewPropertyByDefault(productId);
                     }
@@ -261,52 +293,64 @@
             if (propertyGroups !== undefined && propertyGroups.length) {
                 s.batchData.inputJson.regionList = [];
                 s.batchData.inputJson.propertyGroupList = [];
+                s.batchData.inputJson.departmentList = [];
 
                 propertyGroups.forEach(function (group) {
                     if (group.isAssigned) {
                         if (aoFamilyProduct || productId == "18") {
                             s.batchData.inputJson.propertyGroupList.push(group.id);
                         }
-                        else if(productId == "17"){
+                        else if (productId == "17") {
                             s.batchData.inputJson.messageGroups.push(group.id);
                         }
-                        else if(productId == "16"){
+                        else if (productId == "20") {
+                            s.batchData.inputJson.departmentList.push(group.id);
+                        }
+                        else if (productId == "16") {
                             var newGroup = {
                                 Id: group.propertyGroupId,
                                 Type: group.accessLevel
                             };
                             s.batchData.inputJson.propertyGroup.push(newGroup);
                         }
-                        else if(productId == "8"){
-                            if(isMConsole && s.batchData.inputJson.companiesList[0] != "all"){
+                        else if (productId == "8") {
+                            if (isMConsole && s.batchData.inputJson.companiesList[0] != "all") {
                                 s.batchData.inputJson.companiesList.push(group.id);
                             }
                         }
-                        else{
+                        else {
                             s.batchData.inputJson.regionList.push(group.id);
                         }
                     }
                 });
-                if(productId == "17"){
+
+                if (productId == 47 && !needRegions) {
+                    s.batchData.inputJson.propertyGroup = [];
+                }
+
+                if (productId == "17") {
                     hasPropertyGroupSelected = s.batchData.inputJson.messageGroups.length > 0;
                 }
-                else if(productId == "16"){
+                else if (productId == "20") {
+                    hasPropertyGroupSelected = s.batchData.inputJson.departmentList.length > 0;
+                }
+                else if (productId == "16") {
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroup.length > 0;
                 }
-                else if(productId == "8"){
+                else if (productId == "8") {
                     hasPropertyGroupSelected = s.batchData.inputJson.companiesList.length > 0;
                 }
-                else{
+                else {
                     hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
-                }                
+                }
             }
 
-            if(productId == "17" && notifications !== undefined){
+            if (productId == "17" && notifications !== undefined) {
                 s.batchData.inputJson.Notifications.managerFdiViaEmail = notifications.managerFdiViaEmail;
                 s.batchData.inputJson.Notifications.amenitiesViaEmail = notifications.amenitiesViaEmail;
                 s.batchData.inputJson.Notifications.managerMrViaEmail = notifications.managerMrViaEmail;
             }
-            if(productId == "16" && notifications !== undefined){
+            if (productId == "16" && notifications !== undefined) {
                 s.batchData.inputJson.Notifications = [];
                 s.batchData.inputJson.IsVendorRecommendationChanges = notifications.isVendorRecommendationChanges;
                 s.batchData.inputJson.isInsuranceExpired = notifications.isInsuranceExpired;
@@ -331,6 +375,19 @@
                 s.data.records.push(s.batchBMData);
             }
 
+            if (productId == "47" && diqAreas !== undefined && diqAreas.length > 0 && needAreas) {
+                s.batchData.inputJson.propertyGroupList = [];
+                s.batchData.inputJson.propertyList = [];
+
+                diqAreas.forEach(function (area) {
+                    if (area.isAssigned) {
+                        s.batchData.inputJson.propertyGroupList.push(area.id);
+                    }
+                });
+
+                hasPropertyGroupSelected = s.batchData.inputJson.propertyGroupList.length > 0;
+            }
+
             if (productId == "10") {
                 hasRoleSelected = true;
             }
@@ -350,27 +407,40 @@
                     return s.batchData;
                 }
             }
+
             if (productId == "18") {
                 if (hasPropertySelected || hasPropertyGroupSelected) {
                     return s.batchData;
                 }
             }
-            if(productId == "44"){
+
+            if (productId == "20") {
+                if (hasRoleSelected && !needsProperties && !needsDepartments) {
+                    return s.batchData;
+                }
+                else if (hasRoleSelected &&
+                    (needsProperties && hasPropertySelected) ||
+                    (needsDepartments && hasPropertyGroupSelected)) {
+                    return s.batchData;
+                }
+            }
+
+            if (productId == "44") {
                 if (hasPropertyRoles) {
                     return s.batchData;
                 }
             }
-            
+
             if (productId == "39" || productId == "24" || (productId == "16" && hasPropertyGroupSelected)) {
                 hasPropertySelected = true;
             }
 
-            if(productId == "8"){
+            if (productId == "8") {
                 var companySelectedWithProp = true;
-                if(!isMConsole){
-                    s.propertyGroups.forEach(function(comp){
-                        if (comp.isAssigned === false){
-                            properties.forEach(function(prop){
+                if (!isMConsole) {
+                    s.propertyGroups.forEach(function (comp) {
+                        if (comp.isAssigned === false) {
+                            properties.forEach(function (prop) {
                                 if (prop.companyId === comp.id) {
                                     if (prop.isAssigned) {
                                         companySelectedWithProp = false;
@@ -381,14 +451,29 @@
                         }
                     });
                 }
-                if(!isMConsole && hasRoleSelected && hasPropertySelected){
+                if (!isMConsole && hasRoleSelected && hasPropertySelected) {
                     return s.batchData;
                 }
                 else if (hasPropertyGroupSelected && hasRoleSelected && hasPropertySelected && companySelectedWithProp) {
                     return s.batchData;
-                 }
+                }
             }
-            
+
+            if (productId == "47"){
+                s.batchData.inputJson.canReceiveMonthlyReport = dataSyncManager.getCanReceiveMonthlyReport();
+                if (hasRoleSelected && roleWithoutPropTabs){
+                    return s.batchData;
+                }
+                else if (hasRoleSelected && ((needsProperties && hasPropertySelected) ||
+                                             (needAreas && hasPropertyGroupSelected) ||
+                                             (needRegions && hasPropertyGroupSelected))){
+                    return s.batchData;
+                }
+                else {
+                    return null;
+                }
+            }
+
             if (hasRoleSelected && hasPropertySelected) {
                 return s.batchData;
             }

@@ -147,6 +147,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
 					break;
+				case (int)ProductEnum.SeniorLeadManagement:
+					var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
+					result = productSLMLogic.GetProductProperties(datafilter);
+					break;
 				default:
 					break;
 			}
@@ -244,9 +248,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var manageProductIntegartionMarketplace = new ManageProductIntegrationMarketplace(_userClaims);
 					result = manageProductIntegartionMarketplace.GetRoles(editorPersonaId, userPersonaId, partyId);
 					break;
-				//case (int)ProductEnum.RPDocumentManagement:
-
-				//	break;
+				case (int)ProductEnum.RPDocumentManagement:
+					var manageProductRPDocumentManagement = new ManageProductRPDocumentManagement(_userClaims);
+					result = manageProductRPDocumentManagement.GetRoles(editorPersonaId, userPersonaId, datafilter);
+					break;
 				case (int)ProductEnum.PortfolioManagement:
 					var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
 					result = productPMLogic.GetProductRoles(datafilter);
@@ -258,6 +263,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 					result = manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
+					break;
+				case (int)ProductEnum.SeniorLeadManagement:
+					var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
+					result = productSLMLogic.GetAllRights(datafilter);
 					break;
 				default:
 					break;
@@ -335,6 +344,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.UtilityManagement:
 					var manageProductRum = new ManageProductRum(_userClaims);
 					result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+					break;
+				case (int)ProductEnum.DepositAlternative:
+					var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
+					result = productDALogic.GetProductPropertyGroups(datafilter);
 					break;
 				case (int)ProductEnum.FinancialSuite:
 					var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);

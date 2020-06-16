@@ -28,7 +28,7 @@
             propertiesGridTransform.watch(propertiesGrid);
 
             vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "Properties"); //configModel.getGridConfig()[0];
-
+            logc("vm.config", vm.config, $scope.$parent.productId);
             propertiesGrid.setConfig(vm.config);
             propertiesGridPagination.setGrid(propertiesGrid);
             $scope.propertiesGridPagination = propertiesGridPagination;
@@ -72,13 +72,13 @@
 
         vm.accessTypeChanged = function (value) {
             vm.propertySelect = value;
-            if(vm.propertySelect === 'allProperties'){
+            if (vm.propertySelect === 'allProperties') {
                 vm.allProperties = true;
             }
-            else if(vm.propertySelect === 'property'){
+            else if (vm.propertySelect === 'property') {
                 vm.allProperties = false;
             }
-            else if(vm.propertySelect === 'propertyGroup'){
+            else if (vm.propertySelect === 'propertyGroup') {
                 syncMgr.allPropertiesSync($scope.productId, false);
             }
         };
@@ -165,6 +165,8 @@
             }
         };
 
+
+
         vm.setPropertyData = function (resp) {
             propertiesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
@@ -201,18 +203,9 @@
             var propData = syncMgr.getProductPropertiesData(productId);
 
             if (propData && propData.length > 0) {
-                if (vm.hasViewOnlyAccess()) {
-                    propData.forEach(function (item) {
-                        angular.extend(item, {
-                            disabled: false,
-                            radname: "property"
-                        });
-                        item.disabled = true;
-                    });
-                }
-
                 propData.forEach(function (item) {
                     angular.extend(item, {
+                        disableSelection: vm.hasViewOnlyAccess(),
                         radname: "property",
                         productId: productId,
                         originalProperty: item.isAssigned
@@ -232,11 +225,11 @@
                             }
                         }
                     }
-                    if(productId == "44" && item.propertiesList){
+                    if (productId == "44" && item.propertiesList) {
                         var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
                             return prop.isAssigned === true;
-                        });    
-                        item.assignedProperties = assignedPropertiesCount.length +" of "+ item.propertiesList.length;                    
+                        });
+                        item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
                     }
                 });
 
@@ -348,7 +341,7 @@
         vm.updateGrid = function () {
             vm.propertiesGrid.updateSelected();
         };
-        
+
         vm.resetDataModel = function () {
             //vm.clearProperties();
             vm.resetProperties();
@@ -389,6 +382,7 @@
             if (vm.dataPropReq) {
                 vm.dataPropReq.$cancelRequest();
             }
+
             propertiesGrid.destroy();
             propertiesGridTransform.destroy();
             propertiesGridPagination.destroy();
@@ -397,7 +391,7 @@
             propertiesGridPagination = undefined;
             vm.filteredPropertiesArray = [];
             //vm = undefined;
-            $scope = undefined;
+            //$scope = undefined;
         };
 
         vm.init();

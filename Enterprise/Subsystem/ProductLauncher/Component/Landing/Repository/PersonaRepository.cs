@@ -201,6 +201,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 persona.hasManageClickPayProductAccess = editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
+                persona.hasManageSeniorLeadManagementProductAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString(), StringComparer.OrdinalIgnoreCase);
+
                 persona.hasManageDepositAlternativeProductAccess = editorRights.Contains(ProductRightEnum.ManageDepositAlternativeProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasManageSettingsTemplates = editorRights.Contains(ProductRightEnum.ManageSettingsTemplates.ToString(), StringComparer.OrdinalIgnoreCase);

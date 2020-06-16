@@ -1500,6 +1500,34 @@ AS
                              @RoleID = @RoleId, 
                              @PersonaPrivilgeID = @PerPriv OUTPUT;
                 END;
+				
+								--INSERT all properties indicator for UPFM
+				IF NOT EXISTS
+				(
+					SELECT 1
+					FROM Enterprise.PropertyMapping
+					WHERE PersonaId = @PersonaId
+					AND ProductId = 3
+					AND PropertyId = -1
+					AND ThruDate IS NULL
+				)
+				BEGIN
+					INSERT INTO Enterprise.PropertyMapping (
+						PersonaId,
+						PropertyId,
+						ProductId,
+						FromDate,
+						ThruDate
+					)
+					VALUES (
+						@PersonaId,
+						-1,
+						3,
+						@NOW,
+						NULL
+					)
+				END
+
                 UPDATE #HoldOrgs
                   SET 
                       PStatus = 1
