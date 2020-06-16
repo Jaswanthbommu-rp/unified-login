@@ -359,7 +359,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// RPDocumentManagement
 		/// </summary>
-		RPDocumentManagement = 20,
+        [Description("DOC")]		
+        RPDocumentManagement = 20,
 
 		/// <summary>
 		/// OneSiteConversions
