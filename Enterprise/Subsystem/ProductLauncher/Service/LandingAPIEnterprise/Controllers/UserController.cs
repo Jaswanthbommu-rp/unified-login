@@ -34,7 +34,9 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 using Castle.Components.DictionaryAdapter;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -43,6 +45,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 	/// </summary>
 	public class UserController : BaseApiController
 	{
+
+
+
+        #region Constructor
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public UserController()
+        {
+            // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+
+        /// <summary>
+        /// Used to initialize DI classes with userclaim
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            _repositoryResponse = new RepositoryResponse();
+            _managePersona = new ManagePersona(_userClaims);
+            _personLogic = new ManagePerson();
+            _manageProduct = new ManageProduct(_userClaims);
+        }
+
+		#endregion
+
+
+        #region Private variables
+
+        IRepositoryResponse _repositoryResponse;
+        IManagePersona _managePersona;
+        private IManagePerson _personLogic;
+        IManageProduct _manageProduct;
+        private HttpMessageHandler _messageHandler;
+
+        #endregion
+
 		/// <summary>
 		/// Create a user in RealPage Unified platform and assign product(s).
 		/// </summary>
@@ -737,7 +779,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get a profile for a Person (User)", Type = typeof(UserProducts))]
-        //[SwaggerResponseExamples(typeof(UserProducts), typeof(GetUserProductsExample))]
+        [SwaggerResponseExamples(typeof(UserProducts), typeof(GetUserProductsExamplev2))]
         [Route("user/products")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
@@ -747,24 +789,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             productResult.Products = new Dictionary<string, List<UserProducts>>();
 
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-
-            IManagePersona managePersona = new ManagePersona(_userClaims);
-            IManagePerson personLogic = new ManagePerson();
-            IManageProduct manageProduct = new ManageProduct(_userClaims);
-
-            if (personaId == 0)
+			if (personaId == 0)
             {
                 personaId = _userClaims.PersonaId;
             }
 
-            Persona persona = managePersona.GetPersonaWithRightsToggle(personaId, false);
+            Persona persona = _managePersona.GetPersonaWithRightsToggle(personaId, false);
             if (persona != null)
             {
-                var person = personLogic.GetPerson(persona.RealPageId);
+                var person = _personLogic.GetPerson(persona.RealPageId);
 
                 if (person != null)
-                {                
-
+                {
                     productResult.User = new User()
                     {
                         FullName = $"{person.FirstName} {person.LastName}",
@@ -774,7 +810,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						Title = persona.Name,
 					};
 
-                    var productList = manageProduct.GetAllProductsByPersona(personaId, ProductBatchStatusType.Success);
+                    var productList = _manageProduct.GetAllProductsByPersona(personaId, ProductBatchStatusType.Success);
 
 					List<UserProducts> userProducts = ConvertPersonaProductsToRAUL(productList, personaId);
 
@@ -795,15 +831,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                             productResult.Resources.Add(up);
                         }
-
-					}
+                    }
 				}
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, productResult);
 		}
-
-
+		
 
 		/// <summary>
 		/// Get the user details for the OmniBar
@@ -1482,6 +1516,102 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				
 				productResult.Products = userProducts;
 				//productResult.Resources = userResources;
+
+				return productResult;
+
+			}
+		}
+
+		/// <summary>
+		/// Used to document examples of the UserProducts result
+		/// </summary>
+		[ExcludeFromCodeCoverage]
+		public class GetUserProductsExamplev2 : IProvideExamples
+		{
+			/// <summary>
+			/// Example object data used by Swagger to document the output of the webapi method
+			/// </summary>
+			/// <returns>Newly created user id</returns>
+			public object GetExamples()
+			{
+				UserProductOutputResult productResult = new UserProductOutputResult();
+
+				List<UserProducts> userProducts = new List<UserProducts>()
+				{
+					new UserProducts()
+					{
+						Id = 15,
+						Name = "Renters Insurance",
+						Url = "https://www-local.realpage.com/home/product-redirect.html?prod=15&persona=28793",
+						Description = "RealPage Renters Insurance makes covering your assets, and those of your residents, simple. Our eRenterPlan program offers residents affordable, comprehensive coverage, while optional RenterProtection provides gap coverage for vacant units or uninsured residents.",
+						Label = "insurance",
+						FamilyId = 200,
+						FamilyName = "Resident Services",
+						IsNewTab = true,
+						IsFavorite = false,
+						IsResource = false,
+						ProductCode = ProductEnum.Insurance.ToEnumDescription(),
+						ShowInAppSwitcher = true,
+						Status = 8
+					},
+					new UserProducts()
+					{
+						Id = 1,
+						Name = "OneSite",
+						Url = "https://www-local.realpage.com/home/product-redirect.html?prod=1&persona=28793",
+						Description = "The OneSite environment provides access to Leasing and Rents, Facilities, Purchasing, and Document Management for your properties, depending the mix of products which are licensed.  Use this logo for future state Leasing & Rents.  Also need to discuss whether one tile for Leasing & Rents will apply to Affordable, Senior, and Student. ",
+						Label = "onesite",
+						FamilyId = 100,
+						FamilyName = "Property Management",
+						IsNewTab = true,
+						IsFavorite = false,
+						IsResource = false,
+						ProductCode = ProductEnum.OneSite.ToEnumDescription(),
+						ShowInAppSwitcher = true,
+						Status = 8
+					},
+				};
+
+                List<UserProducts> userResources = new List<UserProducts>()
+                {
+                    new UserProducts()
+                    {
+                        Id = 45,
+                        Name = "CIMPL",
+                        Url = "https://www-local.realpage.com/home/product-redirect.html?prod=45&persona=28793",
+                        Description = "CIMPL",
+                        Label = "cimpl",
+                        FamilyId = 500,
+                        FamilyName = "Administration",
+                        IsNewTab = true,
+                        IsFavorite = false,
+                        IsResource = true,
+                        ProductCode = ProductEnum.CIMPL.ToEnumDescription(),
+                        ShowInAppSwitcher = true,
+                        Status = 8
+                    },
+                    new UserProducts()
+                    {
+                        Id = 49,
+                        Name = "Help Center",
+                        Url = "https://helpcenterqa.realpage.com",
+                        Description = "Help Center",
+                        Label = "help-center",
+                        FamilyId = 500,
+                        FamilyName = "Administration",
+                        IsNewTab = true,
+                        IsFavorite = false,
+                        IsResource = true,
+                        ProductCode = ProductEnum.HelpCenter.ToEnumDescription(),
+                        ShowInAppSwitcher = false,
+                        Status = 8
+                    },
+                };
+
+				productResult.User = new User() {FullName = "Full name", Title = "User title", CompanyName = "User Company", RealPageId = new Guid()};
+				
+				productResult.Products = userProducts;
+                productResult.Resources = userResources;
 
 				return productResult;
 
