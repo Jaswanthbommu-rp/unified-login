@@ -3,6 +3,7 @@
     public enum ProductEntityEndpointKeyEnum
     {
         GetRoleEndpoint,
+        GetRightEndpoint,
         GetPropertyGroupsEndpoint,
         GetUserEndpoint,
         PostUserEndpoint,
@@ -14,6 +15,7 @@
         PatchMigrateUsersEndpoint,
         GetAllUsers,
 	    GetCompanyEndpoint,
-	    GetParentCompanyEndpoint
-	}
+	    GetParentCompanyEndpoint,
+        GetUserExistEndpoint        
+    }
 }

@@ -230,6 +230,11 @@
 		/// </summary>
 		public const string HelpCenter = "HLP";
 
+        /// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		public const string SeniorLeadManagement = "SLM";
+
 		/// <summary>
 		/// AoAIRevenueManagement
 		/// </summary>
@@ -244,7 +249,7 @@
 		/// AoRentControl
 		/// </summary>
 		public const string AoRentControl = "RC";
-
+		
 		/// <summary>
 		/// LRO
 		/// </summary>
