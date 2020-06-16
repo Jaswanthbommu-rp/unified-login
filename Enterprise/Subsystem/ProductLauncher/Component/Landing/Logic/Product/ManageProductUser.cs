@@ -1956,7 +1956,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            throw new NotImplementedException();
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
+            return productLead2Lease.UpdateLead2LeaseUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 
         /// <summary>

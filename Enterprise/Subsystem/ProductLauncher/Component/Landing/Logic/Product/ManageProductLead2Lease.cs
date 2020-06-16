@@ -643,6 +643,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Unassign User
         /// </summary>
+        /// <returns></returns>
         public string UnassignUser(long editorPersonaId, long userPersonaId)
         {
             ListResponse listResponse = new ListResponse();
@@ -665,8 +666,139 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return "";
         }
-        /// <returns></returns>    
 
+        public string UpdateLead2LeaseUserProfile(long editorPersonaId, long userPersonaId)
+        {
+            ListResponse listResponse = new ListResponse();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            try
+            {
+                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (listResponse.IsError)
+                {
+                    return listResponse.ErrorReason;
+                }
+
+                WriteToDiagnosticLog("Lead2LeaseUser.UpdateUserProfile - Begin update user profile");
+                string productLoginName = "";
+
+                Persona userPersona = _managePersona.GetPersona(userPersonaId);
+                WriteToDiagnosticLog("Lead2LeaseUser.UpdateUserProfile - Got persona info");
+                Guid realPageId = userPersona.RealPageId;
+
+                Person person = _managePerson.GetPerson(realPageId);
+                WriteToDiagnosticLog("Lead2LeaseUser.UpdateUserProfile - Got person info");
+
+                UserLoginOnly userLogin = new UserLoginOnly();
+                userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+                IList<UserOrganization> userPersonaOrganizationList = _manageUserLogin.GetUserPersonaOrganization(userLogin.LoginName);
+                bool isRegularUserNoEmail = IsRegularUserNoEmail(userPersonaId);
+
+                // get the email address
+                WriteToDiagnosticLog("Lead2LeaseUser.UpdateUserProfile - Begin get user email address");
+                string userEmailAddress = "";
+                string userLeadEmailAddress = "";
+                ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
+                IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
+                WriteToDiagnosticLog("ManageMarketingCenterUser.UpdateUserProfile - Got list of electronic address");
+                if (_addresses != null)
+                {
+                    if (_addresses.Any(a => a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        userEmailAddress = (from a in _addresses where a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) select a.AddressString).FirstOrDefault();
+                        WriteToDiagnosticLog($"Lead2LeaseUser.UpdateUserProfile - Found email address. {userEmailAddress}");
+                    }
+                }
+                if (string.IsNullOrEmpty(userEmailAddress))
+                {
+                    userEmailAddress = userLogin.LoginName;
+                    WriteToDiagnosticLog("Lead2LeaseUser.UpdateUserProfile - Using login name for email address.");
+                }
+
+                if (isRegularUserNoEmail)
+                {
+                    userLeadEmailAddress = userEmailAddress;
+                }
+                // verify email address looks valid, will fail if not
+                WriteToDiagnosticLog($"Lead2LeaseUser.UpdateUserProfile - User Type : {userPersona.UserTypeId}");
+                WriteToDiagnosticLog($"Lead2LeaseUser.UpdateUserProfile - Validating email address. Email: {userLogin.LoginName}");
+                if (userPersona.UserTypeId == (int)UserTypeConstants.RegularUserNoEmail)
+                {
+                    userEmailAddress = _productUsername;
+                }
+                else
+                {
+                    userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
+                }
+
+                WriteToDiagnosticLog($"Lead2LeaseUser.UpdateUserProfile - Validated email address. Email: {userEmailAddress}");
+                WriteToDiagnosticLog($"Lead2LeaseUser.UpdateUserProfile - Product User Name : {_productUsername}");
+
+                productLoginName = _productUsername;
+                //If the User's LoginName changed in the PrimaryOrganization then update it in the Product
+                if ((userPersonaOrganizationList.ToList().Any(o => o.PrimaryOrganization.Equals(true)
+                    && o.OrganizationPartyId.Equals(userPersona.OrganizationPartyId)))
+                    && (!_productUsername.Equals(userEmailAddress, StringComparison.OrdinalIgnoreCase)))
+                {
+                    productLoginName = userEmailAddress;
+                }
+
+                //Acá voy
+                MarketingCenterUserDetails mUser = GetUserDetails();
+                if (mUser == null)
+                {
+                    WriteToDiagnosticLog($"Lead2LeaseUser.UpdateUserProfile - Error looking for user. userPersonaId={userPersonaId.ToString()}");
+                    return "User not found in product";
+                }
+
+                var mcUser = new MC.MarketingCenterUser()
+                {
+                    CompanyId = mUser.CompanyId,
+                    ContactRoleId = mUser.ContactRoleId,
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    EmailAddress = productLoginName,
+                    LeadEmailAddress = userLeadEmailAddress,
+                    WelcomeEmailSent = true,
+                    AssignNewProperty = mUser.AssignNewProperty
+                };
+
+                var url = _productUrl + $"/v2/contact/{_productUserId}?sourceid={_editorProductUserId}";
+                logData = new Dictionary<string, object>();
+                logData.Add("url", url);
+                logData.Add("mcuser", mcUser);
+                WriteToDiagnosticLog("Lead2LeaseUser.UpdateUserProfile - Update user profile.", logData);
+                var response = _client.PutAsJsonAsync(url, mcUser).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToDiagnosticLog("Lead2LeaseUser - StartUpdate user SAMLAttribute User_email=" + productLoginName);
+                    UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, productLoginName);
+                    WriteToDiagnosticLog("Lead2LeaseUser - Update user SAMLAttribute User_email success. Saved user id");
+
+                    WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
+                    return string.Empty;
+                }
+                else
+                {
+                    string errorContent = string.Empty;
+                    try
+                    {
+                        errorContent = response.Content.ReadAsStringAsync().Result;
+                    }
+                    catch
+                    {/*Ignored*/ }
+                    WriteToErrorLog($"Lead2LeaseUser.UpdateUserProfile Error for user with editorPersona id - {editorPersonaId}.", logData);
+                    return $"There was a problem updating user profile for user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"Lead2LeaseUser.UpdateUserProfile - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                return $"Error - {ex.Message}";
+            }
+        }
 
 
         #region Migration
