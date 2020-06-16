@@ -11,10 +11,15 @@ BEGIN
 	DECLARE @LearningProductID INT = 19
 
 	INSERT INTO @CompanyOrganizationProduct ( ProductId )
-	SELECT DISTINCT ProductId from Enterprise.OrganizationProduct OP 
-		INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = OP.PartyId
-		INNER JOIN Person.Persona per ON (ULP.UserLoginPersonaId = per.UserLoginPersonaId and per.PersonaId = @PersonaId)
-			AND ((@NOW BETWEEN op.FromDate AND op.ThruDate) OR (@NOW >= op.FromDate AND op.ThruDate IS NULL))
+	SELECT 
+		DISTINCT OP.ProductId 
+	FROM 
+		Person.Persona P
+		INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId
+		INNER JOIN Enterprise.OrganizationProduct OP ON ULP.OrganizationPartyId = OP.PartyId
+	WHERE	
+		P.PersonaId = @PersonaId
+		AND ((@NOW BETWEEN OP.FromDate AND OP.ThruDate) OR (@NOW >= OP.FromDate AND OP.ThruDate IS NULL))
 	UNION
 	SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1
 
