@@ -464,7 +464,7 @@
                 if (hasRoleSelected && roleWithoutPropTabs){
                     return s.batchData;
                 }
-                else if (hasRoleSelected && ((needsProperties && hasProperties) ||
+                else if (hasRoleSelected && ((needsProperties && hasPropertySelected) ||
                                              (needAreas && hasPropertyGroupSelected) ||
                                              (needRegions && hasPropertyGroupSelected))){
                     return s.batchData;
