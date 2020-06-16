@@ -4,10 +4,12 @@
 AS
 BEGIN
 	SET NOCOUNT ON
-
+	
 	DECLARE @NOW DATETIME= GETUTCDATE();
 	DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT ) 
-		 
+	DECLARE @UserProducts TABLE ( ProductId INT, isFavorite TINYINT, StatusTypeId INT )
+	DECLARE @LearningProductID INT = 19
+
 	INSERT INTO @CompanyOrganizationProduct ( ProductId )
 	SELECT DISTINCT ProductId from Enterprise.OrganizationProduct OP 
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = OP.PartyId
@@ -18,6 +20,7 @@ BEGIN
 
 	IF 2 = ( select count(1) from @CompanyOrganizationProduct WHERE ProductId in ( 19, 36 ) )
 	BEGIN
+		SET @LearningProductID = 36
 		DELETE FROM @CompanyOrganizationProduct where ProductId = 19
 	END
 
@@ -27,6 +30,28 @@ BEGIN
 			Select ProductId from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )
 		DELETE FROM @CompanyOrganizationProduct WHERE ProductId = 4
 	END	
+
+	-- ADD EASYLMS OR FIX ITS STATUS
+	IF EXISTS (SELECT TOP 1 1 FROM @UserProducts WHERE ProductId = @LearningProductID)
+	BEGIN
+		UPDATE @UserProducts SET StatusTypeId = 8 WHERE ProductId = @LearningProductID
+	END
+	ELSE
+	BEGIN
+		INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )
+		VALUES
+			( @LearningProductID, 0, 8 )
+	END
+
+	INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )
+		SELECT
+			ProductId
+			,IsFavorite
+			,StatusTypeId
+		FROM Enterprise.PersonaConfiguration PC
+		WHERE
+			PC.PersonaId = @PersonaId
+			AND PC.ThruDate IS NULL
 
 	;with ProductSettings AS (
 		SELECT ps.productid, pst.name, ps.value from enterprise.GlobalProductConfiguration GPC 
@@ -54,7 +79,7 @@ BEGIN
 		,CONVERT(TINYINT,ISNULL(ps4.value,0)) as ShowInAppSwitcher
 		--,*
 	FROM
-		Enterprise.PersonaConfiguration PC
+		@UserProducts PC
 		INNER JOIN Enterprise.Product P  ON PC.ProductId = P.ProductId
 		LEFT OUTER JOIN enterprise.producttype pt on p.ProductTypeId = pt.ProductTypeId
 		LEFT OUTER JOIN Enterprise.ProductType PT2 on PT.ParentProductTypeId = PT2.ProductTypeId
@@ -64,9 +89,7 @@ BEGIN
 		INNER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'
 		LEFT OUTER JOIN ProductSettings ps4 on ps4.ProductId = p.ProductId and ps4.name = 'ShowInAppSwitcher'
 	WHERE
-		PC.PersonaId = @PersonaId
-		AND PC.ThruDate IS NULL
-		AND ( PC.StatusTypeId = @StatusTypeId )-- OR ( PC.StatusTypeId = 0 AND PC.ProductId = 36 ) )
+		PC.StatusTypeId = @StatusTypeId
 	UNION
 	SELECT
 		pr.ProductId
