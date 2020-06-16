@@ -38,11 +38,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch (_productType)
             {
                 case ProductEnum.VendorServices:
+				case ProductEnum.RenovationManager:
 					UnityOAuthApiSecurity(httpClient);
 					break;
-				case ProductEnum.RenovationManager:
-					RenoOAuthApiSecurity(httpClient);
-                    break;
+				//case ProductEnum.RenovationManager:
+				//	RenoOAuthApiSecurity(httpClient);
+    //                break;
                 case ProductEnum.LeadManagement: //ILM-LM
                 case ProductEnum.LeadAnalytics: //ILM-LA
                     httpClient.DefaultRequestHeaders.Clear(); // no security

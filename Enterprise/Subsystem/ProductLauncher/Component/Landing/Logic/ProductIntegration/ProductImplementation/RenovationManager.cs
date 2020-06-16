@@ -22,5 +22,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{ }
 
 		#endregion
+
+		#region Methods
+		/// <summary>
+		/// Override this in product implementation if any product requires to create additional saml settings
+		/// e.g. used in PAM
+		/// </summary>
+		protected override void CreateAdditionalSamlUserAttribute(long personaId, int productId, IntegrationProductUser productUser)
+		{
+			WriteToDiagnosticLog(
+				$"RenovationManager.CreateAdditionalSamlUserAttribute - Product {ProductType} userLoginName - {productUser.LoginName} ; PMC {productUser.CompanyId} . At beginning of the method.");
+
+			_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.PMCID, productUser.CompanyId);
+		}
+		#endregion
 	}
 }
