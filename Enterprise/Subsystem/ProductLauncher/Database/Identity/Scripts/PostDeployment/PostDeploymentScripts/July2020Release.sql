@@ -757,6 +757,11 @@ BEGIN
 	
 END
 
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 104)
+BEGIN
+	UPDATE [UserManagement].[Control] SET DisplayName = 'Assign current and new properties automatically' WHERE ControlId = 104
+END
+
 Go
 --Add Unified Settings Product
 DECLARE @ProductID int = 56,
@@ -1128,6 +1133,11 @@ CLOSE curOrganizationRight
 DEALLOCATE curOrganizationRight
 GO
 
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 409)
+BEGIN
+	UPDATE [usermanagement].[control] SET displayname = 'Assign current and new properties automatically' WHERE ControlId =409
+END
+
 
 GO
 declare @now datetime = getutcdate()
@@ -1254,12 +1264,6 @@ begin
 	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 43, 'AccessSettingMGMTConsole' )
 end
 
----- EASY LMS????
----- EASY LMS????
----- EASY LMS????
--- REMOVE CLIENT PORTAL FOR SUPPORT TOOL USERS???
-
-
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 38 AND RIghtShortName = 'AccessVendorMarketplace' )
 begin
 	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 38, 'AccessVendorMarketplace' )
@@ -1279,3 +1283,5 @@ IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 28 
 begin
 	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 28, 'EditOwnProfile' )
 end
+
+GO

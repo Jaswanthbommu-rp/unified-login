@@ -99,6 +99,7 @@
 		/// RPDocumentManagement
 		/// </summary>
 		public const string RPDocumentManagement = "DOC";
+
 		/// <summary>
 		/// iDoc
 		/// </summary>
@@ -228,21 +229,30 @@
 		/// Click Pay
 		/// </summary>
 		public const string HelpCenter = "HLP";
+
 		/// <summary>
 		/// AoAIRevenueManagement
 		/// </summary>
 		public const string AoAIRevenueManagement = "AIRM";
+
 		/// <summary>
 		/// AoAmenityOptimization
 		/// </summary>
 		public const string AoAmenityOptimization = "AA";
+
 		/// <summary>
 		/// AoRentControl
 		/// </summary>
 		public const string AoRentControl = "RC";
+
 		/// <summary>
 		/// LRO
 		/// </summary>
 		public const string AoLeaseRentOption = "LRO";
+
+		/// <summary>
+		/// UnifiedSettings
+		/// </summary>
+		public const string UnifiedSettings = "SET";
 	}
 }
