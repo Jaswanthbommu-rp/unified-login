@@ -147,5 +147,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="createUserRealPageId"></param>
 		/// <param name="createUserPersonaId"></param>
 		void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId);
+
 	}
 }

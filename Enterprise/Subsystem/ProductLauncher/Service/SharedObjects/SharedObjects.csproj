@@ -500,7 +500,6 @@
     <Compile Include="Product\IProductRight.cs" />
     <Compile Include="Product\IProductRole.cs" />
     <Compile Include="Product\IProductUser.cs" />
-    <Compile Include="Product\Lead2Lease\Lead2LeaseOneSiteProduct.cs" />
     <Compile Include="Product\Lead2Lease\Lead2LeaseRoleAndPropertyList.cs" />
     <Compile Include="Product\Lead2Lease\Lead2LeaseUser.cs" />
     <Compile Include="Product\Lead2Lease\Permission.cs" />
