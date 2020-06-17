@@ -982,68 +982,78 @@ BEGIN
     SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 END
 --SLM
---Select @ProductId = 50
---IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
---BEGIN
+Select @ProductId = 50
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN	
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (537, NULL, 8, N'SeniorLeadManagementProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (538, 537, 9, N'SeniorLeadManagementProductAccessPropertiesTabUIId', N'Properties', NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (539, 538, 3, N'SeniorLeadManagementProductAccessPropertiesMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (540, 539, 10, N'SeniorLeadManagementProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (541, 539, 5, N'SeniorLeadManagementProductAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (542, 539, 5, N'SeniorLeadManagementProductAccessStateLabelUIId', N'State', N'state', 3, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (543, 537, 9, N'SeniorLeadManagementProductAccessRightsTabUIId', N'Rights', NULL, 2, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (545, 543, 13, N'SeniorLeadManagementProductAccessSelectaPresetRoleRightsSelectUIId', N'Select a Preset Role', N'roles', 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (546, 543, 3, N'SeniorLeadManagementProductAccessRightsMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (547, 546, 10, N'SeniorLeadManagementProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+	VALUES (548, 546, 5, N'SeniorLeadManagementProductAccessRightLabelUIId', N'Right', N'name', 2, @UserId, @Now)	
+
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (135, 538, N'Default', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (136, 539, N'ShowSelectAll', N'True', @UserId, @Now)
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (137, 546, N'ShowSelectAll', N'True', @UserId, @Now)	
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+
+	IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductPageId = 33)
+	BEGIN
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+		VALUES (33, 50, N'Senior Lead Management Product Access', @UserId, @Now, 1)
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+	END
 	
---	SET IDENTITY_INSERT [UserManagement].[Control] ON 
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (516, NULL, 8, N'SeniorLeadManagementProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
 
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (517, 516, 9, N'SeniorLeadManagementProductAccessPropertiesTabUIId', N'Properties', NULL, 1, @UserId, @Now)
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+	VALUES (43, 33, 537, @UserId, @Now)
+	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (518, 517, 3, N'SeniorLeadManagementProductAccessPropertiesMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (519, 518, 10, N'SeniorLeadManagementProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (520, 518, 5, N'SeniorLeadManagementProductAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (521, 518, 5, N'SeniorLeadManagementProductAccessStateLabelUIId', N'State', N'state', 3, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (522, 516, 9, N'SeniorLeadManagementProductAccessRightsTabUIId', N'Rights', NULL, 2, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (523, 522, 13, N'SeniorLeadManagementProductAccessSelectaPresetRoleRightsSelectUIId', N'Select a Preset Role', N'roles', 1, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (524, 522, 3, N'SeniorLeadManagementProductAccessRightsMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (525, 524, 10, N'SeniorLeadManagementProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
-
---	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
---	VALUES (526, 524, 5, N'SeniorLeadManagementProductAccessRightLabelUIId', N'Right', N'name', 2, @UserId, @Now)
-
---	SET IDENTITY_INSERT [UserManagement].[Control] OFF
-
---	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
---	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
---	VALUES (128, 517, N'Default', N'True', @UserId, @Now)
-
---	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
---	VALUES (129, 518, N'ShowSelectAll', N'True', @UserId, @Now)
-
---	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
---	VALUES (130, 524, N'ShowSelectAll', N'True', @UserId, @Now)
-
---	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
-
---	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
---	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
---	VALUES (33, 50, N'Senior Lead Management Product Access', @UserId, @Now, 1)
---	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
-
---	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
---	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
---	VALUES (42, 33, 516, @UserId, @Now)
---	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
---END
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
+	VALUES (33, 50, N'Senior Lead Management Product Access', @UserId, @Now, 1)
+	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+	
+END
 
 
 IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 104)
@@ -1553,7 +1563,7 @@ VALUES
 ,('GetRoleEndpoint','Role End point for product API','/{0}/roles?isIncludeRights={1}')
 ,('GetRightEndpoint','Right End point for product API','/roleRights/{0}')
 ,('GetPropertyEndpoint','Property End point for product API','/{0}/properties')
-,('GetUserEndpoint','GET User Endpoint for product API','/users?companyId={0}&loginname={1}')
+,('GetUserEndpoint','GET User Endpoint for product API','/users?companyId={0}&loginName={1}')
 ,('GetListUsersEndpoint','','/{0}/users?filter={1}&startRow={2}&resultsperpage={3}')
 ,('PostUserEndpoint','POST User Endpoint for product API','/users')
 ,('PutUserEndpoint','PUT User Endpoint for product API','/users')
@@ -2137,4 +2147,111 @@ BEGIN
 	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
 END;
 
+GO
+--For Reno product internal settings
+DECLARE @UserId bigint,
+	@ProductId int =55,
+	@Now datetime = GETDATE(),
+	@CurrentProductConfigurationID INT,
+	@ProductSettingTypeId INT,
+	@ProductSettingId INT,
+	@roleId INT,
+	@ServerName SYSNAME = @@SERVERNAME;
+		
+		SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+		FROM Enterprise.GlobalProductConfiguration AS gpc
+		WHERE gpc.ProductId = @ProductId AND 
+				( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+				) OR 
+				( @NOW >= gpc.FromDate AND 
+					gpc.ThruDate IS NULL
+				)
+				)
+		ORDER BY GlobalProductConfigurationId DESC;
+
+		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
+		BEGIN
+			Select @roleId = 34
+		END
+		IF @ServerName IN ('RCQUSODBSQL001')
+		BEGIN
+			Select @roleId = 34
+		END
+		IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+		BEGIN
+			Select @roleId = 34
+		END
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'SuperUserRoleId'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId', 'The role Id to create admin user in  product', @ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = @roleId, 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'ClientScope'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'ClientScope', 'The client scope to get access token', @ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = 'renouserapi', 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
 GO

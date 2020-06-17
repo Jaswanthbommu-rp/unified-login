@@ -600,6 +600,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				case (int)ProductRightEnum.ManageClickPayProductAccess:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString());
 					break;
+				case (int)ProductRightEnum.ManageRenovationManager:
+					hasAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString());
+					break;				
                 case (int)ProductRightEnum.ManageSeniorLeadManagement:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
                     break;
