@@ -1,4 +1,4 @@
-﻿CREATE or alter PROCEDURE [Person].[GetProductsByPersonaId]
+﻿CREATE PROCEDURE [Person].[GetProductsByPersonaId]
 	@PersonaId int = 0,
 	@StatusTypeId int = 8
 AS
