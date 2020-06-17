@@ -170,7 +170,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var clientId = _productIntegrationDetails.First(a => a.Name.ToUpper() == "CLIENTID").Value;
 			var tokenIssueUri = _productIntegrationDetails.First(a => a.Name.ToUpper() == "TOKENENDPOINT").Value;
 
-			var token = GetRMToken(tokenIssueUri, clientId, apiSecret);
+			var token = GetAccessToken(tokenIssueUri, clientId, apiSecret);
 			httpClient.DefaultRequestHeaders.Clear();
 			httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 			//httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", "5b0fcd3596946df5fb88d45f68a5a9ecf85625a0");
@@ -196,20 +196,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 throw new Exception($"Error in GetToken- {ex.Message}");
             }
         }
-		private string GetRMToken(string tokenIssueUri, string clientId, string apiSecret)
+		private string GetAccessToken(string tokenIssueUri, string clientId, string apiSecret)
 		{
 			try
 			{
-				string rmScope = "renouserapi";
+				string scope = _productIntegrationDetails.First(a => a.Name.ToUpper() == "CLIENTSCOPE").Value;
 				ObjectCache tokenCache = MemoryCache.Default;
 
 				// Get token values from cache
-				string accessToken = tokenCache["access_token_RM"] as string;				
+				string accessToken = tokenCache[clientId] as string;				
 
 				if (string.IsNullOrEmpty(accessToken))
 				{
 					var tokenClient = new TokenClient($"{tokenIssueUri}", clientId, apiSecret);
-					var tokenResponse = tokenClient.RequestClientCredentialsAsync(rmScope).Result;
+					var tokenResponse = tokenClient.RequestClientCredentialsAsync(scope).Result;
 
 					if (tokenResponse.IsError)
 					{
@@ -223,7 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					};
 
 					accessToken = tokenResponse.AccessToken;
-					tokenCache.Set("access_token_RM", accessToken, cachePolicy);					
+					tokenCache.Set(clientId, accessToken, cachePolicy);					
 				}
 				return accessToken;
 			}			
