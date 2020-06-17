@@ -28,11 +28,12 @@
         }
 
         .is-assigned {
-           width: 85px;
+            min-width: 10%;
+            max-width: 15%;
         }
 
         .name {
-            min-width: 40%;
+            min-width: 50%;
             max-width: 80%;
         }
 
@@ -41,11 +42,13 @@
         }
 
         .city {
-            width: 15%;
+            min-width: 15%;
+            max-width: 20%;
         }
 
         .state {
-            width: 10%;
+            min-width: 15%;
+            max-width: 20%;
         }
 
         .zip {
