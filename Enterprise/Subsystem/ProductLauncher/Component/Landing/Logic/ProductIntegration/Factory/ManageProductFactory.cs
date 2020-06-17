@@ -39,8 +39,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Factories.Add(ProductEnum.PortfolioManagement, typeof(PortfolioManagement));
 			Factories.Add(ProductEnum.DepositAlternative, typeof(DepositAlternativeManagement));
 			Factories.Add(ProductEnum.ClickPay, typeof(ClickPayManagement));
+			Factories.Add(ProductEnum.RenovationManager, typeof(RenovationManager));
             Factories.Add(ProductEnum.SeniorLeadManagement, typeof(SeniorLeadManagement));
         }
+
 
 		#endregion
 

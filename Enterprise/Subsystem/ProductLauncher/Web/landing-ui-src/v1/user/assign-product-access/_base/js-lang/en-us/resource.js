@@ -35,6 +35,7 @@
             "panelName.easylms": "EasyLMS Product Access",
             "panelName.clickPay" : "Payments Product Access",
             "panelName.depositAlternative" : "Deposit Alternative Product Access",
+            "panelName.renovationManager" : "Renovation Manager Product Access",
             "panelName.comingSoon": "Coming Soon",
 
             "panelError.generic": "There was a problem getting information for the product"

@@ -83,11 +83,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.DepositAlternative: return "deposit-iq";
 				case ProductEnum.ClickPay: return "payments";
                 case ProductEnum.HelpCenter: return "help-center";
-                case ProductEnum.SeniorLeadManagement: return "help-center"; // Need this value replaced with actual based on the CDN value
+                case ProductEnum.SeniorLeadManagement: return "senior-lead-management"; // Need this value replaced with actual based on the CDN value
 				case ProductEnum.AoLeaseRentOption: return "lro";
 				case ProductEnum.AoAmenityOptimization: return "amenity-analytics";
 				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
 				case ProductEnum.AoRentControl: return "rent-control";
+				case ProductEnum.RenovationManager: return "renovation-manager";
 			}
 			return null;
 		}
@@ -565,12 +566,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("RC")]
 		AoRentControl = 54,
-
 		/// <summary>
-		/// AO Rent Control
+		///Renovation Manager
+		/// </summary>
+		[Description("RENO")]
+		RenovationManager = 55,
+		/// <summary>
+		/// UnifiedSettings
 		/// </summary>
 		[Description("SET")]
 		UnifiedSettings = 56
+
 	}
 
 	/// <summary>
@@ -781,13 +787,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Manage Settings Template
 		/// </summary>
-		ManageSettingsTemplates = 50,
+		ManageSettingsTemplates = 56,
 
+		/// <summary>
+		/// Renovation Manager
+		/// </summary>
+		[Description("RENO")]
+		ManageRenovationManager = 55,
         /// <summary>
 		/// Senior Lead Management
 		/// </summary>
 		[Description("SLM")]
-        ManageSeniorLeadManagement = 51
+        ManageSeniorLeadManagement = 50
     }
 }
 
