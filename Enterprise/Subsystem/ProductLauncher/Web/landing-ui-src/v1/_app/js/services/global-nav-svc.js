@@ -109,7 +109,7 @@
                         {
                             linkId: "settings activity log",
                             title: "Settings Activity Log",
-                            url: "../settings/activity-log"
+                            url: "/settings/activity-log"
                                 }
                             ]
                 };
@@ -125,7 +125,7 @@
                             setting.items.splice(1, 0, {
                                 linkId: "Manage Templates",
                                 title: "Manage Templates",
-                                url: "../settings/templates"
+                                url: "/settings/templates"
                             });
                         }
 
@@ -144,7 +144,7 @@
                         var tmpl = {
                             linkId: "Manage Templates",
                             title: "Manage Templates",
-                            url: "../settings/templates"
+                            url: "/settings/templates"
                         };
                         setting.items.push(tmpl);
                         navModel.data.push(setting);
