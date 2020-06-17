@@ -151,6 +151,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
 					result = productRMLogic.GetProductProperties(datafilter);
 					break;
+				case (int)ProductEnum.SeniorLeadManagement:
+					var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
+					result = productSLMLogic.GetProductProperties(datafilter);
+					break;
 				default:
 					break;
 			}
@@ -267,6 +271,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				case (int)ProductEnum.RenovationManager:
 					var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
 					result = productRMLogic.GetProductRoles(datafilter);
+					break;
+				case (int)ProductEnum.SeniorLeadManagement:
+					var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
+					result = productSLMLogic.GetAllRights(datafilter);
 					break;
 				default:
 					break;

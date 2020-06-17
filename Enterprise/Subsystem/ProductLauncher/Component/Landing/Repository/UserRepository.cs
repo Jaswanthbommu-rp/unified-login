@@ -2921,7 +2921,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.IntegrationMarketplace,
                     (int) ProductEnum.DepositAlternative,
                     (int) ProductEnum.ClickPay,
-                    (int) ProductEnum.RenovationManager
+                    (int) ProductEnum.RenovationManager,
+                    (int) ProductEnum.SeniorLeadManagement
                 };
             }
 
@@ -2934,9 +2935,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     productsAssignedToCompany.Remove(prod);
                 }
             }
-
             return productsAssignedToCompany;
         }
+        
+        #endregion
+
+        #region Private methods
 
         /// <summary>
         /// Used to Add/Update product information for a user
@@ -3049,22 +3053,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if ((CreateUserPersonaId > 0) && (AssignUserPersonaId > 0))
                 {
                     // if the user isn't a superuser, check to see if both Lead2Lease and OneSite are in the products to be saved. If they are, then they need to be combined into a single product call
-                    if (!(userTypeId == (int)UserRoleType.SuperUser) && productList.Any(a => a.ProductId == (int)ProductEnum.OneSite) && productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
+                    // if the user isn't a superuser, check to see if both SeniorLead and OneSite are in the products to be saved. If they are, then they need to be combined into a single product call
+
+                    //Lead2Lease and OneSite, SeniorLead and OneSite, SeniorLead and OneSite and Lead2Lease
+                    if (!(userTypeId == (int) UserRoleType.SuperUser) 
+                        && productList.Any(a => a.ProductId == (int) ProductEnum.OneSite) 
+                        && ( productList.Any(a => a.ProductId == (int) ProductEnum.Lead2Lease) || productList.Any(a => a.ProductId == (int) ProductEnum.SeniorLeadManagement)))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
-                        SO.Product.Lead2Lease.Lead2LeaseOneSiteProduct l2lOneSite = new SO.Product.Lead2Lease.Lead2LeaseOneSiteProduct();
-
-                        ProductBatch pbLead2Lease = (from a in productList
-                                                     where a.ProductId == (int)ProductEnum.Lead2Lease
-                                                     select a).FirstOrDefault();
-                        l2lOneSite.Lead2Lease = pbLead2Lease.InputJson;
+                        Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
 
                         ProductBatch pbOneSite = (from a in productList
-                                                  where a.ProductId == (int)ProductEnum.OneSite
-                                                  select a).FirstOrDefault();
-                        l2lOneSite.OneSite = pbOneSite.InputJson;
+                            where a.ProductId == (int) ProductEnum.OneSite
+                            select a).FirstOrDefault();
 
-                        SaveProductBatch(repository, pbLead2Lease, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(l2lOneSite));
+                        ProductBatch pbLead2Lease = null;
+                        ProductBatch pbSeniorLead = null;
+
+                        oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
+
+                        if (productList.Any(a => a.ProductId == (int) ProductEnum.Lead2Lease))
+                        {
+                            pbLead2Lease = (from a in productList
+                                where a.ProductId == (int) ProductEnum.Lead2Lease
+                                select a).FirstOrDefault();
+
+                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
+                        }
+
+                        if (productList.Any(a => a.ProductId == (int) ProductEnum.SeniorLeadManagement))
+                        {
+                            pbSeniorLead = (from a in productList
+                                where a.ProductId == (int) ProductEnum.SeniorLeadManagement
+                                select a).FirstOrDefault();
+
+                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
+                        }
+
+                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts));
 
                         if (errorStatus.Success == false)
                         {
@@ -3072,9 +3098,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            // remove OneSite and L2L from the product batch
-                            productList.Remove(pbLead2Lease);
+                            // remove OneSite and any other products with it from the product batch
                             productList.Remove(pbOneSite);
+                            if (pbLead2Lease != null)
+                            {
+                                productList.Remove(pbLead2Lease);
+                            }
+                            if (pbSeniorLead != null)
+                            {
+                                productList.Remove(pbSeniorLead);
+                            }
                         }
                     }
 
@@ -3642,8 +3675,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             return roleId;
         }
-
-        /// <summary>
+		
+		/// <summary>
         /// Used to Update GB(Unified Login) product Role information for a user
         /// </summary>
         /// <param name="repository"></param>

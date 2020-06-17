@@ -196,6 +196,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public bool hasManageRenovationManagerProductAccess { get; set; }
 
+        // <summary>
+        /// Persona Has Senior Lead Management User Access
+        /// </summary>
+        public bool hasManageSeniorLeadManagementProductAccess { get; set; } = true;
 
         #region Examples
         /// <summary>

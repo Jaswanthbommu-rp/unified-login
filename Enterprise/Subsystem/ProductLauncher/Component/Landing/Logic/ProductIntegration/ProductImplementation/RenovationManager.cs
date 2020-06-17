@@ -24,6 +24,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		#endregion
 
 		#region Methods
+		protected override void ApplySuperUserData(IntegrationProductUser productUser)
+		{
+			// super user related assignments
+			
+			productUser.Roles = new List<string> { "34" };
+			productUser.Properties = new List<string>();
+			productUser.PropertyGroups = new List<string>();
+		}
+		protected override bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+		{
+			if (string.IsNullOrEmpty(baseUrlAndQuery))
+				baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
+
+			bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+			if (isCompanyIdRequiredToQuery)
+			{
+				baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+			}
+			else
+			{
+				baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+			}
+
+			var productUser = GetProductUser(baseUrlAndQuery, false);
+
+			if (productUser != null && !string.IsNullOrEmpty(productUser.UserId))
+			{
+				return true;
+			}
+
+			return false;
+		}
 		/// <summary>
 		/// Override this in product implementation if any product requires to create additional saml settings
 		/// e.g. used in PAM

@@ -602,8 +602,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					break;
 				case (int)ProductRightEnum.ManageRenovationManager:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString());
-					break;
-				default:
+					break;				
+                case (int)ProductRightEnum.ManageSeniorLeadManagement:
+                    hasAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
+                    break;
+                default:
 					hasAccess = true; // Some products will have default acess - ex UnifiedLogin
 					break;
 			}
