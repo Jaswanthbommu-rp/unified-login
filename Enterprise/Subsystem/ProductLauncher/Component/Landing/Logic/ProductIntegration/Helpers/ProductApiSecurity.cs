@@ -184,6 +184,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 throw new Exception($"Error in GetToken- {ex.Message}");
             }
         }
-        #endregion
-    }
+		//private string  GetToken1(string tokenIssueUri, string clientId, string apiSecret)
+		//{
+		//	try
+		//	{
+		//		WriteToDiagnosticLog("ManageProductRum.GetToken - Begining of the method.");
+		//		string nwpScope = "greenbooknwpapi";
+		//		ObjectCache tokenCache = MemoryCache.Default;
+
+		//		// Get token values from cache
+		//		_accessToken = tokenCache["access_token_RUM"] as string;
+		//		WriteToDiagnosticLog($"ManageProductRum.GetToken - Cached accessToken - {_accessToken}");
+
+		//		if (string.IsNullOrEmpty(_accessToken))
+		//		{
+		//			WriteToDiagnosticLog("ManageProductRum.GetToken - Null cache value. Getting new token.");
+
+		//			//var tokenUri = ConfigReader.GetIssuerUri;
+
+		//			WriteToDiagnosticLog($"ManageProductRum.GetToken - GetTokenClient from IssueURI {_nwpIssueUri}.");
+
+		//			var tokenResponse = _tokenClient.RequestClientCredentialsAsync(nwpScope).Result;
+
+		//			if (tokenResponse.IsError)
+		//			{
+		//				throw new Exception($"ManageProductRum.GetToken - Received null or empty token. {tokenResponse.Error}");
+		//			}
+
+		//			var cachePolicy = new CacheItemPolicy
+		//			{
+		//				// Expier cache every after 9 minutes (assuming 10 min is token expiration time)
+		//				AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
+		//			};
+
+		//			_accessToken = tokenResponse.AccessToken;
+
+		//			tokenCache.Set("access_token_RUM", _accessToken, cachePolicy);
+		//			Dictionary<string, object> logData = new Dictionary<string, object>() { { "accessToken", _accessToken } };
+		//			WriteToDiagnosticLog("ManageProductRum.GetToken - Got token, received & populated cache with token value.", logData);
+		//		}
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		WriteToErrorLog($"Error in ManageProductRum.GetToken- {ex.Message}");
+		//		throw new Exception($"Error in ManageProductRum.GetToken- {ex.Message}");
+		//	}
+		//}
+		#endregion
+	}
 }

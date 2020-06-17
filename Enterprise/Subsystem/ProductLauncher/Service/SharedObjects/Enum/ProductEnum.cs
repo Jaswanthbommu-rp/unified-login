@@ -785,7 +785,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Renovation Manager
 		/// </summary>
 		[Description("RENO")]
-		ManageRenovationManagerProductAccess = 55,
+		ManageRenovationManager = 55,
 	}	
 }
 
