@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Lead2Lease;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RPDocumentManagement;
 using System;
@@ -576,7 +577,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private ListResponse GetRoles(long editorPersonaId, long userPersonaId)
 		{
 			ListResponse response = new ListResponse();
-
+			ListResponse rpdmDepartments = new ListResponse();
+			ListResponse rpdmProperties = new ListResponse();
+			IList<ProductRole> rpdmRolelist = new List<ProductRole>();
 			try
 			{
 				RPDMResult<RPDMRole> rpdmResult = GetResultFromApi<RPDMResult<RPDMRole>>("/roles?isApi=true", "name");
@@ -610,8 +613,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
+				ProductRole obj = new ProductRole();
+				foreach (ProductRole pr in list)
+				{
+					//ProductRole obj = new ProductRole();
+					obj = pr;
+					if (!string.IsNullOrEmpty(pr.Roletype))
+					{
+						if (pr.Roletype.Equals("Department"))
+						{
+							obj.departmentList = GetRoleClassifierDataset(editorPersonaId, userPersonaId, pr.ID);
+						}
+						else if (pr.Roletype.Equals("Site Name"))
+						{
+							obj.propertyList = GetRoleClassifierDataset(editorPersonaId, userPersonaId, pr.ID);
+						}
+					}
+					rpdmRolelist.Add(obj);
+				}
 
-				if (list != null)
+				if (rpdmRolelist != null)
 				{
 					list = list.OrderBy(p => p.Name).ToList();
 
