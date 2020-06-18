@@ -35,6 +35,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -51,6 +52,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         public UserController()
         {
             // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
+        }
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="repositoryResponse"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="userClaims"></param>
+        public UserController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
+        {
+            _repositoryResponse = repositoryResponse;
+            _managePersona = new ManagePersona(repository, userClaims);
+
+            _personLogic = new ManagePerson(repository);
+            ProductRepository productRepository = new ProductRepository(repository);
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            ManagePersona managePersona = new ManagePersona(repository, userClaims);
+            ManageOrganization manageOrganization = new ManageOrganization(repository, userClaims);
+            ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository);
+			ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
+			
+            ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, productInternalSettingRepository, messageHandler);
+            ManageProfile manageProfile = new ManageProfile(userClaims);
+
+            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, managePersona, manageBlueBook, managePartyRelationship, manageOrganization, manageProfile, manageUserRoleRight, userClaims);
+
+            _messageHandler = messageHandler;
+            _userClaims = userClaims;
         }
 
         /// <summary>
@@ -780,7 +810,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>()};
 
-            //Status<IErrorData> errorStatus = new Status<IErrorData>();
 			if (personaId == 0)
             {
                 personaId = _userClaims.PersonaId;
@@ -852,15 +881,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		{
             return GetUserProductDetails_v2(_userClaims.UserRealPageGuid, null);
 		}
-
-		[Route("user/omnibar2")]
-		[AuthorizeScope("userinfoapi")]
-		[HttpGet]
-		public HttpResponseMessage GetOmnibarInfoTest(long personaId)
-		{
-            return GetUserProductDetails_v2(Guid.Empty, personaId);
-		}
-
 
 		#region Private Methods
 

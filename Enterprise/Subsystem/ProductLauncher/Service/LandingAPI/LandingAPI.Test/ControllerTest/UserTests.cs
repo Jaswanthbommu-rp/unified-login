@@ -83,18 +83,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 "http://localhost/api/user"
                 )
             );
-
-            Assert.True("CreateUser" == _baseTest.VerifyRouteToAction(
-                HttpMethod.Post,
-                "http://localhost/api/user"
-                )
-            );
-
-            Assert.True("CreateUser" == _baseTest.VerifyRouteToAction(
-                HttpMethod.Post,
-                "http://localhost/api/user"
-                )
-            );
         }
 
         [Fact]

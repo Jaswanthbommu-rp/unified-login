@@ -136,12 +136,14 @@
     <Compile Include="ControllerTest\ContactMechanismUsageTypeTests.cs" />
     <Compile Include="ControllerTest\DashboardTest.cs" />
     <Compile Include="ControllerTest\ElectronicAddressTests.cs" />
+    <Compile Include="ControllerTest\EnterpriseUserTests.cs" />
     <Compile Include="ControllerTest\OrganizationTests.cs" />
     <Compile Include="ControllerTest\PartyRelationshipTests.cs" />
     <Compile Include="ControllerTest\PasswordPolicyTests.cs" />
     <Compile Include="ControllerTest\LogTests.cs" />
     <Compile Include="ControllerTest\PersonaTests.cs" />
     <Compile Include="ControllerTest\EmailControllerTests.cs" />
+    <Compile Include="ControllerTest\RouteEnterpriseTestBase.cs" />
     <Compile Include="ControllerTest\WebHookTests.cs" />
     <Compile Include="Logic\ManageBlueBookTests.cs" />
     <Compile Include="Logic\ManageCredentialTest.cs" />
@@ -233,6 +235,10 @@
     <ProjectReference Include="..\..\..\Web\IdentityServer\IdentityHelper\IdentityHelper.csproj">
       <Project>{86748C72-89F8-438D-81D7-419007606978}</Project>
       <Name>IdentityHelper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LandingAPIEnterprise\Service.LandingAPIEnterprise.csproj">
+      <Project>{3ac3ab5f-6b3b-45c9-9e39-6ee6fd07133b}</Project>
+      <Name>Service.LandingAPIEnterprise</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\SharedObjects\SharedObjects.csproj">
       <Project>{941E5338-B2C7-41FD-BAD5-A34A8E732E19}</Project>

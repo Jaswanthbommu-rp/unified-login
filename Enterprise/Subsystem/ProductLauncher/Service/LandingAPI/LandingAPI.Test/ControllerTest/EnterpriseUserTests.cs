@@ -1,0 +1,192 @@
+﻿using JsonApiSerializer;
+using Moq;
+using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using System.Web.Http.Dispatcher;
+using Xunit;
+using UserController = RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers.UserController;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
+{
+    [ExcludeFromCodeCoverage]
+    public class EnterpriseUserTests
+    {
+        private readonly RouteEnterpriseTestBase _baseTest;
+
+        Mock<IRepository> _mockRepository = new Mock<IRepository>();
+        Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
+        Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
+        Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+        private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
+        private static int _PartyId = 54321;
+        private static long _BooksMasterId = 2116;
+        private static long _BooksCompanyMasterId = 379;
+        private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
+
+        #region Constructor
+        public EnterpriseUserTests()
+        {
+            HttpConfiguration config = new HttpConfiguration();
+            WebApiConfig.Register(config);
+            config.EnsureInitialized();
+            DefaultHttpControllerSelector controllerSelector = new DefaultHttpControllerSelector(config);
+            _baseTest = new RouteEnterpriseTestBase(config, controllerSelector);
+
+            _defaultUserClaim.CorrelationId = new Guid();
+            _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
+
+        }
+        #endregion
+
+        #region Controller Unit Tests		
+        //[Fact]
+        //public void GetUserProductsByPersonaId_VerifyRouteToAction_ReturnAction()
+        //{
+        //    //Assert
+        //    Assert.True("GetUserProductsByPersonaId" == _baseTest.VerifyEnterpriseRouteToAction(
+        //            HttpMethod.Get,
+        //            "http://localhost/apienterprise/user/products?personaId=0"
+        //        )
+        //    );
+        //
+        //    UserController controller = new UserController();
+        //    
+        //}
+
+        [Fact]
+        public void GetUserProductsByPersonaId_ValidPersonaId_ReturnProductList()
+        {
+            //Arrange
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>()
+            {
+                new CustomerCompanyMap()
+                {
+                    CompanyInstanceId = 54321,
+                    CompanyInstanceSourceId = _RealPageId.ToString().ToUpper(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    CompanyInstance = new List<CompanyInstance>()
+                    {
+                        new CompanyInstance() {CustomerEnvironment = "Primary", IsActive = true}
+                    }
+                }
+            };
+
+            Persona persona = new Persona()
+            {
+                PersonaId = 1234,
+                RealPageId = _RealPageId,
+                Organization = new Organization(){ Name = "Test Company"},
+                Name = "Title"
+            };
+
+            Person person = new Person()
+            {
+                FirstName = "First name",
+                LastName = "Last name",
+                RealPageId = persona.RealPageId
+            };
+
+            List<PersonaProduct> productList = new List<PersonaProduct>();
+            productList.Add(new PersonaProduct()
+            {
+                ProductId = (int)ProductEnum.OneSite, 
+                Name = "OneSIte", 
+                ShowInAppSwitcher = true, 
+                IsResource = false, 
+                BooksProductCode = ProductEnumHelper.StringValueOf(ProductEnum.OneSite), 
+                IsNewTab = true,
+                Url= "product/onesite",
+                FamilyName="Property Management",
+                FamilyId = 100,
+            });
+
+            productList.Add(new PersonaProduct()
+            {
+                ProductId = (int)ProductEnum.AoBusinessIntelligence,
+                Name = "Business Intelligence",
+                Url = "/product/businessintelligence",
+                FamilyId = 400,
+                FamilyName = "Asset Optimization",
+                IsNewTab = true,
+                isFavorite = true,
+                IsResource = false,
+                StatusTypeId = 8,
+                BooksProductCode = "BI",
+                ShowInAppSwitcher  = true
+            });
+
+            productList.Add(new PersonaProduct()
+            {
+                ProductId = (int)ProductEnum.ProductUpdates,
+                Name = "Product Updates",
+                Url = "http://w2w.realpage.com/products/WNWC.asp",
+                FamilyId = 0,
+                FamilyName = null,
+                IsNewTab = true,
+                isFavorite = false,
+                IsResource = true,
+                StatusTypeId = 8,
+                BooksProductCode = "PUPDATE",
+                ShowInAppSwitcher = false
+            });
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent(jsonToSave);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+
+            _mockRepository
+                .Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(
+                    d => d.ToString().Contains($"personaId = {persona.PersonaId}"))))
+                .Returns(persona);
+
+            _mockRepository
+                .Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.Is<object>(
+                    d => d.ToString().Contains($"{persona.RealPageId}"))))
+                .Returns(person);
+
+            _mockRepository
+                .Setup(m => m.UnitOfWork)
+                .Returns(_mockUnitofWork.Object);
+
+            UserController userController = new UserController(
+                _mockRepository.Object
+                , _mockRepositoryResponse.Object
+                , _mockHttpMessageHandler.Object
+                , _defaultUserClaim
+            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+
+            _mockRepository
+                .Setup(m => m.GetMany<PersonaProduct>(StoredProcNameConstants.SP_GetProductsByPersonaId, It.Is<object>(
+                    d => d.ToString().Contains($"PersonaId = {persona.PersonaId}, StatusTypeId = 8"))))
+                .Returns(productList);
+
+            //Act
+            HttpResponseMessage response = userController.GetUserProductsByPersonaId(1234);
+            UserController.UserProductOutputResultv2 result = response.Content?.ReadAsAsync<UserController.UserProductOutputResultv2>().Result;
+
+            //Assert
+            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(result.Resources.Count == 1 && result.Resources[0].Id == (int)ProductEnum.ProductUpdates);
+            Assert.True(result.Products.Count == 3 && result.Products.ContainsKey("Favorites") && result.Products["Favorites"].Count == 1);
+        }
+
+        #endregion
+    }
+}
