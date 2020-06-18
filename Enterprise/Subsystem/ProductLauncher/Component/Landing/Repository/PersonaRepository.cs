@@ -124,17 +124,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona = repository.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, param);
             }
 
-            //IList<Organization> organizationList = _organizationRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
-            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
-            Organization organization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
-            if (organization != null)
+            if (persona != null)
             {
-                persona.Organization = organization;
-            }
+                //IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(persona.RealPageId, null);
+                //Organization organization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
+                Organization organization = _organizationRepository.GetOrganization(organizationPartyId: persona.OrganizationPartyId);
+                if (organization != null)
+                {
+                    persona.Organization = organization;
+                }
 
-            if (withRights)
-            {
-                persona = AddRightsToPersona(persona);
+                if (withRights)
+                {
+                    persona = AddRightsToPersona(persona);
+                }
             }
 
             return persona;

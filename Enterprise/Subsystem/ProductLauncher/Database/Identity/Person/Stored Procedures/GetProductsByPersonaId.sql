@@ -82,7 +82,6 @@ BEGIN
 		,CONVERT(TINYINT,ISNULL(ps2.value,0)) as IsResource
 		,PS3.Value as Url
 		,CONVERT(TINYINT,ISNULL(ps4.value,0)) as ShowInAppSwitcher
-		--,*
 	FROM
 		@UserProducts PC
 		INNER JOIN Enterprise.Product P  ON PC.ProductId = P.ProductId
@@ -100,7 +99,7 @@ BEGIN
 		pr.ProductId
 		,P.Name
 		,P.BooksProductCode
-		,CONVERT(TINYINT, 0) as isFavorite -- need to figure out
+		,CONVERT(TINYINT, ISNULL(UP.isFavorite,0)) as isFavorite
 		,8 as StatusTypeId
 		,P.Description
 		,PT.ParentProductTypeId as FamilyId
@@ -119,6 +118,7 @@ BEGIN
 		LEFT OUTER JOIN enterprise.producttype pt on p.ProductTypeId = pt.ProductTypeId
 		LEFT OUTER JOIN Enterprise.ProductType PT2 on PT.ParentProductTypeId = PT2.ProductTypeId
 		INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId
+		LEFT OUTER JOIN @UserProducts UP ON P.ProductId = UP.ProductId
 		LEFT OUTER JOIN ProductSettings ps1 on ps1.ProductId = p.ProductId and ps1.name = 'IsNewTab'
 		LEFT OUTER JOIN ProductSettings ps2 on ps2.ProductId = p.ProductId and ps2.name = 'IsResource'
 		LEFT OUTER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'
@@ -126,6 +126,6 @@ BEGIN
 	WHERE 
 		ppv.PersonaId = @personaid
 
-	ORDER BY IsResource, FamilyName, P.Name
+	ORDER BY isFavorite, IsResource, P.Name
 	
 END

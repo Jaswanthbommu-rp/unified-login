@@ -221,6 +221,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Get current active Persona by Enterprise UserId, but excluding the rights merging
+        /// </summary>
+        /// <param name="realPageId">Person Enterprise Id</param>
+        /// <returns>A Persona Object</returns>
+        public Persona GetActivePersonaWithoutRights(Guid realPageId)
+        {
+            if (realPageId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter realPageId.");
+            }
+            Persona persona = new Persona();
+            long personaId = _personaRepository.GetActivePersonaId(realPageId);
+
+            if (personaId > 0)
+            {
+                persona = GetPersonaWithRightsToggle(personaId, withRights: false);
+            }
+            return persona;
+        }
+
+
+        /// <summary>
         /// Get current active Persona by Enterprise UserId and company party id
         /// </summary>
         /// <param name="realPageId">Person Enterprise Id</param>

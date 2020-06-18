@@ -117,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 					
 					IManagePersona managePersona = new ManagePersona();
 					//Active Persona is linked to one organization
-					Persona persona = managePersona.GetActivePersona(_realpageUserId); // this user can only be under 1 company to work correctly
+					Persona persona = managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
 
 					identity.AddClaim(new Claim("sub", userLogin.UserId.ToString()));
 					identity.AddClaim(new Claim("orgPartyId", persona.Organization.PartyId.ToString()));

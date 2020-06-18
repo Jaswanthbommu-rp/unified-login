@@ -72,6 +72,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         Persona GetActivePersona(Guid realPageId);
 
         /// <summary>
+        /// Get current active Persona by Enterprise UserId, but excluding the rights merging
+        /// </summary>
+        /// <param name="realPageId">Person Enterprise Id</param>
+        /// <returns>A Persona Object</returns>
+        Persona GetActivePersonaWithoutRights(Guid realPageId);
+
+        /// <summary>
         /// Get Persona Environment Type
         /// </summary>
         /// <returns>Persona Environment Type Object</returns>

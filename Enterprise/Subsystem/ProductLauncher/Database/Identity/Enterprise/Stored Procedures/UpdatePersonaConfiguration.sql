@@ -32,11 +32,14 @@ BEGIN
 				ThruDate IS NULL
 			
 			COMMIT;
+			SELECT	@PersonaId AS Id ,
+                '' AS ErrorMessage
 		END	
 
 		IF EXISTS ( SELECT TOP 1 1 FROM Enterprise.ProductSetting PS INNER JOIN Enterprise.ProductSettingType PST on PS.ProductSettingTypeId = PST.ProductSettingTypeId
 			WHERE PS.ProductSettingId = @ProductSettingID AND PST.Name = 'IsFavorite' )
 		BEGIN
+			BEGIN TRANSACTION;
 			UPDATE 
 				Enterprise.PersonaConfiguration
 				SET IsFavorite = @SettingValue
@@ -48,6 +51,8 @@ BEGIN
 				ThruDate IS NULL
 			
 			COMMIT;
+			SELECT	@PersonaId AS Id ,
+                '' AS ErrorMessage
 		END
 	END TRY
 	BEGIN CATCH
