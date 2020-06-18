@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        #region Roles
+         #region Roles
 
         /// <summary>
         /// Used to get roles for Lead2Lease
