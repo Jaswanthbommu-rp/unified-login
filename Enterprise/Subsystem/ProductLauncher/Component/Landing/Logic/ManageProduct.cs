@@ -30,8 +30,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IManageOrganization _manageOrganization;
         IManageProfile _manageProfile;
         IManageUserRoleRight _manageUserRoleRight;
-	    IUserRoleRightRepository _userRoleRightRepository;
-	    IUnifiedLoginRepository _unifiedLoginRepository;
+	    //IUserRoleRightRepository _userRoleRightRepository;
+	    //IUnifiedLoginRepository _unifiedLoginRepository;
 	    DefaultUserClaim _defaultUserClaim;
 
         private readonly object rightLock = new object();
@@ -42,13 +42,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// Used for dependency injection
 		/// </summary> 
 		public ManageProduct(IProductRepository productRepository,
-            IProductInternalSettingRepository productInternalSettingRepositor, IManagePersona managePersona,
+            IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona,
             IManageBlueBook manageBlueBook, IManagePartyRelationship managePartyRelationship,
             IManageOrganization manageOrganization, IManageProfile manageProfile,
             IManageUserRoleRight manageUserRoleRight, DefaultUserClaim userClaim)
         {
             _productRepository = productRepository;
-            _productInternalSettingRepository = productInternalSettingRepositor;
+            _productInternalSettingRepository = productInternalSettingRepository;
             _managePersona = managePersona;
             _manageBlueBook = manageBlueBook;
             _managePartyRelationship = managePartyRelationship;
@@ -71,8 +71,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageOrganization = new ManageOrganization();
             _manageProfile = new ManageProfile(userClaim);
             _manageUserRoleRight = new ManageUserRoleRight();
-	        _userRoleRightRepository = new UserRoleRightRepository();
-	        _unifiedLoginRepository = new UnifiedLoginRepository();
+	        //_userRoleRightRepository = new UserRoleRightRepository();
+	        //_unifiedLoginRepository = new UnifiedLoginRepository();
 	        _defaultUserClaim = userClaim;
         }
 
@@ -525,7 +525,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public IList<GbProductMap> ListProducts(int? productId = null, Guid? productGuid = null, string name = null, string booksProductCode = null)
         {
-            //IProductRepository productRepository = new ProductRepository();
             var result = _productRepository.ListProducts(productId, productGuid, name, booksProductCode);
             return result;
         }
