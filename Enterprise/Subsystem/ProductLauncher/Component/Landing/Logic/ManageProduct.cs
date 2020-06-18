@@ -30,8 +30,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IManageOrganization _manageOrganization;
         IManageProfile _manageProfile;
         IManageUserRoleRight _manageUserRoleRight;
-	    //IUserRoleRightRepository _userRoleRightRepository;
-	    //IUnifiedLoginRepository _unifiedLoginRepository;
 	    DefaultUserClaim _defaultUserClaim;
 
         private readonly object rightLock = new object();
@@ -68,11 +66,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePersona = new ManagePersona(userClaim);
             _manageBlueBook = new ManageBlueBook(userClaim);
             _managePartyRelationship = new ManagePartyRelationship();
-            _manageOrganization = new ManageOrganization();
+            _manageOrganization = new ManageOrganization(userClaim);
             _manageProfile = new ManageProfile(userClaim);
             _manageUserRoleRight = new ManageUserRoleRight();
-	        //_userRoleRightRepository = new UserRoleRightRepository();
-	        //_unifiedLoginRepository = new UnifiedLoginRepository();
 	        _defaultUserClaim = userClaim;
         }
 
