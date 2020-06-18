@@ -35,20 +35,15 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using Castle.Components.DictionaryAdapter;
-using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
-	/// <summary>
-	/// User Controller
-	/// </summary>
-	public class UserController : BaseApiController
+    /// <summary>
+    /// User Controller
+    /// </summary>
+    public class UserController : BaseApiController
 	{
-
-
-
-        #region Constructor
+		#region Constructor
 
         /// <summary>
         /// Default constructor
@@ -57,7 +52,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
-
 
         /// <summary>
         /// Used to initialize DI classes with userclaim
@@ -73,8 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
 		#endregion
-
-
+		
         #region Private variables
 
         IRepositoryResponse _repositoryResponse;
@@ -785,10 +778,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long personaId)
         {
-            UserProductOutputResultv2 productResult = new UserProductOutputResultv2();
-            productResult.Products = new Dictionary<string, List<UserProducts>>();
+            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>()};
 
-            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            //Status<IErrorData> errorStatus = new Status<IErrorData>();
 			if (personaId == 0)
             {
                 personaId = _userClaims.PersonaId;
@@ -797,6 +789,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             Persona persona = _managePersona.GetPersonaWithRightsToggle(personaId, false);
             if (persona != null)
             {
+                if (!(_userClaims.ImpersonatedBy != Guid.Empty) && _userClaims.OrganizationPartyId != 0 && _userClaims.OrganizationPartyId != persona.OrganizationPartyId)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Get User Products by persona: Invalid company id");
+                }
+
                 var person = _personLogic.GetPerson(persona.RealPageId);
 
                 if (person != null)
