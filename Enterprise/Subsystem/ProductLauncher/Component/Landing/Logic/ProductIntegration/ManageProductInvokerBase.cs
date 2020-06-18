@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog(
                             $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-                        var userProperties = user.Properties;
+                        var userProperties = user.Properties.ConvertAll(p => p.ToUpper());
                         MergeUserProperties(propertyList, userProperties);
                     }
                 }
@@ -1041,6 +1041,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return ProductApiBaseUrl + partialApiQueryUrl;
         }
 
+        protected string GetProductInternalSettingValue(string settingName)
+        {
+            // Get product setting value
+            var settingValue = ProductInternalSettingList.First(a => a.Name.ToUpper() == settingName.ToUpper()).Value;
+            return settingValue;
+        }
         #endregion
 
         #region Logging Methods

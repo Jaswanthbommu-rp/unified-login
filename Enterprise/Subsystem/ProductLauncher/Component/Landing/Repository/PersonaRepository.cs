@@ -208,7 +208,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona.hasManageSettingsTemplates = editorRights.Contains(ProductRightEnum.ManageSettingsTemplates.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasnotificationsAccess = editorRights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);
-                
+
+                persona.hasManageRenovationManagerProductAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString(), StringComparer.OrdinalIgnoreCase);
+
             }
 
             if (currentClaimPrincipal.Identity.IsAuthenticated)
