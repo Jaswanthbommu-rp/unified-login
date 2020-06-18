@@ -68,6 +68,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public string DefaultRole { get; set; }
 
+        /// <summary>
+        /// Property List
+        /// </summary>
+
+        public ListResponse propertiesList { get; set; }
+
+        /// <summary>
+        /// Assigned Properties
+        /// </summary>
+
+        public string assignedProperties { get; set; }
         #region Examples
         /// <summary>
         /// Used to document examples of the Role Model webapi result

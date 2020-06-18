@@ -250,7 +250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.RPDocumentManagement:
 					var manageProductRPDocumentManagement = new ManageProductRPDocumentManagement(_userClaims);
-					result = manageProductRPDocumentManagement.GetRoles(editorPersonaId, userPersonaId, datafilter);
+					result = manageProductRPDocumentManagement.GetPropertyRoles(editorPersonaId, userPersonaId, datafilter);
 					break;
 				case (int)ProductEnum.PortfolioManagement:
 					var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);

@@ -22,6 +22,10 @@
             return model.tabName;
         };
 
+        model.getRoleType = function () {
+            return model.roleType;
+        };
+
         model.getSelectedPropertyRoleData = function () {
             return model.propertyData;
         };
@@ -40,6 +44,10 @@
 
         model.setTabName = function (name) {
             model.tabName = name;
+        };
+
+        model.setRoleType = function (name) {
+            model.roleType = name;
         };
         
         model.setSelectedPropertyRoleData = function (data) {
