@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")
 		]
 		[ProductAllowed(ProductEnum.LeadManagement, ProductEnum.LeadAnalytics, ProductEnum.PortfolioManagement,
-			ProductEnum.ClickPay, ProductEnum.DepositAlternative, ProductEnum.SeniorLeadManagement)]
+			ProductEnum.ClickPay, ProductEnum.DepositAlternative, ProductEnum.SeniorLeadManagement, ProductEnum.RenovationManager)]
 		[Route("products/roles")]
 		[HttpGet]
 		public HttpResponseMessage GetRoles(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
@@ -197,7 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
 			 "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[ProductAllowed(ProductEnum.LeadAnalytics, ProductEnum.LeadManagement, ProductEnum.PortfolioManagement, ProductEnum.DepositAlternative
-            , ProductEnum.SeniorLeadManagement)]
+            , ProductEnum.SeniorLeadManagement, ProductEnum.RenovationManager)]
 		[Route("products/properties")]
 		[HttpGet]
 		public HttpResponseMessage GetProperties(ProductEnum productType, long editorPersonaId, long subjectPersonaId,

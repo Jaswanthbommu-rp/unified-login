@@ -172,6 +172,7 @@
     <Compile Include="Logic\ProductIntegration\Model\SeniorLeadManagement\SLMUserExist.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\ClickPayManagement.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\DepositAlternativeManagement.cs" />
+    <Compile Include="Logic\ProductIntegration\ProductImplementation\RenovationManager.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\SeniorLeadManagement.cs" />
     <Compile Include="Logic\Product\ManageProductOneSiteAccounting.cs" />
     <Compile Include="Logic\ManageSecuritySettings.cs" />

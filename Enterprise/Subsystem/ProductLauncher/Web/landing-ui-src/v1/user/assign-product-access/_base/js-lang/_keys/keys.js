@@ -32,6 +32,7 @@
             "panelName.easylms",
             "panelName.clickPay",
             "panelName.depositAlternative",
+            "panelName.renovationManager",
             "panelName.comingSoon"
         ];
 
