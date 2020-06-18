@@ -24,6 +24,7 @@
             "text.solnTitle.107": "Unified Amenities",
             "text.solnTitle.110": "Document Director",
             "text.solnTitle.111": "EasyLMS",
+            "text.solnTitle.112": "Renovation Manager",
             "text.solnTitle.201": "Resident Portals",
             "text.solnTitle.204": "Renters Insurance",
             "text.solnTitle.205": "Utility Management",

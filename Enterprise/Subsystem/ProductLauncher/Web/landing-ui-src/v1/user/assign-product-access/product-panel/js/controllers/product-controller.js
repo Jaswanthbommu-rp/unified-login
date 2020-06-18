@@ -24,7 +24,6 @@
             vm.productDisabled = false;
             vm.tabsList = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
-
             //Below flag in use for Financial Suite
             vm.hasAccessToSiteSpendManagementOnly = false;
             vm.hasAccessToAllCurrentFutureProperties = false;
@@ -34,12 +33,12 @@
             vm.accountingSMSwitchModel = {};
             vm.accountingAllPropertiesSwitchModel = {};
             vm.accountingAdminSwitchModel = {};
-            
+
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
             vm.productDisabledWatch = pubsub.subscribe("productpanel.userTypeChanged", vm.resetProductDisabled);
-            vm.accountingAdditionalSetWatch = pubsub.subscribe("acct.accountingAdditionalDataSet",vm.accountingAdditionalDataSet);
+            vm.accountingAdditionalSetWatch = pubsub.subscribe("acct.accountingAdditionalDataSet", vm.accountingAdditionalDataSet);
         };
 
         vm.productSelected = function (obj) {
@@ -69,24 +68,24 @@
             return vm;
         };
 
-        vm.accountingAdditionalDataSet = function(obj){
-            if(vm.productId == 8 && obj != undefined){
+        vm.accountingAdditionalDataSet = function (obj) {
+            if (vm.productId == 8 && obj != undefined) {
                 vm.hasAccessToSiteSpendManagementOnly = obj["hasAccessToSiteSpendManagementOnly"];
                 vm.hasAccessToAllCurrentFutureProperties = obj["hasAccessToAllCurrentFutureProperties"];
                 vm.isAccountingAdmin = obj["isAccountingAdmin"];
                 vm.isSiteSpendManagementAssignedToCompany = obj["isSiteSpendManagementAssignedToCompany"];
                 vm.isMConsolePMC = obj["isMConsolePMC"];
-                if(vm.hasAccessToAllCurrentFutureProperties){
+                if (vm.hasAccessToAllCurrentFutureProperties) {
                     pubsub.publish("acct.accountingAllPropertiesSet", !vm.hasAccessToAllCurrentFutureProperties);
                     pubsub.publish("acct.accountingAllCompaniesSet", !vm.hasAccessToAllCurrentFutureProperties);
                 }
             }
         };
 
-        vm.isAccountingProduct = function(){
+        vm.isAccountingProduct = function () {
             return vm.productId == 8;
         };
-        
+
         vm.isActive = function () {
             return active && persona.isReady();
         };
@@ -151,10 +150,10 @@
 
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
-            if($scope.productId == 8){
-                vm.accountingSMSwitchModel = productModel.getProductSwitchConfig($scope.productId,"AccesstoSiteSpendManagementonly")[0];
-                vm.accountingAllPropertiesSwitchModel = productModel.getProductSwitchConfig($scope.productId,"Allowaccesstoallcurrentandfutureentities")[0];
-                vm.accountingAdminSwitchModel = productModel.getProductSwitchConfig($scope.productId,"AccountingAdmin")[0];
+            if ($scope.productId == 8) {
+                vm.accountingSMSwitchModel = productModel.getProductSwitchConfig($scope.productId, "AccesstoSiteSpendManagementonly")[0];
+                vm.accountingAllPropertiesSwitchModel = productModel.getProductSwitchConfig($scope.productId, "Allowaccesstoallcurrentandfutureentities")[0];
+                vm.accountingAdminSwitchModel = productModel.getProductSwitchConfig($scope.productId, "AccountingAdmin")[0];
             }
 
             vm.tabsList = tabs.tabsList;
@@ -174,7 +173,7 @@
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
-                            if(tabGrp.type === "Tab"){
+                            if (tabGrp.type === "Tab") {
                                 var activeTab = false;
                                 var hideTab = false;
                                 if (tabGrp.attributes !== null && tabGrp.type === "Tab") {
@@ -194,16 +193,26 @@
                                 if (tabName === "rights" || tabName === "globalroles") {
                                     tabName = "roles";
                                 }
-                                if (tabName === "markets" || tabName === "messaginggroups" || tabName === "companies") {
+
+                                if (tabName === "markets" ||
+                                    tabName === "messaginggroups" ||
+                                    tabName === "departments" ||
+                                    tabName === "regions") {
                                     tabName = "propertygroup";
                                 }
+
                                 if (tabName === "additionalrights") {
                                     tabName = "rights";
                                 }
-                                if((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entityroles" || tabName === "entities"){
+
+                                if ((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entityroles") {
                                     tabName = "properties";
                                 }
-                                
+
+                                if (tabName === "benchmarkingrole" || tabName === "areas") {
+                                    tabName = "producttab6";
+                                }
+
                                 var tab = {
                                     id: tabGrp.displayName.toLowerCase(),
                                     text: tabGrp.displayName,
@@ -233,19 +242,23 @@
                     if (tabControl.type === 'Tab Group') {
                         tabControl.controls.forEach(function (tabGrp) {
                             var tabName = tabGrp.displayName.replace(/ /g, "");
-                            if (tabName === "Markets" || tabName === "MessagingGroups" || tabName === "Companies") {
+                            if (tabName === "Markets" ||
+                                tabName === "MessagingGroups" ||
+                                tabName === "Departments" ||
+                                tabName === "Regions") {
                                 tabName = "PropertyGroup";
                             }
                             else if (tabName === "Rights" || tabName === "GlobalRoles") {
                                 tabName = "Roles";
-                            } 
-                            else if((tabName === "PropertyGroup" && productId == 13) || tabName === "EntityRoles" || tabName === "Entities"){
+                            }
+                            else if ((tabName === "PropertyGroup" && productId == 13) || tabName === "EntityRoles" || tabName === "Entities") {
                                 tabName = "Properties";
                             }
-                            else if(tabName === "AdditionalRights"){
+                            else if (tabName === "AdditionalRights") {
                                 tabName = "Rights";
                             }
-                            if(tabGrp.controls){
+
+                            if (tabGrp.controls) {
                                 tabGrp.controls.forEach(function (tab) {
                                     if (tab.type === "Multi Select Grid" || tab.type === "Select Grid") {
                                         //Check and Set Grid Config Types
@@ -275,15 +288,15 @@
                                                 productModel.renderProductGridConfigMap(productId, tabName, gridConfig);
                                                 vm.setProductDependency(tab, productId);
                                             }
-                                            
+
                                         }
 
                                         //Check and Set any Aside List Grid
                                         if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
                                             var asideShowSelectAll = false;
-                                            if (tab.controls) {                                        
+                                            if (tab.controls) {
                                                 tab.controls.forEach(function (ctrl) {
-                                                    if(ctrl.controls){
+                                                    if (ctrl.controls) {
                                                         ctrl.controls.forEach(function (attr) {
                                                             if (attr.attributes !== null) {
                                                                 attr.attributes.forEach(function (item) {
@@ -318,6 +331,7 @@
                 });
             }
         };
+
 
         vm.setProductDependency = function (gridData, productId) {
             // logc("griddata--", gridData,gridData.Type);
@@ -369,10 +383,10 @@
                         tabControl.controls.forEach(function (tabGrp) {
                             aSwitch = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
-                            if($scope.productId == 8){
+                            if ($scope.productId == 8) {
                                 if (tabGrp.type === 'Switch') {
                                     var c = {};
-                                    if(tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly"){
+                                    if (tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly") {
                                         c = {
                                             id: tabGrp.id,
                                             text: tabGrp.displayName,
@@ -384,7 +398,7 @@
                                         };
                                         vm.accountingSMSwitchModel = c;
                                     }
-                                    else if(tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties"){
+                                    else if (tabGrp.dataSource == "hasAccessToAllCurrentFutureProperties") {
                                         c = {
                                             id: tabGrp.id,
                                             text: tabGrp.displayName,
@@ -396,7 +410,7 @@
                                         };
                                         vm.accountingAllPropertiesSwitchModel = c;
                                     }
-                                    else if(tabGrp.dataSource == "isAccountingAdmin"){
+                                    else if (tabGrp.dataSource == "isAccountingAdmin") {
                                         c = {
                                             id: tabGrp.id,
                                             text: tabGrp.displayName,
@@ -408,7 +422,7 @@
                                         };
                                         vm.accountingAdminSwitchModel = c;
                                     }
-                                    logc("Switchc",c);                                        
+                                    logc("Switchc", c);
                                     aSwitch.push(c);
                                 }
                             }
@@ -427,10 +441,9 @@
                                         aSwitch.push(c);
                                     }
                                 });
-
-                                if (aSwitch.length > 0) {
-                                    productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
-                                }
+                            }
+                            if (aSwitch.length > 0) {
+                                productModel.renderProductSwitchConfigMap($scope.productId, tabName, aSwitch);
                             }
                         });
                     }
@@ -439,31 +452,31 @@
         };
 
         vm.acessSiteSpndMgmtOnlySwitchWatch = function (val) {
-            logc("acessSiteSpndMgmtOnlySwitchWatch",val);
+            logc("acessSiteSpndMgmtOnlySwitchWatch", val);
             vm.hasAccessToSiteSpendManagementOnly = val;
             productModel.updateProductAdditionalData($scope.productId, "hasAccessToSiteSpendManagementOnly", val);
-            if(vm.hasAccessToSiteSpendManagementOnly){
-                 vm.isAccountingAdmin = false;
-                 productModel.updateProductAdditionalData($scope.productId, "isAccountingAdmin", !val);
+            if (vm.hasAccessToSiteSpendManagementOnly) {
+                vm.isAccountingAdmin = false;
+                productModel.updateProductAdditionalData($scope.productId, "isAccountingAdmin", !val);
             }
-         };
+        };
 
-         vm.allPropertiesSwitchWatch = function (val) {
-             logc("allPropertiesSwitchWatch",val);
-             pubsub.publish("acct.accountingAllPropertiesSet",val);
-             pubsub.publish("acct.accountingAllCompaniesSet",val);
-             vm.hasAccessToAllCurrentFutureProperties = val;
-         };
+        vm.allPropertiesSwitchWatch = function (val) {
+            logc("allPropertiesSwitchWatch", val);
+            pubsub.publish("acct.accountingAllPropertiesSet", val);
+            pubsub.publish("acct.accountingAllCompaniesSet", val);
+            vm.hasAccessToAllCurrentFutureProperties = val;
+        };
 
-         vm.accountingAdminSwitchWatch = function (val) { 
-             logc("accountingAdminSwitchWatch",val); 
-             vm.isAccountingAdmin = val;
-             productModel.updateProductAdditionalData($scope.productId, "isAccountingAdmin", val);
-             if(vm.isAccountingAdmin){
-                 vm.hasAccessToSiteSpendManagementOnly = !val;
-                 productModel.updateProductAdditionalData($scope.productId, "hasAccessToSiteSpendManagementOnly", !val);
-             }
-         };
+        vm.accountingAdminSwitchWatch = function (val) {
+            logc("accountingAdminSwitchWatch", val);
+            vm.isAccountingAdmin = val;
+            productModel.updateProductAdditionalData($scope.productId, "isAccountingAdmin", val);
+            if (vm.isAccountingAdmin) {
+                vm.hasAccessToSiteSpendManagementOnly = !val;
+                productModel.updateProductAdditionalData($scope.productId, "hasAccessToSiteSpendManagementOnly", !val);
+            }
+        };
 
         vm.setSelectPageLevelRadioConfigs = function (data) {
             var aRadio = [];
@@ -478,27 +491,27 @@
                                 tabName = "Roles";
                             }
                             if (productModel.getProductPageLevelRadioConfig($scope.productId, tabName) === undefined) {
-                                if($scope.productId == 16){
+                                if ($scope.productId == 16) {
                                     tabGrp.controls.forEach(function (ctrl) {
-                                    if (ctrl.type === 'Radio') {
-                                        var c = {
-                                            id: ctrl.id,
-                                            text: ctrl.displayName,
-                                            key: ctrl.dataSource,
-                                            configData: menuConfig({
-                                                nameKey: "name",
-                                                valueKey: "id",
-                                                fieldName: "accessTypeSelect",
-                                                onChange: vm.resetDataModel,
-                                                disabled: false
-                                            })
+                                        if (ctrl.type === 'Radio') {
+                                            var c = {
+                                                id: ctrl.id,
+                                                text: ctrl.displayName,
+                                                key: ctrl.dataSource,
+                                                configData: menuConfig({
+                                                    nameKey: "name",
+                                                    valueKey: "id",
+                                                    fieldName: "accessTypeSelect",
+                                                    onChange: vm.resetDataModel,
+                                                    disabled: false
+                                                })
                                             };
                                             aRadio.push(c);
-                                            if(ctrl.dependency) {
+                                            if (ctrl.dependency) {
                                                 productModel.renderProductDependencyMap($scope.productId, ctrl.dataSource, ctrl.id);
                                             }
                                         }
-                                        
+
                                     });
                                     if (aRadio.length > 0) {
                                         logc("aRadio config", aRadio, tabName);
@@ -525,7 +538,7 @@
                                 tabName = "Roles";
                             }
                             if (productModel.getProductSelectTypeConfig($scope.productId, tabName) === undefined) {
-                                if(tabGrp.controls){
+                                if (tabGrp.controls) {
                                     tabGrp.controls.forEach(function (ctrl) {
                                         if (ctrl.type === 'Select') {
                                             var c = {
@@ -550,7 +563,7 @@
                                     }
                                 }
 
-                                
+
                             }
                         });
                     }

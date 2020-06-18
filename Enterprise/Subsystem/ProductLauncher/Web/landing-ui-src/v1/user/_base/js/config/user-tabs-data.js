@@ -37,6 +37,13 @@
             id: "activityLog",
             text: "Activity",
             templateUrl: "common/activity-log/templates/index.html"
+        },
+
+        userPreference: {
+            isActive: false,
+            id: "userPreference",
+            text: "User Preference",
+            templateUrl: "user/user-preference/templates/index.html"
         }
     };
 
