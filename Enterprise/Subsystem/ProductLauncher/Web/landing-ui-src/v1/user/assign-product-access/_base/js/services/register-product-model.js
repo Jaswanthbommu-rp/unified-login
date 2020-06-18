@@ -223,7 +223,6 @@
                 });
             }
 
-
             if (templateModel.isProductExists(55)) {
                 list.push({
                     model: ppModel,
@@ -232,7 +231,7 @@
                 });
             }
 
-            list.push({
+             list.push({
                 model: cmsModel,
                 key: "default"
             });
