@@ -13,21 +13,16 @@
             table-layout: auto;
         }
         .is-assigned {
-            min-width: 10%;
-            max-width: 15%;
+            width: 10%; 
         }
         .name {
-            min-width: 50%;
-            max-width: 80%;
+           width:60%;
         }
         .type {
-            min-width: 40%;
-            max-width: 60%;
-    
+            width: 40%;
         }
         .info-tooltip {
-            min-width: 10%;
-            max-width: 15%;
+            width: 10%;
         }
     }
 }
