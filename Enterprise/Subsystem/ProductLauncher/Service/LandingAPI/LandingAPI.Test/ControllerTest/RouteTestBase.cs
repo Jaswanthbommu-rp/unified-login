@@ -14,24 +14,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	[ExcludeFromCodeCoverage]
 	public class RouteTestBase
 	{
-		private static HttpConfiguration _config;
-		private static ApiControllerActionSelector _actionSelector = new ApiControllerActionSelector();
-		private static DefaultHttpControllerSelector _controllerSelector;
-		private static HttpControllerContext _controllerContext;
-		private static HttpRequestMessage _request;
-		private static HttpControllerDescriptor _controllerDescriptor;
-		private static HttpActionDescriptor _actionDescriptor;
-		private static Type _type;
+		private readonly HttpConfiguration _config;
+		private readonly DefaultHttpControllerSelector _controllerSelector;
 
 		/// <summary>
 		/// RouteTestBase Constructor
 		/// </summary>
-		/// <param name="Config">Represents a configuration of System.Web.Http.HttpServer instances.</param>
-		/// <param name="ControllerSelector">Represents a default System.Web.Http.Dispatcher.IHttpControllerSelector instance for choosing a System.Web.Http.Controllers.HttpControllerDescriptor given a System.Net.Http.HttpRequestMessage.</param>
-		public RouteTestBase(HttpConfiguration Config, DefaultHttpControllerSelector ControllerSelector)
+		/// <param name="config">Represents a configuration of System.Web.Http.HttpServer instances.</param>
+		/// <param name="controllerSelector">Represents a default System.Web.Http.Dispatcher.IHttpControllerSelector instance for choosing a System.Web.Http.Controllers.HttpControllerDescriptor given a System.Net.Http.HttpRequestMessage.</param>
+		public RouteTestBase(HttpConfiguration config, DefaultHttpControllerSelector controllerSelector)
 		{
-			_config = Config;
-			_controllerSelector = ControllerSelector;
+			_config = config;
+			_controllerSelector = controllerSelector;
 		}
 
 		/// <summary>
@@ -46,20 +40,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			{
 				// remove the leading /api as the services are now running under their own application
 				url = url.Replace("/api", "");
-				_request = new HttpRequestMessage(method, url);
-				var routeData = _config.Routes.GetRouteData(_request);
-				_request.Properties[HttpPropertyKeys.HttpRouteDataKey] = routeData;
-				_controllerContext = new HttpControllerContext(_config, routeData, _request);
-				_controllerDescriptor = _controllerSelector.SelectController(_request);
-				_controllerContext.ControllerDescriptor = _controllerDescriptor;
-				_type = _controllerDescriptor.ControllerType;
-				_actionDescriptor = _actionSelector.SelectAction(_controllerContext);
+                HttpRequestMessage request = new HttpRequestMessage(method, url);
+				var routeData = _config.Routes.GetRouteData(request);
+				request.Properties[HttpPropertyKeys.HttpRouteDataKey] = routeData;
+                HttpControllerContext controllerContext = new HttpControllerContext(_config, routeData, request);
+                HttpControllerDescriptor controllerDescriptor = _controllerSelector.SelectController(request);
+				controllerContext.ControllerDescriptor = controllerDescriptor;
+                Type type = controllerDescriptor.ControllerType;
+                ApiControllerActionSelector actionSelector = new ApiControllerActionSelector();
+                HttpActionDescriptor actionDescriptor = actionSelector.SelectAction(controllerContext);
+                return actionDescriptor.ActionName;
 			}
 			catch (Exception e)
 			{
 				return "";
 			}
-			return _actionDescriptor.ActionName;
-		}
+        }
 	}
 }
