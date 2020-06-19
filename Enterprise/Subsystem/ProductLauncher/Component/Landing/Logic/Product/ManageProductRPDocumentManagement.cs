@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RP
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Net.Http;
 using System.Text;
 
@@ -134,7 +135,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				return response;
 			}
-			return GetPropertyRoles(editorPersonaId, userPersonaId);
+			Persona editorPersona = response.Records[0] as Persona;
+			
+			return GetPropertyRoles(editorPersonaId, userPersonaId, editorPersona.Organization.PartyId);
 		}
 
 		/// <summary>
@@ -664,7 +667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <returns></returns>
-		private ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId)
+		private ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId, long organizationPartyId)
 		{
 			ListResponse response = new ListResponse();
 			IList<ProductRole> rpdmRolelist = new List<ProductRole>();
@@ -672,57 +675,70 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse propertyResponse = new ListResponse();
 			try
 			{
-				
-				response = GetRoles(editorPersonaId, userPersonaId);
-				if (response.TotalRows > 0)
+				ObjectCache productCache = MemoryCache.Default;
+				var cacheKey = $"PROD-PANEL-RPDMROLES_{userPersonaId}_{organizationPartyId}";
+				ListResponse lstRolesProperties = productCache[cacheKey] as ListResponse;
+				if (lstRolesProperties == null)
 				{
-					list = response.Records.Cast<ProductRole>().ToArray();
-					ProductRole pRole = new ProductRole();
-					ListResponse propertyListResponse = new ListResponse();
-					foreach (ProductRole item in list)
-					{
-						pRole = item;
-						if (!string.IsNullOrEmpty(item.Roletype))
-						{
-							if (item.Name.Contains("(" + item.Roletype + ")"))
-							{
-								pRole.Name = item.Name.Replace("(" + item.Roletype + ")", "").Trim();
-							}
-							if (item.Roletype.ToLower().Contains("site"))
-							{
-								pRole.Roletype = "Property";
-							}
 
-							propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID);
-							if (propertyResponse.Records.Count > 0) {
-								pRole.propertiesList = propertyResponse.Records as List<object>;
+					response = GetRoles(editorPersonaId, userPersonaId);
+					if (response.TotalRows > 0)
+					{
+						list = response.Records.Cast<ProductRole>().ToArray();
+						ProductRole pRole = new ProductRole();
+						ListResponse propertyListResponse = new ListResponse();
+						foreach (ProductRole item in list)
+						{
+							pRole = item;
+							if (!string.IsNullOrEmpty(item.Roletype))
+							{
+								if (item.Name.Contains("(" + item.Roletype + ")"))
+								{
+									pRole.Name = item.Name.Replace("(" + item.Roletype + ")", "").Trim();
+								}
+								if (item.Roletype.ToLower().Contains("site"))
+								{
+									pRole.Roletype = "Property";
+								}
+
+								propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID);
+								if (propertyResponse.Records.Count > 0)
+								{
+									pRole.propertiesList = propertyResponse.Records as List<object>;
+								}
 							}
+							rpdmRolelist.Add(pRole);
 						}
-						rpdmRolelist.Add(pRole);
+
 					}
 
-				}
-				
-
-				if (rpdmRolelist != null)
-				{
-					rpdmRolelist = rpdmRolelist.OrderBy(p => p.Name).ToList();
-
-					response = new ListResponse()
+					if (rpdmRolelist != null)
 					{
-						Records = rpdmRolelist.Cast<object>().ToList(),
-						TotalRows = rpdmRolelist.Count,
-						RowsPerPage = rpdmRolelist.Count,
-						TotalPages = 1,
-						ErrorReason = ""
-					};
+						rpdmRolelist = rpdmRolelist.OrderBy(p => p.Name).ToList();
+
+						response = new ListResponse()
+						{
+							Records = rpdmRolelist.Cast<object>().ToList(),
+							TotalRows = rpdmRolelist.Count,
+							RowsPerPage = rpdmRolelist.Count,
+							TotalPages = 1,
+							ErrorReason = ""
+						};
+						// caching roles and properties
+						SetProductRoleCache(response, userPersonaId, organizationPartyId);
+					}
+					else
+					{
+						WriteToErrorLog("GetRoles - Error. list == null");
+						response.IsError = true;
+						response.ErrorReason = "There was a problem getting the role details";
+					}
 				}
 				else
 				{
-					WriteToErrorLog("GetRoles - Error. list == null");
-					response.IsError = true;
-					response.ErrorReason = "There was a problem getting the role details";
+					return lstRolesProperties;
 				}
+
 			}
 			catch (Exception ex)
 			{
@@ -734,6 +750,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
+		public void SetProductRoleCache(ListResponse response, long userPersonaId, long organizationPartyId)
+		{
+			// Get products
+			ObjectCache productCache = MemoryCache.Default;
+			var cacheKey = $"PROD-PANEL-RPDMROLES_{userPersonaId}_{organizationPartyId}";
+			var lstRolesProperties = productCache[cacheKey] as ListResponse;
+			
+			if (lstRolesProperties == null)
+			{
+				lstRolesProperties = response;
+
+				var cachePolicy = new CacheItemPolicy
+				{
+					AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(5)// Expier cache every after 5 minutes 
+				};
+
+				productCache.Set(cacheKey, lstRolesProperties, cachePolicy);
+			}
+		}
 		/// <summary>
 		/// 
 		/// </summary>

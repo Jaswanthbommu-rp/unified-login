@@ -288,23 +288,16 @@
 
                 if ($scope.$parent.productId == 20) {
                     var totalCount = 0;
-                    var assignedCount = 0;
                     var roleList = resp.records;
-                    var count = 0;
                     vm.getDistinctRoleTypes(roleList);
                     roleList.forEach( function(record){
                         if(record.propertiesList !== null){
                             var propertyList = record.propertiesList;
-    
-                            propertyList.forEach(function (property) {
-                                if (property.isAssigned === true) {
-                                    assignedCount++;
-                                }
+                            var assignedPropertiesCount = propertyList.filter(function (prop) {
+                                return prop.isAssigned === true;
                             });
-                            totalCount = propertyList.length;
-                            resp.records[count].assignedProperties = assignedCount + " of " + totalCount;
+                            record.assignedProperties = assignedPropertiesCount.length + " of " + propertyList.length;
                         }
-                        count++;
                     });
                     
                 }
