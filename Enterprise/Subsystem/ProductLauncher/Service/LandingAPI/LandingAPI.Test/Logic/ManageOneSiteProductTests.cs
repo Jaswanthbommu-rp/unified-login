@@ -446,12 +446,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockManageBlueBook = new Mock<IManageBlueBook>();
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
-            var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
+            var mockRepository = new Mock<IRepository>();
 
             SamlRepository samlRepository = new SamlRepository();
 
+            mockRepository
+                .Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.Is<object>(
+                    d => d.ToString().Contains($"ProductId = 1"))))
+                .Returns(_productInternalSettingsOneSite);
+
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
+
             //Act
-            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, productInternalSettingRepository,
                 mockHttpMessageHandler.Object);
 
             ListResponse resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, reqParameter);

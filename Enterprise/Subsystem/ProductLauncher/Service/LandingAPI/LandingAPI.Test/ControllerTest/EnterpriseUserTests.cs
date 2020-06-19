@@ -9,15 +9,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
-using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.Dispatcher;
 using Xunit;
 using UserController = RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers.UserController;
 

@@ -14,14 +14,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	[ExcludeFromCodeCoverage]
 	public class RouteTestBase
 	{
-		private HttpConfiguration _config;
-		private ApiControllerActionSelector _actionSelector = new ApiControllerActionSelector();
-		private DefaultHttpControllerSelector _controllerSelector;
-		private HttpControllerContext _controllerContext;
-		private HttpRequestMessage _request;
-		private HttpControllerDescriptor _controllerDescriptor;
-		private HttpActionDescriptor _actionDescriptor;
-		private Type _type;
+		private static HttpConfiguration _config;
+		private static ApiControllerActionSelector _actionSelector = new ApiControllerActionSelector();
+		private static DefaultHttpControllerSelector _controllerSelector;
+		private static HttpControllerContext _controllerContext;
+		private static HttpRequestMessage _request;
+		private static HttpControllerDescriptor _controllerDescriptor;
+		private static HttpActionDescriptor _actionDescriptor;
+		private static Type _type;
 
 		/// <summary>
 		/// RouteTestBase Constructor

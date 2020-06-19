@@ -18,7 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public ProductOneSiteTests()
         {
             HttpConfiguration config = new HttpConfiguration();
-            WebApiConfig.Register(config);
+            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(config);
             config.EnsureInitialized();
             DefaultHttpControllerSelector controllerSelector = new DefaultHttpControllerSelector(config);
             _baseTest = new RouteTestBase(config, controllerSelector);

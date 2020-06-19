@@ -29,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-			WebApiConfig.Register(Config);
+            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
@@ -287,17 +287,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-			WebApiConfig.Register(Config);
+            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
 
+            string result = baseTest.VerifyRouteToAction(
+                    HttpMethod.Get,
+                    "http://localhost/api/products/24/organization/-1");
 			//Assert
-			Assert.True("ListProductUsers" == baseTest.VerifyRouteToAction(
-				HttpMethod.Get,
-				"http://localhost/api/products/24/organization/-1"
-				)
-			);
+			Assert.True("ListProductUsers" == result);
 		}
 
 		[Fact]
