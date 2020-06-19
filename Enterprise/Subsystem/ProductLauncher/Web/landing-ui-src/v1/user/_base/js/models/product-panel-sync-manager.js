@@ -679,16 +679,13 @@
         };
         p.selectedAsidePropertySync = function (productId) {
             var s = this,
-            propertyData,
-            assignedPropertiesCount,
-            totalPropertyCount;
+            propertyData;
             propertyData = s.asidePropertyMap['product' + productId].asideProperties;
-            assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
+            var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
                     return data.isAssigned === true;
             });
-            totalPropertyCount = propertyData.propertiesList.length;
             
-            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ totalPropertyCount;
+            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length;
             return s;
         };
 
@@ -770,7 +767,6 @@
             var s = this,
                 propertyList,
                 assignedCount = 0,
-                totalCount = 0,
                 matchRecord;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
@@ -783,8 +779,7 @@
             if(bool){
                   assignedCount = record.length;
             }
-            totalCount = propertyList.propertiesList.length;
-            propertyList.assignedProperties = assignedCount + " of " + totalCount;
+            propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
             return s;
         };
         p.setAllPropertyGroupSync = function (productId, bool) {
