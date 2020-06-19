@@ -198,7 +198,7 @@
                                     tabName === "messaginggroups" ||
                                     tabName === "departments" ||
                                     tabName === "regions" ||
-                                    tabName === "Companies") {
+                                    tabName === "companies") {
                                     tabName = "propertygroup";
                                 }
 

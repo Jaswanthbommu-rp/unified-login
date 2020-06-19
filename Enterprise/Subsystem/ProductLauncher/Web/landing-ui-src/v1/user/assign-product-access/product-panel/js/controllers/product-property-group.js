@@ -167,7 +167,7 @@
             pgGrid.busy(false);
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
-                if ($scope.$parent.productId == 8) {
+                if ($scope.$parent.productId == 8 && resp.additional && resp.additional != undefined) {
                     syncMgr.setProductAdditionalData($scope.$parent.productId, resp.additional);
                 }
                 vm.loadGridData($scope.$parent.productId);
@@ -176,7 +176,7 @@
             if (resp.isError) {
                 vm.isPropertyGroupsError = true;
             }
-            if (resp.additional) {
+            if (resp.additional && resp.additional != undefined) {
                 var accesstype = resp.additional.accessType;
                 pubsub.publish("ppanel.assign-accessType", accesstype);
             }
