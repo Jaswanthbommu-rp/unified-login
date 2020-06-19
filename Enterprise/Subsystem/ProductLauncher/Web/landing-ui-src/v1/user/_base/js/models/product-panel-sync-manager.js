@@ -583,12 +583,12 @@
                     item.isAssigned = record.isAssigned;
                 }
 
-                if (record.productId == 20 &&
-                    item.roletype === record.roletype &&
-                    item.id !== record.id)
-                {
-                    item.disableSelection = record.isAssigned;
-                }
+                // if (record.productId == 20 &&
+                //     item.roletype === record.roletype &&
+                //     item.id !== record.id)
+                // {
+                //     item.disableSelection = record.isAssigned;
+                // }
             });
 
             return s;
@@ -679,14 +679,24 @@
         };
         p.selectedAsidePropertySync = function (productId) {
             var s = this,
-            propertyData;
-
+            propertyData,
+            assignedPropertiesCount,
+            totalPropertyCount;
             propertyData = s.asidePropertyMap['product' + productId].asideProperties;
-            var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
-                return data.isAssigned === true;
-            });
-
-            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length;
+            if(productId == 20){
+                assignedPropertiesCount = propertyData.propertiesList.records.filter(function (data) {
+                    return data.isAssigned === true;
+                });
+                totalPropertyCount = propertyData.propertiesList.records.length;
+            }
+            else{
+                assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
+                    return data.isAssigned === true;
+                });
+                totalPropertyCount = propertyData.propertiesList.length;
+            }
+            
+            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ totalPropertyCount;
             return s;
         };
 
@@ -768,16 +778,29 @@
             var s = this,
                 propertyList,
                 assignedCount = 0,
+                totalCount = 0,
                 matchRecord;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
-            record.forEach(function (item) {
-                item.isAssigned = bool;
-            });
-            if(bool){
-                assignedCount = record.length;
+            if(productId == 20){
+                record.propertiesList.records.forEach(function (item) {
+                    item.isAssigned = bool;
+                });
+                if(bool){
+                    assignedCount = record.propertiesList.records.length;
+                }
+                totalCount = record.propertiesList.records.length;
             }
-            propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
+            else{
+                record.forEach(function (item) {
+                    item.isAssigned = bool;
+                });
+                if(bool){
+                    assignedCount = record.length;
+                }
+                totalCount = propertyList.propertiesList.length;
+            }
+            propertyList.assignedProperties = assignedCount + " of " + totalCount;
             return s;
         };
         p.setAllPropertyGroupSync = function (productId, bool) {

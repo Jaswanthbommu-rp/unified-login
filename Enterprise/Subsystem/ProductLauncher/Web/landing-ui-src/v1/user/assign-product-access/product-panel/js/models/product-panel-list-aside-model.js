@@ -5,7 +5,7 @@
 
     function factory() {
         var model = {};
-        var productLists = [44]; // list of panels require the footer buttons
+        var productLists = [44, 20]; // list of panels require the footer buttons
         model.getName = function () {
             return model.Name;
         };

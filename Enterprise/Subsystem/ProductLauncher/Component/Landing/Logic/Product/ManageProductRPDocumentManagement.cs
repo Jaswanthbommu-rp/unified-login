@@ -121,6 +121,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Used to get roles along with properties for a company or user
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		public ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+		{
+			ListResponse response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			if (response.IsError)
+			{
+				return response;
+			}
+			return GetPropertyRoles(editorPersonaId, userPersonaId);
+		}
+
+		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="editorPersonaId"></param>
@@ -210,9 +227,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RoleList == null || rolePropertyEntityList.RoleList.Count == 0))
+			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RolePropertyIdList == null || rolePropertyEntityList.RolePropertyIdList.Count == 0))
 			{
-				WriteToDiagnosticLog("ManageRPDMUser - Create user error. RoleList.Count=" + rolePropertyEntityList?.RoleList?.Count.ToString() + " , PropertyList.Count=" + rolePropertyEntityList?.PropertyList?.Count.ToString() + " , DepartmentList.Count=" + rolePropertyEntityList?.DepartmentList?.Count.ToString());
+				WriteToDiagnosticLog("ManageRPDMUser - Create user error. RoleList.Count=" + rolePropertyEntityList?.RolePropertyIdList?.Count.ToString());
 				return "There was a problem creating the user. Missing required information.";
 			}
 
@@ -248,16 +265,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// fix up the users roles/property/department info
 				try
 				{
-					foreach (string roleId in rolePropertyEntityList.RoleList)
+					foreach (RPDMRolePropertyList role in rolePropertyEntityList.RolePropertyIdList)
 					{
-						if (rpdmResult.Page.Any(p => p.ID == roleId))
+						if (rpdmResult.Page.Any(p => p.ID == role.RoleId))
 						{
-							RPDMRole roleDetail = (from a in rpdmResult.Page where a.ID == roleId select a).FirstOrDefault();
-							RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + roleId);
+							RPDMRole roleDetail = (from a in rpdmResult.Page where a.ID == role.RoleId select a).FirstOrDefault();
+							RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + role.RoleId);
 							IList<ProductProperty> list = new List<ProductProperty>();
 							if (rpdmRoleDetail.Scope != null)
 							{
-								if (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0)
+								if (rolePropertyEntityList?.RolePropertyIdList?.Count > 0)
 								{
 									// get additional information for the role details
 									if (!string.IsNullOrEmpty(rpdmRoleDetail.Scope.HRef))
@@ -268,8 +285,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 											RPDMResult<RPDMDataset> rpdmDataSetResults = GetResultFromApi<RPDMResult<RPDMDataset>>(classifier.DataSet.HRef + "/values", "name");
 											if (rpdmDataSetResults.Page.Count > 0)
 											{
-												InsertRoleDetails(rolePropertyEntityList.PropertyList, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
-												InsertRoleDetails(rolePropertyEntityList.DepartmentList, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
+												InsertRoleDetails(role.PropertyIds, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
+												//InsertRoleDetails(rolePropertyEntityList.DepartmentList, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
 											}
 										}
 									}
@@ -620,6 +637,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						Records = list.Cast<object>().ToList(),
 						TotalRows = list.Count,
 						RowsPerPage = list.Count,
+						TotalPages = 1,
+						ErrorReason = ""
+					};
+				}
+				else
+				{
+					WriteToErrorLog("GetRoles - Error. list == null");
+					response.IsError = true;
+					response.ErrorReason = "There was a problem getting the role details";
+				}
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+				response.IsError = true;
+				response.ErrorReason = "There was a problem getting the role details";
+			}
+
+			return response;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		private ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId)
+		{
+			ListResponse response = new ListResponse();
+			IList<ProductRole> rpdmRolelist = new List<ProductRole>();
+			IList<ProductRole> list;
+			try
+			{
+				
+				response = GetRoles(editorPersonaId, userPersonaId);
+				if (response.TotalRows > 0)
+				{
+					list = response.Records.Cast<ProductRole>().ToArray();
+					ProductRole pRole = new ProductRole();
+					foreach (ProductRole item in list)
+					{
+						pRole = item;
+						
+						
+						if (!string.IsNullOrEmpty(item.Roletype))
+						{
+							if (item.Name.Contains("(" + item.Roletype + ")"))
+							{
+								pRole.Name = item.Name.Replace("(" + item.Roletype + ")", "").Trim();
+							}
+							if (item.Roletype.ToLower().Contains("site"))
+							{
+								pRole.Roletype = "Property";
+							}
+							
+							pRole.propertiesList = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID);
+						}
+						rpdmRolelist.Add(pRole);
+					}
+
+				}
+				
+
+				if (rpdmRolelist != null)
+				{
+					rpdmRolelist = rpdmRolelist.OrderBy(p => p.Name).ToList();
+
+					response = new ListResponse()
+					{
+						Records = rpdmRolelist.Cast<object>().ToList(),
+						TotalRows = rpdmRolelist.Count,
+						RowsPerPage = rpdmRolelist.Count,
 						TotalPages = 1,
 						ErrorReason = ""
 					};
