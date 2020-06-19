@@ -72,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Property List
         /// </summary>
 
-        public ListResponse propertiesList { get; set; }
+        public IList<object> propertiesList { get; set; }
 
         /// <summary>
         /// Assigned Properties

@@ -669,6 +669,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse response = new ListResponse();
 			IList<ProductRole> rpdmRolelist = new List<ProductRole>();
 			IList<ProductRole> list;
+			ListResponse propertyResponse = new ListResponse();
 			try
 			{
 				
@@ -677,11 +678,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					list = response.Records.Cast<ProductRole>().ToArray();
 					ProductRole pRole = new ProductRole();
+					ListResponse propertyListResponse = new ListResponse();
 					foreach (ProductRole item in list)
 					{
 						pRole = item;
-						
-						
 						if (!string.IsNullOrEmpty(item.Roletype))
 						{
 							if (item.Name.Contains("(" + item.Roletype + ")"))
@@ -692,8 +692,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							{
 								pRole.Roletype = "Property";
 							}
-							
-							pRole.propertiesList = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID);
+
+							propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID);
+							if (propertyResponse.Records.Count > 0) {
+								pRole.propertiesList = propertyResponse.Records as List<object>;
+							}
 						}
 						rpdmRolelist.Add(pRole);
 					}

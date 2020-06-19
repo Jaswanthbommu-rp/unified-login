@@ -294,7 +294,7 @@
                     vm.getDistinctRoleTypes(roleList);
                     roleList.forEach( function(record){
                         if(record.propertiesList !== null){
-                            var propertyList = record.propertiesList.records;
+                            var propertyList = record.propertiesList;
     
                             propertyList.forEach(function (property) {
                                 if (property.isAssigned === true) {

@@ -683,18 +683,10 @@
             assignedPropertiesCount,
             totalPropertyCount;
             propertyData = s.asidePropertyMap['product' + productId].asideProperties;
-            if(productId == 20){
-                assignedPropertiesCount = propertyData.propertiesList.records.filter(function (data) {
+            assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
                     return data.isAssigned === true;
-                });
-                totalPropertyCount = propertyData.propertiesList.records.length;
-            }
-            else{
-                assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
-                    return data.isAssigned === true;
-                });
-                totalPropertyCount = propertyData.propertiesList.length;
-            }
+            });
+            totalPropertyCount = propertyData.propertiesList.length;
             
             propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ totalPropertyCount;
             return s;
@@ -783,23 +775,15 @@
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
             if(productId == 20){
-                record.propertiesList.records.forEach(function (item) {
-                    item.isAssigned = bool;
-                });
-                if(bool){
-                    assignedCount = record.propertiesList.records.length;
-                }
-                totalCount = record.propertiesList.records.length;
+                record = record.propertiesList;
             }
-            else{
-                record.forEach(function (item) {
-                    item.isAssigned = bool;
-                });
-                if(bool){
-                    assignedCount = record.length;
-                }
-                totalCount = propertyList.propertiesList.length;
+            record.forEach(function (item) {
+                   item.isAssigned = bool;
+            });
+            if(bool){
+                  assignedCount = record.length;
             }
+            totalCount = propertyList.propertiesList.length;
             propertyList.assignedProperties = assignedCount + " of " + totalCount;
             return s;
         };

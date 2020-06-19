@@ -17,12 +17,8 @@
             vm.roleType = listAsideModel.getRoleType();
             vm.asideGrid = asideGrid;
             vm.properteiesData = {};
-            if (vm.productId === 20) {
-                vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
-            }
-            else {
-                vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData().propertiesList;
-            }
+            vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
+            
             asidegridTransform.watch(asideGrid);
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
             syncMgr.setAsidePropertyList(listAsideModel.getSelectedPropertyRoleData(), vm.productId);
@@ -114,7 +110,7 @@
                 vm.properteiesData.records = vm.propertyRecords;
                 vm.setData(vm.properteiesData);
             }else if(productId == "20"){
-                vm.properteiesData.records = vm.propertyRecords.propertiesList.records;
+                vm.properteiesData.records = vm.propertyRecords.propertiesList;
                 vm.setData(vm.properteiesData);
             }
             else {
