@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
     [ExcludeFromCodeCoverage]
     public class EnterpriseUserTests
     {
-        private readonly RouteEnterpriseTestBase _baseTest;
+        //private readonly RouteEnterpriseTestBase _baseTest;
 
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
         Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
@@ -36,17 +36,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
         private static int _PartyId = 54321;
         private static long _BooksMasterId = 2116;
+        private static long _PersonaId = 1234;
         private static long _BooksCompanyMasterId = 379;
         private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
 
         #region Constructor
         public EnterpriseUserTests()
         {
-            HttpConfiguration config = new HttpConfiguration();
-            WebApiConfig.Register(config);
-            config.EnsureInitialized();
-            DefaultHttpControllerSelector controllerSelector = new DefaultHttpControllerSelector(config);
-            _baseTest = new RouteEnterpriseTestBase(config, controllerSelector);
+            //HttpConfiguration config = new HttpConfiguration();
+            //WebApiConfig.Register(config);
+            //config.EnsureInitialized();
+            //DefaultHttpControllerSelector controllerSelector = new DefaultHttpControllerSelector(config);
+            //_baseTest = new RouteEnterpriseTestBase(config, controllerSelector);
 
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
@@ -55,20 +56,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         #endregion
 
         #region Controller Unit Tests		
-        //[Fact]
-        //public void GetUserProductsByPersonaId_VerifyRouteToAction_ReturnAction()
-        //{
-        //    //Assert
-        //    Assert.True("GetUserProductsByPersonaId" == _baseTest.VerifyEnterpriseRouteToAction(
-        //            HttpMethod.Get,
-        //            "http://localhost/apienterprise/user/products?personaId=0"
-        //        )
-        //    );
-        //
-        //    UserController controller = new UserController();
-        //    
-        //}
-
         [Fact]
         public void GetUserProductsByPersonaId_ValidPersonaId_ReturnProductList()
         {
@@ -88,7 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             Persona persona = new Persona()
             {
-                PersonaId = 1234,
+                PersonaId = _PersonaId,
                 RealPageId = _RealPageId,
                 Organization = new Organization(){ Name = "Test Company"},
                 Name = "Title"
@@ -178,13 +165,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(productList);
 
             //Act
-            HttpResponseMessage response = userController.GetUserProductsByPersonaId(1234);
+            HttpResponseMessage response = userController.GetUserProductsByPersonaId(_PersonaId);
             UserController.UserProductOutputResultv2 result = response.Content?.ReadAsAsync<UserController.UserProductOutputResultv2>().Result;
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-            Assert.True(result.Resources.Count == 1 && result.Resources[0].Id == (int)ProductEnum.ProductUpdates);
-            Assert.True(result.Products.Count == 3 && result.Products.ContainsKey("Favorites") && result.Products["Favorites"].Count == 1);
+            Assert.True(result?.Resources.Count == 1 && result?.Resources[0].Id == (int)ProductEnum.ProductUpdates);
+            Assert.True(result?.Products.Count == 3 && result.Products.ContainsKey("Favorites") && result?.Products["Favorites"].Count == 1);
+            Assert.Equal(result.User.FullName, person.FirstName + " " + person.LastName);
         }
 
         #endregion
