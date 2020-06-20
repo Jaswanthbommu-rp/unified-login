@@ -21,6 +21,7 @@ using UserController = RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAP
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
     [ExcludeFromCodeCoverage]
+    [Collection("RunAlone")]
     public class EnterpriseUserTests
     {
         //private readonly RouteEnterpriseTestBase _baseTest;
