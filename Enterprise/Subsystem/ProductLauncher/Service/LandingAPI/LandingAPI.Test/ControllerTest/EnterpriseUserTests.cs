@@ -18,7 +18,7 @@ using System.Web.Http;
 using Xunit;
 using UserController = RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers.UserController;
 
-namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
+namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest.Enterprise
 {
     [ExcludeFromCodeCoverage]
     [Collection("RunAlone")]

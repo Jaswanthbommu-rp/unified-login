@@ -8,6 +8,7 @@ using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Xunit;
 
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly, DisableTestParallelization = true)] 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
 	/// <summary>

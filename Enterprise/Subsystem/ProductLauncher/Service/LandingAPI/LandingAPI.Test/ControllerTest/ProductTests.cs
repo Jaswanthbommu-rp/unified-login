@@ -3,7 +3,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using System;
 using System.Collections.Generic;
@@ -15,10 +14,10 @@ using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
-	/// <summary>
-	/// Product xUnit tests
-	/// </summary>
-	[ExcludeFromCodeCoverage]
+    /// <summary>
+    /// Product xUnit tests
+    /// </summary>
+    [ExcludeFromCodeCoverage]
 	public class ProductTests
 	{
 		#region Controller Unit Tests
