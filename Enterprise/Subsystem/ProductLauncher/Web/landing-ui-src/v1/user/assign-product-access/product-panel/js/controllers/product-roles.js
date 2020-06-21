@@ -256,6 +256,19 @@
             var data = syncMgr.allRolesSync($scope.$parent.productId, bool);
         };
 
+        vm.getDistinctRoleTypes = function (rolesList){
+            var distinctRoles = [];
+            var roletype = "";
+            rolesList.forEach(function (role) {
+                if(role.roletype !== undefined){
+                    roletype = role.roletype.split(" ").join("");
+                    if(distinctRoles.indexOf(roletype) == -1){
+                        distinctRoles.push(roletype);
+                    }
+                }
+            });
+            pubsub.publish("ppanel.distinct-role-types", distinctRoles);
+        };
         vm.setRolesData = function (resp) {
             rolesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
@@ -278,7 +291,21 @@
                     syncMgr.setPresetRoleList(resp.additional.presets, $scope.$parent.productId);
                 }
 
-
+                if ($scope.$parent.productId == 20) {
+                    var totalCount = 0;
+                    var roleList = resp.records;
+                    vm.getDistinctRoleTypes(roleList);
+                    roleList.forEach( function(record){
+                        if(record.propertiesList !== null){
+                            var propertyList = record.propertiesList;
+                            var assignedPropertiesCount = propertyList.filter(function (prop) {
+                                return prop.isAssigned === true;
+                            });
+                            record.assignedProperties = assignedPropertiesCount.length + " of " + propertyList.length;
+                        }
+                    });
+                    
+                }
 
                 vm.loadGridData($scope.$parent.productId);
             }

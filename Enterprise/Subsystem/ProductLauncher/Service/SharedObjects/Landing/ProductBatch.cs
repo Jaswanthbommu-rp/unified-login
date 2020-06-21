@@ -150,6 +150,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public List<string> DepartmentList { get; set; }
 
 		/// <summary>
+		/// Used for RPDM
+		/// </summary>
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public List<RPDMRolePropertyList> RolePropertyIdList { get; set; }
+
+		/// <summary>
 		/// Used for PAM
 		/// </summary>
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

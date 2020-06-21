@@ -5,7 +5,7 @@
 
     function factory() {
         var model = {};
-        var productLists = [44]; // list of panels require the footer buttons
+        var productLists = [44, 20]; // list of panels require the footer buttons
         model.getName = function () {
             return model.Name;
         };
@@ -20,6 +20,10 @@
 
         model.getTabName = function () {
             return model.tabName;
+        };
+
+        model.getRoleType = function () {
+            return model.roleType;
         };
 
         model.getSelectedPropertyRoleData = function () {
@@ -40,6 +44,10 @@
 
         model.setTabName = function (name) {
             model.tabName = name;
+        };
+
+        model.setRoleType = function (name) {
+            model.roleType = name;
         };
         
         model.setSelectedPropertyRoleData = function (data) {
