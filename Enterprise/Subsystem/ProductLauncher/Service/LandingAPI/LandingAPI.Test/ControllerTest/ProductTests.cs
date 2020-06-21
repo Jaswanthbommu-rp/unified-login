@@ -3,6 +3,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,14 @@ using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
-    /// <summary>
+	/// <summary>
     /// Product xUnit tests
     /// </summary>
     [ExcludeFromCodeCoverage]
 	public class ProductTests
 	{
+		private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
+
 		#region Controller Unit Tests
 		[Fact]
 		public void GetProductFamilies_VerifyRouteToAction_ReturnAction()
@@ -28,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
+            WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
@@ -36,7 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			//Assert
 			Assert.True("GetProductFamilies" == baseTest.VerifyRouteToAction(
 				HttpMethod.Get,
-				"http://localhost/api/productfamilies"
+				"http://localhost/api/productfamilies?personRealPageId="
 				)
 			);
 		}
@@ -286,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
+            WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
