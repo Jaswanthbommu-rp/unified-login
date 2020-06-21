@@ -169,6 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList)
 		{
 			ListResponse response = new ListResponse();
+			List<RPDMRolePropertyList> lstRoleProperties = new List<RPDMRolePropertyList>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError)
 			{
@@ -228,6 +229,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						foundNewUserName = true;
 					}
 				}
+			}
+
+			// setting roles and properties values if it is not a dynamic panel
+			if (rolePropertyEntityList.RolePropertyIdList == null && (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
+			{
+				rolePropertyEntityList.PropertyList.AddRange(rolePropertyEntityList.DepartmentList);
+				foreach (string roleId in rolePropertyEntityList.RoleList)
+				{
+					RPDMRolePropertyList objRole = new RPDMRolePropertyList();
+					List<string> propertyIds = new List<string>();
+					objRole.RoleId = roleId;
+					objRole.PropertyIds = rolePropertyEntityList.PropertyList;
+					lstRoleProperties.Add(objRole);
+				}
+				rolePropertyEntityList.RolePropertyIdList = lstRoleProperties;
 			}
 
 			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RolePropertyIdList == null || rolePropertyEntityList.RolePropertyIdList.Count == 0))
