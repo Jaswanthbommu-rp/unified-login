@@ -18,14 +18,11 @@ using System.Web.Http;
 using Xunit;
 using UserController = RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers.UserController;
 
-namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest.Enterprise
+namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterprise
 {
     [ExcludeFromCodeCoverage]
-    [Collection("RunAlone")]
     public class EnterpriseUserTests
     {
-        //private readonly RouteEnterpriseTestBase _baseTest;
-
         Mock<IRepository> _mockRepository = new Mock<IRepository>();
         Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
         Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
@@ -41,12 +38,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         #region Constructor
         public EnterpriseUserTests()
         {
-            //HttpConfiguration config = new HttpConfiguration();
-            //WebApiConfig.Register(config);
-            //config.EnsureInitialized();
-            //DefaultHttpControllerSelector controllerSelector = new DefaultHttpControllerSelector(config);
-            //_baseTest = new RouteEnterpriseTestBase(config, controllerSelector);
-
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
 
@@ -75,7 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             {
                 PersonaId = _PersonaId,
                 RealPageId = _RealPageId,
-                Organization = new Organization(){ Name = "Test Company"},
+                Organization = new Organization() { Name = "Test Company" },
                 Name = "Title"
             };
 
@@ -89,14 +80,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             List<PersonaProduct> productList = new List<PersonaProduct>();
             productList.Add(new PersonaProduct()
             {
-                ProductId = (int)ProductEnum.OneSite, 
-                Name = "OneSIte", 
-                ShowInAppSwitcher = true, 
-                IsResource = false, 
-                BooksProductCode = ProductEnumHelper.StringValueOf(ProductEnum.OneSite), 
+                ProductId = (int)ProductEnum.OneSite,
+                Name = "OneSIte",
+                ShowInAppSwitcher = true,
+                IsResource = false,
+                BooksProductCode = ProductEnumHelper.StringValueOf(ProductEnum.OneSite),
                 IsNewTab = true,
-                Url= "product/onesite",
-                FamilyName="Property Management",
+                Url = "product/onesite",
+                FamilyName = "Property Management",
                 FamilyId = 100,
             });
 
@@ -112,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 IsResource = false,
                 StatusTypeId = 8,
                 BooksProductCode = "BI",
-                ShowInAppSwitcher  = true
+                ShowInAppSwitcher = true
             });
 
             productList.Add(new PersonaProduct()
@@ -155,7 +146,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , _defaultUserClaim
-            ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
+            )
+            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             _mockRepository
                 .Setup(m => m.GetMany<PersonaProduct>(StoredProcNameConstants.SP_GetProductsByPersonaId, It.Is<object>(
