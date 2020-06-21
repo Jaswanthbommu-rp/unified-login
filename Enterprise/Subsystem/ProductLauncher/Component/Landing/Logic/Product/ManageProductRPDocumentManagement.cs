@@ -358,6 +358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						RPDMUser newUser = GetUserDetails(newid);
 						if (newUser != null)
 						{
+							SetProductRoleCache(null, userPersonaId, userPersona.OrganizationPartyId);
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, newUser.Name);
 							WriteToDiagnosticLog($"ManageRPDMUser - Create user. newid={newid}, login={newUser.Name}");
@@ -422,6 +423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
 						if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 						{
+							SetProductRoleCache(null, userPersonaId, userPersona.OrganizationPartyId);
 							WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
 							WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
 						}
@@ -752,22 +754,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		public void SetProductRoleCache(ListResponse response, long userPersonaId, long organizationPartyId)
 		{
-			// Get products
 			ObjectCache productCache = MemoryCache.Default;
 			var cacheKey = $"PROD-PANEL-RPDMROLES_{userPersonaId}_{organizationPartyId}";
-			var lstRolesProperties = productCache[cacheKey] as ListResponse;
-			
-			if (lstRolesProperties == null)
+			var cachePolicy = new CacheItemPolicy
 			{
-				lstRolesProperties = response;
-
-				var cachePolicy = new CacheItemPolicy
-				{
-					AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(5)// Expier cache every after 5 minutes 
-				};
-
-				productCache.Set(cacheKey, lstRolesProperties, cachePolicy);
-			}
+				AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(5)// Expier cache every after 5 minutes 
+			};
+			productCache.Set(cacheKey, response, cachePolicy);
 		}
 		/// <summary>
 		/// 
