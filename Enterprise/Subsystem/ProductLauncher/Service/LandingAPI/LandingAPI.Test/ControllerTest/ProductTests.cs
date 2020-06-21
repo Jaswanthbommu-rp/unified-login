@@ -39,7 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			//Assert
 			Assert.True("GetProductFamilies" == baseTest.VerifyRouteToAction(
 				HttpMethod.Get,
-				"http://localhost/api/productfamilies?personRealPageId="
+				"http://localhost/api/productfamilies"
 				)
 			);
 		}
