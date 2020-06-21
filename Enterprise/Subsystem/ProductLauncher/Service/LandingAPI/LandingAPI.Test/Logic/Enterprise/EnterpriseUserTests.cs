@@ -45,8 +45,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
         #endregion
 
         #region Controller Unit Tests		
-        [Fact(Skip = "Having issues with routing tests")]
-        public void GetUserProductsByPersonaId_ValidPersonaId_ReturnProductList()
+        [Theory]
+        [InlineData("Primary")]
+        public void GetUserProductsByPersonaId_ValidPersonaId_ReturnProductList(string Domain)
         {
             //Arrange
             IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>()
@@ -57,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
                     CompanyInstanceSourceId = _RealPageId.ToString().ToUpper(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                     CompanyInstance = new List<CompanyInstance>()
                     {
-                        new CompanyInstance() {CustomerEnvironment = "Primary", IsActive = true}
+                        new CompanyInstance() {CustomerEnvironment = Domain, IsActive = true}
                     }
                 }
             };
