@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -324,7 +325,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				result.IsError = true;
-				result.ErrorReason = "There was a problem getting the properties";
+
+				if (ex is BlueBookException)
+				{
+					result.ErrorReason = ex.Message;
+				}
+				else
+				{
+					result.ErrorReason = "There was a problem getting the properties";
+				}
 				WriteToErrorLog($"GetProperties - Error. {ex.Message}", exception: ex);
 			}
 			return result;
