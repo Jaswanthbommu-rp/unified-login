@@ -109,7 +109,7 @@
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
             else if(accessType === 'allProperties') {
-                syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                //syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
             }
             vm.propertySelect = accessType;
