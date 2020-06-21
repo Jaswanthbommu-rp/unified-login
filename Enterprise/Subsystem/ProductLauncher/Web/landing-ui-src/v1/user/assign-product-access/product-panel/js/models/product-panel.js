@@ -171,14 +171,16 @@
 
             if (productId == "8") {
                 var additionalData = dataSyncManager.getProductAdditionalData(productId);
-                s.batchData.inputJson.hasAccessToAllCurrentFutureProperties = additionalData['hasAccessToAllCurrentFutureProperties'];
-                s.batchData.inputJson.hasAccessToSiteSpendManagementOnly = additionalData['hasAccessToSiteSpendManagementOnly'];
-                s.batchData.inputJson.isAccountingAdmin = additionalData['isAccountingAdmin'];
-                isMConsole = additionalData["isMConsolePMC"];
-                if (s.batchData.inputJson.hasAccessToAllCurrentFutureProperties || properties.length === 0) {
-                    s.batchData.inputJson.propertyList.push("all");
-                    s.batchData.inputJson.companiesList.push("all");
-                    dataSyncManager.updateProductAllProperties(productId, true);
+                if(additionalData != undefined){
+                    s.batchData.inputJson.hasAccessToAllCurrentFutureProperties = additionalData['hasAccessToAllCurrentFutureProperties'];
+                    s.batchData.inputJson.hasAccessToSiteSpendManagementOnly = additionalData['hasAccessToSiteSpendManagementOnly'];
+                    s.batchData.inputJson.isAccountingAdmin = additionalData['isAccountingAdmin'];
+                    isMConsole = additionalData["isMConsolePMC"];
+                    if (s.batchData.inputJson.hasAccessToAllCurrentFutureProperties || properties.length === 0) {
+                        s.batchData.inputJson.propertyList.push("all");
+                        s.batchData.inputJson.companiesList.push("all");
+                        dataSyncManager.updateProductAllProperties(productId, true);
+                    }
                 }
             }
 

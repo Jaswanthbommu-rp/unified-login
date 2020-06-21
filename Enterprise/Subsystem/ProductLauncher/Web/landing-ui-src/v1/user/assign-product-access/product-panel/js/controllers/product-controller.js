@@ -207,7 +207,8 @@
                                 if (tabName === "markets" ||
                                     tabName === "messaginggroups" ||
                                     tabName === "departments" ||
-                                    tabName === "regions") {
+                                    tabName === "regions" ||
+                                    tabName === "companies") {
                                     tabName = "propertygroup";
                                 }
 
@@ -215,7 +216,7 @@
                                     tabName = "rights";
                                 }
 
-                                if ((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entityroles") {
+                                if ((tabName === "propertygroup" && $scope.productId == 13) || tabName === "entityroles" || tabName === "entities") {
                                     tabName = "properties";
                                 }
 
@@ -256,7 +257,8 @@
                             if (tabName === "Markets" ||
                                 tabName === "MessagingGroups" ||
                                 tabName === "Departments" ||
-                                tabName === "Regions") {
+                                tabName === "Regions" ||
+                                tabName === "Companies") {
                                 tabName = "PropertyGroup";
                             }
                             else if (tabName === "Rights" || tabName === "GlobalRoles") {

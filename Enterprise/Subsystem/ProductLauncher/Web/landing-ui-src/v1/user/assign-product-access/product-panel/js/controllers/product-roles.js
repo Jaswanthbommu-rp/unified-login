@@ -80,9 +80,14 @@
         };
 
         vm.updateAllPropertiesSwitch = function(bool){
+            if(vm.rpRoleSelected && vm.rpRoleSelected != undefined && vm.rpRoleSelected.name.toLowerCase() == "enterprise admin"){
+                vm.showAllPropertiesSwitch = false;
+            }
+            else{
+                vm.showAllPropertiesSwitch = bool;
+            }
             vm.allProperties = bool;
-            vm.showAllPropertiesSwitch = bool;
-
+            
             var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
             if(bool){
                 var tb = allTabs.find(function (item) {
