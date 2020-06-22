@@ -14,18 +14,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	[ExcludeFromCodeCoverage]
 	public class RouteTestBase
 	{
-		private readonly HttpConfiguration _config;
-		private readonly DefaultHttpControllerSelector _controllerSelector;
+		private HttpConfiguration _config;
+		private ApiControllerActionSelector _actionSelector = new ApiControllerActionSelector();
+		private DefaultHttpControllerSelector _controllerSelector;
+		private HttpControllerContext _controllerContext;
+		private HttpRequestMessage _request;
+		private HttpControllerDescriptor _controllerDescriptor;
+		private HttpActionDescriptor _actionDescriptor;
+		private Type _type;
 
 		/// <summary>
 		/// RouteTestBase Constructor
 		/// </summary>
-		/// <param name="config">Represents a configuration of System.Web.Http.HttpServer instances.</param>
-		/// <param name="controllerSelector">Represents a default System.Web.Http.Dispatcher.IHttpControllerSelector instance for choosing a System.Web.Http.Controllers.HttpControllerDescriptor given a System.Net.Http.HttpRequestMessage.</param>
-		public RouteTestBase(HttpConfiguration config, DefaultHttpControllerSelector controllerSelector)
+		/// <param name="Config">Represents a configuration of System.Web.Http.HttpServer instances.</param>
+		/// <param name="ControllerSelector">Represents a default System.Web.Http.Dispatcher.IHttpControllerSelector instance for choosing a System.Web.Http.Controllers.HttpControllerDescriptor given a System.Net.Http.HttpRequestMessage.</param>
+		public RouteTestBase(HttpConfiguration Config, DefaultHttpControllerSelector ControllerSelector)
 		{
-			_config = config;
-			_controllerSelector = controllerSelector;
+			_config = Config;
+			_controllerSelector = ControllerSelector;
 		}
 
 		/// <summary>
@@ -40,21 +46,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			{
 				// remove the leading /api as the services are now running under their own application
 				url = url.Replace("/api", "");
-                HttpRequestMessage request = new HttpRequestMessage(method, url);
-				var routeData = _config.Routes.GetRouteData(request);
-				request.Properties[HttpPropertyKeys.HttpRouteDataKey] = routeData;
-                HttpControllerContext controllerContext = new HttpControllerContext(_config, routeData, request);
-                HttpControllerDescriptor controllerDescriptor = _controllerSelector.SelectController(request);
-				controllerContext.ControllerDescriptor = controllerDescriptor;
-                Type type = controllerDescriptor.ControllerType;
-                ApiControllerActionSelector actionSelector = new ApiControllerActionSelector();
-                HttpActionDescriptor actionDescriptor = actionSelector.SelectAction(controllerContext);
-                return actionDescriptor.ActionName;
+				_request = new HttpRequestMessage(method, url);
+				var routeData = _config.Routes.GetRouteData(_request);
+				_request.Properties[HttpPropertyKeys.HttpRouteDataKey] = routeData;
+				_controllerContext = new HttpControllerContext(_config, routeData, _request);
+				_controllerDescriptor = _controllerSelector.SelectController(_request);
+				_controllerContext.ControllerDescriptor = _controllerDescriptor;
+				_type = _controllerDescriptor.ControllerType;
+				_actionDescriptor = _actionSelector.SelectAction(_controllerContext);
 			}
 			catch (Exception e)
 			{
 				return "";
 			}
-        }
+			return _actionDescriptor.ActionName;
+		}
 	}
 }

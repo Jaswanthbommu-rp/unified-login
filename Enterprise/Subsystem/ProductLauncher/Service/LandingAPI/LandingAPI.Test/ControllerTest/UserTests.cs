@@ -8,7 +8,6 @@ using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Xunit;
 
-[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly, DisableTestParallelization = true)] 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
 	/// <summary>
@@ -17,7 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 	[ExcludeFromCodeCoverage]
 	public class UserTests
 	{
-        //private readonly RouteTestBase _baseTest;
+        private readonly RouteTestBase _baseTest;
 
         #region Constructor
         public UserTests()
@@ -26,7 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             WebApiConfig.Register(config);
             config.EnsureInitialized();
             DefaultHttpControllerSelector controllerSelector = new DefaultHttpControllerSelector(config);
-            //_baseTest = new RouteTestBase(config, controllerSelector);
+            _baseTest = new RouteTestBase(config, controllerSelector);
         }
 		#endregion
 
@@ -38,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
+			WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
@@ -58,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
+			WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
@@ -75,16 +74,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void CreateNewUser_VerifyRouteToAction_ReturnAction()
         {
             //Arrange
-            HttpConfiguration Config = new HttpConfiguration();
 
             //Act
-            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
-            Config.EnsureInitialized();
-            DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
-            RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
 
             //Assert
-            Assert.True("CreateUser" == baseTest.VerifyRouteToAction(
+            Assert.True("CreateUser" == _baseTest.VerifyRouteToAction(
+                HttpMethod.Post,
+                "http://localhost/api/user"
+                )
+            );
+
+            Assert.True("CreateUser" == _baseTest.VerifyRouteToAction(
+                HttpMethod.Post,
+                "http://localhost/api/user"
+                )
+            );
+
+            Assert.True("CreateUser" == _baseTest.VerifyRouteToAction(
                 HttpMethod.Post,
                 "http://localhost/api/user"
                 )
@@ -95,16 +101,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void UpdateNewUser_VerifyRouteToAction_ReturnAction()
         {
             //Arrange
-            HttpConfiguration Config = new HttpConfiguration();
 
             //Act
-            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
-            Config.EnsureInitialized();
-            DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
-            RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
 
             //Assert
-            Assert.True("UpdateNewUser" == baseTest.VerifyRouteToAction(
+            Assert.True("UpdateNewUser" == _baseTest.VerifyRouteToAction(
                 HttpMethod.Post,
                 "http://localhost/api/newuser/profile?activityToken=41E2469D-4CAF-4FF4-B251-46CBC161A1C6&companyJobTitle=Leasing+Agent+I&userLogin=test@test1.com"
                 )
@@ -118,13 +119,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-            RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.WebApiConfig.Register(Config);
+			WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
 
 			//Assert
-			Assert.True("AssignProductsToAdministrators" == baseTest.VerifyRouteToAction(
+			Assert.True("AssignProductsToAdministrators" == _baseTest.VerifyRouteToAction(
 				HttpMethod.Post,
 				"http://localhost/api/user/assignproductstoadministrators?organizationRealPageId=8DA6737A-55FA-4DEA-BE2B-6AA2BE620A57&assignUserPersonaId=1"
 				)
