@@ -23,9 +23,9 @@
             };
             s.propertyRoleListData = {
                 "PropertyIds": [],
+                "RoleType": "",
                 "RoleId": ""
             };
-            
 
             s.batchData = {
                 productId: 0,
