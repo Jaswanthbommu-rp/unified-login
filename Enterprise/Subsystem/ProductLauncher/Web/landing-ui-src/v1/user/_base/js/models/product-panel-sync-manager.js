@@ -583,12 +583,6 @@
                     item.isAssigned = record.isAssigned;
                 }
 
-                // if (record.productId == 20 &&
-                //     item.roletype === record.roletype &&
-                //     item.id !== record.id)
-                // {
-                //     item.disableSelection = record.isAssigned;
-                // }
             });
 
             return s;
