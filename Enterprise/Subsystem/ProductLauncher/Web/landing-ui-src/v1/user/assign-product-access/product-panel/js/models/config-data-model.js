@@ -67,7 +67,7 @@
             return cnfgs;
         };
 
-        p.getListAsideConfig = function (data) {
+        p.getListAsideConfig = function (data, roleType) {
             var s = this,
                 displayName = "",
                 isSlideScreen = false,
@@ -91,17 +91,31 @@
                         if (isSlideScreen) {
                             ctrl.controls.forEach(function (subCtrls) {
                                 logc("sub controls", subCtrls);
-                                if (subCtrls.type === "Grid") {
-                                    listasideConfig.displayName = subCtrls.displayName;
-                                    subCtrls.controls.forEach(function (gridCtrl) {
-                                        listasideConfig.config.push({
-                                            "key": gridCtrl.dataSource,
-                                            "type": s.isType(gridCtrl.type),
-                                            "text": gridCtrl.displayName,
-                                            "idKey": "id"
+                                if (subCtrls.type === "Grid" || subCtrls.type === "Multi Select Grid") {
+                                    listasideConfig.displayName = roleType !== "" ?  roleType : subCtrls.displayName;
+                                    
+                                    if(roleType !== ""){
+                                        subCtrls.controls.forEach(function (gridCtrl) {
+                                            listasideConfig.config.push({
+                                                "key": gridCtrl.dataSource,
+                                                "type": s.isType(gridCtrl.type),
+                                                "text": roleType,
+                                                "idKey": "id"
+                                            });
                                         });
-
-                                    });
+                                    }
+                                    else{
+                                        subCtrls.controls.forEach(function (gridCtrl) {
+                                            listasideConfig.config.push({
+                                                "key": gridCtrl.dataSource,
+                                                "type": s.isType(gridCtrl.type),
+                                                "text": gridCtrl.displayName,
+                                                "idKey": "id"
+                                            });
+    
+                                        });
+                                    }
+                                    
                                 }
                             });
                         }
