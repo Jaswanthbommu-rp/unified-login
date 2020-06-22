@@ -127,6 +127,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Get Persona by Persona Id but only include rights if needed
+        /// </summary>
+        /// <param name="personaId">Persona Id</param>
+        /// <param name="withRights">Should the rights also be included</param>
+        /// <returns>Persona Object</returns>
+        public Persona GetPersonaWithRightsToggle(long personaId, bool withRights = false)
+        {
+            if (personaId == 0)
+            {
+                throw new Exception("Invalid parameter personaId.");
+            }
+
+            return _personaRepository.GetPersona(personaId, withRights);
+        }
+
+        /// <summary>
         /// Lists Personas by Enterprise UserId, does NOT include rights correctly!
         /// </summary>
         /// <param name="realPageId">Person Enterprise Id</param>
@@ -203,6 +219,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return persona;
         }
+
+        /// <summary>
+        /// Get current active Persona by Enterprise UserId, but excluding the rights merging
+        /// </summary>
+        /// <param name="realPageId">Person Enterprise Id</param>
+        /// <returns>A Persona Object</returns>
+        public Persona GetActivePersonaWithoutRights(Guid realPageId)
+        {
+            if (realPageId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter realPageId.");
+            }
+            Persona persona = new Persona();
+            long personaId = _personaRepository.GetActivePersonaId(realPageId);
+
+            if (personaId > 0)
+            {
+                persona = GetPersonaWithRightsToggle(personaId, withRights: false);
+            }
+            return persona;
+        }
+
 
         /// <summary>
         /// Get current active Persona by Enterprise UserId and company party id

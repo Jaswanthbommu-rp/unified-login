@@ -64,10 +64,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #endregion
 
+        /// <summary>
+        /// Used to get a list of products for the given persona id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
+        {
+            dynamic param = new
+            {
+                PersonaId = personaId,
+                StatusTypeId = (int)statusType
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetMany<PersonaProduct>(StoredProcNameConstants.SP_GetProductsByPersonaId, param);
+                return result;
+            }
+        }
+
         #region Public Methods
 
         /// <summary>
-        /// Returns a list of products user has access to, filterable by favorites and resouce only
+        /// Returns a list of products user has access to, filterable by favorites and resource only
         /// </summary>
         /// <param name="persona">persona</param>       
         /// <param name="productSelectType">productSelectType</param>
@@ -93,13 +114,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductSettingList> productSettings = GetProductSettingsByPersona(persona.PersonaId).ToList();
             IList<ProductType> productTypeList = GetProductTypes();
 
-            // is EasyLMS a favourite product?
+            // is EasyLMS a favorite product?
             CheckUserFavouriteProducts(productSettings, ProductEnum.EasyLMS, isFavouriteProducts);
 
-            // is PropertyPhotos a favourite product?
+            // is PropertyPhotos a favorite product?
             CheckUserFavouriteProducts(productSettings, ProductEnum.PropertyPhotos, isFavouriteProducts);
 
-            // is VendorMarketplace a favourite product?
+            // is VendorMarketplace a favorite product?
             CheckUserFavouriteProducts(productSettings, ProductEnum.VendorMarketplace, isFavouriteProducts);
 
             //List of Products By Persona
@@ -179,7 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 //Is the Product enabled to be a Favorite?
                 productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("IsFavorite", StringComparison.OrdinalIgnoreCase));
-                p.IsAllowFavorite = (productInternalSetting != null) && ((productInternalSetting.Value.Trim() == "1"));
+                p.IsAllowFavorite = productInternalSetting != null && productInternalSetting.Value.Trim() == "1";
                 //If enabled then, is the product a favorite in persona?
                 p.IsFavorite = p.IsAllowFavorite && IsFavorite;
 
@@ -382,7 +403,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             AddAdditionalProduct(persona, listProductUI, userProducts, ProductEnum.PropertyPhotos, isFavouriteProducts.Any(p => p == ProductEnum.PropertyPhotos));
                         }
                     }
-
                 }
             }
 
@@ -907,6 +927,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 repositoryResponse.ErrorMessage = "CreateProductSetting Error: CreateProductConfigurationbyPersonaId failed.";
                                 WriteToLog(LogType.Error, repositoryResponse.ErrorMessage);
+                            }
+                            else
+                            {
+                                // update the persona configuration with the latest setting result
+                                param = new
+                                {
+                                    PersonaId = PersonaId,
+                                    ProductId = ProductId,
+                                    ProductSettingID = ProductSettingId
+                                };
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonaConfiguration, param);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "CreateProductSetting Error: UpdatePersonaConfiguration failed.";
+                                    WriteToLog(LogType.Error, repositoryResponse.ErrorMessage);
+                                }
                             }
                         }
                     }

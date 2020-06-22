@@ -12,6 +12,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -29,8 +30,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IManageOrganization _manageOrganization;
         IManageProfile _manageProfile;
         IManageUserRoleRight _manageUserRoleRight;
-	    IUserRoleRightRepository _userRoleRightRepository;
-	    IUnifiedLoginRepository _unifiedLoginRepository;
 	    DefaultUserClaim _defaultUserClaim;
 
         private readonly object rightLock = new object();
@@ -41,13 +40,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// Used for dependency injection
 		/// </summary> 
 		public ManageProduct(IProductRepository productRepository,
-            IProductInternalSettingRepository productInternalSettingRepositor, IManagePersona managePersona,
+            IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona,
             IManageBlueBook manageBlueBook, IManagePartyRelationship managePartyRelationship,
             IManageOrganization manageOrganization, IManageProfile manageProfile,
             IManageUserRoleRight manageUserRoleRight, DefaultUserClaim userClaim)
         {
             _productRepository = productRepository;
-            _productInternalSettingRepository = productInternalSettingRepositor;
+            _productInternalSettingRepository = productInternalSettingRepository;
             _managePersona = managePersona;
             _manageBlueBook = manageBlueBook;
             _managePartyRelationship = managePartyRelationship;
@@ -67,11 +66,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePersona = new ManagePersona(userClaim);
             _manageBlueBook = new ManageBlueBook(userClaim);
             _managePartyRelationship = new ManagePartyRelationship();
-            _manageOrganization = new ManageOrganization();
+            _manageOrganization = new ManageOrganization(userClaim);
             _manageProfile = new ManageProfile(userClaim);
             _manageUserRoleRight = new ManageUserRoleRight();
-	        _userRoleRightRepository = new UserRoleRightRepository();
-	        _unifiedLoginRepository = new UnifiedLoginRepository();
 	        _defaultUserClaim = userClaim;
         }
 
@@ -411,16 +408,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(personaId), "Null personaId");
             }
 
-            int? productSettingTypeId = _productRepository.GetProductSettingType(productSetting.Name.Trim());
+            var productSettingTypeId = _productRepository.GetProductSettingType(productSetting.Name.Trim());
             RepositoryResponse response = new RepositoryResponse();
 
-            if (productSettingTypeId.HasValue && productSettingTypeId > 0)
+            if (productSettingTypeId > 0)
             {
-                response = _productRepository.CreateProductSetting(personaId.Value, productSetting.ProductId, productSettingTypeId.Value, productSetting.Value);
+                response = _productRepository.CreateProductSetting(personaId.Value, productSetting.ProductId, productSettingTypeId, productSetting.Value);
             }
             else
             {
-                response.ErrorMessage = string.Format("Unable to get productSettingTypeId for {0}", productSetting.Name);
+                response.ErrorMessage = $"Unable to get productSettingTypeId for {productSetting.Name}";
                 response.Id = 0;
             }
 
@@ -524,9 +521,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public IList<GbProductMap> ListProducts(int? productId = null, Guid? productGuid = null, string name = null, string booksProductCode = null)
         {
-            IProductRepository productRepository = new ProductRepository();
-            var result = productRepository.ListProducts(productId, productGuid, name, booksProductCode);
+            var result = _productRepository.ListProducts(productId, productGuid, name, booksProductCode);
             return result;
+        }
+
+        /// <summary>
+        /// Used to get a list of products for the given persona id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
+        {
+            return _productRepository.GetAllProductsByPersona(personaId, statusType);
         }
 
         #endregion

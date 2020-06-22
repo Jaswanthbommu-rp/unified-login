@@ -1437,6 +1437,153 @@ BEGIN
 	UPDATE [usermanagement].[control] SET displayname = 'Assign current and new properties automatically' WHERE ControlId =409
 END
 
+
+GO
+declare @now datetime = getutcdate()
+;with personastatus (personaid, productid, statusid, rownumber )
+as (
+ SELECT	p.PersonaID,
+			pec.ProductId,
+			ps.value,
+			Row_Number() Over(Partition by prc.configurationid Order by productconfigurationid DESC) As RN
+		FROM	
+			Person.Persona p
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId
+			INNER JOIN Enterprise.ProductSettingType pst ON ps.ProductSettingTypeId = pst.ProductSettingTypeId AND pst.name = 'ProductStatus'
+		WHERE
+		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+)
+
+update pc
+set pc.statustypeid = ps.statusid
+--select *
+from enterprise.PersonaConfiguration pc
+inner join personastatus ps on pc.personaid = ps.personaid and ps.productid = pc.ProductId
+where
+rownumber = 1
+and pc.statustypeid != ps.statusid
+and ps.statusid in ( select statustypeid from enterprise.StatusType )
+
+GO
+
+declare @now datetime = getutcdate()
+;with personaproductfavourite (personaid, productid, isfav, rownumber )
+as (
+ SELECT	p.PersonaID,
+			pec.ProductId,
+			ps.value,
+			Row_Number() Over(Partition by prc.configurationid Order by productconfigurationid DESC) As RN
+		FROM	
+			Person.Persona p
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId
+			INNER JOIN Enterprise.ProductSettingType pst ON ps.ProductSettingTypeId = pst.ProductSettingTypeId AND pst.name = 'IsFavorite'
+		WHERE
+		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+)
+
+update pc
+set pc.IsFavorite = ps.isfav
+--select *
+from enterprise.PersonaConfiguration pc
+inner join personaproductfavourite ps on pc.personaid = ps.personaid and ps.productid = pc.ProductId
+where
+rownumber = 1
+and pc.isfavorite != ps.isfav
+
+GO
+update enterprise.product set assigntoallusers = 1 where productid in ( 3, 19, 28, 21, 49 )
+
+GO
+
+-- SPECIAL!
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 37 AND RIghtShortName = 'AccessPropertyPhotos' AND DependantProductId = 9 )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname, DependantProductId ) values ( 37, 'AccessPropertyPhotos', 9 )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 21 AND RIghtShortName = 'AccessOneSiteConversions' and DependantProductId = 1 )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname, DependantProductId ) values ( 21, 'AccessOneSiteConversions', 1 )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 19 AND RIghtShortName = 'ProductLearningPortal' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 19, 'ProductLearningPortal' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 49 AND RIghtShortName = 'AccessHelpCenter' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 49, 'AccessHelpCenter' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 9 AND RIghtShortName = 'MigrationTool' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 27, 'MigrationTool' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 35 AND RIghtShortName = 'AccessToUnifiedPlatform' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 35, 'AccessToUnifiedPlatform' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 35 AND RIghtShortName = 'AccessToUnifiedSettings' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 35, 'AccessToUnifiedSettings' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 35 AND RIghtShortName = 'ViewOnlySupportToolAccess' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 35, 'ViewOnlySupportToolAccess' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'ViewCIMPLQuestions' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'ViewCIMPLQuestions' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 45 AND RIghtShortName = 'EmployeeViewCIMPLQuestions' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 45, 'EmployeeViewCIMPLQuestions' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 43 AND RIghtShortName = 'AccessSettingMGMTConsole' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 43, 'AccessSettingMGMTConsole' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 38 AND RIghtShortName = 'AccessVendorMarketplace' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 38, 'AccessVendorMarketplace' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 38 AND RIghtShortName = 'EmployeeAccessVendorMarketPlace' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 38, 'EmployeeAccessVendorMarketPlace' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 28 AND RIghtShortName = 'ProductLearningPortal' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 28, 'ProductLearningPortal' )
+end
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductRight WHERE PRODUCTID = 28 AND RIghtShortName = 'EditOwnProfile' )
+begin
+	insert into Enterprise.ProductRight ( productid, rightshortname ) values ( 28, 'EditOwnProfile' )
+end
+
+GO
 GO
 --Renovation Manager Product
 /*This script is a sample script to create new prodcut in the system.*/

@@ -5,9 +5,12 @@
     [ProductId]              INT      NOT NULL,
     [FromDate]               DATETIME DEFAULT (getutcdate()) NOT NULL,
     [ThruDate]               DATETIME NULL,
+    [StatusTypeId] INT NOT NULL DEFAULT 0, 
+    [IsFavorite] TINYINT NOT NULL DEFAULT 0, 
     CONSTRAINT [PK_PersonaConfiguration] PRIMARY KEY CLUSTERED ([PersonaConfigurationId] ASC) WITH (FILLFACTOR = 80),
     CONSTRAINT [FK_PersonaConfiguration_Configuration] FOREIGN KEY ([ConfigurationId]) REFERENCES [Enterprise].[Configuration] ([ConfigurationId]) ON DELETE CASCADE,
-    CONSTRAINT [FK_PersonaConfiguration_Persona] FOREIGN KEY ([PersonaId]) REFERENCES [Person].[Persona] ([PersonaId]) ON DELETE CASCADE
+    CONSTRAINT [FK_PersonaConfiguration_Persona] FOREIGN KEY ([PersonaId]) REFERENCES [Person].[Persona] ([PersonaId]) ON DELETE CASCADE,
+    CONSTRAINT [FK_PersonaConfiguration_StatusType] FOREIGN KEY ([StatusTypeId]) REFERENCES [Enterprise].[StatusType] ([StatusTypeId])
 );
 
 
