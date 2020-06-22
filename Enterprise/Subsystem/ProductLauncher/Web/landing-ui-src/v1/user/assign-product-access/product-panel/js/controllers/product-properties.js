@@ -79,7 +79,7 @@
                 vm.allProperties = false;
             }
             else if (vm.propertySelect === 'propertyGroup') {
-                syncMgr.allPropertiesSync($scope.productId, false);
+                //syncMgr.allPropertiesSync($scope.productId, false);
             }
         };
 

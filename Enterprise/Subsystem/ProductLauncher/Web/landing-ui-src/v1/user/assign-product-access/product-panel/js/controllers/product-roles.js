@@ -101,7 +101,7 @@
 
         vm.resetDataModel = function (accessType) {
             if (accessType === 'propertyGroup') {
-                syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                //syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
             else if(accessType === 'property') {
