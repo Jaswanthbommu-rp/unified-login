@@ -41,7 +41,6 @@
                     propertyGroupList: [],
                     departmentList: [],
                     RolePropertiesList: [],
-                    RolePropertyIdList:[],
                     propertyGroup: [],
                     removedPropertyList: [],
                     messageGroups: [],

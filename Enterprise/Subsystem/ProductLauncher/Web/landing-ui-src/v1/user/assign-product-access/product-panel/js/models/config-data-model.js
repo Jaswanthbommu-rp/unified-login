@@ -93,28 +93,17 @@
                                 logc("sub controls", subCtrls);
                                 if (subCtrls.type === "Grid" || subCtrls.type === "Multi Select Grid") {
                                     listasideConfig.displayName = roleType !== "" ?  roleType : subCtrls.displayName;
-                                    
-                                    if(roleType !== ""){
-                                        subCtrls.controls.forEach(function (gridCtrl) {
-                                            listasideConfig.config.push({
-                                                "key": gridCtrl.dataSource,
-                                                "type": s.isType(gridCtrl.type),
-                                                "text": roleType,
-                                                "idKey": "id"
-                                            });
+                                    subCtrls.controls.forEach(function (gridCtrl) {
+                                        var columnName = roleType !== "" ? roleType :  gridCtrl.displayName;
+                                        listasideConfig.config.push({
+                                            "key": gridCtrl.dataSource,
+                                            "type": s.isType(gridCtrl.type),
+                                            "text": columnName,
+                                            "idKey": "id"
                                         });
-                                    }
-                                    else{
-                                        subCtrls.controls.forEach(function (gridCtrl) {
-                                            listasideConfig.config.push({
-                                                "key": gridCtrl.dataSource,
-                                                "type": s.isType(gridCtrl.type),
-                                                "text": gridCtrl.displayName,
-                                                "idKey": "id"
-                                            });
     
-                                        });
-                                    }
+                                    });
+                                    
                                     
                                 }
                             });
