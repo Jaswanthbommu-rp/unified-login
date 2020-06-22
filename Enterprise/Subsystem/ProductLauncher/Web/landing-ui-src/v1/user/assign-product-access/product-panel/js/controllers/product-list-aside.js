@@ -14,9 +14,11 @@
             vm.subtitle = listAsideModel.getName();
             vm.tabName = listAsideModel.getTabName();
             vm.productId = listAsideModel.getProductID();
+            vm.roleType = listAsideModel.getRoleType();
             vm.asideGrid = asideGrid;
             vm.properteiesData = {};
-            vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData().propertiesList;
+            vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
+            
             asidegridTransform.watch(asideGrid);
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
             syncMgr.setAsidePropertyList(listAsideModel.getSelectedPropertyRoleData(), vm.productId);
@@ -36,8 +38,15 @@
                 vm.title = "Property Group Details";
             }
             else if (vm.tabName.toLowerCase() == "role") {
-                configTab = "Roles";
-                vm.title = "Role Details";
+                if(vm.productId == 20){
+                    vm.subtitle= persona.data.organization.name;
+                    configTab = vm.roleType.split(" ").join("");
+                    vm.title = "Assign " + vm.roleType;
+                }
+                else{
+                    configTab = "Roles";
+                    vm.title = "Role Details";
+                }
             }
 
             vm.asideConfig = syncMgr.getProductAsideGridConfig(vm.productId, configTab);
@@ -99,6 +108,9 @@
                 vm.dataReq = groupSvc.get(params, vm.setData);
             }else if(productId == "44"){
                 vm.properteiesData.records = vm.propertyRecords;
+                vm.setData(vm.properteiesData);
+            }else if(productId == "20"){
+                vm.properteiesData.records = vm.propertyRecords.propertiesList;
                 vm.setData(vm.properteiesData);
             }
             else {

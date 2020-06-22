@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RP
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Net.Http;
 using System.Text;
 
@@ -121,6 +122,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Used to get roles along with properties for a company or user
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		public ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+		{
+			ListResponse response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			if (response.IsError)
+			{
+				return response;
+			}
+			Persona editorPersona = response.Records[0] as Persona;
+			
+			return GetPropertyRoles(editorPersonaId, userPersonaId, editorPersona.Organization.PartyId);
+		}
+
+		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="editorPersonaId"></param>
@@ -149,6 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList)
 		{
 			ListResponse response = new ListResponse();
+			List<RPDMRolePropertyList> lstRoleProperties = new List<RPDMRolePropertyList>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError)
 			{
@@ -210,9 +231,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RoleList == null || rolePropertyEntityList.RoleList.Count == 0))
+			// setting roles and properties values if it is not a dynamic panel
+			if (rolePropertyEntityList.RolePropertyIdList == null && (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
 			{
-				WriteToDiagnosticLog("ManageRPDMUser - Create user error. RoleList.Count=" + rolePropertyEntityList?.RoleList?.Count.ToString() + " , PropertyList.Count=" + rolePropertyEntityList?.PropertyList?.Count.ToString() + " , DepartmentList.Count=" + rolePropertyEntityList?.DepartmentList?.Count.ToString());
+				rolePropertyEntityList.PropertyList.AddRange(rolePropertyEntityList.DepartmentList);
+				foreach (string roleId in rolePropertyEntityList.RoleList)
+				{
+					RPDMRolePropertyList objRole = new RPDMRolePropertyList();
+					List<string> propertyIds = new List<string>();
+					objRole.RoleId = roleId;
+					objRole.PropertyIds = rolePropertyEntityList.PropertyList;
+					lstRoleProperties.Add(objRole);
+				}
+				rolePropertyEntityList.RolePropertyIdList = lstRoleProperties;
+			}
+
+			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RolePropertyIdList == null || rolePropertyEntityList.RolePropertyIdList.Count == 0))
+			{
+				WriteToDiagnosticLog("ManageRPDMUser - Create user error. RoleList.Count=" + rolePropertyEntityList?.RolePropertyIdList?.Count.ToString());
 				return "There was a problem creating the user. Missing required information.";
 			}
 
@@ -248,16 +284,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// fix up the users roles/property/department info
 				try
 				{
-					foreach (string roleId in rolePropertyEntityList.RoleList)
+					foreach (RPDMRolePropertyList role in rolePropertyEntityList.RolePropertyIdList)
 					{
-						if (rpdmResult.Page.Any(p => p.ID == roleId))
+						if (rpdmResult.Page.Any(p => p.ID == role.RoleId))
 						{
-							RPDMRole roleDetail = (from a in rpdmResult.Page where a.ID == roleId select a).FirstOrDefault();
-							RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + roleId);
+							RPDMRole roleDetail = (from a in rpdmResult.Page where a.ID == role.RoleId select a).FirstOrDefault();
+							RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + role.RoleId);
 							IList<ProductProperty> list = new List<ProductProperty>();
 							if (rpdmRoleDetail.Scope != null)
 							{
-								if (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0)
+								if (rolePropertyEntityList?.RolePropertyIdList?.Count > 0)
 								{
 									// get additional information for the role details
 									if (!string.IsNullOrEmpty(rpdmRoleDetail.Scope.HRef))
@@ -268,8 +304,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 											RPDMResult<RPDMDataset> rpdmDataSetResults = GetResultFromApi<RPDMResult<RPDMDataset>>(classifier.DataSet.HRef + "/values", "name");
 											if (rpdmDataSetResults.Page.Count > 0)
 											{
-												InsertRoleDetails(rolePropertyEntityList.PropertyList, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
-												InsertRoleDetails(rolePropertyEntityList.DepartmentList, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
+												InsertRoleDetails(role.PropertyIds, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
+												//InsertRoleDetails(rolePropertyEntityList.DepartmentList, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
 											}
 										}
 									}
@@ -338,6 +374,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						RPDMUser newUser = GetUserDetails(newid);
 						if (newUser != null)
 						{
+							SetProductRoleCache(null, userPersonaId, userPersona.OrganizationPartyId);
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, newUser.Name);
 							WriteToDiagnosticLog($"ManageRPDMUser - Create user. newid={newid}, login={newUser.Name}");
@@ -402,6 +439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
 						if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 						{
+							SetProductRoleCache(null, userPersonaId, userPersona.OrganizationPartyId);
 							WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
 							WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
 						}
@@ -641,6 +679,105 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		private ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId, long organizationPartyId)
+		{
+			ListResponse response = new ListResponse();
+			IList<ProductRole> rpdmRolelist = new List<ProductRole>();
+			IList<ProductRole> list;
+			ListResponse propertyResponse = new ListResponse();
+			try
+			{
+				ObjectCache productCache = MemoryCache.Default;
+				var cacheKey = $"PROD-PANEL-RPDMROLES_{userPersonaId}_{organizationPartyId}";
+				ListResponse lstRolesProperties = productCache[cacheKey] as ListResponse;
+				if (lstRolesProperties == null)
+				{
+
+					response = GetRoles(editorPersonaId, userPersonaId);
+					if (response.TotalRows > 0)
+					{
+						list = response.Records.Cast<ProductRole>().ToArray();
+						ProductRole pRole = new ProductRole();
+						ListResponse propertyListResponse = new ListResponse();
+						foreach (ProductRole item in list)
+						{
+							pRole = item;
+							if (!string.IsNullOrEmpty(item.Roletype))
+							{
+								if (item.Name.Contains("(" + item.Roletype + ")"))
+								{
+									pRole.Name = item.Name.Replace("(" + item.Roletype + ")", "").Trim();
+								}
+								if (item.Roletype.ToLower().Contains("site"))
+								{
+									pRole.Roletype = "Property";
+								}
+
+								propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID);
+								if (propertyResponse.Records.Count > 0)
+								{
+									pRole.propertiesList = propertyResponse.Records as List<object>;
+								}
+							}
+							rpdmRolelist.Add(pRole);
+						}
+
+					}
+
+					if (rpdmRolelist != null)
+					{
+						rpdmRolelist = rpdmRolelist.OrderBy(p => p.Name).ToList();
+
+						response = new ListResponse()
+						{
+							Records = rpdmRolelist.Cast<object>().ToList(),
+							TotalRows = rpdmRolelist.Count,
+							RowsPerPage = rpdmRolelist.Count,
+							TotalPages = 1,
+							ErrorReason = ""
+						};
+						// caching roles and properties
+						SetProductRoleCache(response, userPersonaId, organizationPartyId);
+					}
+					else
+					{
+						WriteToErrorLog("GetRoles - Error. list == null");
+						response.IsError = true;
+						response.ErrorReason = "There was a problem getting the role details";
+					}
+				}
+				else
+				{
+					return lstRolesProperties;
+				}
+
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+				response.IsError = true;
+				response.ErrorReason = "There was a problem getting the role details";
+			}
+
+			return response;
+		}
+
+		public void SetProductRoleCache(ListResponse response, long userPersonaId, long organizationPartyId)
+		{
+			ObjectCache productCache = MemoryCache.Default;
+			var cacheKey = $"PROD-PANEL-RPDMROLES_{userPersonaId}_{organizationPartyId}";
+			var cachePolicy = new CacheItemPolicy
+			{
+				AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(5)// Expier cache every after 5 minutes 
+			};
+			productCache.Set(cacheKey, response, cachePolicy);
+		}
 		/// <summary>
 		/// 
 		/// </summary>

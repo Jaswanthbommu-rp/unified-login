@@ -23,6 +23,8 @@
             vm.productId = 0;
             vm.productDisabled = false;
             vm.tabsList = [];
+            vm.tabsData = "";
+            vm.distinctRoleType = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
             //Below flag in use for Financial Suite
             vm.hasAccessToSiteSpendManagementOnly = false;
@@ -39,6 +41,8 @@
             vm.productSelectedWatch = pubsub.subscribe("product.selectedProduct", vm.productSelected);
             vm.productDisabledWatch = pubsub.subscribe("productpanel.userTypeChanged", vm.resetProductDisabled);
             vm.accountingAdditionalSetWatch = pubsub.subscribe("acct.accountingAdditionalDataSet", vm.accountingAdditionalDataSet);
+            vm.productAsidePanelWatch = pubsub.subscribe("ppanel.distinct-role-types", vm.setAsidePanelConfig);
+
         };
 
         vm.productSelected = function (obj) {
@@ -143,11 +147,12 @@
 
         vm.setTabs = function (data) {
             panelModel.gridReset();
+            vm.tabsData = data;
             vm.setTabsConfigData(data);
             vm.setSwitchConfigs(data);
             vm.setSelectConfigs(data);
             vm.setSelectPageLevelRadioConfigs(data);
-
+            
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
             if ($scope.productId == 8) {
@@ -163,6 +168,11 @@
             active = true;
             panelModel.setPropertyGridActive(true);
             panelModel.setRoleGridActive(true);
+        };
+
+        vm.setAsidePanelConfig = function(distinctRoles){
+            vm.distinctRoleType = distinctRoles;
+            vm.setTabsConfigData(vm.tabsData);
         };
 
         vm.getProductTabsData = function (data) {
@@ -238,6 +248,7 @@
         vm.setTabsConfigData = function (data) {
             var productId = $scope.productId;
             var bmProductId = 34;
+            var roleType = "";
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
@@ -311,13 +322,29 @@
                                                     }
                                                 });
                                             }
-                                            var listAsideconfigs = configData.getListAsideConfig(tab);
-
-                                            if (listAsideconfigs !== undefined &&
-                                                listAsideconfigs.config.length > 0) {
-                                                var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
-                                                logc("asideGridConfig", asideGridConfig);
-                                                productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
+                                            
+                                            var listAsideconfigs;
+                                            if(productId === 20){
+                                                if(vm.distinctRoleType.length > 0){
+                                                    var distinctRoleTypes = vm.distinctRoleType;
+                                                    distinctRoleTypes.forEach(function (roletype) {
+                                                            listAsideconfigs = configData.getListAsideConfig(tab, roletype);
+                                                            if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
+                                                                var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
+                                                                logc("asideGridConfig", asideGridConfig);
+                                                                productModel.renderProductAsideGridConfigMap(productId, roletype, asideGridConfig, listAsideconfigs.displayName);
+                                                            }
+                                                    });
+                                                }
+                                            }
+                                            else{
+                                                listAsideconfigs = configData.getListAsideConfig(tab, "");
+                                                if (listAsideconfigs !== undefined &&
+                                                    listAsideconfigs.config.length > 0) {
+                                                    var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
+                                                    logc("asideGridConfig", asideGridConfig);
+                                                    productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
+                                                }
                                             }
                                         }
                                     }
