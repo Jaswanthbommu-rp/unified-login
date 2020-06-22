@@ -256,7 +256,7 @@
             var data = syncMgr.allRolesSync($scope.$parent.productId, bool);
         };
 
-        vm.getDistinctRoleTypes = function (rolesList){
+        vm.configAPanelbyRoleTypes = function (rolesList){
             var distinctRoles = [];
             var roletype = "";
             rolesList.forEach(function (role) {
@@ -294,7 +294,7 @@
                 if ($scope.$parent.productId == 20) {
                     var totalCount = 0;
                     var roleList = resp.records;
-                    vm.getDistinctRoleTypes(roleList);
+                    vm.configAPanelbyRoleTypes(roleList);
                     roleList.forEach( function(record){
                         if(record.propertiesList !== null){
                             var propertyList = record.propertiesList;

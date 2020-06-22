@@ -25,11 +25,7 @@
                 "PropertyIds": [],
                 "RoleId": ""
             };
-            s.propRoleListData = {
-                "PropertyIds": [],
-                "RoleType": "",
-                "RoleId": ""
-            };
+            
 
             s.batchData = {
                 productId: 0,
@@ -85,7 +81,6 @@
             s._batchBMData = angular.copy(s.batchBMData);
             s._data = angular.copy(s.data);
             s._propertyRoleListData = angular.copy(s.propertyRoleListData);
-            s._propRoleListData = angular.copy(s.propRoleListData);
         };
 
         p.setChanged = function () {
@@ -215,26 +210,26 @@
                             s.batchData.inputJson.roleList.push(role.level);
                         }
                         else if (productId == "20") {
-                            s.propRoleListData = angular.copy(s._propRoleListData);
-                            s.propRoleListData.RoleId = role.id;
-                            s.propRoleListData.RoleType = role.roletype;
+                            s.propertyRoleListData = angular.copy(s._propertyRoleListData);
+                            s.propertyRoleListData.RoleId = role.id;
+                            s.propertyRoleListData.RoleType = role.roletype;
                             if(role.roletype !== 'Domain Admin')
                             {
                                 var propList = role.propertiesList;
                                 propList.forEach(function (item){
                                     if(item.isAssigned) {
-                                        s.propRoleListData.PropertyIds.push(item.id);
+                                        s.propertyRoleListData.PropertyIds.push(item.id);
                                     }
                                 });
-                                if (s.propRoleListData.PropertyIds.length > 0) {
-                                    s.batchData.inputJson.RolePropertiesList.push(s.propRoleListData);
+                                if (s.propertyRoleListData.PropertyIds.length > 0) {
+                                    s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
                                 }
                                 else {
                                     needsProperties = true;
                                 }
                             }
                             else {
-                                s.batchData.inputJson.RolePropertiesList.push(s.propRoleListData);
+                                s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
                             }
                         }
                         else {

@@ -169,7 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList)
 		{
 			ListResponse response = new ListResponse();
-			List<RPDMRolePropertyList> lstRoleProperties = new List<RPDMRolePropertyList>();
+			List<PAMRolePropertyList> lstRoleProperties = new List<PAMRolePropertyList>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError)
 			{
@@ -232,23 +232,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			// setting roles and properties values if it is not a dynamic panel
-			if (rolePropertyEntityList.RolePropertyIdList == null && (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
+			if (rolePropertyEntityList.RolePropertiesList== null && (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
 			{
 				rolePropertyEntityList.PropertyList.AddRange(rolePropertyEntityList.DepartmentList);
 				foreach (string roleId in rolePropertyEntityList.RoleList)
 				{
-					RPDMRolePropertyList objRole = new RPDMRolePropertyList();
+					PAMRolePropertyList objRole = new PAMRolePropertyList();
 					List<string> propertyIds = new List<string>();
 					objRole.RoleId = roleId;
 					objRole.PropertyIds = rolePropertyEntityList.PropertyList;
 					lstRoleProperties.Add(objRole);
 				}
-				rolePropertyEntityList.RolePropertyIdList = lstRoleProperties;
+				rolePropertyEntityList.RolePropertiesList = lstRoleProperties;
 			}
 
-			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RolePropertyIdList == null || rolePropertyEntityList.RolePropertyIdList.Count == 0))
+			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RolePropertiesList == null || rolePropertyEntityList.RolePropertiesList.Count == 0))
 			{
-				WriteToDiagnosticLog("ManageRPDMUser - Create user error. RoleList.Count=" + rolePropertyEntityList?.RolePropertyIdList?.Count.ToString());
+				WriteToDiagnosticLog("ManageRPDMUser - Create user error. RoleList.Count=" + rolePropertyEntityList?.RolePropertiesList?.Count.ToString());
 				return "There was a problem creating the user. Missing required information.";
 			}
 
@@ -284,7 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// fix up the users roles/property/department info
 				try
 				{
-					foreach (RPDMRolePropertyList role in rolePropertyEntityList.RolePropertyIdList)
+					foreach (PAMRolePropertyList role in rolePropertyEntityList.RolePropertiesList)
 					{
 						if (rpdmResult.Page.Any(p => p.ID == role.RoleId))
 						{
@@ -293,7 +293,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							IList<ProductProperty> list = new List<ProductProperty>();
 							if (rpdmRoleDetail.Scope != null)
 							{
-								if (rolePropertyEntityList?.RolePropertyIdList?.Count > 0)
+								if (rolePropertyEntityList?.RolePropertiesList?.Count > 0)
 								{
 									// get additional information for the role details
 									if (!string.IsNullOrEmpty(rpdmRoleDetail.Scope.HRef))

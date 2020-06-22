@@ -12,11 +12,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	{
 		public string RoleId { get; set; }
 		public List<string> PropertyIds { get; set; }
-	}
-	public class RPDMRolePropertyList
-	{
-		public string RoleId { get; set; }
 		public string RoleType { get; set; }
-		public List<string> PropertyIds { get; set; }
 	}
 }

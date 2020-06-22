@@ -248,7 +248,6 @@
         vm.setTabsConfigData = function (data) {
             var productId = $scope.productId;
             var bmProductId = 34;
-            var roleType = "";
             if (data && data.controls) {
                 data.controls.forEach(function (tabControl) {
                     if (tabControl.type === 'Tab Group') {
@@ -326,8 +325,7 @@
                                             var listAsideconfigs;
                                             if(productId === 20){
                                                 if(vm.distinctRoleType.length > 0){
-                                                    var distinctRoleTypes = vm.distinctRoleType;
-                                                    distinctRoleTypes.forEach(function (roletype) {
+                                                    vm.distinctRoleType.forEach(function (roletype) {
                                                             listAsideconfigs = configData.getListAsideConfig(tab, roletype);
                                                             if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
                                                                 var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
