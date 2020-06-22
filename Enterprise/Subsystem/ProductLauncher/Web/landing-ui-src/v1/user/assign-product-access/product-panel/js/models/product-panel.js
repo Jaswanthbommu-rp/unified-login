@@ -23,9 +23,9 @@
             };
             s.propertyRoleListData = {
                 "PropertyIds": [],
+                "RoleType": "",
                 "RoleId": ""
             };
-            
 
             s.batchData = {
                 productId: 0,
@@ -81,6 +81,7 @@
             s._batchBMData = angular.copy(s.batchBMData);
             s._data = angular.copy(s.data);
             s._propertyRoleListData = angular.copy(s.propertyRoleListData);
+            // s._propRoleListData = angular.copy(s.propRoleListData);
         };
 
         p.setChanged = function () {
