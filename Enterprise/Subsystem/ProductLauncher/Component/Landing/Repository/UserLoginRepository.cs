@@ -401,10 +401,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 IList<Organization> organizationList = repository.GetMany<Organization>(StoredProcNameConstants.SP_ListOrganizationByRealPageId, param);
 
-                organizationList.ToList().ForEach(o =>
-                    o.organizationType = organizationTypeList.ToList().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId)
-                );
+                organizationList.ToList().ForEach(org =>
+                    {
+                        var orgType = _organizationRepository.ListOrganizationType().FirstOrDefault(o => o.OrganizationTypeId == org.OrganizationTypeId);
+                        org.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
+                        var orgDomain = _organizationRepository.ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == org.OrganizationDomainId);
+                        org.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
+                    }
 
+                );
                 return organizationList;
             }
         }
