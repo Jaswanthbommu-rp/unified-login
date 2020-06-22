@@ -62,16 +62,20 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
+            var excludeProducts = [18, 20, 47];
             var productId = $scope.$parent.productId;
-            if (productId != 18 || productId != 20) {
+            if (excludeProducts.indexOf(productId) === -1) {
                 syncMgr.allPropertiesSync($scope.$parent.productId, val);
             }
+
             vm.updateGrid();
         };
 
         vm.selectionChange = function (record) {
-            if (record && $scope.$parent.productId != 20) {
-                syncMgr.groupToPropertySync($scope.$parent.productId, record);
+            var productId = $scope.$parent.productId;
+            var excludeProducts = [20, 47];
+            if (excludeProducts.indexOf(productId) === -1) {
+                syncMgr.groupToPropertySync(productId, record);
             }
         };
 

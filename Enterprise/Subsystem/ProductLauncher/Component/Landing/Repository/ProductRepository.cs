@@ -1269,6 +1269,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
                     }
+                    personaProductUserDetails = personaProductUserDetails.OrderBy(n => n.ProductName).ToList();
                 }
             }
             catch (Exception ex)

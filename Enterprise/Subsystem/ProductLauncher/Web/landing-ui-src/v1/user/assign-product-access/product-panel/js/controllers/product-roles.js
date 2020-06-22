@@ -87,7 +87,7 @@
                 vm.showAllPropertiesSwitch = bool;
             }
             vm.allProperties = bool;
-            
+
             var allTabs = syncMgr.getProductAllTabs($scope.$parent.productId);
             if(bool){
                 var tb = allTabs.find(function (item) {
@@ -162,7 +162,7 @@
             //var productId = $scope.$parent.productId;
             rolesGrid.busy(false);
             var roleData = syncMgr.getProductRolesData(productId);
-            if (productId == 17 || productId == 26 || productId == 18) {
+            if (productId == 17 || productId == 26 || productId == 18 || productId == 47) {
                 vm.rpRoleSelected = roleData.find(function (item) {
                     return item.isAssigned === true;
                 });
@@ -267,6 +267,9 @@
                                 role.isAssigned = true;
                             }
                         });
+                    }
+                    else {
+
                     }
 
                     var reportValue = userPersonaId === 0 ? true : resp.additional.canReceiveMonthlyReport;
