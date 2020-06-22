@@ -67,7 +67,7 @@
             return cnfgs;
         };
 
-        p.getListAsideConfig = function (data) {
+        p.getListAsideConfig = function (data, roleType) {
             var s = this,
                 displayName = "",
                 isSlideScreen = false,
@@ -91,17 +91,20 @@
                         if (isSlideScreen) {
                             ctrl.controls.forEach(function (subCtrls) {
                                 logc("sub controls", subCtrls);
-                                if (subCtrls.type === "Grid") {
-                                    listasideConfig.displayName = subCtrls.displayName;
+                                if (subCtrls.type === "Grid" || subCtrls.type === "Multi Select Grid") {
+                                    listasideConfig.displayName = roleType !== "" ?  roleType : subCtrls.displayName;
                                     subCtrls.controls.forEach(function (gridCtrl) {
+                                        var columnName = roleType !== "" ? roleType :  gridCtrl.displayName;
                                         listasideConfig.config.push({
                                             "key": gridCtrl.dataSource,
                                             "type": s.isType(gridCtrl.type),
-                                            "text": gridCtrl.displayName,
+                                            "text": columnName,
                                             "idKey": "id"
                                         });
-
+    
                                     });
+                                    
+                                    
                                 }
                             });
                         }
