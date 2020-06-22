@@ -804,7 +804,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.OK, Description = "Get a profile for a Person (User)", Type = typeof(UserProducts))]
         [SwaggerResponseExamples(typeof(UserProducts), typeof(GetUserProductsExamplev2))]
         [Route("user/products")]
-        [AuthorizeScope("userinfoapi")]
+        [AuthorizeScope("userinfoapi", "internalapi")]
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long personaId)
         {
@@ -818,7 +818,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             Persona persona = _managePersona.GetPersonaWithRightsToggle(personaId, false);
             if (persona != null)
             {
-                if (!(_userClaims.ImpersonatedBy != Guid.Empty) && _userClaims.OrganizationPartyId != 0 && _userClaims.OrganizationPartyId != persona.OrganizationPartyId)
+                if (_userClaims.OrganizationPartyId == 0)
+                {
+                    List<Claim> claimList = ClaimsPrincipal.Current.Claims.ToList();
+                    if (!claimList.Any(p => p.Type.Equals("Scope", StringComparison.OrdinalIgnoreCase) && p.Value.Equals("internalapi", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, "Get User Products by persona: Invalid company id");
+                    }
+                }
+                else if (!(_userClaims.ImpersonatedBy != Guid.Empty) && _userClaims.OrganizationPartyId != persona.OrganizationPartyId)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Get User Products by persona: Invalid company id");
                 }
