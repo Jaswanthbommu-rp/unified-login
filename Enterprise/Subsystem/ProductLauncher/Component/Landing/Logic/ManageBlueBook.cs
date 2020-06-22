@@ -186,12 +186,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="companyRealPageId">The guid for the company</param>
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
-        /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
+        /// <param name="includeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "")
+        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string includeExtra = "", bool includeGreenBookCares = true, string domain = "")
         {
+            if (useRPFMId && companyRealPageId != Guid.Empty)
+            {
+                var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
+                booksCompanyMasterId = (newCompanyMasterId != 0) ? newCompanyMasterId : booksCompanyMasterId;
+            }
+            
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
             string domainFilter = "";
 
@@ -214,12 +220,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             string companyFilter = $"filter[customerCompanyId]={booksCompanyMasterId}&";
 
-            if (useRPFMId & companyRealPageId != Guid.Empty)
-            {
-                companyFilter = $"filter[customerCompanyId]={booksCompanyMasterId}&";
-            }
-
-            companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
+            companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}"] as List<CustomerCompanyMap>;
 
             if (companyMap == null)
             {
@@ -229,9 +230,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     uri += "&filter[source]=" + source;
                 }
 
-                if (!string.IsNullOrWhiteSpace(IncludeExtra))
+                if (!string.IsNullOrWhiteSpace(includeExtra))
                 {
-                    uri += "&include=" + IncludeExtra;
+                    uri += "&include=" + includeExtra;
                 }
 
                 var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
@@ -245,7 +246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{IncludeExtra}", companyMap, policy);
+                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}", companyMap, policy);
                 }
                 else
                 {
@@ -265,6 +266,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return companyMap;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="domain"></param>
+        /// <returns></returns>
+        private long GetCompanyMasterIdForRPDMID(string companyRealPageId, string domain)
+        {
+            //string domainFilter = "";
+            //bool includeGreenBookCares = true;
+            //
+            //if (!string.IsNullOrEmpty(domain) && useDomains)
+            //{
+            //    includeGreenBookCares = false;
+            //    domainFilter = $"filter[companyInstance.domain]={domain}&";
+            //}
+
+            //string uri = $"customercompanymap?filter[source]=UPFM&filter[companyInstanceSourceId]={companyRealPageId}&" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + domainFilter + $"include=companyInstance";
+            string uri = $"customercompanymap?filter[companyInstanceSourceId]={companyRealPageId}&include=companyInstance";
+
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"GetCompanyMasterIdForRPDMID_{companyRealPageId}";
+            CustomerCompanyMap booksCustomerMaster = rpcache.GetFromCache<CustomerCompanyMap>(cacheKey, 180, () =>
+            {
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    //companyMap = response.Content.ReadAsJsonApiManyAsync<CompanyMap>(_contractResolver, _cache).Result;
+                    var companyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    Dictionary<string, object> logData = new Dictionary<string, object>() { { "companyMap", companyMap } };
+                    WriteToLog(LogType.Diagnostic, "GetCompanyMasterIdForRPDMID - Got info.", logData);
+                    return companyMap[0];
+                }
+
+                return null;
+            });
+            if (booksCustomerMaster == null)
+            {
+                return 0;
+            }
+            return booksCustomerMaster.CustomerCompanyId;
         }
 
         /// <summary>
@@ -313,7 +357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         //
         //    return companyPropertyInstanceMap;
         //}
-        
+
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system
         /// </summary>

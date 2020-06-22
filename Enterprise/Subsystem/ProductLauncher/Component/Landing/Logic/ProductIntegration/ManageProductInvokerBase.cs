@@ -72,6 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _dataCollector = new DataCollector();
             Init(productType, editorPersonaId, subjectPersonaId, userClaims);
         }
+
         /// <summary>
         ///  Used for unit testing
         /// </summary>
@@ -85,10 +86,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             Init(productType, editorPersonaId, subjectPersonaId, userClaims);
         }
+
         private void Init(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
         {
             ProductType = productType;
-            ProductId = (int)ProductType;
+            ProductId = (int) ProductType;
             _userClaims = userClaims;
 
             // Get editor & subject user details & Verify editor user is the logged-in user
@@ -177,9 +179,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-		/// Returns Product Rights for a Role
-		/// </summary>
-		public virtual ListResponse GetProductRightsForRole(RequestParameter dataFilter, long roleId, string baseUrlAndQuery = null)
+        /// Returns Product Rights for a Role
+        /// </summary>
+        public virtual ListResponse GetProductRightsForRole(RequestParameter dataFilter, long roleId, string baseUrlAndQuery = null)
         {
             try
             {
@@ -270,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
                     TotalPages = 1
-            };
+                };
             }
             catch (Exception ex)
             {
@@ -494,12 +496,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //var organizationList = userLoginRepository.ListOrganizationWithoutStatusByUserId(userLogin.UserId);
                 //OrganizationStatus orgStatus = organizationList.FirstOrDefault(p => p.PartyId == persona.OrganizationPartyId);
 
-                int statusValue = (int)UserUiStatusType.AccountHidden;
+                int statusValue = (int) UserUiStatusType.AccountHidden;
 
                 //if user is disabled then set status to deactivated instead hidden
                 if (orgStatus.Status.ToString().Equals(UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    statusValue = (int)UserUiStatusType.Deactivated;
+                    statusValue = (int) UserUiStatusType.Deactivated;
                 }
 
                 // Update product status in green book
@@ -691,14 +693,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId);
                 }
                 else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType ==
-                         BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                    BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
                     // activity logging
                     ProductActivityLogger.WriteUpdateUserTypeActivityLog(EditorUserDetails, SubjectUserDetails,
                         BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId, batchProcessType);
                 }
 
-                _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int)ProductBatchStatusType.Success);
+                _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
                 UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser.UserId, productUser.LoginName, productUser.Email);
 
@@ -796,7 +798,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ProductActivityLogger.WriteUpdateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
                     CorrelationId);
 
-                _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int)ProductBatchStatusType.Success);
+                _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
                 UpdateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUserProfile.UserId, productUserProfile.LoginName, productUserProfile.Email);
 
@@ -847,6 +849,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
         }
+
         #endregion
 
         #region Migration
@@ -873,12 +876,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     filter = datafilter.FilterBy["filter"];
                 }
+
                 if (datafilter.Pages != null)
                 {
                     startRow = datafilter.Pages.StartRow;
                     resultPerRow = datafilter.Pages.ResultsPerPage;
                 }
             }
+
             var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetListUsersEndpoint);
 
             baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, filter, startRow, resultPerRow);
@@ -964,10 +969,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return false;
         }
+
         protected string GetUniqueProductLogin(string unityUserName)
         {
             return unityUserName;
         }
+
         protected virtual IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups userRolePropertiesRegion)
         {
             // Map user info
@@ -990,24 +997,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString())
             };
 
-            if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
+            if (SubjectUserDetails.UserRoleTypeId == (int) UserRoleType.SuperUser)
             {
                 ApplySuperUserData(productUser);
             }
 
             return productUser;
         }
+
         protected virtual void ApplySuperUserData(IntegrationProductUser productUser)
         {
             // super user related assignments; if anything different then override in product implementation
             productUser.IsAdminUser = true;
         }
+
         protected T GetResultFromApi<T>(string baseUrlAndQuery, bool isThrowOnError = true) where T : class
         {
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery);
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             return integration.GetEntityFromApi<T>(isThrowOnError);
         }
+
         protected void DumpApiCallInfoToDiagnosticLog(string baseUrlAndQuery, object apiPayLoad = null)
         {
             Dictionary<string, object> logData = new Dictionary<string, object>();
@@ -1018,6 +1028,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteToDiagnosticLog($"API Call for product {ProductType} is getting called.", logData);
         }
+
         protected virtual void MergeUserPropertyGroups(IList<ProductPropertyGroups> groupList, IntegrationProductUser user)
         {
             List<string> userPropertyGroups = user.PropertyGroups;
@@ -1029,6 +1040,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
         }
+
         protected string GetOperationEndPoint(ProductEntityEndpointKeyEnum entityType)
         {
             // Get partial api query based on end point
@@ -1047,6 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var settingValue = ProductInternalSettingList.First(a => a.Name.ToUpper() == settingName.ToUpper()).Value;
             return settingValue;
         }
+
         #endregion
 
         #region Logging Methods
@@ -1055,14 +1068,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             WriteToLog(LogType.Information, message, logData);
         }
+
         protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             WriteToLog(LogType.Error, message, logData, exception);
         }
+
         protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
         {
             WriteToLog(LogType.Diagnostic, message, logData);
         }
+
         private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             if (logData == null)
@@ -1100,6 +1116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
         }
+
         internal void MergeUserProperties(IList<ProductProperties> propertyList, List<string> userProperties)
         {
             if (propertyList != null && userProperties != null)
@@ -1113,6 +1130,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
         }
+
         private void GetValidateEditorSubjectUserDetails(long editorPersonaId, long subjectPersonaId)
         {
             try
@@ -1137,6 +1155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 throw;
             }
         }
+
         private void GetProductEndPointDetails()
         {
             try
@@ -1157,6 +1176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 throw;
             }
         }
+
         private void ApplyApiSecurity()
         {
             try
@@ -1175,6 +1195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 throw;
             }
         }
+
         private bool ValidateEditorUser(UserDetails editorUserDetails)
         {
             if (editorUserDetails.PersonaId == 0)
@@ -1194,6 +1215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return true;
         }
+
         private void GetBlueBookProductMapAndCompanyDetails(long subjectPersonaId)
         {
             try
@@ -1205,8 +1227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var userBooksMasterId = EditorUserDetails.BooksCustomerMasterId;
                 if (subjectPersonaId != 0)
                     userBooksMasterId = SubjectUserDetails.BooksCustomerMasterId;
-                CompanyInstanceSourceId =
-                    _dataCollector.GetProductCompanyMap(BlueBookGbProductMap.BooksProductCode, userBooksMasterId, _userClaims).CompanyInstanceSourceId;
+                CompanyInstanceSourceId = _dataCollector.GetProductCompanyMap(BlueBookGbProductMap.BooksProductCode, userBooksMasterId, _userClaims, EditorUserDetails.OrganizationDomain).CompanyInstanceSourceId;
 
                 if (string.IsNullOrEmpty(CompanyInstanceSourceId))
                 {

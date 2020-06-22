@@ -31,11 +31,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="companyRealPageId">The guid for the company</param>
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
-        /// <param name="IncludeExtra">Extra Uri Includes (Optional)</param>
+        /// <param name="includeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
         /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMapResource</returns>
-        IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true, string domain = "");
+        IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string includeExtra = "", bool includeGreenBookCares = true, string domain = "");
 
         /// <summary>
         /// Get a list of property instances under the given company instance in the BlueBook system
