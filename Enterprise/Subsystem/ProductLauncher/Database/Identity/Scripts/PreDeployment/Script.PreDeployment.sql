@@ -17,5 +17,5 @@
 
 
 --:r .\PreDeploymentScripts\Activity-PreDeployment.sql
-:r .\PreDeploymentScripts\PopulateMultiCompanySchema.sql
+--:r .\PreDeploymentScripts\PopulateMultiCompanySchema.sql
 

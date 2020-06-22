@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -87,7 +88,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// List GB products; if pass nothing then returns all products
         /// </summary>
-        IList<GbProductMap> ListProducts(int? productId = null, Guid? productGuid = null, string name = null,
-            string booksProductCode = null);
+        IList<GbProductMap> ListProducts(int? productId = null, Guid? productGuid = null, string name = null, string booksProductCode = null);
+
+        /// <summary>
+        /// Used to get a list of products for the given persona id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType);
     }
 }

@@ -16,11 +16,13 @@ using Xunit;
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
 	/// <summary>
-	/// Product xUnit tests
-	/// </summary>
-	[ExcludeFromCodeCoverage]
+    /// Product xUnit tests
+    /// </summary>
+    [ExcludeFromCodeCoverage]
 	public class ProductTests
 	{
+		private static Guid _realPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
+
 		#region Controller Unit Tests
 		[Fact]
 		public void GetProductFamilies_VerifyRouteToAction_ReturnAction()
@@ -29,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-			WebApiConfig.Register(Config);
+            WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
@@ -287,17 +289,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			HttpConfiguration Config = new HttpConfiguration();
 
 			//Act
-			WebApiConfig.Register(Config);
+            WebApiConfig.Register(Config);
 			Config.EnsureInitialized();
 			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
 			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
 
+            string result = baseTest.VerifyRouteToAction(
+                    HttpMethod.Get,
+                    "http://localhost/api/products/24/organization/-1");
 			//Assert
-			Assert.True("ListProductUsers" == baseTest.VerifyRouteToAction(
-				HttpMethod.Get,
-				"http://localhost/api/products/24/organization/-1"
-				)
-			);
+			Assert.True("ListProductUsers" == result);
 		}
 
 		[Fact]

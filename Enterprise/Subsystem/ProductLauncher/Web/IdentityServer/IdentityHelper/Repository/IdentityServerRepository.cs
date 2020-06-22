@@ -27,13 +27,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 
                 if (client != null)
                 {
-                    var multiResuts = repository.QueryMultiple(StoredProcNameConstants.SP_GetClientDetails, new { ClientId = client.ClientId });
+                    using (var repository2 = GetRepository())
+                    {
+                        var multiResuts = repository2.QueryMultiple(StoredProcNameConstants.SP_GetClientDetails, new {ClientId = client.ClientId});
 
-                    client.ClientRedirectUris = multiResuts.Read<ClientRedirectUri>();
-                    client.ClientScopes = multiResuts.Read<ClientScope>();
-                    client.ClientSecrets = multiResuts.Read<ClientSecret>();
-                    client.ClientPostLogoutRedirectUris = multiResuts.Read<ClientPostLogoutRedirectUri>();
-	                client.ClientClaims = multiResuts.Read<ClientClaim>();
+                        client.ClientRedirectUris = multiResuts.Read<ClientRedirectUri>();
+                        client.ClientScopes = multiResuts.Read<ClientScope>();
+                        client.ClientSecrets = multiResuts.Read<ClientSecret>();
+                        client.ClientPostLogoutRedirectUris = multiResuts.Read<ClientPostLogoutRedirectUri>();
+                        client.ClientClaims = multiResuts.Read<ClientClaim>();
+                    }
                 }
 
                 return client;
