@@ -21,6 +21,7 @@
             s.propertyMap = {};
             s.roleMap = {};
             s.benchMarkRoleMap = {};
+            s.tab6DataMap = {};
             s.rightMap = {};
             s.sidePanelDataMap = {};
             s.productGridConfigMap = {};
@@ -31,10 +32,12 @@
             s.productTabsMap = {};
             s.productActiveTabMap = {};
             s.productSelectTypeConfigMap = {};
+            s.productPageLevelRadioConfigMap = {};
             s.productDependencyDataMap = {};
             s.productPresetRolesMap = {};
             s.notificationsMap={};
             s.originalPropertyListMap = {};
+            s.asidePropertyMap = {};
 
             s.productControlsList = {
                 products: []
@@ -47,10 +50,13 @@
             s.originalPropertyList = [];
             s.roleList = [];
             s.benchMarkRoleList = [];
+            s.tab6DataList = [];
             s.rightList = [];
             s.presetRoleList = [];
             s.sidePanelDataList = [];
-
+            s.asidePropertyList = [];
+            s.canReceiveMonthlyReport = false;
+            s.productAdditionalMap = [];
         };
 
         // Getters
@@ -138,6 +144,15 @@
             return config;
         };
 
+        p.getProductPageLevelRadioConfig = function (productId, tabName) {
+            var s = this,
+                config;
+            if (s.productPageLevelRadioConfigMap['product' + productId + tabName] !== undefined) {
+                config = s.productPageLevelRadioConfigMap['product' + productId + tabName].selectCtrlConfig;
+            }
+            return config;
+        };
+
         p.getProductRadioConfig = function (productId, tabName) {
             var s = this,
                 config;
@@ -191,6 +206,17 @@
             return productBMRolesList;
         };
 
+        p.getTab6ProductData = function (product) {
+            var s = this,
+                productDataList;
+
+            if (s.tab6DataMap['product' + product] !== undefined) {
+                productDataList = s.tab6DataMap['product' + product].data;
+            }
+
+            return productDataList;
+        };
+
         p.getProductRightsData = function (product) {
             var s = this,
                 productRightsList;
@@ -232,6 +258,15 @@
             }
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return productPropertiesList;
+        };
+        p.getProductAsidePropertyData = function (product) {
+            var s = this,
+                asidePropertyList;
+
+            if (s.asidePropertyMap['product' + product] !== undefined) {
+                asidePropertyList = s.asidePropertyMap['product' + product].asideProperties;
+            }
+            return asidePropertyList;
         };
 
         p.getProductPropertyGroupData = function (product) {
@@ -289,13 +324,30 @@
             //logc("master data",product,s.propertyMap, productPropertiesList);
             return activeTab;
         };
+
+        p.getCanReceiveMonthlyReport = function() {
+            var s = this;
+            return s.canReceiveMonthlyReport;
+        };
         // Setters
 
+        p.setCanReceiveMonthlyReport = function(bool) {
+            var s = this;
+            s.canReceiveMonthlyReport = bool;
+            pubsub.publish("diq.canReceiveMonthlyReport",bool);
+        };
 
         p.setPropertyList = function (list, key) {
             var s = this;
             s.propertyList = list;
             s.renderPropertyMap(key);
+            return s;
+        };
+
+        p.setAsidePropertyList = function (list, key) {
+            var s = this;
+            s.asidePropertyList = list;
+            s.renderAsidePropertyMap(key);
             return s;
         };
 
@@ -344,6 +396,14 @@
             s.renderBenchMarkRoleMap(key);
             return s;
         };
+
+         p.setTab6DataList = function (list, key) {
+            var s = this;
+            s.tab6DataList = list;
+            s.renderTab6DataMap(key);
+            return s;
+        };
+
         p.setRightList = function (list, key) {
             var s = this;
             s.rightList = list;
@@ -449,7 +509,13 @@
 
             roleData.forEach(function (item) {
                 item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == "23") {
+                    item.isAssigned = item.level == record.level;
+                }
+                else{
+                    item.isAssigned = item.id == record.id;
+                }
+
             });
 
             return s;
@@ -470,6 +536,23 @@
 
             return s;
         };
+
+         p.selectedTab6DataSync = function (key, record) {
+            var s = this,
+                tabData,
+                selectedRole,
+                selectState = false;
+
+            tabData = s.tab6DataMap['product' + key].data;
+
+            tabData.forEach(function (item) {
+                item.isAssigned = false;
+                item.isAssigned = item.id == record.id;
+            });
+
+            return s;
+        };
+
         p.selectedRightSync = function (key, record) {
             var s = this,
                 rightData,
@@ -495,8 +578,16 @@
             roleData = s.roleMap['product' + key].roles;
 
             roleData.forEach(function (item) {
+
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
+                }
+
+                if (record.productId == 20 &&
+                    item.roletype === record.roletype &&
+                    item.id !== record.id)
+                {
+                    item.disableSelection = record.isAssigned;
                 }
             });
 
@@ -510,7 +601,6 @@
                 selectState = false;
 
             roleData = s.benchMarkRoleMap['product' + key].roles;
-
             roleData.forEach(function (item) {
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
@@ -519,6 +609,23 @@
 
             return s;
         };
+
+        p.multiSelectTab6DataSync = function (key, record) {
+            var s = this,
+                tabData,
+                selectedRole,
+                selectState = false;
+
+            tabData = s.tab6DataMap['product' + key].data;
+            tabData.forEach(function (item) {
+                if (item.id == record.id) {
+                    item.isAssigned = record.isAssigned;
+                }
+            });
+
+            return s;
+        };
+
         p.multiSelectRightSync = function (key, record) {
             var s = this,
                 rightData,
@@ -559,10 +666,27 @@
             propertyData = s.propertyMap['product' + key].properties;
 
             propertyData.forEach(function (item) {
-                item.isAssigned = false;
-                item.isAssigned = item.id == record.id;
+                if(key == 8){
+                    item.isAssigned = item.propertyId == record.propertyId;
+                }
+                else{
+                    item.isAssigned = false;
+                    item.isAssigned = item.id == record.id;
+                }
             });
 
+            return s;
+        };
+        p.selectedAsidePropertySync = function (productId) {
+            var s = this,
+            propertyData;
+
+            propertyData = s.asidePropertyMap['product' + productId].asideProperties;
+            var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
+                return data.isAssigned === true;
+            });
+
+            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length;
             return s;
         };
 
@@ -640,6 +764,22 @@
             pubsub.publish("pplpropertygroup.updateGrids");
             return s;
         };
+        p.updateAllFilterAsideProperties = function (productId, record, bool) {
+            var s = this,
+                propertyList,
+                assignedCount = 0,
+                matchRecord;
+
+            propertyList = s.asidePropertyMap['product' + productId].asideProperties;
+            record.forEach(function (item) {
+                item.isAssigned = bool;
+            });
+            if(bool){
+                assignedCount = record.length;
+            }
+            propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
+            return s;
+        };
         p.setAllPropertyGroupSync = function (productId, bool) {
             var s = this,
                 propertyGroupList;
@@ -649,7 +789,7 @@
                     item["isAssigned"] = bool;
                 });
             }
-               
+
             return s;
         };
 
@@ -689,6 +829,23 @@
 
             return s;
         };
+
+         p.allTab6DataSync = function (productId, selected) {
+            var s = this,
+                list,
+                selectState = false,
+                assignedCount = 0,
+                totalCount = 0;
+
+            list = s.tab6DataMap['product' + productId].data;
+
+            list.forEach(function (item) {
+                item["isAssigned"] = selected;
+            });
+
+            return s;
+        };
+
         p.allRightsSync = function (productId, selected) {
             var s = this,
                 rightList,
@@ -765,6 +922,13 @@
             s.selectTypeConfigLoaded = true;
         };
 
+        p.renderPageLevelRadioConfigMap = function (productId, tabName, config) {
+            var s = this;
+            s.productPageLevelRadioConfigMap['product' + productId + tabName] = {
+                selectCtrlConfig: config
+            };
+        };
+
         p.renderProductRadioConfigMap = function (productId, tabName, config) {
             var s = this;
             s.productRadioConfigMap['product' + productId + tabName] = {
@@ -821,6 +985,14 @@
                 };
             }
         };
+        p.renderAsidePropertyMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.asidePropertyList)) {
+                s.asidePropertyMap['product' + key] = {
+                    asideProperties: s.asidePropertyList,
+                };
+            }
+        };
 
         p.renderPropertyGroupMap = function (key) {
             var s = this;
@@ -867,6 +1039,17 @@
                 };
             }
         };
+
+        p.renderTab6DataMap = function (key) {
+            var s = this;
+
+            if (!angular.equals({}, s.tab6DataList)) {
+                s.tab6DataMap['product' + key] = {
+                    data: s.tab6DataList
+                };
+            }
+        };
+
         p.renderRightMap = function (key) {
             var s = this;
 
@@ -920,6 +1103,39 @@
             return s;
         };
 
+        p.clearPropertyGroupData = function(key) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
+        };
+
+        p.getProductAdditionalData = function (product) {
+            var s = this,
+                additionalData;
+            if (s.productAdditionalMap['product' + product] !== undefined) {
+                additionalData = s.productAdditionalMap['product' + product].additional;
+            }
+            return additionalData;
+        };
+
+        p.setProductAdditionalData = function (product, value) {
+            var s = this;
+            s.productAdditionalMap['product' + product] = {
+                additional: value
+            };
+        };
+
+        p.updateProductAdditionalData = function (product, tabName, value) {
+            var s = this,
+            additionalData = s.getProductAdditionalData(product);
+            additionalData[tabName] = value;
+            s.setProductAdditionalData(product, additionalData);
+        };
+
         // Assertions
 
         p.allSelected = function (list, selectKey) {
@@ -927,12 +1143,7 @@
             return s.getSelectedCount(list) === list.length;
         };
 
-        // p.isUserHasManageProductAccess = function () {
-        //     return !persona.data.hasManageAssetOptimizationProductAccess;
-        // };
         p.isUserHasManageProductAccess = function (productId) {
-            //var productId = $scope.$parent.productId;
-            //logc("test", persona.data.hasProspectContactCenterProductAccess);
             var s = this;
             switch (productId) {
                 case "1":
@@ -1002,6 +1213,7 @@
             s.productControlsMap = {};
             s.productPresetRolesMap = {};
             s.notificationsMap = {};
+            s.productAdditionalMap = [];
         };
 
         return new ProductDataSyncManager();

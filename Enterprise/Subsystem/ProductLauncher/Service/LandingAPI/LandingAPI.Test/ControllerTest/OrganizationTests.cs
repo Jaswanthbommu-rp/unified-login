@@ -1310,7 +1310,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             foreach (var pr in typeof(ProductEnum).GetFields())
             {
-                if (pr.Name != "value__")
+                if ((!pr.Name.Equals("value__", StringComparison.OrdinalIgnoreCase))&& (!pr.Name.Equals("UnifiedSettings", StringComparison.OrdinalIgnoreCase)))
                 {
                     ProductEnum current = (ProductEnum) Enum.Parse(typeof(ProductEnum), pr.Name);
                     if (!ignoreProductList.Contains(current))

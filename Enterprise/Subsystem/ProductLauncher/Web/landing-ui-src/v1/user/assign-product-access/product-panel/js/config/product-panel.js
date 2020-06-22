@@ -166,6 +166,21 @@
             });
         }
 
+        if (templateModel.isProductExists(16)) {
+            productAccess.register({
+                model: model,
+                key: "soln105",
+                product: "16"
+            });
+        }
+        if (templateModel.isProductExists(24)) {
+            productAccess.register({
+                model: model,
+                key: "soln601",
+                product: "24"
+            });
+        }
+
         if (templateModel.isProductExists(54)) {
             productAccess.register({
                 model: model,
@@ -179,6 +194,14 @@
                     product: "18"
                 });
             }
+        }
+
+         if (templateModel.isProductExists(50)) {
+            productAccess.register({
+                model: model,
+                key: "soln311",
+                product: "50"
+            });
         }
         logc("productAccess", productAccess);
     }

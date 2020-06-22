@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration
 {
     /// <summary>
     /// Migrate Response
     /// </summary>
     public class MigrateResponse
     {
+        /// <summary>
+        /// Id
+        /// </summary>
+        public string Id { get; set; }
         /// <summary>
         /// Status
         /// </summary>

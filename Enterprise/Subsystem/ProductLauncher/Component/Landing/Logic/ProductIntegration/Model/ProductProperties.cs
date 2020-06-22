@@ -5,13 +5,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// <summary>
     /// Class which binds with product response
     /// </summary>
-    public class ProductProperties
+    public class ProductProperties : IProductProperties
     {
         private string _name = string.Empty;
         private string _propertyId;
 
         [JsonProperty(PropertyName = "id")]
-        public string GetPropertyId => _propertyId;
+        public string GetPropertyId
+        {
+            get { return _propertyId; }
+        }
 
         [JsonProperty(PropertyName = "PropertyId")]
         public string SetPropertyId
@@ -20,14 +23,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         [JsonProperty(PropertyName = "name")]
-        public string GetName => _name;
+        public string GetName 
+        {
+            get { return _name; }
+        }
 
         [JsonProperty(PropertyName = "PropertyName")]
         public string SetName
         {
             set { this._name = value; }
         }
-        
+
         public bool IsAssigned { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -36,8 +42,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string PropertyType { get; set; }
 
-	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-	    public string State { get; set; }
-	}
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string State { get; set; }
 
+    }
 }

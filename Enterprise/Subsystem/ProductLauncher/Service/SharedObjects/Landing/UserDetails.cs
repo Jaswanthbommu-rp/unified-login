@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
@@ -25,5 +26,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public DateTime? FromDate { get; set; }
 		public DateTime? ThruDate { get; set; }
 		public bool? IsActive { get; set; } = false;
+		public List<string> PhoneNumbers { get; set; } = new List<string>();//SLM
 	}
 }

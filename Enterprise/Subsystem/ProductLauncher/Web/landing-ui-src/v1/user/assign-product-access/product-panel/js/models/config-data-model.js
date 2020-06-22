@@ -37,6 +37,7 @@
                         "type": s.isType(item.type),
                         "text": item.displayName,
                         "idKey": "id",
+                        "disabledKey": "disableSelection",
                         "filterType": filterType,
                         "templateUrl": s.getTemplate(s.isControl(item.type), tabName)
                     });
@@ -79,10 +80,10 @@
 
             if (data && data.controls) {
                 data.controls.forEach(function (ctrl) {
-                    if (ctrl.type === "Icon") {
+                    if (ctrl.type === "Icon" || ctrl.type === "Link") {
                         if (ctrl.attributes !== null) {
                             ctrl.attributes.forEach(function (item) {
-                                if (item.key === "InfoIcon" && item.value === "Slide") {
+                                if ((item.key === "InfoIcon" || item.key === "AssignedProperties") && item.value === "Slide") {
                                     isSlideScreen = true;
                                 }
                             });
@@ -117,7 +118,7 @@
             if (type === 'Label') {
                 return 'text';
             }
-            else if (type === 'Radio' || type === 'Dropdown' || type === 'Icon') {
+            else if (type === 'Radio' || type === 'Dropdown' || type === 'Icon' || type === 'Link') {
                 return 'custom';
             }
             else if (type === 'CheckBox' || type === 'Checkbox') {
@@ -141,6 +142,9 @@
             else if (type === 'Icon') {
                 return 'icon';
             }
+            else if (type === 'Link') {
+                return 'link';
+            }
         };
 
         p.getHeaders = function (tab, val) {
@@ -154,9 +158,17 @@
                     });
                 }
                 else if (item.type === 'custom') {
-                    hdr.push({
-                        "key": item.key,
-                    });
+                    if(item.key === 'assignedProperties'){
+                        hdr.push({
+                            "key": item.key,
+                            "text": item.text
+                        });
+                    }else{
+                        hdr.push({
+                            "key": item.key,
+                        });
+                    }
+                   
                 }
                 else if (item.type === 'select') {
                     hdr.push({
@@ -203,7 +215,7 @@
                     });
                 }
 
-                if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon')) {
+                if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon' && item.key !== 'assignedProperties')) {
                     fltr.push({
                         "key": item.key,
                         "type": "menu",
@@ -224,7 +236,7 @@
                         ]
                     });
                 }
-                if (item.type === 'custom' && item.key == 'InfoIcon') {
+                if (item.type === 'custom' && (item.key === 'InfoIcon' || item.key === 'assignedProperties')) {
                     fltr.push({
                         "key": item.key,
                         "type": "",
@@ -242,7 +254,7 @@
                 if (item.type === 'text') {
                     main.push({
                         "key": item.key,
-                        "type": item.type,
+                        "type": item.type
                     });
                 }
                 if (item.type === 'custom') {
@@ -250,14 +262,16 @@
                         "key": item.key,
                         "type": item.type,
                         "templateUrl": item.templateUrl,
-                        "idKey": item.idKey
+                        "idKey": item.idKey,
+                        "disabledKey": item.disabledKey
                     });
                 }
                 else if (item.type === 'select') {
                     main.push({
                         "key": item.key,
                         "type": item.type,
-                        "idKey": item.idKey
+                        "idKey": item.idKey,
+                        "disabledKey": item.disabledKey
                     });
                 }
             });
@@ -274,6 +288,10 @@
             else if (type === 'icon') {
                 url = "user/assign-product-access/product-panel/templates/product-panel-info-icon.html";
             }
+            else if (type === 'link') {
+                url = "user/assign-product-access/product-panel/templates/product-panel-label-link.html";
+            }
+
 
             return url;
         };

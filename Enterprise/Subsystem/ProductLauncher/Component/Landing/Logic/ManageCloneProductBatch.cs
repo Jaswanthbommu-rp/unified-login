@@ -217,6 +217,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						productListToCreate.Add(CreateProductBatchRecordForClickPay(organizationRoles));
 					}
+					else if (product.ProductId == (int)ProductEnum.RenovationManager)
+					{
+						var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, createUserPersonaId, personaId, userClaim);
+						var productUser = productLogic.GetProductUser();						
+
+						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
+					}
 				}
 				catch (Exception ex)
 				{
@@ -279,6 +286,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					RoleList = productUser.Roles,
 					CanReceiveMonthlyReport = productUser.CanReceiveMonthlyReport,
 					PropertyGroupList = productUser.PropertyGroups,
+					PropertyList = productUser.Properties
+				}
+			};
+
+			return productBatch;
+		}
+
+		private ProductBatch CreateProductBatchRecordForRenovationManager(IntegrationProductUser productUser)
+		{
+			ProductBatch productBatch = new ProductBatch()
+			{
+				ProductId = (int)ProductEnum.RenovationManager,
+				StatusTypeId = 5,
+				RetryCount = 0,
+				InputJson = new RolePropertyList()
+				{
+					RoleList = productUser.Roles,				
 					PropertyList = productUser.Properties
 				}
 			};

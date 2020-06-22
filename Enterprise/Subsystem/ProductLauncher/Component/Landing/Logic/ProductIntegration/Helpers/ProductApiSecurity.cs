@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.Caching;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers
 {
@@ -37,8 +38,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             switch (_productType)
             {
-                case ProductEnum.VendorServices:
-                    UnityOAuthApiSecurity(httpClient);
+                case ProductEnum.VendorServices:				
+					UnityOAuthApiSecurity(httpClient);
+					break;
+				case ProductEnum.RenovationManager:
+					RenoOAuthApiSecurity(httpClient);
                     break;
                 case ProductEnum.LeadManagement: //ILM-LM
                 case ProductEnum.LeadAnalytics: //ILM-LA
@@ -53,10 +57,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	            case ProductEnum.ClickPay:
 		            ClickPayApiSecurity(httpClient);
 		            break;
-			}
+                case ProductEnum.SeniorLeadManagement:
+                    SeniorLeadManagementApiSecurity(httpClient);
+                    break;
+            }
         }
 
-	    private void ClickPayApiSecurity(HttpClient httpClient)
+        private void SeniorLeadManagementApiSecurity(HttpClient httpClient)
+        {            
+            string apiKey = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIKEY").Value;
+
+            httpClient.DefaultRequestHeaders.Clear();
+            httpClient.DefaultRequestHeaders.Add("X-ExternalClientId", apiKey);
+        }
+
+        private void ClickPayApiSecurity(HttpClient httpClient)
 	    {
 			string apiUser = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIUSERNAME").Value;
 		    string apiPassword = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;
@@ -74,9 +89,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			httpClient.DefaultRequestHeaders.Clear();
 		    httpClient.SetBasicAuthentication(apiUser, apiPassword);
-		}
-
-	    #endregion
+		}	
+		#endregion
 
 		#region Private Methods - Portfolio Management
 		/// <summary>
@@ -150,7 +164,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        private string GetToken(string tokenIssueUri, string clientId, string apiSecret)
+		private void RenoOAuthApiSecurity(HttpClient httpClient)
+		{
+			var apiSecret = _productIntegrationDetails.First(a => a.Name.ToUpper() == "APISECRET").Value;
+			var clientId = _productIntegrationDetails.First(a => a.Name.ToUpper() == "CLIENTID").Value;
+			var tokenIssueUri = _productIntegrationDetails.First(a => a.Name.ToUpper() == "TOKENENDPOINT").Value;
+
+			var token = GetAccessToken(tokenIssueUri, clientId, apiSecret);
+			httpClient.DefaultRequestHeaders.Clear();
+			httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+			//httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", "5b0fcd3596946df5fb88d45f68a5a9ecf85625a0");
+		}
+		private string GetToken(string tokenIssueUri, string clientId, string apiSecret)
         {
             try
             {
@@ -171,6 +196,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 throw new Exception($"Error in GetToken- {ex.Message}");
             }
         }
-        #endregion
-    }
+		private string GetAccessToken(string tokenIssueUri, string clientId, string apiSecret)
+		{
+			try
+			{
+				string scope = _productIntegrationDetails.First(a => a.Name.ToUpper() == "CLIENTSCOPE").Value;
+				ObjectCache tokenCache = MemoryCache.Default;
+
+				// Get token values from cache
+				string accessToken = tokenCache[clientId] as string;				
+
+				if (string.IsNullOrEmpty(accessToken))
+				{
+					var tokenClient = new TokenClient($"{tokenIssueUri}", clientId, apiSecret);
+					var tokenResponse = tokenClient.RequestClientCredentialsAsync(scope).Result;
+
+					if (tokenResponse.IsError)
+					{
+						throw new Exception($"Received null or empty token. {tokenResponse.Error}");
+					}
+
+					var cachePolicy = new CacheItemPolicy
+					{
+						// Expier cache every after 9 minutes (assuming 10 min is token expiration time)
+						AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
+					};
+
+					accessToken = tokenResponse.AccessToken;
+					tokenCache.Set(clientId, accessToken, cachePolicy);					
+				}
+				return accessToken;
+			}			
+			catch (Exception ex)
+			{
+				throw new Exception($"Error in GetToken- {ex.Message}");
+			}
+		}
+		#endregion
+	}
 }

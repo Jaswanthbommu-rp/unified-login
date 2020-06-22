@@ -1269,6 +1269,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
                     }
+                    personaProductUserDetails = personaProductUserDetails.OrderBy(n => n.ProductName).ToList();
                 }
             }
             catch (Exception ex)
@@ -1880,6 +1881,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         break;
                     case (int)ProductRightEnum.ManageClickPayProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageRenovationManager:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageSeniorLeadManagement:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
                         break;
                     default:
                         break;

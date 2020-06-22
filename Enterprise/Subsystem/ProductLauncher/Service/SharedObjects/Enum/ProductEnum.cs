@@ -56,7 +56,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.ResidentPortal: return "resident-portals";
 				case ProductEnum.UtilityManagement: return "utility-management";
 				case ProductEnum.ProductLearningPortal: return "learning-portal";
-				case ProductEnum.HelpCenter: return "help-center";
 				case ProductEnum.RPDocumentManagement: return "realpage-document-management";
 				case ProductEnum.OneSiteConversions: return "leasing-and-rent-conversion-tool";
 				case ProductEnum.OmniChannel: return "rentjoy";
@@ -83,10 +82,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.LeadAnalytics: return "ilm-leasing-analytics";
 				case ProductEnum.DepositAlternative: return "deposit-iq";
 				case ProductEnum.ClickPay: return "payments";
+                case ProductEnum.HelpCenter: return "help-center";
+                case ProductEnum.SeniorLeadManagement: return "senior-lead-management"; // Need this value replaced with actual based on the CDN value
 				case ProductEnum.AoLeaseRentOption: return "lro";
 				case ProductEnum.AoAmenityOptimization: return "amenity-analytics";
 				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
 				case ProductEnum.AoRentControl: return "rent-control";
+				case ProductEnum.RenovationManager: return "renovation-manager";
 			}
 			return null;
 		}
@@ -280,6 +282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Yieldstar - THIS IS NOT REQUIRED
 		/// </summary>
+		[Description("YS")]
 		Yieldstar = 7, //TODO: This can be replaced with some other products
 
 		/// <summary>
@@ -303,6 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Social
 		/// </summary>
+		[Description("??")]
 		Social = 11,
 
 		/// <summary>
@@ -352,22 +356,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("LP")]
 		ProductLearningPortal = 19,
-
+        		
 		/// <summary>
-		/// Help Center
+		/// RPDocumentManagement
 		/// </summary>
-		[Description("HLP")]
-		HelpCenter = 49,
-
-        /// <summary>
-        /// RPDocumentManagement
-        /// </summary>
-        [Description("DOC")]
+        [Description("DOC")]		
         RPDocumentManagement = 20,
 
 		/// <summary>
 		/// OneSiteConversions
 		/// </summary>
+		[Description("OSC")]
 		OneSiteConversions = 21,
 
 		/// <summary>
@@ -531,26 +530,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("CPAY")]
 		ClickPay = 48,
+
+        /// <summary>
+		/// Help Center
+		/// </summary>
+		[Description("HLP")]
+        HelpCenter = 49,
+
+        /// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		[Description("SLM")]
+        SeniorLeadManagement = 50,
+
 		/// <summary>
 		/// AO LeaseRentOption
 		/// </summary>
 		[Description("LRO")]
 		AoLeaseRentOption = 51,
+
 		/// <summary>
 		/// AO Amenity Optimization
 		/// </summary>
 		[Description("AA")]
 		AoAmenityOptimization = 52,
+
 		/// <summary>
 		/// AO AI Revenue Management
 		/// </summary>
 		[Description("AIRM")]
 		AoAIRevenueManagement = 53,
+
 		/// <summary>
 		/// AO Rent Control
 		/// </summary>
 		[Description("RC")]
-		AoRentControl = 54
+		AoRentControl = 54,
+		/// <summary>
+		///Renovation Manager
+		/// </summary>
+		[Description("RENO")]
+		RenovationManager = 55,
+		/// <summary>
+		/// UnifiedSettings
+		/// </summary>
+		[Description("SET")]
+		UnifiedSettings = 56
+
 	}
 
 	/// <summary>
@@ -564,20 +590,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("OS")]
 		ManageOneSiteProductAccess = 1,
 
-
 		/// <summary>
 		/// Asset Optimizer - Umbrella for all AO products
 		/// </summary>
 		[Description("AO")]
 		ManageAssetOptimizationProductAccess = 4,
 
-
 		/// <summary>
 		/// Lead2Lease
 		/// </summary>
 		[Description("L2L")]
 		ManageLead2LeaseProductAccess = 6,
-
 
 		/// <summary>
 		/// Accounting
@@ -602,7 +625,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("OPS")]
 		ManageSpendManagementProductAccess = 13,
-
 
 		/// <summary>
 		/// SalesForce ClientPortal
@@ -698,11 +720,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("AA")]
 		AoAmenityOptimization = 52,
+
 		/// <summary>
 		/// AO AI Revenue Management
 		/// </summary>
 		[Description("AIRM")]
 		AoAIRevenueManagement = 53,
+
 		/// <summary>
 		/// AO Rent Control
 		/// </summary>
@@ -763,8 +787,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Manage Settings Template
 		/// </summary>
-		ManageSettingsTemplates = 50,
-	}	
+		ManageSettingsTemplates = 56,
+
+		/// <summary>
+		/// Renovation Manager
+		/// </summary>
+		[Description("RENO")]
+		ManageRenovationManager = 55,
+        /// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		[Description("SLM")]
+        ManageSeniorLeadManagement = 50
+    }
 }
 
 //public static class EnumHelper

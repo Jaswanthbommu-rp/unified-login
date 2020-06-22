@@ -24,10 +24,13 @@
             "text.solnTitle.107": "Unified Amenities",
             "text.solnTitle.110": "Document Director",
             "text.solnTitle.111": "EasyLMS",
+            "text.solnTitle.112": "Renovation Manager",
+
             "text.solnTitle.201": "Resident Portals",
             "text.solnTitle.204": "Renters Insurance",
             "text.solnTitle.205": "Utility Management",
             "text.solnTitle.206": "Payments",
+
             "text.solnTitle.302": "Prospect Contact Center",
             "text.solnTitle.303": "Marketing Center",
             "text.solnTitle.305": "Lead2Lease",
@@ -36,6 +39,8 @@
             "text.solnTitle.308": "ILM Lead Management",
             "text.solnTitle.309": "ILM Leasing Analytics",
             "text.solnTitle.310": "Deposit Alternative",
+            "text.solnTitle.311": "Senior Lead Management",
+
             "text.solnTitle.401": "YieldStar",
             "text.solnTitle.402": "Business Intelligence",
             "text.solnTitle.403": "Performance Analytics",
@@ -45,11 +50,14 @@
             "text.solnTitle.408": "Amenity Optimization",
             "text.solnTitle.409": "AI Revenue Management",
             "text.solnTitle.410": "Rent Control",
+
             "text.solnTitle.501": "Client Portal",
             "text.solnTitle.503": "Unified Platform",
             "text.solnTitle.504": "Self-Provisioning Portal",
             "text.solnTitle.505": "Integration Marketplace",
+
             "text.solnTitle.601": "Master Data Management",
+
             "text.solnTitle.701": "Portfolio Management"
         });
 
