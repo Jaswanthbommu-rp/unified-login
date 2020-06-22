@@ -74,11 +74,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         public IList<object> propertiesList { get; set; }
 
-        /// <summary>
-        /// Assigned Properties
-        /// </summary>
-
-        public string assignedProperties { get; set; }
         #region Examples
         /// <summary>
         /// Used to document examples of the Role Model webapi result

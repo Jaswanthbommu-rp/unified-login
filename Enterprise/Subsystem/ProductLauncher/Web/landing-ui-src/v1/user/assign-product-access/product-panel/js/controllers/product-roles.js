@@ -261,7 +261,7 @@
             var roletype = "";
             rolesList.forEach(function (role) {
                 if(role.roletype !== undefined){
-                    roletype = role.roletype.split(" ").join("");
+                    roletype = role.roletype.replace(/ /g, "");
                     if(distinctRoles.indexOf(roletype) == -1){
                         distinctRoles.push(roletype);
                     }

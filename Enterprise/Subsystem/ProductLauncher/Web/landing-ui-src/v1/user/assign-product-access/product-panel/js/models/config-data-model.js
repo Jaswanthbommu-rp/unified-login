@@ -92,34 +92,16 @@
                             ctrl.controls.forEach(function (subCtrls) {
                                 logc("sub controls", subCtrls);
                                 if (subCtrls.type === "Grid" || subCtrls.type === "Multi Select Grid") {
-                                    if(roleType !== ""){
-                                        listasideConfig.displayName = roleType;
-                                    }
-                                    else{
-                                        listasideConfig.displayName = subCtrls.displayName;
-                                    }
+                                    listasideConfig.displayName = roleType !== "" ?  roleType : subCtrls.displayName;
                                     
                                     if(roleType !== ""){
                                         subCtrls.controls.forEach(function (gridCtrl) {
-                                                var displayName = null; 
-                                                if(gridCtrl.displayName !== null)
-                                                {
-                                                    //if(roleType.toLowerCase().indexOf("site") !== -1)
-                                                    //{
-                                                    //    displayName = "Property";    
-                                                    //}
-                                                    //else{
-                                                        displayName = roleType;
-                                                    //}
-                                                }
-                                                
-                                                //var displayName = gridCtrl.displayName !== null ? roleType : null;
-                                                listasideConfig.config.push({
-                                                    "key": gridCtrl.dataSource,
-                                                    "type": s.isType(gridCtrl.type),
-                                                    "text": displayName,
-                                                    "idKey": "id"
-                                                });
+                                            listasideConfig.config.push({
+                                                "key": gridCtrl.dataSource,
+                                                "type": s.isType(gridCtrl.type),
+                                                "text": roleType,
+                                                "idKey": "id"
+                                            });
                                         });
                                     }
                                     else{

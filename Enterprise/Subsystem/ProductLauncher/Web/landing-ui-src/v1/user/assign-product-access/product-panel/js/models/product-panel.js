@@ -456,11 +456,6 @@
                 if (hasRoleSelected && !needsProperties) {
                     return s.batchData;
                 }
-                // else if (hasRoleSelected &&
-                //     (needsProperties && hasPropertySelected) ||
-                //     (needsDepartments && hasPropertyGroupSelected)) {
-                //     return s.batchData;
-                // }
             }
 
             if (productId == "44") {

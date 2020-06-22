@@ -40,7 +40,7 @@
             else if (vm.tabName.toLowerCase() == "role") {
                 if(vm.productId == 20){
                     vm.subtitle= persona.data.organization.name;
-                    configTab = vm.roleType.split(" ").join("");
+                    configTab = vm.roleType.replace(/ /g, "");
                     vm.title = "Assign " + vm.roleType;
                 }
                 else{

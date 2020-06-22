@@ -374,7 +374,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						RPDMUser newUser = GetUserDetails(newid);
 						if (newUser != null)
 						{
-							SetProductRoleCache(null, userPersonaId, userPersona.OrganizationPartyId);
+							if (userPersonaId == 0)
+							{
+								var cacheKey = $"DocumentDirector_Roles_{editorPersonaId}_{userPersona.OrganizationPartyId}";
+								MemoryCache.Default.Remove(cacheKey);
+							}
+							
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, newUser.Name);
 							WriteToDiagnosticLog($"ManageRPDMUser - Create user. newid={newid}, login={newUser.Name}");
@@ -439,7 +444,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
 						if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 						{
-							SetProductRoleCache(null, userPersonaId, userPersona.OrganizationPartyId);
 							WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
 							WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
 						}
@@ -457,7 +461,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
 
 					var postUpdateResponse = _client.PostAsJsonAsync(url, manageUser).Result;
-
+					var cacheKey = $"DocumentDirector_Roles_{editorPersonaId}_{userPersonaId}_{userPersona.OrganizationPartyId}";
+					MemoryCache.Default.Remove(cacheKey);
 					if (postUpdateResponse.IsSuccessStatusCode || postUpdateResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 					{
 						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Success);
@@ -684,6 +689,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
+		/// <param name="organizationPartyId"></param>
 		/// <returns></returns>
 		private ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId, long organizationPartyId)
 		{
@@ -693,12 +699,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse propertyResponse = new ListResponse();
 			try
 			{
-				ObjectCache productCache = MemoryCache.Default;
-				var cacheKey = $"PROD-PANEL-RPDMROLES_{userPersonaId}_{organizationPartyId}";
-				ListResponse lstRolesProperties = productCache[cacheKey] as ListResponse;
-				if (lstRolesProperties == null)
+				RPObjectCache rpCache = new RPObjectCache();
+				string cacheKey = userPersonaId == 0 ? $"DocumentDirector_Roles_{editorPersonaId}_{organizationPartyId}" : $"DocumentDirector_Roles_{editorPersonaId}_{userPersonaId}_{organizationPartyId}";
+				ListResponse lstRolesProperties = rpCache.GetFromCache(cacheKey, 300, () =>
 				{
-
 					response = GetRoles(editorPersonaId, userPersonaId);
 					if (response.TotalRows > 0)
 					{
@@ -727,7 +731,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}
 							rpdmRolelist.Add(pRole);
 						}
-
 					}
 
 					if (rpdmRolelist != null)
@@ -742,8 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							TotalPages = 1,
 							ErrorReason = ""
 						};
-						// caching roles and properties
-						SetProductRoleCache(response, userPersonaId, organizationPartyId);
+						
 					}
 					else
 					{
@@ -751,33 +753,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						response.IsError = true;
 						response.ErrorReason = "There was a problem getting the role details";
 					}
-				}
-				else
-				{
-					return lstRolesProperties;
-				}
-
+					return response;
+				});
+				return lstRolesProperties;
 			}
 			catch (Exception ex)
 			{
 				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the role details";
+				return response;
 			}
-
-			return response;
 		}
 
-		public void SetProductRoleCache(ListResponse response, long userPersonaId, long organizationPartyId)
-		{
-			ObjectCache productCache = MemoryCache.Default;
-			var cacheKey = $"PROD-PANEL-RPDMROLES_{userPersonaId}_{organizationPartyId}";
-			var cachePolicy = new CacheItemPolicy
-			{
-				AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(5)// Expier cache every after 5 minutes 
-			};
-			productCache.Set(cacheKey, response, cachePolicy);
-		}
 		/// <summary>
 		/// 
 		/// </summary>
