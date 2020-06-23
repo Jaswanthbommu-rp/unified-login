@@ -234,7 +234,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// setting roles and properties values if it is not a dynamic panel
 			if (rolePropertyEntityList.RolePropertiesList== null && (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
 			{
-				rolePropertyEntityList.PropertyList.AddRange(rolePropertyEntityList.DepartmentList);
+				if (rolePropertyEntityList.DepartmentList?.Count > 0 && rolePropertyEntityList.PropertyList?.Count > 0)
+				{
+					rolePropertyEntityList.PropertyList.AddRange(rolePropertyEntityList.DepartmentList);
+				}
+				else if(rolePropertyEntityList.DepartmentList?.Count > 0)
+				{
+					rolePropertyEntityList.PropertyList = rolePropertyEntityList.DepartmentList;
+				}
+				
 				foreach (string roleId in rolePropertyEntityList.RoleList)
 				{
 					PAMRolePropertyList objRole = new PAMRolePropertyList();
