@@ -1113,6 +1113,16 @@
             s.renderPropertyGroupMap(key);
         };
 
+        p.setPropertyGroupData = function(key, record) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = record.id == item.id;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
+        };
+
         p.getProductAdditionalData = function (product) {
             var s = this,
                 additionalData;

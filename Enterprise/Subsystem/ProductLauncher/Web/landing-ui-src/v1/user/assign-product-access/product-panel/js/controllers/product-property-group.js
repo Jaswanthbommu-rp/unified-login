@@ -29,6 +29,7 @@
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
+            vm.gridRadioSelectionWatch = pgGrid.subscribe("ppanel.property-group-radio", vm.radioselectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllCompaniesSet", vm.accountingAllCompaniesSet);
@@ -73,6 +74,10 @@
             if (record && $scope.$parent.productId != 20) {
                 syncMgr.groupToPropertySync($scope.$parent.productId, record);
             }
+        };
+
+        vm.radioselectionChange = function (record) {
+                syncMgr.setPropertyGroupData($scope.$parent.productId, record);
         };
 
         vm.loadData = function () {
