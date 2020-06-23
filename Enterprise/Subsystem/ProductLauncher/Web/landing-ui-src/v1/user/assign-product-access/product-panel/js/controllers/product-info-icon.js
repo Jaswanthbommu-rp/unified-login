@@ -16,6 +16,9 @@
             listModel.setTabName(record.radname);
             listModel.setListID(record.id);
             listModel.setProductID(record.productId);
+            if(record.productId === 20) {
+                 listModel.setRoleType(record.roletype);
+             }
             listModel.setSelectedPropertyRoleData(record);
             aside.show();
         };
