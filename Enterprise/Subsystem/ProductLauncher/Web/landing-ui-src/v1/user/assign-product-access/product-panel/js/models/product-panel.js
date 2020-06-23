@@ -350,6 +350,9 @@
                                 s.batchData.inputJson.companiesList.push(group.id);
                             }
                         }
+                        else if (productId == "47" && group.groupType === "region") {
+                                s.batchData.inputJson.propertyGroupList.push(group.id);
+                        }
                         else {
                             s.batchData.inputJson.regionList.push(group.id);
                         }
@@ -412,7 +415,7 @@
                 s.batchData.inputJson.propertyList = [];
 
                 diqAreas.forEach(function (area) {
-                    if (area.isAssigned) {
+                    if (area.isAssigned && area.groupType === "area") {
                         s.batchData.inputJson.propertyGroupList.push(area.id);
                     }
                 });

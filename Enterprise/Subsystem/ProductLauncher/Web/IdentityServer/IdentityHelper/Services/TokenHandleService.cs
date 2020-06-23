@@ -9,7 +9,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
     public class TokenHandleService : BaseTokenService<IdentityServer3.Core.Models.Token>, ITokenHandleStore
     {
-	    private static IIdentityServerRepository _identityServerRepository;
+	    private readonly IIdentityServerRepository _identityServerRepository;
 
 		public TokenHandleService(IIdentityServerRepository identityServerRepository, IScopeStore scopeStore, IClientStore clientStore)
             : base(TokenTypeEnum.TokenHandle, scopeStore, clientStore, identityServerRepository)

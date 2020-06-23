@@ -1,4 +1,5 @@
 ﻿using System;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -33,6 +34,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			_partyRelationshipRepository = new PartyRelationshipRepository();
 		}
+
+        /// <summary>
+        /// Create a basic instance of the ManageOrganization Controller class
+        /// </summary>
+        public ManagePartyRelationship(IRepository repository)
+        {
+            _partyRelationshipRepository = new PartyRelationshipRepository(repository);
+        }
+
 		#endregion
 
 		/// <summary>
