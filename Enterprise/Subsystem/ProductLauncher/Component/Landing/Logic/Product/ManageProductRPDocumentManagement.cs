@@ -812,7 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 										{
 											foreach (RPDMUserRoles ur in userRoles)
 											{
-												if (pp.ID == ur.Entity?.Id?.ToUpper())
+												if (pp.ID == ur.Entity?.Id?.ToUpper() && roleId == ur.Role?.Id?.ToUpper())
 												{
 													pp.IsAssigned = true;
 													break;
