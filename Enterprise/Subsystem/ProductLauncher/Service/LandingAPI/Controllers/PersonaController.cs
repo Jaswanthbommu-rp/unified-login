@@ -250,7 +250,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             ObjectOutput<RepositoryResponse, IErrorData> output = new ObjectOutput<RepositoryResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-            Persona persona = null;
 
             if (productId == null)
             {
@@ -270,19 +269,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, output);
             }
 
-            //long? activePersonaId = _managePersona.GetActivePersonaId(_realpageUserId);
-
-            //if (activePersonaId == null || activePersonaId == 0)
-            //{
-            //    errorStatus.Success = false;
-            //    errorStatus.ErrorCode = "200.3";
-            //    errorStatus.ErrorMsg = "Active persona not found!";
-            //    output.Status = errorStatus;
-            //    return Request.CreateResponse(HttpStatusCode.BadRequest, output);
-            //}
-
-            //persona = _managePersona.GetPersona(activePersonaId.Value);
-            persona = _managePersona.GetPersona(_personaId);
+            Persona persona = _managePersona.GetPersonaWithRightsToggle(_personaId, withRights: false);
 
             if (persona == null)
             {

@@ -23,6 +23,7 @@
             };
             s.propertyRoleListData = {
                 "PropertyIds": [],
+                "RoleType": "",
                 "RoleId": ""
             };
 
@@ -151,6 +152,8 @@
             else {
                 roles = dataSyncManager.getProductRolesData(productId);
             }
+            
+                
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
 
@@ -205,6 +208,29 @@
                         else if (productId == "23") {
                             s.batchData.inputJson.roleList.push(role.level);
                         }
+                        else if (productId == "20") {
+                            s.propertyRoleListData = angular.copy(s._propertyRoleListData);
+                            s.propertyRoleListData.RoleId = role.id;
+                            s.propertyRoleListData.RoleType = role.roletype;
+                            if(role.roletype !== 'Domain Admin')
+                            {
+                                var propList = role.propertiesList;
+                                propList.forEach(function (item){
+                                    if(item.isAssigned) {
+                                        s.propertyRoleListData.PropertyIds.push(item.id);
+                                    }
+                                });
+                                if (s.propertyRoleListData.PropertyIds.length > 0) {
+                                    s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
+                                }
+                                else {
+                                    needsProperties = true;
+                                }
+                            }
+                            else {
+                                s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
+                            }
+                        }
                         else {
                             s.batchData.inputJson.roleList.push(role.id);
                         }
@@ -225,8 +251,12 @@
                         }
                     }
                 });
-
-                hasRoleSelected = s.batchData.inputJson.roleList.length > 0;
+                if(productId == "20") {
+                    hasRoleSelected = s.batchData.inputJson.RolePropertiesList.length > 0;
+                }
+                else {
+                    hasRoleSelected = s.batchData.inputJson.roleList.length > 0;
+                }
             }
 
             if (properties !== undefined && properties.length) {
@@ -420,12 +450,7 @@
             }
 
             if (productId == "20") {
-                if (hasRoleSelected && !needsProperties && !needsDepartments) {
-                    return s.batchData;
-                }
-                else if (hasRoleSelected &&
-                    (needsProperties && hasPropertySelected) ||
-                    (needsDepartments && hasPropertyGroupSelected)) {
+                if (hasRoleSelected && !needsProperties) {
                     return s.batchData;
                 }
             }

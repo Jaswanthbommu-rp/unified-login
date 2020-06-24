@@ -583,12 +583,6 @@
                     item.isAssigned = record.isAssigned;
                 }
 
-                if (record.productId == 20 &&
-                    item.roletype === record.roletype &&
-                    item.id !== record.id)
-                {
-                    item.disableSelection = record.isAssigned;
-                }
             });
 
             return s;
@@ -680,12 +674,11 @@
         p.selectedAsidePropertySync = function (productId) {
             var s = this,
             propertyData;
-
             propertyData = s.asidePropertyMap['product' + productId].asideProperties;
             var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
-                return data.isAssigned === true;
+                    return data.isAssigned === true;
             });
-
+            
             propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length;
             return s;
         };
@@ -695,14 +688,16 @@
                 propertyData;
 
             propertyData = s.propertyMap['product' + key].properties;
-
             propertyData.forEach(function (item) {
-                if (item.id == record.id) {
+                if(key == 8){
+                    if(item.propertyId == record.propertyId){
+                        item.isAssigned = true;
+                    }
+                }
+                else if(item.id == record.id) {
                     item.isAssigned = record.isAssigned;
                 }
-
             });
-
             return s;
         };
 
@@ -771,11 +766,14 @@
                 matchRecord;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
+            if(productId == 20){
+                record = record.propertiesList;
+            }
             record.forEach(function (item) {
-                item.isAssigned = bool;
+                   item.isAssigned = bool;
             });
             if(bool){
-                assignedCount = record.length;
+                  assignedCount = record.length;
             }
             propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
             return s;

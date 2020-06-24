@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -33,6 +34,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _personRepository = new PersonRepository();
         }
+
+        /// <summary>
+        /// Create a basic instance of the ManagePerson Controller class
+        /// </summary>
+        public ManagePerson(IRepository repository)
+        {
+            _personRepository = new PersonRepository(repository);
+        }
+
         #endregion
 
         #region Public ManagePerson methods

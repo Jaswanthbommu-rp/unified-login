@@ -9,7 +9,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
     public class RefreshTokenService : BaseTokenService<IdentityServer3.Core.Models.RefreshToken>, IRefreshTokenStore
     {
-	    private static IIdentityServerRepository _identityServerRepository;
+	    private readonly IIdentityServerRepository _identityServerRepository;
 
 	    public RefreshTokenService(IIdentityServerRepository identityServerRepository, IScopeStore scopeStore, IClientStore clientStore)
 		    : base(TokenTypeEnum.RefreshToken, scopeStore, clientStore, identityServerRepository)
