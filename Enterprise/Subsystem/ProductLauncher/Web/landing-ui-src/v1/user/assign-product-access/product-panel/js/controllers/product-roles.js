@@ -113,6 +113,7 @@
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
             }
             vm.propertySelect = accessType;
+            syncMgr.setAccessTypeValue($scope.$parent.productId, accessType);
             var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, accessType);
             if (dependencyControlId > 0) {
                 vm.loadProductControlDependencyData(dependencyControlId);
