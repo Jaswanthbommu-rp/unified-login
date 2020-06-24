@@ -573,7 +573,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = "Error getting role list.";
+                    response.ErrorReason = CommonMessageConstants.RolErrorMessage;
                 }
             }
 
@@ -692,34 +692,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, object> logData = new Dictionary<string, object>();
             RoleList roleListResult = new RoleList();
             WriteToDiagnosticLog("GetOneSiteRoleListMain - Begin get role list");
-            try
-            {
-                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 3500);
-                NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                logData.Add("uiArgs", uiArgs);
-                logData.Add("wsParams", wsParams);
-                WriteToDiagnosticLog("GetOneSiteRoleListMain - Getting role list", logData);
-                roleListResult = _service.GetAllRoles(uiArgs, uniqueIdentifier, wsParams);
 
-                if (roleListResult == null)
+            FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 3500);
+            NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
+            logData.Add("uiArgs", uiArgs);
+            logData.Add("wsParams", wsParams);
+            WriteToDiagnosticLog("GetOneSiteRoleListMain - Getting role list", logData);
+            roleListResult = _service.GetAllRoles(uiArgs, uniqueIdentifier, wsParams);
+
+            if (roleListResult == null)
+            {
+                throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+            }
+            else
+            {
+                if (roleListResult.Role?.Any() != true)
                 {
                     throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
                 }
-                else
-                {
-                    if (roleListResult.Role?.Any() != true)
-                    {
-                        throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                WriteToErrorLog("GetOneSiteRoleListMain - Error getting role list. " + ex.Message, exception: ex);
             }
             logData = new Dictionary<string, object>();
             logData.Add("roleListResult", roleListResult);
             WriteToDiagnosticLog("GetOneSiteRoleListMain - Finished get role list", logData);
+
             return roleListResult;
         }
 
