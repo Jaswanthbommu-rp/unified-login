@@ -7,7 +7,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -25,13 +24,6 @@ using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-    // get the list of onesite properties for the given BlackBook OneSite id
-    // http://booksapi-stg.realpage.com/companypropertyinstancemap?filter[companyInstanceId]=650532&include=propertyInstance&fields[propertyInstance]=propertyInstanceSourceId,propertyInstanceId,source,propertyName,isActive
-
-    // get all the products for a given company
-    // http://booksapi-stg.realpage.com/companymap?filter[companyId]=2326
-    // http://booksapi-stg.realpage.com/companymap?filter[companyId]=2326&include=companyInstance
-
     /// <summary>
     /// Manage BlueBook APIs
     /// </summary>
@@ -182,7 +174,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
 
-            if (useRPFMId && companyRealPageId != Guid.Empty && !string.IsNullOrEmpty(source))
+            if (useRPFMId && companyRealPageId != Guid.Empty && !string.IsNullOrEmpty(source) && !source.Equals(ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)))
             {
                 companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString().ToUpper(), source, domain);
                 if (companyMap != null)
@@ -275,7 +267,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     Dictionary<string, object> logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}};
                     WriteToLog(LogType.Diagnostic, "GetTranslateFromUPFMToProduct - Got info.", logData);
                     CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
-                    map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.CompanyInstanceSourceId;
+                    map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
+                    map.Source = productSource;
                     companyListCache.Add(map);
                     return companyListCache;
                 }
@@ -294,7 +287,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         private long GetCompanyMasterIdForRPDMID(string companyRealPageId, string domain)
         {
-            //string uri = $"customercompanymap?filter[source]=UPFM&filter[companyInstanceSourceId]={companyRealPageId}&" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + domainFilter + $"include=companyInstance";
             string uri = $"customercompanymap?filter[companyInstanceSourceId]={companyRealPageId}&include=companyInstance";
 
             RPObjectCache rpcache = new RPObjectCache();
@@ -554,13 +546,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Used to get the information about the company for RPUP
+        /// Used to get the information about the company, using the books customer master id or the UPFM id
         /// </summary>
-        /// <param name="booksCompanyMasterId"></param>        
+        /// <param name="companyRealPageId"></param>
+        /// <param name="domain"></param>
+        /// <param name="booksCompanyMasterId"></param>
         /// <returns></returns>
-        public CustomerCompany GetCompanyCustomerInfo(long booksCompanyMasterId)
+        public CustomerCompany GetCompanyCustomerInfo(Guid companyRealPageId, string domain, long booksCompanyMasterId)
         {
             CustomerCompany companyInstance = new CustomerCompany();
+            if (useRPFMId && companyRealPageId != Guid.Empty)
+            {
+                // need to send guid in uppercase because books is case sensitive.
+                var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
+                booksCompanyMasterId = (newCompanyMasterId != 0) ? newCompanyMasterId : booksCompanyMasterId;
+            }
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"getCompanyCustomerInfo_{booksCompanyMasterId}";

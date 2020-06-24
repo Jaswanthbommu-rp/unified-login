@@ -252,7 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return "";
             }
 
-            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(booksCustomerMasterId);
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(Guid.Empty, null, booksCustomerMasterId);
             if (customerCompany == null){ return "Company not found in books environment"; }
             
             OrganizationCreate organization = new OrganizationCreate()

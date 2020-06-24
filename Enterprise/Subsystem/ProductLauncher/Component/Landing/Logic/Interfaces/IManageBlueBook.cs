@@ -62,9 +62,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Used to get the information about the company for RPUP
         /// </summary>
-        /// <param name="booksCompanyMasterId">Master Company Id</param>
-        /// <returns>Company object</returns>
-        CustomerCompany GetCompanyCustomerInfo(long booksCompanyMasterId);
+        /// <param name="companyRealPageId"></param>
+        /// <param name="domain"></param>
+        /// <param name="booksCompanyMasterId"></param>
+        /// <returns></returns>
+        CustomerCompany GetCompanyCustomerInfo(Guid companyRealPageId, string domain, long booksCompanyMasterId);
 
         /// <summary>
         /// Used to get property information from the books
