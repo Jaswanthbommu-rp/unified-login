@@ -2473,3 +2473,18 @@ DECLARE @UserId bigint,
 				@ThruDate = NULL;   -- datetime
 			END;
 GO
+	 IF EXISTS (SELECT 1 FROM [UserManagement].[ProductPage] WHERE ProductId = 8)
+	  BEGIN
+		UPDATE [UserManagement].[ProductPage] SET IsActive = 0 WHERE ProductId = 8
+	  END
+
+	   IF EXISTS (SELECT 1 FROM [UserManagement].[ProductPage] WHERE ProductId = 50)
+	  BEGIN
+		UPDATE [UserManagement].[ProductPage] SET IsActive = 0 WHERE ProductId = 50
+	  END
+
+	   IF EXISTS (SELECT 1 FROM [UserManagement].[ProductPage] WHERE ProductId = 55)
+	  BEGIN
+		UPDATE [UserManagement].[ProductPage] SET IsActive = 0 WHERE ProductId = 55
+	  END
+  GO
