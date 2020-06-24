@@ -1,6 +1,6 @@
 ﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants
 {
-    public static class CommonMessageConstatns
+    public static class CommonMessageConstants
     {
         #region Products
 
