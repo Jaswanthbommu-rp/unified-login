@@ -246,10 +246,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"GetOneSitePropertyList - Error. {ex.Message} " , exception: ex);
+                WriteToErrorLog($"GetOneSitePropertyList - Error. {ex.Message} ", exception: ex);
                 response = new ListResponse();
                 response.IsError = true;
-                 
+
                 if (ex is BlueBookException blueBookException)
                 {
                     response.ErrorReason = ex.Message;
@@ -258,10 +258,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     response.ErrorReason = "There was a problem getting the list of properties";
                 }
-                
+
                 return response;
             }
-            
+
         }
 
         /// <summary>
@@ -530,32 +530,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public ListResponse GetOneSiteRoleListAll(long editorPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog("GetOneSiteRoleListAll - Begin");
-            ListResponse response = new ListResponse();
-            response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
-            _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
-            if (response.IsError) { return response; }
-
-            Dictionary<string, string> args = new Dictionary<string, string>();
-            args.Add("PMCID", _pmcID);
-            _roleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
-            IList<ProductRole> list = _roleList.ToGBRoles();
-            if (list == null) { list = new List<ProductRole>(); }
-            // set all the isactive to false because OneSite may return the roles that the editor has assigned
-            foreach (ProductRole pr in list)
+            ListResponse response;
+            try
             {
-                pr.IsAssigned = false;
+                WriteToDiagnosticLog("GetOneSiteRoleListAll - Begin");
+
+                response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+                _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
+                if (response.IsError) { return response; }
+
+                Dictionary<string, string> args = new Dictionary<string, string>();
+                args.Add("PMCID", _pmcID);
+                _roleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
+                IList<ProductRole> list = _roleList.ToGBRoles();
+                if (list == null) { list = new List<ProductRole>(); }
+                // set all the isactive to false because OneSite may return the roles that the editor has assigned
+                foreach (ProductRole pr in list)
+                {
+                    pr.IsAssigned = false;
+                }
+
+                response = new ListResponse()
+                {
+                    Records = list.Cast<object>().ToList(),
+                    TotalRows = list.Count,
+                    RowsPerPage = 9999,
+                    ErrorReason = "",
+                    TotalPages = 1
+                };
+
+                WriteToDiagnosticLog("GetOneSiteRoleListAll - End");
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"GetOneSiteRoleListAll - Error. {ex.Message} ", exception: ex);
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = "Error getting role list.";
+                }
             }
 
-            response = new ListResponse()
-            {
-                Records = list.Cast<object>().ToList(),
-                TotalRows = list.Count,
-                RowsPerPage = 9999,
-                ErrorReason = "",
-                TotalPages = 1
-            };
-            WriteToDiagnosticLog("GetOneSiteRoleListAll - End");
             return response;
         }
 
@@ -679,6 +700,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 logData.Add("wsParams", wsParams);
                 WriteToDiagnosticLog("GetOneSiteRoleListMain - Getting role list", logData);
                 roleListResult = _service.GetAllRoles(uiArgs, uniqueIdentifier, wsParams);
+
+                if (roleListResult == null)
+                {
+                    throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                }
+                else
+                {
+                    if (roleListResult.Role?.Any() != true)
+                    {
+                        throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                    }
+                }
             }
             catch (Exception ex)
             {
