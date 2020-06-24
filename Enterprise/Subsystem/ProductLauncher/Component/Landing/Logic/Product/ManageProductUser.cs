@@ -1974,11 +1974,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Lead2Lease Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            throw new NotImplementedException();
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
+            return productLead2Lease.UpdateLead2LeaseUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 
         /// <summary>
