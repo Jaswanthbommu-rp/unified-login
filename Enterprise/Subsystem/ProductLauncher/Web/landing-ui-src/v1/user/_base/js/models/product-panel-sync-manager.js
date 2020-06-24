@@ -751,17 +751,19 @@
                 assignedCount = 0,
                 totalCount = 0;
 
-            propertyList = s.propertyMap['product' + productId].properties;
-            propertyList.forEach(function (item) {
-                item["isAssigned"] = selected;
-                if (item.isAssigned) {
-                    assignedCount++;
-                }
-                totalCount++;
-            });
-
-            propertyList.assignedProperties = assignedCount + " of " + totalCount;
-            pubsub.publish("pplpropertygroup.updateGrids");
+            if(s.propertyMap['product' + productId] !== undefined){
+                propertyList = s.propertyMap['product' + productId].properties;
+                propertyList.forEach(function (item) {
+                    item["isAssigned"] = selected;
+                    if (item.isAssigned) {
+                        assignedCount++;
+                    }
+                    totalCount++;
+                });
+    
+                propertyList.assignedProperties = assignedCount + " of " + totalCount;
+                pubsub.publish("pplpropertygroup.updateGrids");
+            }
             return s;
         };
         p.updateAllFilterAsideProperties = function (productId, record, bool) {
@@ -1117,7 +1119,7 @@
             var s = this;
             var list = s.propertyGroupMap['product' + key].propertyGroup;
             list.forEach(function (item) {
-                item.isAssigned = record.id == item.id;
+                item.isAssigned = record.propertyGroupId == item.propertyGroupId;
             });
             s.propertyGroupList = list;
             s.renderPropertyGroupMap(key);

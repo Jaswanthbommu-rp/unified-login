@@ -72,17 +72,14 @@
 
         vm.accessTypeChanged = function (value) {
             vm.propertySelect = value;
-            var propertyData = syncMgr.getProductPropertiesData($scope.$parent.productId);
             if (vm.propertySelect === 'allProperties') {
                 vm.allProperties = true;
-                if(propertyData !== undefined){
-                    syncMgr.allPropertiesSync($scope.productId, false);
-                }
+                syncMgr.allPropertiesSync($scope.productId, false);
             }
             else if (vm.propertySelect === 'property') {
                 vm.allProperties = false;
             }
-            else if (vm.propertySelect === 'propertyGroup' && propertyData !== undefined) {
+            else if (vm.propertySelect === 'propertyGroup') {
                 syncMgr.allPropertiesSync($scope.productId, false);
             }
         };

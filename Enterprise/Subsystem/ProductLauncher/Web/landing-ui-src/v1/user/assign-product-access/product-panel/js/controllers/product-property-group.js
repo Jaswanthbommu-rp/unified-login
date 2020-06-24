@@ -29,7 +29,7 @@
             vm.activeWatch = $scope.$watch(vm.isActive, vm.loadData);
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
-            vm.gridRadioSelectionWatch = pgGrid.subscribe("ppanel.property-group-radio", vm.radioselectionChange);
+            vm.gridRadioSelectionWatch = pubsub.subscribe("ppanel.property-group-radio", vm.radioselectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllCompaniesSet", vm.accountingAllCompaniesSet);
