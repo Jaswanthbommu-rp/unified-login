@@ -690,7 +690,9 @@
             propertyData = s.propertyMap['product' + key].properties;
             propertyData.forEach(function (item) {
                 if(key == 8){
-                    item.isAssigned = item.propertyId == record.propertyId;
+                    if(item.propertyId == record.propertyId){
+                        item.isAssigned = true;
+                    }
                 }
                 else if(item.id == record.id) {
                     item.isAssigned = record.isAssigned;
