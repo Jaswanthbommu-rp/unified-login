@@ -27,6 +27,7 @@
             s.productGridConfigMap = {};
             s.productAsideGridConfigMap = {};
             s.productSwitchConfigMap = {};
+            s.productAccessTypeMap = {};
             s.productRadioConfigMap = {};
             s.productDependencyMap = {};
             s.productTabsMap = {};
@@ -133,6 +134,20 @@
                 config = s.productSwitchConfigMap['product' + productId + tabName].switchCtrlConfig;
             }
             return config;
+        };
+
+        p.getAccessTypeValue = function (productId) {
+            var s = this,
+                accessTypeValue;
+            if (s.productAccessTypeMap['product' + productId] !== undefined) {
+                accessTypeValue = s.productAccessTypeMap['product' + productId];
+            }
+            return accessTypeValue;
+        };
+
+        p.setAccessTypeValue = function (productId , value) {
+            var s = this;
+            s.productAccessTypeMap['product' + productId] = value;
         };
 
         p.getProductSelectTypeConfig = function (productId, tabName) {
@@ -723,17 +738,17 @@
             var s = this,
                 propertyList,
                 selectState = false;
+            if(s.propertyMap['product' + productId] !== undefined){
+                propertyList = s.propertyMap['product' + productId].properties;
 
-            propertyList = s.propertyMap['product' + productId].properties;
-
-            propertyList.forEach(function (item) {
-                if (parseInt(item.region_id) == parseInt(group.id)) {
-                    item["isAssigned"] = group.isAssigned;
-                }
-            });
-
-            pubsub.publish("pplpropertygroup.updateGrids");
-
+                propertyList.forEach(function (item) {
+                    if (parseInt(item.region_id) == parseInt(group.id)) {
+                        item["isAssigned"] = group.isAssigned;
+                    }
+                });
+    
+                pubsub.publish("pplpropertygroup.updateGrids");
+            }
             return s;
         };
 
@@ -743,18 +758,19 @@
                 selectState = false,
                 assignedCount = 0,
                 totalCount = 0;
+            if(s.propertyMap['product' + productId] !== undefined){
+                propertyList = s.propertyMap['product' + productId].properties;
+                propertyList.forEach(function (item) {
+                    item["isAssigned"] = selected;
+                    if (item.isAssigned) {
+                        assignedCount++;
+                    }
+                    totalCount++;
+                });
 
-            propertyList = s.propertyMap['product' + productId].properties;
-            propertyList.forEach(function (item) {
-                item["isAssigned"] = selected;
-                if (item.isAssigned) {
-                    assignedCount++;
-                }
-                totalCount++;
-            });
-
-            propertyList.assignedProperties = assignedCount + " of " + totalCount;
-            pubsub.publish("pplpropertygroup.updateGrids");
+                propertyList.assignedProperties = assignedCount + " of " + totalCount;
+                pubsub.publish("pplpropertygroup.updateGrids");
+            }
             return s;
         };
         p.updateAllFilterAsideProperties = function (productId, record, bool) {
@@ -1104,6 +1120,16 @@
             var list = s.propertyGroupMap['product' + key].propertyGroup;
             list.forEach(function (item) {
                 item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
+        };
+
+        p.setPropertyGroupData = function(key, record) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = record.propertyGroupId == item.propertyGroupId;
             });
             s.propertyGroupList = list;
             s.renderPropertyGroupMap(key);

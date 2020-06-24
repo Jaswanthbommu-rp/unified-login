@@ -30,6 +30,7 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
+            vm.gridRadioSelectionWatch = pubsub.subscribe("ppanel.property-group-radio", vm.radioSelectionChange);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllCompaniesSet", vm.accountingAllCompaniesSet);
             vm.updateGridWatch = pubsub.subscribe("acct.updateGridWatchSet", vm.updateGrid);
@@ -49,6 +50,10 @@
 
         vm.filter = function (filterBy) {
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+        };
+
+        vm.radioSelectionChange = function (record) {
+            syncMgr.setPropertyGroupData($scope.$parent.productId, record);
         };
 
         vm.clearPropertyGroup = function (productId) {
@@ -147,6 +152,10 @@
 
                 });
 
+                if(productId == 16) {
+                    var accesstype = syncMgr.getAccessTypeValue(productId);
+                    pubsub.publish("ppanel.assign-accessType", accesstype);
+                }
                 if (productId == 47) {
                     propData.map(function (region) {
                         if (region.groupType === 'region') {
@@ -162,6 +171,7 @@
                         number: 0
                     });
                 }
+                
             }
 
             return vm;
