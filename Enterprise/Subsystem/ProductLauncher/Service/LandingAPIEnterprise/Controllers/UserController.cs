@@ -585,9 +585,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			}
 
 			ListResponse listResponse = new ListResponse();
-			switch (ManageBlueBook.GetBlueBookProductId(productCode))
+			switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
 			{
-				case (int)ProductEnum.OpsBuyer:
+				case ProductEnum.OpsBuyer:
 					var samlRepository = new SamlRepository();
 					IList<PersonaProductUserDetails> productList = samlRepository.ListActiveProductsByPersonaId(persona.PersonaId, (int) ProductEnum.OpsBuyer, null);
 					if (productList.Any(p => p.ProductStatus == (int) ProductBatchStatusType.Success))
@@ -671,9 +671,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			}
 
 			RequestParameter requestParameter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = rowsPerPage, StartRow = pageNumber } };
-			switch (ManageBlueBook.GetBlueBookProductId(productCode))
+			switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
 			{
-				case (int)ProductEnum.OpsBuyer:
+				case ProductEnum.OpsBuyer:
 					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 					ListResponse listResponse = manageProductOps.GetUsers(_userClaims.PersonaId, requestParameter);
 
