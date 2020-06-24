@@ -1158,17 +1158,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (userAccessLevel == "Client")
             {
-                //allPropertyGroups = new List<VendorServicesPropertyGroup>
-                //{
-                //    //new VendorServicesPropertyGroup
-                //    //{
-                //    //    Name = "Client",
-                //    //    AccessLevel = "AllProperties",
-                //    //    IsAssigned = true,
-                //    //    PropertyGroupId = propGroupId
-                //    //}
-                //};
-
                 accessType.Add("accessType", "allProperties");
                 WriteToDiagnosticLog($"ManageProductVendorServices.MergeProductGroupsWithGreenbook accessType - allProperties");
             }
