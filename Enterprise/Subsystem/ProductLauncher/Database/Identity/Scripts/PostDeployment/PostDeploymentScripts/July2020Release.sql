@@ -162,7 +162,7 @@ END
 declare @productPageId int;
 SELECT @productPageId = ProductPageId FROM [UserManagement].[ProductPage] WHERE ProductId = @ProductId
 
-IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPageControl] WHERE ControlId = 399)
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPageControl] WHERE ProductPageControlId = 14)
 BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
@@ -174,7 +174,7 @@ BEGIN
 END
 ELSE
 BEGIN
-	UPDATE [UserManagement].[ProductPageControl] SET ControlId = 399 WHERE ProductPageId = @productPageId;
+	UPDATE [UserManagement].[ProductPageControl] SET ControlId = 399 WHERE ProductPageControlId = 14;
 END
 
 SELECT @ProductId = 26
