@@ -40,6 +40,13 @@
 
             vm.gridAllWatch = tab6Grid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = tab6Grid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
+            vm.filterData = tab6Grid.subscribe("filterBy", vm.filter.bind(vm));
+        };
+
+        vm.filter = function (filterBy) {
+            if ($scope.$parent.productId !== 30) {
+               vm.filteredRecords = $filter("filter")(vm.dataTabReq.records, filterBy);
+            }
         };
 
         vm.isActive = function () {
