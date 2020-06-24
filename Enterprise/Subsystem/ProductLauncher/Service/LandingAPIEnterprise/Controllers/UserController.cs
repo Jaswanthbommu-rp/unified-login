@@ -806,16 +806,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user/products")]
         [AuthorizeScope("userinfoapi", "internalapi")]
         [HttpGet]
-        public HttpResponseMessage GetUserProductsByPersonaId(long personaId)
+        public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0)
         {
             UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>()};
 
-			if (personaId == 0)
+			if (!personaId.HasValue || personaId == 0)
             {
                 personaId = _userClaims.PersonaId;
             }
 
-            Persona persona = _managePersona.GetPersonaWithRightsToggle(personaId, false);
+            Persona persona = _managePersona.GetPersonaWithRightsToggle(personaId.Value, false);
             if (persona != null)
             {
                 if (_userClaims.OrganizationPartyId == 0)
@@ -844,9 +844,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						Title = persona.Name,
 					};
 
-                    var productList = _manageProduct.GetAllProductsByPersona(personaId, ProductBatchStatusType.Success);
+                    var productList = _manageProduct.GetAllProductsByPersona(personaId.Value, ProductBatchStatusType.Success);
 
-					List<UserProducts> userProducts = ConvertPersonaProductsToRAUL(productList, personaId);
+					List<UserProducts> userProducts = ConvertPersonaProductsToRAUL(productList, personaId.Value);
 
 					productResult.Products.Add("Favorites", userProducts.Where(p => p.IsFavorite).ToList());
 					foreach (UserProducts up in userProducts)

@@ -74,6 +74,7 @@
             vm.propertySelect = value;
             if (vm.propertySelect === 'allProperties') {
                 vm.allProperties = true;
+                syncMgr.allPropertiesSync($scope.productId, false);
             }
             else if (vm.propertySelect === 'property') {
                 vm.allProperties = false;

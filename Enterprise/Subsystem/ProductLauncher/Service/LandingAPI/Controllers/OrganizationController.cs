@@ -327,13 +327,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdString);
                     CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
                     {
-                        CompanyInstanceId = companyMap.CompanyInstanceId,
+                        CompanyInstanceId = null,
                         CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
                         CompanyName = org.Name,
-                        CustomerCompanyId = companyMap.CustomerCompanyId,
+                        CustomerCompanyId = null,
                         IsActive = companyMap.CompanyInstance[0].IsActive,
                         Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                        CustomerEnvironment = org.OrganizationDomain.Name,
+                        CustomerEnvironment = null,
                         ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
                     };
                     var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance);
