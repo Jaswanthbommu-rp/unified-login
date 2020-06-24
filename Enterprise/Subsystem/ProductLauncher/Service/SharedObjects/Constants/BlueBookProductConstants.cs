@@ -262,5 +262,10 @@
 		/// UnifiedSettings
 		/// </summary>
 		public const string UnifiedSettings = "SET";
+
+		/// <summary>
+		/// CompanyMapErrorMessage
+		/// </summary>
+		public const string CompanyMapErrorMessage = "This product is not yet implemented.  The product access page will be available when your implementation is complete. Thank you for choosing RealPage.";
 	}
 }

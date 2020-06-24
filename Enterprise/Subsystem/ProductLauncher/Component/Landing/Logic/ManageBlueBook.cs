@@ -216,7 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - No info found.", logData);
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        throw new BlueBookException("This product is not yet implemented.  The product access page will be available when your implementation is complete. Thank you for choosing RealPage.");
+                        throw new BlueBookException(BlueBookProductConstants.CompanyMapErrorMessage);
                     }
                     else
                     {
