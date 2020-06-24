@@ -169,16 +169,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="companyRealPageId">The guid for the company</param>
         /// <param name="booksCompanyMasterId">Master Company Id</param>
         /// <param name="source">A filter on source if given</param>
+        /// <param name="domain">The domain to query for the company</param>
         /// <param name="includeExtra">Extra Uri Includes (Optional)</param>
         /// <param name="includeGreenBookCares">Filter result using greenbook cares flag</param>
-        /// <param name="domain">The domain to query for the company</param>
         /// <returns>List of CompanyMapResource</returns>
-        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string includeExtra = "", bool includeGreenBookCares = true, string domain = "")
+        public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true)
         {
             if (booksCompanyMasterId == -1)
             {
                 // shortcut out for RealPage Employee company
                 return null;
+            }
+            IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
+
+            if (useRPFMId && companyRealPageId != Guid.Empty && !string.IsNullOrEmpty(source))
+            {
+                companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString().ToUpper(), source, domain);
+                if (companyMap != null)
+                {
+                    return companyMap;
+                }
             }
 
             if (useRPFMId && companyRealPageId != Guid.Empty)
@@ -187,8 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
                 booksCompanyMasterId = (newCompanyMasterId != 0) ? newCompanyMasterId : booksCompanyMasterId;
             }
-
-            IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
+            
             string domainFilter = "";
 
             if (source == null)
@@ -247,6 +256,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return companyMap;
+        }
+
+        private IList<CustomerCompanyMap> GetTranslateFromUPFMToProduct(string companyRealPageId, string productSource, string domain)
+        {
+            //translate/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
+            string uri = $"translate/companyinstance/{companyRealPageId}/UPFM/{productSource}?filter[customerEnvironment]={domain}";
+
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"GetTranslateFromUPFMToProduct_{companyRealPageId}_{productSource}_{domain}";
+            List<CustomerCompanyMap> booksCustomerMaster = rpcache.GetFromCache<List<CustomerCompanyMap>>(cacheKey, 180, () =>
+            {
+                List<CustomerCompanyMap> companyListCache = new List<CustomerCompanyMap>();
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
+                    Dictionary<string, object> logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}};
+                    WriteToLog(LogType.Diagnostic, "GetTranslateFromUPFMToProduct - Got info.", logData);
+                    CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
+                    map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.CompanyInstanceSourceId;
+                    companyListCache.Add(map);
+                    return companyListCache;
+                }
+
+                return null;
+            });
+
+            return booksCustomerMaster;
         }
 
         /// <summary>

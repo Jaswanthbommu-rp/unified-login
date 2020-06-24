@@ -167,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, result.Status.ErrorMsg);
             }
 
-            IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false, domain: result.obj.Org.OrganizationDomain.Name);
+            IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: result.obj.Org.OrganizationDomain.Name, includeGreenBookCares: false);
 
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
@@ -321,7 +321,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (orgNameChanged)
             {
                 // update the name in MDM
-                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId:org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false, domain: organization.OrganizationDomainName);
+                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId:org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomainName, includeGreenBookCares: false);
                 if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdString))
                 {
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdString);
@@ -421,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     continue;
                 }
 
-                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), includeGreenBookCares: false, domain: organization.OrganizationDomain.Name);
+                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomain.Name, includeGreenBookCares: false);
 
                 // add the missing company to books
                 var companyInstance = new CompanyInstanceAdd()
