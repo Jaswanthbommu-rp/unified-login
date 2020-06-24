@@ -13,14 +13,17 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using Microsoft.Ajax.Utilities;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -405,7 +408,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         public HttpResponseMessage SyncBooksOrganizations(bool commit = false)
         {
-            Dictionary<string, CompanyInstanceAdd> processResult = new Dictionary<string, CompanyInstanceAdd>();
             var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
             var booksUrl = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             if (booksUrl.Contains("booksapi.realpage.com"))
@@ -414,74 +416,80 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             IList<Organization> orgList = _manageOrganization.GetOrganizationList();
-            foreach (var organization in orgList)
+            ConcurrentDictionary<string, CompanyInstanceAdd> result = new ConcurrentDictionary<string, CompanyInstanceAdd>();
+            Parallel.ForEach(orgList, new ParallelOptions {MaxDegreeOfParallelism = 5}, companyList => { SyncBooksCompany(commit, companyList).ForEach(x => result.TryAdd(x.Key, x.Value)); });
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
+        private Dictionary<string, CompanyInstanceAdd> SyncBooksCompany(bool commit, Organization organization)
+        {
+            Dictionary<string, CompanyInstanceAdd> result = new Dictionary<string, CompanyInstanceAdd>();
+            if (organization.BooksCustomerMasterId <= 0)
             {
-                if (organization.BooksCustomerMasterId <= 0)
+                return result;
+            }
+
+            IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomain.Name, includeGreenBookCares: false);
+
+            // add the missing company to books
+            var companyInstance = new CompanyInstanceAdd()
+            {
+                Id = organization.BooksCustomerMasterId,
+                CustomerCompanyId = organization.BooksCustomerMasterId,
+                CompanyInstanceSourceId = organization.RealPageId.ToString(),
+                CompanyName = organization.Name,
+                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                IsActive = true,
+                CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                CustomerEnvironment = organization.OrganizationDomain.Name
+            };
+
+            bool foundInstance = false;
+
+            if (companyMapResource != null)
+            {
+                // remove any existing instance and add a new one
+                foreach (var customerCompanyMap in companyMapResource)
                 {
-                    continue;
-                }
-
-                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomain.Name, includeGreenBookCares: false);
-
-                // add the missing company to books
-                var companyInstance = new CompanyInstanceAdd()
-                {
-                    Id = organization.BooksCustomerMasterId,
-                    CustomerCompanyId = organization.BooksCustomerMasterId,
-                    CompanyInstanceSourceId = organization.RealPageId.ToString(),
-                    CompanyName = organization.Name,
-                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                    IsActive = true,
-                    CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                    CustomerEnvironment = organization.OrganizationDomain.Name
-                };
-
-                bool foundInstance = false;
-
-                if (companyMapResource != null)
-                {
-                    // remove any existing instance and add a new one
-                    foreach (var customerCompanyMap in companyMapResource)
+                    bool deleteInstance = false;
+                    customerCompanyMap.CompanyInstance.ForEach(i =>
                     {
-                        bool deleteInstance = false;
-                        customerCompanyMap.CompanyInstance.ForEach(i =>
+                        if (i.CustomerEnvironment == null)
                         {
-                            if (i.CustomerEnvironment == null)
-                            {
-                                deleteInstance = true;
-                            }
-                            else if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase) && !i.CompanyInstanceSourceId.Equals(companyInstance.CompanyInstanceSourceId, StringComparison.OrdinalIgnoreCase))
-                            {
-                                deleteInstance = true;
-                            }
-                            else
-                            {
-                                foundInstance = true;
-                            }
-                        });
-                        if (deleteInstance)
+                            deleteInstance = true;
+                        }
+                        else if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase) && !i.CompanyInstanceSourceId.Equals(companyInstance.CompanyInstanceSourceId, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (commit)
-                            {
-                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
-                            }
+                            deleteInstance = true;
+                        }
+                        else
+                        {
+                            foundInstance = true;
+                        }
+                    });
+                    if (deleteInstance)
+                    {
+                        if (commit)
+                        {
+                            _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
                         }
                     }
                 }
-
-                if (!foundInstance)
-                {
-                    // add the company data to books
-                    if (commit)
-                    {
-                        _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
-                    }
-
-                    processResult.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
-                }
             }
 
-            return Request.CreateResponse(HttpStatusCode.NoContent, processResult);
+            if (!foundInstance)
+            {
+                // add the company data to books
+                if (commit)
+                {
+                    _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                }
+
+                result.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
+            }
+
+            return result;
         }
 
 
