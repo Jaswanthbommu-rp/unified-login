@@ -216,7 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - No info found.", logData);
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        throw new BlueBookException(BlueBookProductConstants.CompanyMapErrorMessage);
+                        throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
                     }
                     else
                     {
