@@ -688,14 +688,14 @@
                 propertyData;
 
             propertyData = s.propertyMap['product' + key].properties;
-
             propertyData.forEach(function (item) {
-                if (item.id == record.id) {
+                if(key == 8){
+                    item.isAssigned = item.propertyId == record.propertyId;
+                }
+                else if(item.id == record.id) {
                     item.isAssigned = record.isAssigned;
                 }
-
             });
-
             return s;
         };
 
