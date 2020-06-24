@@ -100,11 +100,8 @@
         };
 
         vm.resetDataModel = function (accessType) {
-            //var propertyData = syncMgr.getProductPropertiesData($scope.$parent.productId);
             if (accessType === 'propertyGroup') {
-                // if(propertyData !== undefined){
-                    syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                // }
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
             else if(accessType === 'property') {
