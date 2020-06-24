@@ -533,8 +533,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			IUserLoginOnly userLogin = new UserLoginOnly();
 			userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+			
+            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
+            userPersona.Organization = organizationList.FirstOrDefault(i => i.PartyId == userPersona.OrganizationPartyId);
 
-			var personaOrganization = userPersona.Organization;
+            var personaOrganization = userPersona.Organization;
 			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
 			// get the email address
