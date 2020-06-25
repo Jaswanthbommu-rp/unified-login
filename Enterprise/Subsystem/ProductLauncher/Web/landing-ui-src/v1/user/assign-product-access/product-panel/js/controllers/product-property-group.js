@@ -154,6 +154,10 @@
 
                 if(productId == 16) {
                     var accesstype = syncMgr.getAccessTypeValue(productId);
+                    if(accesstype == 'allProperties')
+                    {
+                        syncMgr.allPropertiesSync(productId, false);
+                    }
                     pubsub.publish("ppanel.assign-accessType", accesstype);
                 }
                 if (productId == 47) {
@@ -181,6 +185,9 @@
             pgGrid.busy(false);
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
+                if(resp.additional.accessType){
+                    syncMgr.setAccessTypeValue($scope.$parent.productId, resp.additional.accessType);
+                }
                 if ($scope.$parent.productId == 8 && resp.additional && resp.additional != undefined) {
                     syncMgr.setProductAdditionalData($scope.$parent.productId, resp.additional);
                 }
