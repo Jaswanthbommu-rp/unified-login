@@ -112,8 +112,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         product = new OneSiteProduct(_defaultUserClaim);
 
-                        productPropertiesRoles =
-                           JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                        if (ValidateDictionaryMapping(productUser.InputJson))
+                        {
+                            productPropertiesRoles =
+                               JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                        }
+                        else
+                        {
+                            productPropertiesRoles =
+                                GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                        }
 
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                             productUser.AssignUserPersonaId, productPropertiesRoles);
@@ -860,6 +868,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // if the parser fails return an empty object so the product call can catch the error
                 return default(T);
             }
+        }
+
+        /// <summary>
+        /// Validate if the input value can be serialized as dictionary
+        /// </summary>
+        /// <param name="productUserInputJson">Json payload</param>
+        /// <returns>A boolean indicating if its valid or not</returns>
+        private bool ValidateDictionaryMapping(string productUserInputJson)
+        {
+            bool result;
+
+            try
+            {
+                JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUserInputJson.Trim());
+
+                result = true;
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
+
+            return result;
         }
 
         private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId)
@@ -3660,7 +3691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         #endregion
-        
+
     }
 
     #endregion
