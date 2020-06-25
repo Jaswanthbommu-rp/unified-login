@@ -16,7 +16,7 @@
             vm = this;
             vm.tab6Grid = tab6Grid;
             vm.assignedRoleId = 0;
-
+            vm.diqAreas = [];
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             tab6GridTransform.watch(tab6Grid);
@@ -46,7 +46,7 @@
 
         vm.filter = function (filterBy) {
             if ($scope.$parent.productId !== 30) {
-               vm.filteredRecords = $filter("filter")(vm.dataTabReq.records, filterBy);
+                vm.filteredRecords = $filter("filter")(vm.diqAreas, filterBy);
             }
         };
 
@@ -106,7 +106,7 @@
 
         vm.loadGridData = function (productId) {
             //var productId = $scope.$parent.productId;
-            var diqAreas = [];
+            vm.diqAreas = [];
             tab6Grid.busy(false);
             var data = syncMgr.getTab6ProductData(productId);
             logc("syncMgr", syncMgr, data);
@@ -122,10 +122,10 @@
                 if (productId == 47) {
                     data.map(function (area) {
                         if (area.groupType === 'area') {
-                            diqAreas.push(area);
+                            vm.diqAreas.push(area);
                         }
                     });
-                    tab6GridPagination.setData(diqAreas).goToPage({
+                    tab6GridPagination.setData(vm.diqAreas).goToPage({
                         number: 0
                     });
                 }
@@ -167,9 +167,10 @@
             if ($scope.$parent.productId == 30) {
                 syncMgr.allTab6DataSync(34, bool);
             }
-            else {
+            else if ($scope.$parent.productId !== 47) {
                 syncMgr.allTab6DataSync($scope.$parent.productId, bool);
             }
+            vm.tab6Grid.updateSelected();
         };
 
         vm.updateRoleRecords = function (record) {
