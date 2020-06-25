@@ -185,7 +185,7 @@
             pgGrid.busy(false);
             if (resp.records && resp.records.length) {
                 var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
-                if(resp.additional.accessType){
+                if(resp.additional && resp.additional != undefined){
                     syncMgr.setAccessTypeValue($scope.$parent.productId, resp.additional.accessType);
                 }
                 if ($scope.$parent.productId == 8 && resp.additional && resp.additional != undefined) {
