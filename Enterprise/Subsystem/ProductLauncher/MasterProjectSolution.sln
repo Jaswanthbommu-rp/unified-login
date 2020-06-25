@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.MvcWeb", "..\..\Found
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.WebApi", "..\..\Foundation\Audit\Audit.WebApi\Audit.WebApi.csproj", "{FFAD1EF8-C442-499B-9959-8F8D43A84515}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LandingAPI.Test", "Service\LandingAPI\LandingAPI.Test\LandingAPI.Test.csproj", "{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Component.Landing", "Component\Landing\Component.Landing.csproj", "{5794A497-56D2-4B0C-A168-D0F75BB21FF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.LandingAPIEnterprise", "Service\LandingAPIEnterprise\Service.LandingAPIEnterprise.csproj", "{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}"
@@ -86,6 +88,11 @@ Global
 		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
 		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFAD1EF8-C442-499B-9959-8F8D43A84515}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5794A497-56D2-4B0C-A168-D0F75BB21FF9}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU

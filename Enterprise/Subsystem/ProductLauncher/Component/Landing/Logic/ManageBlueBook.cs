@@ -190,12 +190,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 booksCompanyMasterId = (newCompanyMasterId != 0) ? newCompanyMasterId : booksCompanyMasterId;
             }
             
-            string domainFilter = "";
-
             if (source == null)
             {
                 source = "";
             }
+
+            string domainFilter = "";
 
             if (!string.IsNullOrEmpty(domain) && useDomains)
             {
