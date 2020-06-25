@@ -371,7 +371,7 @@
                     relevantTab = allTab.filter(function (data) {
                         return data.text.toLowerCase() !== irreleventTab.displayName.toLowerCase();
                     });
-                    if (vm.propertySelect == '') {
+                    if (vm.propertySelect == '' || vm.propertySelect === undefined) {
                         relevantTab = relevantTab.filter(function (data) {
                             return data.id.toLowerCase() !== 'properties';
                         });
