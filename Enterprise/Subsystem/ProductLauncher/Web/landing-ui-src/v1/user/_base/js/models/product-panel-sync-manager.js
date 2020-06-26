@@ -778,20 +778,20 @@
         p.updateAllFilterAsideProperties = function (productId, record, bool) {
             var s = this,
                 propertyList,
-                assignedCount = 0,
+                assignedList,
                 matchRecord;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
-            if(productId == 20){
-                record = record.propertiesList;
-            }
+            
             record.forEach(function (item) {
                    item.isAssigned = bool;
             });
-            if(bool){
-                  assignedCount = record.length;
-            }
-            propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
+            
+            assignedList = propertyList.propertiesList.filter(function (data) {
+                return data.isAssigned === true;
+            });
+
+            propertyList.assignedProperties = assignedList.length + " of " + propertyList.propertiesList.length;
             return s;
         };
         p.setAllPropertyGroupSync = function (productId, bool) {
