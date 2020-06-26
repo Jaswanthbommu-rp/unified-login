@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -117,16 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 RoleInfo result = GetRolesMain();
-                if (result == null)
-                {
-                    response = new ListResponse()
-                    {
-                        IsError = true,
-                        ErrorReason = "Role info is missing"
-                    };
-                    WriteToDiagnosticLog("GetRoles - Error retrieving role info.");
-                    return response;
-                }
+
                 list = result.Roles.ToGBRoles();
                 if (list == null) { list = new List<ProductRole>(); }
 
@@ -179,14 +171,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                // test
-                WriteToErrorLog($"GetRoles - Error", exception: ex);
-                response = new ListResponse()
+                WriteToErrorLog($"GetRoles - Error. {ex.Message} ", exception: ex);
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException)
                 {
-                    IsError = true,
-                    ErrorReason = ex.Message
-                };
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                }
             }
+
             return response;
         }
 
@@ -211,7 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 IList<Property> result = GetPropertyMain();
                 if (result == null)
-                {                      
+                {
                     response = new ListResponse()
                     {
                         IsError = true,
@@ -505,18 +503,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                RoleInfo result = GetRolesMain();
-                if (result == null)
+                RoleInfo result = null;
+
+                try
                 {
-                    response = new ListResponse()
+                    result = GetRolesMain();
+                }
+                catch (Exception ex)
+                {
+                    WriteToErrorLog($"ManageLead2LeaseUser - Error. {ex.Message} ", exception: ex);
+                    response = new ListResponse();
+                    response.IsError = true;
+
+                    if (ex is BlueBookException)
                     {
-                        IsError = true,
-                        ErrorReason = "Role list failed"
-                    };
-                    WriteToDiagnosticLog("ManageLead2LeaseUser - Error getting role list.");
+                        response.ErrorReason = ex.Message;
+                    }
+                    else
+                    {
+                        response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                    }
+
                     return response.ErrorReason;
                 }
-
 
                 List<string> adminRights = new List<string> {
                 "ALLOW USER TO CHANGE PASSWORDS MANUALLY",
@@ -886,20 +895,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         private RoleInfo GetRolesMain()
         {
+            RoleInfo result;
+
             Dictionary<string, object> logData = new Dictionary<string, object>();
             string baseUrlAndQuery = $"{_apiEndPoint}/Users/ActiveRoles";
             logData.Add("baseUrlAndQuery", baseUrlAndQuery);
             WriteToDiagnosticLog("GetRoles - Getting info.", logData);
-            RoleInfo result = new RoleInfo();
-            try
+
+            result = GetResultFromApi<RoleInfo>(baseUrlAndQuery, false);
+
+            if (result == null)
             {
-                result = GetResultFromApi<RoleInfo>(baseUrlAndQuery, false);
+                throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
             }
-            catch (Exception ex)
+            else
             {
-                WriteToErrorLog($"GetRolesMain - GetRoles failed.", logData, ex);
-                result = null;
+                if (result.Presets?.Any() != true)
+                {
+                    throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                }
             }
+
             return result;
         }
 
