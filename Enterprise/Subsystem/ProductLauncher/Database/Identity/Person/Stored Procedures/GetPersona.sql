@@ -1,4 +1,4 @@
-﻿CREATE or alter  PROCEDURE [Person].[GetPersona](@PersonaId BIGINT)
+﻿CREATE PROCEDURE [Person].[GetPersona](@PersonaId BIGINT)
 AS
      BEGIN
          DECLARE @NOW DATETIME= GETUTCDATE();

@@ -13,5 +13,10 @@
         /// The value of the setting
         /// </summary>
         public string Value { get; set; }
+
+        /// <summary>
+        /// Does the setting contain sensitive data
+        /// </summary>
+        public bool SensitiveData { get; set; }
     }
 }

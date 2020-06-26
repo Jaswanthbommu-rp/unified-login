@@ -21,6 +21,7 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -34,7 +35,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         const string MediaTypeName = "application/vnd.api+json";
         const int CacheTimeSeconds = 300;
         const int AuthTokenRefreshMinutes = 50;
-        const int LandingProductID = 3;
 
         const int MAXRETRYCOUNT = 5;
 
@@ -45,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         readonly AuthTokenData _authTokenInfo = new AuthTokenData();
 
         private bool useDomains = false;
-        private bool useRPFMId = false;
+        private bool useUPFMId = false;
 
         ObjectCache _manageBlueBookCache = MemoryCache.Default;
 
@@ -59,14 +59,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #region GetSettings
 
-            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + LandingProductID] as List<ProductInternalSetting>;
+            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
             if (productInternalSettingList == null)
             {
                 _productInternalSettingRepository = new ProductInternalSettingRepository();
-                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(LandingProductID);
+                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
                 CacheItemPolicy policy = new CacheItemPolicy();
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageBlueBookCache.Set("productInternalSetting_" + LandingProductID, productInternalSettingList, policy);
+                _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
 
             #endregion
@@ -77,9 +77,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 useDomains = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value);
             }
 
-            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)))
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase)))
             {
-                useRPFMId = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)).Value);
+                useUPFMId = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase)).Value);
             }
 
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
@@ -98,14 +98,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #region GetSettings
 
-            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + LandingProductID] as List<ProductInternalSetting>;
+            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
             if (productInternalSettingList == null)
             {
                 _productInternalSettingRepository = new ProductInternalSettingRepository();
-                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(LandingProductID);
+                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
                 CacheItemPolicy policy = new CacheItemPolicy();
                 policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageBlueBookCache.Set("productInternalSetting_" + LandingProductID, productInternalSettingList, policy);
+                _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
             }
 
             #endregion
@@ -113,16 +113,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)))
             {
-                useDomains = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value);
+                useDomains = Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)).Value));
             }
 
-            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)))
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase)))
             {
-                useRPFMId = Convert.ToBoolean(productInternalSettingList.First(a => a.Name.Equals("BooksUseRPFMId", StringComparison.OrdinalIgnoreCase)).Value);
+                useUPFMId = Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase)).Value));
             }
 
-            useDomains = true;
-            useRPFMId = true;
             //bbUri = "https://booksapi.realpage.com";
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
             //_authTokenInfo.Data.Password = "P>qx3g6MEkt(G:-";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIPASSWORD").Value;
@@ -174,7 +172,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
 
-            if (useRPFMId && companyRealPageId != Guid.Empty && !string.IsNullOrEmpty(source) && !source.Equals(ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)))
+            if (useUPFMId && companyRealPageId != Guid.Empty && !string.IsNullOrEmpty(source) && !source.Equals(ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)))
             {
                 companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString().ToUpper(), source, domain);
                 if (companyMap != null)
@@ -183,7 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
-            if (useRPFMId && companyRealPageId != Guid.Empty)
+            if (useUPFMId && companyRealPageId != Guid.Empty)
             {
                 // need to send guid in uppercase because books is case sensitive.
                 var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
@@ -205,7 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             string companyFilter = $"filter[customerCompanyId]={booksCompanyMasterId}&";
 
-            companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}_{domainFilter}"] as List<CustomerCompanyMap>;
+            companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}_{domain}"] as List<CustomerCompanyMap>;
 
             if (companyMap == null)
             {
@@ -225,13 +223,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    //companyMap = response.Content.ReadAsJsonApiManyAsync<CompanyMap>(_contractResolver, _cache).Result;
                     companyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() {{"companyMap", companyMap}};
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}_{domainFilter}", companyMap, policy);
+                    _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}_{domain}", companyMap, policy);
                 }
                 else
                 {
@@ -253,7 +250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IList<CustomerCompanyMap> GetTranslateFromUPFMToProduct(string companyRealPageId, string productSource, string domain)
         {
             //translate/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
-            string uri = $"translate/companyinstance/{companyRealPageId}/UPFM/{productSource}?filter[customerEnvironment]={domain}";
+            string uri = $"translate/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[customerEnvironment]={domain}";
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"GetTranslateFromUPFMToProduct_{companyRealPageId}_{productSource}_{domain}";
@@ -304,12 +301,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 return null;
             });
-            if (booksCustomerMaster == null)
-            {
-                return 0;
-            }
-
-            return booksCustomerMaster.CustomerCompanyId;
+            return booksCustomerMaster?.CustomerCompanyId ?? 0;
         }
 
         /// <summary>
@@ -382,7 +374,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
                 return true;
             }
 
@@ -555,7 +547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public CustomerCompany GetCompanyCustomerInfo(Guid companyRealPageId, string domain, long booksCompanyMasterId)
         {
             CustomerCompany companyInstance = new CustomerCompany();
-            if (useRPFMId && companyRealPageId != Guid.Empty)
+            if (useUPFMId && companyRealPageId != Guid.Empty)
             {
                 // need to send guid in uppercase because books is case sensitive.
                 var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);

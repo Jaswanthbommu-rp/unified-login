@@ -216,6 +216,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return productInternalSettingsList;
         }
 
+        
+        /// <summary>
+        /// Used to get product internal settings
+        /// </summary>
+        /// <param name="productid">The id of the product to get the settings for</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the productsolutions", Type = typeof(ProductInternalSetting))]
+        [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
+        [Route("product/{productid}/settings")]
+        [Authorize]
+        [HttpGet]
+        public IList<ProductInternalSetting> GetProductNonSensitiveSettings(int productid)
+        {
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            IList<ProductInternalSetting> productInternalSettingsList = new List<ProductInternalSetting>();
+
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            return manageProduct.GetProductInternalSettings(productid)?.Where(p => !p.SensitiveData).OrderBy(p => p.Name).ToList();
+        }
+
         /// <summary>
         /// Used to get product saml login
         /// </summary>
