@@ -660,8 +660,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     case ProductEnum.OneSite:
                         product = new OneSiteProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<OneSiteRoleAndPropertyList>(batchRecord.InputJson);
+
+                        if (ValidateDictionaryMapping(batchRecord.InputJson))
+                        {
+                            productPropertiesRoles =
+                               JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
+                        }
+                        else
+                        {
+                            productPropertiesRoles =
+                                GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
+                        }
+
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     case ProductEnum.MarketingCenter:
@@ -708,9 +718,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                     case ProductEnum.Lead2Lease:
                         product = new Lead2LeaseProduct(_defaultUserClaim);
-                        productPropertiesRoles =
 
-                        JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
+                        if (ValidateDictionaryMapping(batchRecord.InputJson))
+                        {
+                            productPropertiesRoles =
+                               JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
+                        }
+                        else
+                        {
+                            productPropertiesRoles =
+                                GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
+                        }
 
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
@@ -1233,7 +1251,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string changeProductUserTypeResponse = string.Empty;
 
-            var rpList = rolePropList as OneSiteRoleAndPropertyList;
+            // try initally getting just the Lead2Lease data
+            var rpList = rolePropList as RolePropertyList;
+            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
+            if (rpList == null)
+            {
+                // the single data failed so attempt to parse Lead2Lease and OneSite as a combined product
+                combinedRoleProp = rolePropList as Dictionary<string, RolePropertyList>;
+                if (combinedRoleProp == null)
+                {
+                    return "Input JSON parsing issue; Null object.";
+                }
+
+                rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
+            }
 
             if (rpList == null)
             {
