@@ -1122,7 +1122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 						if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 						{
-							UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, biLoginName.ToLower(), biAoUserCompanyPropertyRoleDetails, biAoUserCompanyPropertyRoleDetails);
+							UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, biLoginName.ToLower(), biAoUserCompanyPropertyRoleDetails, biAoUserCompanyPropertyRoleDetails, loginNameChanged);
 						}
 					}
 				}
@@ -1139,7 +1139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails);
+					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged);
 				}
 
 				return updateResult;
@@ -2153,7 +2153,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			long userPersonaId,
 			string productLoginName,
 			IList<AoUserCompanyPropertyRoleDetail> existingAssignedProducts,
-			IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails)
+			IList<AoUserCompanyPropertyRoleDetail> aoUserCompanyPropertyRoleDetails,
+			bool loginNameChanged = false)
 		{
 			var productAssigned = new List<string>();
 			var productUnAssigned = new List<string>();
@@ -2232,6 +2233,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						// add activity log
 						WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
 					}
+					else if (loginNameChanged)
+					{
+						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
+						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
+						// add activity log
+						WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
+					}
 
 					//if product is assigned
 					foreach (var product in productAssigned)
@@ -2251,6 +2259,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							_samlRepository.CreateSamlUserAttribute(userPersonaId,
 								(int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
 
+							// add activity log
+							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} assigned for product {2} by user {3} {4}.");
+						}
+						else if (loginNameChanged)
+						{
+							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername, productLoginName);
+							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
 							// add activity log
 							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} assigned for product {2} by user {3} {4}.");
 						}
@@ -2274,6 +2289,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						if (samlUserDetails.Any())
 						{
 							WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - {product} record found in GB for AO user -{productLoginName}. Removing.");
+
+							DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
 
 							UpdateProductSettingProductStatus(userPersonaId,
 								_productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Deleted);
