@@ -2665,3 +2665,7 @@ IF NOT EXISTS
         );
 END;
 GO
+
+  update [UserManagement].[ProductPage] set IsActive = 0
+  where ProductId in (51,16,20,17)  
+GO
