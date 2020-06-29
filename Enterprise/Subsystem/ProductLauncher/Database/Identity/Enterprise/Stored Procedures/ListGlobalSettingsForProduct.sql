@@ -6,6 +6,7 @@ AS
 		DECLARE @NOW DATETIME = GETUTCDATE();
 
         SELECT	pc.ProductConfigurationId,
+				gpc.ConfigurationId,
 				pst.Name,
 				ps.Value,
 				pst.SensitiveData

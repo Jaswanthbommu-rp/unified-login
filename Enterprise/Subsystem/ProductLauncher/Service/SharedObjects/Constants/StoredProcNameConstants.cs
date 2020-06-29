@@ -179,6 +179,8 @@
         public const string SP_ListProductSettingsByPersonaId = "Enterprise.ListProductSettingsByPersonaId";
         public const string SP_ListGlobalSettingsForProduct = "Enterprise.ListGlobalSettingsForProduct";
         public const string SP_CreateProductSetting = "Enterprise.CreateProductSetting";
+        public const string SP_LinkProductSettingToConfiguration = "Enterprise.LinkProductSettingToConfiguration";
+
         public const string SP_CreateProductConfigurationbyPersonaId = "Enterprise.CreateProductConfigurationbyPersonaId";
         public const string SP_UpdatePersonaConfiguration = "Enterprise.UpdatePersonaConfiguration";
         public const string SP_ListProductBatchStatusesByRealPageId = "Enterprise.ListProductBatchByRealPageId";
@@ -195,6 +197,9 @@
 
         //ProductSettingType
         public const string SP_ListProductSettingType = "Enterprise.ListProductSettingType";
+        
+        
+        
 
         //Contact Mechanism
         public const string SP_CreateContactMechanism = "Person.CreateContactMechanism";

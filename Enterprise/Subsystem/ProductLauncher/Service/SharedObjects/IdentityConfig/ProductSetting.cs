@@ -6,6 +6,16 @@
     public class ProductInternalSetting
     {
         /// <summary>
+        /// The specific product configuration id of the setting
+        /// </summary>
+        public string ProductConfigurationId { get; set; }
+
+        /// <summary>
+        /// The configuration id the product belongs to
+        /// </summary>
+        public string ConfigurationId { get; set; }
+
+        /// <summary>
         /// The type of setting
         /// </summary>
         public string Name { get; set; }
