@@ -16,12 +16,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		/// <summary>
         /// Property instance id
         /// </summary>
-        public int CompanyInstanceId { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public long? CompanyInstanceId { get; set; }
 
         /// <summary>
         /// Customer company instance id
         /// </summary>
-        public long CustomerCompanyId { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public long? CustomerCompanyId { get; set; }
 
 		/// <summary>
         /// Property instance source id

@@ -30,6 +30,7 @@
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
             vm.gridSelectionWatch = pgGrid.subscribe("selectChange", vm.selectionChange);
             vm.gridSelectAllWatch = pgGrid.subscribe("selectAll", vm.selectAllPropertyGroup);
+            vm.gridRadioSelectionWatch = pubsub.subscribe("ppanel.property-group-radio", vm.radioSelectionChange);
             vm.filterData = pgGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.accountingAllPropertiesSetWatch = pubsub.subscribe("acct.accountingAllCompaniesSet", vm.accountingAllCompaniesSet);
             vm.updateGridWatch = pubsub.subscribe("acct.updateGridWatchSet", vm.updateGrid);
@@ -51,6 +52,10 @@
             vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
         };
 
+        vm.radioSelectionChange = function (record) {
+            syncMgr.setPropertyGroupData($scope.$parent.productId, record);
+        };
+
         vm.clearPropertyGroup = function (productId) {
             syncMgr.allPropertiesSync(productId, false);
             vm.updateGrid();
@@ -62,16 +67,20 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
+            var excludeProducts = [18, 20, 47];
             var productId = $scope.$parent.productId;
-            if (productId != 18 || productId != 20) {
+            if (excludeProducts.indexOf(productId) === -1) {
                 syncMgr.allPropertiesSync($scope.$parent.productId, val);
             }
+
             vm.updateGrid();
         };
 
         vm.selectionChange = function (record) {
-            if (record && $scope.$parent.productId != 20) {
-                syncMgr.groupToPropertySync($scope.$parent.productId, record);
+            var productId = $scope.$parent.productId;
+            var excludeProducts = [20, 47];
+            if (excludeProducts.indexOf(productId) === -1) {
+                syncMgr.groupToPropertySync(productId, record);
             }
         };
 
@@ -143,6 +152,10 @@
 
                 });
 
+                if(productId == 16) {
+                    var accesstype = syncMgr.getAccessTypeValue(productId);
+                    pubsub.publish("ppanel.assign-accessType", accesstype);
+                }
                 if (productId == 47) {
                     propData.map(function (region) {
                         if (region.groupType === 'region') {
@@ -158,6 +171,7 @@
                         number: 0
                     });
                 }
+                
             }
 
             return vm;

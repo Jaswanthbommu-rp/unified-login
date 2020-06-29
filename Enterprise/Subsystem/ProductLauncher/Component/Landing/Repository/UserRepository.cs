@@ -236,6 +236,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 cloneUserPersonaId = newProfile.Persona[0].PersonaId;
                 var cloneUserPersona = _managePersona.GetPersona(cloneUserPersonaId);
+                IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(cloneUserPersona.RealPageId, null);
+                cloneUserPersona.Organization = organizationList.FirstOrDefault(i => i.PartyId == cloneUserPersona.OrganizationPartyId);
+
                 var personaOrganization = cloneUserPersona.Organization;
                 bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
                 using (var pbRepository = GetRepository())

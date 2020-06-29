@@ -27,6 +27,7 @@
             s.productGridConfigMap = {};
             s.productAsideGridConfigMap = {};
             s.productSwitchConfigMap = {};
+            s.productAccessTypeMap = {};
             s.productRadioConfigMap = {};
             s.productDependencyMap = {};
             s.productTabsMap = {};
@@ -133,6 +134,20 @@
                 config = s.productSwitchConfigMap['product' + productId + tabName].switchCtrlConfig;
             }
             return config;
+        };
+
+        p.getAccessTypeValue = function (productId) {
+            var s = this,
+                accessTypeValue;
+            if (s.productAccessTypeMap['product' + productId] !== undefined) {
+                accessTypeValue = s.productAccessTypeMap['product' + productId];
+            }
+            return accessTypeValue;
+        };
+
+        p.setAccessTypeValue = function (productId , value) {
+            var s = this;
+            s.productAccessTypeMap['product' + productId] = value;
         };
 
         p.getProductSelectTypeConfig = function (productId, tabName) {
@@ -583,12 +598,6 @@
                     item.isAssigned = record.isAssigned;
                 }
 
-                if (record.productId == 20 &&
-                    item.roletype === record.roletype &&
-                    item.id !== record.id)
-                {
-                    item.disableSelection = record.isAssigned;
-                }
             });
 
             return s;
@@ -680,12 +689,11 @@
         p.selectedAsidePropertySync = function (productId) {
             var s = this,
             propertyData;
-
             propertyData = s.asidePropertyMap['product' + productId].asideProperties;
             var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
-                return data.isAssigned === true;
+                    return data.isAssigned === true;
             });
-
+            
             propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length;
             return s;
         };
@@ -695,14 +703,16 @@
                 propertyData;
 
             propertyData = s.propertyMap['product' + key].properties;
-
             propertyData.forEach(function (item) {
-                if (item.id == record.id) {
+                if(key == 8){
+                    if(item.propertyId == record.propertyId){
+                        item.isAssigned = true;
+                    }
+                }
+                else if(item.id == record.id) {
                     item.isAssigned = record.isAssigned;
                 }
-
             });
-
             return s;
         };
 
@@ -730,17 +740,17 @@
             var s = this,
                 propertyList,
                 selectState = false;
+            if(s.propertyMap['product' + productId] !== undefined){
+                propertyList = s.propertyMap['product' + productId].properties;
 
-            propertyList = s.propertyMap['product' + productId].properties;
-
-            propertyList.forEach(function (item) {
-                if (parseInt(item.region_id) == parseInt(group.id)) {
-                    item["isAssigned"] = group.isAssigned;
-                }
-            });
-
-            pubsub.publish("pplpropertygroup.updateGrids");
-
+                propertyList.forEach(function (item) {
+                    if (parseInt(item.region_id) == parseInt(group.id)) {
+                        item["isAssigned"] = group.isAssigned;
+                    }
+                });
+    
+                pubsub.publish("pplpropertygroup.updateGrids");
+            }
             return s;
         };
 
@@ -750,18 +760,19 @@
                 selectState = false,
                 assignedCount = 0,
                 totalCount = 0;
+            if(s.propertyMap['product' + productId] !== undefined){
+                propertyList = s.propertyMap['product' + productId].properties;
+                propertyList.forEach(function (item) {
+                    item["isAssigned"] = selected;
+                    if (item.isAssigned) {
+                        assignedCount++;
+                    }
+                    totalCount++;
+                });
 
-            propertyList = s.propertyMap['product' + productId].properties;
-            propertyList.forEach(function (item) {
-                item["isAssigned"] = selected;
-                if (item.isAssigned) {
-                    assignedCount++;
-                }
-                totalCount++;
-            });
-
-            propertyList.assignedProperties = assignedCount + " of " + totalCount;
-            pubsub.publish("pplpropertygroup.updateGrids");
+                propertyList.assignedProperties = assignedCount + " of " + totalCount;
+                pubsub.publish("pplpropertygroup.updateGrids");
+            }
             return s;
         };
         p.updateAllFilterAsideProperties = function (productId, record, bool) {
@@ -771,11 +782,14 @@
                 matchRecord;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
+            if(productId == 20){
+                record = record.propertiesList;
+            }
             record.forEach(function (item) {
-                item.isAssigned = bool;
+                   item.isAssigned = bool;
             });
             if(bool){
-                assignedCount = record.length;
+                  assignedCount = record.length;
             }
             propertyList.assignedProperties = assignedCount + " of " + propertyList.propertiesList.length;
             return s;
@@ -1108,6 +1122,16 @@
             var list = s.propertyGroupMap['product' + key].propertyGroup;
             list.forEach(function (item) {
                 item.isAssigned = false;
+            });
+            s.propertyGroupList = list;
+            s.renderPropertyGroupMap(key);
+        };
+
+        p.setPropertyGroupData = function(key, record) {
+            var s = this;
+            var list = s.propertyGroupMap['product' + key].propertyGroup;
+            list.forEach(function (item) {
+                item.isAssigned = record.propertyGroupId == item.propertyGroupId;
             });
             s.propertyGroupList = list;
             s.renderPropertyGroupMap(key);

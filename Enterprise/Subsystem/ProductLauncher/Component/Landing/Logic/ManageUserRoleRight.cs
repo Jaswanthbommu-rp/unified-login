@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -32,6 +33,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			_userRoleRightRepository = userRoleRightRepository;
 		}
+
+        /// <summary>
+        /// DI constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        public ManageUserRoleRight(IRepository repository)
+        {
+            _userRoleRightRepository = new UserRoleRightRepository(repository);
+        }
 
 		/// <summary>
 		/// Used to get a list of roles assigned to the given persona for the given product id

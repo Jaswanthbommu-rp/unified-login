@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -649,18 +650,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				logData.Add("results2", results2);
 				WriteToDiagnosticLog($"GetUserRoles - result from api", logData);
 				list = roleList.ToGBRoles();
+
 				if (list == null)
 				{
-					if (results2.Length > 0)
-					{
-						string message = results2[0].TotalRows1;
-						if (message.ToUpper().Contains("NOT A VALID USERID"))
-						{
-							throw new Exception("Invalid user");
-						}
-					}
-					list = new List<ProductRole>();
+					throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
 				}
+				else
+				{
+					if (results2?.Any() != true)
+					{
+						throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+					}
+				}
+
+				//if (list == null)
+				//{
+				//	if (results2.Length > 0)
+				//	{
+				//		string message = results2[0].TotalRows1;
+				//		if (message.ToUpper().Contains("NOT A VALID USERID"))
+				//		{
+				//			throw new Exception("Invalid user");
+				//		}
+				//	}
+				//	list = new List<ProductRole>();
+				//}
+
 				response = new ListResponse()
 				{
 					Records = list.Cast<object>().ToList(),
@@ -671,14 +686,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{				
-				WriteToErrorLog($"GetUserRoles - Error", exception: ex);
-				response = new ListResponse()
+			{
+				WriteToErrorLog($"GetUserRoles - Error. {ex.Message} ", exception: ex);
+				response = new ListResponse();
+				response.IsError = true;
+
+				if (ex is BlueBookException)
 				{
-					IsError = true,
-					ErrorReason = ex.Message
-				};
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+				}
 			}
+
 			return response;
 		}
 

@@ -133,8 +133,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (response.IsSuccessStatusCode)
 				{
 					var jsonContent = response.Content.ReadAsStringAsync().Result;
+
+					if (jsonContent == null)
+					{
+						throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+					}
+
 					rolesList = JsonConvert.DeserializeObject<IList<MC.Role>>(jsonContent);
-					if (rolesList == null) { rolesList = new List<MC.Role>(); }
+					
+					if (rolesList == null) 
+					{
+						throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+					}
+
 					logData = new Dictionary<string, object>();
 					logData.Add("rolesList", rolesList);
 					WriteToDiagnosticLog("GetRoles - Got response", logData);
@@ -182,15 +193,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				else
 				{
 					result.IsError = true;
-					result.ErrorReason = "There was a problem getting the roles";
+					result.ErrorReason =  CommonMessageConstants.RolErrorMessage;
 					WriteToErrorLog("GetRoles - Error. " + response.Content.ReadAsStringAsync().Result);
 				}
 			}
 			catch (Exception ex)
 			{
+				WriteToErrorLog($"GetRoles - Error. {ex.Message} ", exception: ex);
+				result = new ListResponse();
 				result.IsError = true;
-				result.ErrorReason = "There was a problem getting the roles";
-				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+
+				if (ex is BlueBookException)
+				{
+					result.ErrorReason = ex.Message;
+				}
+				else
+				{
+					result.ErrorReason = CommonMessageConstants.RolErrorMessage;
+				}
 			}
 			return result;
 		}
@@ -543,8 +563,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			IUserLoginOnly userLogin = new UserLoginOnly();
 			userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+			
+            IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
+            userPersona.Organization = organizationList.FirstOrDefault(i => i.PartyId == userPersona.OrganizationPartyId);
 
-			var personaOrganization = userPersona.Organization;
+            var personaOrganization = userPersona.Organization;
 			bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
 			// get the email address

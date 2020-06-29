@@ -7,6 +7,16 @@
 AS
 BEGIN
     BEGIN TRY
+        IF EXISTS ( SELECT TOP 1 1 FROM Ident.SamlUserAttribute WHERE PersonaId = @PersonaId AND ProductId = @ProductId AND SamlAttributeId = @SamlAttributeId AND Value = @Value )
+        BEGIN
+            SELECT 
+                SamlUserAttributeId AS Id
+                ,'' AS ErrorMessage
+            FROM Ident.SamlUserAttribute 
+                WHERE PersonaId = @PersonaId AND ProductId = @ProductId AND SamlAttributeId = @SamlAttributeId AND Value = @Value
+            RETURN
+        END
+
         BEGIN TRANSACTION;
 
         INSERT INTO Ident.SamlUserAttribute
