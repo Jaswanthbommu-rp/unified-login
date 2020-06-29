@@ -338,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				else
 				{
 					result.IsError = true;
-					result.ErrorReason = "There was a problem getting the properties";
+					result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 					WriteToErrorLog("GetRoles - Error. " + response.Content.ReadAsStringAsync().Result);
 				}
 			}
