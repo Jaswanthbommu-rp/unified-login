@@ -500,13 +500,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("GetOneSiteRoleList - Error. " + ex.Message, exception: ex);
-                response = new ListResponse()
+                WriteToErrorLog($"GetOneSiteRoleList - Error. {ex.Message} ", exception: ex);
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException)
                 {
-                    IsError = true,
-                    ErrorReason = "There was a problem getting the list of roles"
-                };
-                return response;
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                }
             }
 
             if (roleList == null) { roleList = new RoleList(); }
