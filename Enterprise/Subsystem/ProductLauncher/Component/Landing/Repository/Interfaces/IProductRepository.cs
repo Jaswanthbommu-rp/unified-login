@@ -209,5 +209,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="productUserIds"></param>
         /// <returns>List of Unified Login mapping UserId by product and company</returns>
         List<ULMappedPersonaIds> GetULMappingPersonaIDsByCompanyAndProducts(int companyId, int productId, List<string> productUserIds);
+
+        /// <summary>
+        /// Used to get a list of products for the given persona id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType);
     }
 }

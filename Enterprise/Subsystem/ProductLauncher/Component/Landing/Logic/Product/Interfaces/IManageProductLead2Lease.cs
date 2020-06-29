@@ -37,5 +37,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isActive"></param>
         /// <returns></returns>
         bool ChangeUserStatus(long editorPersonaId, string username, string productUserId, bool isActive = false);
+
+        /// <summary>
+        /// Updates user profile
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
+        string UpdateLead2LeaseUserProfile(long editorPersonaId, long userPersonaId);
     }
 }

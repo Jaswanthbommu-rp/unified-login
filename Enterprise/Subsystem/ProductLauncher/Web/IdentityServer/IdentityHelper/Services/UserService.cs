@@ -586,7 +586,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             context.IsActive = false;
             if (!context.Subject.Identity.IsAuthenticated) return Task.FromResult(0);
 
-            var user = _userLoginLogic.GetUserLoginOnly(Convert.ToInt64(context.Subject.GetSubjectId()));
+            RPModel.UserLoginOnly user = _userLoginLogic.GetUserLoginOnly(Convert.ToInt64(context.Subject.GetSubjectId()));
             var activePersona = _personaManager.GetActivePersona(user.RealPageId);
 
             OrganizationStatus primaryOrgStatus = _userLoginIdentityLogic.GetUserOrganizationStatus(user.UserId, user.LastLogin, activePersona.OrganizationPartyId, false);

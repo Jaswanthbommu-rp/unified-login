@@ -638,10 +638,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
 				var productUserGbLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-				var personaOrganization = persona.Organization;
-				IList<Organization> organizationList = new List<Organization>();
-				IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+
+                IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+				IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
+				var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
+                bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
 				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
 				if (productUserGbLogin == null)
@@ -694,8 +695,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(_productUsername))
 				{
-					organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
-
 					//Check to see if user has multicompany, then get user products and assign before any updates
 					if (organizationList?.Count > 1)
 					{
@@ -1030,7 +1029,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				string userEmailAddress = GetUserEmailAddress(realPageId, userLogin.LoginName, userPersonaId);
-				IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+                IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
+                persona.Organization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
+
+                IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				string productUserName = "";
 				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
 				bool isExternalUser = persona.Organization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && persona.Organization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);

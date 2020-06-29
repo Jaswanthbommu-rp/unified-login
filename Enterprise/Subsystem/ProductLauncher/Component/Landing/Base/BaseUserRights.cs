@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 			{
 				// get the impersonators details
 				ManagePersona mp = new ManagePersona();
-				Persona impersonateUserPersona = mp.GetActivePersona(userClaim.ImpersonatedBy); // safe to use because we just came from it
+				Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(userClaim.ImpersonatedBy); // safe to use because we just came from it
 
 				// get impersonator company roles
 				IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaim, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);

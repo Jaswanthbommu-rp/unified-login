@@ -7,5 +7,6 @@
     [Description] NVARCHAR(1000) NULL, 
     [ProductTypeId] INT NULL, 
     [BooksProductCode] NVARCHAR(20) NULL, 
+    [AssignToAllUsers] BIT NOT NULL DEFAULT 0, 
     CONSTRAINT [FK_Product_ProductType] FOREIGN KEY ([ProductTypeId]) REFERENCES [Enterprise].[ProductType]([ProductTypeId])
 )
