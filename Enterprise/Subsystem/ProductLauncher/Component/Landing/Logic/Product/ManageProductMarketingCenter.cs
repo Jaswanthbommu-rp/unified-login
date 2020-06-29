@@ -332,7 +332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					result.ErrorReason = "There was a problem getting the properties";
+					result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 				}
 				WriteToErrorLog($"GetProperties - Error. {ex.Message}", exception: ex);
 			}

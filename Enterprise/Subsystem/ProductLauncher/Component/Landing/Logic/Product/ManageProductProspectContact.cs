@@ -160,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					result.ErrorReason = "ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+					result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 				}
 				
 				WriteToErrorLog(

@@ -256,7 +256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = "There was a problem getting the list of properties";
+                    response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
                 }
                 
                 return response;

@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -288,11 +289,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog($"GetProperties - Error", exception: ex);
-                response = new ListResponse()
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException blueBookException)
                 {
-                    IsError = true,
-                    ErrorReason = ex.Message
-                };
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                } 
             }
             return response;
         }
@@ -643,6 +650,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Unassign User
         /// </summary>
+        /// <returns></returns>    
         public string UnassignUser(long editorPersonaId, long userPersonaId)
         {
             ListResponse listResponse = new ListResponse();
@@ -665,9 +673,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             return "";
         }
-        /// <returns></returns>    
-
-
 
         #region Migration
         /// <summary>
