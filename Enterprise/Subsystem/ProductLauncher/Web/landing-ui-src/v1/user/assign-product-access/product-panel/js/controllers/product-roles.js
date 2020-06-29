@@ -30,6 +30,7 @@
             vm.allProperties = false;
             vm.showAllPropertiesSwitch = false;
             vm.propertySelect =  '';
+            vm.filteredRecord = {};
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -58,12 +59,16 @@
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
 
             vm.updateGridWatch = pubsub.subscribe("rp.updateAllPropertiesSwitchSet",vm.updateAllPropertiesSwitch);
+            vm.filterData = rolesGrid.subscribe("filterBy", vm.filter.bind(vm));
         };
 
         vm.isActive = function () {
             return productDataModel.isRoleGridActive();
         };
 
+        vm.filter = function (filterBy) {
+            vm.filteredRecords = $filter("filter")(vm.dataRoleReq.records, filterBy);
+        };
         vm.isReady = function () {
             return productDataModel.isRoleGridActive(); //productDataModel.isActive();
         };
@@ -254,7 +259,14 @@
         };
 
         vm.selectionAll = function (bool) {
-            var data = syncMgr.allRolesSync($scope.$parent.productId, bool);
+            if(vm.filteredRecords !== undefined){
+                vm.filteredRecords.forEach(function (item) {
+                    item.isAssigned = bool;
+                });
+                syncMgr.updateAllRoles($scope.$parent.productId, vm.filteredRecords);
+            }else{
+                var data = syncMgr.allRolesSync($scope.$parent.productId, bool);
+            }
         };
 
         vm.configAPanelbyRoleTypes = function (rolesList){
