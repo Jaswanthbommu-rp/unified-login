@@ -22,6 +22,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite.RoleType;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -499,13 +500,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("GetOneSiteRoleList - Error. " + ex.Message, exception: ex);
-                response = new ListResponse()
+                WriteToErrorLog($"GetOneSiteRoleList - Error. {ex.Message} ", exception: ex);
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException)
                 {
-                    IsError = true,
-                    ErrorReason = "There was a problem getting the list of roles"
-                };
-                return response;
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                }
             }
 
             if (roleList == null) { roleList = new RoleList(); }
@@ -537,7 +543,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
-                if (response.IsError) { return response; }
+                if (response.IsError) 
+                {
+                    return response; 
+                }
+
+                if (string.IsNullOrWhiteSpace(_pmcID))
+                {
+                    throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                }
 
                 Dictionary<string, string> args = new Dictionary<string, string>();
                 args.Add("PMCID", _pmcID);
@@ -692,24 +706,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, object> logData = new Dictionary<string, object>();
             RoleList roleListResult = new RoleList();
             WriteToDiagnosticLog("GetOneSiteRoleListMain - Begin get role list");
-
-            FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 3500);
-            NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-            logData.Add("uiArgs", uiArgs);
-            logData.Add("wsParams", wsParams);
-            WriteToDiagnosticLog("GetOneSiteRoleListMain - Getting role list", logData);
-            roleListResult = _service.GetAllRoles(uiArgs, uniqueIdentifier, wsParams);
-
-            if (roleListResult == null)
+            try
             {
-                throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 3500);
+                NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
+                logData.Add("uiArgs", uiArgs);
+                logData.Add("wsParams", wsParams);
+                WriteToDiagnosticLog("GetOneSiteRoleListMain - Getting role list", logData);
+                roleListResult = _service.GetAllRoles(uiArgs, uniqueIdentifier, wsParams);
             }
-            else
+            catch (Exception ex)
             {
-                if (roleListResult.Role?.Any() != true)
-                {
-                    throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
-                }
+                WriteToErrorLog("GetOneSiteRoleListMain - Error getting role list. " + ex.Message, exception: ex);
             }
             logData = new Dictionary<string, object>();
             logData.Add("roleListResult", roleListResult);
