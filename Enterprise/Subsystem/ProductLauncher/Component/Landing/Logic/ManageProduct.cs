@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -445,7 +446,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		    //   }
 		    RPObjectCache rpcache = new RPObjectCache();
 		    var cacheKey = "productInternalSetting_" + productId;
-		    productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+		    productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 180, () =>
 		    {
 			    // load from database
 			    _productInternalSettingRepository = new ProductInternalSettingRepository();
@@ -454,7 +455,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		    return productInternalSettingList;
 	    }
 
-	    /// <summary>
+        /// <summary>
+        /// Used to add or update a product setting for the given configuration
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="productInternalSetting"></param>
+        /// <returns></returns>
+        public RepositoryResponse CreateProductSettingAndLinkToConfiguration(int productId, ProductInternalSetting productInternalSetting)
+        {
+            RepositoryResponse response = _productInternalSettingRepository.CreateProductSettingAndLinkToConfiguration(productId, productInternalSetting);
+            if (string.IsNullOrEmpty(response.ErrorMessage))
+            {
+                MemoryCache.Default.Remove("productInternalSetting_" + productId);
+            }
+
+            return response;
+        }
+
+        /// <summary>
         /// Used to return a list of productTypes
         /// </summary>
         /// <returns></returns>

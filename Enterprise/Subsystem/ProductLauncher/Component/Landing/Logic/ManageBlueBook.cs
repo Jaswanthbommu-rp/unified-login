@@ -198,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (!string.IsNullOrEmpty(domain) && useDomains)
             {
                 //includeGreenBookCares = false;
-                domainFilter = $"filter[companyInstance.domain]={domain}&";
+                domainFilter = $"filter[companyInstance.customerEnvironment]={domain}&";
             }
 
             string companyFilter = $"filter[customerCompanyId]={booksCompanyMasterId}&";

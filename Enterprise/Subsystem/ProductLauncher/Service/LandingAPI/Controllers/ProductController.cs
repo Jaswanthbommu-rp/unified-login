@@ -225,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the productsolutions", Type = typeof(ProductInternalSetting))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the product settings", Type = typeof(ProductInternalSetting))]
         [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
         [Route("product/{productid}/settings")]
         [Authorize]
@@ -237,6 +237,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IManageProduct manageProduct = new ManageProduct(_userClaims);
             return manageProduct.GetProductInternalSettings(productid)?.Where(p => !p.SensitiveData).OrderBy(p => p.Name).ToList();
+        }
+
+
+        //IRepositoryResponse CreateProductSettingAndLinkToConfiguration(ProductEnum product, ProductInternalSetting productInternalSetting)
+        /// <summary>
+        /// Used to update a product internal setting
+        /// </summary>
+        /// <param name="productId">The id of the product to get the settings for</param>
+        /// <param name="productInternalSetting"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update information about a product setting", Type = typeof(ProductInternalSetting))]
+        [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
+        [Route("product/{productid}/settings")]
+        [Authorize]
+        [HttpPut]
+        public HttpResponseMessage UpdateProductSettingAndLinkToConfiguration(int productId, ProductInternalSetting productInternalSetting)
+        {
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            RepositoryResponse response = manageProduct.CreateProductSettingAndLinkToConfiguration(productId, productInternalSetting);
+
+            if (!String.IsNullOrEmpty(response.ErrorMessage))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response.ErrorMessage);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
 
         /// <summary>

@@ -97,5 +97,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="statusType"></param>
         /// <returns></returns>
         IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType);
+
+        /// <summary>
+        /// Used to add or update a product setting for the given configuration
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="productInternalSetting"></param>
+        /// <returns></returns>
+        RepositoryResponse CreateProductSettingAndLinkToConfiguration(int productId, ProductInternalSetting productInternalSetting);
     }
 }
