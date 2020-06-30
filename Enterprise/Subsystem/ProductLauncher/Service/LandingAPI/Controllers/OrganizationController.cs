@@ -163,6 +163,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         public HttpResponseMessage InsertOrganization([FromBody] OrganizationCreate organization, bool processBlueBookMessage = false)
         {
+            var organizationDomainList = _manageOrganization.ListOrganizationDomain();
+
+            if (!organizationDomainList.Any(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
+            {
+                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() {Name = organization.OrganizationDomain});
+                if (response.Id > 0)
+                {
+                    organization.OrganizationDomainId = Convert.ToInt32(response.Id);
+                }
+            }
+            else
+            {
+                organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+            }
+            
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
 
             if (!result.Status.Success)
@@ -171,7 +186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: result.obj.Org.OrganizationDomain.Name, includeGreenBookCares: false);
-
+            
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
@@ -184,6 +199,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
+
+            return Request.CreateResponse(HttpStatusCode.OK, result.obj);
 
             if (companyMapResource != null)
             {

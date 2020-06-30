@@ -271,10 +271,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             };
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
-            
-            organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
-            organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
 
+            organization.OrganizationTypeId = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+
+            if (!organizationDomainList.Any(d => d.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)))
+            {
+                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() {Name = domain});
+                if (response.Id > 0)
+                {
+                    organization.OrganizationDomainId = Convert.ToInt32(response.Id);
+                }
+            }
+            else
+            {
+                organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+            }
+            
             organization.Products = new List<string>();
 
             // get a list of products from blue

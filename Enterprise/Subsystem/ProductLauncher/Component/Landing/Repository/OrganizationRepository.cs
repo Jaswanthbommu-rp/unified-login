@@ -59,7 +59,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         OrganizationName = organization.Name,
                         BlueBookId = organization.BooksCustomerMasterId,
                         BlackBookId = organization.BooksMasterId,
-                        OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId
+                        OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId,
+                        OrganizationDomainId = organization.OrganizationDomain
                     };
 
                     newOrganization = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, paramNewOrg);
@@ -444,6 +445,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             return organizationDomainList;
         }
+
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        public RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain)
+        {
+            RepositoryResponse result;
+            dynamic param = new
+            {
+                DomainName = organizationDomain.Name
+            };
+
+            using (var repository = GetRepository())
+            {
+                result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationDomain, param);
+            }
+
+            return result;
+        }
+
         #endregion
     }
 }

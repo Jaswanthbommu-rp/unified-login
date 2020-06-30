@@ -95,7 +95,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns>Organization object</returns>
         List<OrganizationType> ListOrganizationType();
 
+        /// <summary>
+        /// Used to get the list of all Organization Domains
+        /// </summary>
+        /// <returns>OrganizationDomain list</returns>
         List<OrganizationDomain> ListOrganizationDomain();
+
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain);
+
 
         /// <summary>
         /// Used to get a list of products by company id

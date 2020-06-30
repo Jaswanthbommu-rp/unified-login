@@ -197,8 +197,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (!string.IsNullOrEmpty(domain) && useDomains)
             {
-                //includeGreenBookCares = false;
-                domainFilter = $"filter[companyInstance.customerEnvironment]={domain}&";
+                //domainFilter = $"filter[companyInstance.customerEnvironment]={domain}&";
+                domainFilter = $"filter[companyInstance.domain]={domain}&";
             }
 
             string companyFilter = $"filter[customerCompanyId]={booksCompanyMasterId}&";
@@ -247,6 +247,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return companyMap;
         }
 
+        /// <summary>
+        /// Get all instances related to the given UPFM instance source. Filtering on the given domain
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="productSource"></param>
+        /// <param name="domain"></param>
+        /// <returns></returns>
         private IList<CustomerCompanyMap> GetTranslateFromUPFMToProduct(string companyRealPageId, string productSource, string domain)
         {
             //translate/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
@@ -263,6 +270,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
                     Dictionary<string, object> logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}};
                     WriteToLog(LogType.Diagnostic, "GetTranslateFromUPFMToProduct - Got info.", logData);
+                    CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
+                    map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
+                    map.Source = productSource;
+                    companyListCache.Add(map);
+                    return companyListCache;
+                }
+
+                return null;
+            });
+
+            return booksCustomerMaster;
+        }
+
+        /// <summary>
+        /// Get all instances related to the given UPFM instance source. Filters domain automatically
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="productSource"></param>
+        /// <returns></returns>
+        private IList<CustomerCompanyMap> GetTranslateFromUPFMToProductv2(string companyRealPageId, string productSource)
+        {
+            //translate/v2/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
+            string uri = $"translate/v2/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}";
+
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"GetTranslateFromUPFMToProductv2_{companyRealPageId}_{productSource}";
+            List<CustomerCompanyMap> booksCustomerMaster = rpcache.GetFromCache<List<CustomerCompanyMap>>(cacheKey, 180, () =>
+            {
+                List<CustomerCompanyMap> companyListCache = new List<CustomerCompanyMap>();
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
+                    Dictionary<string, object> logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}};
+                    WriteToLog(LogType.Diagnostic, "GetTranslateFromUPFMToProductv2 - Got info.", logData);
                     CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
                     map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
                     map.Source = productSource;
@@ -518,7 +560,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string booksCompanyMasterIds = GetCompanyIds(companyList);
 
             var companyInstance = new List<Company>();
-            string uri = $"customercompany?filter[customerCompanyId]=in:{booksCompanyMasterIds.ToString()}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999";
+            string uri = $"customercompany?filter[customerCompanyId]=in:{booksCompanyMasterIds}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999";
 
             var logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
             WriteToLog(LogType.Diagnostic, $"GetCompanyListByCompIds - Getting info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData);
@@ -550,8 +592,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (useUPFMId && companyRealPageId != Guid.Empty)
             {
                 // need to send guid in uppercase because books is case sensitive.
-                var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
-                booksCompanyMasterId = (newCompanyMasterId != 0) ? newCompanyMasterId : booksCompanyMasterId;
+                var currentCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
+                booksCompanyMasterId = (currentCompanyMasterId != 0) ? currentCompanyMasterId : booksCompanyMasterId;
             }
 
             RPObjectCache rpcache = new RPObjectCache();

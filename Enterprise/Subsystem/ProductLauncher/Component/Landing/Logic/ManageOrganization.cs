@@ -604,6 +604,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             return _organizationRepository.ListOrganizationDomain();
         }
+
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        public RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain)
+        {
+            return _organizationRepository.CreateOrganizationDomain(organizationDomain);
+        }
         #endregion
     }
 }

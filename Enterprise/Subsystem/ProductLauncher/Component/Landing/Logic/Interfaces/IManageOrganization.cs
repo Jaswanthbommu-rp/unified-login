@@ -110,5 +110,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns>list of OrganizationDomain objects</returns>
         List<OrganizationDomain> ListOrganizationDomain();
 
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain);
     }
 }
