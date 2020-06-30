@@ -261,6 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// Activity Logging
 			//WriteUnassignActivityLog(editorPersonaId, userPersonaId, _productName, System.Reflection.MethodBase.GetCurrentMethod().Name);
+			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
 			return string.Empty;
 		}
