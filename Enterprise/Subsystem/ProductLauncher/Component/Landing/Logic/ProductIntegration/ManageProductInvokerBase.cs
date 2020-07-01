@@ -315,7 +315,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var user = GetProductUser();
 
                     // map user properties
-                    if (user != null)
+                    if (user != null && user.Properties != null)
                     {
                         WriteToDiagnosticLog(
                             $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
