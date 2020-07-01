@@ -60,17 +60,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         BlueBookId = organization.BooksCustomerMasterId,
                         BlackBookId = organization.BooksMasterId,
                         OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId,
-                        OrganizationDomainId = organization.OrganizationDomain
+                        OrganizationDomainId = organization.OrganizationDomain.OrganizationDomainId
                     };
 
                     newOrganization = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, paramNewOrg);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
                     repository.UnitOfWork.Rollback();
                     newOrganization.ErrorMessage = "Failed to create organization";
                 }
-                repository.UnitOfWork.Commit();
             }
             return newOrganization;
         }
