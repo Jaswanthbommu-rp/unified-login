@@ -260,7 +260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
 			// Activity Logging
-			//WriteUnassignActivityLog(editorPersonaId, userPersonaId, _productName, System.Reflection.MethodBase.GetCurrentMethod().Name);
+			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
 			return string.Empty;
 		}
