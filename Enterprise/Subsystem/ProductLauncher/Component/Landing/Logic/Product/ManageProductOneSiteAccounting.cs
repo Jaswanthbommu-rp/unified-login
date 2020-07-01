@@ -274,10 +274,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog($"GetUserPropertiesNew - Error", exception: ex);
-                response = new ListResponse()
-                {
-                    IsError = true,
-                    ErrorReason = ex.Message
+				response = new ListResponse()
+				{
+					IsError = true,
+					ErrorReason = CommonMessageConstants.PropertyErrorMessage
                 };
             }
             return response;
