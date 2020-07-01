@@ -320,8 +320,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog(
                             $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-                        var userProperties = user.Properties.ConvertAll(p => p.ToUpper());
-                        MergeUserProperties(propertyList, userProperties);
+                        if (user != null && user.Properties != null)
+                        {
+                            var userProperties = user.Properties.ConvertAll(p => p.ToUpper());
+                            MergeUserProperties(propertyList, userProperties);
+                        }
                     }
                 }
 
