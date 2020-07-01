@@ -827,6 +827,25 @@
             roleList.assignedRoles = assignedCount + " of " + totalCount;
             return s;
         };
+        p.updateAllRoles = function (productId, record) {
+            var s = this,
+            roleList;
+
+            roleList = s.roleMap['product' + productId].roles;
+
+            record.forEach(function (item) {
+                var record = roleList.filter(function (data) {
+                    return item.id === data.id;
+                })[0];
+
+                if (item.id == record.id) {
+                    record.isAssigned = item.isAssigned;
+                }
+
+            });
+
+            return s;
+        };
 
         p.allBenchMarkRolesSync = function (productId, selected) {
             var s = this,
