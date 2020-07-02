@@ -419,20 +419,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Used to get the master id for the given organization
-        /// </summary>
-        /// <param name="realPageId"></param>
-        /// <returns>BooksMaster object</returns>
-            public BooksMaster GetBooksCompanyMaster(Guid realPageId)
-        {
-            if (realPageId == Guid.Empty)
-            {
-                throw new Exception("Invalid parameter realPageId.");
-            }
-            return _organizationRepository.GetBooksCompanyMaster(realPageId); ;
-        }
-
-        /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>

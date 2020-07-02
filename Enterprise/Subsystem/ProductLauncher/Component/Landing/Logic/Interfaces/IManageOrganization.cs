@@ -58,13 +58,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         Guid GetOrganizationAdminUserRealPageId(Guid organizationRealPageId);
 
         /// <summary>
-		/// Used to get the master id for the given organization
-		/// </summary>
-		/// <param name="realPageId"></param>
-		/// <returns></returns>
-        BooksMaster GetBooksCompanyMaster(Guid realPageId);
-
-        /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>

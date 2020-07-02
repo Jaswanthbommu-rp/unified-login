@@ -31,10 +31,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
         /// <param name="organizationPartyId">Optional organization PartyId</param>
-        /// <param name="blueBookId">Optional blueBookId</param>
-        /// <param name="blackBookId">Optional blackBookId</param>
         /// <returns>Organization object</returns>
-        Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null);
+        Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null);
 
         /// <summary>
         /// Used to update any company master id records that match the old id to a new id
@@ -56,13 +54,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRealPageId"></param>
         /// <returns></returns>
         Guid GetOrganizationAdminUserRealPageId(Guid organizationRealPageId);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="realPageId"></param>
-        /// <returns></returns>
-        BooksMaster GetBooksCompanyMaster(Guid realPageId);
 
         /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId

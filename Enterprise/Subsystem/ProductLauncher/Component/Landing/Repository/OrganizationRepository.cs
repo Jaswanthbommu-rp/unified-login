@@ -117,17 +117,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
         /// <param name="organizationPartyId">Optional organization PartyId</param>
-        /// <param name="blueBookId">Optional blueBookId</param>
-        /// <param name="blackBookId">Optional blackBookId</param>
         /// <returns>Organization object</returns>
-        public Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null)
+        public Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null)
         {
             dynamic param = new
             {
                 RealPageId = (realPageId == Guid.Empty) ? null : realPageId,
-                PartyId = organizationPartyId,
-                BlueBookId = blueBookId,
-                BlackBookId = blackBookId
+                PartyId = organizationPartyId
             };
 
             using (var repo = GetRepository())
@@ -209,31 +205,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return realPageEmployeeAccessId;
-        }
-
-        /// <summary>
-        /// Used to get the Books master id for the given organization
-        /// </summary>
-        /// <param name="realPageId">The organization id to get the books master id for</param>
-        /// <returns>the books master id</returns>
-        public BooksMaster GetBooksCompanyMaster(Guid realPageId)
-        {
-            RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"booksMaster_{realPageId}";
-            BooksMaster booksMaster = rpCache.GetFromCache<BooksMaster>(cacheKey, 180, () =>
-            {
-                dynamic param = new
-                {
-                    RealPageId = realPageId,
-                };
-
-                using (var repository = GetRepository())
-                {
-                    return repository.GetOne<BooksMaster>(StoredProcNameConstants.SP_GetBookIdByOrganization, param);
-                }
-            });
-
-            return booksMaster;
         }
 
         /// <summary>
