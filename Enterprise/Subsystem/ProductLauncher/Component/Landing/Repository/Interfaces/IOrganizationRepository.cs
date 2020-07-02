@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
 using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -106,6 +107,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRealPageId"></param>
         /// <returns>List of Products</returns>
         IList<ProductUI> GetProductsByCompany(Guid organizationRealPageId);
+
+        /// <summary>
+        /// List of Unified Login companies
+        /// </summary>       
+        /// <returns>List of Unified Login companies including admin user info</returns>
+        List<UnifiedLoginCompany> GetUnifiedLoginCompanyList();
 
         #endregion
     }

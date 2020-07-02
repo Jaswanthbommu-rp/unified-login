@@ -147,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					}
 				}
                 
-                if (_userClaims.CustomerMasterId == DefaultUserClaim.ExternalCompanyMasterId)
+                if (_userClaims.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
                 {
                     errorList.Add(new ValidationResult("Cannot create new user in External User company."));
                 }

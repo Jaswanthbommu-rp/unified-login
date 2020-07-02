@@ -144,25 +144,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             break;
                         case "books.customercompany.deleted":
                             var customerCompanyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerCompanyId"] == null || thinEvent.Payload["payload"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["customerCompanyId"]);
-                            var organization = _organizationRepository.GetOrganization(blueBookId: customerCompanyIdDeleted);
-                            if (organization != null)
+                            
+                            // NEED TO GET ALL COMPANIES WITH BLUE ID
+                            var orgList = _organizationRepository.GetUnifiedLoginCompanyList();
+                            //var organization = _organizationRepository.GetOrganization(blueBookId: customerCompanyIdDeleted);
+                            if (orgList.Any(p => p.BooksCustomerMasterId == customerCompanyIdDeleted))
                             {
-                                var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"] == null || thinEvent.Payload["payload"]["replacementCustomerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
-                                if (newCustomerCompanyId != 0)
-                                {
-                                    Organization newOrganization = new Organization() {PartyId = organization.PartyId, BooksCustomerMasterId = newCustomerCompanyId};
-                                    RepositoryResponse result = _organizationRepository.UpdateOrganizationBooksCompanyMasterId(organization, newOrganization);
-                                    if (result.ErrorMessage.Length != 0 || result.Id == 0)
-                                    {
-                                        logData = new Dictionary<string, object> {{"error", result}};
+                                List<RepositoryResponse> errorResponseList = new List<RepositoryResponse>();
 
-                                        WriteToLog(LogType.Error, "Error", logData);
-                                        return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
-                                    }
-                                }
-                                else
+                                orgList.ForEach(p =>
                                 {
-                                    // the company is being deleted with no replacement, but we don't do anything with this yet
+                                    if (p.BooksCustomerMasterId == customerCompanyIdDeleted)
+                                    {
+                                        var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"] == null || thinEvent.Payload["payload"]["replacementCustomerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
+                                        if (newCustomerCompanyId != 0)
+                                        {
+                                            Organization oldOrganization = new Organization() {PartyId = p.PartyId, BooksCustomerMasterId = p.BooksCustomerMasterId};
+                                            Organization newOrganization = new Organization() {PartyId = p.PartyId, BooksCustomerMasterId = newCustomerCompanyId};
+                                            RepositoryResponse result = _organizationRepository.UpdateOrganizationBooksCompanyMasterId(oldOrganization, newOrganization);
+                                            if (result.ErrorMessage.Length != 0 || result.Id == 0)
+                                            {
+                                                logData = new Dictionary<string, object> {{"error", result}};
+                                                WriteToLog(LogType.Error, "Error", logData);
+                                                errorResponseList.Add(result);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // the company is being deleted with no replacement, but we don't do anything with this yet
+                                        }
+                                    }
+                                });
+                                if (errorResponseList.Count > 0)
+                                {
+                                    string errorText = "";
+                                    errorResponseList.ForEach(p =>
+                                    {
+                                        errorText += ResultErrorMessage(p);
+                                    });
+                                    
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorText);
                                 }
                             }
 

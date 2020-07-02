@@ -229,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 
 
                 // For Import User Access - Support tool Employee
-                persona.hasImportUsersAccess = persona.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId && userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
+                persona.hasImportUsersAccess = persona.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId && userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
 
                 if (!persona.hasViewOnlySettingsAccess || !persona.hasManageUnifiedSettings || !persona.hasManageCustomFields || !persona.hasManagePlatFormSecurity || !persona.hasManageSettingsTemplates)
                 {
@@ -357,7 +357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 UserRoleType = userRoleType
             };
 
-            Organization organization = _organizationRepository.GetOrganization(null, organizationPartyId, null, null);
+            Organization organization = _organizationRepository.GetOrganization(null, organizationPartyId);
 
             using (var repository = GetRepository())
             {

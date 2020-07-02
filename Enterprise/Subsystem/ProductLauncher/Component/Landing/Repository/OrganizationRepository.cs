@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -163,6 +164,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 );
 
                 return organizationList;
+            }
+        }
+
+        /// <summary>
+        /// List of Unified Login companies
+        /// </summary>       
+        /// <returns>List of Unified Login companies including admin user info</returns>
+        public List<UnifiedLoginCompany> GetUnifiedLoginCompanyList()
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {                    
+                };
+
+                List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
+                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
+                if (result != null)
+                {
+                    foreach (var item in result)
+                    {
+                        compList.Add(new UnifiedLoginCompany { CompanyId = long.Parse(item.BooksMasterId.ToString()), BooksCustomerMasterId = long.Parse(item.BooksCustomerMasterId.ToString() == string.Empty ? "0" : item.BooksCustomerMasterId.ToString()), CompanyName = item.Name, IsActive = true, PartyId = item.PartyId, CompanyRealPageId = item.OrganizationRealPageId.ToString(),  UserRealPageId = item.PersonRealPageId.ToString(), UserLoginAs = item.LoginName, Domain = item.Domain });
+                    }
+                    compList = compList.OrderBy(p => p.CompanyName).ToList();
+                }
+                return compList;
             }
         }
 
