@@ -17,6 +17,7 @@
             vm.roleType = listAsideModel.getRoleType();
             vm.asideGrid = asideGrid;
             vm.properteiesData = {};
+            vm._properteiesData = {};
             vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
             
             asidegridTransform.watch(asideGrid);
@@ -108,6 +109,7 @@
                 vm.dataReq = groupSvc.get(params, vm.setData);
             }else if(productId == "20" || productId == "44"){
                 vm.properteiesData.records = vm.propertyRecords.propertiesList;
+                vm._properteiesData = angular.copy(vm.propertyRecords.propertiesList);
                 vm.setData(vm.properteiesData);
             }
             else {
@@ -132,10 +134,12 @@
         };
 
         vm.cancel = function () {
+            vm.propertyRecords.propertiesList = vm._properteiesData;
             aside.hide();
         };
         
         vm.update = function(){
+            syncMgr.updateAssignedProperties(vm.productId);
             aside.hide();
         };
 
