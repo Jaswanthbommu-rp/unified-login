@@ -281,6 +281,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetAllRights(datafilter);
                         break;
+                    case (int)ProductEnum.ClickPay:
+                        //pending implementation
+                        break;
                     default:
                         break;
                 }
