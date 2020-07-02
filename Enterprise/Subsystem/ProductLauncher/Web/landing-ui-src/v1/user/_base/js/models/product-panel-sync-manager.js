@@ -690,11 +690,6 @@
             var s = this,
             propertyData;
             propertyData = s.asidePropertyMap['product' + productId].asideProperties;
-            var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
-                    return data.isAssigned === true;
-            });
-            
-            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length;
             return s;
         };
 
@@ -777,9 +772,7 @@
         };
         p.updateAllFilterAsideProperties = function (productId, record, bool) {
             var s = this,
-                propertyList,
-                assignedList,
-                matchRecord;
+                propertyList;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
             
@@ -787,10 +780,20 @@
                    item.isAssigned = bool;
             });
             
+            return s;
+        };
+
+        p.updateAssignedProperties = function (productId) {
+            var s = this,
+                propertyList,
+                assignedList;
+            propertyList = s.asidePropertyMap['product' + productId].asideProperties;
+            
             assignedList = propertyList.propertiesList.filter(function (data) {
                 return data.isAssigned === true;
             });
 
+            propertyList.isAssigned = assignedList.length > 0 ? true : false;
             propertyList.assignedProperties = assignedList.length + " of " + propertyList.propertiesList.length;
             return s;
         };
