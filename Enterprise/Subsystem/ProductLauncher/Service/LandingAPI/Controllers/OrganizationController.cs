@@ -200,7 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CustomerEnvironment = result.obj.Org.OrganizationDomain.Name
             };
 
-            return Request.CreateResponse(HttpStatusCode.OK, result.obj);
+            //return Request.CreateResponse(HttpStatusCode.OK, result.obj);
 
             if (companyMapResource != null)
             {
@@ -253,21 +253,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             Organization org = null;
             if (organization != null)
             {
-                if (organization.BooksCustomerMasterId != 0)
-                {
-                    // get the organization by customer master id
-                    org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId: organization.BooksCustomerMasterId);
-                }
-                else if (organization.BooksMasterId != 0)
-                {
-                    // get the organization by Master Data Management (black book) master id
-                    org = _manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: organization.BooksMasterId);
-                }
-                else
-                {
-                    // get the org by UL realpageID
-                    org = _manageOrganization.GetOrganization(organization.RealPageId);
-                }
+                // get the org by UL realpageID
+                org = _manageOrganization.GetOrganization(organization.RealPageId);
             }
             else
             {
@@ -338,6 +325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
             }
 
+            //orgNameChanged = false;
             if (orgNameChanged)
             {
                 // update the name in MDM
@@ -859,7 +847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             ObjectListOutput<OrganizationDomain, IErrorData> output = new ObjectListOutput<OrganizationDomain, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-
+            MemoryCache.Default.Remove("getListOrganizationDomain");
             IList<OrganizationDomain> organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
             if (organizationDomainList != null)
