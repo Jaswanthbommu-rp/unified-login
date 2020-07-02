@@ -217,23 +217,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
                 return authenticateUserResponse;
             }
 
-            //if (!validateUsingPassword || (user.PasswordHash == authUserDetails.Password.PasswordHashBySalt(Convert.FromBase64String(user.PasswordSalt))))
-            //{
-            //    // Reset activity count
-            //    _userLoginRepository.UpdateUserActivityAttempts(authUserDetails.EnterpriseUserName, ActivityType.LoginSuccess, authUserDetails.UserDeviceDetails, primaryOrgStatus.PartyId, null);
+            if (!validateUsingPassword || (user.PasswordHash == authUserDetails.Password.PasswordHashBySalt(Convert.FromBase64String(user.PasswordSalt))))
+            {
+                // Reset activity count
+                _userLoginRepository.UpdateUserActivityAttempts(authUserDetails.EnterpriseUserName, ActivityType.LoginSuccess, authUserDetails.UserDeviceDetails, primaryOrgStatus.PartyId, null);
 
-            //    // remove password hash from user object
-            //    user.PasswordHash = "";
-            //    user.PasswordSalt = "";
-            //    authenticateUserResponse.IsError = false;
-            //    authenticateUserResponse.ErrorReason = string.Empty;
-            //    authenticateUserResponse.UserLogin = user;
-            //    authenticateUserResponse.PrimaryOrganizationStatus = primaryOrgStatus;
-            //    return authenticateUserResponse;
-            //}
+                // remove password hash from user object
+                user.PasswordHash = "";
+                user.PasswordSalt = "";
+                authenticateUserResponse.IsError = false;
+                authenticateUserResponse.ErrorReason = string.Empty;
+                authenticateUserResponse.UserLogin = user;
+                authenticateUserResponse.PrimaryOrganizationStatus = primaryOrgStatus;
+                return authenticateUserResponse;
+            }
 
             // good user but wrong password
-            _userLoginRepository._userLoginRepository.UpdateUserActivityAttempts(authUserDetails.EnterpriseUserName, ActivityType.Login, authUserDetails.UserDeviceDetails, primaryOrgStatus.PartyId, null); (authUserDetails.EnterpriseUserName, ActivityType.Login, authUserDetails.UserDeviceDetails, primaryOrgStatus.PartyId, null);
+            _userLoginRepository.UpdateUserActivityAttempts(authUserDetails.EnterpriseUserName, ActivityType.Login, authUserDetails.UserDeviceDetails, primaryOrgStatus.PartyId, null);
             
             //Get activity attempts after save
             var activityAttempts = _userLoginRepository.GetActivityAttemptExceeds(primaryOrgStatus.PartyId, authUserDetails.EnterpriseUserName, (int)ActivityType.Login);
