@@ -121,6 +121,12 @@
         };
 
         vm.hidePropertiesGrid = function () {
+            if($scope.$parent.productId === 16){
+                var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
+                if(accesstype){
+                    vm.propertySelect = accesstype;
+                }
+            }
             if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
                 return true;
             }
