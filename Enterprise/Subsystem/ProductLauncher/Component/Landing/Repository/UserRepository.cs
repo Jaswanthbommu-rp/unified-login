@@ -3193,8 +3193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     foreach (var prod in userProducts)
                     {
                         // skip AO products
-                        if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)prod.ProductId) &&
-                            (ProductEnum)prod.ProductId != ProductEnum.AssetOptimizer)
+                        if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)prod.ProductId) && (ProductEnum)prod.ProductId != ProductEnum.AssetOptimizer)
                         {
                             // remove products which are completely unassigned
                             if (productBatchData.All(p => p.ProductId != prod.ProductId))
@@ -3441,8 +3440,71 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if ((productListToCreate != null) && (productListToCreate.Count > 0))
             {
                 //Do we have the Create & Assign PersonaIds
-                if ((createUserPersonaId > 0) && (assignUserPersonaId > 0))
+                if (createUserPersonaId > 0 && assignUserPersonaId > 0)
                 {
+                    if (!(userTypeId == (int) UserRoleType.SuperUser) 
+                        && productListToCreate.Any(a => a.ProductId == (int) ProductEnum.OneSite) 
+                        && ( productListToCreate.Any(a => a.ProductId == (int) ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int) ProductEnum.SeniorLeadManagement)))
+                    {
+                        // need to combine the Lead2Lease and OneSite product details so they can run synchronously
+                        Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
+
+                        ProductBatch pbOneSite = (from a in productListToCreate
+                            where a.ProductId == (int) ProductEnum.OneSite
+                            select a).FirstOrDefault();
+
+                        ProductBatch pbLead2Lease = null;
+                        ProductBatch pbSeniorLead = null;
+
+                        oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
+
+                        if (productListToCreate.Any(a => a.ProductId == (int) ProductEnum.Lead2Lease))
+                        {
+                            pbLead2Lease = (from a in productListToCreate
+                                where a.ProductId == (int) ProductEnum.Lead2Lease
+                                select a).FirstOrDefault();
+
+                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
+                        }
+
+                        if (productListToCreate.Any(a => a.ProductId == (int) ProductEnum.SeniorLeadManagement))
+                        {
+                            pbSeniorLead = (from a in productListToCreate
+                                where a.ProductId == (int) ProductEnum.SeniorLeadManagement
+                                select a).FirstOrDefault();
+
+                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
+                        }
+                        
+                        if (userProducts.Any(pr => pr.ProductId == (int) ProductEnum.OneSite))
+                        {
+                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), batchProcessTypeId);
+                        }
+                        else
+                        {
+                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts));
+                        }
+
+                        if (errorStatus.Success == false)
+                        {
+                            errorStatus.ErrorMsg = saveProductBatchError;
+                        }
+                        else
+                        {
+                            // remove OneSite and any other products with it from the product batch
+                            productListToCreate.Remove(pbOneSite);
+                            if (pbLead2Lease != null)
+                            {
+                                productListToCreate.Remove(pbLead2Lease);
+                            }
+                            if (pbSeniorLead != null)
+                            {
+                                productListToCreate.Remove(pbSeniorLead);
+                            }
+                        }
+                    }
+
+
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productListToCreate)
                     {

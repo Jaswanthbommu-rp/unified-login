@@ -584,7 +584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
-        protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
+        public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
         {
             WriteToLog(LogType.Diagnostic, message, logData);
         }

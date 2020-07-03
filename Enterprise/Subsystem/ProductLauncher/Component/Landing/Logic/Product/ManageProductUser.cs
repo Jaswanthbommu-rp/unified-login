@@ -25,7 +25,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ve
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -112,8 +114,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         product = new OneSiteProduct(_defaultUserClaim);
 
-                        productPropertiesRoles =
-                           JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                        if (ValidateDictionaryMapping(productUser.InputJson))
+                        {
+                            productPropertiesRoles =
+                               JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                        }
+                        else
+                        {
+                            productPropertiesRoles =
+                                GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson);
+                        }
 
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                             productUser.AssignUserPersonaId, productPropertiesRoles);
@@ -652,8 +662,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     case ProductEnum.OneSite:
                         product = new OneSiteProduct(_defaultUserClaim);
-                        productPropertiesRoles =
-                            GetProductPropertiesRoles<OneSiteRoleAndPropertyList>(batchRecord.InputJson);
+
+                        if (ValidateDictionaryMapping(batchRecord.InputJson))
+                        {
+                            productPropertiesRoles =
+                               JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
+                        }
+                        else
+                        {
+                            productPropertiesRoles =
+                                GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
+                        }
+
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     case ProductEnum.MarketingCenter:
@@ -701,9 +721,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.Lead2Lease:
                         product = new Lead2LeaseProduct(_defaultUserClaim);
                         productPropertiesRoles =
-
-                        JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(batchRecord.InputJson.Trim());
-
+                                GetProductPropertiesRoles<RolePropertyList>(batchRecord.InputJson);
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     case ProductEnum.ResidentPortal:
@@ -862,6 +880,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        /// <summary>
+        /// Validate if the input value can be serialized as dictionary
+        /// </summary>
+        /// <param name="productUserInputJson">Json payload</param>
+        /// <returns>A boolean indicating if its valid or not</returns>
+        private bool ValidateDictionaryMapping(string productUserInputJson)
+        {
+            bool result;
+
+            try
+            {
+                JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUserInputJson.Trim());
+
+                result = true;
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
+
+            return result;
+        }
+
         private void WriteActivityLogWithMessage(long fromPersonaId, long toPersonaId, string message, int productId)
         {
             // log product user updated activity
@@ -934,7 +975,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         #endregion
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        /// <param name="logType"></param>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        /// <param name="exception"></param>
+        public void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            string correlationId = "";
+            if (_defaultUserClaim != null)
+            {
+                correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
+
+            }
+
+            Log.Write(logType, new LogDetails
+            {
+                Message = message,
+                AdditionalInfo = logData,
+                ProductModule = this.GetType().ToString(),
+                Exception = exception,
+                CorrelationId = correlationId
+            });
+        }
     }
+
 
     #region Interfaces
     /// <summary>
@@ -1202,7 +1269,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string changeProductUserTypeResponse = string.Empty;
 
-            var rpList = rolePropList as OneSiteRoleAndPropertyList;
+            // try initially getting just the OneSite data
+            var rpList = rolePropList as RolePropertyList;
+            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
+            if (rpList == null)
+            {
+                // the single data failed so attempt to parse combined product data
+                combinedRoleProp = rolePropList as Dictionary<string, RolePropertyList>;
+                if (combinedRoleProp == null)
+                {
+                    return "Input JSON parsing issue; Null object.";
+                }
+
+                rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
+            }
 
             if (rpList == null)
             {
@@ -1220,10 +1300,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 //Do Nothing
             }
-
+            
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var os = new ManageProductOneSite(base.UserClaim);
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            logData.Add("rolePropList", rolePropList);
 
+            os.WriteToDiagnosticLog("OneSite.ChangeProductUserType", logData);
             // Unassign User
             bool deleteSamlUserProductInfoAndStatus = true;
             changeProductUserTypeResponse = os.UnassignUser(createUserPersonaId, assignUserPersonaId, deleteSamlUserProductInfoAndStatus);
@@ -1231,6 +1314,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 changeProductUserTypeResponse = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, false);
             }
+            
+            var lead2leaseresult = "";
+            if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
+            {
+                os.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Adding Lead2Lease");
+                rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
+                var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
+                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.UnassignUser");
+                // Unassign User
+                lead2leaseresult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
+                if (string.IsNullOrEmpty(lead2leaseresult))
+                {
+                    productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.ReassignUser");
+                    // assign user
+                    lead2leaseresult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList);
+                }
+
+                if (!string.IsNullOrEmpty(lead2leaseresult))
+                {
+                    changeProductUserTypeResponse += lead2leaseresult;
+                }
+                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Lead2Lease result:"+lead2leaseresult);
+            }
+
+            var slmresult = "";
+            if (combinedRoleProp.Any(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()))
+            {
+                rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.SeniorLeadManagement.ToString()).First().Value;
+                var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, this.UserClaim);
+
+                // Unassign User
+                // need to finish
+
+                // assign user
+                // need to finish
+            }
+            
             return changeProductUserTypeResponse;
         }
     }
@@ -1993,49 +2113,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
         {
-            // try initally getting just the Lead2Lease data
+            string changeProductUserTypeResponse = string.Empty;
             var roleProp = rolePropList as RolePropertyList;
-            var combinedRoleProp = new Dictionary<string, RolePropertyList>();
+
             if (roleProp == null)
             {
-                // the single data failed so attempt to parse Lead2Lease and OneSite as a combined product
-                combinedRoleProp = rolePropList as Dictionary<string, RolePropertyList>;
-                if (combinedRoleProp == null)
-                {
-                    return "Input JSON parsing issue; Null object.";
-                }
-
-                roleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
+                return "Input JSON parsing issue; Null object.";
             }
-
-            string oneSiteResult = "";
+            else if ((batchProcessType == BatchProcessType.UserTypeAdminToRegular) && (roleProp.PropertyList.Count == 0))
+            {
+                return "At least one Property is required in the Input JSON when changing a Lease2Lease user type from Admin to Regular.";
+            }
+            else if ((batchProcessType == BatchProcessType.UserTypeAdminToRegular) && (roleProp.RoleList.Count == 0))
+            {
+                return "At least one Role is required in the Input JSON when changing a Lease2Lease user type from Admin to Regular.";
+            }
+            else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+            {
+                //Do Nothing
+            }
 
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
 
-            if (!combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
+            // Unassign User
+            changeProductUserTypeResponse = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
+            if (string.IsNullOrEmpty(changeProductUserTypeResponse))
             {
-                var productOneSite = new ManageProductOneSite(base.UserClaim);
-                var onesiteRoleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
-                //un assign user first
-                oneSiteResult = productOneSite.UnassignUser(createUserPersonaId, assignUserPersonaId);
-
-                oneSiteResult = productOneSite.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, onesiteRoleProp.RoleList, onesiteRoleProp.PropertyList, false);
-            }
-
-            // now process the Lead2Lease user once the OneSite user was created, if one was sent and no errors were encountered
-            if (roleProp != null && string.IsNullOrEmpty(oneSiteResult))
-            {
-                var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
-
-                // Unassign User
-                oneSiteResult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
                 // assign user
-                return productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList);
+                changeProductUserTypeResponse = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList);
             }
-            else
-            {
-                return oneSiteResult;
-            }
+
+            return changeProductUserTypeResponse;
         }
     }
     #endregion
@@ -3660,7 +3769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         #endregion
-        
+
     }
 
     #endregion
@@ -3741,8 +3850,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Input JSON parsing issue; Null object.";
             }
 
-            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var userClaims = new DefaultUserClaim {CorrelationId = Guid.NewGuid()};
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum) _productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }

@@ -623,7 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var userClaimTypesForClients = _identityServerRepository.GetUserClaimTypesForClient(clientId);
             foreach (var clientClaim in userClaimTypesForClients)
             {
-                if (!string.IsNullOrEmpty(clientClaim.SamlAttributeName))
+                if (clientClaim.ProductId != (int)ProductEnum.UnifiedPlatform && !string.IsNullOrEmpty(clientClaim.SamlAttributeName))
                 {
                     var userClaim = GetSamlUserClaimAndAttributesForProduct(clientClaim.ClaimName, clientClaim.SamlAttributeName, persona.PersonaId, (ProductEnum) clientClaim.ProductId, out _);
                     if (userClaim != null)
@@ -631,18 +631,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     continue;
                 }
 
-                if (string.IsNullOrEmpty(clientClaim.SamlAttributeName))
+                if(clientClaim.ProductId == (int)ProductEnum.UnifiedPlatform)
                 {
-                    switch (clientClaim.ClaimName.ToUpperInvariant())
+                    string dataField = clientClaim.ClaimName.ToUpperInvariant();
+                    if (!string.IsNullOrEmpty(clientClaim.SamlAttributeName))
                     {
+                        dataField = clientClaim.SamlAttributeName.ToUpperInvariant();
+                    }
+
+                    switch (dataField)
+                    {
+                        case "LOGINNAME":
+                            claims.Add(new Claim(clientClaim.ClaimName, userInfo.LoginName));
+                            break;
+
+                        case "FIRSTNAME":
+                            claims.Add(new Claim(clientClaim.ClaimName, person.FirstName));
+                            break;
+
+                        case "LASTNAME":
+                            claims.Add(new Claim(clientClaim.ClaimName, person.LastName));
+                            break;
+
                         case "USERID":
-                            claims.Add(new Claim("userId", userInfo.UserId.ToString()));
+                            claims.Add(new Claim(clientClaim.ClaimName, userInfo.UserId.ToString()));
                             break;
 
                         case "ROLE":
                             roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum) clientClaim.ProductId);
                             if (roleList != null && roleList.Count > 0)
-                            claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
+                                claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
                             break;
 
                         case "ROLE|ROLEID":
@@ -652,6 +670,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                                 claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
                                 claims.AddRange(roleList.Select(a => new Claim("roleId", a.ID)).ToList());
                             }
+
                             break;
 
                         case "ROLE|ROLEALIAS":
@@ -661,10 +680,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                                 claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
                                 claims.AddRange(roleList.Select(a => new Claim("rolealias", a.Alias)).ToList());
                             }
+
                             break;
 
                         case "ROLE|RIGHTS":
-                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum)clientClaim.ProductId);
+                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum) clientClaim.ProductId);
                             if (roleList != null && roleList.Count > 0)
                             {
                                 claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
@@ -674,7 +694,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 
                             foreach (var productRole in roleList)
                             {
-                                var roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, (ProductEnum)clientClaim.ProductId, Convert.ToInt32(productRole.ID));
+                                var roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, (ProductEnum) clientClaim.ProductId, Convert.ToInt32(productRole.ID));
                                 claims.AddRange(roleRights.Select(a => new Claim("right", a.Alias)).ToList());
                             }
 
@@ -698,6 +718,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                             claims.Add(new Claim("PhoneNumber", ph));
                             claims.Add(new Claim("PhoneType", ut));
                             break;
+
                     }
                 }
             }
