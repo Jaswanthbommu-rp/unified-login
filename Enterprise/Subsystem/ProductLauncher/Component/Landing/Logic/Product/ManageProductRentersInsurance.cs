@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -309,11 +310,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (_companyInstanceId == 0)
 				{
 					_companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
-					if (_companyInstanceId == 0)
-					{
-						WriteToErrorLog($"ManageProductRentersInsurance.ListProperties.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-						return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					}
 				}
 				WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties.GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
@@ -351,7 +347,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				listResponse.IsError = true;
+				listResponse = new ListResponse()
+				{
+					IsError = true
+				};
+
+				if (ex is BlueBookException)
+				{
+					listResponse.ErrorReason = ex.Message;
+				}
+				else
+				{
+					listResponse.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+				}
+
 				listResponse.ErrorReason = $"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties.";
 				WriteToErrorLog($"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", exception: ex);
 			}
