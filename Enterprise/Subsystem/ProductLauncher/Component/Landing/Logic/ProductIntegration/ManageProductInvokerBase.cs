@@ -1221,7 +1221,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog(
                     $"ManageProductInvokerBase.GetBlueBookProductCodeAndCompanyDetails - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}.", null, ex);
 
-                throw;
+                throw ex;
             }
         }
 
