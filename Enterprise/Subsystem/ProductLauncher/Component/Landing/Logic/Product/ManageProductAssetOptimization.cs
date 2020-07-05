@@ -21,6 +21,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -397,12 +398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
 				string aoCompanyId = company.CompanyInstanceSourceId;
-				if (string.IsNullOrEmpty(aoCompanyId))
-				{
-					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					WriteToDiagnosticLog("ManageProductAssetOptimization.GetProductProperties - Error looking for company id in bluebook.");
-					return result;
-				}
+
 				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductProperties - Found blue book company source id {aoCompanyId}");
 
 				IList<ProductProperty> companyProperties = new List<ProductProperty>();
@@ -426,7 +422,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}					
 				}
 
-
 				response = new ListResponse()
 				{
 					Records = companyProperties.Cast<object>().ToList(),
@@ -442,8 +437,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				response.IsError = true;
-				response.ErrorReason = "There was a problem getting the Product Properties.";
+				response = new ListResponse
+				{
+					IsError = true
+				};
+
+				if (ex is BlueBookException)
+				{
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+				}
 				WriteToErrorLog(
 					$"ManageProductAssetOptimization.GetProductProperties Error for user with editorPersona id - {editorPersonaId} " +
 					$"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
