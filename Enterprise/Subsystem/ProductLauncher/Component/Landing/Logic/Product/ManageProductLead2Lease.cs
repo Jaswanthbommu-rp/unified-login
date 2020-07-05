@@ -1042,13 +1042,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (result == null)
             {
-                throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
             }
             else
             {
                 if (result.Presets?.Any() != true)
                 {
-                    throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                    throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                 }
             }
 

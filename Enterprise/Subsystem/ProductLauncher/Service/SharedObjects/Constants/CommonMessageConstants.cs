@@ -34,9 +34,9 @@
         #region BlueBook
 
         /// <summary>
-        /// CompanyMapErrorMessage
+        /// CompanyErrorMessage
         /// </summary>
-        public const string CompanyMapErrorMessage = "This product is not yet implemented.  The product access page will be available when your implementation is complete. Thank you for choosing RealPage.";
+        public const string CompanyErrorMessage = "This product is not yet implemented.  The product access page will be available when your implementation is complete. Thank you for choosing RealPage.";
         
         #endregion
 

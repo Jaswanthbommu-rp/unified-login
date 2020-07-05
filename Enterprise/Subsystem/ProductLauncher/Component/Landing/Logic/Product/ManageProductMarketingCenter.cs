@@ -136,14 +136,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					if (jsonContent == null)
 					{
-						throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+						throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
 					}
 
 					rolesList = JsonConvert.DeserializeObject<IList<MC.Role>>(jsonContent);
 					
 					if (rolesList == null) 
 					{
-						throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+						throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
 					}
 
 					logData = new Dictionary<string, object>();

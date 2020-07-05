@@ -653,13 +653,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (list == null)
 				{
-					throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+					throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
 				}
 				else
 				{
 					if (results2?.Any() != true)
 					{
-						throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+						throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
 					}
 				}
 

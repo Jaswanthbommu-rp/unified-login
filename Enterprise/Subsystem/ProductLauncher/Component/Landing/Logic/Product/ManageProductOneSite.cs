@@ -550,7 +550,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrWhiteSpace(_pmcID))
                 {
-                    throw new BlueBookException(CommonMessageConstants.CompanyMapErrorMessage);
+                    throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                 }
 
                 Dictionary<string, string> args = new Dictionary<string, string>();
