@@ -145,7 +145,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				result.IsError = true;
+				result = new ListResponse()
+				{ 
+					IsError = true
+				};
 
 				if (ex is BlueBookException)
 				{
