@@ -599,7 +599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			productIdList.Add((int)ProductEnum.ProspectContactCenter);
 
 			_mockManageOrganization
-				.Setup(m => m.GetOrganization(It.IsAny<Guid>(),null, It.IsAny<long>(), null))
+				.Setup(m => m.GetOrganization(It.IsAny<Guid>(), It.IsAny<long>()))
 				.Returns(organization);
 
 			_mockProductRepository

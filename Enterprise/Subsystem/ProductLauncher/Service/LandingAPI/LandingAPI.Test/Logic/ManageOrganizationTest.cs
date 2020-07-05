@@ -288,15 +288,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 && orgResult.CreateDate == _CreateDate
             );
 
-            var orgResult2 = manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: _BooksCompanyMasterId);
-
-            //Assert
-            Assert.True(
-                orgResult2.PartyId == _PartyId
-                && orgResult2.RealPageId == _RealPageId
-                && orgResult2.Name == _CompanyName
-                && orgResult2.CreateDate == _CreateDate
-            );
+            //var orgResult2 = manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: _BooksCompanyMasterId);
+            //
+            ////Assert
+            //Assert.True(
+            //    orgResult2.PartyId == _PartyId
+            //    && orgResult2.RealPageId == _RealPageId
+            //    && orgResult2.Name == _CompanyName
+            //    && orgResult2.CreateDate == _CreateDate
+            //);
         }
 
         [Fact]
@@ -385,11 +385,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             result = manageOrganization.GetOrganization(realPageId: Guid.Empty, organizationPartyId: _PartyId);
             Assert.True(result.RealPageId == _organization.RealPageId);
 
-            result = manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId:_BooksMasterId);
-            Assert.True(result.RealPageId == _organization.RealPageId);
-
-            result = manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId:_BooksCompanyMasterId);
-            Assert.True(result.RealPageId == _organization.RealPageId);
+            //result = manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId:_BooksMasterId);
+            //Assert.True(result.RealPageId == _organization.RealPageId);
+            //
+            //result = manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId:_BooksCompanyMasterId);
+            //Assert.True(result.RealPageId == _organization.RealPageId);
 
             Exception exception = Record.Exception(() => manageOrganization.GetOrganization(Guid.Empty));
 

@@ -157,10 +157,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockManageBlueBook
-				.Setup(m => m.GetCompanyMap(
-					It.IsAny<long>(),
-					It.IsAny<string>(),
-					It.IsAny<string>(),
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				))
 				.Returns(_mapCompany);
@@ -174,6 +176,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_mockManageBlueBook
 				.Setup(m => m.GetCompanyCustomerInfo(
+					It.IsAny<Guid>(),
+					It.IsAny<string>(),
 					It.IsAny<long>()
 				))
 				.Returns(_customercompany);
