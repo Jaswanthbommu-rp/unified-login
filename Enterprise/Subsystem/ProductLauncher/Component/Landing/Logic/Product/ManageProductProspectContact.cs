@@ -113,13 +113,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// product side company Id
 				int companyInstanceSourceId = Convert.ToInt32(compnayDetails.CompanyInstanceSourceId);
 
-				if (companyInstanceSourceId == 0)
-				{
-					WriteToErrorLog(
-						$"ManageProductProspectContact.GetProperties-GetProductCompanyInstanceId - Error looking for companyInstanceSourceId in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-				}
-
 				WriteToDiagnosticLog(
 					$"ManageProductProspectContact.GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}; companyInstanceSourceId {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}");
 
