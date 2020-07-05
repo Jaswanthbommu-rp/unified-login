@@ -156,7 +156,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     $"ManageProductClientPortal.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
                     exception: ex);
 
-                result.IsError = true;
+                result = new ListResponse()
+                { 
+                    IsError = true
+                };
 
                 if (ex is BlueBookException)
                 {
