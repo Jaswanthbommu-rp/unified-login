@@ -17,6 +17,7 @@
             vm.roleType = listAsideModel.getRoleType();
             vm.asideGrid = asideGrid;
             vm.properteiesData = {};
+            vm._properteiesData = {};
             vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
             
             asidegridTransform.watch(asideGrid);
@@ -79,7 +80,7 @@
         };
 
         vm.filter = function(filterBy){
-            vm.filteredRecords = $filter("filter")(vm.propertyRecords, filterBy);
+            vm.filteredRecords = $filter("filter")(vm.propertyRecords.propertiesList, filterBy);
         };
 
         vm.loadData = function () {
@@ -106,10 +107,8 @@
                 };
 
                 vm.dataReq = groupSvc.get(params, vm.setData);
-            }else if(productId == "44"){
-                vm.properteiesData.records = vm.propertyRecords;
-                vm.setData(vm.properteiesData);
-            }else if(productId == "20"){
+            }else if(productId == "20" || productId == "44"){
+                vm._properteiesData = angular.copy(vm.propertyRecords.propertiesList);
                 vm.properteiesData.records = vm.propertyRecords.propertiesList;
                 vm.setData(vm.properteiesData);
             }
@@ -135,10 +134,12 @@
         };
 
         vm.cancel = function () {
+            vm.propertyRecords.propertiesList = vm._properteiesData;
             aside.hide();
         };
         
         vm.update = function(){
+            syncMgr.updateAssignedProperties(vm.productId);
             aside.hide();
         };
 
@@ -147,9 +148,10 @@
                 syncMgr.updateAllFilterAsideProperties(vm.productId, vm.filteredRecords, val);
             }
             else{
-                syncMgr.updateAllFilterAsideProperties(vm.productId, vm.propertyRecords, val);
+                syncMgr.updateAllFilterAsideProperties(vm.productId, vm.propertyRecords.propertiesList, val);
             }
         };
+
         vm.selectionChange = function (record) {
             if (record) {
                 syncMgr.selectedAsidePropertySync(vm.productId);

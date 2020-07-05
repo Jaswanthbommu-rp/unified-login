@@ -19,13 +19,20 @@
         // Getters
 
         p.getAccessData = function (key, productId) {
-            var s = this;
+            var s = this,
+            excludeProducts = [50, 51, 52, 53, 54, 55];
 
             if (templateModel.isProductExists(productId)) {
                 return s.products[key].getData(productId);
             }
             else {
-                return s.products[key].getData();
+                //if new slm,lro,airm,am,rc,rm products turned off then return null do not check in old panels code
+                if (excludeProducts.indexOf(productId) >= 0) {
+                    return null;
+                }
+                else {
+                    return s.products[key].getData();
+                }
             }
 
             return undefined;
