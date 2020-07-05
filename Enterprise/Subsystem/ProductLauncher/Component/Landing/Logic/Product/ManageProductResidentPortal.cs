@@ -268,16 +268,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
                 }
-                else
-                {
-                    WriteToErrorLog($"ManageProductResidentPortal.ListProperties - There was a problem getting the CompanyInstanceSourceId from BlueBook for user with editorPersona id - {editorPersonaId}.");
-
-                    _listResponse.IsError = true;
-                    _listResponse.ErrorReason = "Company Setup Error: Please Contact Support.";
-
-                    return _listResponse;
-                }
-
+               
                 IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
 
                 if ((propertyProductList == null) || (propertyProductList.Count == 0))
@@ -326,7 +317,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToErrorLog($"ManageProductResidentPortal.ListProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", exception: ex);
 
-                _listResponse.IsError = true;
+                _listResponse = new ListResponse()
+                {
+                    IsError = true
+                };
 
                 if (ex is BlueBookException)
                 {
