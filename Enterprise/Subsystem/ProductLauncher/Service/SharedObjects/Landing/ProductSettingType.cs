@@ -19,5 +19,10 @@
 		/// Product Setting Type Description
 		/// </summary>
 		public string Description { get; set; }
+
+		/// <summary>
+		/// Does the setting contain sensitive data
+		/// </summary>
+		public bool SensitiveData { get; set; }
 	}
 }

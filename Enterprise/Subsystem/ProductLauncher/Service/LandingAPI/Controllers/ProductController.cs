@@ -14,12 +14,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Security.Claims;
 using System.Web.Http;
 using Thinktecture.IdentityModel.Client;
@@ -239,8 +237,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return manageProduct.GetProductInternalSettings(productid)?.Where(p => !p.SensitiveData).OrderBy(p => p.Name).ToList();
         }
 
-
-        //IRepositoryResponse CreateProductSettingAndLinkToConfiguration(ProductEnum product, ProductInternalSetting productInternalSetting)
         /// <summary>
         /// Used to update a product internal setting
         /// </summary>
@@ -266,6 +262,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             return Request.CreateResponse(HttpStatusCode.OK);
         }
+
+        /// <summary>
+        /// Get a list of product setting types
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List of product setting types", Type = typeof(ProductSettingType))]
+        [Route("product/settingtypes")]
+        [Authorize]
+        [HttpGet]
+        public IList<ProductSettingType> ListProductSettingType()
+        {
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            return manageProduct.ListProductSettingType();
+        }
+
 
         /// <summary>
         /// Used to get product saml login

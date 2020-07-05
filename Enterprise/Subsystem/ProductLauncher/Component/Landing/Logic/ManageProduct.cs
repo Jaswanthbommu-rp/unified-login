@@ -481,6 +481,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Returns a list of productSettingType
+        /// </summary>
+        /// <returns></returns>
+        public IList<ProductSettingType> ListProductSettingType()
+        {
+            return _productRepository.ListProductSettingType();
+        }
+
+        /// <summary>
         /// Used to return a list of productTypes
         /// </summary>
         /// <returns></returns>

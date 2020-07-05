@@ -105,5 +105,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productInternalSetting"></param>
         /// <returns></returns>
         RepositoryResponse CreateProductSettingAndLinkToConfiguration(int productId, ProductInternalSetting productInternalSetting);
+
+        /// <summary>
+        /// Returns a list of productSettingType
+        /// </summary>
+        /// <returns></returns>
+        IList<ProductSettingType> ListProductSettingType();
     }
 }

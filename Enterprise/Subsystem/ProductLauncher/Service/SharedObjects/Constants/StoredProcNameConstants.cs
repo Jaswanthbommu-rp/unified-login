@@ -199,9 +199,7 @@
 
         //ProductSettingType
         public const string SP_ListProductSettingType = "Enterprise.ListProductSettingType";
-        
-        
-        
+
 
         //Contact Mechanism
         public const string SP_CreateContactMechanism = "Person.CreateContactMechanism";
