@@ -16,6 +16,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -323,9 +324,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                _listResponse.IsError = true;
-                _listResponse.ErrorReason = $"ManageProductResidentPortal.ListProperties - There was a problem getting the properties.";
                 WriteToErrorLog($"ManageProductResidentPortal.ListProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", exception: ex);
+
+                _listResponse.IsError = true;
+
+                if (ex is BlueBookException)
+                {
+                    _listResponse.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    _listResponse.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
             }
             return _listResponse;
         }
