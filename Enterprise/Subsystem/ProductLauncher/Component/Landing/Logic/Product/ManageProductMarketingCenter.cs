@@ -933,23 +933,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public bool ChangeUserStatus(long editorPersonaId, string username, string productUserId, bool isActive = false)
         {
             _productUserId = productUserId;
-            ListResponse listResponse = new ListResponse();
-            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (listResponse.IsError) { return false; }
-
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
-            {
-                WriteToErrorLog($"ManageProductMarketingCente.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                return false;
-            }
             try
             {
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog($"ManageProductMarketingCente.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return false;
+                }
                 return SetMarketingCenterUserStatus(isActive, _productUserId);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageMarketingCenter.ChangeUserActiveStatus - Updating user status failed for user {companyInstanceSourceId}|{username} by editorPersonaId = {editorPersonaId}", exception: ex);
+                WriteToErrorLog($"ManageMarketingCenter.ChangeUserActiveStatus - Updating user status failed for user {username} by editorPersonaId = {editorPersonaId}", exception: ex);
                 return false;
             }
         }
