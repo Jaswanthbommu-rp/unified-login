@@ -177,8 +177,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = "There was a problem getting the property groups.";
+                response = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                }
+                
                 WriteToErrorLog($"ManageProductVendorServices.GetPropertyGroups - error for user with editorPersona id - {editorPersonaId} - {response.ErrorReason}", exception: ex);
             }
 
