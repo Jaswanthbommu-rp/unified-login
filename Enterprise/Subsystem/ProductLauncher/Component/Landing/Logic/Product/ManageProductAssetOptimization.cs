@@ -301,11 +301,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				response.IsError = true;
-				response.ErrorReason = "There was a problem getting the Product Roles.";
 				WriteToErrorLog($"ManageProductAssetOptimization.GetProductRoles Error for user with " +
 								$"editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}",
 					exception: ex);
+
+				response = new ListResponse();
+				response.IsError = true;
+
+				if (ex is BlueBookException)
+				{
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+				}
 			}
 
 			return response;

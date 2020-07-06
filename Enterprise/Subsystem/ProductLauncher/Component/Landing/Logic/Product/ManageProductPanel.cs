@@ -282,8 +282,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = productSLMLogic.GetAllRights(datafilter);
                         break;
                     case (int)ProductEnum.ClickPay:
+                    case (int)ProductEnum.AoAxiometrics:
+                    case (int)ProductEnum.AssetOptimizer:
+                    case (int)ProductEnum.CIMPL:
+                    case (int)ProductEnum.EasyLMS:
+                    case (int)ProductEnum.HelpCenter:
+                    case (int)ProductEnum.MigrationTool:
+                    case (int)ProductEnum.OmniChannel:
                         //pending implementation
-                        break;
+                        throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     default:
                         break;
                 }
@@ -305,7 +312,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    result.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                    if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
+                    {
+                        result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                    }
+                    else
+                    {
+                        result.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                    }
                 }
             }
 
