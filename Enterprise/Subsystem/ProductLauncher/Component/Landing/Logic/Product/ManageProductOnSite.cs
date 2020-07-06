@@ -20,10 +20,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Mi
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	/// <summary>
-	/// On-Site integration
-	/// </summary>
-	public class ManageProductOnSite : ManageProductBase, IManageProductOnSite
+    /// <summary>
+    /// On-Site integration
+    /// </summary>
+    public class ManageProductOnSite : ManageProductBase, IManageProductOnSite
     {
         #region Private members
 
@@ -233,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else // Called during creating a new User
                 {
                     response = new ListResponse()
-                    {                        
+                    {
                         Records = allRegions.OrderBy(p => p.GetRegionName).Cast<object>().ToList(),
                         TotalRows = allRegions.Count(),
                         RowsPerPage = 9999,
@@ -259,7 +259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 }
-                
+
                 WriteToErrorLog($"ManageProductOnSite.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
@@ -332,7 +332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response = new ListResponse 
+                response = new ListResponse
                 {
                     IsError = true
                 };
@@ -391,24 +391,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-	    /// <summary>
-		/// 
-		/// </summary>
-		/// <param name="createUserPersonaId"></param>
-		/// <param name="assignUserPersonaId"></param>
-		/// <param name="rpList"></param>
-		/// <param name="batchProcessType"></param>
-		/// <returns></returns>
-	    public string ChangeOnSiteServiceUserType(long createUserPersonaId, long assignUserPersonaId, OnSiteUserPropertyRegionRole rpList, BatchProcessType batchProcessType)
-	    {
-		    return ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, rpList, batchProcessType);
-	    }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="createUserPersonaId"></param>
+        /// <param name="assignUserPersonaId"></param>
+        /// <param name="rpList"></param>
+        /// <param name="batchProcessType"></param>
+        /// <returns></returns>
+        public string ChangeOnSiteServiceUserType(long createUserPersonaId, long assignUserPersonaId, OnSiteUserPropertyRegionRole rpList, BatchProcessType batchProcessType)
+        {
+            return ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, rpList, batchProcessType);
+        }
 
-		/// <summary>
-		/// Updated to create/update a user in On Site 
-		/// </summary>
-		public string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
-		{
+        /// <summary>
+        /// Updated to create/update a user in On Site 
+        /// </summary>
+        public string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        {
             WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - Begin create/update user for user with editorPersona id - {editorPersonaId}.");
 
             try
@@ -468,12 +468,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                 }
-	            else
-	            {
-		            userEmailAddress = userLogin.LoginName;
-	            }
+                else
+                {
+                    userEmailAddress = userLogin.LoginName;
+                }
 
-	            var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
+                var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
 
                 // get user name from email
                 productLoginName = GetUserCode(productLoginName);
@@ -563,20 +563,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var updateResult = UpdateOnSiteProductUser(userPersonaId, editorPersonaId, onSiteUser);
-	            if (string.IsNullOrEmpty(updateResult))
-	            {
-		            // add activity log
-		            if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
-		            {
-			            WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-		            }
-		            else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
-		            {
-			            WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
-		            }
-	            }
+                if (string.IsNullOrEmpty(updateResult))
+                {
+                    // add activity log
+                    if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
+                    {
+                        WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
+                    }
+                    else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                    {
+                        WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
+                    }
+                }
 
-				return updateResult;
+                return updateResult;
 
             }
             catch (Exception ex)
@@ -586,102 +586,102 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-		/// <summary>
-		/// Updates user profile  
-		/// </summary>
-		public string UpdateOnSiteUserProfile(long editorPersonaId, long userPersonaId)
-		{
-			try
-			{
-				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (listResponse.IsError)
-				{
-					WriteToErrorLog($"ManageProductOnSite.UpdateOnSiteUserProfile - Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
-					return listResponse.ErrorReason;
-				}
+        /// <summary>
+        /// Updates user profile  
+        /// </summary>
+        public string UpdateOnSiteUserProfile(long editorPersonaId, long userPersonaId)
+        {
+            try
+            {
+                var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (listResponse.IsError)
+                {
+                    WriteToErrorLog($"ManageProductOnSite.UpdateOnSiteUserProfile - Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                    return listResponse.ErrorReason;
+                }
 
-				var persona = _managePersona.GetPersona(userPersonaId);
-				var realPageId = persona.RealPageId;
-				var person = _managePerson.GetPerson(realPageId);
-				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+                var persona = _managePersona.GetPersona(userPersonaId);
+                var realPageId = persona.RealPageId;
+                var person = _managePerson.GetPerson(realPageId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-				string userEmailAddress = string.Empty;
-				if (IsRegularUserNoEmail(userPersonaId))
-				{
-					// get the email address
-					var manageElectronicAddress = new ManageElectronicAddress();
-					var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
+                string userEmailAddress = string.Empty;
+                if (IsRegularUserNoEmail(userPersonaId))
+                {
+                    // get the email address
+                    var manageElectronicAddress = new ManageElectronicAddress();
+                    var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
 
-					if (addresses != null)
-					{
-						if (addresses.Any(
-							a =>
-								a.AddressType.ToUpper() == "EMAIL"))
-						{
-							userEmailAddress = (from a in addresses
-												where
-												a.AddressType.ToUpper() == "EMAIL"
-												select a.AddressString).FirstOrDefault();
-						}
-					}
-				}
-				else
-				{
-					userEmailAddress = userLogin.LoginName;
-				}
+                    if (addresses != null)
+                    {
+                        if (addresses.Any(
+                            a =>
+                                a.AddressType.ToUpper() == "EMAIL"))
+                        {
+                            userEmailAddress = (from a in addresses
+                                                where
+                                                a.AddressType.ToUpper() == "EMAIL"
+                                                select a.AddressString).FirstOrDefault();
+                        }
+                    }
+                }
+                else
+                {
+                    userEmailAddress = userLogin.LoginName;
+                }
 
-				var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
-				int companyId = Convert.ToInt32(company.CompanyInstanceSourceId);
-				OnSiteUserProfileUpdate onSiteUser = new OnSiteUserProfileUpdate
-				{
-					FirstName = person.FirstName,
-					LastName = person.LastName,
-					Email = userEmailAddress,
-					UserName = null,
-					PhoneNumber = "",
-					IsActive = null,
-					UserId = _productUserId
-				};
+                var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
+                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+                int companyId = Convert.ToInt32(company.CompanyInstanceSourceId);
+                OnSiteUserProfileUpdate onSiteUser = new OnSiteUserProfileUpdate
+                {
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    Email = userEmailAddress,
+                    UserName = null,
+                    PhoneNumber = "",
+                    IsActive = null,
+                    UserId = _productUserId
+                };
 
-				// UPDATE USER
-				WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteUserProfile - trying to UPDATE user Profile with editorPersona id - {editorPersonaId}.");				
+                // UPDATE USER
+                WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteUserProfile - trying to UPDATE user Profile with editorPersona id - {editorPersonaId}.");
 
-				// activate user - everytime we have to call activate user before updating user
-				// this is because each user can have multiple companies & IsActive in User object has diffrent meaning 
-				var activateResult = ActivateDeactivateOnSiteProductUser(company.CompanyInstanceSourceId);
+                // activate user - everytime we have to call activate user before updating user
+                // this is because each user can have multiple companies & IsActive in User object has diffrent meaning 
+                var activateResult = ActivateDeactivateOnSiteProductUser(company.CompanyInstanceSourceId);
 
-				if (string.IsNullOrEmpty(activateResult))
-				{
-					WriteToDiagnosticLog($"UpdateOnSiteUserProfile.ManageOnSiteUser userPersonaId: {userPersonaId}");
-				}
-				else
-				{
-					throw new Exception($"UpdateOnSiteUserProfile.ManageOnSiteUser; error while activating user profile before calling update/ Error contents - {activateResult}");
-				}
+                if (string.IsNullOrEmpty(activateResult))
+                {
+                    WriteToDiagnosticLog($"UpdateOnSiteUserProfile.ManageOnSiteUser userPersonaId: {userPersonaId}");
+                }
+                else
+                {
+                    throw new Exception($"UpdateOnSiteUserProfile.ManageOnSiteUser; error while activating user profile before calling update/ Error contents - {activateResult}");
+                }
 
-				var updateResult = UpdateOnSiteProductUserProfile(userPersonaId, editorPersonaId, onSiteUser);
-				if (string.IsNullOrEmpty(updateResult))
-				{
-					// add activity log
-					WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
-				}
+                var updateResult = UpdateOnSiteProductUserProfile(userPersonaId, editorPersonaId, onSiteUser);
+                if (string.IsNullOrEmpty(updateResult))
+                {
+                    // add activity log
+                    WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
+                }
 
-				return updateResult;
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog($"UpdateOnSiteUserProfile.ManageOnSiteUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
-				return $"Error - {ex.Message}";
-			}
-		}
-		/// <summary>
-		/// List all users
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="datafilter"></param>
-		/// <returns></returns>
-		public ListResponse GetUsers(long editorPersonaId, RequestParameter datafilter)
+                return updateResult;
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"UpdateOnSiteUserProfile.ManageOnSiteUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                return $"Error - {ex.Message}";
+            }
+        }
+        /// <summary>
+        /// List all users
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="datafilter"></param>
+        /// <returns></returns>
+        public ListResponse GetUsers(long editorPersonaId, RequestParameter datafilter)
         {
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { return claimResposnse; }
@@ -750,65 +750,80 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             };
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
-
-            //int companyInstanceSourceId = 279; // to get sample groups 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductOnSite.GetUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
 
-            var filter = "UnMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
+                //int companyInstanceSourceId = 279; // to get sample groups 
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
                 {
-                    filter = datafilter.FilterBy["filter"];
+                    WriteToErrorLog(
+                        $"ManageProductOnSite.GetUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
                 }
-                if (datafilter.Pages != null)
+
+                var filter = "UnMigrated";
+                var startRow = 0;
+                var resultPerRow = 1000;
+                if (datafilter != null)
                 {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
+                    if (datafilter.FilterBy.ContainsKey("filter"))
+                    {
+                        filter = datafilter.FilterBy["filter"];
+                    }
+                    if (datafilter.Pages != null)
+                    {
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
+                    }
                 }
-            }
-            var url = $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}&filter={filter}&page={startRow}&per_page={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductOnSite.GetUsers", new Dictionary<string, object> { { "Url", url } });
+                var url = $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}&filter={filter}&page={startRow}&per_page={resultPerRow}";
+                WriteToDiagnosticLog("ManageProductOnSite.GetUsers", new Dictionary<string, object> { { "Url", url } });
 
-            var allUsers = GetResultFromApi<IList<OnSiteUser>>(_accessToken, url);
+                var allUsers = GetResultFromApi<IList<OnSiteUser>>(_accessToken, url);
 
-            if (allUsers == null)
-            {
-                WriteToErrorLog($"ManageProductOnSite.GetUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
+                if (allUsers == null)
+                {
+                    WriteToErrorLog($"ManageProductOnSite.GetUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
+                }
+                var migrationUsers = new List<MigrationUser>();
+                foreach (var user in allUsers)
+                {
+                    var migrationUser = new MigrationUser();
+                    migrationUser.CompanyInstanceSourceId = companyInstanceSourceId.ToString();
+                    migrationUser.UserId = user.OnSiteUserProfile?.UserId;
+                    migrationUser.FirstName = user.OnSiteUserProfile?.FirstName;
+                    migrationUser.LastName = user.OnSiteUserProfile?.LastName;
+                    migrationUser.Email = user.OnSiteUserProfile?.Email;
+                    migrationUser.Username = user.OnSiteUserProfile?.UserName;
+                    migrationUser.Status = user.OnSiteUserProfile?.IsActive == true ? "Active" : "Disabled";
+                    migrationUser.Phone = user.OnSiteUserProfile?.PhoneNumber;
+                    migrationUser.Properties = user.OnSiteUserProfile?.Properties?.PropertyIdList?.Select(p => new MigrationProperty() { PropertyInstanceSourceId = p.ToString() }).ToList();
+                    migrationUsers.Add(migrationUser);
+                }
+                WriteToDiagnosticLog($"ManageProductOnSite.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = migrationUsers.Cast<object>().ToList();
+                response.TotalRows = migrationUsers.Count();
             }
-            var migrationUsers = new List<MigrationUser>();
-            foreach (var user in allUsers)
+            catch (Exception ex)
             {
-                var migrationUser = new MigrationUser();
-                migrationUser.CompanyInstanceSourceId = companyInstanceSourceId.ToString();
-                migrationUser.UserId = user.OnSiteUserProfile?.UserId;
-                migrationUser.FirstName = user.OnSiteUserProfile?.FirstName;
-                migrationUser.LastName = user.OnSiteUserProfile?.LastName;
-                migrationUser.Email = user.OnSiteUserProfile?.Email;
-                migrationUser.Username = user.OnSiteUserProfile?.UserName;
-                migrationUser.Status = user.OnSiteUserProfile?.IsActive == true ? "Active" : "Disabled";
-                migrationUser.Phone = user.OnSiteUserProfile?.PhoneNumber;
-                migrationUser.Properties = user.OnSiteUserProfile?.Properties?.PropertyIdList?.Select(p => new MigrationProperty() { PropertyInstanceSourceId = p.ToString() }).ToList();
-                migrationUsers.Add(migrationUser);
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductOnSite.GetUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+
             }
-            WriteToDiagnosticLog($"ManageProductOnSite.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = migrationUsers.Cast<object>().ToList();
-            response.TotalRows = migrationUsers.Count();
             return response;
+
         }
 
         /// <summary>
@@ -1204,7 +1219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return new ListResponse()
-            {                
+            {
                 Records = allRegions.OrderBy(p => p.GetRegionName).Cast<object>().ToList(),
                 TotalRows = allRegions.Count(),
                 RowsPerPage = 9999,
@@ -1243,11 +1258,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
                 WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - calling product API for user with editorPersona id - {editorPersonaId}.");
-				var logData = new Dictionary<string, object>();
-				logData.Add("user data", onSiteUser);
-				WriteToDiagnosticLog("ManageProductOnSite.UpdateOnSiteProductUser - Update user data.", logData);
+                var logData = new Dictionary<string, object>();
+                logData.Add("user data", onSiteUser);
+                WriteToDiagnosticLog("ManageProductOnSite.UpdateOnSiteProductUser - Update user data.", logData);
 
-				var response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{onSiteUser.UserId}/update", onSiteUser).Result;
+                var response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{onSiteUser.UserId}/update", onSiteUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -1281,55 +1296,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-		private string UpdateOnSiteProductUserProfile(long userPersonaId, long editorPersonaId, OnSiteUserProfileUpdate onSiteUser)
-		{
-			string result = string.Empty;
-			using (var client = new HttpClient())
-			{
-				client.DefaultRequestHeaders.Clear();
-				client.DefaultRequestHeaders.Authorization =
-					new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
+        private string UpdateOnSiteProductUserProfile(long userPersonaId, long editorPersonaId, OnSiteUserProfileUpdate onSiteUser)
+        {
+            string result = string.Empty;
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-				WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - calling product API for user with editorPersona id - {editorPersonaId}.");
-				var logData = new Dictionary<string, object>();
-				logData.Add("user data", onSiteUser);
-				WriteToDiagnosticLog("ManageProductOnSite.UpdateOnSiteProductUser - Update user data.", logData);
+                WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - calling product API for user with editorPersona id - {editorPersonaId}.");
+                var logData = new Dictionary<string, object>();
+                logData.Add("user data", onSiteUser);
+                WriteToDiagnosticLog("ManageProductOnSite.UpdateOnSiteProductUser - Update user data.", logData);
 
-				var response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{onSiteUser.UserId}/update", onSiteUser).Result;
+                var response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{onSiteUser.UserId}/update", onSiteUser).Result;
 
-				if (response.IsSuccessStatusCode)
-				{
-					WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}.");
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}.");
 
-					var jsonContent = response.Content.ReadAsStringAsync().Result;
-					dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-					if (userResult != null)
-					{
-						result = string.Empty;
-					}
-					//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-				}
-				else
-				{
-					string errorContent = string.Empty;
-					try
-					{
-						errorContent = response.Content.ReadAsStringAsync().Result;
-					}
-					catch
-					{/*Ignored*/ }
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                    if (userResult != null)
+                    {
+                        result = string.Empty;
+                    }
+                    //UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+                }
+                else
+                {
+                    string errorContent = string.Empty;
+                    try
+                    {
+                        errorContent = response.Content.ReadAsStringAsync().Result;
+                    }
+                    catch
+                    {/*Ignored*/ }
 
-					WriteToErrorLog(
-						$"ManageProductOnSite.UpdateOnSiteProductUser.UpdateOnSiteProductUser Error for user with editorPersona id - {editorPersonaId}. Error - {errorContent}.");
-					//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-					result = $"There was a problem updating the user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
-				}
-			}
+                    WriteToErrorLog(
+                        $"ManageProductOnSite.UpdateOnSiteProductUser.UpdateOnSiteProductUser Error for user with editorPersona id - {editorPersonaId}. Error - {errorContent}.");
+                    //UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                    result = $"There was a problem updating the user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
+                }
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		private string ActivateDeactivateOnSiteProductUser(string companyId, bool isDeactivate = false)
+        private string ActivateDeactivateOnSiteProductUser(string companyId, bool isDeactivate = false)
         {
             string result = string.Empty;
             using (var client = new HttpClient(_messageHandler, false))
@@ -1558,32 +1573,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public IList<OnSiteRole> Roles { get; set; }
     }
 
-	public class OnSiteUserProfileUpdate
-	{
-		[JsonProperty(PropertyName = "user_id", NullValueHandling = NullValueHandling.Ignore)]
-		public string UserId { get; set; }
+    public class OnSiteUserProfileUpdate
+    {
+        [JsonProperty(PropertyName = "user_id", NullValueHandling = NullValueHandling.Ignore)]
+        public string UserId { get; set; }
 
-		[JsonProperty(PropertyName = "first_name")]
-		public string FirstName { get; set; }
+        [JsonProperty(PropertyName = "first_name")]
+        public string FirstName { get; set; }
 
-		[JsonProperty(PropertyName = "last_name")]
-		public string LastName { get; set; }
+        [JsonProperty(PropertyName = "last_name")]
+        public string LastName { get; set; }
 
-		[JsonProperty(PropertyName = "phone_number")]
-		public string PhoneNumber { get; set; }
+        [JsonProperty(PropertyName = "phone_number")]
+        public string PhoneNumber { get; set; }
 
-		[JsonProperty(PropertyName = "user_name", NullValueHandling = NullValueHandling.Ignore)]
-		public string UserName { get; set; }
+        [JsonProperty(PropertyName = "user_name", NullValueHandling = NullValueHandling.Ignore)]
+        public string UserName { get; set; }
 
-		[JsonProperty(PropertyName = "email_address")]
-		public string Email { get; set; }
+        [JsonProperty(PropertyName = "email_address")]
+        public string Email { get; set; }
 
-		[JsonProperty(PropertyName = "is_active", NullValueHandling = NullValueHandling.Ignore)]
-		public bool? IsActive { get; set; }
-		
-	}
+        [JsonProperty(PropertyName = "is_active", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsActive { get; set; }
 
-	public class PropertyAcsess
+    }
+
+    public class PropertyAcsess
     {
         [JsonProperty(PropertyName = "all_in_company_ids")]
         public List<int> CompanyIdList { get; set; }
