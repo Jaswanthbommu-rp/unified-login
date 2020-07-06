@@ -177,8 +177,15 @@
         vm.setPropertyData = function (resp) {
             propertiesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
+                var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
+                if(accesstype === "allProperties" && $scope.$parent.productId === 16){
+                    syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                    resp.records.forEach(function (item) {
+                        item.isAssigned = false;
+                    });
+                }
                 var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
-
+                
                 if (resp.additional && resp.additional.allProperties) {
                     syncMgr.updateProductAllProperties($scope.$parent.productId, true);
                     vm.allProperties = true;
