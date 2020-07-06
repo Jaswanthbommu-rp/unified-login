@@ -688,35 +688,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var response = new ListResponse();
             Dictionary<string, object> logData = new Dictionary<string, object>();
-
-            //int companyInstanceSourceId = 279; // to get sample groups 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductOnSite.GetUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+
+                //int companyInstanceSourceId = 279; // to get sample groups 
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductOnSite.GetUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                }
+
+                logData.Add("Url", $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
+                WriteToDiagnosticLog("ManageProductOnSite.GetUsers", logData);
+
+                var allUsers = GetResultFromApi<IList<OnSiteUser>>(_accessToken, $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
+
+                if (allUsers == null)
+                {
+                    WriteToErrorLog($"ManageProductOnSite.GetUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    response.IsError = true;
+                    response.ErrorReason = "No Users.";
+                    return response;
+                }
+                WriteToDiagnosticLog($"ManageProductOnSite.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = 9999;
+                response.ErrorReason = string.Empty;
+                response.TotalPages = 1;
+                response.Records = allUsers.Cast<object>().ToList();
+                response.TotalRows = allUsers.Count();
             }
-
-            logData.Add("Url", $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
-            WriteToDiagnosticLog("ManageProductOnSite.GetUsers", logData);
-
-            var allUsers = GetResultFromApi<IList<OnSiteUser>>(_accessToken, $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
-
-            if (allUsers == null)
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductOnSite.GetUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                response.IsError = true;
-                response.ErrorReason = "No Users.";
-                return response;
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductOnSite.GetMigrationGetUsersUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
-            WriteToDiagnosticLog($"ManageProductOnSite.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = 9999;
-            response.ErrorReason = string.Empty;
-            response.TotalPages = 1;
-            response.Records = allUsers.Cast<object>().ToList();
-            response.TotalRows = allUsers.Count();
             return response;
+
         }
 
         #region Migration Tool
