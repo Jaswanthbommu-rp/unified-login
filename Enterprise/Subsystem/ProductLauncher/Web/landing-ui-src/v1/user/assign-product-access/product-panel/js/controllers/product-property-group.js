@@ -184,10 +184,10 @@
         vm.setPropertyGroupData = function (resp) {
             pgGrid.busy(false);
             if (resp.records && resp.records.length) {
-                var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
                 if(resp.additional && resp.additional != undefined){
                     syncMgr.setAccessTypeValue($scope.$parent.productId, resp.additional.accessType);
                 }
+                var pdata = syncMgr.setPropertyGroupList(resp.records, $scope.$parent.productId);
                 if ($scope.$parent.productId == 8 && resp.additional && resp.additional != undefined) {
                     syncMgr.setProductAdditionalData($scope.$parent.productId, resp.additional);
                 }
