@@ -718,41 +718,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 , _defaultUserClaim
             ) {Request = new HttpRequestMessage(), Configuration = new HttpConfiguration()};
 
+            //OrganizationUpdate organizationUpdate = new OrganizationUpdate()
+            //{
+            //    //BooksMasterId = 0,
+            //    //BooksCustomerMasterId = _BooksCompanyMasterId,
+            //    OrganizationTypeId = _organizationTypeId,
+            //    OrganizationDomainId = _organizationDomainId,
+            //    Name = "New Company",
+            //};
+            //
+            ////Act
+            //RPObjectCache rPObjectCache = new RPObjectCache();
+            //rPObjectCache.BustCache();
+            //
+            //HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
+            //OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+            //
+            ////Assert
+            //Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            //
+            //organizationUpdate = new OrganizationUpdate()
+            //{
+            //    //BooksMasterId = _BooksMasterId,
+            //    //BooksCustomerMasterId = 0,
+            //    OrganizationTypeId = 0,
+            //    OrganizationTypeName = "MultiFamily",
+            //    OrganizationDomainId = _organizationDomainId,
+            //    Name = "New Company",
+            //};
+            //response = organizationController.UpdateOrganization(organizationUpdate);
+            //orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+
+            //Assert
+            //Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+
             OrganizationUpdate organizationUpdate = new OrganizationUpdate()
-            {
-                //BooksMasterId = 0,
-                //BooksCustomerMasterId = _BooksCompanyMasterId,
-                OrganizationTypeId = _organizationTypeId,
-                OrganizationDomainId = _organizationDomainId,
-                Name = "New Company",
-            };
-
-            //Act
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
-            OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
-
-            //Assert
-            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-
-            organizationUpdate = new OrganizationUpdate()
-            {
-                //BooksMasterId = _BooksMasterId,
-                //BooksCustomerMasterId = 0,
-                OrganizationTypeId = 0,
-                OrganizationTypeName = "MultiFamily",
-                OrganizationDomainId = _organizationDomainId,
-                Name = "New Company",
-            };
-            response = organizationController.UpdateOrganization(organizationUpdate);
-            orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
-
-            //Assert
-            Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
-
-            organizationUpdate = new OrganizationUpdate()
             {
                 RealPageId = _RealPageId,
                 //BooksMasterId = 0,
@@ -762,8 +762,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationDomainName = "Primary",
                 Name = "New Company",
             };
-            response = organizationController.UpdateOrganization(organizationUpdate);
-            orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
+            HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
+            OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
@@ -814,6 +814,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             OrganizationUpdate organizationUpdate = new OrganizationUpdate()
             {
+                RealPageId = _RealPageId,
                 //BooksMasterId = _BooksMasterId,
                 //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = -1,
@@ -830,6 +831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             organizationUpdate = new OrganizationUpdate()
             {
+                RealPageId = _RealPageId,
                 //BooksMasterId = _BooksMasterId,
                 //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = 0,
@@ -846,6 +848,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             organizationUpdate = new OrganizationUpdate()
             {
+                RealPageId = _RealPageId,
                 //BooksMasterId = _BooksMasterId,
                 //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = 0,
@@ -867,6 +870,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             organizationUpdate = new OrganizationUpdate()
             {
+                RealPageId = _RealPageId,
                 //BooksMasterId = _BooksMasterId,
                 //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = _organizationTypeId,
@@ -883,6 +887,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             organizationUpdate = new OrganizationUpdate()
             {
+                RealPageId = _RealPageId,
                 //BooksMasterId = _BooksMasterId,
                 //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = _organizationTypeId,
@@ -899,6 +904,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             organizationUpdate = new OrganizationUpdate()
             {
+                RealPageId = _RealPageId,
                 //BooksMasterId = _BooksMasterId,
                 //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = _organizationTypeId,

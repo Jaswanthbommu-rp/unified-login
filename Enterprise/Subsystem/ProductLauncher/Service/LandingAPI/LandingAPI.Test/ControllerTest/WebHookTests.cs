@@ -17,6 +17,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -30,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private static DateTime _CreateDate = DateTime.MaxValue.ToUniversalTime();
         private static int _PartyId = 54321;
         private static long _BooksMasterId = 12345;
-        private static long _BooksCompanyMasterId = 12345;
+        private static long _BooksCompanyMasterId = 15862;
         private static int _organizationTypeId = 6;
         private static string _organizationTypeName = "Multifamily";
         private static int _organizationDomainId = 1;
@@ -70,13 +71,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private readonly string _mockJson_books_provisioning_upfmorder_create_nulldomain = "{\"id\":\"7ac983c3-bb3f-f5a6-baf1-e41b139d690b\",\"topic\":\"provisioning.upfmorder.create\",\"createdAt\":\"2020-05-19T12:59:54-05:00\",\"payload\":{\"source\":\"UPFM\",\"company\":{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"1 BUSH ST STE 900\",\"country\":\"UNITED STATES\",\"postalCode\":\"94104-4425\",\"companyName\":\"VERITAS INVESTMENTS\",\"productCenters\":[],\"customerCompanyId\":1948,\"companyInstanceSourceId\":null},\"properties\":[{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"units\":35,\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"100 BRODERICK ST\",\"country\":\"UNITED STATES\",\"postalCode\":\"94117-3158\",\"propertyName\":\"100 BRODERICK\",\"productCenters\":[{\"productCenterSourceId\":\"17\"},{\"productCenterSourceId\":\"4\"}],\"customerPropertyId\":391411,\"propertyInstanceSourceId\":null}],\"customerEnvironment\":null}}";
         private readonly string _mockJson_books_provisioning_upfmorder_create_nulldomain_Signature = "5bf97d010439a93a40251271779f511f2514d15cfaf809dcebdb2b377577f510";
 
+        //private readonly string _mockJsonCompanyList = "[\r\n\t{\r\n\t\t\"PartyId\": \""+_PartyId+"\",\r\n\t\t\"Name\": \""+_CompanyName+"\",\r\n\t\t\"OrganizationRealPageId\": \""+_RealPageId+"\",\r\n\t\t\"BooksMasterId\": \""+_BooksMasterId+"\",\r\n\t\t\"BooksCustomerMasterId\": \""+_BooksCompanyMasterId+"\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \"guid\",\r\n\t\t\"LoginName\": \"admin@test.com\",\r\n\t}\r\n]";
+        private readonly string _mockJsonCompanyList = "{\r\n\t\t\"PartyId\": \""+_PartyId+"\",\r\n\t\t\"Name\": \""+_CompanyName+"\",\r\n\t\t\"OrganizationRealPageId\": \""+_RealPageId+"\",\r\n\t\t\"BooksMasterId\": \""+_BooksMasterId+"\",\r\n\t\t\"BooksCustomerMasterId\": \""+_BooksCompanyMasterId+"\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \"guid\",\r\n\t\t\"LoginName\": \"admin@test.com\",\r\n\t}";
 
         private List<OrganizationType> _organizationTypeList;
         private List<OrganizationDomain> _organizationDomains;
 
         private Organization _organization = null;
         private List<ProductInternalSetting> _productInternalSettings;
-
+        
         public WebHookTests()
         {
             _userClaim = new DefaultUserClaim() {CorrelationId = Guid.NewGuid()};
@@ -139,6 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
 
             _productInternalSettings = new List<ProductInternalSetting>() {new ProductInternalSetting() {Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret}};
+
         }
 
         [Fact]
@@ -331,6 +335,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
+            List<dynamic> companyList = new List<dynamic>();
+            companyList.Add(JsonConvert.DeserializeObject<dynamic>(_mockJsonCompanyList));
+
             mockRepository
                 .Setup(m => m.UnitOfWork)
                 .Returns(mockUnitOfWork.Object);
@@ -338,6 +345,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(_organization);
+
+            mockRepository
+                .Setup(m => m.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, null))
+                .Returns(companyList);
 
             mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))

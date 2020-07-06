@@ -395,7 +395,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Assert
             Assert.IsType<Exception>(exception);
-            Assert.Equal("Invalid parameter: Organization realPageId, partyId, blueBook Id, or blackBook Id is required.", exception.Message);
+            Assert.Equal("Invalid parameter: Organization realPageId, partyId is required.", exception.Message);
         }
 
         [Fact]

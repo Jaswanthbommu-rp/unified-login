@@ -175,12 +175,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
-                dynamic param = new
-                {                    
-                };
-
                 List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, param);
+                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, null);
                 if (result != null)
                 {
                     foreach (var item in result)

@@ -497,7 +497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 OrganizationDomain = new OrganizationDomain() {OrganizationDomainId = 1, Name = "Primary"}
             };
 
-            UnifiedLoginCompany ulc = new UnifiedLoginCompany(){ CompanyRealPageId = organization.RealPageIdString, CompanyName = organization.Name, BooksCustomerMasterId = -1, Domain = organization.OrganizationDomain.Name};
+            UnifiedLoginCompany ulc = new UnifiedLoginCompany(){ CompanyRealPageId = organization.RealPageIdString, CompanyName = organization.Name, BooksCustomerMasterId = blueBookCompanyInstanceId, Domain = organization.OrganizationDomain.Name};
 
             List<UnifiedLoginCompany> unifiedLoginCompanyList = new List<UnifiedLoginCompany>() {ulc};
 
@@ -606,7 +606,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			productIdList.Add((int)ProductEnum.ProspectContactCenter);
 
 			_mockManageOrganization
-				.Setup(m => m.GetOrganization(It.IsAny<Guid>(), It.IsAny<long>()))
+				.Setup(m => m.GetOrganization(It.IsAny<Guid>(), null))
 				.Returns(organization);
 
             _mockManageOrganization
