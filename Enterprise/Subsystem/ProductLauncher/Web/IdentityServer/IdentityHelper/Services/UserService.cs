@@ -623,7 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var userClaimTypesForClients = _identityServerRepository.GetUserClaimTypesForClient(clientId);
             foreach (var clientClaim in userClaimTypesForClients)
             {
-                if (clientClaim.ProductId != (int)ProductEnum.UnifiedPlatform && !string.IsNullOrEmpty(clientClaim.SamlAttributeName))
+                if (!string.IsNullOrEmpty(clientClaim.SamlAttributeName))
                 {
                     var userClaim = GetSamlUserClaimAndAttributesForProduct(clientClaim.ClaimName, clientClaim.SamlAttributeName, persona.PersonaId, (ProductEnum) clientClaim.ProductId, out _);
                     if (userClaim != null)
@@ -631,30 +631,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     continue;
                 }
 
-                if(clientClaim.ProductId == (int)ProductEnum.UnifiedPlatform)
+                if (string.IsNullOrEmpty(clientClaim.SamlAttributeName))
                 {
                     string dataField = clientClaim.ClaimName.ToUpperInvariant();
-                    if (!string.IsNullOrEmpty(clientClaim.SamlAttributeName))
+                    string claimName = clientClaim.ClaimName;
+
+                    if (clientClaim.ClaimName.Contains("~"))
                     {
-                        dataField = clientClaim.SamlAttributeName.ToUpperInvariant();
+                        var claimSplit = clientClaim.ClaimName.Split('~');
+                        dataField = claimSplit[0].ToUpperInvariant();
+                        claimName = claimSplit[1];
                     }
 
                     switch (dataField)
                     {
                         case "LOGINNAME":
-                            claims.Add(new Claim(clientClaim.ClaimName, userInfo.LoginName));
+                            claims.Add(new Claim(claimName, userInfo.LoginName));
                             break;
 
                         case "FIRSTNAME":
-                            claims.Add(new Claim(clientClaim.ClaimName, person.FirstName));
+                            claims.Add(new Claim(claimName, person.FirstName));
                             break;
 
                         case "LASTNAME":
-                            claims.Add(new Claim(clientClaim.ClaimName, person.LastName));
+                            claims.Add(new Claim(claimName, person.LastName));
                             break;
 
                         case "USERID":
-                            claims.Add(new Claim(clientClaim.ClaimName, userInfo.UserId.ToString()));
+                            claims.Add(new Claim(claimName, userInfo.UserId.ToString()));
                             break;
 
                         case "ROLE":
