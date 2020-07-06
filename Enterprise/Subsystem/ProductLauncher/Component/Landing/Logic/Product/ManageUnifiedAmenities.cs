@@ -474,7 +474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
 		{
 			ListResponse result = new ListResponse();
-			WriteToDiagnosticLog($"GetProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
+			WriteToDiagnosticLog($"GetProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
 
 			try
 			{

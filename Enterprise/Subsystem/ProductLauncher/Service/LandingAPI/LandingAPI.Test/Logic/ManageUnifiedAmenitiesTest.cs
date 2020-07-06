@@ -797,20 +797,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			response = manageProduct.GetProperties(4, 0, false, null);
 			Assert.True(response.IsError == false && response.Records.Count == 0);
-
-			_editorPersona.Organization.BooksCustomerMasterId = 0;
-
-			//_mockManagePersona
-			//	.Setup(m => m.GetPersona(
-			//		It.Is<long>(l => l == 4)
-			//	))
-			//	.Returns(_editorPersona);
-
-			// invalid company
-			response = manageProduct.GetProperties(4, 0, false, null);
-			Assert.True(response.IsError == true && response.ErrorReason == "Company Setup Error: Please Contact Support.");
-
-
 		}
 	}
 }
