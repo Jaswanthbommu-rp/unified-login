@@ -211,8 +211,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                result.IsError = true;
-                result.ErrorReason = $"OmniChannel - ManageProductOmniChannel.GetProperties - There was a problem getting the properties.";
+                result = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
                 WriteToErrorLog(
                     $"OmniChannel - ManageProductOmniChannel.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
                     exception: ex);
