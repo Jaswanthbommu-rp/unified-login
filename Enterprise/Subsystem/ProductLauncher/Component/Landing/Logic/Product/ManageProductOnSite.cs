@@ -842,29 +842,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductOnSite.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
-            }
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductOnSite.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    return migrateResponse;
+                }
 
-            var onSitemigrateUsers = new OnSiteMigrateUsers();
-            var onSiteUnmigrateUsers = new OnSiteMigrateUsers();
+                var onSitemigrateUsers = new OnSiteMigrateUsers();
+                var onSiteUnmigrateUsers = new OnSiteMigrateUsers();
 
-            onSitemigrateUsers.Users = migrateUsers.Where(x => x.UsingUnifiedLogin).Select(x => new OnSiteMigrateUser() { UserId = x.UserId }).ToList();
-            onSiteUnmigrateUsers.Users = migrateUsers.Where(x => !x.UsingUnifiedLogin).Select(x => new OnSiteMigrateUser() { UserId = x.UserId }).ToList();
+                onSitemigrateUsers.Users = migrateUsers.Where(x => x.UsingUnifiedLogin).Select(x => new OnSiteMigrateUser() { UserId = x.UserId }).ToList();
+                onSiteUnmigrateUsers.Users = migrateUsers.Where(x => !x.UsingUnifiedLogin).Select(x => new OnSiteMigrateUser() { UserId = x.UserId }).ToList();
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-            if (onSitemigrateUsers.Users.Any())
-            {
-                var url = $"{_apiEndPoint}/users/migrate_users";
-                var response = _client.PostAsJsonAsync(url, onSitemigrateUsers).Result;
-                var responseContent = response.Content.ReadAsStringAsync().Result;
-                var logData = new Dictionary<string, object>
+                _client.DefaultRequestHeaders.Clear();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+                if (onSitemigrateUsers.Users.Any())
+                {
+                    var url = $"{_apiEndPoint}/users/migrate_users";
+                    var response = _client.PostAsJsonAsync(url, onSitemigrateUsers).Result;
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+                    var logData = new Dictionary<string, object>
                 {
                     { "Url", url },
                     { "Response", responseContent },
@@ -872,27 +874,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     { "MigratedUser", onSitemigrateUsers }
                 };
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var migrationResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    WriteToDiagnosticLog("ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                    migrateResponse.Message = migrationResponse.count;
-                    migrateResponse.Status = migrationResponse.count != 0;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var migrationResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                        WriteToDiagnosticLog("ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                        migrateResponse.Message = migrationResponse.count;
+                        migrateResponse.Status = migrationResponse.count != 0;
+                    }
+                    else
+                    {
+                        WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                        migrateResponse.Message = "Cannot update user status to migrated.";
+                        migrateResponse.Status = false;
+                    }
                 }
-                else
-                {
-                    WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                    migrateResponse.Message = "Cannot update user status to migrated.";
-                    migrateResponse.Status = false;
-                }
-            }
 
-            if (onSiteUnmigrateUsers.Users.Any())
-            {
-                var url = $"{_apiEndPoint}/users/unmigrate_users";
-                var response = _client.PostAsJsonAsync(url, onSiteUnmigrateUsers).Result;
-                var responseContent = response.Content.ReadAsStringAsync().Result;
-                var logData = new Dictionary<string, object>
+                if (onSiteUnmigrateUsers.Users.Any())
+                {
+                    var url = $"{_apiEndPoint}/users/unmigrate_users";
+                    var response = _client.PostAsJsonAsync(url, onSiteUnmigrateUsers).Result;
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+                    var logData = new Dictionary<string, object>
                 {
                     { "Url", url },
                     { "Response", responseContent },
@@ -900,19 +902,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     { "MigratedUser", onSiteUnmigrateUsers }
                 };
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var migrationResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    WriteToDiagnosticLog("ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                    migrateResponse.Message = $"{ migrateResponse.Message} {migrationResponse.count}";
-                    migrateResponse.Status = migrateResponse.Status && migrationResponse.count != 0;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var migrationResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                        WriteToDiagnosticLog("ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                        migrateResponse.Message = $"{ migrateResponse.Message} {migrationResponse.count}";
+                        migrateResponse.Status = migrateResponse.Status && migrationResponse.count != 0;
+                    }
+                    else
+                    {
+                        WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                        migrateResponse.Message = "Cannot update user status to unmigrated.";
+                        migrateResponse.Status = false;
+                    }
                 }
-                else
+            }
+            catch (Exception ex)
+            {
+                migrateResponse = new MigrateResponse
                 {
-                    WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                    migrateResponse.Message = "Cannot update user status to unmigrated.";
-                    migrateResponse.Status = false;
-                }
+                    Status = false,
+                    Message = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
             return migrateResponse;
