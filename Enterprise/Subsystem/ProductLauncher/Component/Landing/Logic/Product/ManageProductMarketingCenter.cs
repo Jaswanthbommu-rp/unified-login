@@ -1179,50 +1179,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IsError = true,
                 ErrorReason = "No Users."
             };
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductMarketingCenter.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var filter = "NonMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
+                var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
+
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
                 {
-                    filter = datafilter.FilterBy["filter"];
+                    WriteToErrorLog(
+                        $"ManageProductMarketingCenter.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
                 }
-                if (datafilter.Pages != null)
+                var filter = "NonMigrated";
+                var startRow = 0;
+                var resultPerRow = 1000;
+                if (datafilter != null)
                 {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
+                    if (datafilter.FilterBy.ContainsKey("filter"))
+                    {
+                        filter = datafilter.FilterBy["filter"];
+                    }
+                    if (datafilter.Pages != null)
+                    {
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
+                    }
                 }
+
+                var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
+                WriteToDiagnosticLog("ManageProductMarketingCenter.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+
+                var migrationResponse = GetResultFromApi<MigrationResponse<IList<MigrationUser>>>(url);
+
+                if (migrationResponse == null)
+                {
+                    WriteToErrorLog($"ManageProductMarketingCenter.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
+                }
+                WriteToDiagnosticLog($"ManageProductMarketingCenter.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = migrationResponse.Data.Cast<object>().ToList();
+                response.TotalRows = migrationResponse.Data.Count();
             }
-
-            var url = $"{_productUrl}/v2/api/{companyInstanceSourceId}/users?filter-type={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductMarketingCenter.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
-
-            var migrationResponse = GetResultFromApi<MigrationResponse<IList<MigrationUser>>>(url);
-
-            if (migrationResponse == null)
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductMarketingCenter.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductMarketingCenter.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
-            WriteToDiagnosticLog($"ManageProductMarketingCenter.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = migrationResponse.Data.Cast<object>().ToList();
-            response.TotalRows = migrationResponse.Data.Count();
             return response;
         }
 
