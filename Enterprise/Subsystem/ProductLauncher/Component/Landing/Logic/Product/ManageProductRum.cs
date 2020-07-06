@@ -533,9 +533,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = $"There was a problem getting the roles.";
                 WriteToErrorLog($"ManageProductRum.GetUMGlobalRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException blueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
             }
 
             return response;

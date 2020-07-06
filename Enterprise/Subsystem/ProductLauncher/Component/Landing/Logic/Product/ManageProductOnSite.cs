@@ -257,7 +257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 }
                 
                 WriteToErrorLog($"ManageProductOnSite.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
