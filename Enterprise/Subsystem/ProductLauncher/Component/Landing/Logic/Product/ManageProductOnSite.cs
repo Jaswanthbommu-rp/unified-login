@@ -246,8 +246,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = $"There was a problem getting the roles.";
+                response = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException blueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                }
+                
                 WriteToErrorLog($"ManageProductOnSite.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
