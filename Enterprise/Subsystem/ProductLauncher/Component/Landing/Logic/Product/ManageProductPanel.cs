@@ -288,6 +288,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                 }
 
+                if (result.IsError)
+                {
+                    throw new Exception(result.ErrorReason);
+                }
+
             }
             catch (Exception ex)
             {
