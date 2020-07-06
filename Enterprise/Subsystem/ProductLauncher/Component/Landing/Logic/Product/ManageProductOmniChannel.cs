@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OmniChannel;
@@ -21,34 +22,34 @@ using UserLocation = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObj
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
 
-	/// <summary>
-	/// Used to update OmniCHannel user information
-	/// </summary>
-	public class ManageProductOmniChannel : ManageProductBase, IManageProductOmniChannel
+    /// <summary>
+    /// Used to update OmniCHannel user information
+    /// </summary>
+    public class ManageProductOmniChannel : ManageProductBase, IManageProductOmniChannel
     {
-		#region Private members
-		private DefaultUserClaim _userClaims;
+        #region Private members
+        private DefaultUserClaim _userClaims;
 
-		#endregion
+        #endregion
 
-		#region Ctor
-
-
+        #region Ctor
 
 
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="editorRealPageId">Real page Id of user who is creating new user</param>
-		public ManageProductOmniChannel(DefaultUserClaim userClaims) : base((int)ProductEnum.OmniChannel, userClaims, null)
-		{
-			_userClaims = userClaims;
 
-			WriteToDiagnosticLog("OmniChannel - ManageProductOmniChannel.Ctor - Getting Product settings.");
-            _productId = (int)ProductEnum.OmniChannel;            
+
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="editorRealPageId">Real page Id of user who is creating new user</param>
+        public ManageProductOmniChannel(DefaultUserClaim userClaims) : base((int)ProductEnum.OmniChannel, userClaims, null)
+        {
+            _userClaims = userClaims;
+
+            WriteToDiagnosticLog("OmniChannel - ManageProductOmniChannel.Ctor - Getting Product settings.");
+            _productId = (int)ProductEnum.OmniChannel;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
-            
+
         }
 
         #endregion
@@ -56,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #region Public Methods
 
         #region Properties and Roles
-       
+
 
 
         /// <summary>
@@ -82,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel).CompanyInstanceId;                
+                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel).CompanyInstanceId;
                 if (companyInstanceId == 0)
                 {
                     WriteToErrorLog(
@@ -104,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog($"OmniChannel - ManageProductOmniChannel.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
 
                 // need to do a filter on the result
-                if (userPersonaId != 0 ) // Called during updating Existing User
+                if (userPersonaId != 0) // Called during updating Existing User
                 {
                     WriteToDiagnosticLog(
                         $"OmniChannel - ManageProductOmniChannel.GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
@@ -126,8 +127,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                result.IsError = true;
-                result.ErrorReason = $"OmniChannel - ManageProductOmniChannel.GetProperties - There was a problem getting the properties.";
+                result = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
+
                 WriteToErrorLog(
                     $"OmniChannel - ManageProductOmniChannel.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
                     exception: ex);
@@ -160,7 +173,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel).CompanyInstanceId;                
+                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel).CompanyInstanceId;
                 if (companyInstanceId == 0)
                 {
                     WriteToErrorLog(
@@ -237,14 +250,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var productIds = new List<int>(); // GetProductIdsByOrg();
 
                 ProductRepository pr = new ProductRepository();
-	            IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+                IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
 
-	            var gbAllRoles = pr.ListRolesForProductByParty(partyId, productIdList, productId);
+                var gbAllRoles = pr.ListRolesForProductByParty(partyId, productIdList, productId);
 
                 WriteToDiagnosticLog(
                     $"OmniChannel - ManageProductOmniChannel.GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
 
-                if (userPersonaId != 0 ) // Called during updating Existing User
+                if (userPersonaId != 0) // Called during updating Existing User
                 {
                     WriteToDiagnosticLog(
                          $"OmniChannel - ManageProductOmniChannel.GetRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
@@ -263,7 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         TotalPages = 1
                     };
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -296,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var realPageId = persona.RealPageId;
                 //var person = _managePerson.GetPerson(realPageId);
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-                
+
                 // super user
                 if (IsSuperUser(userPersonaId))
                 {
@@ -304,10 +317,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     userAssignProductPropertyRole = new UserAssignProductPropertyRole
                     {
-                        PropertyList = new List<string> { "-1" },                         
+                        PropertyList = new List<string> { "-1" },
                         RoleList = new List<string>()
                     };
-                   
+
                 }
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
@@ -315,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                    $"OmniChannel - ManageProductOmniChannel.ManageOmniChannelUser - _productUsername for user is {_productUsername}.");
 
-	            CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel);
 
 
                 // enable after debugging : TODO
@@ -328,8 +341,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // Check for user locations
                 List<UserLocation> userLocations = null;
                 List<UserAccessGroup> userAccessGroups = null;
-                                
-                
+
+
                 if (userAssignProductPropertyRole != null)
                 {
                     // map userAssignProductPropertyRole to ProductPropertyRole
@@ -338,7 +351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (productPropertyRole.PropertyList != null &&
                         productPropertyRole.PropertyList.Count > 0)
                     {
-                        userLocations = productPropertyRole.PropertyList;                        
+                        userLocations = productPropertyRole.PropertyList;
                     }
 
                     if (productPropertyRole.UserAccessGroups != null &&
@@ -362,9 +375,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // To Do
                     UpdateDeleteOmniChannelProductUserDB(userPersonaId, editorPersonaId, userLocations, userAccessGroups);
                     WriteToDiagnosticLog($"OmniChannel - ManageProductOmniChannel.ManageOmniChannelUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
-                }               
+                }
 
-               
+
                 return "";
             }
             catch (Exception ex)
@@ -389,7 +402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteToInformationLog($"ManageProductOmniChannel.UnassignUser userPersonaId:{userPersonaId}");
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-            
+
             // Activity Logging
             WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
@@ -399,7 +412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private ProductPropertyRole MapGbObjectToProduct(UserAssignProductPropertyRole userProductPropertyRole)
         {
             var result = new ProductPropertyRole();
-           
+
 
             if (userProductPropertyRole.PropertyList != null &&
                 userProductPropertyRole.PropertyList.Count > 0)
@@ -441,10 +454,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 RepositoryResponse result = new RepositoryResponse();
-                result = InsertAssignedUserRoleData(userPersonaId,  int.Parse(role.AccessGroupCode));
+                result = InsertAssignedUserRoleData(userPersonaId, int.Parse(role.AccessGroupCode));
                 if (result.Id < 0)
                 {
-                   
+
                 }
             }
             catch (Exception ex)
@@ -466,7 +479,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 catch (Exception ex)
                 {
-                    WriteToErrorLog($"OmniChannel - ManageProductOmniChannel.InsertAssignedPropRoleToUser - Error for user with userPersonaId - {userPersonaId}, PropertyId - {prop.PropertyId}, RoleId - {role.AccessGroupCode}", exception: ex);                    
+                    WriteToErrorLog($"OmniChannel - ManageProductOmniChannel.InsertAssignedPropRoleToUser - Error for user with userPersonaId - {userPersonaId}, PropertyId - {prop.PropertyId}, RoleId - {role.AccessGroupCode}", exception: ex);
                 }
             }
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
@@ -485,7 +498,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             List<PropertyRole> propRoleListDB = null; /*GetAssignedPropertyRoleForPersona(userPersonaId);*/ // Existing Assigned Properties and Role in DB for the User
-                        
+
             var isRoleChanged = false;
             int productId = (int)ProductEnum.OmniChannel;
 
@@ -552,9 +565,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 {
                                     continue;
                                 }
-                               
+
                             }
-                           
+
                         }
                         catch (Exception ex)
                         {
@@ -586,24 +599,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToErrorLog($"OmniChannel - ManageProductOmniChannel.InsertAssignedPropRoleToUser - Error for user with userPersonaId - {userPersonaId}, PropertyId - {prop.PropertyId}, RoleId - {role.AccessGroupCode}", exception: ex);
                         }
                     }
-                }                
+                }
             }
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
         }
 
 
-		/// <summary>
-		/// Used to assign a property to the given user
-		/// </summary>
-		/// <param name="userPersonaId"></param>
-		/// <param name="productId"></param>
-		/// <param name="propID"></param>
-		/// <param name="roleID"></param>
-		/// <returns></returns>
-        private RepositoryResponse InsertAssignedUserData(long userPersonaId, ProductEnum productId, long propID, long roleID )
-		{
-			return InsertAssignedUserPropertyData(userPersonaId, ProductEnum.OmniChannel, propID);
-			/*
+        /// <summary>
+        /// Used to assign a property to the given user
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="propID"></param>
+        /// <param name="roleID"></param>
+        /// <returns></returns>
+        private RepositoryResponse InsertAssignedUserData(long userPersonaId, ProductEnum productId, long propID, long roleID)
+        {
+            return InsertAssignedUserPropertyData(userPersonaId, ProductEnum.OmniChannel, propID);
+            /*
 	        PropertyRepository pr = new PropertyRepository();
             RepositoryResponse result = new RepositoryResponse();
             WriteToDiagnosticLog($"OmniChannel - ManageProductOmniChannel.InsertAssignedPropRoleToUser START - calling DB to Delete Property/Role assigned to user userPersonaId - {userPersonaId}, PropertyId - {propID}, RoleId - {roleID}.");
@@ -619,10 +632,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
 			*/
 
-		}
+        }
 
 
-        private RepositoryResponse InsertAssignedUserRoleData(long userPersonaId,  long roleID)
+        private RepositoryResponse InsertAssignedUserRoleData(long userPersonaId, long roleID)
         {
             OmniChannelRepository ocr = new OmniChannelRepository();
             RepositoryResponse result = new RepositoryResponse();
@@ -643,8 +656,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private RepositoryResponse DeleteAssignedUserData(long userPersonaId, ProductEnum productId, long propID, long roleID)
         {
-	        return DeleteAssignedUserPropertyData(userPersonaId, ProductEnum.OmniChannel, propID);
-			/*
+            return DeleteAssignedUserPropertyData(userPersonaId, ProductEnum.OmniChannel, propID);
+            /*
 			PropertyRepository pr = new PropertyRepository();
 			RepositoryResponse result = new RepositoryResponse();
             int del = 1; // setting for Delete in DB
@@ -669,15 +682,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             int productId = (int)ProductEnum.OmniChannel;
             //OmniChannelRepository ocr = new OmniChannelRepository();
-			UserRoleRightRepository urr = new UserRoleRightRepository();
+            UserRoleRightRepository urr = new UserRoleRightRepository();
             List<UL.Role> propRole = urr.ListRoleByPersona(productId, userPersonaId, null);
             return propRole;
         }
 
         private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
         {
-            
-             // get roles from DB for OmniChannel product
+
+            // get roles from DB for OmniChannel product
             WriteToDiagnosticLog(
                    $"OmniChannel - Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
             List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
@@ -724,7 +737,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<Property> propRoleList = GetAssignedPropertyForPersona(userPersonaId);
 
             // if a  record exists - set prop assigned to true
-            
+
             foreach (var propRole in propRoleList)
             {
                 if (blueBookPropertyList.Any(a => a.ID == propRole.PropID.ToString()))
@@ -746,7 +759,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 TotalRows = blueBookPropertyList.Count(),
                 RowsPerPage = 9999,
                 ErrorReason = string.Empty,
-                TotalPages = 1               
+                TotalPages = 1
             };
         }
 
@@ -754,7 +767,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     }
 
 
-    
+
 
     #endregion
 }
