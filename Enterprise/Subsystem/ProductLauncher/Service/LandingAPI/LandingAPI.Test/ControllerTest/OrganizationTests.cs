@@ -4,7 +4,6 @@ using Moq;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -782,7 +781,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             UserLoginOnly userLoginOnlyNull = null;
 
-            //Organization organization = new Organization();
             RepositoryResponse repositoryResponse = new RepositoryResponse()
             {
                 Id = 0,
@@ -815,8 +813,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             OrganizationUpdate organizationUpdate = new OrganizationUpdate()
             {
                 RealPageId = _RealPageId,
-                //BooksMasterId = _BooksMasterId,
-                //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = -1,
                 OrganizationDomainId = _organizationDomainId,
                 Name = "New Company",
@@ -832,8 +828,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             organizationUpdate = new OrganizationUpdate()
             {
                 RealPageId = _RealPageId,
-                //BooksMasterId = _BooksMasterId,
-                //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = 0,
                 OrganizationDomainId = _organizationDomainId,
                 Name = "New Company",
@@ -849,8 +843,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             organizationUpdate = new OrganizationUpdate()
             {
                 RealPageId = _RealPageId,
-                //BooksMasterId = _BooksMasterId,
-                //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = 0,
                 OrganizationTypeName = "Incorrect Type",
                 OrganizationDomainId = _organizationDomainId,
@@ -871,8 +863,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             organizationUpdate = new OrganizationUpdate()
             {
                 RealPageId = _RealPageId,
-                //BooksMasterId = _BooksMasterId,
-                //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = _organizationTypeId,
                 OrganizationDomainId = -1,
                 Name = "New Company",
@@ -888,8 +878,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             organizationUpdate = new OrganizationUpdate()
             {
                 RealPageId = _RealPageId,
-                //BooksMasterId = _BooksMasterId,
-                //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = _organizationTypeId,
                 OrganizationDomainId = 0,
                 Name = "New Company",
@@ -905,8 +893,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             organizationUpdate = new OrganizationUpdate()
             {
                 RealPageId = _RealPageId,
-                //BooksMasterId = _BooksMasterId,
-                //BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = _organizationTypeId,
                 OrganizationDomainName = "Invalid domain type",
                 Name = "New Company",
