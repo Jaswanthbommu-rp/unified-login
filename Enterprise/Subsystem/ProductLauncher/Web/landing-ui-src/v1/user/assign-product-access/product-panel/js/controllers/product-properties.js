@@ -121,6 +121,12 @@
         };
 
         vm.hidePropertiesGrid = function () {
+            if($scope.$parent.productId === 16){
+                var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
+                if(accesstype){
+                    vm.propertySelect = accesstype;
+                }
+            }
             if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
                 return true;
             }
@@ -171,8 +177,14 @@
         vm.setPropertyData = function (resp) {
             propertiesGrid.busy(false);
             if (resp.records && resp.records.length > 0) {
+                var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
+                if(accesstype === "allProperties" && $scope.$parent.productId === 16){
+                    syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                    resp.records.forEach(function (item) {
+                        item.isAssigned = false;
+                    });
+                }
                 var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
-
                 if (resp.additional && resp.additional.allProperties) {
                     syncMgr.updateProductAllProperties($scope.$parent.productId, true);
                     vm.allProperties = true;
@@ -202,6 +214,7 @@
             var activeCount = 0;
             var inActiveCount = 0;
             var propData = syncMgr.getProductPropertiesData(productId);
+            var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
 
             if (propData && propData.length > 0) {
                 propData.forEach(function (item) {
@@ -212,6 +225,10 @@
                         originalProperty: item.isAssigned
                     });
 
+                    
+                    if(accesstype == "allProperties" && productId === 16){
+                        item.isAssigned = false;
+                    }
                     if (item.active !== undefined && productId === 10) {
                         if (item.active == 'true') {
                             vm.activeProperties.push(item);
