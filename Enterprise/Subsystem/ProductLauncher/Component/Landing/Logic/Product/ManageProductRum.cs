@@ -184,8 +184,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = $"There was a problem getting the roles.";
+                response = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                }
+
                 WriteToErrorLog($"ManageProductRum.GetPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
