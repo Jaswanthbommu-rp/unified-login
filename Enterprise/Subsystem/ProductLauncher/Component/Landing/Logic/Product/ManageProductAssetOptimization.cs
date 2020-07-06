@@ -314,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					response.ErrorReason = CommonMessageConstants.RolErrorMessage;
+					response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
 				}
 			}
 

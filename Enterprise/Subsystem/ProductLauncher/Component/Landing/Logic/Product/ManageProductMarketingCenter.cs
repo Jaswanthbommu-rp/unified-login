@@ -193,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				else
 				{
 					result.IsError = true;
-					result.ErrorReason =  CommonMessageConstants.RolErrorMessage;
+					result.ErrorReason =  CommonMessageConstants.RoleErrorMessage;
 					WriteToErrorLog("GetRoles - Error. " + response.Content.ReadAsStringAsync().Result);
 				}
 			}
@@ -209,7 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					result.ErrorReason = CommonMessageConstants.RolErrorMessage;
+					result.ErrorReason = CommonMessageConstants.RoleErrorMessage;
 				}
 			}
 			return result;

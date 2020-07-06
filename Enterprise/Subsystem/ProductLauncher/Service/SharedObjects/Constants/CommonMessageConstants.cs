@@ -18,7 +18,7 @@
         /// <summary>
         /// RolErrorMessage
         /// </summary>
-        public const string RolErrorMessage = "There was a problem getting the roles.";
+        public const string RoleErrorMessage = "There was a problem getting the roles.";
 
         #endregion
 

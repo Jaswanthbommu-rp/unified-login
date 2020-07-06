@@ -230,7 +230,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = CommonMessageConstants.RolErrorMessage;                  
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;                  
                 WriteToErrorLog($"ManageProductClientPortal.GetRoles Error for user with editorPersona id - {editorPersonaId} ",
                     exception: ex);
             }

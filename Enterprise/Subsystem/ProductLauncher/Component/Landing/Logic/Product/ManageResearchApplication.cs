@@ -19,6 +19,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResearchApplication.UserAssignProductPropertyRole;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -116,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = $"ResearchApplication - ManageResearchApplication.GetRoles  There was a problem getting the roles.";
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 WriteToErrorLog($"ResearchApplication - ManageResearchApplication.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 

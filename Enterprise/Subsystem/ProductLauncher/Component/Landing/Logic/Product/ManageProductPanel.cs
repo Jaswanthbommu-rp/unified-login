@@ -289,6 +289,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.HelpCenter:
                     case (int)ProductEnum.MigrationTool:
                     case (int)ProductEnum.OmniChannel:
+                    case (int)ProductEnum.OneSiteConversions:
+                    case (int)ProductEnum.OpsBid:
+                    case (int)ProductEnum.ProductLearningPortal:
+                    case (int)ProductEnum.ProductUpdates:
+                    case (int)ProductEnum.PropertyPhotos:
+                    case (int)ProductEnum.Propertyware:
+                    case (int)ProductEnum.ProspectContactCenter:
+                    case (int)ProductEnum.SalesForce:
+                    case (int)ProductEnum.SelfProvisioningPortal:
+                    case (int)ProductEnum.SettingsManagement:
+                    case (int)ProductEnum.SiteSpendManagement:
+                    case (int)ProductEnum.Social:
+                    case (int)ProductEnum.SupportTool:
+                    case (int)ProductEnum.UnifiedSettings:
+                    case (int)ProductEnum.UnifiedUI:
+                    case (int)ProductEnum.VendorMarketplace:
+                    case (int)ProductEnum.Yieldstar:
                         //pending implementation
                         throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     default:
@@ -318,7 +335,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     else
                     {
-                        result.ErrorReason = CommonMessageConstants.RolErrorMessage;
+                        if (ex.InnerException != null)
+                        {
+                            if (ex.InnerException.Message == CommonMessageConstants.CompanyErrorMessage)
+                            {
+                                result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                            }
+                            else
+                            {
+                                result.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                            }
+                        }
+                        else
+                        {
+                            result.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                        }
                     }
                 }
             }
