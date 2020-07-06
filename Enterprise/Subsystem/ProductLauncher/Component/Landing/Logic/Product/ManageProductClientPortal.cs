@@ -785,6 +785,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsError = true,
                     ErrorReason = ex.Message
                 };
+
+                WriteToErrorLog($"ManageProductClientPortal.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
             return response;
         }
