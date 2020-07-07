@@ -16,6 +16,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -148,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
                 var allPropertyGroups = groups as IList<VendorServicesPropertyGroup> ?? groups.ToList();
-               
+
 
                 WriteToDiagnosticLog(
                                $"ManageProductVendorServices.GetPropertyGroups - recived product groups with count {allPropertyGroups.Count}for user with editorPersona id - {editorPersonaId} and companyInstanceSourceId{companyInstanceSourceId}");
@@ -176,8 +177,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = "There was a problem getting the property groups.";
+                response = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                }
+
                 WriteToErrorLog($"ManageProductVendorServices.GetPropertyGroups - error for user with editorPersona id - {editorPersonaId} - {response.ErrorReason}", exception: ex);
             }
 
@@ -246,11 +259,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                result.IsError = true;
-                result.ErrorReason = $"ManageProductVendorServices.GetProperties - There was a problem getting the properties.";
-                WriteToErrorLog(
-                    $"ManageProductVendorServices.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
-                    exception: ex);
+                WriteToErrorLog($"GetVendorServicesPropertyList - Error. {ex.Message} ", exception: ex);
+                result = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
             }
 
             return result;
@@ -608,7 +630,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (productPropertyNotification.PropertyGroup != null)
                     {
                         propertyGroupId = productPropertyNotification.PropertyGroup.Id;
-                        accessLevel = productPropertyNotification.PropertyGroup.Type.ToString();                       
+                        accessLevel = productPropertyNotification.PropertyGroup.Type.ToString();
                     }
 
                     vendorServicesUser = new VendorServicesUser
@@ -648,8 +670,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 WriteToDiagnosticLog($"User {productLoginName} already exists in Vendor Credentialing product with editorPersona id -{editorPersonaId}. Getting new one.");
                                 incrementor++;
-                                if(incrementor == 1)
-                                    productLoginName = $"{updatedproductUsername}{productUserPersonaId}";                                
+                                if (incrementor == 1)
+                                    productLoginName = $"{updatedproductUsername}{productUserPersonaId}";
                                 else
                                     productLoginName = $"{updatedproductUsername}{productUserPersonaId}{incrementor}";
                             }
@@ -657,11 +679,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 foundNewUserName = true;
                             }
-                            if(incrementor == 10)
+                            if (incrementor == 10)
                                 throw new Exception($"Could not find a unique username for user persona id {productUserPersonaId} after {incrementor} try.");
                         }
                         // Product username cannot be more than 50 characters
-                        if(productLoginName.Length > 50)
+                        if (productLoginName.Length > 50)
                             productLoginName = productLoginName.Substring(1, 50);
                         vendorServicesUser.Username = productLoginName;
                     }
@@ -719,23 +741,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (listResponse.IsError) { return false; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
-            {
-                WriteToErrorLog(
-                    $"ManageProductVendorServices.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                return false;
-            }
-            _productUserId = productUserId;
-            _productUsername = username;
             try
             {
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductVendorServices.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return false;
+                }
+                _productUserId = productUserId;
+                _productUsername = username;
+
                 //Note : User Active means is not locked in vendor service.
                 DisableProductUser(!isActive);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductVendorServices.ChangeUserActiveStatus - Updating user status failed for user {companyInstanceSourceId}|{username} by editorPersonaId = {editorPersonaId}", exception: ex);
+                WriteToErrorLog($"ManageProductVendorServices.ChangeUserActiveStatus - Updating user status failed for user {username} by editorPersonaId = {editorPersonaId}", exception: ex);
                 return false;
             }
 
@@ -762,67 +785,81 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var isMigrated = false;
-            var startRow = 1;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                isMigrated = datafilter.FilterBy.ContainsKey("filter") && datafilter.FilterBy["filter"].ToUpper() == "MIGRATED";
-                if (datafilter.Pages != null)
+
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
                 {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
+                    WriteToErrorLog(
+                        $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
                 }
-            }
-
-            var url = $"{_apiEndPoint}/api/users?companyId={companyInstanceSourceId}&isMigrated={isMigrated}&startRow={startRow}&resultsPerPage={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductVendorServices.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
-
-            var allUsers = GetResultFromApi<IList<VendorServicesUser>>(_accessToken, url);
-
-            if (allUsers == null)
-            {
-                WriteToErrorLog($"ManageProductVendorServices.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
-            }
-
-            var migrationUsers = new List<MigrationUser>();
-            foreach (var user in allUsers)
-            {
-                var migrationUser = new MigrationUser();
-                migrationUser.CompanyInstanceSourceId = user.CompanyId;
-                migrationUser.FirstName = user.FirstName;
-                migrationUser.LastName = user.LastName;
-                migrationUser.UserId = user.ID;
-                migrationUser.Username = user.Username;
-                migrationUser.Email = user.Email;
-                migrationUser.Phone = user.Phone;
-                migrationUser.LastActivity = user.LastLoginDate.ToString();
-                migrationUser.Status = user.Locked ? "Disabled" : "Active";
-                if (user.UserLocations != null)
+                var isMigrated = false;
+                var startRow = 1;
+                var resultPerRow = 1000;
+                if (datafilter != null)
                 {
-                    foreach (var userLocation in user.UserLocations)
+                    isMigrated = datafilter.FilterBy.ContainsKey("filter") && datafilter.FilterBy["filter"].ToUpper() == "MIGRATED";
+                    if (datafilter.Pages != null)
                     {
-                        migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = userLocation.PropertyId });
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
                     }
                 }
-                migrationUsers.Add(migrationUser);
+
+                var url = $"{_apiEndPoint}/api/users?companyId={companyInstanceSourceId}&isMigrated={isMigrated}&startRow={startRow}&resultsPerPage={resultPerRow}";
+                WriteToDiagnosticLog("ManageProductVendorServices.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+
+                var allUsers = GetResultFromApi<IList<VendorServicesUser>>(_accessToken, url);
+
+                if (allUsers == null)
+                {
+                    WriteToErrorLog($"ManageProductVendorServices.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
+                }
+
+                var migrationUsers = new List<MigrationUser>();
+                foreach (var user in allUsers)
+                {
+                    var migrationUser = new MigrationUser();
+                    migrationUser.CompanyInstanceSourceId = user.CompanyId;
+                    migrationUser.FirstName = user.FirstName;
+                    migrationUser.LastName = user.LastName;
+                    migrationUser.UserId = user.ID;
+                    migrationUser.Username = user.Username;
+                    migrationUser.Email = user.Email;
+                    migrationUser.Phone = user.Phone;
+                    migrationUser.LastActivity = user.LastLoginDate.ToString();
+                    migrationUser.Status = user.Locked ? "Disabled" : "Active";
+                    if (user.UserLocations != null)
+                    {
+                        foreach (var userLocation in user.UserLocations)
+                        {
+                            migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = userLocation.PropertyId });
+                        }
+                    }
+                    migrationUsers.Add(migrationUser);
+                }
+                WriteToDiagnosticLog($"ManageProductVendorServices.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = migrationUsers.Cast<object>().ToList();
+                response.TotalRows = migrationUsers.Count();
             }
-            WriteToDiagnosticLog($"ManageProductVendorServices.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = migrationUsers.Cast<object>().ToList();
-            response.TotalRows = migrationUsers.Count();
+            catch (Exception ex)
+            {
+                response = new ListResponse
+                { 
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductVendorServices.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
             return response;
         }
 
@@ -842,49 +879,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
-            }
 
-            var vendorServiceMigrateUsers = migrateUsers.Select(migrateUser => new VendorServiceMigrateUser
-            {
-                CompanyId = companyInstanceSourceId.ToString(),
-                Id = migrateUser.UserId,
-                UnifiedLoginUserName = migrateUser.UnifiedLoginUserName,
-                UsingUnifiedLogin = migrateUser.UsingUnifiedLogin
-            });
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    return migrateResponse;
+                }
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.SetBearerToken(_accessToken);
+                var vendorServiceMigrateUsers = migrateUsers.Select(migrateUser => new VendorServiceMigrateUser
+                {
+                    CompanyId = companyInstanceSourceId.ToString(),
+                    Id = migrateUser.UserId,
+                    UnifiedLoginUserName = migrateUser.UnifiedLoginUserName,
+                    UsingUnifiedLogin = migrateUser.UsingUnifiedLogin
+                });
 
-            var url = $"{_apiEndPoint}/api/users/migrateusers";
-            var response = _client.PutAsJsonAsync(url, vendorServiceMigrateUsers).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+                _client.DefaultRequestHeaders.Clear();
+                _client.SetBearerToken(_accessToken);
 
-            var logData = new Dictionary<string, object>
+                var url = $"{_apiEndPoint}/api/users/migrateusers";
+                var response = _client.PutAsJsonAsync(url, vendorServiceMigrateUsers).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                var logData = new Dictionary<string, object>
             {
                 { "Url", url },
                 { "Response", responseContent },
                 { "EditorPersonaId", editorPersonaId },
                 { "MigratedUser", vendorServiceMigrateUsers }
             };
-            if (response.IsSuccessStatusCode)
-            {
-                WriteToDiagnosticLog("ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = responseContent;
-                migrateResponse.Status = true;
-                return migrateResponse;
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToDiagnosticLog("ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = responseContent;
+                    migrateResponse.Status = true;
+                    return migrateResponse;
+                }
+                else
+                {
+                    WriteToErrorLog($"ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = "Cannot update user status to migrated.";
+                    return migrateResponse;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = "Cannot update user status to migrated.";
-                return migrateResponse;
+                WriteToErrorLog($"ManageProductVendorServices.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                return new MigrateResponse
+                { 
+                    Status = false,
+                    Message = ex.Message
+                };
             }
         }
         #endregion
@@ -1173,7 +1223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         propGroup.IsAssigned = true;
                     else if (userAccessLevel == "Region" && propGroupId == propGroup.PropertyGroupId)
                         propGroup.IsAssigned = true;
-                    else if ( (userAccessLevel.ToUpper().Trim() == "OWNERSHIP" || userAccessLevel == "Ownergroup") && propGroupId == propGroup.PropertyGroupId)
+                    else if ((userAccessLevel.ToUpper().Trim() == "OWNERSHIP" || userAccessLevel == "Ownergroup") && propGroupId == propGroup.PropertyGroupId)
                         propGroup.IsAssigned = true;
                 }
             }
