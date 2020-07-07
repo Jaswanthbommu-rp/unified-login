@@ -149,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
                 var allPropertyGroups = groups as IList<VendorServicesPropertyGroup> ?? groups.ToList();
-               
+
 
                 WriteToDiagnosticLog(
                                $"ManageProductVendorServices.GetPropertyGroups - recived product groups with count {allPropertyGroups.Count}for user with editorPersona id - {editorPersonaId} and companyInstanceSourceId{companyInstanceSourceId}");
@@ -190,7 +190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
                 }
-                
+
                 WriteToErrorLog($"ManageProductVendorServices.GetPropertyGroups - error for user with editorPersona id - {editorPersonaId} - {response.ErrorReason}", exception: ex);
             }
 
@@ -630,7 +630,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (productPropertyNotification.PropertyGroup != null)
                     {
                         propertyGroupId = productPropertyNotification.PropertyGroup.Id;
-                        accessLevel = productPropertyNotification.PropertyGroup.Type.ToString();                       
+                        accessLevel = productPropertyNotification.PropertyGroup.Type.ToString();
                     }
 
                     vendorServicesUser = new VendorServicesUser
@@ -670,8 +670,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 WriteToDiagnosticLog($"User {productLoginName} already exists in Vendor Credentialing product with editorPersona id -{editorPersonaId}. Getting new one.");
                                 incrementor++;
-                                if(incrementor == 1)
-                                    productLoginName = $"{updatedproductUsername}{productUserPersonaId}";                                
+                                if (incrementor == 1)
+                                    productLoginName = $"{updatedproductUsername}{productUserPersonaId}";
                                 else
                                     productLoginName = $"{updatedproductUsername}{productUserPersonaId}{incrementor}";
                             }
@@ -679,11 +679,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 foundNewUserName = true;
                             }
-                            if(incrementor == 10)
+                            if (incrementor == 10)
                                 throw new Exception($"Could not find a unique username for user persona id {productUserPersonaId} after {incrementor} try.");
                         }
                         // Product username cannot be more than 50 characters
-                        if(productLoginName.Length > 50)
+                        if (productLoginName.Length > 50)
                             productLoginName = productLoginName.Substring(1, 50);
                         vendorServicesUser.Username = productLoginName;
                     }
@@ -741,23 +741,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (listResponse.IsError) { return false; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
-            {
-                WriteToErrorLog(
-                    $"ManageProductVendorServices.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                return false;
-            }
-            _productUserId = productUserId;
-            _productUsername = username;
             try
             {
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductVendorServices.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    return false;
+                }
+                _productUserId = productUserId;
+                _productUsername = username;
+
                 //Note : User Active means is not locked in vendor service.
                 DisableProductUser(!isActive);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductVendorServices.ChangeUserActiveStatus - Updating user status failed for user {companyInstanceSourceId}|{username} by editorPersonaId = {editorPersonaId}", exception: ex);
+                WriteToErrorLog($"ManageProductVendorServices.ChangeUserActiveStatus - Updating user status failed for user {username} by editorPersonaId = {editorPersonaId}", exception: ex);
                 return false;
             }
 
@@ -1195,7 +1196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         propGroup.IsAssigned = true;
                     else if (userAccessLevel == "Region" && propGroupId == propGroup.PropertyGroupId)
                         propGroup.IsAssigned = true;
-                    else if ( (userAccessLevel.ToUpper().Trim() == "OWNERSHIP" || userAccessLevel == "Ownergroup") && propGroupId == propGroup.PropertyGroupId)
+                    else if ((userAccessLevel.ToUpper().Trim() == "OWNERSHIP" || userAccessLevel == "Ownergroup") && propGroupId == propGroup.PropertyGroupId)
                         propGroup.IsAssigned = true;
                 }
             }
