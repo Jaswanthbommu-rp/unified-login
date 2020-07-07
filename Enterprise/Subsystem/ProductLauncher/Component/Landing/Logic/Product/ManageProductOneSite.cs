@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
@@ -22,7 +21,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite.RoleType;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -1747,7 +1745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     catch (Exception ex)
                     {
                         WriteToErrorLog($"ManageProductOneSite.GetOneSitePMCIDFromPersona Error for user with person id - {persona.PersonaId} ", exception: ex);
-                        return pmcID;
+                        return string.Empty;
                     }
                 }
             }
