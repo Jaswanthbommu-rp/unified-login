@@ -646,40 +646,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 			if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
-
-			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
-			if (companyInstanceSourceId == 0)
+			try
 			{
-				WriteToErrorLog(
-					$"ManageProductProspectContact.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-				migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-				return migrateResponse;
-			}
 
-			var url = $"{_apiEndPoint}/migrate-users/{companyInstanceSourceId}";
-			var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
-			var responseContent = response.Content.ReadAsStringAsync().Result;
+				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
+				if (companyInstanceSourceId == 0)
+				{
+					WriteToErrorLog(
+						$"ManageProductProspectContact.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+					migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+					return migrateResponse;
+				}
 
-			var logData = new Dictionary<string, object>
+				var url = $"{_apiEndPoint}/migrate-users/{companyInstanceSourceId}";
+				var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
+				var responseContent = response.Content.ReadAsStringAsync().Result;
+
+				var logData = new Dictionary<string, object>
 			{
 				{ "Url", url },
 				{ "Response", responseContent },
 				{ "EditorPersonaId", editorPersonaId },
 				{ "MigratedUser", migrateUsers }
 			};
-			if (response.IsSuccessStatusCode)
-			{
-				var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
-				WriteToDiagnosticLog("ManageProductProspectContact.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-				migrateResponse.Message = migrationResponse.Message;
-				migrateResponse.Status = migrationResponse.Status;
-				return migrateResponse;
+				if (response.IsSuccessStatusCode)
+				{
+					var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
+					WriteToDiagnosticLog("ManageProductProspectContact.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+					migrateResponse.Message = migrationResponse.Message;
+					migrateResponse.Status = migrationResponse.Status;
+					return migrateResponse;
+				}
+				else
+				{
+					WriteToErrorLog($"ManageProductProspectContact.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+					migrateResponse.Message = "Cannot update user status to migrated.";
+					return migrateResponse;
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductProspectContact.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-				migrateResponse.Message = "Cannot update user status to migrated.";
-				return migrateResponse;
+				WriteToErrorLog($"ManageProductProspectContact.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+
+				return new MigrateResponse 
+				{
+					Status = false,
+					Message = ex.Message
+				};
 			}
 		}
 		#endregion
