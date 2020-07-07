@@ -171,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>List of CompanyMapResource</returns>
         public IList<CustomerCompanyMap> GetCompanyMap(Guid companyRealPageId, long booksCompanyMasterId, string source, string domain, string includeExtra = "", bool includeGreenBookCares = true)
         {
-            if (booksCompanyMasterId == -1)
+            if (booksCompanyMasterId == -1 || companyRealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
                 // shortcut out for RealPage Employee company
                 return null;
@@ -521,7 +521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Used to get the information about the list of companies by companyIds from the BlueBook system
         /// </summary>
-        /// <param name="booksCompanyMasterIds"></param>        
+        /// <param name="booksCompanyMasterList"></param>        
         /// <returns></returns>
         public IList<Company> GetCompanyListByCompIds(List<UnifiedLoginCompany> booksCompanyMasterList)
         {

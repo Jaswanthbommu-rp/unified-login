@@ -123,6 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return outputResult;
                 }
 
+                // TODO update for domain?
                 if (organizationList.Any(c => c.BooksCustomerMasterId == organization.BooksCustomerMasterId))
                 {
                     outputResult.Status.ErrorMsg = $"MessageHandler.Handle - Bluebook customer master id {organization.BooksCustomerMasterId} already in use!";
