@@ -1730,36 +1730,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductResidentPortal.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
-            }
 
-            var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users?app_id={_appId}&app_key={_appKey}";
-            var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductResidentPortal.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    return migrateResponse;
+                }
 
-            var logData = new Dictionary<string, object>
-            {
-                { "Url", url },
-                { "Response", responseContent },
-                { "EditorPersonaId", editorPersonaId },
-                { "MigratedUser", migrateUsers }
-            };
-            if (response.IsSuccessStatusCode)
-            {
-                WriteToDiagnosticLog("ManageProductResidentPortal.UpdateUsersMigrationStatus.PutAsJsonAsync", logData);
-                return JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
+                var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users?app_id={_appId}&app_key={_appKey}";
+                var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                var logData = new Dictionary<string, object>
+                {
+                    { "Url", url },
+                    { "Response", responseContent },
+                    { "EditorPersonaId", editorPersonaId },
+                    { "MigratedUser", migrateUsers }
+                };
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToDiagnosticLog("ManageProductResidentPortal.UpdateUsersMigrationStatus.PutAsJsonAsync", logData);
+                    return JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
+                }
+                else
+                {
+                    WriteToErrorLog($"ManageProductResidentPortal.UpdateUsersMigrationStatus.PutAsJsonAsync", logData);
+                    migrateResponse.Message = "Cannot update user status to migrated.";
+                    return migrateResponse;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductResidentPortal.UpdateUsersMigrationStatus.PutAsJsonAsync", logData);
-                migrateResponse.Message = "Cannot update user status to migrated.";
-                return migrateResponse;
+                WriteToErrorLog($"ManageProductResidentPortal.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+
+                return new MigrateResponse
+                { 
+                    Status = false,
+                    Message = ex.Message
+                };
             }
         }
         #endregion
