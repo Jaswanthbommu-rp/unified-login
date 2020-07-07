@@ -902,47 +902,60 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductRum.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var filter = "NonMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
+
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
                 {
-                    filter = datafilter.FilterBy["filter"];
+                    WriteToErrorLog(
+                        $"ManageProductRum.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
                 }
-                if (datafilter.Pages != null)
+                var filter = "NonMigrated";
+                var startRow = 0;
+                var resultPerRow = 1000;
+                if (datafilter != null)
                 {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
+                    if (datafilter.FilterBy.ContainsKey("filter"))
+                    {
+                        filter = datafilter.FilterBy["filter"];
+                    }
+                    if (datafilter.Pages != null)
+                    {
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
+                    }
                 }
+
+                var url = $"{_apiEndPoint}/migration/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
+                WriteToDiagnosticLog("ManageProductRum.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+
+                var allUsers = GetResultFromApi<IList<MigrationUser>>(_accessToken, url);
+
+                if (allUsers == null)
+                {
+                    WriteToErrorLog($"ManageProductRum.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
+                }
+                WriteToDiagnosticLog($"ManageProductRum.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = allUsers.Cast<object>().ToList();
+                response.TotalRows = allUsers.Count();
             }
-
-            var url = $"{_apiEndPoint}/migration/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductRum.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
-
-            var allUsers = GetResultFromApi<IList<MigrationUser>>(_accessToken, url);
-
-            if (allUsers == null)
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductRum.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
+                response = new ListResponse
+                { 
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+                WriteToErrorLog($"ManageProductRum.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
-            WriteToDiagnosticLog($"ManageProductRum.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = allUsers.Cast<object>().ToList();
-            response.TotalRows = allUsers.Count();
             return response;
         }
 
