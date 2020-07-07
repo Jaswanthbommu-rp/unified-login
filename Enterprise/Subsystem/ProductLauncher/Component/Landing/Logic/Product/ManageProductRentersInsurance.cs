@@ -361,7 +361,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					listResponse.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 				}
 
-				listResponse.ErrorReason = $"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties.";
 				WriteToErrorLog($"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", exception: ex);
 			}
 			return listResponse;
