@@ -259,7 +259,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"GetVendorServicesPropertyList - Error. {ex.Message} ", exception: ex);
+                WriteToErrorLog($"ManageProductVendorServices.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", 
+                    exception: ex);
                 result = new ListResponse
                 {
                     IsError = true
