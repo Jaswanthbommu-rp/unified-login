@@ -959,80 +959,94 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            var companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
-            if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
-            {
-                WriteToErrorLog(
-                    $"ManageProductRentersInsurance.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var filter = "NonMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
-                {
-                    filter = datafilter.FilterBy["filter"];
-                }
-                if (datafilter.Pages != null)
-                {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
-                }
-            }          
+			try
+			{
 
-            var userActionByPMCIDRequest = new UserActionByPMCIDRequest()
-            {
-                CompanyId = companyInstanceSourceId,
-                Login = _username,
-                Password = _password,
-                RequestedBy = _requestedBy,
-                FilterType = filter,
-                StartRow = startRow,
-                Resultsperpage = resultPerRow
-            };
-            WriteToDiagnosticLog("ManageProductRentersInsurance.GetMigrationUsers", new Dictionary<string, object>
-            {
-                { "ManageProductRentersInsurance.GetMigrationUsers Request: ", $"{companyInstanceSourceId}, {filter}, {startRow}, {resultPerRow}" }
-            });
+				var companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
+				if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
+				{
+					WriteToErrorLog(
+						$"ManageProductRentersInsurance.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+					response.ErrorReason = "Company Setup Error: Please Contact Support.";
+					return response;
+				}
+				var filter = "NonMigrated";
+				var startRow = 0;
+				var resultPerRow = 1000;
+				if (datafilter != null)
+				{
+					if (datafilter.FilterBy.ContainsKey("filter"))
+					{
+						filter = datafilter.FilterBy["filter"];
+					}
+					if (datafilter.Pages != null)
+					{
+						startRow = datafilter.Pages.StartRow;
+						resultPerRow = datafilter.Pages.ResultsPerPage;
+					}
+				}
 
-            var allUsers = _insuranceService.GetUsersByPMC(userActionByPMCIDRequest);
-            if (allUsers == null)
-            {
-                WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
-            }
+				var userActionByPMCIDRequest = new UserActionByPMCIDRequest()
+				{
+					CompanyId = companyInstanceSourceId,
+					Login = _username,
+					Password = _password,
+					RequestedBy = _requestedBy,
+					FilterType = filter,
+					StartRow = startRow,
+					Resultsperpage = resultPerRow
+				};
+				WriteToDiagnosticLog("ManageProductRentersInsurance.GetMigrationUsers", new Dictionary<string, object>
+			{
+				{ "ManageProductRentersInsurance.GetMigrationUsers Request: ", $"{companyInstanceSourceId}, {filter}, {startRow}, {resultPerRow}" }
+			});
 
-            var migrationUsers = new List<MigrationUser>();
-            foreach (var user in allUsers.UserList)
-            {
-                var migrationUser = new MigrationUser();
-                migrationUser.CompanyInstanceSourceId = companyInstanceSourceId;
-                migrationUser.UserId = user.UserId.ToString();
-                migrationUser.FirstName = user.FirstName;
-                migrationUser.LastName = user.LastName;
-                migrationUser.Username = user.User;                
-                migrationUser.Email = user.Email;                
-                migrationUser.LastActivity = user.DateLastLogin;
-                migrationUser.Status = user.IsActive ? "Active" : "Disabled";
-                if (user.PropertyList != null && user.PropertyList.Length > 0)
-                {
-                    foreach (var property in user.PropertyList)
-                    {
-                        migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = property.PropertyID.ToString() });
-                    }
-                }
-                migrationUsers.Add(migrationUser);
-            }
-            WriteToDiagnosticLog($"ManageProductOneSiteAccounting.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = migrationUsers.Cast<object>().ToList();
-            response.TotalRows = migrationUsers.Count();
+				var allUsers = _insuranceService.GetUsersByPMC(userActionByPMCIDRequest);
+				if (allUsers == null)
+				{
+					WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+					return response;
+				}
+
+				var migrationUsers = new List<MigrationUser>();
+				foreach (var user in allUsers.UserList)
+				{
+					var migrationUser = new MigrationUser();
+					migrationUser.CompanyInstanceSourceId = companyInstanceSourceId;
+					migrationUser.UserId = user.UserId.ToString();
+					migrationUser.FirstName = user.FirstName;
+					migrationUser.LastName = user.LastName;
+					migrationUser.Username = user.User;
+					migrationUser.Email = user.Email;
+					migrationUser.LastActivity = user.DateLastLogin;
+					migrationUser.Status = user.IsActive ? "Active" : "Disabled";
+					if (user.PropertyList != null && user.PropertyList.Length > 0)
+					{
+						foreach (var property in user.PropertyList)
+						{
+							migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = property.PropertyID.ToString() });
+						}
+					}
+					migrationUsers.Add(migrationUser);
+				}
+				WriteToDiagnosticLog($"ManageProductOneSiteAccounting.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+				response.RowsPerPage = resultPerRow;
+				response.ErrorReason = string.Empty;
+				response.IsError = false;
+				response.TotalPages = 1;
+				response.Records = migrationUsers.Cast<object>().ToList();
+				response.TotalRows = migrationUsers.Count();
+			}
+			catch (Exception ex)
+			{
+				response = new ListResponse
+				{ 
+					IsError = true,
+					ErrorReason = ex.Message
+				};
+
+				WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+			}
             return response;
         }
 
