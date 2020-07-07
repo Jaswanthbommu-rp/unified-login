@@ -282,12 +282,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.GetRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
 
                 // get access groups from on-site product
                 var allRoles = GetResultFromApi<IList<OnSiteRole>>(_accessToken,
@@ -826,13 +820,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                    return migrateResponse;
-                }
 
                 var onSitemigrateUsers = new OnSiteMigrateUsers();
                 var onSiteUnmigrateUsers = new OnSiteMigrateUsers();
