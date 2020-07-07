@@ -540,80 +540,94 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 			if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
-			if (companyInstanceSourceId == 0)
+			try
 			{
-				WriteToErrorLog(
-					$"ManageProductProspectContact.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-				response.ErrorReason = "Company Setup Error: Please Contact Support.";
-				return response;
-			}
 
-			var filter = "GreenbookUser";
-			var startRow = 0;
-			var resultPerRow = 1000;
-			if (datafilter != null)
-			{
-				if (datafilter.FilterBy.ContainsKey("filter"))
+				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
+				if (companyInstanceSourceId == 0)
 				{
-					filter = datafilter.FilterBy["filter"];
+					WriteToErrorLog(
+						$"ManageProductProspectContact.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+					response.ErrorReason = "Company Setup Error: Please Contact Support.";
+					return response;
 				}
-				if (datafilter.Pages != null)
+
+				var filter = "GreenbookUser";
+				var startRow = 0;
+				var resultPerRow = 1000;
+				if (datafilter != null)
 				{
-					startRow = datafilter.Pages.StartRow;
-					resultPerRow = datafilter.Pages.ResultsPerPage;
+					if (datafilter.FilterBy.ContainsKey("filter"))
+					{
+						filter = datafilter.FilterBy["filter"];
+					}
+					if (datafilter.Pages != null)
+					{
+						startRow = datafilter.Pages.StartRow;
+						resultPerRow = datafilter.Pages.ResultsPerPage;
+					}
 				}
-			}
 
-			var url = $"{_apiEndPoint}/users/{companyInstanceSourceId}?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
-			WriteToDiagnosticLog("ManageProductProspectContact.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+				var url = $"{_apiEndPoint}/users/{companyInstanceSourceId}?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
+				WriteToDiagnosticLog("ManageProductProspectContact.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
 
-			var allUsers = GetResultFromApi<List<ProspectContactCenterUserProfile>>(url);
-			
-			if (allUsers == null)
-			{
-				WriteToErrorLog($"ManageProductProspectContact.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-				return response;
-			}
-			else
-			{
-				//This logic will remove the users whom already migrated in to UL,since PCC not implemented filter logic.
-				ProductRepository productRepository = new ProductRepository();
-				string product = Convert.ToString((int)ProductEnum.ProspectContactCenter);
-				IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
+				var allUsers = GetResultFromApi<List<ProspectContactCenterUserProfile>>(url);
 
-				if (productUserList?.Count > 0)
+				if (allUsers == null)
 				{
-					allUsers.RemoveAll(o => productUserList.Any(p => p.ProductUserName == o.LoginName));
-				}				
-			}
-			var migrationUsers = new List<MigrationUser>();
-			foreach (var user in allUsers)
-			{
-				var migrationUser = new MigrationUser
+					WriteToErrorLog($"ManageProductProspectContact.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+					return response;
+				}
+				else
 				{
-					FirstName = user.FirstName,
-					LastName = user.LastName,
-					Username = user.LoginName,
-					UserId = user.SystemIdentifier,
-					Status = user.UserActive ? "Active" : "Disabled",
-					LastActivity = user.LastLogin.ToString(),
-					Email = user.Email,
-					CompanyInstanceSourceId = companyInstanceSourceId.ToString()
+					//This logic will remove the users whom already migrated in to UL,since PCC not implemented filter logic.
+					ProductRepository productRepository = new ProductRepository();
+					string product = Convert.ToString((int)ProductEnum.ProspectContactCenter);
+					IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
+
+					if (productUserList?.Count > 0)
+					{
+						allUsers.RemoveAll(o => productUserList.Any(p => p.ProductUserName == o.LoginName));
+					}
+				}
+				var migrationUsers = new List<MigrationUser>();
+				foreach (var user in allUsers)
+				{
+					var migrationUser = new MigrationUser
+					{
+						FirstName = user.FirstName,
+						LastName = user.LastName,
+						Username = user.LoginName,
+						UserId = user.SystemIdentifier,
+						Status = user.UserActive ? "Active" : "Disabled",
+						LastActivity = user.LastLogin.ToString(),
+						Email = user.Email,
+						CompanyInstanceSourceId = companyInstanceSourceId.ToString()
+					};
+					if (user.PropertyID != "0")
+					{
+						migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = user.PropertyID });
+					}
+					migrationUsers.Add(migrationUser);
+				}
+				WriteToDiagnosticLog($"ManageProductProspectContact.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+				response.RowsPerPage = 9999;
+				response.ErrorReason = string.Empty;
+				response.IsError = false;
+				response.TotalPages = 1;
+				response.Records = migrationUsers.Cast<object>().ToList();
+				response.TotalRows = migrationUsers.Count();
+			}
+			catch (Exception ex)
+			{
+				response = new ListResponse 
+				{ 
+					IsError =  true,
+					ErrorReason = ex.Message
 				};
-				if (user.PropertyID != "0")
-				{
-					migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = user.PropertyID });
-				}
-				migrationUsers.Add(migrationUser);
+
+				WriteToErrorLog($"ManageProductProspectContact.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
-			WriteToDiagnosticLog($"ManageProductProspectContact.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-			response.RowsPerPage = 9999;
-			response.ErrorReason = string.Empty;
-			response.IsError = false;
-			response.TotalPages = 1;
-			response.Records = migrationUsers.Cast<object>().ToList();
-			response.TotalRows = migrationUsers.Count();
 			return response;
 		}
 
