@@ -56,108 +56,152 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
         {
             ListResponse result = new ListResponse();
-            IProduct product;
-            string productName = Enum.GetName(typeof(ProductEnum), productId);
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
-            switch (productId)
+            try
             {
-                case (int)ProductEnum.OneSite:
-                    IManageProductOneSite _manageProductOneSite = new ManageProductOneSite(_userClaims);
-                    result = _manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, datafilter);
-                    break;
-                case (int)ProductEnum.MarketingCenter:
-                    ManageProductMarketingCenter mg = new ManageProductMarketingCenter(_userClaims);
-                    result = mg.GetProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.FinancialSuite:
-                    IManageProductOneSiteAccounting mangeProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
-                    result = mangeProductOneSiteAccounting.GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.OpsBuyer:
-                    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
-                    result = manageProductOps.GetCompanyAssets(editorPersonaId, userPersonaId, assignedOnly, datafilter);
-                    break;
-                case (int)ProductEnum.VendorServices:
-                    IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
-                    result = manageProductVendorServices.GetProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.ClientPortal:
-                    IManageProductClientPortal _manageProductClientPortal = new ManageProductClientPortal(_userClaims);
-                    result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.ProspectContactCenter:
-                    IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims.UserRealPageGuid);
-                    result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.Lead2Lease:
-                    IManageProductLead2Lease manageProductLead2Lease = new ManageProductLead2Lease(_userClaims);
-                    result = manageProductLead2Lease.GetProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.ResidentPortal:
-                    ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
-                    result = manageProductResidentPortal.ListProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.OnSite:
-                    var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
-                    result = manageProductOnSite.GetProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.Insurance:
-                    ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
-                    result = manageProductRentersInsurance.ListProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.UtilityManagement:
-                    var manageProductRum = new ManageProductRum(_userClaims);
-                    result = manageProductRum.GetProperties(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.UnifiedAmenities:
-                    IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
-                    result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
-                    break;
-                case (int)ProductEnum.AoBusinessIntelligence:
-                case (int)ProductEnum.AoInvestmentAnalytics:
-                case (int)ProductEnum.AoPerformanceAnalytics:
-                case (int)ProductEnum.AoRevenueManagement:
-                case (int)ProductEnum.AoBenchmarking:
-                case (int)ProductEnum.AoLeaseRentOption:
-                case (int)ProductEnum.AoAmenityOptimization:
-                case (int)ProductEnum.AoAIRevenueManagement:
-                case (int)ProductEnum.AoRentControl:
-                    var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                    result = manageProductAo.GetProductProperties(editorPersonaId, userPersonaId, productcode, datafilter, userLoginName);
-                    break;
-                case (int)ProductEnum.LeadManagement:
-                    var productLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadManagement, editorPersonaId, userPersonaId, _userClaims);
-                    result = productLMLogic.GetProductProperties(datafilter);
-                    break;
-                case (int)ProductEnum.LeadAnalytics:
-                    var productLALogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadAnalytics, editorPersonaId, userPersonaId, _userClaims);
-                    result = productLALogic.GetProductProperties(datafilter);
-                    break;
-                //case (int)ProductEnum.RPDocumentManagement:
+                IProduct product;
+                string productName = Enum.GetName(typeof(ProductEnum), productId);
+                string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+                switch (productId)
+                {
+                    case (int)ProductEnum.OneSite:
+                        IManageProductOneSite _manageProductOneSite = new ManageProductOneSite(_userClaims);
+                        result = _manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, datafilter);
+                        break;
+                    case (int)ProductEnum.MarketingCenter:
+                        ManageProductMarketingCenter mg = new ManageProductMarketingCenter(_userClaims);
+                        result = mg.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.FinancialSuite:
+                        IManageProductOneSiteAccounting mangeProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                        result = mangeProductOneSiteAccounting.GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.OpsBuyer:
+                        IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
+                        result = manageProductOps.GetCompanyAssets(editorPersonaId, userPersonaId, assignedOnly, datafilter);
+                        break;
+                    case (int)ProductEnum.VendorServices:
+                        IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
+                        result = manageProductVendorServices.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.ClientPortal:
+                        IManageProductClientPortal _manageProductClientPortal = new ManageProductClientPortal(_userClaims);
+                        result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.ProspectContactCenter:
+                        IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims.UserRealPageGuid);
+                        result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.Lead2Lease:
+                        IManageProductLead2Lease manageProductLead2Lease = new ManageProductLead2Lease(_userClaims);
+                        result = manageProductLead2Lease.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.ResidentPortal:
+                        ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
+                        result = manageProductResidentPortal.ListProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.OnSite:
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        result = manageProductOnSite.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.Insurance:
+                        ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(_userClaims);
+                        result = manageProductRentersInsurance.ListProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.UtilityManagement:
+                        var manageProductRum = new ManageProductRum(_userClaims);
+                        result = manageProductRum.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.UnifiedAmenities:
+                        IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
+                        result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
+                        break;
+                    case (int)ProductEnum.AoBusinessIntelligence:
+                    case (int)ProductEnum.AoInvestmentAnalytics:
+                    case (int)ProductEnum.AoPerformanceAnalytics:
+                    case (int)ProductEnum.AoRevenueManagement:
+                    case (int)ProductEnum.AoBenchmarking:
+                    case (int)ProductEnum.AoLeaseRentOption:
+                    case (int)ProductEnum.AoAmenityOptimization:
+                    case (int)ProductEnum.AoAIRevenueManagement:
+                    case (int)ProductEnum.AoRentControl:
+                        var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+                        result = manageProductAo.GetProductProperties(editorPersonaId, userPersonaId, productcode, datafilter, userLoginName);
+                        break;
+                    case (int)ProductEnum.LeadManagement:
+                        var productLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadManagement, editorPersonaId, userPersonaId, _userClaims);
+                        result = productLMLogic.GetProductProperties(datafilter);
+                        break;
+                    case (int)ProductEnum.LeadAnalytics:
+                        var productLALogic = ManageProductFactory.GetProductLogic(ProductEnum.LeadAnalytics, editorPersonaId, userPersonaId, _userClaims);
+                        result = productLALogic.GetProductProperties(datafilter);
+                        break;
+                    //case (int)ProductEnum.RPDocumentManagement:
 
-                //	break;
-                case (int)ProductEnum.PortfolioManagement:
-                    var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
-                    result = productPMLogic.GetProductProperties(datafilter);
-                    break;
-                case (int)ProductEnum.DepositAlternative:
-                    var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
-                    result = productDALogic.GetProductProperties(datafilter);
-                    break;
-                case (int)ProductEnum.UnifiedPlatform:
-                    IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                    result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
-                    break;
-                case (int)ProductEnum.RenovationManager:
-                    var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
-                    result = productRMLogic.GetProductProperties(datafilter);
-                    break;
-                case (int)ProductEnum.SeniorLeadManagement:
-                    var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
-                    result = productSLMLogic.GetProductProperties(datafilter);
-                    break;
-                default:
-                    break;
+                    //	break;
+                    case (int)ProductEnum.PortfolioManagement:
+                        var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
+                        result = productPMLogic.GetProductProperties(datafilter);
+                        break;
+                    case (int)ProductEnum.DepositAlternative:
+                        var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
+                        result = productDALogic.GetProductProperties(datafilter);
+                        break;
+                    case (int)ProductEnum.UnifiedPlatform:
+                        IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+                        result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+                        break;
+                    case (int)ProductEnum.RenovationManager:
+                        var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
+                        result = productRMLogic.GetProductProperties(datafilter);
+                        break;
+                    case (int)ProductEnum.SeniorLeadManagement:
+                        var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
+                        result = productSLMLogic.GetProductProperties(datafilter);
+                        break;
+                    default:
+                        break;
+                }
+
+                if (result.IsError)
+                {
+                    throw new Exception(result.ErrorReason);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                result = new ListResponse();
+                result.IsError = true;
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                }
+                else
+                {
+                    if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
+                    {
+                        result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                    }
+                    else
+                    {
+                        if (ex.InnerException != null)
+                        {
+                            if (ex.InnerException.Message == CommonMessageConstants.CompanyErrorMessage)
+                            {
+                                result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                            }
+                            else
+                            {
+                                result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                            }
+                        }
+                        else
+                        {
+                            result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                        }
+                    }
+                }
             }
             return result;
         }
@@ -325,7 +369,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (ex is BlueBookException)
                 {
-                    result.ErrorReason = ex.Message;
+                    result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
                 }
                 else
                 {
@@ -384,60 +428,102 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
         {
             ListResponse result = new ListResponse();
-            IProduct product;
-            string productName = Enum.GetName(typeof(ProductEnum), productId);
-            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
-            switch (productId)
+            try
             {
+                IProduct product;
+                string productName = Enum.GetName(typeof(ProductEnum), productId);
+                string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+                switch (productId)
+                {
 
-                case (int)ProductEnum.OnSite:
-                    var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
-                    result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.ResidentPortal:
-                    List<IMessagingGroups> messageGroupsList = new List<IMessagingGroups>();
-                    ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
-                    messageGroupsList = manageProductResidentPortal.ListMessageGroups(editorPersonaId, userPersonaId);
-                    if (messageGroupsList?.Count > 0)
+                    case (int)ProductEnum.OnSite:
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.ResidentPortal:
+                        List<IMessagingGroups> messageGroupsList = new List<IMessagingGroups>();
+                        ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
+                        messageGroupsList = manageProductResidentPortal.ListMessageGroups(editorPersonaId, userPersonaId);
+                        if (messageGroupsList?.Count > 0)
+                        {
+                            result.Records = messageGroupsList.Cast<object>().ToList();
+                            result.TotalRows = messageGroupsList.Count;
+                            result.RowsPerPage = messageGroupsList.Count;
+                            result.TotalPages = 1;
+                            result.ErrorReason = string.Empty;
+                            result.Additional = null;
+                        }
+                        break;
+                    case (int)ProductEnum.VendorServices:
+                        IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
+                        result = manageProductVendorServices.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.AoBusinessIntelligence:
+                    case (int)ProductEnum.AoInvestmentAnalytics:
+                    case (int)ProductEnum.AoPerformanceAnalytics:
+                    case (int)ProductEnum.AoRevenueManagement:
+                    case (int)ProductEnum.AoBenchmarking:
+                    case (int)ProductEnum.AoLeaseRentOption:
+                    case (int)ProductEnum.AoAmenityOptimization:
+                    case (int)ProductEnum.AoAIRevenueManagement:
+                    case (int)ProductEnum.AoRentControl:
+                        var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+                        result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
+                        break;
+                    case (int)ProductEnum.UtilityManagement:
+                        var manageProductRum = new ManageProductRum(_userClaims);
+                        result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    case (int)ProductEnum.DepositAlternative:
+                        var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
+                        result = productDALogic.GetProductPropertyGroups(datafilter);
+                        break;
+                    case (int)ProductEnum.FinancialSuite:
+                        var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                        result = manageProductOneSiteAccounting.GetUserCompanies(editorPersonaId, userPersonaId, datafilter);
+                        break;
+                    default:
+                        break;
+                }
+                if (result.IsError)
+                {
+                    throw new Exception(result.ErrorReason);
+                }
+            }
+            catch (Exception ex)
+            {
+                result = new ListResponse();
+                result.IsError = true;
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                }
+                else
+                {
+                    if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
-                        result.Records = messageGroupsList.Cast<object>().ToList();
-                        result.TotalRows = messageGroupsList.Count;
-                        result.RowsPerPage = messageGroupsList.Count;
-                        result.TotalPages = 1;
-                        result.ErrorReason = string.Empty;
-                        result.Additional = null;
+                        result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
                     }
-                    break;
-                case (int)ProductEnum.VendorServices:
-                    IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
-                    result = manageProductVendorServices.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.AoBusinessIntelligence:
-                case (int)ProductEnum.AoInvestmentAnalytics:
-                case (int)ProductEnum.AoPerformanceAnalytics:
-                case (int)ProductEnum.AoRevenueManagement:
-                case (int)ProductEnum.AoBenchmarking:
-                case (int)ProductEnum.AoLeaseRentOption:
-                case (int)ProductEnum.AoAmenityOptimization:
-                case (int)ProductEnum.AoAIRevenueManagement:
-                case (int)ProductEnum.AoRentControl:
-                    var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                    result = manageProductAo.GetProductPropertyGroups(editorPersonaId, userPersonaId, productcode, userLoginName);
-                    break;
-                case (int)ProductEnum.UtilityManagement:
-                    var manageProductRum = new ManageProductRum(_userClaims);
-                    result = manageProductRum.GetPropertyGroups(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                case (int)ProductEnum.DepositAlternative:
-                    var productDALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
-                    result = productDALogic.GetProductPropertyGroups(datafilter);
-                    break;
-                case (int)ProductEnum.FinancialSuite:
-                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
-                    result = manageProductOneSiteAccounting.GetUserCompanies(editorPersonaId, userPersonaId, datafilter);
-                    break;
-                default:
-                    break;
+                    else
+                    {
+                        if (ex.InnerException != null)
+                        {
+                            if (ex.InnerException.Message == CommonMessageConstants.CompanyErrorMessage)
+                            {
+                                result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                            }
+                            else
+                            {
+                                result.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                            }
+                        }
+                        else
+                        {
+                            result.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                        }
+                    }
+                }
             }
             return result;
         }
