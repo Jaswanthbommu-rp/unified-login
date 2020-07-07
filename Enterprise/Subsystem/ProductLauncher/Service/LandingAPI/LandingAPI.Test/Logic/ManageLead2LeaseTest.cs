@@ -263,19 +263,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 userLoginRepository: null);
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
-            Assert.True(resp.IsError == true && resp.ErrorReason == "Role info is missing");
+            Assert.True(resp.IsError == true && (resp.ErrorReason == "Role info is missing" || 
+                        resp.ErrorReason == CommonMessageConstants.RoleErrorMessage || 
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
-            Assert.True(resp.IsError == true && resp.ErrorReason == "Company Setup Error: Please Contact Support.");
+            Assert.True(resp.IsError == true && (resp.ErrorReason == "Company Setup Error: Please Contact Support." ||
+                        resp.ErrorReason == CommonMessageConstants.PropertyErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
             // break the Organization blue book id
             _editorPersona.Organization.BooksCustomerMasterId = 0;
             
             resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
-            Assert.True(resp.IsError == true && resp.ErrorReason == "Role info is missing");
+            Assert.True(resp.IsError == true && (resp.ErrorReason == "Role info is missing" ||
+                        resp.ErrorReason == CommonMessageConstants.RoleErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
-            Assert.True(resp.IsError == true && resp.ErrorReason == "Company Setup Error: Please Contact Support.");
+            Assert.True(resp.IsError == true && (resp.ErrorReason == "Company Setup Error: Please Contact Support." ||
+                        resp.ErrorReason == CommonMessageConstants.PropertyErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
             // reset the results being returned
             responseProperties.Content = new StringContent(JsonConvert.SerializeObject(_l2lPropertyList));
@@ -335,10 +343,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 userLoginRepository: null);
 
             resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
-            Assert.True(resp.IsError == true && resp.ErrorReason == "User info is missing");
+            Assert.True(resp.IsError == true && (resp.ErrorReason == "User info is missing" ||
+                        resp.ErrorReason == CommonMessageConstants.RoleErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
-            Assert.True(resp.IsError == true && resp.ErrorReason == "User info is missing");
+            Assert.True(resp.IsError == true && (resp.ErrorReason == "User info is missing" ||
+                        resp.ErrorReason == CommonMessageConstants.PropertyErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
         }
 

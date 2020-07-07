@@ -183,10 +183,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return null;
             }
 
-            companyMap = _manageBlueBookCache[$"getCompanyMapResource_9{booksCompanyMasterId.ToString()}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
+            companyMap = _manageBlueBookCache[$"getCompanyMapResource_{booksCompanyMasterId.ToString()}_{source}_{IncludeExtra}"] as List<CustomerCompanyMap>;
             if (companyMap == null)
             {
-                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + $"filter[customerCompanyId]=9{booksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes";
+                string uri = $"customercompanymap?" + (includeGreenBookCares ? "filter[companyInstance.greenBookCares]=true&" : "" ) + $"filter[customerCompanyId]={booksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes";
                 if (!string.IsNullOrEmpty(source))
                 {
                     uri += "&filter[source]=" + source;

@@ -27,6 +27,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using Xunit;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -1547,7 +1548,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, null);
 
 			//Assert
-			Assert.True(resp.IsError && resp.ErrorReason.ToUpper() == "THERE WAS A PROBLEM GETTING THE LIST OF PROPERTIES");
+			Assert.True(resp.IsError && (resp.ErrorReason.ToUpper() == "THERE WAS A PROBLEM GETTING THE LIST OF PROPERTIES" ||
+                        resp.ErrorReason == CommonMessageConstants.PropertyErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
         }
 
         [Fact]
