@@ -557,11 +557,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				WriteToErrorLog("ManageRPDMUser - There was a problem getting the DocManagement attribute in BlueBook", exception: ex);
-				if (ex is BlueBookException)
-				{
-					return ex.Message;
-				}
-				return "There was a problem getting the company details from BlueBook.";
+
+				return CommonMessageConstants.CompanyErrorMessage;
 			}
 
 			return domain;
