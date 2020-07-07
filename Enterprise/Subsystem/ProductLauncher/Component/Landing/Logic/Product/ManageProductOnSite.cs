@@ -202,12 +202,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.GetRegions-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
 
                 // get access groups from on-site product
                 var allRegions = GetResultFromApi<IList<OnSiteRegion>>(_accessToken,
