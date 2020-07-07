@@ -879,49 +879,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
-            }
 
-            var vendorServiceMigrateUsers = migrateUsers.Select(migrateUser => new VendorServiceMigrateUser
-            {
-                CompanyId = companyInstanceSourceId.ToString(),
-                Id = migrateUser.UserId,
-                UnifiedLoginUserName = migrateUser.UnifiedLoginUserName,
-                UsingUnifiedLogin = migrateUser.UsingUnifiedLogin
-            });
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    return migrateResponse;
+                }
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.SetBearerToken(_accessToken);
+                var vendorServiceMigrateUsers = migrateUsers.Select(migrateUser => new VendorServiceMigrateUser
+                {
+                    CompanyId = companyInstanceSourceId.ToString(),
+                    Id = migrateUser.UserId,
+                    UnifiedLoginUserName = migrateUser.UnifiedLoginUserName,
+                    UsingUnifiedLogin = migrateUser.UsingUnifiedLogin
+                });
 
-            var url = $"{_apiEndPoint}/api/users/migrateusers";
-            var response = _client.PutAsJsonAsync(url, vendorServiceMigrateUsers).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+                _client.DefaultRequestHeaders.Clear();
+                _client.SetBearerToken(_accessToken);
 
-            var logData = new Dictionary<string, object>
+                var url = $"{_apiEndPoint}/api/users/migrateusers";
+                var response = _client.PutAsJsonAsync(url, vendorServiceMigrateUsers).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                var logData = new Dictionary<string, object>
             {
                 { "Url", url },
                 { "Response", responseContent },
                 { "EditorPersonaId", editorPersonaId },
                 { "MigratedUser", vendorServiceMigrateUsers }
             };
-            if (response.IsSuccessStatusCode)
-            {
-                WriteToDiagnosticLog("ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = responseContent;
-                migrateResponse.Status = true;
-                return migrateResponse;
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToDiagnosticLog("ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = responseContent;
+                    migrateResponse.Status = true;
+                    return migrateResponse;
+                }
+                else
+                {
+                    WriteToErrorLog($"ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = "Cannot update user status to migrated.";
+                    return migrateResponse;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductVendorServices.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = "Cannot update user status to migrated.";
-                return migrateResponse;
+                WriteToErrorLog($"ManageProductVendorServices.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                return new MigrateResponse
+                { 
+                    Status = false,
+                    Message = ex.Message
+                };
             }
         }
         #endregion
