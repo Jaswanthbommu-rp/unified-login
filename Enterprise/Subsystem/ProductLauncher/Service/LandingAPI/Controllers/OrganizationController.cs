@@ -58,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageUserLogin = new ManageUserLogin(repository, userClaims);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
             _manageOrganization = new ManageOrganization(repository, userClaims);
-            _productInternalSettingRepository = null;
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;

@@ -132,6 +132,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 }
             };
 
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"}
+            };
+
             HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
             var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
             responseMapResource.Content = new StringContent(jsonToSave);
@@ -179,6 +185,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(organizationDomainList);
 
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstanceSourceId]={_RealPageId}&include=companyInstance", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.domain]=Primary&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes&filter[source]=UPFM", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={_BooksCompanyMasterId}&include=companyInstance&include=companyInstance.attributes&filter[source]=UPFM", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
@@ -659,6 +671,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 BooksCustomerMasterId = _BooksCompanyMasterId,
                 OrganizationTypeId = 6,
                 Name = "New Company",
+                OrganizationDomain = "Primary",
                 Products = new List<string>()
                 {
                     "AB"
@@ -1437,6 +1450,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             roleTypeList.Add(new RoleType() {Name = "User", PartyRoleTypeId = 401, ParentPartyRoleTypeId = 400});
             roleTypeList.Add(new RoleType() {Name = "Property Management Company", PartyRoleTypeId = 202, ParentPartyRoleTypeId = 200});
 
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"}
+            };
+
             _mockRepository
                 .Setup(m => m.GetMany<Organization>(StoredProcNameConstants.SP_ListOrganizationByRealPageId, It.IsAny<object>()))
                 .Returns(organizationList);
@@ -1455,6 +1474,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
                 .Returns(roleTypeList);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
 
             OrganizationController organizationController = new OrganizationController(
                 _mockRepository.Object

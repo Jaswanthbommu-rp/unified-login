@@ -128,17 +128,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
         }
 
-        public ManageBlueBook(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository)
-        {
-            _productInternalSettingRepository = productInternalSettingRepository;
-            _defaultUserClaim = userClaim;
-        }
-
         public ManageBlueBook(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
         {
             _productInternalSettingRepository = productInternalSettingRepository;
             _httpClient = new HttpClient(messageHandler) {BaseAddress = new Uri("http://localhost")};
             _defaultUserClaim = userClaim;
+
+            productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)))
+            {
+                useDomains = Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals("BooksUseDomains", StringComparison.OrdinalIgnoreCase)).Value));
+            }
+
+            if (productInternalSettingList.Any(p => p.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase)))
+            {
+                useUPFMId = Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase)).Value));
+            }
         }
 
         /// <summary>
