@@ -785,67 +785,81 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var isMigrated = false;
-            var startRow = 1;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                isMigrated = datafilter.FilterBy.ContainsKey("filter") && datafilter.FilterBy["filter"].ToUpper() == "MIGRATED";
-                if (datafilter.Pages != null)
+
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
                 {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
+                    WriteToErrorLog(
+                        $"ManageProductVendorServices.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
                 }
-            }
-
-            var url = $"{_apiEndPoint}/api/users?companyId={companyInstanceSourceId}&isMigrated={isMigrated}&startRow={startRow}&resultsPerPage={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductVendorServices.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
-
-            var allUsers = GetResultFromApi<IList<VendorServicesUser>>(_accessToken, url);
-
-            if (allUsers == null)
-            {
-                WriteToErrorLog($"ManageProductVendorServices.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
-            }
-
-            var migrationUsers = new List<MigrationUser>();
-            foreach (var user in allUsers)
-            {
-                var migrationUser = new MigrationUser();
-                migrationUser.CompanyInstanceSourceId = user.CompanyId;
-                migrationUser.FirstName = user.FirstName;
-                migrationUser.LastName = user.LastName;
-                migrationUser.UserId = user.ID;
-                migrationUser.Username = user.Username;
-                migrationUser.Email = user.Email;
-                migrationUser.Phone = user.Phone;
-                migrationUser.LastActivity = user.LastLoginDate.ToString();
-                migrationUser.Status = user.Locked ? "Disabled" : "Active";
-                if (user.UserLocations != null)
+                var isMigrated = false;
+                var startRow = 1;
+                var resultPerRow = 1000;
+                if (datafilter != null)
                 {
-                    foreach (var userLocation in user.UserLocations)
+                    isMigrated = datafilter.FilterBy.ContainsKey("filter") && datafilter.FilterBy["filter"].ToUpper() == "MIGRATED";
+                    if (datafilter.Pages != null)
                     {
-                        migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = userLocation.PropertyId });
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
                     }
                 }
-                migrationUsers.Add(migrationUser);
+
+                var url = $"{_apiEndPoint}/api/users?companyId={companyInstanceSourceId}&isMigrated={isMigrated}&startRow={startRow}&resultsPerPage={resultPerRow}";
+                WriteToDiagnosticLog("ManageProductVendorServices.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+
+                var allUsers = GetResultFromApi<IList<VendorServicesUser>>(_accessToken, url);
+
+                if (allUsers == null)
+                {
+                    WriteToErrorLog($"ManageProductVendorServices.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
+                }
+
+                var migrationUsers = new List<MigrationUser>();
+                foreach (var user in allUsers)
+                {
+                    var migrationUser = new MigrationUser();
+                    migrationUser.CompanyInstanceSourceId = user.CompanyId;
+                    migrationUser.FirstName = user.FirstName;
+                    migrationUser.LastName = user.LastName;
+                    migrationUser.UserId = user.ID;
+                    migrationUser.Username = user.Username;
+                    migrationUser.Email = user.Email;
+                    migrationUser.Phone = user.Phone;
+                    migrationUser.LastActivity = user.LastLoginDate.ToString();
+                    migrationUser.Status = user.Locked ? "Disabled" : "Active";
+                    if (user.UserLocations != null)
+                    {
+                        foreach (var userLocation in user.UserLocations)
+                        {
+                            migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = userLocation.PropertyId });
+                        }
+                    }
+                    migrationUsers.Add(migrationUser);
+                }
+                WriteToDiagnosticLog($"ManageProductVendorServices.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = migrationUsers.Cast<object>().ToList();
+                response.TotalRows = migrationUsers.Count();
             }
-            WriteToDiagnosticLog($"ManageProductVendorServices.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = migrationUsers.Cast<object>().ToList();
-            response.TotalRows = migrationUsers.Count();
+            catch (Exception ex)
+            {
+                response = new ListResponse
+                { 
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductVendorServices.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
             return response;
         }
 
