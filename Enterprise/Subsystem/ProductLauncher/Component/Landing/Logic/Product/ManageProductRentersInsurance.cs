@@ -422,7 +422,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				errorStatus.Success = false;
-				errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID - Error " + ex.Message;
+
+				if (ex is BlueBookException)
+				{
+					errorStatus.ErrorMsg = ex.Message;
+				}
+				else
+				{
+					errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID - Error " + ex.Message;
+				}
+
 				outputList.Status = errorStatus;
 				WriteToDiagnosticLog(errorStatus.ErrorMsg);
 				return outputList;
