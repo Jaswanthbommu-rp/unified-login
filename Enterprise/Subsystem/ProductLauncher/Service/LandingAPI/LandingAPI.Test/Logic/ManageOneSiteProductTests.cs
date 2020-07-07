@@ -634,9 +634,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, managePersona, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
             Persona persona = new Persona();
-            var exception = Record.Exception(() => manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, null));
-            Assert.NotNull(exception);
-            Assert.IsType<System.Exception>(exception);
+            var error =  manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, null);
+            Assert.NotNull(error);
+            Assert.True(error.IsError);
         }
 
         [Fact]

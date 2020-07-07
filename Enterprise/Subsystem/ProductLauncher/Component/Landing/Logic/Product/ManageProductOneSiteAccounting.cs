@@ -651,32 +651,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog($"GetUserRoles - result from api", logData);
 				list = roleList.ToGBRoles();
 
-				if (list == null)
-				{
-					throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
-				}
-				else
-				{
-					if (results2?.Any() != true)
-					{
-						throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
-					}
-				}
+                if (list == null)
+                {
+                    if (results2.Length > 0)
+                    {
+                        string message = results2[0].TotalRows1;
+                        if (message.ToUpper().Contains("NOT A VALID USERID"))
+                        {
+                            throw new Exception("Invalid user");
+                        }
+                    }
+                    list = new List<ProductRole>();
+                }
 
-				//if (list == null)
-				//{
-				//	if (results2.Length > 0)
-				//	{
-				//		string message = results2[0].TotalRows1;
-				//		if (message.ToUpper().Contains("NOT A VALID USERID"))
-				//		{
-				//			throw new Exception("Invalid user");
-				//		}
-				//	}
-				//	list = new List<ProductRole>();
-				//}
-
-				response = new ListResponse()
+                response = new ListResponse()
 				{
 					Records = list.Cast<object>().ToList(),
 					TotalRows = list.Count,
