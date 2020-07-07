@@ -1730,16 +1730,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    // get the PMCID from BlueBook because the user doesn't have the PMCID for OneSite yet
-                    WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Getting info from BlueBook.GetCompanyMapResource");
-                    //IList<CompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.BooksMasterId, BlueBookProductConstants.OneSite);
-                    IList<CustomerCompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.BooksCustomerMasterId, BlueBookProductConstants.OneSite);
-                    WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Done getting info from BlueBook.GetCompanyMapResource");
-                    if (companyMapResource != null && companyMapResource.Count > 0 && companyMapResource.Any(a => a.Source.ToUpper() == BlueBookProductConstants.OneSite))
+                    try
                     {
-                        WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Getting PMC ID from BlueBook result");
-                        pmcID = companyMapResource.First(a => a.Source.ToUpper() == BlueBookProductConstants.OneSite).CompanyInstanceSourceId;
-                        WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Found PMC ID from BlueBook result");
+                        // get the PMCID from BlueBook because the user doesn't have the PMCID for OneSite yet
+                        WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Getting info from BlueBook.GetCompanyMapResource");
+                        //IList<CompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.BooksMasterId, BlueBookProductConstants.OneSite);
+                        IList<CustomerCompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.BooksCustomerMasterId, BlueBookProductConstants.OneSite);
+                        WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Done getting info from BlueBook.GetCompanyMapResource");
+                        if (companyMapResource != null && companyMapResource.Count > 0 && companyMapResource.Any(a => a.Source.ToUpper() == BlueBookProductConstants.OneSite))
+                        {
+                            WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Getting PMC ID from BlueBook result");
+                            pmcID = companyMapResource.First(a => a.Source.ToUpper() == BlueBookProductConstants.OneSite).CompanyInstanceSourceId;
+                            WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Found PMC ID from BlueBook result");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteToErrorLog($"ManageProductOneSite.GetOneSitePMCIDFromPersona Error for user with person id - {persona.PersonaId} ", exception: ex);
+                        return pmcID;
                     }
                 }
             }
