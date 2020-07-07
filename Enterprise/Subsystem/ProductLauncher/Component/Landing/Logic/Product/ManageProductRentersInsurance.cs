@@ -20,47 +20,47 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Re
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	/// <summary>
-	/// Used to update Renters Insurance user information
-	/// </summary>
-	public class ManageProductRentersInsurance : ManageProductBase, IManageProductRentersInsurance
-	{
-		#region Private Variables
-		private string _username;
+    /// <summary>
+    /// Used to update Renters Insurance user information
+    /// </summary>
+    public class ManageProductRentersInsurance : ManageProductBase, IManageProductRentersInsurance
+    {
+        #region Private Variables
+        private string _username;
         private string _password;
-		private string _rentersInsuranceUrl;
-		private string _rentersInsuranceApiEndPoint;
-		private int _requestedBy;
-		private long _companyInstanceSourceId;
-		private long _companyInstanceId;
+        private string _rentersInsuranceUrl;
+        private string _rentersInsuranceApiEndPoint;
+        private int _requestedBy;
+        private long _companyInstanceSourceId;
+        private long _companyInstanceId;
 
-		private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
-		private UserAPIResponse _userAPIResponse = new UserAPIResponse();
-		private ListOfUserRolesResponse _listOfUserRolesResponse = new ListOfUserRolesResponse();
-		private ListPropertyByPMCIDResponse _listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
+        private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
+        private UserAPIResponse _userAPIResponse = new UserAPIResponse();
+        private ListOfUserRolesResponse _listOfUserRolesResponse = new ListOfUserRolesResponse();
+        private ListPropertyByPMCIDResponse _listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
 
-		/// Services
-		private IInsuranceService _insuranceService = new InsuranceService();
-		#endregion
+        /// Services
+        private IInsuranceService _insuranceService = new InsuranceService();
+        #endregion
 
-		#region Constructor
-		/// <summary>
-		/// The default constructor
-		/// </summary>
-		/// <param name="userClaims">User Claim</param>
-		public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance, null)
+        #region Constructor
+        /// <summary>
+        /// The default constructor
+        /// </summary>
+        /// <param name="userClaims">User Claim</param>
+        public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance, null)
         {
             _productId = (int)ProductEnum.Insurance;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
 
-			_rentersInsuranceUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "PRODUCTURL").Value;
-			_rentersInsuranceApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
+            _rentersInsuranceUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "PRODUCTURL").Value;
+            _rentersInsuranceApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _username = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value;
             _password = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;
-			_requestedBy = Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "REQUESTEDBY").Value);
+            _requestedBy = Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "REQUESTEDBY").Value);
 
-			_insuranceService.Url = _rentersInsuranceApiEndPoint;
+            _insuranceService.Url = _rentersInsuranceApiEndPoint;
         }
 
         /// <summary>
@@ -77,10 +77,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="managePerson">Person business logic</param>
 		/// <param name="manageUserLogin">UserLogin business logic</param>
 		/// <param name="managePartyRelationship">Party Relationship business logic</param>
-		public ManageProductRentersInsurance(Guid editorRealPageId, IInsuranceService rentersInsuraceService, ISamlRepository samlRepository, 
-            IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, 
-            IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, 
-            IManagePartyRelationship managePartyRelationship) 
+		public ManageProductRentersInsurance(Guid editorRealPageId, IInsuranceService rentersInsuraceService, ISamlRepository samlRepository,
+            IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
+            IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin,
+            IManagePartyRelationship managePartyRelationship)
             : base((int)ProductEnum.Insurance, productInternalSettingRepository)
         {
             _editorRealPageId = editorRealPageId;
@@ -111,529 +111,537 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
         public ManageProductRentersInsurance(Guid editorRealPageId, IInsuranceService rentersInsuraceService, ListOfUserRolesResponse listOfUserRolesResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository)
         {
-			_editorRealPageId = editorRealPageId;
-			_insuranceService = rentersInsuraceService;
-			_listOfUserRolesResponse = listOfUserRolesResponse;
-			_samlRepository = samlRepository;
-			_managePersona = managePersona;
-			_managePerson = managePerson;
-			_manageUserLogin = manageUserLogin;
-			_blueBook = manageBlueBook;
-			_productRepository = productRepository;
-			_productInternalSettingRepository = productInternalSettingRepository;
-			_managePartyRelationship = managePartyRelationship;
-		}
+            _editorRealPageId = editorRealPageId;
+            _insuranceService = rentersInsuraceService;
+            _listOfUserRolesResponse = listOfUserRolesResponse;
+            _samlRepository = samlRepository;
+            _managePersona = managePersona;
+            _managePerson = managePerson;
+            _manageUserLogin = manageUserLogin;
+            _blueBook = manageBlueBook;
+            _productRepository = productRepository;
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _managePartyRelationship = managePartyRelationship;
+        }
 
-		/// <summary>
-		/// Unit test constructor to test list properties
-		/// </summary>
-		/// <param name="editorRealPageId">The RealPageId of the editor</param>
-		/// <param name="companyInstanceId">Company Id</param>
-		/// <param name="rentersInsuraceService">Renters Insurace Service</param>
-		/// <param name="listPropertyByPMCIDResponse">list of Properties By PMCID Response</param>
-		/// <param name="samlRepository">SAML Repository</param>
-		/// <param name="managePersona">Persona business logic</param>
-		/// <param name="manageBlueBook">BlueBook business logic</param>
-		/// <param name="productRepository">Product Repository</param>
-		/// <param name="productInternalSettingRepository">Product Internal Setting Repository</param>
-		/// <param name="managePerson">Person business logic</param>
-		/// <param name="manageUserLogin">UserLogin business logic</param>
-		/// <param name="managePartyRelationship">Party Relationship business logic</param>
-		public ManageProductRentersInsurance(Guid editorRealPageId, long companyInstanceId, IInsuranceService rentersInsuraceService, ListPropertyByPMCIDResponse listPropertyByPMCIDResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository)
-		{
-			_editorRealPageId = editorRealPageId;
-			_companyInstanceId = companyInstanceId;
-			_insuranceService = rentersInsuraceService;
-			_listPropertyByPMCIDResponse = listPropertyByPMCIDResponse;
-			_samlRepository = samlRepository;
-			_managePersona = managePersona;
-			_managePerson = managePerson;
-			_manageUserLogin = manageUserLogin;
-			_blueBook = manageBlueBook;
-			_productRepository = productRepository;
-			_productInternalSettingRepository = productInternalSettingRepository;
-			_managePartyRelationship = managePartyRelationship;
-		}
-		#endregion
+        /// <summary>
+        /// Unit test constructor to test list properties
+        /// </summary>
+        /// <param name="editorRealPageId">The RealPageId of the editor</param>
+        /// <param name="companyInstanceId">Company Id</param>
+        /// <param name="rentersInsuraceService">Renters Insurace Service</param>
+        /// <param name="listPropertyByPMCIDResponse">list of Properties By PMCID Response</param>
+        /// <param name="samlRepository">SAML Repository</param>
+        /// <param name="managePersona">Persona business logic</param>
+        /// <param name="manageBlueBook">BlueBook business logic</param>
+        /// <param name="productRepository">Product Repository</param>
+        /// <param name="productInternalSettingRepository">Product Internal Setting Repository</param>
+        /// <param name="managePerson">Person business logic</param>
+        /// <param name="manageUserLogin">UserLogin business logic</param>
+        /// <param name="managePartyRelationship">Party Relationship business logic</param>
+        public ManageProductRentersInsurance(Guid editorRealPageId, long companyInstanceId, IInsuranceService rentersInsuraceService, ListPropertyByPMCIDResponse listPropertyByPMCIDResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository)
+        {
+            _editorRealPageId = editorRealPageId;
+            _companyInstanceId = companyInstanceId;
+            _insuranceService = rentersInsuraceService;
+            _listPropertyByPMCIDResponse = listPropertyByPMCIDResponse;
+            _samlRepository = samlRepository;
+            _managePersona = managePersona;
+            _managePerson = managePerson;
+            _manageUserLogin = manageUserLogin;
+            _blueBook = manageBlueBook;
+            _productRepository = productRepository;
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _managePartyRelationship = managePartyRelationship;
+        }
+        #endregion
 
-		#region Public Methods
-		/// <summary>
-		/// Disable User in Renters Insurance
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>ObjectOutput object</returns>
-		public ObjectOutput<UserAPIResponse, IErrorData> DisableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
-		{
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-			ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+        #region Public Methods
+        /// <summary>
+        /// Disable User in Renters Insurance
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <returns>ObjectOutput object</returns>
+        public ObjectOutput<UserAPIResponse, IErrorData> DisableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			ListResponse listResponse = new ListResponse();
-			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = listResponse.ErrorReason;
-				output.Status = errorStatus;
-				return output;
-			}
+            ListResponse listResponse = new ListResponse();
+            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if (listResponse.IsError)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = listResponse.ErrorReason;
+                output.Status = errorStatus;
+                return output;
+            }
 
-			//Call Renters Insurance Disable User API
-			try
-			{
-				logData = new Dictionary<string, object>
-				{
-					{ "ManageProductRentersInsurance.DisableRentersInsuranceUser userId:", _productUserId }
-				};
-				WriteToDiagnosticLog("ManageProductRentersInsurance.DisableRentersInsuranceUser - Delete user.", logData);
-				UserActionRequest userActionRequest = new UserActionRequest()
-				{
-					Login = _username,
-					Password = _password,
-					RequestedBy = _requestedBy,
-					UserId = Convert.ToInt32(_productUserId)
-				};
-				_userAPIResponse = _insuranceService.DisableUser(userActionRequest);
-				if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
-				{
-					logData = new Dictionary<string, object>
-					{
-						{ "ManageProductRentersInsurance.DisableRentersInsuranceUser response", _userAPIResponse }
-					};
-					WriteToDiagnosticLog("ManageProductRentersInsurance.DisableRentersInsuranceUser response.", logData);
-				}
-			}
-			catch (Exception ex)
-			{
-				// return the user exists
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = "ManageProductRentersInsurance.DisableRentersInsuranceUser - Error " + ex.Message;
-				output.Status = errorStatus;
-				WriteToDiagnosticLog(errorStatus.ErrorMsg);
-				return output;
-			}
+            //Call Renters Insurance Disable User API
+            try
+            {
+                logData = new Dictionary<string, object>
+                {
+                    { "ManageProductRentersInsurance.DisableRentersInsuranceUser userId:", _productUserId }
+                };
+                WriteToDiagnosticLog("ManageProductRentersInsurance.DisableRentersInsuranceUser - Delete user.", logData);
+                UserActionRequest userActionRequest = new UserActionRequest()
+                {
+                    Login = _username,
+                    Password = _password,
+                    RequestedBy = _requestedBy,
+                    UserId = Convert.ToInt32(_productUserId)
+                };
+                _userAPIResponse = _insuranceService.DisableUser(userActionRequest);
+                if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
+                {
+                    logData = new Dictionary<string, object>
+                    {
+                        { "ManageProductRentersInsurance.DisableRentersInsuranceUser response", _userAPIResponse }
+                    };
+                    WriteToDiagnosticLog("ManageProductRentersInsurance.DisableRentersInsuranceUser response.", logData);
+                }
+            }
+            catch (Exception ex)
+            {
+                // return the user exists
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = "ManageProductRentersInsurance.DisableRentersInsuranceUser - Error " + ex.Message;
+                output.Status = errorStatus;
+                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                return output;
+            }
 
-			errorStatus.Success = true;
-			errorStatus.ErrorMsg = "";
-			output.Status = errorStatus;
-			output.obj = _userAPIResponse;
-			return output;
-		}
+            errorStatus.Success = true;
+            errorStatus.ErrorMsg = "";
+            output.Status = errorStatus;
+            output.obj = _userAPIResponse;
+            return output;
+        }
 
-		/// <summary>
-		/// Enable User in Renters Insurance
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>Error object</returns>
-		public ObjectOutput<UserAPIResponse, IErrorData> EnableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
-		{
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-			ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+        /// <summary>
+        /// Enable User in Renters Insurance
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <returns>Error object</returns>
+        public ObjectOutput<UserAPIResponse, IErrorData> EnableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			ListResponse listResponse = new ListResponse();
-			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = listResponse.ErrorReason;
-				output.Status = errorStatus;
-				return output;
-			}
+            ListResponse listResponse = new ListResponse();
+            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if (listResponse.IsError)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = listResponse.ErrorReason;
+                output.Status = errorStatus;
+                return output;
+            }
 
-			//Call Renters Insurance Enable User API
-			try
-			{
-				logData = new Dictionary<string, object>
-				{
-					{ "ManageProductRentersInsurance.EnableRentersInsuranceUser userId:", _productUserId }
-				};
-				WriteToDiagnosticLog("ManageProductRentersInsurance.EnableRentersInsuranceUser - Enable user.", logData);
-				UserActionRequest userActionRequest = new UserActionRequest()
-				{
-					Login = _username,
-					Password = _password,
-					RequestedBy = _requestedBy,
-					UserId = Convert.ToInt32(_productUserId)
-				};
-				_userAPIResponse = _insuranceService.EnableUser(userActionRequest);
-				if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
-				{
-					logData = new Dictionary<string, object>
-					{
-						{ "ManageProductRentersInsurance.EnableRentersInsuranceUser response", _userAPIResponse }
-					};
-					WriteToDiagnosticLog("ManageProductRentersInsurance.EnableRentersInsuranceUser response.", logData);
-				}
-			}
-			catch (Exception ex)
-			{
-				// return the user exists
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = "ManageProductRentersInsurance.EnableRentersInsuranceUser - Error " + ex.Message;
-				output.Status = errorStatus;
-				WriteToDiagnosticLog(errorStatus.ErrorMsg);
-				return output;
-			}
+            //Call Renters Insurance Enable User API
+            try
+            {
+                logData = new Dictionary<string, object>
+                {
+                    { "ManageProductRentersInsurance.EnableRentersInsuranceUser userId:", _productUserId }
+                };
+                WriteToDiagnosticLog("ManageProductRentersInsurance.EnableRentersInsuranceUser - Enable user.", logData);
+                UserActionRequest userActionRequest = new UserActionRequest()
+                {
+                    Login = _username,
+                    Password = _password,
+                    RequestedBy = _requestedBy,
+                    UserId = Convert.ToInt32(_productUserId)
+                };
+                _userAPIResponse = _insuranceService.EnableUser(userActionRequest);
+                if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
+                {
+                    logData = new Dictionary<string, object>
+                    {
+                        { "ManageProductRentersInsurance.EnableRentersInsuranceUser response", _userAPIResponse }
+                    };
+                    WriteToDiagnosticLog("ManageProductRentersInsurance.EnableRentersInsuranceUser response.", logData);
+                }
+            }
+            catch (Exception ex)
+            {
+                // return the user exists
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = "ManageProductRentersInsurance.EnableRentersInsuranceUser - Error " + ex.Message;
+                output.Status = errorStatus;
+                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                return output;
+            }
 
-			errorStatus.Success = true;
-			errorStatus.ErrorMsg = "";
-			output.Status = errorStatus;
-			output.obj = _userAPIResponse;
-			return output;
-		}
+            errorStatus.Success = true;
+            errorStatus.ErrorMsg = "";
+            output.Status = errorStatus;
+            output.obj = _userAPIResponse;
+            return output;
+        }
 
-		/// <summary>
-		/// Used to list properties  
-		/// </summary>
-		/// <param name="editorPersonaId">The persona id of the user making the request</param>
-		/// <param name="userPersonaId">The persona id of the user being changed</param>
-		/// <param name="datafilter"></param>
-		/// <returns>ListResponse object</returns>
-		public ListResponse ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
-		{
-			ListResponse listResponse = new ListResponse();
-			IList<ProductProperty> blueBookPropertyList = new List<ProductProperty>();
-			WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
+        /// <summary>
+        /// Used to list properties  
+        /// </summary>
+        /// <param name="editorPersonaId">The persona id of the user making the request</param>
+        /// <param name="userPersonaId">The persona id of the user being changed</param>
+        /// <param name="datafilter"></param>
+        /// <returns>ListResponse object</returns>
+        public ListResponse ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+        {
+            ListResponse listResponse = new ListResponse();
+            IList<ProductProperty> blueBookPropertyList = new List<ProductProperty>();
+            WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
 
-			try
-			{
-				listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (listResponse.IsError)
-				{
-					WriteToErrorLog($"ManageProductRentersInsurance.ListProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {listResponse.ErrorReason}");
-					return listResponse;
-				}
+            try
+            {
+                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (listResponse.IsError)
+                {
+                    WriteToErrorLog($"ManageProductRentersInsurance.ListProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {listResponse.ErrorReason}");
+                    return listResponse;
+                }
 
-				if (_companyInstanceId == 0)
-				{
-					_companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
-				}
-				WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties.GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}");
+                if (_companyInstanceId == 0)
+                {
+                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
+                }
+                WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties.GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
 
-				CompanyPropertyRootObject CompanyProperties = _blueBook.GetCompanyPropertyInstance(_companyInstanceId);
-				WriteToDiagnosticLog($"ManageProductVendorServices.GetProperties-GetPropertyInstance - Found total {CompanyProperties.data.attributes.getCompanyPropertyInstances.Count} properties with blue book company instance id {_companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
-				
-				blueBookPropertyList = CompanyProperties.MapBlueBookToGBProperties() ?? new List<ProductProperty>();
-				WriteToDiagnosticLog($"ManageProductVendorServices.GetProperties-MapBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
-				
-				//called during updating Existing User to flag the properties the user has access to.
-				if (userPersonaId != 0 && (_productUserId?.Length > 0))
-				{
-					WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-					listResponse = MergeProductPropertiesWithGreenbook(editorPersonaId, userPersonaId, blueBookPropertyList);
-					WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
-				}
-				else
-				{
-					Dictionary<string, bool> additionalDictionary = new Dictionary<string, bool>
-					{
-						{ "allProperties", false }
-					};
+                CompanyPropertyRootObject CompanyProperties = _blueBook.GetCompanyPropertyInstance(_companyInstanceId);
+                WriteToDiagnosticLog($"ManageProductVendorServices.GetProperties-GetPropertyInstance - Found total {CompanyProperties.data.attributes.getCompanyPropertyInstances.Count} properties with blue book company instance id {_companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
 
-					listResponse = new ListResponse()
-					{
-						Records = blueBookPropertyList.Cast<object>().ToList(),
-						TotalRows = blueBookPropertyList.Count,
-						RowsPerPage = blueBookPropertyList.Count,
-						TotalPages = 1,
-						ErrorReason = string.Empty,
-						Additional = additionalDictionary
-					};
-				}
-			}
-			catch (Exception ex)
-			{
-				listResponse = new ListResponse()
-				{
-					IsError = true
-				};
+                blueBookPropertyList = CompanyProperties.MapBlueBookToGBProperties() ?? new List<ProductProperty>();
+                WriteToDiagnosticLog($"ManageProductVendorServices.GetProperties-MapBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
 
-				if (ex is BlueBookException)
-				{
-					listResponse.ErrorReason = ex.Message;
-				}
-				else
-				{
-					listResponse.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
-				}
+                //called during updating Existing User to flag the properties the user has access to.
+                if (userPersonaId != 0 && (_productUserId?.Length > 0))
+                {
+                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    listResponse = MergeProductPropertiesWithGreenbook(editorPersonaId, userPersonaId, blueBookPropertyList);
+                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                }
+                else
+                {
+                    Dictionary<string, bool> additionalDictionary = new Dictionary<string, bool>
+                    {
+                        { "allProperties", false }
+                    };
 
-				listResponse.ErrorReason = $"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties.";
-				WriteToErrorLog($"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", exception: ex);
-			}
-			return listResponse;
-		}
+                    listResponse = new ListResponse()
+                    {
+                        Records = blueBookPropertyList.Cast<object>().ToList(),
+                        TotalRows = blueBookPropertyList.Count,
+                        RowsPerPage = blueBookPropertyList.Count,
+                        TotalPages = 1,
+                        ErrorReason = string.Empty,
+                        Additional = additionalDictionary
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                listResponse = new ListResponse()
+                {
+                    IsError = true
+                };
 
-		/// <summary>
-		/// Used to list Renters Insurance properties by PMCId
-		/// </summary>
-		/// <param name="editorPersonaId">The persona id of the user making the request</param>
-		/// <param name="userPersonaId">The persona id of the user being changed</param>
-		/// <returns>ListResponse object</returns>
-		public ObjectListOutput<PropertyInstance, IErrorData> ListPropertiesByPMCID(long editorPersonaId, long userPersonaId)
-		{
-			ListResponse listResponse = new ListResponse();
-			ListPropertyByPMCIDResponse listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
-			ObjectListOutput<PropertyInstance, IErrorData> outputList = new ObjectListOutput<PropertyInstance, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			outputList.Status = errorStatus;
-			WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID - at begining of method for user with editorPersona id - {editorPersonaId}");
+                if (ex is BlueBookException)
+                {
+                    listResponse.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    listResponse.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
 
-			try
-			{
-				listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (listResponse.IsError)
-				{
-					WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {listResponse.ErrorReason}");
-					errorStatus.Success = false;
-					errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails - Error " + listResponse.ErrorReason;
-					outputList.Status = errorStatus;
-					return outputList;
-				}
+                WriteToErrorLog($"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", exception: ex);
+            }
+            return listResponse;
+        }
 
-				int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
-				if (companyInstanceId == 0)
-				{
-					WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-					errorStatus.Success = false;
-					errorStatus.ErrorMsg = "Company Setup Error: Please Contact Support.";
-					outputList.Status = errorStatus;
-					return outputList;
-				}
-				WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
+        /// <summary>
+        /// Used to list Renters Insurance properties by PMCId
+        /// </summary>
+        /// <param name="editorPersonaId">The persona id of the user making the request</param>
+        /// <param name="userPersonaId">The persona id of the user being changed</param>
+        /// <returns>ListResponse object</returns>
+        public ObjectListOutput<PropertyInstance, IErrorData> ListPropertiesByPMCID(long editorPersonaId, long userPersonaId)
+        {
+            ListResponse listResponse = new ListResponse();
+            ListPropertyByPMCIDResponse listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
+            ObjectListOutput<PropertyInstance, IErrorData> outputList = new ObjectListOutput<PropertyInstance, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            outputList.Status = errorStatus;
+            WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID - at begining of method for user with editorPersona id - {editorPersonaId}");
 
-				IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
-				WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
+            try
+            {
+                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (listResponse.IsError)
+                {
+                    WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {listResponse.ErrorReason}");
+                    errorStatus.Success = false;
+                    errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails - Error " + listResponse.ErrorReason;
+                    outputList.Status = errorStatus;
+                    return outputList;
+                }
 
-				listPropertyByPMCIDResponse = _insuranceService.GetListPropertyByPMCID(companyInstanceId);
+                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
+                if (companyInstanceId == 0)
+                {
+                    WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    errorStatus.Success = false;
+                    errorStatus.ErrorMsg = "Company Setup Error: Please Contact Support.";
+                    outputList.Status = errorStatus;
+                    return outputList;
+                }
+                WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
-				if (listPropertyByPMCIDResponse?.PropertyList != null)
-				{
-					propertyList.ToList().ForEach(blueBook => blueBook.IsActive = listPropertyByPMCIDResponse.PropertyList.Any(rentersInsurance => rentersInsurance.PropertyID.ToString() == blueBook.PropertyInstanceSourceId));
-				}
-				errorStatus.Success = true;
-				errorStatus.ErrorMsg = "";
-				outputList.Status = errorStatus;
-				outputList.list = propertyList;
-				return outputList;
-			}
-			catch (Exception ex)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID - Error " + ex.Message;
-				outputList.Status = errorStatus;
-				WriteToDiagnosticLog(errorStatus.ErrorMsg);
-				return outputList;
-			}
-		}
+                IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
+                WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
 
-		/// <summary>
-		/// List Roles
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>Levels list</returns>
-		public IList<ProductRole> ListRoles(long editorPersonaId, long userPersonaId)
-		{
-			GetUserByIDResponse getUserByIDResponse = new GetUserByIDResponse();
-			IList<ProductRole> productRoleList = new List<ProductRole>();
-			ListResponse listResponse = new ListResponse();
+                listPropertyByPMCIDResponse = _insuranceService.GetListPropertyByPMCID(companyInstanceId);
 
-			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if ((!listResponse.IsError) && (!string.IsNullOrWhiteSpace(_productUserId)))
-			{
-				UserActionRequest userActionRequest = new UserActionRequest()
-				{
-					Login = _username,
-					Password = _password,
-					RequestedBy = _requestedBy,
-					UserId = Convert.ToInt32(_productUserId)
-				};
-				getUserByIDResponse = _insuranceService.GetUserByID(userActionRequest);
-			}
+                if (listPropertyByPMCIDResponse?.PropertyList != null)
+                {
+                    propertyList.ToList().ForEach(blueBook => blueBook.IsActive = listPropertyByPMCIDResponse.PropertyList.Any(rentersInsurance => rentersInsurance.PropertyID.ToString() == blueBook.PropertyInstanceSourceId));
+                }
+                errorStatus.Success = true;
+                errorStatus.ErrorMsg = "";
+                outputList.Status = errorStatus;
+                outputList.list = propertyList;
+                return outputList;
+            }
+            catch (Exception ex)
+            {
+                errorStatus.Success = false;
 
-			_listOfUserRolesResponse = _insuranceService.GetListOfUserRoles();
-			productRoleList = _listOfUserRolesResponse.ToGBRoles();
+                if (ex is BlueBookException)
+                {
+                    errorStatus.ErrorMsg = ex.Message;
+                }
+                else
+                {
+                    errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID - Error " + ex.Message;
+                }
 
-			//if a user record exists
-			if (getUserByIDResponse?.UserInfo != null)
-			{
-				productRoleList.ToList().Find(item => item.Name == getUserByIDResponse.UserInfo.Role).IsAssigned = true;
-			}
-			//relabel Renters Insurance Roles names for the UI
-			productRoleList.ToList().ForEach(item =>
-			{
-				switch (Convert.ToInt32(item.ID))
-				{
-					case 2:
-						//ID = 2 and Name = PMC => Corporate User
-						item.Name = "Corporate User";
-						break;
-					case 21:
-						//ID = 21 and Name = RPXPMC => Corporate User with RPX
-						item.Name = "Corporate User with RPX";
-						break;
-					case 22:
-						//ID = 22 and Name = RPXProperty Manager => Property Manager with RPX
-						item.Name = "Property Manager with RPX";
-						break;
-					default:
-						//ID = 14 and Name = Property Manager => Property Manager
-						break;
-				}
-			});
-			//return productRoleList.OrderBy(item => item.Name).ToList();
-			return productRoleList;
-		}
-		/// <summary>
-		/// List Roles Response
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>Levels list</returns>
-		public ListResponse ListRolesResponse(long editorPersonaId, long userPersonaId)
-		{
-			IList<ProductRole> productRoleList = ListRoles(editorPersonaId, userPersonaId);
-			ListResponse result = new ListResponse()
-			{
-				Records = productRoleList.Cast<object>().ToList(),
-				TotalRows = productRoleList.Count,
-				RowsPerPage = productRoleList.Count,
-				TotalPages = 1,
-				ErrorReason = ""
-			};
-			return result;
-		}
+                outputList.Status = errorStatus;
+                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                return outputList;
+            }
+        }
 
-		/// <summary>
-		/// Change user type
-		/// </summary>
-		/// <param name="createUserPersonaId">Logged-in user PersonaId</param>
-		/// <param name="assignUserPersonaId">new user PersonaId</param>
-		/// <param name="rentersInsuranceRoleAndPropertyList">Used to grant a user Role, Properties, and and Is the Product assigned or removed for the user.</param>
-		/// <param name="batchProcessType">batchProcess Type</param>
-		/// <returns></returns>
-		public ObjectOutput<UserAPIResponse, IErrorData> ChangeRentersInsuranceUserType(long createUserPersonaId, long assignUserPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType)
+        /// <summary>
+        /// List Roles
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <returns>Levels list</returns>
+        public IList<ProductRole> ListRoles(long editorPersonaId, long userPersonaId)
+        {
+            GetUserByIDResponse getUserByIDResponse = new GetUserByIDResponse();
+            IList<ProductRole> productRoleList = new List<ProductRole>();
+            ListResponse listResponse = new ListResponse();
+
+            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if ((!listResponse.IsError) && (!string.IsNullOrWhiteSpace(_productUserId)))
+            {
+                UserActionRequest userActionRequest = new UserActionRequest()
+                {
+                    Login = _username,
+                    Password = _password,
+                    RequestedBy = _requestedBy,
+                    UserId = Convert.ToInt32(_productUserId)
+                };
+                getUserByIDResponse = _insuranceService.GetUserByID(userActionRequest);
+            }
+
+            _listOfUserRolesResponse = _insuranceService.GetListOfUserRoles();
+            productRoleList = _listOfUserRolesResponse.ToGBRoles();
+
+            //if a user record exists
+            if (getUserByIDResponse?.UserInfo != null)
+            {
+                productRoleList.ToList().Find(item => item.Name == getUserByIDResponse.UserInfo.Role).IsAssigned = true;
+            }
+            //relabel Renters Insurance Roles names for the UI
+            productRoleList.ToList().ForEach(item =>
+            {
+                switch (Convert.ToInt32(item.ID))
+                {
+                    case 2:
+                        //ID = 2 and Name = PMC => Corporate User
+                        item.Name = "Corporate User";
+                        break;
+                    case 21:
+                        //ID = 21 and Name = RPXPMC => Corporate User with RPX
+                        item.Name = "Corporate User with RPX";
+                        break;
+                    case 22:
+                        //ID = 22 and Name = RPXProperty Manager => Property Manager with RPX
+                        item.Name = "Property Manager with RPX";
+                        break;
+                    default:
+                        //ID = 14 and Name = Property Manager => Property Manager
+                        break;
+                }
+            });
+            //return productRoleList.OrderBy(item => item.Name).ToList();
+            return productRoleList;
+        }
+        /// <summary>
+        /// List Roles Response
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <returns>Levels list</returns>
+        public ListResponse ListRolesResponse(long editorPersonaId, long userPersonaId)
+        {
+            IList<ProductRole> productRoleList = ListRoles(editorPersonaId, userPersonaId);
+            ListResponse result = new ListResponse()
+            {
+                Records = productRoleList.Cast<object>().ToList(),
+                TotalRows = productRoleList.Count,
+                RowsPerPage = productRoleList.Count,
+                TotalPages = 1,
+                ErrorReason = ""
+            };
+            return result;
+        }
+
+        /// <summary>
+        /// Change user type
+        /// </summary>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rentersInsuranceRoleAndPropertyList">Used to grant a user Role, Properties, and and Is the Product assigned or removed for the user.</param>
+        /// <param name="batchProcessType">batchProcess Type</param>
+        /// <returns></returns>
+        public ObjectOutput<UserAPIResponse, IErrorData> ChangeRentersInsuranceUserType(long createUserPersonaId, long assignUserPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType)
         {
             return ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, rentersInsuranceRoleAndPropertyList, batchProcessType);
         }
 
-		/// <summary>
-		/// Add or update a Renters Insurance
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <param name="rentersInsuranceRoleAndPropertyList">Used to grant a user Role, Properties, and and Is the Product assigned or removed for the user.</param>
-		/// <param name="batchProcessType">batchProcess Type</param>
-		/// <returns>ObjectOuput and Error</returns>
-		public ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
-		{
-			UserProperty userProperty = new UserProperty();
-			IList<UserProperty> userPropertyList = new List<UserProperty>();
-			PropertyInstance propertyInstance = new PropertyInstance();
-			GetUserByIDResponse getUserByIDResponse = new GetUserByIDResponse();
-			IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
-			ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Begin create/update user for user with userPersonaId - {userPersonaId}.");
+        /// <summary>
+        /// Add or update a Renters Insurance
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <param name="rentersInsuranceRoleAndPropertyList">Used to grant a user Role, Properties, and and Is the Product assigned or removed for the user.</param>
+        /// <param name="batchProcessType">batchProcess Type</param>
+        /// <returns>ObjectOuput and Error</returns>
+        public ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        {
+            UserProperty userProperty = new UserProperty();
+            IList<UserProperty> userPropertyList = new List<UserProperty>();
+            PropertyInstance propertyInstance = new PropertyInstance();
+            GetUserByIDResponse getUserByIDResponse = new GetUserByIDResponse();
+            IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
+            ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Begin create/update user for user with userPersonaId - {userPersonaId}.");
 
-			try
-			{
-				ListResponse listResponse = new ListResponse();
-				listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-				if (listResponse.IsError)
-				{
-					WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}");
-					errorStatus.Success = false;
-					errorStatus.ErrorMsg = listResponse.ErrorReason;
-					output.Status = errorStatus;
-					return output;
-				}
-				Persona userPersona = _managePersona.GetPersona(userPersonaId);
-				Guid realPageId = userPersona.RealPageId;
+            try
+            {
+                ListResponse listResponse = new ListResponse();
+                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (listResponse.IsError)
+                {
+                    WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}");
+                    errorStatus.Success = false;
+                    errorStatus.ErrorMsg = listResponse.ErrorReason;
+                    output.Status = errorStatus;
+                    return output;
+                }
+                Persona userPersona = _managePersona.GetPersona(userPersonaId);
+                Guid realPageId = userPersona.RealPageId;
 
-				IPerson person = _managePerson.GetPerson(realPageId);
+                IPerson person = _managePerson.GetPerson(realPageId);
 
-				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-				CustomerCompanyMap companyMap = GetRentersInsuranceCompanyInstanceId();
-				_companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
+                CustomerCompanyMap companyMap = GetRentersInsuranceCompanyInstanceId();
+                _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
 
-				CompanyPropertyRootObject CompanyProperties = _blueBook.GetCompanyPropertyInstance(companyMap.CompanyInstanceId);
-				IList<ProductProperty> blueBookPropertyList = CompanyProperties.MapBlueBookToGBProperties() ?? new List<ProductProperty>();
+                CompanyPropertyRootObject CompanyProperties = _blueBook.GetCompanyPropertyInstance(companyMap.CompanyInstanceId);
+                IList<ProductProperty> blueBookPropertyList = CompanyProperties.MapBlueBookToGBProperties() ?? new List<ProductProperty>();
 
-				string userEmail = string.Empty;
-				string userEmailAddress = string.Empty;
-				string productUserName = string.Empty;
-				if ((userPersonaId > 0) && (IsRegularUserNoEmail(userPersonaId)))
-				{
-					productUserName = userLogin.LoginName;
-					// get the email address
-					IList<ElectronicAddress> electronicAddressList = new List<ElectronicAddress>();
-					IManageElectronicAddress manageElectronicAddress = new ManageElectronicAddress();
-					electronicAddressList = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
-					if (electronicAddressList != null)
-					{
-						if (electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
-						{
-							userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
-						}
-					}
-				}
-				else
-				{
-					userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
-					productUserName = userEmailAddress;
-				}
+                string userEmail = string.Empty;
+                string userEmailAddress = string.Empty;
+                string productUserName = string.Empty;
+                if ((userPersonaId > 0) && (IsRegularUserNoEmail(userPersonaId)))
+                {
+                    productUserName = userLogin.LoginName;
+                    // get the email address
+                    IList<ElectronicAddress> electronicAddressList = new List<ElectronicAddress>();
+                    IManageElectronicAddress manageElectronicAddress = new ManageElectronicAddress();
+                    electronicAddressList = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
+                    if (electronicAddressList != null)
+                    {
+                        if (electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
+                        {
+                            userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
+                        }
+                    }
+                }
+                else
+                {
+                    userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
+                    productUserName = userEmailAddress;
+                }
 
-				userEmail = string.IsNullOrWhiteSpace(userEmailAddress) ? userEmailAddress : userEmailAddress.Substring(0, Math.Min(userEmailAddress.Length, 155));
+                userEmail = string.IsNullOrWhiteSpace(userEmailAddress) ? userEmailAddress : userEmailAddress.Substring(0, Math.Min(userEmailAddress.Length, 155));
 
-				WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Begin create/update user userPersonaId - {userPersonaId}");
+                WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Begin create/update user userPersonaId - {userPersonaId}");
 
-				// create user
-				if (string.IsNullOrWhiteSpace(_productUserId))
-				{
-					_productUsername = productUserName;
-				}
-				else
-				{
-					productUserName = _productUsername;
-					if (batchProcessType == BatchProcessType.ProfileUpdate)
-					{
-						rentersInsuranceRoleAndPropertyList = new RentersInsuranceRoleAndPropertyList();
-						getUserByIDResponse = GetUserDetail(editorPersonaId, userPersonaId);
-						// if a user record exists
-						if (getUserByIDResponse?.UserInfo != null)
-						{
-							rentersInsuranceRoleAndPropertyList.RoleList = new List<string>()
-							{
-								getUserByIDResponse.UserInfo.RoleID.ToString()
-							};
-						}
-					}
-				}
+                // create user
+                if (string.IsNullOrWhiteSpace(_productUserId))
+                {
+                    _productUsername = productUserName;
+                }
+                else
+                {
+                    productUserName = _productUsername;
+                    if (batchProcessType == BatchProcessType.ProfileUpdate)
+                    {
+                        rentersInsuranceRoleAndPropertyList = new RentersInsuranceRoleAndPropertyList();
+                        getUserByIDResponse = GetUserDetail(editorPersonaId, userPersonaId);
+                        // if a user record exists
+                        if (getUserByIDResponse?.UserInfo != null)
+                        {
+                            rentersInsuranceRoleAndPropertyList.RoleList = new List<string>()
+                            {
+                                getUserByIDResponse.UserInfo.RoleID.ToString()
+                            };
+                        }
+                    }
+                }
 
-				//User details
-				UserInfo userInfo = new UserInfo()
-				{
-					CompanyId = Convert.ToInt32(_companyInstanceSourceId),
-					DateLastLogin = null,
-					Email = userEmail,
-					FailedCounter = 0,
-					//GreenBook nvarchar 100 -- Renters Insurance 50
-					FirstName = string.IsNullOrWhiteSpace(person.FirstName) ? person.FirstName : person.FirstName.Substring(0, Math.Min(person.FirstName.Length, 50)),
-					IsActive = true,
-					//GreenBook nvarchar 100 -- Renters Insurance 50
-					LastName = string.IsNullOrWhiteSpace(person.LastName) ? person.LastName : person.LastName.Substring(0, Math.Min(person.LastName.Length, 50)),
-					//If we are adding an Admin and the "RoleList":[] then set the RoleId to 2 = Corporate User
-					RoleID = (rentersInsuranceRoleAndPropertyList.RoleList.Count > 0) ? Convert.ToInt32(rentersInsuranceRoleAndPropertyList.RoleList[0]) : 2,
-					Role = null,
-					UserId = (!string.IsNullOrWhiteSpace(_productUserId)) ? Convert.ToInt32(_productUserId) : 0,
-					User = productUserName
-				};
+                //User details
+                UserInfo userInfo = new UserInfo()
+                {
+                    CompanyId = Convert.ToInt32(_companyInstanceSourceId),
+                    DateLastLogin = null,
+                    Email = userEmail,
+                    FailedCounter = 0,
+                    //GreenBook nvarchar 100 -- Renters Insurance 50
+                    FirstName = string.IsNullOrWhiteSpace(person.FirstName) ? person.FirstName : person.FirstName.Substring(0, Math.Min(person.FirstName.Length, 50)),
+                    IsActive = true,
+                    //GreenBook nvarchar 100 -- Renters Insurance 50
+                    LastName = string.IsNullOrWhiteSpace(person.LastName) ? person.LastName : person.LastName.Substring(0, Math.Min(person.LastName.Length, 50)),
+                    //If we are adding an Admin and the "RoleList":[] then set the RoleId to 2 = Corporate User
+                    RoleID = (rentersInsuranceRoleAndPropertyList.RoleList.Count > 0) ? Convert.ToInt32(rentersInsuranceRoleAndPropertyList.RoleList[0]) : 2,
+                    Role = null,
+                    UserId = (!string.IsNullOrWhiteSpace(_productUserId)) ? Convert.ToInt32(_productUserId) : 0,
+                    User = productUserName
+                };
 
                 if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
@@ -658,7 +666,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeRegularToAdmin Properties - END");
                         }
                     }
-                    else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal )
+                    else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal)
                     {
                         WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeAdminToRegular Properties - START");
 
@@ -678,15 +686,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeAdminToRegular Properties - END");
                     }
                 }
-				else if ((batchProcessType == BatchProcessType.ProfileUpdate) && (getUserByIDResponse?.UserInfo?.PropertyList != null))
-				{
-					userPropertyList = getUserByIDResponse.UserInfo.PropertyList;
-				}
-				else
-				{
-					//UI will set {"PropertyList":["all"]} in ProductBatch if Role = Corporate User OR Corporate User with RPX
-					//give user acces to all properties if the User's Role is Corporate User OR Corporate User with RPX
-					if ((rentersInsuranceRoleAndPropertyList.PropertyList != null) && ((rentersInsuranceRoleAndPropertyList.PropertyList.Count == 0) || ((rentersInsuranceRoleAndPropertyList.PropertyList.Count == 1) && (rentersInsuranceRoleAndPropertyList.PropertyList[0].ToUpper() == "ALL"))))
+                else if ((batchProcessType == BatchProcessType.ProfileUpdate) && (getUserByIDResponse?.UserInfo?.PropertyList != null))
+                {
+                    userPropertyList = getUserByIDResponse.UserInfo.PropertyList;
+                }
+                else
+                {
+                    //UI will set {"PropertyList":["all"]} in ProductBatch if Role = Corporate User OR Corporate User with RPX
+                    //give user acces to all properties if the User's Role is Corporate User OR Corporate User with RPX
+                    if ((rentersInsuranceRoleAndPropertyList.PropertyList != null) && ((rentersInsuranceRoleAndPropertyList.PropertyList.Count == 0) || ((rentersInsuranceRoleAndPropertyList.PropertyList.Count == 1) && (rentersInsuranceRoleAndPropertyList.PropertyList[0].ToUpper() == "ALL"))))
                     {
                         foreach (var property in blueBookPropertyList)
                         {
@@ -715,58 +723,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-				userInfo.PropertyList = userPropertyList.ToArray();
+                userInfo.PropertyList = userPropertyList.ToArray();
 
-				//API required details
-				AddUpdateUserRequest addUpdateUserRequest = new AddUpdateUserRequest()
-				{
-					Login = _username,
-					Password = _password,
-					RequestedBy = _requestedBy,
-					User = userInfo
-				};
+                //API required details
+                AddUpdateUserRequest addUpdateUserRequest = new AddUpdateUserRequest()
+                {
+                    Login = _username,
+                    Password = _password,
+                    RequestedBy = _requestedBy,
+                    User = userInfo
+                };
 
-				if (string.IsNullOrWhiteSpace(_productUserId))
-				{
-					//Generate a random password when adding a new user.
-					userInfo.Password = Membership.GeneratePassword(20, 5);
-					//Add User
-					_userAPIResponse = _insuranceService.AddUser(addUpdateUserRequest);
-				}
-				else
-				{
-					//Do not update the user Password in Renters Insurance when Updating the user detail
-					userInfo.Password = null;
-					//Update User
-					_userAPIResponse = _insuranceService.UpdateUser(addUpdateUserRequest);
-				}
-				WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - End create/update user userPersonaId - {userPersonaId}");
+                if (string.IsNullOrWhiteSpace(_productUserId))
+                {
+                    //Generate a random password when adding a new user.
+                    userInfo.Password = Membership.GeneratePassword(20, 5);
+                    //Add User
+                    _userAPIResponse = _insuranceService.AddUser(addUpdateUserRequest);
+                }
+                else
+                {
+                    //Do not update the user Password in Renters Insurance when Updating the user detail
+                    userInfo.Password = null;
+                    //Update User
+                    _userAPIResponse = _insuranceService.UpdateUser(addUpdateUserRequest);
+                }
+                WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - End create/update user userPersonaId - {userPersonaId}");
 
-				if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
-				{
-					//Create OR Update a new Product UserName SAML attribute for the given personaId
-					//Create OR Update a new Product UserId SAML attribute for the given personaId
-					Dictionary<SamlAttributeEnum, string> userSetting = new Dictionary<SamlAttributeEnum, string>()
-					{
-						{
-							SamlAttributeEnum.productUsername, 
-							productUserName
-						},
-						{
-							SamlAttributeEnum.UserId,
-							_userAPIResponse.UserId.ToString()
-						}
-					};
-					UpdateSamlUserAttributes(userPersonaId, userSetting);
+                if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
+                {
+                    //Create OR Update a new Product UserName SAML attribute for the given personaId
+                    //Create OR Update a new Product UserId SAML attribute for the given personaId
+                    Dictionary<SamlAttributeEnum, string> userSetting = new Dictionary<SamlAttributeEnum, string>()
+                    {
+                        {
+                            SamlAttributeEnum.productUsername,
+                            productUserName
+                        },
+                        {
+                            SamlAttributeEnum.UserId,
+                            _userAPIResponse.UserId.ToString()
+                        }
+                    };
+                    UpdateSamlUserAttributes(userPersonaId, userSetting);
 
-					WriteToDiagnosticLog("ManageProductRentersInsurance.ManageRentersInsuranceUser - Setting product result to success");
-					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+                    WriteToDiagnosticLog("ManageProductRentersInsurance.ManageRentersInsuranceUser - Setting product result to success");
+                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
-					WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - End create/update user for user with editorPersona id - {editorPersonaId}.");
-					errorStatus.Success = true;
-					errorStatus.ErrorMsg = "";
-					output.obj = _userAPIResponse;
-					output.Status = errorStatus;
+                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - End create/update user for user with editorPersona id - {editorPersonaId}.");
+                    errorStatus.Success = true;
+                    errorStatus.ErrorMsg = "";
+                    output.obj = _userAPIResponse;
+                    output.Status = errorStatus;
 
                     if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                     {
@@ -776,162 +784,162 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         WriteCreateUserActivityLog(editorPersonaId, person as Person, userLogin);
                     }
-				}
-				else
-				{
-					WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Failed to create/update a renters insurance user for userPersonaId - {userPersonaId}.");
-					errorStatus.Success = false;
-					errorStatus.ErrorMsg = "Failed to create a renters insurance user.";
-					output.Status = errorStatus;
-				}
-				return output;
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = $"Error - {ex.Message}";
-				output.Status = errorStatus;
-				return output;
-			}
-		}
+                }
+                else
+                {
+                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Failed to create/update a renters insurance user for userPersonaId - {userPersonaId}.");
+                    errorStatus.Success = false;
+                    errorStatus.ErrorMsg = "Failed to create a renters insurance user.";
+                    output.Status = errorStatus;
+                }
+                return output;
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = $"Error - {ex.Message}";
+                output.Status = errorStatus;
+                return output;
+            }
+        }
 
-		/// <summary>
-		/// Unassign User in GreenBook and disable in Renters Insurance
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>ObjectOutput object</returns>
-		public ObjectOutput<UserAPIResponse, IErrorData> UnassignRentersInsuranceUser(long editorPersonaId, long userPersonaId)
-		{
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-			ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+        /// <summary>
+        /// Unassign User in GreenBook and disable in Renters Insurance
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <returns>ObjectOutput object</returns>
+        public ObjectOutput<UserAPIResponse, IErrorData> UnassignRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			ListResponse listResponse = new ListResponse();
-			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = listResponse.ErrorReason;
-				output.Status = errorStatus;
-				return output;
-			}
+            ListResponse listResponse = new ListResponse();
+            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if (listResponse.IsError)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = listResponse.ErrorReason;
+                output.Status = errorStatus;
+                return output;
+            }
 
-			WriteToDiagnosticLog($"ManageProductRentersInsurance.UnassignRentersInsuranceUser userPersonaId: {userPersonaId}");
-			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+            WriteToDiagnosticLog($"ManageProductRentersInsurance.UnassignRentersInsuranceUser userPersonaId: {userPersonaId}");
+            UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-			//Call Renters Insurance Disable User API
-			try
-			{
-				logData = new Dictionary<string, object>
-				{
-					{ "ManageProductRentersInsurance.UnassignRentersInsuranceUser userId:", _productUserId }
-				};
-				WriteToDiagnosticLog("ManageProductRentersInsurance.UnassignRentersInsuranceUser - Delete user.", logData);
-				UserActionRequest userActionRequest = new UserActionRequest()
-				{
-					Login = _username,
-					Password = _password,
-					RequestedBy = _requestedBy,
-					UserId = Convert.ToInt32(_productUserId)
-				};
+            //Call Renters Insurance Disable User API
+            try
+            {
+                logData = new Dictionary<string, object>
+                {
+                    { "ManageProductRentersInsurance.UnassignRentersInsuranceUser userId:", _productUserId }
+                };
+                WriteToDiagnosticLog("ManageProductRentersInsurance.UnassignRentersInsuranceUser - Delete user.", logData);
+                UserActionRequest userActionRequest = new UserActionRequest()
+                {
+                    Login = _username,
+                    Password = _password,
+                    RequestedBy = _requestedBy,
+                    UserId = Convert.ToInt32(_productUserId)
+                };
 
-				_userAPIResponse = _insuranceService.DisableUser(userActionRequest);
-				if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
-				{
-					logData = new Dictionary<string, object>
-					{
-						{ "ManageProductRentersInsurance.UnassignRentersInsuranceUser response", _userAPIResponse }
-					};
-					WriteToDiagnosticLog("ManageProductRentersInsurance.UnassignRentersInsuranceUser response.", logData);
-				}
-			}
-			catch (Exception ex)
-			{
-				// return the user exists
-				string errorMsg = "ManageProductRentersInsurance.UnassignRentersInsuranceUser - Error " + ex.Message;
-				WriteToDiagnosticLog(errorMsg);
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = errorMsg;
-				output.Status = errorStatus;
-				return output;
-			}
+                _userAPIResponse = _insuranceService.DisableUser(userActionRequest);
+                if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
+                {
+                    logData = new Dictionary<string, object>
+                    {
+                        { "ManageProductRentersInsurance.UnassignRentersInsuranceUser response", _userAPIResponse }
+                    };
+                    WriteToDiagnosticLog("ManageProductRentersInsurance.UnassignRentersInsuranceUser response.", logData);
+                }
+            }
+            catch (Exception ex)
+            {
+                // return the user exists
+                string errorMsg = "ManageProductRentersInsurance.UnassignRentersInsuranceUser - Error " + ex.Message;
+                WriteToDiagnosticLog(errorMsg);
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = errorMsg;
+                output.Status = errorStatus;
+                return output;
+            }
 
-			// Activity Logging
-			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
+            // Activity Logging
+            WriteUnassignActivityLog(editorPersonaId, userPersonaId);
 
-			errorStatus.Success = true;
-			errorStatus.ErrorMsg = "";
-			output.Status = errorStatus;
-			output.obj = _userAPIResponse;
-			return output;
-		}
+            errorStatus.Success = true;
+            errorStatus.ErrorMsg = "";
+            output.Status = errorStatus;
+            output.obj = _userAPIResponse;
+            return output;
+        }
 
-		/// <summary>
-		/// Disable User in Renters Insurance
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>ObjectOutput object</returns>
-		public ObjectOutput<UserAPIResponse, IErrorData> UnlockRentersInsuranceUser(long editorPersonaId, long userPersonaId)
-		{
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-			ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+        /// <summary>
+        /// Disable User in Renters Insurance
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <returns>ObjectOutput object</returns>
+        public ObjectOutput<UserAPIResponse, IErrorData> UnlockRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			ListResponse listResponse = new ListResponse();
-			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = listResponse.ErrorReason;
-				output.Status = errorStatus;
-				return output;
-			}
+            ListResponse listResponse = new ListResponse();
+            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if (listResponse.IsError)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = listResponse.ErrorReason;
+                output.Status = errorStatus;
+                return output;
+            }
 
-			//Call Renters Insurance Unlock User API
-			try
-			{
-				logData = new Dictionary<string, object>
-				{
-					{ "ManageProductRentersInsurance.UnlockRentersInsuranceUser userId:", _productUserId }
-				};
-				WriteToDiagnosticLog("ManageProductRentersInsurance.UnlockRentersInsuranceUser - Delete user.", logData);
-				UserActionRequest userActionRequest = new UserActionRequest()
-				{
-					Login = _username,
-					Password = _password,
-					RequestedBy = _requestedBy,
-					UserId = Convert.ToInt32(_productUserId)
-				};
+            //Call Renters Insurance Unlock User API
+            try
+            {
+                logData = new Dictionary<string, object>
+                {
+                    { "ManageProductRentersInsurance.UnlockRentersInsuranceUser userId:", _productUserId }
+                };
+                WriteToDiagnosticLog("ManageProductRentersInsurance.UnlockRentersInsuranceUser - Delete user.", logData);
+                UserActionRequest userActionRequest = new UserActionRequest()
+                {
+                    Login = _username,
+                    Password = _password,
+                    RequestedBy = _requestedBy,
+                    UserId = Convert.ToInt32(_productUserId)
+                };
 
-				_userAPIResponse = _insuranceService.UnlockUser(userActionRequest);
-				if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
-				{
-					logData = new Dictionary<string, object>
-					{
-						{ "ManageProductRentersInsurance.UnlockRentersInsuranceUser response", _userAPIResponse }
-					};
-					WriteToDiagnosticLog("ManageProductRentersInsurance.UnlockRentersInsuranceUser response.", logData);
-				}
-			}
-			catch (Exception ex)
-			{
-				// return the user exists
-				errorStatus.Success = false;
-				errorStatus.ErrorMsg = "ManageProductRentersInsurance.UnlockRentersInsuranceUser - Error " + ex.Message;
-				output.Status = errorStatus;
-				WriteToDiagnosticLog(errorStatus.ErrorMsg);
-				return output;
-			}
+                _userAPIResponse = _insuranceService.UnlockUser(userActionRequest);
+                if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
+                {
+                    logData = new Dictionary<string, object>
+                    {
+                        { "ManageProductRentersInsurance.UnlockRentersInsuranceUser response", _userAPIResponse }
+                    };
+                    WriteToDiagnosticLog("ManageProductRentersInsurance.UnlockRentersInsuranceUser response.", logData);
+                }
+            }
+            catch (Exception ex)
+            {
+                // return the user exists
+                errorStatus.Success = false;
+                errorStatus.ErrorMsg = "ManageProductRentersInsurance.UnlockRentersInsuranceUser - Error " + ex.Message;
+                output.Status = errorStatus;
+                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                return output;
+            }
 
-			errorStatus.Success = true;
-			errorStatus.ErrorMsg = "";
-			output.Status = errorStatus;
-			output.obj = _userAPIResponse;
-			return output;
-		}
+            errorStatus.Success = true;
+            errorStatus.ErrorMsg = "";
+            output.Status = errorStatus;
+            output.obj = _userAPIResponse;
+            return output;
+        }
         #endregion
 
         #region Migration
@@ -951,80 +959,94 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            var companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
-            if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductRentersInsurance.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var filter = "NonMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
-                {
-                    filter = datafilter.FilterBy["filter"];
-                }
-                if (datafilter.Pages != null)
-                {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
-                }
-            }          
 
-            var userActionByPMCIDRequest = new UserActionByPMCIDRequest()
-            {
-                CompanyId = companyInstanceSourceId,
-                Login = _username,
-                Password = _password,
-                RequestedBy = _requestedBy,
-                FilterType = filter,
-                StartRow = startRow,
-                Resultsperpage = resultPerRow
-            };
-            WriteToDiagnosticLog("ManageProductRentersInsurance.GetMigrationUsers", new Dictionary<string, object>
+                var companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
+                if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
+                {
+                    WriteToErrorLog(
+                        $"ManageProductRentersInsurance.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
+                }
+                var filter = "NonMigrated";
+                var startRow = 0;
+                var resultPerRow = 1000;
+                if (datafilter != null)
+                {
+                    if (datafilter.FilterBy.ContainsKey("filter"))
+                    {
+                        filter = datafilter.FilterBy["filter"];
+                    }
+                    if (datafilter.Pages != null)
+                    {
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
+                    }
+                }
+
+                var userActionByPMCIDRequest = new UserActionByPMCIDRequest()
+                {
+                    CompanyId = companyInstanceSourceId,
+                    Login = _username,
+                    Password = _password,
+                    RequestedBy = _requestedBy,
+                    FilterType = filter,
+                    StartRow = startRow,
+                    Resultsperpage = resultPerRow
+                };
+                WriteToDiagnosticLog("ManageProductRentersInsurance.GetMigrationUsers", new Dictionary<string, object>
             {
                 { "ManageProductRentersInsurance.GetMigrationUsers Request: ", $"{companyInstanceSourceId}, {filter}, {startRow}, {resultPerRow}" }
             });
 
-            var allUsers = _insuranceService.GetUsersByPMC(userActionByPMCIDRequest);
-            if (allUsers == null)
-            {
-                WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
-            }
-
-            var migrationUsers = new List<MigrationUser>();
-            foreach (var user in allUsers.UserList)
-            {
-                var migrationUser = new MigrationUser();
-                migrationUser.CompanyInstanceSourceId = companyInstanceSourceId;
-                migrationUser.UserId = user.UserId.ToString();
-                migrationUser.FirstName = user.FirstName;
-                migrationUser.LastName = user.LastName;
-                migrationUser.Username = user.User;                
-                migrationUser.Email = user.Email;                
-                migrationUser.LastActivity = user.DateLastLogin;
-                migrationUser.Status = user.IsActive ? "Active" : "Disabled";
-                if (user.PropertyList != null && user.PropertyList.Length > 0)
+                var allUsers = _insuranceService.GetUsersByPMC(userActionByPMCIDRequest);
+                if (allUsers == null)
                 {
-                    foreach (var property in user.PropertyList)
-                    {
-                        migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = property.PropertyID.ToString() });
-                    }
+                    WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
                 }
-                migrationUsers.Add(migrationUser);
+
+                var migrationUsers = new List<MigrationUser>();
+                foreach (var user in allUsers.UserList)
+                {
+                    var migrationUser = new MigrationUser();
+                    migrationUser.CompanyInstanceSourceId = companyInstanceSourceId;
+                    migrationUser.UserId = user.UserId.ToString();
+                    migrationUser.FirstName = user.FirstName;
+                    migrationUser.LastName = user.LastName;
+                    migrationUser.Username = user.User;
+                    migrationUser.Email = user.Email;
+                    migrationUser.LastActivity = user.DateLastLogin;
+                    migrationUser.Status = user.IsActive ? "Active" : "Disabled";
+                    if (user.PropertyList != null && user.PropertyList.Length > 0)
+                    {
+                        foreach (var property in user.PropertyList)
+                        {
+                            migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = property.PropertyID.ToString() });
+                        }
+                    }
+                    migrationUsers.Add(migrationUser);
+                }
+                WriteToDiagnosticLog($"ManageProductOneSiteAccounting.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = migrationUsers.Cast<object>().ToList();
+                response.TotalRows = migrationUsers.Count();
             }
-            WriteToDiagnosticLog($"ManageProductOneSiteAccounting.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = migrationUsers.Cast<object>().ToList();
-            response.TotalRows = migrationUsers.Count();
+            catch (Exception ex)
+            {
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+            }
             return response;
         }
 
@@ -1044,39 +1066,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-            string companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
-            if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
-            {
-                WriteToErrorLog(
-                    $"ManageProductRentersInsurance.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
-            }
-
-            WriteToDiagnosticLog("ManageProductRentersInsurance.UpdateUserMigrationStatus");
-
-            var migrateUserRequests = migrateUsers.Select(mu => {
-                return new MigrateUserrequest()
-                {
-                    unifiedLoginUserName = mu.UnifiedLoginUserName,
-                    userid = mu.UserId,
-                    usingUnifiedLogin = mu.UsingUnifiedLogin.ToString()
-                };
-            });
-
             try
             {
+                string companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
+                if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
+                {
+                    WriteToErrorLog(
+                        $"ManageProductRentersInsurance.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    return migrateResponse;
+                }
+
+                WriteToDiagnosticLog("ManageProductRentersInsurance.UpdateUserMigrationStatus");
+
+                var migrateUserRequests = migrateUsers.Select(mu =>
+                {
+                    return new MigrateUserrequest()
+                    {
+                        unifiedLoginUserName = mu.UnifiedLoginUserName,
+                        userid = mu.UserId,
+                        usingUnifiedLogin = mu.UsingUnifiedLogin.ToString()
+                    };
+                });
+
+
                 WriteToDiagnosticLog($"ManageProductRentersInsurance.UpdateUsersMigrationStatus.MigrateUser, {migrateResponse.Message}");
                 migrateResponse.Message = _insuranceService.MigrateUser(migrateUserRequests.ToArray());
                 migrateResponse.Status = true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 WriteToErrorLog($"ManageProductRentersInsurance.UpdateUsersMigrationStatus.MigrateUser, {ex.Message}");
                 migrateResponse.Message = ex.Message;
                 migrateResponse.Status = false;
             }
-            
+
             return migrateResponse;
         }
 
@@ -1119,8 +1143,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         { "ManageProductRentersInsurance.ChangeUserStatus response", userAPIResponse }
                     };
                 WriteToDiagnosticLog("ManageProductRentersInsurance.ChangeUserStatus response.", logData);
-               
-                if(userAPIResponse == null || !userAPIResponse.IsSuccess ||  string.IsNullOrWhiteSpace(userAPIResponse.UserId.ToString()))
+
+                if (userAPIResponse == null || !userAPIResponse.IsSuccess || string.IsNullOrWhiteSpace(userAPIResponse.UserId.ToString()))
                     return false;
             }
             catch (Exception ex)
@@ -1143,96 +1167,96 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <returns>CompanyMap object</returns>
         private CustomerCompanyMap GetRentersInsuranceCompanyInstanceId()
-		{
-			WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Getting info.");
-			//IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.Insurance);
+        {
+            WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Getting info.");
+            //IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.Insurance);
             IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, BlueBookProductConstants.Insurance);
             CustomerCompanyMap company = new CustomerCompanyMap();
-			if (companyProductList.Any(a => a.Source.ToUpper() == BlueBookProductConstants.Insurance))
-			{
-				company = (from a in companyProductList where a.Source.ToUpper() == BlueBookProductConstants.Insurance select a).FirstOrDefault();
-			}
-			Dictionary<string, object> logData = new Dictionary<string, object>
-			{
-				{ "companyProductList", companyProductList }
-			};
-			WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Got info. ", logData);
-			return company;
-		}
+            if (companyProductList.Any(a => a.Source.ToUpper() == BlueBookProductConstants.Insurance))
+            {
+                company = (from a in companyProductList where a.Source.ToUpper() == BlueBookProductConstants.Insurance select a).FirstOrDefault();
+            }
+            Dictionary<string, object> logData = new Dictionary<string, object>
+            {
+                { "companyProductList", companyProductList }
+            };
+            WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Got info. ", logData);
+            return company;
+        }
 
-		/// <summary>
-		/// Used to get details about an Renters Insurance user
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">User PersonaId</param>
-		/// <returns>GetUserByIDResponse object</returns>
-		private GetUserByIDResponse GetUserDetail(long editorPersonaId, long userPersonaId)
-		{
-			WriteToDiagnosticLog($"ManageProductRentersInsurance.GetEnterpriseUser - Begin get enterprise user details - {userPersonaId}.");
-			GetUserByIDResponse GetUserByIDResponse = new GetUserByIDResponse();
-			ListResponse listResponse = new ListResponse();
+        /// <summary>
+        /// Used to get details about an Renters Insurance user
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">User PersonaId</param>
+        /// <returns>GetUserByIDResponse object</returns>
+        private GetUserByIDResponse GetUserDetail(long editorPersonaId, long userPersonaId)
+        {
+            WriteToDiagnosticLog($"ManageProductRentersInsurance.GetEnterpriseUser - Begin get enterprise user details - {userPersonaId}.");
+            GetUserByIDResponse GetUserByIDResponse = new GetUserByIDResponse();
+            ListResponse listResponse = new ListResponse();
 
-			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-			if (listResponse.IsError)
-			{
-				WriteToErrorLog($"ManageProductRentersInsurance.GetEnterpriseUser Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
-				return GetUserByIDResponse;
-			}
+            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            if (listResponse.IsError)
+            {
+                WriteToErrorLog($"ManageProductRentersInsurance.GetEnterpriseUser Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                return GetUserByIDResponse;
+            }
 
-			UserActionRequest userActionRequest = new UserActionRequest()
-			{
-				Login = _username,
-				Password = _password,
-				RequestedBy = _requestedBy,
-				UserId = Convert.ToInt32(_productUserId)
-			};
-			return _insuranceService.GetUserByID(userActionRequest);
-		}
+            UserActionRequest userActionRequest = new UserActionRequest()
+            {
+                Login = _username,
+                Password = _password,
+                RequestedBy = _requestedBy,
+                UserId = Convert.ToInt32(_productUserId)
+            };
+            return _insuranceService.GetUserByID(userActionRequest);
+        }
 
-		/// <summary>
-		/// merge the given user details with the list
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <param name="blueBookPropertyList">blueBook Property List</param>
-		/// <returns>ListResponse object</returns>
-		private ListResponse MergeProductPropertiesWithGreenbook(long editorPersonaId, long userPersonaId, IList<ProductProperty> blueBookPropertyList)
-		{
-			bool allProperties = false;
-			Dictionary<string, bool> additionalDictionary = new Dictionary<string, bool>();
+        /// <summary>
+        /// merge the given user details with the list
+        /// </summary>
+        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
+        /// <param name="userPersonaId">new user PersonaId</param>
+        /// <param name="blueBookPropertyList">blueBook Property List</param>
+        /// <returns>ListResponse object</returns>
+        private ListResponse MergeProductPropertiesWithGreenbook(long editorPersonaId, long userPersonaId, IList<ProductProperty> blueBookPropertyList)
+        {
+            bool allProperties = false;
+            Dictionary<string, bool> additionalDictionary = new Dictionary<string, bool>();
 
-			List<ProductProperty> propertyList = new List<ProductProperty>();
-			propertyList = blueBookPropertyList.ToList();
-			// merge the given user details with the list
-			GetUserByIDResponse getUserByIDResponse = GetUserDetail(editorPersonaId, userPersonaId);
+            List<ProductProperty> propertyList = new List<ProductProperty>();
+            propertyList = blueBookPropertyList.ToList();
+            // merge the given user details with the list
+            GetUserByIDResponse getUserByIDResponse = GetUserDetail(editorPersonaId, userPersonaId);
 
-			// if a user record exists
-			if (getUserByIDResponse?.UserInfo?.PropertyList != null)
-			{
-				propertyList.ToList().ForEach(blueBook => blueBook.IsAssigned = getUserByIDResponse.UserInfo.PropertyList.Any(rentersInsurance => rentersInsurance.PropertyID.ToString() == blueBook.ID));
-			}
+            // if a user record exists
+            if (getUserByIDResponse?.UserInfo?.PropertyList != null)
+            {
+                propertyList.ToList().ForEach(blueBook => blueBook.IsAssigned = getUserByIDResponse.UserInfo.PropertyList.Any(rentersInsurance => rentersInsurance.PropertyID.ToString() == blueBook.ID));
+            }
 
-			//"Allow access to all current and future propeties" On or Off?
-			additionalDictionary.Add("allProperties", allProperties);
+            //"Allow access to all current and future propeties" On or Off?
+            additionalDictionary.Add("allProperties", allProperties);
 
-			return new ListResponse()
-			{
-				Records = propertyList.Cast<object>().ToList(),
-				TotalRows = blueBookPropertyList.Count(),
-				RowsPerPage = 9999,
-				ErrorReason = string.Empty,
-				TotalPages = 1,
-				Additional = additionalDictionary
-			};
-		}
-		#endregion
-	}
+            return new ListResponse()
+            {
+                Records = propertyList.Cast<object>().ToList(),
+                TotalRows = blueBookPropertyList.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = additionalDictionary
+            };
+        }
+        #endregion
+    }
 
-	/// <summary>
-	/// Used to build the XML required to call the Renters Insurance web services
-	/// </summary>
-	public static class ManageProductRentersInsuranceHelpers
-	{
+    /// <summary>
+    /// Used to build the XML required to call the Renters Insurance web services
+    /// </summary>
+    public static class ManageProductRentersInsuranceHelpers
+    {
         /// <summary>
         /// Used to convert a OneSite property into a GreenBook role to be used by the UI
         /// </summary>
@@ -1241,11 +1265,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public static IList<ProductProperty> ToGBProperties(this List<UserProperty> properties)
         {
             if (properties == null)
-			{
-				return null;
-			}
-			IList<ProductProperty> results = new List<ProductProperty>();
-			//Loop through the Renters Insurance user properties
+            {
+                return null;
+            }
+            IList<ProductProperty> results = new List<ProductProperty>();
+            //Loop through the Renters Insurance user properties
             foreach (UserProperty userProperty in properties)
             {
                 results.Add(new ProductProperty
@@ -1266,10 +1290,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public static IList<ProductRole> ToGBRoles(this ListOfUserRolesResponse roles)
         {
             if (roles?.UserRoleList == null)
-			{
-				return null;
-			}
-			IList<ProductRole> results = new List<ProductRole>();
+            {
+                return null;
+            }
+            IList<ProductRole> results = new List<ProductRole>();
             foreach (UserRole role in roles.UserRoleList)
             {
                 results.Add(new ProductRole
