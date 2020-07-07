@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -167,6 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>List of CompanyMapResource</returns>
         public IList<CustomerCompanyMap> GetCompanyMap(long booksCompanyMasterId, string source, string IncludeExtra = "", bool includeGreenBookCares = true)
         {
+
             IList<CustomerCompanyMap> companyMap = new List<CustomerCompanyMap>();
             Dictionary<string, object> logData;
 
@@ -214,8 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - No info found.", logData);
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        // return an empty CompanyMapResource because it wasn't found
-                        return companyMap;
+                        throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     }
                     else
                     {

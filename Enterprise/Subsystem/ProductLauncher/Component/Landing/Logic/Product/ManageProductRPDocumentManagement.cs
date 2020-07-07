@@ -17,6 +17,7 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Net.Http;
 using System.Text;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -542,9 +543,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private string GetDomain()
 		{
 			string domain = "";
-			CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
 			try
 			{
+				CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
+			
 				IList<InstanceAttribute> listInstanceAttribute = companyMap.CompanyInstance[0].Attributes;
 				if (listInstanceAttribute.ToList().Any(a => a.AttributeName.ToUpper() == "DOMAIN ID"))
 				{
@@ -555,7 +557,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				WriteToErrorLog("ManageRPDMUser - There was a problem getting the DocManagement attribute in BlueBook", exception: ex);
-				return "There was a problem getting the company details from BlueBook.";
+
+				return CommonMessageConstants.CompanyErrorMessage;
 			}
 
 			return domain;
