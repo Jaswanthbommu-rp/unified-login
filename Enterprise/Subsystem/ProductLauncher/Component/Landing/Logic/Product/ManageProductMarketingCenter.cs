@@ -134,17 +134,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					var jsonContent = response.Content.ReadAsStringAsync().Result;
 
-					if (jsonContent == null)
-					{
-						throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
-					}
-
 					rolesList = JsonConvert.DeserializeObject<IList<MC.Role>>(jsonContent);
-					
-					if (rolesList == null) 
-					{
-						throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
-					}
+					if (rolesList == null) { rolesList = new List<MC.Role>(); }
 
 					logData = new Dictionary<string, object>();
 					logData.Add("rolesList", rolesList);
