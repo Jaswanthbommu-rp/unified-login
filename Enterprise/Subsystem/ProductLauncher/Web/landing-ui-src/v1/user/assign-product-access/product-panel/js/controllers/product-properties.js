@@ -180,6 +180,7 @@
                 var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
                 if(accesstype === "allProperties" && $scope.$parent.productId === 16){
                     syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
                     resp.records.forEach(function (item) {
                         item.isAssigned = false;
                     });
