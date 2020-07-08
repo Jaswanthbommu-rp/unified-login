@@ -263,7 +263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             // check to see if the company already exists
             var organizationList = _manageOrganization.GetOrganizationList();
-            if (organizationList.Any(o => o.BooksCustomerMasterId == booksCustomerMasterId))
+            if (organizationList.Any(o => o.BooksCustomerMasterId == booksCustomerMasterId && o.OrganizationDomain.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)))
             {
                 return "";
             }
@@ -273,7 +273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return "";
             }
 
-            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(Guid.Empty, null, booksCustomerMasterId);
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain:null, booksCompanyMasterId:booksCustomerMasterId );
             if (customerCompany == null){ return "Company not found in books environment"; }
             
             OrganizationCreate organization = new OrganizationCreate()
@@ -311,7 +311,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             organization.Products = new List<string>();
 
             // get a list of products from blue
-            var productList = _manageBlueBook.GetCompanyMap(Guid.NewGuid(), booksCustomerMasterId, domain: domain);
+            var productList = _manageBlueBook.GetCompanyMap(companyRealPageId: Guid.Empty, booksCompanyMasterId: booksCustomerMasterId, source: null, domain: domain, includeGreenBookCares: false);
             if (productList != null)
             {
                 foreach (var customerCompanyMap in productList)
