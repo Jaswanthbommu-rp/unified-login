@@ -587,6 +587,7 @@
         p.multiSelectedRoleSync = function (key, record) {
             var s = this,
                 roleData,
+                assignedCount = 0,
                 selectedRole,
                 selectState = false;
 
@@ -596,6 +597,15 @@
 
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
+
+                    if(item.propertiesList && !record.isAssigned)
+                    {
+                        item.propertiesList.forEach(function (prop) {
+                            prop.isAssigned = false;
+                        });
+
+                        item.assignedProperties = assignedCount + " of " + item.propertiesList.length;
+                    }
                 }
 
             });
@@ -695,6 +705,7 @@
 
         p.multiSelectedPropertySync = function (key, record) {
             var s = this,
+                assignedCount = 0,
                 propertyData;
 
             propertyData = s.propertyMap['product' + key].properties;
@@ -706,6 +717,14 @@
                 }
                 else if(item.id == record.id) {
                     item.isAssigned = record.isAssigned;
+                    if(item.propertiesList && !record.isAssigned)
+                    {
+                        item.propertiesList.forEach(function (prop) {
+                            prop.isAssigned = false;
+                        });
+
+                        item.assignedProperties = assignedCount + " of " + item.propertiesList.length;
+                    }
                 }
             });
             return s;

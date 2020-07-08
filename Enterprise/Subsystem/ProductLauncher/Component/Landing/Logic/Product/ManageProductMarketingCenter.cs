@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -132,8 +133,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (response.IsSuccessStatusCode)
 				{
 					var jsonContent = response.Content.ReadAsStringAsync().Result;
+
 					rolesList = JsonConvert.DeserializeObject<IList<MC.Role>>(jsonContent);
 					if (rolesList == null) { rolesList = new List<MC.Role>(); }
+
 					logData = new Dictionary<string, object>();
 					logData.Add("rolesList", rolesList);
 					WriteToDiagnosticLog("GetRoles - Got response", logData);
@@ -181,15 +184,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				else
 				{
 					result.IsError = true;
-					result.ErrorReason = "There was a problem getting the roles";
+					result.ErrorReason =  CommonMessageConstants.RoleErrorMessage;
 					WriteToErrorLog("GetRoles - Error. " + response.Content.ReadAsStringAsync().Result);
 				}
 			}
 			catch (Exception ex)
 			{
+				WriteToErrorLog($"GetRoles - Error. {ex.Message} ", exception: ex);
+				result = new ListResponse();
 				result.IsError = true;
-				result.ErrorReason = "There was a problem getting the roles";
-				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+
+				if (ex is BlueBookException)
+				{
+					result.ErrorReason = ex.Message;
+				}
+				else
+				{
+					result.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+				}
 			}
 			return result;
 		}
@@ -317,14 +329,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				else
 				{
 					result.IsError = true;
-					result.ErrorReason = "There was a problem getting the properties";
+					result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 					WriteToErrorLog("GetRoles - Error. " + response.Content.ReadAsStringAsync().Result);
 				}
 			}
 			catch (Exception ex)
 			{
 				result.IsError = true;
-				result.ErrorReason = "There was a problem getting the properties";
+
+				if (ex is BlueBookException)
+				{
+					result.ErrorReason = ex.Message;
+				}
+				else
+				{
+					result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+				}
 				WriteToErrorLog($"GetProperties - Error. {ex.Message}", exception: ex);
 			}
 			return result;

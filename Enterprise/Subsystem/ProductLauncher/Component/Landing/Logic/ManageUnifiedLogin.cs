@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -73,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (companyMasterId == 0)
                 {
                     WriteToErrorLog($"ManageUnifiedLogin.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                    return new ListResponse { IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage };
                 }
 
                 IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
