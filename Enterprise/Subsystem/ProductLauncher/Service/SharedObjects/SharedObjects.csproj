@@ -111,6 +111,7 @@
     <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
     <Compile Include="BlackBook\TranslateCompanyInstance.cs" />
     <Compile Include="Constants\BlueBookProductConstants.cs" />
+    <Compile Include="Constants\CommonMessageConstants.cs" />
     <Compile Include="Constants\StoredProcNameConstants.cs" />
     <Compile Include="Constants\UserTypeConstants.cs" />
     <Compile Include="DapperMappingGuides\IProductSettingList.cs" />
