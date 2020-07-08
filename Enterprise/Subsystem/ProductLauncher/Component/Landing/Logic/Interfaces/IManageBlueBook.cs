@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="companyInstanceId">Ids of the company instances element</param>
         /// <returns>List of PropertyInstance</returns>
-        //IList<PropertyInstance> GetPropertyInstance(long companyInstanceId);
+        IList<PropertyInstance> GetPropertyInstance(long companyInstanceId);
 
         /// <summary>
         /// Get a list of property master records under the given company id in the BlueBook system

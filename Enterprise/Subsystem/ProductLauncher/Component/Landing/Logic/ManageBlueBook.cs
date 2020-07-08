@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -350,6 +351,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return null;
             });
             return booksCustomerMaster?.CustomerCompanyId ?? 0;
+        }
+
+        /// <summary>
+        /// Get a list of property instances under the given company instance in the BlueBook system
+        /// </summary>
+        /// <param name="companyInstanceId"></param>
+        /// <returns></returns>
+        public IList<PropertyInstance> GetPropertyInstance(long companyInstanceId)
+        {
+            IList<PropertyInstance> propertyInstance = new List<PropertyInstance>();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+
+            propertyInstance = _manageBlueBookCache[$"getPropertyInstance_{companyInstanceId.ToString()}"] as List<PropertyInstance>;
+            if (propertyInstance == null)
+            {
+                string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId.ToString()}";
+                //string uri = $"propertyinstance?filter[greenBookCares]=true&filter[companyPropertyInstanceMap.companyInstanceId]={companyInstanceId.ToString()}&sort=PropertyName&page[size]=3000";
+                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogType.Diagnostic, "GetPropertyInstance - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    //propertyInstance = response.Content.ReadAsJsonApiManyAsync<PropertyInstanceResource>(_contractResolver, _cache).Result;
+                    propertyInstance = JsonConvert.DeserializeObject<List<PropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    logData = new Dictionary<string, object>() { { "propertyInstanceResource", propertyInstance } };
+                    WriteToLog(LogType.Diagnostic, "GetPropertyInstance - Got info.", logData);
+                    CacheItemPolicy policy = new CacheItemPolicy();
+                    policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
+                    _manageBlueBookCache.Set($"getPropertyInstance_{companyInstanceId.ToString()}", propertyInstance, policy);
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogType.Diagnostic, "GetPropertyInstance - No info found.", logData);
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        // return an empty CompanyMapResource because it wasn't found
+                        return propertyInstance;
+                    }
+                    else
+                    {
+                        response.EnsureSuccessStatusCode();
+                        return null;
+                    }
+                }
+            }
+
+            return propertyInstance;
         }
 
         /// <summary>
