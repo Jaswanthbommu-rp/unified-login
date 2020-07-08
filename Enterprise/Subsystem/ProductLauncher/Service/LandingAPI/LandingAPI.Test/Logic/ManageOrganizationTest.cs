@@ -2,16 +2,14 @@
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -287,16 +285,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 && orgResult.Name == _CompanyName
                 && orgResult.CreateDate == _CreateDate
             );
-
-            //var orgResult2 = manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId: _BooksCompanyMasterId);
-            //
-            ////Assert
-            //Assert.True(
-            //    orgResult2.PartyId == _PartyId
-            //    && orgResult2.RealPageId == _RealPageId
-            //    && orgResult2.Name == _CompanyName
-            //    && orgResult2.CreateDate == _CreateDate
-            //);
         }
 
         [Fact]
@@ -384,12 +372,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             result = manageOrganization.GetOrganization(realPageId: Guid.Empty, organizationPartyId: _PartyId);
             Assert.True(result.RealPageId == _organization.RealPageId);
-
-            //result = manageOrganization.GetOrganization(realPageId: Guid.Empty, blackBookId:_BooksMasterId);
-            //Assert.True(result.RealPageId == _organization.RealPageId);
-            //
-            //result = manageOrganization.GetOrganization(realPageId: Guid.Empty, blueBookId:_BooksCompanyMasterId);
-            //Assert.True(result.RealPageId == _organization.RealPageId);
 
             Exception exception = Record.Exception(() => manageOrganization.GetOrganization(Guid.Empty));
 
