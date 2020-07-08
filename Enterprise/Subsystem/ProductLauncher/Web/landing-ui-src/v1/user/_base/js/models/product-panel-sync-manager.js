@@ -701,7 +701,7 @@
             propertyData.forEach(function (item) {
                 if(key == 8){
                     if(item.propertyId == record.propertyId){
-                        item.isAssigned = true;
+                        item.isAssigned = record.isAssigned;
                     }
                 }
                 else if(item.id == record.id) {
