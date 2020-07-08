@@ -1,4 +1,4 @@
-﻿CREATE or alter PROCEDURE [Enterprise].[ListOrganizations_Ver01] @RealPageId UNIQUEIDENTIFIER = NULL
+﻿CREATE PROCEDURE [Enterprise].[ListOrganizations_Ver01] @RealPageId UNIQUEIDENTIFIER = NULL
 AS
      BEGIN
          SELECT O.PartyId,
