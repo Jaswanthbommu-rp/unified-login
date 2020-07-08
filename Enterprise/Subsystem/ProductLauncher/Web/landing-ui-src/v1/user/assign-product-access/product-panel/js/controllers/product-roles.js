@@ -553,6 +553,7 @@
                     });
                 }
                 else{
+                    syncMgr.allPropertiesSync($scope.$parent.productId, false);
                     pubsub.publish("rp.residentPortalAllPropertiesSet","property");
                 }
 
