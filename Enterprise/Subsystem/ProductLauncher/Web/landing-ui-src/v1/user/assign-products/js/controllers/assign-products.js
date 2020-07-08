@@ -37,7 +37,9 @@
         };
 
         vm.onGetData = function (resp) {
-            var soln = model.setData(resp.data);
+            if (model.isEmpty()) {
+                var soln = model.setData(resp.data);
+            }
             vm.setAOProductAccess(resp.data);
             vm.onDataReady();
         };

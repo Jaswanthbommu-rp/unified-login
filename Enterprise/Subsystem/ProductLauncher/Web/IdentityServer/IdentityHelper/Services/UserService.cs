@@ -633,16 +633,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 
                 if (string.IsNullOrEmpty(clientClaim.SamlAttributeName))
                 {
-                    switch (clientClaim.ClaimName.ToUpperInvariant())
+                    string dataField = clientClaim.ClaimName.ToUpperInvariant();
+                    string claimName = clientClaim.ClaimName;
+
+                    if (clientClaim.ClaimName.Contains("~"))
                     {
+                        var claimSplit = clientClaim.ClaimName.Split('~');
+                        dataField = claimSplit[0].ToUpperInvariant();
+                        claimName = claimSplit[1];
+                    }
+
+                    switch (dataField)
+                    {
+                        case "LOGINNAME":
+                            claims.Add(new Claim(claimName, userInfo.LoginName));
+                            break;
+
+                        case "FIRSTNAME":
+                            claims.Add(new Claim(claimName, person.FirstName));
+                            break;
+
+                        case "LASTNAME":
+                            claims.Add(new Claim(claimName, person.LastName));
+                            break;
+
                         case "USERID":
-                            claims.Add(new Claim("userId", userInfo.UserId.ToString()));
+                            claims.Add(new Claim(claimName, userInfo.UserId.ToString()));
                             break;
 
                         case "ROLE":
                             roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum) clientClaim.ProductId);
                             if (roleList != null && roleList.Count > 0)
-                            claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
+                                claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
                             break;
 
                         case "ROLE|ROLEID":
@@ -652,6 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                                 claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
                                 claims.AddRange(roleList.Select(a => new Claim("roleId", a.ID)).ToList());
                             }
+
                             break;
 
                         case "ROLE|ROLEALIAS":
@@ -661,10 +684,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                                 claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
                                 claims.AddRange(roleList.Select(a => new Claim("rolealias", a.Alias)).ToList());
                             }
+
                             break;
 
                         case "ROLE|RIGHTS":
-                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum)clientClaim.ProductId);
+                            roleList = _userRoleManager.GetProductRolesByPersona(persona.PersonaId, (ProductEnum) clientClaim.ProductId);
                             if (roleList != null && roleList.Count > 0)
                             {
                                 claims.AddRange(roleList.Select(a => new Claim("role", a.Name)).ToList());
@@ -674,7 +698,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 
                             foreach (var productRole in roleList)
                             {
-                                var roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, (ProductEnum)clientClaim.ProductId, Convert.ToInt32(productRole.ID));
+                                var roleRights = _userRoleManager.ListRightsByRole(persona.OrganizationPartyId, persona.Organization.RealPageId, (ProductEnum) clientClaim.ProductId, Convert.ToInt32(productRole.ID));
                                 claims.AddRange(roleRights.Select(a => new Claim("right", a.Alias)).ToList());
                             }
 
@@ -698,6 +722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                             claims.Add(new Claim("PhoneNumber", ph));
                             claims.Add(new Claim("PhoneType", ut));
                             break;
+
                     }
                 }
             }

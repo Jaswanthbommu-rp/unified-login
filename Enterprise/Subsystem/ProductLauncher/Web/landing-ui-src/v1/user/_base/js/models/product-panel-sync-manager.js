@@ -587,6 +587,7 @@
         p.multiSelectedRoleSync = function (key, record) {
             var s = this,
                 roleData,
+                assignedCount = 0,
                 selectedRole,
                 selectState = false;
 
@@ -596,6 +597,15 @@
 
                 if (item.id == record.id) {
                     item.isAssigned = record.isAssigned;
+
+                    if(item.propertiesList && !record.isAssigned)
+                    {
+                        item.propertiesList.forEach(function (prop) {
+                            prop.isAssigned = false;
+                        });
+
+                        item.assignedProperties = assignedCount + " of " + item.propertiesList.length;
+                    }
                 }
 
             });
@@ -690,16 +700,12 @@
             var s = this,
             propertyData;
             propertyData = s.asidePropertyMap['product' + productId].asideProperties;
-            var assignedPropertiesCount = propertyData.propertiesList.filter(function (data) {
-                    return data.isAssigned === true;
-            });
-            
-            propertyData.assignedProperties = assignedPropertiesCount.length+" of "+ propertyData.propertiesList.length;
             return s;
         };
 
         p.multiSelectedPropertySync = function (key, record) {
             var s = this,
+                assignedCount = 0,
                 propertyData;
 
             propertyData = s.propertyMap['product' + key].properties;
@@ -711,6 +717,14 @@
                 }
                 else if(item.id == record.id) {
                     item.isAssigned = record.isAssigned;
+                    if(item.propertiesList && !record.isAssigned)
+                    {
+                        item.propertiesList.forEach(function (prop) {
+                            prop.isAssigned = false;
+                        });
+
+                        item.assignedProperties = assignedCount + " of " + item.propertiesList.length;
+                    }
                 }
             });
             return s;
@@ -777,9 +791,7 @@
         };
         p.updateAllFilterAsideProperties = function (productId, record, bool) {
             var s = this,
-                propertyList,
-                assignedList,
-                matchRecord;
+                propertyList;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
             
@@ -787,10 +799,20 @@
                    item.isAssigned = bool;
             });
             
+            return s;
+        };
+
+        p.updateAssignedProperties = function (productId) {
+            var s = this,
+                propertyList,
+                assignedList;
+            propertyList = s.asidePropertyMap['product' + productId].asideProperties;
+            
             assignedList = propertyList.propertiesList.filter(function (data) {
                 return data.isAssigned === true;
             });
 
+            propertyList.isAssigned = assignedList.length > 0 ? true : false;
             propertyList.assignedProperties = assignedList.length + " of " + propertyList.propertiesList.length;
             return s;
         };
