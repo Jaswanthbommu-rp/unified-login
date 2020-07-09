@@ -193,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     int roleCategoryId = catList.FirstOrDefault(c => c.CategoryName.ToUpper() == "ROLE TYPE" && c.Status.ToUpper() == "CUSTOM").StatusTypeid;
 
 
-                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId);
+                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId,_userClaims.UserId);
                     if(resp.ErrorMessage.Trim() != string.Empty )
                     {
                         response.IsError = true;
@@ -207,7 +207,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else // Existing role to Edit/Update
                 {
                    
-                    var resp = ocr.UpdateCustomRole(roleId,roleName, "");
+                    var resp = ocr.UpdateCustomRole(roleId,roleName, "", _userClaims.UserId);
                     if (resp.ErrorMessage.Trim() != string.Empty)
                     {
                         response.IsError = true;
@@ -1323,7 +1323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rightsAddRem.Add(rightDel);
             }
 
-            var result = ocr.LinkRightsToRole(rightsAddRem);
+            var result = ocr.LinkRightsToRole(rightsAddRem, _userClaims.UserId);
         }
 
 
@@ -1356,7 +1356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rightsAddRem.Add(roleDel);
             }
 
-            var result = ocr.LinkRightsToRole(rightsAddRem);
+            var result = ocr.LinkRightsToRole(rightsAddRem, _userClaims.UserId);
         }
 
 

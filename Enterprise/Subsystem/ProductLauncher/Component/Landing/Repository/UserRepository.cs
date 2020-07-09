@@ -230,6 +230,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 identityProviderTypeList = organizationRepository.GetOrganizationIdentityProviderType(newProfile.organization[0].RealPageId);
             }
 
+            string schemaName = getRoleRightsSchemaName();
+
             //NOTE TO DEVELOPERS
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
             if (newProfile.ClonedUser)
@@ -278,7 +280,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     //Get the Clone User list of UnifiedLogin Top level properties and Role
-                    var ulRole = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, new { ProductId = (int)ProductEnum.UnifiedPlatform, PersonaId = cloneUserPersonaId });
+                    var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+                    var ulRole = pbRepository.GetMany<dynamic>(procName, new { ProductId = (int)ProductEnum.UnifiedPlatform, PersonaId = cloneUserPersonaId });
                     var ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new { PersonaId = cloneUserPersonaId, ProductId = (int)ProductEnum.UnifiedPlatform });
 
                     if ((ulProperties != null) && (ulRole != null))
@@ -1007,11 +1010,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         // Linking Persona to a Role based on user type
+                        var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                         param = new
                         {
                             realPageId = currentOrg.OrganizationRealPageId
                         };
-                        IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, param);
+                        IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
 
                         int greenBookRole = 0;
                         gbProductBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
@@ -1035,22 +1039,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     if (newProfile.ClonedUser)
                                     {
-                                        // get the users existing UnifiedLogin role
+                                        // get the users existing UnifiedLogin role                                       
+                                        procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+
                                         param = new
                                         {
                                             PersonaID = cloneUserPersonaId,
                                             ProductID = (int)ProductEnum.UnifiedPlatform
                                         };
-                                        var userRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, param);
+                                        var userRole = repository.GetOne<dynamic>(procName, param);
                                         greenBookRole = userRole != null ? userRole.RoleId : 0;
                                     }
                                     else
                                     {
+                                       procName = schemaName?.Length > 0 ? $"{schemaName}.GetUnifiedLoginDefaultRole" : StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole;
+
                                         param = new
                                         {
                                             RealPageID = currentOrg.OrganizationRealPageId
                                         };
-                                        var defaultRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole, param);
+                                        var defaultRole = repository.GetOne<dynamic>(procName, param);
 
                                         greenBookRole = defaultRole != null ? defaultRole.RoleId : enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
                                     }
@@ -1062,9 +1070,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             personaID = personaId,
                             roleID = greenBookRole,
+                            CreatedBy = _userClaim.UserId,
                             personaPrivilgeID = 0
                         };
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+                        
+                        procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
+                        repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
                         if (repositoryResponse.Id == 0)
                         {
                             repository.UnitOfWork.Rollback();
@@ -3751,7 +3762,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="realPageId"></param>
         /// <param name="userTypeId"></param>
         /// <param name="existingRoleId"></param>
-        private void UpdateGreenBookRole(IRepository repository, int newRoleId, long assignUserPersonaId, Guid loggedInUserRealPageId, Guid realPageId, int userTypeId, long existingRoleId)
+        private void UpdateGreenBookRole(IRepository repository, int newRoleId, long assignUserPersonaId, Guid loggedInUserRealPageId, Guid realPageId, int userTypeId, long existingRoleId, long userId)
         {
             if (newRoleId > 0)
             {
@@ -3761,11 +3772,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (existingRoleId != 0)
                     {
                         // Delete existing roleId
-                        userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, existingRoleId, true);
+                        userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, existingRoleId, Convert.ToInt32(userId), true);
                     }
 
                     //Insert new roleId to GB
-                    userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, newRoleId);
+                    userRoleRightRepository.InsertAssignedRoleToUser(assignUserPersonaId, newRoleId, Convert.ToInt32(userId));
                 }
             }
         }
@@ -4188,20 +4199,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 personaId = repositoryResponse.Id;
 
                 // Linking Persona to a Role based on user type for External Users
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 param = new
                 {
                     realPageId = organizationExternalUser.RealPageId
                 };
-                IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, param);
+                IList<EnterpriseRole> enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, param);
 
                 greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase)).RoleId;
                 param = new
                 {
                     personaID = personaId,
                     roleID = greenBookRole,
+                    CreatedBy = _userClaim.UserId,
                     personaPrivilgeID = 0
                 };
-                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+
+                procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
+                repositoryResponse = repository.GetOne<RepositoryResponse>(procName, param);
                 if (repositoryResponse.Id == 0)
                 {
                     return "Update User Error: Linking Persona to a Role based on user type for External Users failed.";
@@ -4780,6 +4796,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             UserBatchEntity userBatchEntity;
             bool isFeatureUser = false;
+         
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -4791,10 +4808,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
-                
+
 
                 //We can get this with the oldProfile
-                var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_ListRolesByRealPageID, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
+                var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
                 try
                 {
                     repositoryResponse.Id = updateUserProfileEntity.OldProfile.Persona[0].PersonPartyId;
@@ -5297,18 +5316,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                                 else
                                 {
+                                    schemaName = getRoleRightsSchemaName();
+                                    procName = schemaName?.Length > 0 ? $"{schemaName}.GetUnifiedLoginDefaultRole" : StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole;
+
                                     var paramDefaultRole = new
                                     {
                                         RealPageID = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId
                                     };
-                                    var defaultRole = repository.GetOne<dynamic>(StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole, paramDefaultRole);
+                                    var defaultRole = repository.GetOne<dynamic>(procName, paramDefaultRole);
 
                                     greenBookRole = defaultRole != null ? defaultRole.RoleId : enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId;
                                 }
                             }
                         }
 
-                        UpdateGreenBookRole(repository, greenBookRole, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.ExistingRoleId);
+                        UpdateGreenBookRole(repository, greenBookRole, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.ExistingRoleId, updateUserProfileEntity.UserLoginOnly.UserId);
 
                         if (updateUserProfileEntity.SaveProductBatchError != "Save Product(s) Error: ")
                         {
@@ -5382,6 +5404,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repositoryResponse;
             }
         }
+
+        private string getRoleRightsSchemaName()
+        {
+            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
+            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+        }
+
         #endregion
     }
 }

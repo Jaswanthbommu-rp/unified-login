@@ -140,7 +140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="partyId">Party ID</param>   
         /// <param name="productId">Product ID</param>   
-        /// <param name="productIdList">Product ID's by Org</param>  
+        /// <param name="productIdList">Product ID's by Org</param>        
         /// <returns>List of Roles and rights count by PartyId and Product</returns>
         IList<RightRoleDetail> ListRoleWithRights(long partyId, int productId, List<int> productIdList); 
 
