@@ -1106,7 +1106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetUserRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
