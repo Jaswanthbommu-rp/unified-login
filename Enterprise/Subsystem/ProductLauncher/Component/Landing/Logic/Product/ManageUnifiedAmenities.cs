@@ -505,7 +505,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (masterCompany == null || masterCompany?.CustomerCompanyId == 0 || (!masterCompany.IsActive == true && masterCompany.CustomerCompanyId != 0))
                 {
 					WriteToErrorLog($"GetProperties-GetCompanyCustomerInfo - Error looking for company id {companyMasterId} in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					return new ListResponse { IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage };
 				}
 
 				WriteToDiagnosticLog($"ManageProductProspectContact.GetProperties-GetProductCompanyInstanceId - Found blue book company id - {companyMasterId} for user editorPersona id -{editorPersonaId}");
@@ -539,7 +539,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				result.IsError = true;
-				result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+				result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 				WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
 					exception: ex);
 			}
