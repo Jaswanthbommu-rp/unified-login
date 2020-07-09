@@ -2,12 +2,14 @@
     @ProductId INT
 AS
     BEGIN
-
+		
 		DECLARE @NOW DATETIME = GETUTCDATE();
 
-        SELECT	pc.ProductConfigurationId ,
-				pst.Name ,
-				ps.Value
+        SELECT	pc.ProductConfigurationId,
+				gpc.ConfigurationId,
+				pst.Name,
+				ps.Value,
+				pst.SensitiveData
         FROM	Enterprise.GlobalProductConfiguration gpc
 				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
 				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
