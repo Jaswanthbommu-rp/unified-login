@@ -236,20 +236,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					marketingCenterCompanyId = companyMap.First(a => a.Source.Equals(BlueBookProductConstants.MarketingCenter, StringComparison.OrdinalIgnoreCase)).CompanyInstanceSourceId;
 					WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Found PMC ID from BlueBook result: {marketingCenterCompanyId}");
 
-					if (marketingCenterCompanyId == string.Empty || Convert.ToInt32(marketingCenterCompanyId) == 0)
-					{
-						WriteToErrorLog(
-							$"GetMarketingCenterPMCIDFromPersona.GetProperties - Error looking for companyInstanceSourceId in bluebook for user with editorPersona id - {editorPersonaId}.");
-						return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					}
-				}
-
-				if (companyMap == null)
-				{
-					WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - companyMap is NULL");
-
-					WriteToErrorLog($"GetMarketingCenterPMCIDFromPersona.GetProperties - Unable to get companyInstanceSourceId info in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
 				}
 
 				//companyInstanceId = 779893; // LeaseStar id 438
