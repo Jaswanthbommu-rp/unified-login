@@ -493,6 +493,7 @@
             pubsub.publish("acct.accountingAllPropertiesSet", val);
             pubsub.publish("acct.accountingAllCompaniesSet", val);
             vm.hasAccessToAllCurrentFutureProperties = val;
+            productModel.updateProductAdditionalData($scope.productId, "hasAccessToAllCurrentFutureProperties", val);
         };
 
         vm.accountingAdminSwitchWatch = function (val) {
