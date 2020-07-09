@@ -25,18 +25,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims)
 		{
-			IManageBlueBook blueBook = new ManageBlueBook(userClaims);
-
-			IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(booksMasterId, blueBookProductCode.ToUpper());
-			if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
-
-			CustomerCompanyMap company = new CustomerCompanyMap();
-			if (companyProductList.Any(a => a.Source.ToUpper() == blueBookProductCode.ToUpper()))
+			try
 			{
-				company = (from a in companyProductList where a.Source.ToUpper() == blueBookProductCode.ToUpper() select a).FirstOrDefault();
-			}
+				IManageBlueBook blueBook = new ManageBlueBook(userClaims);
 
-			return company;
+				IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(booksMasterId, blueBookProductCode.ToUpper());
+				if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
+
+				CustomerCompanyMap company = new CustomerCompanyMap();
+				if (companyProductList.Any(a => a.Source.ToUpper() == blueBookProductCode.ToUpper()))
+				{
+					company = (from a in companyProductList where a.Source.ToUpper() == blueBookProductCode.ToUpper() select a).FirstOrDefault();
+				}
+
+				return company;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message , ex);
+			}
 		}
 
 		/// <summary>
