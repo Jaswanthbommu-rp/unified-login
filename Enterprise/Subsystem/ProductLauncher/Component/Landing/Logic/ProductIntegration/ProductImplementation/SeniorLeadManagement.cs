@@ -174,7 +174,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (rolesRights == null)
                     throw new Exception("Null Right List.");
 
-                List<ProductRightRole> records = AddRightsRole(rolesRights);
+                List<string> slmRights = new List<string>();
+
+                if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
+                {
+                    WriteToDiagnosticLog(
+                        $"SeniorLeadManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+                    var user = GetProductUser();
+
+                    // map user roles
+                    if (user != null)
+                    {
+                        WriteToDiagnosticLog(
+                            $"SeniorLeadManagement.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+
+                        slmRights = user.Roles;
+                    }
+                }
+
+                List<ProductRightRole> records = AddRightsRole(rolesRights,slmRights);
                 Dictionary<string, object> additional = AddRolesToRights(rolesRights);
 
                 return new ListResponse
@@ -348,8 +366,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Add the info to rigths depending of roles
         /// </summary>
         /// <param name="roles">Product role data</param>
+        /// <param name="slmRights">Slm rights</param>
         /// <returns>A right role list</returns>
-        private List<ProductRightRole> AddRightsRole(IList<Model.ProductRole> roles)
+        private List<ProductRightRole> AddRightsRole(IList<Model.ProductRole> roles, List<string> slmRights)
         {
             List<ProductRightRole> result = new List<ProductRightRole>();
 
@@ -366,6 +385,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             RoleType = ""
                         });
                     }
+                }
+            }
+
+            foreach (ProductRightRole right in result)
+            {
+                if (slmRights.Contains(right.RightId))
+                {
+                    right.IsAssigned = true;
                 }
             }
 
