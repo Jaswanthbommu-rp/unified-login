@@ -96,16 +96,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_emptySamlAttributes = new List<SamlAttributes>();
 
 			_editorPersona = new Persona() { PersonaId = _editorPersonaId, RealPageId = _editorRealPageId, OrganizationPartyId = _editorOrganizationPartyId, UserId = _editorUserId};
-			_editorPersona.Organization = new Organization() { PartyId = _editorOrganizationPartyId, RealPageId = _editorOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321 };
+			_editorPersona.Organization = new Organization() { PartyId = _editorOrganizationPartyId, RealPageId = _editorOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
 
 			_userPersona = new Persona() { PersonaId = _userPersonaId, RealPageId = _userRealPageId, OrganizationPartyId = _userOrganizationPartyId};
-			_userPersona.Organization = new Organization() { PartyId = _userOrganizationPartyId, RealPageId = _userOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321 };
+			_userPersona.Organization = new Organization() { PartyId = _userOrganizationPartyId, RealPageId = _userOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
 
 			_newUserPersona = new Persona() { PersonaId = _newUserPersonaId, RealPageId = _newUserRealPageId, OrganizationPartyId = _newUserOrganizationPartyId };
-			_newUserPersona.Organization = new Organization() { PartyId = _newUserOrganizationPartyId, Name = "RealPage", BooksMasterId = 1234, RealPageId = _newuserOrganizationRealPageId, BooksCustomerMasterId = 4321 };
+			_newUserPersona.Organization = new Organization() { PartyId = _newUserOrganizationPartyId, Name = "RealPage", BooksMasterId = 1234, RealPageId = _newuserOrganizationRealPageId, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
 
 			_userInvalidPersona = new Persona() { PersonaId = _userPersonaId, RealPageId = _userRealPageId, OrganizationPartyId = _userInvalidOrganizationPartyId };
-			_userInvalidPersona.Organization = new Organization() { PartyId = _userInvalidOrganizationPartyId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321 };
+			_userInvalidPersona.Organization = new Organization() { PartyId = _userInvalidOrganizationPartyId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
                     
             _editorUserClaim = new DefaultUserClaim() { CorrelationId = _editorCorrelationId, OrganizationRealPageGuid = _editorOrganizationRealPageId, UserRealPageGuid = _editorRealPageId };
 			_userUserClaim = new DefaultUserClaim() { CorrelationId = _userCorrelationId, OrganizationRealPageGuid = _userOrganizationRealPageId, UserRealPageGuid = _userRealPageId };

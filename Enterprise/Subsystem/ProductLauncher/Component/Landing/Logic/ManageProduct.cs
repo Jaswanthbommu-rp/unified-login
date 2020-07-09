@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -13,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -112,7 +114,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             long? userPersonaId = null;
 
             //Get the UL Organization details by the CompanyInstanceId from BlackBook
-            organization = _manageOrganization.GetOrganization(realPageId:Guid.Empty, blueBookId: blueBookCompanyInstanceId);
+            var orgList = _manageOrganization.GetUnifiedLoginCompanyList();
+            UnifiedLoginCompany ulc = orgList.FirstOrDefault(p => p.Domain.Equals("Primary") && p.BooksCustomerMasterId == blueBookCompanyInstanceId);
+            if (ulc == null)
+            {
+                throw new Exception("No company could be found.");
+            }
+            Guid companyRealPageId = new Guid(ulc.CompanyRealPageId);
+            organization = _manageOrganization.GetOrganization(realPageId: companyRealPageId);
             if (organization != null)
             {
 				if (_defaultUserClaim.OrganizationRealPageGuid == Guid.Empty) {
@@ -445,7 +454,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		    //   }
 		    RPObjectCache rpcache = new RPObjectCache();
 		    var cacheKey = "productInternalSetting_" + productId;
-		    productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+		    productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 180, () =>
 		    {
 			    // load from database
 			    _productInternalSettingRepository = new ProductInternalSettingRepository();
@@ -454,7 +463,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		    return productInternalSettingList;
 	    }
 
-	    /// <summary>
+        /// <summary>
+        /// Used to add or update a product setting for the given configuration
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="productInternalSetting"></param>
+        /// <returns></returns>
+        public RepositoryResponse CreateProductSettingAndLinkToConfiguration(int productId, ProductInternalSetting productInternalSetting)
+        {
+            RepositoryResponse response = _productInternalSettingRepository.CreateProductSettingAndLinkToConfiguration(productId, productInternalSetting);
+            if (string.IsNullOrEmpty(response.ErrorMessage))
+            {
+                MemoryCache.Default.Remove("productInternalSetting_" + productId);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Returns a list of productSettingType
+        /// </summary>
+        /// <returns></returns>
+        public IList<ProductSettingType> ListProductSettingType()
+        {
+            return _productRepository.ListProductSettingType();
+        }
+
+        /// <summary>
         /// Used to return a list of productTypes
         /// </summary>
         /// <returns></returns>

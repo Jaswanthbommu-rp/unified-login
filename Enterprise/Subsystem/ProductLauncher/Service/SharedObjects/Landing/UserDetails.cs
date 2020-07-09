@@ -22,6 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public string Email { get; set; }
 		public string PhoneNumber { get; set; }
 		public int OrganizationPartyId { get; set; }
+		public string OrganizationDomain { get; set; }
 		public DateTime? FromDate { get; set; }
 		public DateTime? ThruDate { get; set; }
 		public bool? IsActive { get; set; } = false;

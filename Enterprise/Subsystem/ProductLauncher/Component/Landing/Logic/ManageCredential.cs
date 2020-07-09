@@ -1095,6 +1095,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _userClaim.CustomerMasterId = primaryOrg.BooksCustomerMasterId;
                 _userClaim.OrganizationName = primaryOrg.Name;
                 _userClaim.OrganizationRealPageGuid = primaryOrg.RealPageId;
+
                 _manageUserLogin = new ManageUserLogin(_userClaim);
                 _userRepository = new UserRepository(_userClaim);
             }

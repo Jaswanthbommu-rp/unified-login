@@ -141,7 +141,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 new Claim("orgName", organization.Name),
                 new Claim("orgMasterId", organization.BooksMasterId.ToString()),
                 new Claim("orgCompanyMasterId", organization.BooksCustomerMasterId.ToString()),
-                new Claim("orgType", organization.organizationType.Name)
+                new Claim("orgType", organization.organizationType.Name),
+                new Claim("orgDomain", organization.OrganizationDomain.Name)
             };
             return claims;
         }

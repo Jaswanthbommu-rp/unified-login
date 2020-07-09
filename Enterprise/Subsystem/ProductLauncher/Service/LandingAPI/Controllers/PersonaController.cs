@@ -140,7 +140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 
             persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
-            persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+            persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
             return persona;
         }
 
@@ -162,7 +162,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             List<PersonaCompany> pcl = new List<PersonaCompany>();
             foreach (var persona in personaList)
             {
-                if (persona.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId)
+                if (persona.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
                 {
                     if (pcl.All(p => p.CompanyRealPageId != persona.Organization.RealPageId))
                     {

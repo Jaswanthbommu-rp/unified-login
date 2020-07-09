@@ -3,6 +3,7 @@ AS
 BEGIN  
 	SELECT	ProductSettingTypeId,
 			Name,
-			Description
+			Description,
+			SensitiveData
 	FROM	Enterprise.ProductSettingType
 END;

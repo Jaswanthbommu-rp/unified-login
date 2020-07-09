@@ -182,10 +182,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 WriteToDiagnosticLog($"OmniChannel - - GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
-                IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
-                WriteToDiagnosticLog($"OmniChannel - ManageProductOmniChannel.GetProperties-GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
+                //IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
+                //WriteToDiagnosticLog($"OmniChannel - ManageProductOmniChannel.GetProperties-GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
 
-                IList<ProductProperty> blueBookPropertyList = propertyList.FromBlueBookToGBProperties() ?? new List<ProductProperty>();
+                IList<ProductProperty> blueBookPropertyList = null; //propertyList.FromBlueBookToGBProperties() ?? new List<ProductProperty>();
                 WriteToDiagnosticLog($"OmniChannel - ManageProductOmniChannel.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
 
                 // need to do a filter on the result

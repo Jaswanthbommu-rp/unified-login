@@ -57,6 +57,7 @@ BEGIN
 						TC.AreaCode + TC.PhoneNumber AS PhoneNumber,
 						COALESCE(DIM.MasterId, 0) AS BooksMasterId,
 						COALESCE(DIM.CompanyMasterId, 0) AS BooksCustomerMasterId,
+						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
 						RT.Name UserRoleType
 		FROM	Enterprise.Party P
@@ -66,6 +67,8 @@ BEGIN
 					INNER JOIN Person.Persona PEA ON PEA.UserLoginPersonaId = ULP.UserLoginPersonaId
 					INNER JOIN Enterprise.PartyRelationShip PR ON (PR.PartyIdFrom = UL.PersonPartyId AND pr.PartyIdTo = ULP.OrganizationPartyId)
 					INNER JOIN Enterprise.RoleType RT ON (RT.PartyROleTypeId = PR.RoleTypeIdFrom AND RT.ParentPartyRoleTypeId = 400)
+					INNER JOIN Enterprise.Organization O ON ULP.OrganizationPartyId = O.PartyId
+					INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId
 					INNER JOIN [Enterprise].[VW_DataImportMapping] DIM ON DIM.PartyId = ULP.OrganizationPartyId
 					LEFT OUTER JOIN Email EM ON EM.PartyId = P.PartyId
 					LEFT OUTER JOIN TeleComm TC ON TC.PartyId = P.PartyId
@@ -123,6 +126,7 @@ BEGIN
 						TC.AreaCode + TC.PhoneNumber AS PhoneNumber,
 						COALESCE(DIM.MasterId, 0) AS BooksMasterId,
 						COALESCE(DIM.CompanyMasterId, 0) AS BooksCustomerMasterId,
+						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
 						RT.Name UserRoleType
 		FROM	Enterprise.Party P
@@ -132,6 +136,8 @@ BEGIN
 					INNER JOIN Person.Persona PEA ON PEA.UserLoginPersonaId = ULP.UserLoginPersonaId
 					INNER JOIN Enterprise.PartyRelationShip PR ON (PR.PartyIdFrom = UL.PersonPartyId AND pr.PartyIdTo = ULP.OrganizationPartyId)
 					INNER JOIN Enterprise.RoleType RT ON (RT.PartyROleTypeId = PR.RoleTypeIdFrom AND RT.ParentPartyRoleTypeId = 400)
+					INNER JOIN Enterprise.Organization O ON ULP.OrganizationPartyId = O.PartyId
+					INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId
 					INNER JOIN [Enterprise].[VW_DataImportMapping] DIM ON DIM.PartyId = ULP.OrganizationPartyId
 					LEFT OUTER JOIN Email EM ON EM.PartyId = P.PartyId
 					LEFT OUTER JOIN TeleComm TC ON TC.PartyId = P.PartyId

@@ -1,4 +1,4 @@
-﻿CREATE   PROCEDURE [Enterprise].[ListOrganizations_Ver01] @RealPageId UNIQUEIDENTIFIER = NULL
+﻿CREATE PROCEDURE [Enterprise].[ListOrganizations_Ver01] @RealPageId UNIQUEIDENTIFIER = NULL
 AS
      BEGIN
          SELECT O.PartyId,
@@ -8,10 +8,12 @@ AS
 				COALESCE(ISNULL(D.CompanyMasterId, 0), 0)  AS 'BooksCustomerMasterId',
                 MST.Name AS 'SettingName',
                 MS.Value AS 'PersonRealPageId',
-                UL.LoginName
+                UL.LoginName,
+				OD.Name as Domain
          FROM Enterprise.Organization O
               INNER JOIN Enterprise.Party P ON O.PartyId = P.PartyId
               INNER JOIN Enterprise.VW_DataImportMapping D ON O.PartyId = D.PartyId
+			  INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId
               INNER JOIN Enterprise.MasterConfiguration MC ON MC.AttributeId = O.PartyId
               INNER JOIN Enterprise.MasterConfigurationSetting MCS ON MC.MasterConfigurationId = MCS.MasterConfigurationId
               INNER JOIN Enterprise.MasterSetting MS ON MCS.MasterSettingId = MS.MasterSettingId
