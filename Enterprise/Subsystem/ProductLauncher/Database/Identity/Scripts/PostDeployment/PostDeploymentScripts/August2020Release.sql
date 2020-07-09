@@ -23,8 +23,50 @@ if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = '
 begin
 	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseUPFMId', 'Use UPFM instance for books api calls', 0 )
 end
+go
 
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseDomains' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseDomains'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseDomains' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
 GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseUPFMId'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
 -- sync up the employee and external company guids
 update enterprise.party set realpageid = '0D018E46-C20E-477D-ADED-4E5A35FB8F99' where partyid = (select top 1 partyid from enterprise.DataImportMapping where sourceid = '-1')
 update enterprise.party set realpageid = 'EEFACE50-9F75-4DCE-B133-A97EE0E0D723' where partyid = (select top 1 partyid from enterprise.DataImportMapping where sourceid = '-2')
@@ -160,7 +202,7 @@ VALUES
 ,('GetListUsersEndpoint','','/{0}/users?filter={1}&startRow={2}&resultsperpage={3}', 0)
 ,('PostUserEndpoint','POST User Endpoint for product API','/users', 0)
 ,('PutUserEndpoint','PUT User Endpoint for product API','/users', 0)
-,('DeleteUserEndpoint','DELETE User Endpoint for product API','/{0}/users?loginName={0}'), 0)
+,('DeleteUserEndpoint','DELETE User Endpoint for product API','/{0}/users?loginName={0}', 0)
 ,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate', 0)
 ,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile', 0)
 ,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}', 0) -- Made New Setting
@@ -507,7 +549,7 @@ VALUES
 ,('GetListUsersEndpoint','','/users/{0}?filter={1}&pageNumber={2}&PageSize={3}', 0)
 ,('PostUserEndpoint','POST User Endpoint for product API','/users', 0)
 ,('PutUserEndpoint','PUT User Endpoint for product API','/users', 0)
-,('DeleteUserEndpoint','DELETE User Endpoint for product API','/users?loginName={0}'), 0)
+,('DeleteUserEndpoint','DELETE User Endpoint for product API','/users?loginName={0}', 0)
 ,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate', 0)
 ,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile', 0)
 ,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}', 0) -- Made New Setting
