@@ -215,12 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceId;
-                if (companyInstanceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductVendorServices.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
+                
                 WriteToDiagnosticLog($"Vendor Credentialing - GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
 
