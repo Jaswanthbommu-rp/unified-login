@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -54,16 +55,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IApiError apiError;
 			Organization organization = new Organization();
 			IManageOrganization manageOrganization = new ManageOrganization();
-
+            var orgList = manageOrganization.GetUnifiedLoginCompanyList();
+            
 			switch (bookMasterTypeId)
 			{
 				case 1:
-					//BlackBookId
-					organization = manageOrganization.GetOrganization(Guid.Empty, null, null, bookMasterId);
-					break;
 				case 2:
 					//BlueBookId
-					organization = manageOrganization.GetOrganization(Guid.Empty, null, bookMasterId, null);
+					//organization = manageOrganization.GetOrganization(Guid.Empty, null, bookMasterId, null);
+                    UnifiedLoginCompany ufl = orgList.FirstOrDefault(c => c.Domain.Equals("Primary") && (c.CompanyId == bookMasterId || c.BooksCustomerMasterId == bookMasterId));
+                    if (ufl != null)
+                    {
+                        organization = manageOrganization.GetOrganization(new Guid(ufl.CompanyRealPageId), null);
+                    }
 					break;
 				default:
 					apiError = new ApiError()
@@ -219,16 +223,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			Organization organization = new Organization();
 			IManageOrganization manageOrganization = new ManageOrganization();
+            var orgList = manageOrganization.GetUnifiedLoginCompanyList();
+
 			switch (bookMasterTypeId)
 			{
-				case 1:
-					//BlackBookId
-					organization = manageOrganization.GetOrganization(Guid.Empty, null, null, bookMasterId);
-					break;
-				case 2:
-					//BlueBookId
-					organization = manageOrganization.GetOrganization(Guid.Empty, null, bookMasterId, null);
-					break;
+                case 1:
+                case 2:
+                    //BlueBookId
+                    //organization = manageOrganization.GetOrganization(Guid.Empty, null, bookMasterId, null);
+                    UnifiedLoginCompany ufl = orgList.FirstOrDefault(c => c.Domain.Equals("Primary") && (c.CompanyId == bookMasterId || c.BooksCustomerMasterId == bookMasterId));
+                    if (ufl != null)
+                    {
+                        organization = manageOrganization.GetOrganization(new Guid(ufl.CompanyRealPageId), null);
+                    }
+                    break;
 				default:
 					apiError = new ApiError()
 					{

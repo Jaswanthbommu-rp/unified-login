@@ -49,7 +49,12 @@
 
 
         <div class="product-panel-all-properties" ng-if="cpp.hidePropertiesGrid()">
+            <div ng-if="cpp.isFinancialSuite()">
+                This user will be assigned current and new entities automatically.
+            </div>
+            <div ng-if="!cpp.isFinancialSuite()">
                 This user will be assigned current and new properties automatically.
+            </div>
         </div>
     </div>
     <div class="product-panel-properties-error" ng-if="cpp.isDataError">

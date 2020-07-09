@@ -65,7 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
                     .Select(ar => ar.Action)
                     .ToList();
 
-                if (_userClaim.CustomerMasterId == DefaultUserClaim.ExternalCompanyMasterId)
+                if (_userClaim.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
                 {
                     routeSecurity.Rights.Remove("Clone User");
                     routeSecurity.Rights.Remove("Create User");

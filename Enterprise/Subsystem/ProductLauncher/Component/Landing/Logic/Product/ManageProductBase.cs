@@ -746,8 +746,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>The blue book company instance information</returns>
         protected CustomerCompanyMap GetProductCompanyInstanceId(string blueBookProductName, string includeExtra = "")
         {
-            //IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, blueBookProductName.ToUpper(), includeExtra);
-            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, blueBookProductName.ToUpper(), includeExtra);
+            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: blueBookProductName.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name, includeExtra: includeExtra);
             if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
             CustomerCompanyMap company = new CustomerCompanyMap();
             if (companyProductList.Any(a => a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase)))

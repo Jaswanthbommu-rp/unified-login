@@ -91,7 +91,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Security
             Assert.Equal(actual.obj.Rights.First(), expected.obj.Rights.First());
             Assert.Equal(actual.obj.Rights.Last(), expected.obj.Rights.Last());
 
-            DefaultUserClaim userClaim = new DefaultUserClaim(){ CustomerMasterId = DefaultUserClaim.ExternalCompanyMasterId};
+            DefaultUserClaim userClaim = new DefaultUserClaim(){ OrganizationRealPageGuid = DefaultUserClaim.ExternalCompanyRealPageId};
             _manageSecurity = new ManageSecurity(userClaim, _mockPersonaRightRepository.Object);
             actual = _manageSecurity.GetPersonaRightsAndActionsByRoute(personaId, routeId);
 

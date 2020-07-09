@@ -788,7 +788,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 {
                     // get the users primary org because it wasn't passed by the caller, but exclude the external company -2 because it can't be logged into
                     var organizationList = _userLoginLogic.GetUserPersonaOrganization(userInfo.LoginName);
-                    if (organizationList.Any(p => p.PrimaryOrganization && p.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId))
+                    if (organizationList.Any(p => p.PrimaryOrganization && p.OrganizationRealPageId != DefaultUserClaim.ExternalCompanyRealPageId))
                     {
                         organizationPartyId = organizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationPartyId;
                     }
@@ -799,7 +799,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     // get whatever persona is available
                     if (activePersonaList.Count > 0)
                     {
-                        newPersona = activePersonaList.FirstOrDefault(p => p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId);
+                        newPersona = activePersonaList.FirstOrDefault(p => p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId);
                         if (newPersona != null)
                         {
                             _personaManager.UpdateActivePersona(userInfo.RealPageId, newPersona.PersonaId);

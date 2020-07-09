@@ -92,11 +92,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             };
 
             mockManageBlueBook
-               .Setup(m => m.GetCompanyMap(
-                   It.IsAny<long>(),
-                   It.IsAny<string>(),
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
                     It.IsAny<string>(),
-                   It.IsAny<bool>()
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>()
                 ))
                 .Returns(mapCompany);
 

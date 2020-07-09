@@ -3,7 +3,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -11,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -123,6 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return outputResult;
                 }
 
+                // TODO update for domain?
                 if (organizationList.Any(c => c.BooksCustomerMasterId == organization.BooksCustomerMasterId))
                 {
                     outputResult.Status.ErrorMsg = $"MessageHandler.Handle - Bluebook customer master id {organization.BooksCustomerMasterId} already in use!";
@@ -385,16 +386,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
         /// <param name="organizationPartyId">Optional organization PartyId</param>
-        /// <param name="blueBookId">Optional blueBookId</param>
-        /// <param name="blackBookId">Optional blackBookId</param>
         /// <returns>Organization object</returns>
-        public Organization GetOrganization(Guid realPageId, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null)
+        public Organization GetOrganization(Guid realPageId, long? organizationPartyId = null)
         {
-            if ((realPageId == Guid.Empty) && (organizationPartyId == null) && (blueBookId == null) && (blackBookId == null))
+            if (realPageId == Guid.Empty && organizationPartyId == null)
             {
-                throw new Exception("Invalid parameter: Organization realPageId, partyId, blueBook Id, or blackBook Id is required.");
+                throw new Exception("Invalid parameter: Organization realPageId, partyId is required.");
             }
-            Organization organization = _organizationRepository.GetOrganization(realPageId, organizationPartyId, blueBookId, blackBookId);
+            Organization organization = _organizationRepository.GetOrganization(realPageId, organizationPartyId);
             return organization;
         }
 
@@ -409,6 +408,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// List of Unified Login companies
+        /// </summary>       
+        /// <returns>List of Unified Login companies including admin user info</returns>
+        public List<UnifiedLoginCompany> GetUnifiedLoginCompanyList()
+        {
+            return _organizationRepository.GetUnifiedLoginCompanyList();
+        }
+
+        /// <summary>
         /// Used to get the RealPageId of the admin user of the organization
         /// </summary>
         /// <param name="organizationRealPageId"></param>
@@ -416,20 +424,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public Guid GetOrganizationAdminUserRealPageId(Guid organizationRealPageId)
         {
             return _organizationRepository.GetOrganizationAdminUserRealPageId(organizationRealPageId);
-        }
-
-        /// <summary>
-        /// Used to get the master id for the given organization
-        /// </summary>
-        /// <param name="realPageId"></param>
-        /// <returns>BooksMaster object</returns>
-            public BooksMaster GetBooksCompanyMaster(Guid realPageId)
-        {
-            if (realPageId == Guid.Empty)
-            {
-                throw new Exception("Invalid parameter realPageId.");
-            }
-            return _organizationRepository.GetBooksCompanyMaster(realPageId); ;
         }
 
         /// <summary>
@@ -603,6 +597,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public List<OrganizationDomain> ListOrganizationDomain()
         {
             return _organizationRepository.ListOrganizationDomain();
+        }
+
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        public RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain)
+        {
+            return _organizationRepository.CreateOrganizationDomain(organizationDomain);
         }
         #endregion
     }
