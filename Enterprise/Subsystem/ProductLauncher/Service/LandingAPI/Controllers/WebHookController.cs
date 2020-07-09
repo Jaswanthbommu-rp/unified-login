@@ -329,7 +329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var companyInstance= new CompanyInstanceAdd()
             {
                 CustomerCompanyId = booksCustomerMasterId,
-                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
+                CompanyInstanceSourceId = result.obj.Org.RealPageIdUpperCaseForBooks,
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,

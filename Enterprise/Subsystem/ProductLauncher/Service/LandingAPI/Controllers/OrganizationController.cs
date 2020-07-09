@@ -192,7 +192,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 Id = organization.BooksCustomerMasterId,
                 CustomerCompanyId = organization.BooksCustomerMasterId,
-                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
+                CompanyInstanceSourceId = result.obj.Org.RealPageIdUpperCaseForBooks,
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,
@@ -330,9 +330,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 // update the name in MDM
                 IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId:org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomainName, includeGreenBookCares: false);
-                if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdString))
+                if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdUpperCaseForBooks))
                 {
-                    var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdString);
+                    var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdUpperCaseForBooks);
                     CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
                     {
                         CompanyInstanceId = null,
@@ -435,64 +435,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return result;
             }
 
-            IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomain.Name, includeGreenBookCares: false);
-
-            // add the missing company to books
-            var companyInstance = new CompanyInstanceAdd()
+            try
             {
-                Id = organization.BooksCustomerMasterId,
-                CustomerCompanyId = organization.BooksCustomerMasterId,
-                CompanyInstanceSourceId = organization.RealPageId.ToString(),
-                CompanyName = organization.Name,
-                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
-                IsActive = true,
-                CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                CustomerEnvironment = organization.OrganizationDomain.Name
-            };
+                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: "", includeGreenBookCares: false);
 
-            bool foundInstance = false;
-
-            if (companyMapResource != null)
-            {
-                // remove any existing instance and add a new one
-                foreach (var customerCompanyMap in companyMapResource)
+                // add the missing company to books
+                var companyInstance = new CompanyInstanceAdd()
                 {
-                    bool deleteInstance = false;
-                    customerCompanyMap.CompanyInstance.ForEach(i =>
+                    Id = organization.BooksCustomerMasterId,
+                    CustomerCompanyId = organization.BooksCustomerMasterId,
+                    CompanyInstanceSourceId = organization.RealPageIdUpperCaseForBooks,
+                    CompanyName = organization.Name,
+                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    IsActive = true,
+                    CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                    CustomerEnvironment = organization.OrganizationDomain.Name
+                };
+
+                bool foundInstance = false;
+
+                if (companyMapResource != null)
+                {
+                    // remove any existing instance and add a new one
+                    foreach (var customerCompanyMap in companyMapResource)
                     {
-                        if (i.CustomerEnvironment == null)
+                        bool deleteInstance = false;
+                        customerCompanyMap.CompanyInstance.ForEach(i =>
                         {
-                            deleteInstance = true;
-                        }
-                        else if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase) && !i.CompanyInstanceSourceId.Equals(companyInstance.CompanyInstanceSourceId, StringComparison.OrdinalIgnoreCase))
+                            if (i.CustomerEnvironment == null || i.Domain == null)
+                            {
+                                deleteInstance = true;
+                            }
+                            else if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase) && !i.CompanyInstanceSourceId.Equals(companyInstance.CompanyInstanceSourceId, StringComparison.CurrentCulture))
+                            {
+                                deleteInstance = true;
+                            }
+                            else
+                            {
+                                foundInstance = true;
+                            }
+                        });
+                        if (deleteInstance)
                         {
-                            deleteInstance = true;
-                        }
-                        else
-                        {
-                            foundInstance = true;
-                        }
-                    });
-                    if (deleteInstance)
-                    {
-                        if (commit)
-                        {
-                            _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                            if (commit)
+                            {
+                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                            }
                         }
                     }
                 }
-            }
 
-            if (!foundInstance)
-            {
-                // add the company data to books
-                if (commit)
+                if (!foundInstance)
                 {
-                    _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
-                }
+                    // add the company data to books
+                    if (commit)
+                    {
+                        _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+                    }
 
-                result.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
+                    result.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
+                }
             }
+            catch (Exception ex){}
 
             return result;
         }
