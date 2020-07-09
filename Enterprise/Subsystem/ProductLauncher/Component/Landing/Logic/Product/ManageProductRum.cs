@@ -348,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToErrorLog($"ManageProductRum.GetRegions-no properties received from product for user with editorPersona id - {editorPersonaId}.");
 
                     response.IsError = true;
-                    response.ErrorReason = "No regions received from product.";
+                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
                     return response;
                 }
 
@@ -387,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
                 }
                 WriteToErrorLog($"ManageProductRum.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
