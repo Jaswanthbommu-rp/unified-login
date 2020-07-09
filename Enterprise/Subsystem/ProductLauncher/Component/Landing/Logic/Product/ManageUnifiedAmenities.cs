@@ -497,7 +497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (companyMasterId == 0)
 				{
 					WriteToErrorLog($"GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					return new ListResponse { IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage };
 				}
 
 				CustomerCompany masterCompany = _blueBook.GetCompanyCustomerInfo(companyMasterId);
