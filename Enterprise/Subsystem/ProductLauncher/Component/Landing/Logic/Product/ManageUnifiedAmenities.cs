@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				response.IsError = true;
-				response.ErrorReason = $"There was a problem getting the roles.";
+				response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
 				WriteToErrorLog($"GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
 
