@@ -100,6 +100,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.PMCID, productUser.CompanyId);
 		}
+
+		/// <summary>
+		/// Create or update product user
+		/// Gets called from Product-Batch
+		/// </summary> 
+		public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+		{
+			string result;
+
+			WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+
+			// Get product user object 
+			var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
+
+			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.UserNoEmail)
+			{
+				newProductUser.LoginName = newProductUser.Email;
+			}
+
+			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+			{
+				WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+				// Create User
+				result = CreateUser(newProductUser);
+			}
+			else
+			{
+				WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+				// Update user with Id/Login from product
+				newProductUser.UserId = SubjectUserDetails.ProductUserId;
+				newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+				result = UpdateUser(newProductUser, batchProcessType);
+			}
+			return result;
+		}
+
 		#endregion
 	}
 }
