@@ -133,6 +133,10 @@
             return false;
         };
 
+        vm.isFinancialSuite = function () {
+            return $scope.$parent.productId == 8;
+        };
+
         vm.setSwitchConfig = function () {
             var productId = $scope.$parent.productId;
             vm.switchconfigs = syncMgr.getProductSwitchConfig(productId, "Properties");
