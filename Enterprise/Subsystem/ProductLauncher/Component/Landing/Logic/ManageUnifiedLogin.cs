@@ -740,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
+                response.ErrorReason = CommonMessageConstants.RightErrorMessage;
                 WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
