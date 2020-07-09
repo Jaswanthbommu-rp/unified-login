@@ -117,12 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
 				string marketingCompanyId = company.CompanyInstanceSourceId;
-				if (string.IsNullOrEmpty(marketingCompanyId))
-				{
-					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					WriteToDiagnosticLog("GetRoles - Error looking for company id in bluebook.");
-					return result;
-				}
+				
 				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
 				var url = _productUrl + $"/v2/company/{marketingCompanyId}/contact/roles";
 				logData = new Dictionary<string, object>();
