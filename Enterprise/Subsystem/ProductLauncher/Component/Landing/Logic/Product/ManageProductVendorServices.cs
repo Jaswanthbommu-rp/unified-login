@@ -132,12 +132,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //int companyInstanceSourceId = 10201; // to get sample groups 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.VendorServices).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductVendorServices.GetPropertyGroups-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
 
                 WriteToDiagnosticLog(
                 $"ManageProductVendorServices.GetPropertyGroups - getting product groups for user with editorPersona id - {editorPersonaId} and companyInstanceSourceId{companyInstanceSourceId}");
