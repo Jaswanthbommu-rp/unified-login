@@ -214,15 +214,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
                     WriteToLog(LogType.Diagnostic, "GetCompanyMap - No info found.", logData);
-                    if (response.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
-                    }
-                    else
-                    {
-                        //response.EnsureSuccessStatusCode();
-                        return null;
-                    }
+
+                    throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                 }
             }
 
