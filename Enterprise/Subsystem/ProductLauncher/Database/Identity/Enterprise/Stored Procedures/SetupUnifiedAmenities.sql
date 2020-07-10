@@ -102,204 +102,204 @@ AS
 			)
          VALUES
 			(1,
-			 'Assign Unit Amenities',
+			 'Assign unit amenities',
 			 'assign.unit',
-			 'Ability to Assign Unit Amenities'
+			 'Ability to assign unit amenities'
 			),
 			(2,
-			 'Un-Assign Unit Amenities',
+			 'Unassign unit amenities',
 			 'unassign.unit',
-			 'Ability to Un-Assign Unit Amenities'
+			 'Ability to unassign unit amenities'
 			),
 			(3,
-			 'Assign Floorplan Amenities',
+			 'Assign floorplan amenities',
 			 'assign.floorplan',
-			 'Ability to Assign Floorplan Amenities'
+			 'Ability to assign floorplan amenities'
 			),
 			(4,
-			 'Un-Assign Floorplan Amenities',
+			 'Unassign floorplan amenities',
 			 'unassign.floorplan',
-			 'Ability to Un-Assign Floorplan Amenities'
+			 'Ability to unassign floorplan amenities'
 			),
 			(5,
-			 'Add Common Area Amenity',
+			 'Add common area amenity',
 			 'ca.add',
-			 'Ability to Add Common Area Amenity'
+			 'Ability to add common area amenity'
 			),
 			(6,
-			 'Edit Common Area Amenity',
+			 'Edit common area amenity',
 			 'ca.edit',
-			 'Ability to Edit Common Area Amenity'
+			 'Ability to edit common area amenity'
 			),
 			(7,
-			 'Delete Common Area Amenity',
+			 'Delete common area amenity',
 			 'ca.delete',
-			 'Ability to Delete Common Area Amenity'
+			 'Ability to delete common area amenity'
 			),
 			(8,
-			 'Add Floorplan Unit Amenity',
+			 'Add floorplan unit amenity',
 			 'fpu.add',
-			 'Ability to Add Floorplan Unit Amenity'
+			 'Ability to add floorplan unit amenity'
 			),
 			(9,
-			 'Edit Floorplan Unit Amenity',
+			 'Edit floorplan unit amenity',
 			 'fpu.edit',
-			 'Ability to Edit Floorplan Unit Amenity'
+			 'Ability to edit floorplan unit amenity'
 			),
 			(10,
-			 'Delete Floorplan Unit Amenity',
+			 'Delete floorplan unit amenity',
 			 'fpu.delete',
-			 'Ability to Delete Floorplan Unit Amenity'
+			 'Ability to delete floorplan unit amenity'
 			),
 			(11,
-			 'Merge Common Area Amenities',
+			 'Merge common area amenities',
 			 'ca.merge',
-			 'Ability to Merge Common Area Amenities'
+			 'Ability to merge common area amenities'
 			),
 			(12,
-			 'Merge Floorplan Unit Amenities',
+			 'Merge floorplan unit amenities',
 			 'fpu.merge',
-			 'Ability to Merge Floorplan Unit Amenities'
+			 'Ability to merge floorplan unit amenities'
 			),
 			(13,
-			 'Export Common Area Amenities',
+			 'Export common area amenities',
 			 'ca.export',
-			 'Ability to Export Common Area Amenities'
+			 'Ability to export common area amenities'
 			),
 			(14,
-			 'Export Floorplan unit Amenities',
+			 'Export floorplan unit amenities',
 			 'fpu.export',
-			 'Ability to Export Floorplan unit Amenities'
+			 'Ability to export floorplan unit amenities'
 			),
 			(15,
-			 'Assign to Properties',
+			 'Assign to properties',
 			 'assignto.prop',
-			 'Ability to Assign to Properties'
+			 'Ability to assign to properties'
 			),
 			(16,
-			 'Add Default Pricing',
+			 'Add default pricing',
 			 'defaultpricing.add',
-			 'Ability to Add Default Pricing'
+			 'Ability to add default pricing'
 			),
 			(17,
-			 'Edit Default Pricing',
+			 'Edit default pricing',
 			 'defaultpricing.edit',
-			 'Ability to Edit Default Pricing'
+			 'Ability to edit default pricing'
 			),
 			(18,
-			 'Delete Default Pricing',
+			 'Delete default pricing',
 			 'defaultpricing.delete',
-			 'Ability to Delete Default Pricing'
+			 'Ability to delete default pricing'
 			),
 			(19,
-			 'Turn On Depriciation Setting',
+			 'Turn on depreciation setting',
 			 'depriciation.on',
-			 'Ability to Turn On Depriciation Setting'
+			 'Ability to turn on depreciation setting'
 			),
 			(20,
-			 'Turn Off Depriciation Setting',
+			 'Turn off depreciation setting',
 			 'depriciation.off',
-			 'Ability to Turn Off Depriciation Setting'
+			 'Ability to turn off depreciation setting'
 			),
 			(21,
-			 'Add Property Common Area Amenity',
+			 'Add property common area amenity',
 			 'prop.ca.add',
-			 'Ability to Add Property Common Area Amenity'
+			 'Add property common area amenity'
 			),
 			(22,
-			 'Edit Property Common Area Amenity',
+			 'Edit property common area amenity',
 			 'prop.ca.edit',
-			 'Ability to Edit Property Common Area Amenity'
+			 'Ability to edit property common area amenity'
 			),
 			(23,
-			 'Delete Property Common Area Amenity',
+			 'Delete property common area amenity',
 			 'prop.ca.delete',
-			 'Ability to Delete Property Common Area Amenity'
+			 'Ability to delete property common area amenity'
 			),
 			(24,
-			 'Add Property Floorplan Unit Amenity',
+			 'Add property floorplan unit amenity',
 			 'prop.fpu.add',
-			 'Ability to Add Property Floorplan Unit Amenity'
+			 'Ability to add property floorplan unit amenity'
 			),
 			(25,
-			 'Edit Property Floorplan Unit Amenity',
+			 'Edit property floorplan unit amenity',
 			 'prop.fpu.edit',
-			 'Ability to Edit Property Floorplan Unit Amenity'
+			 'Ability to edit property floorplan unit amenity'
 			),
 			(26,
-			 'Delete Property Floorplan Unit Amenity',
+			 'Delete property floorplan unit amenity',
 			 'prop.fpu.delete',
-			 'Ability to Delete Property Floorplan Unit Amenity'
+			 'Ability to delete property floorplan unit amenity'
 			),
 			(27,
-			 'Merge Property Common Area Amenities',
+			 'Merge property common area amenities',
 			 'prop.ca.merge',
-			 'Ability to Merge Property Common Area Amenities'
+			 'Ability to merge property common area amenities'
 			),
 			(28,
-			 'Merge Property Floorplan Unit Amenities',
+			 'Merge property floorplan unit amenities',
 			 'prop.fpu.merge',
-			 'Ability to Merge Property Floorplan Unit Amenities'
+			 'Ability to merge property floorplan unit amenities'
 			),
 			(29,
-			 'Export Property Common Area Amenities',
+			 'Export property common area amenities',
 			 'prop.ca.export',
-			 'Ability to Export Property Common Area Amenities'
+			 'Ability to export property common area amenities'
 			),
 			(30,
-			 'Export Property Flroorplan unit Amenities',
+			 'Export property floorplan unit amenities',
 			 'prop.fpu.export',
-			 'Ability to Export Property Flroorplan unit Amenities'
+			 'Ability to export property floorplan unit amenities'
 			),
 			(31,
-			 'Add Price Points',
+			 'Add price points',
 			 'price.point.add',
-			 'Ability to Add Price Points'
+			 'Ability to add price points'
 			),
 			(32,
-			 'Edit Price Points',
+			 'Edit price points',
 			 'price.point.edit',
-			 'Ability to Edit Price Points'
+			 'Ability to edit price points'
 			),
 			(33,
-			 'Delete Price Points',
+			 'Delete price points',
 			 'price.point.delete',
-			 'Ability to Delete Price Points'
+			 'Ability to delete price points'
 			),
 			(34,
-			 'Add Depreciation Schedule',
+			 'Add depreciation schedule',
 			 'depreciation.add',
-			 'Ability to Add Depreciation Schedule'
+			 'Ability to add depreciation schedule'
 			),
 			(35,
-			 'Edit Depreciation Schedule',
+			 'Edit depreciation schedule',
 			 'depreciation.edit',
-			 'Ability to Edit Depreciation Schedule'
+			 'Ability to edit depreciation schedule'
 			),
 			(36,
-			 'View Common Area Amenites Master List',
+			 'View common area amenities master list',
 			 'ca.master.view',
-			 'Ability to View Common Area Amenites Master List'
+			 'Ability to view common area amenities master list'
 			),
 			(37,
-			 'View Common Area Amenites by Property',
+			 'View common area amenities by property',
 			 'ca.property.view',
-			 'Ability to View Common Area Amenites by Property'
+			 'Ability to view common area amenities by property'
 			),
 			(38,
-			 'View Floorplan Unit amenities master list',
+			 'View floorplan unit amenities master list',
 			 'fpu.master.view',
-			 'Ability to View Floorplan Unit amenities master list'
+			 'Ability to view floorplan unit amenities master list'
 			),
 			(39,
-			 'View Floorplan Unit amenities by property',
+			 'View floorplan unit amenities by property',
 			 'fpu.property.view',
-			 'Ability to View Floorplan Unit amenities by property'
+			 'Ability to view floorplan unit amenities by property'
 			),
 			(40,
-			 'View Activity Page',
+			 'View activity page',
 			 'activity.view',
-			 'Ability to View Activity Page'
+			 'Ability to view activity page'
 			);
          DECLARE @UAMapping TABLE
 			(RoleId  INT,
