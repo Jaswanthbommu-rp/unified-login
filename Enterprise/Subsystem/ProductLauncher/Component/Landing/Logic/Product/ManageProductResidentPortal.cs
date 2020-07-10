@@ -264,11 +264,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 CustomerCompanyMap companyMap = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal);
-                if ((companyMap != null) && (Convert.ToInt32(companyMap.CompanyInstanceSourceId) > 0))
-                {
-                    _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
-                }
-               
+                _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
+
                 IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
 
                 if ((propertyProductList == null) || (propertyProductList.Count == 0))

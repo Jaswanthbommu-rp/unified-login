@@ -348,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToErrorLog($"ManageProductRum.GetRegions-no properties received from product for user with editorPersona id - {editorPersonaId}.");
 
                     response.IsError = true;
-                    response.ErrorReason = "No regions received from product.";
+                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
                     return response;
                 }
 
@@ -387,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
                 }
                 WriteToErrorLog($"ManageProductRum.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
@@ -417,12 +417,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductRum.GetRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
 
                 // get roles from rum product
                 var allRoles = GetRumRoles(companyInstanceSourceId);

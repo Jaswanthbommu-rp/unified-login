@@ -670,7 +670,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Throws(new Exception("Invalid SQL"));
 
 			response = manageProduct.GetRoles(4, 0, 3);
-			Assert.True(response.IsError == true && response.ErrorReason == "There was a problem getting the roles.");
+			Assert.True(response.IsError == true && (response.ErrorReason == "There was a problem getting the roles.") ||
+													 response.ErrorReason == CommonMessageConstants.CompanyErrorMessage ||
+													 response.ErrorReason == CommonMessageConstants.RoleErrorMessage);
 		}
 
 		[Fact]
@@ -755,7 +757,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Throws(new Exception("Invalid SQL"));
 
 			response = manageProduct.GetRightsByRole(4, 0, 3);
-			Assert.True(response.IsError == true && response.ErrorReason == "There was a problem getting the rights.");
+			Assert.True(response.IsError == true && (response.ErrorReason == "There was a problem getting the rights." ||
+													 response.ErrorReason == CommonMessageConstants.RightErrorMessage ||
+													 response.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 		}
 
 		[Fact]
