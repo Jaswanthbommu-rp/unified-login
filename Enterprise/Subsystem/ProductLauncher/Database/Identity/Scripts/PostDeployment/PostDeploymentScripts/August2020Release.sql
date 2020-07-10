@@ -1040,3 +1040,64 @@ BEGIN
 
 END
 GO
+
+-- Unified Amenities rights in Sentence case instead of Title Case format
+	IF EXISTS(SELECT * FROM Enterprise.RightValueType WHERE TargetProductId = 26)
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= UPPER(LEFT([VALUE],1))+LOWER(SUBSTRING([VALUE],2,LEN([VALUE]))),
+		  [Description] = UPPER(LEFT([Description],1))+LOWER(SUBSTRING([Description],2,LEN([Description])))
+		WHERE TargetProductId = 26
+	END
+
+	IF EXISTS(select * from enterprise.RightValueType where TargetProductId = 26 and [Value] like'%Un-Assign%')
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= REPLACE([VALUE],  'Un-Assign',  'Unassign' ),
+		  [Description] = REPLACE([Description],  'Un-Assign',  'Unassign' )
+		WHERE TargetProductId = 26 and  [Value] like'%Un-Assign%'
+	END
+
+	IF EXISTS(select * from enterprise.RightValueType where TargetProductId = 26 and [Value] like'%Depriciation%')
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= REPLACE([VALUE],  'Depriciation',  'depreciation' ),
+		  [Description] = REPLACE([Description],  'Depriciation',  'depreciation' )
+		WHERE TargetProductId = 26 and [Value] like'%Depriciation%'
+	END
+
+	IF EXISTS( select * from enterprise.RightValueType where TargetProductId = 26 and [Value] like'%Amenites%')
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= REPLACE([VALUE],  'Amenites',  'amenities' ),
+		  [Description] = REPLACE([Description],  'Amenites',  'amenities' )
+		WHERE TargetProductId = 26 and [Value] like'%Amenites%'
+	END
+
+-- Unified Amenities: "View Amenities" Role is selected as default
+DECLARE @RoleValueTypeId int;
+SELECT	@RoleValueTypeId = RoleValueTypeId
+FROM	Enterprise.RoleValueType
+WHERE	Value='View Amenities'
+
+IF EXISTS(SELECT TOP 1 1 FROM Enterprise.Role WHERE RoleValueTypeId=@RoleValueTypeId and PartyId in (1566,132790,82532) and DefaultRole=0)
+BEGIN
+
+		UPDATE r SET DefaultRole = 1
+         FROM enterprise.rolevaluetype rv
+              INNER JOIN enterprise.role r ON r.rolevaluetypeid = rv.rolevaluetypeid
+         WHERE rv.value = 'view amenities'
+               AND R.PartyId = 1566;
+
+		UPDATE r SET DefaultRole = 1
+         FROM enterprise.rolevaluetype rv
+              INNER JOIN enterprise.role r ON r.rolevaluetypeid = rv.rolevaluetypeid
+         WHERE rv.value = 'view amenities'
+               AND R.PartyId = 82532;
+
+		UPDATE r SET DefaultRole = 1
+         FROM enterprise.rolevaluetype rv
+              INNER JOIN enterprise.role r ON r.rolevaluetypeid = rv.rolevaluetypeid
+         WHERE rv.value = 'view amenities'
+               AND R.PartyId = 132790;
+END
