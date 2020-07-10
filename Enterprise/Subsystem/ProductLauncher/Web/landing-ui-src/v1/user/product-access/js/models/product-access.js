@@ -74,7 +74,7 @@
                 // logc("touched", touched);
                 // logc("assignmentChanged", assignmentChanged);
                 // logc("accessChanged", accessChanged);
-                if (assignmentChanged && !isDisabled) {
+                if (assignmentChanged && (!isDisabled || productId == 29)) {
                     if (isAssigned) {
                         prodData = productAccess.getAccessData(key, productId);
                         logc("prodData1", prodData, productId);
