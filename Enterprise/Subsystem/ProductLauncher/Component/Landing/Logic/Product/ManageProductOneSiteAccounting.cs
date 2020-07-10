@@ -2771,7 +2771,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
                 // get the CompanyName from BlueBook because the user doesn't have the Company for Accounting yet
                 //IList<CompanyMap> companyMap = _blueBook.GetCompanyMap(persona.Organization.BooksMasterId, BlueBookProductConstants.Accounting);
-                IList<blueBook.CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(persona.Organization.BooksCustomerMasterId, BlueBookProductConstants.FinancialSuite);
+                IList<blueBook.CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(persona.Organization.RealPageId, persona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.FinancialSuite, domain: persona.Organization.OrganizationDomain.Name);
 
                 if (companyMap != null && companyMap.Count > 0 && companyMap.First(a => a.Source.ToUpper() == BlueBookProductConstants.FinancialSuite) != null)
 				{

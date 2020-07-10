@@ -1,7 +1,9 @@
 ﻿using Moq;
 using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
@@ -13,19 +15,16 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Mi
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 {
-	[ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     public class ManageVendorServicesProductTests : ManageProductBaseTests
     {
         #region Private Variables
@@ -84,16 +83,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 {
                     CustomerCompanyId = _blueBookId,
                     CompanyInstanceSourceId = _companyInstanceSourceId,
-                    Source = ProductEnum.VendorServices.ToEnumDescription()
+                    Source = ProductEnum.VendorServices.ToEnumDescription(),
                 }
             };
 
             mockManageBlueBook
-               .Setup(m => m.GetCompanyMap(
-                   It.IsAny<long>(),
-                   It.IsAny<string>(),
-					It.IsAny<string>(),
-                   It.IsAny<bool>()
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>()
 				))
                 .Returns(mapCompany);
 

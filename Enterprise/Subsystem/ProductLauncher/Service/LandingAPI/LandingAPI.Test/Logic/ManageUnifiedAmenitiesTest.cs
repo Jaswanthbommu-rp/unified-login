@@ -157,21 +157,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockManageBlueBook
-				.Setup(m => m.GetCompanyMap(
-					It.IsAny<long>(),
-					It.IsAny<string>(),
-					It.IsAny<string>(),
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				))
 				.Returns(_mapCompany);
 
-			_mockManageBlueBook
-				.Setup(m => m.GetPropertyInstance(
-					It.IsAny<long>()
-				))
-				.Returns(_propertyInstanceList);
-
-			//GetVCompanyPropertyMap
 			_mockManageBlueBook
 				.Setup(m => m.GetVCompanyPropertyMap(
 					It.IsAny<long>(),
@@ -181,6 +176,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_mockManageBlueBook
 				.Setup(m => m.GetCompanyCustomerInfo(
+					It.IsAny<Guid>(),
+					It.IsAny<string>(),
 					It.IsAny<long>()
 				))
 				.Returns(_customercompany);
@@ -800,20 +797,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			response = manageProduct.GetProperties(4, 0, false, null);
 			Assert.True(response.IsError == false && response.Records.Count == 0);
-
-			_editorPersona.Organization.BooksCustomerMasterId = 0;
-
-			//_mockManagePersona
-			//	.Setup(m => m.GetPersona(
-			//		It.Is<long>(l => l == 4)
-			//	))
-			//	.Returns(_editorPersona);
-
-			// invalid company
-			response = manageProduct.GetProperties(4, 0, false, null);
-			Assert.True(response.IsError == true && response.ErrorReason == "Company Setup Error: Please Contact Support.");
-
-
 		}
 	}
 }

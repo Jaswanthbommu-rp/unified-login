@@ -1,5 +1,77 @@
 ﻿-- August 2020 changes
 GO
+
+update enterprise.ProductSettingType set sensitivedata = 1 where name in (
+'ApiSecret'
+,'MTClientSecret'
+,'UnifiedLoginResearchApplicationClientSecret'
+,'TokenClientSecret'
+,'TiboWebHookSigningSecret'
+,'ApiPassword'
+,'IntactPassword'
+
+)
+GO
+
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'BooksUseDomains' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseDomains', 'Use domains for books api calls', 0 )
+end
+GO
+
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'BooksUseUPFMId' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseUPFMId', 'Use UPFM instance for books api calls', 0 )
+end
+go
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseDomains' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseDomains'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseDomains' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseUPFMId'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+-- sync up the employee and external company guids
+update enterprise.party set realpageid = '0D018E46-C20E-477D-ADED-4E5A35FB8F99' where partyid = (select top 1 partyid from enterprise.DataImportMapping where sourceid = '-1')
+update enterprise.party set realpageid = 'EEFACE50-9F75-4DCE-B133-A97EE0E0D723' where partyid = (select top 1 partyid from enterprise.DataImportMapping where sourceid = '-2')
+
+GO
 --Renovation Manager Product
 /*This script is a sample script to create new prodcut in the system.*/
 
@@ -93,51 +165,50 @@ set nocount on
 INSERT INTO @ProductConfiguration
 (SettingName, 
  SettingDescription, 
- SettingValue
+ SettingValue,
+ SettingSensitiveData
 )
 VALUES
- ('ClassName','','renovationmanager')
-,('ProductUrl','','/product/renovationmanager')
-,('TitleId','','Renovation Manager')
-,('TitleUniqueId','','4167CF48-B169-4F4F-A510-0CEB73365334')
-,('IsNewTab','','1')
-,('MetatagUniqueId','','Renovation Manager')
-,('IsResource','','0')
-,('IsFavorite','','1')
-,('LearnMore','','https://www.realpage.com/reno/')
-,('ApiEndPoint','',@apiendpoint)
-,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','7')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
-,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
-,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
-,('ShowInAppSwitcher','Should the product show in the application switcher','1')
-,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
-,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
-,('LockOnProductAccess', '', '0')
-,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+ ('ClassName','','renovationmanager', 0)
+,('ProductUrl','','/product/renovationmanager', 0)
+,('TitleId','','Renovation Manager', 0)
+,('TitleUniqueId','','4167CF48-B169-4F4F-A510-0CEB73365334', 0)
+,('IsNewTab','','1', 0)
+,('MetatagUniqueId','','Renovation Manager', 0)
+,('IsResource','','0', 0)
+,('IsFavorite','','1', 0)
+,('LearnMore','','https://www.realpage.com/reno/', 0)
+,('ApiEndPoint','',@apiendpoint, 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','7', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','10', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','19', 0)
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1', 0)
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0', 0)
+,('ShowInAppSwitcher','Should the product show in the application switcher','1', 0)
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1', 0)
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0', 0)
+,('LockOnProductAccess', '', '0', 0)
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0', 0)
 
-,('CLIENTID','','ulrenoapi') -- For DEV Environment
-,('TOKENENDPOINT','', @tokenEndPoint) -- For DEV Environment
-,('APISECRET','', @apisecret)
+,('CLIENTID','','ulrenoapi', 0) -- For DEV Environment
+,('TOKENENDPOINT','', @tokenEndPoint, 0) -- For DEV Environment
+,('APISECRET','', @apisecret, 1)
 
-,('GetRoleEndpoint','Role End point for product API','/{0}/roles?isIncludeRights={1}')
-,('GetRightEndpoint','Right End point for product API','/roleRights/{0}')
-,('GetPropertyEndpoint','Property End point for product API','/{0}/properties')
-,('GetUserEndpoint','GET User Endpoint for product API','/users?companyId={0}&loginName={1}')
-,('GetListUsersEndpoint','','/{0}/users?filter={1}&startRow={2}&resultsperpage={3}')
-,('PostUserEndpoint','POST User Endpoint for product API','/users')
-,('PutUserEndpoint','PUT User Endpoint for product API','/users')
-,('DeleteUserEndpoint','DELETE User Endpoint for product API','/{0}/users?loginName={0}') 
-,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate')
-,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile')
-,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}') -- Made New Setting
-,('AuthenticationType','Used to determine how to log into the product','Redirect')
+,('GetRoleEndpoint','Role End point for product API','/{0}/roles?isIncludeRights={1}', 0)
+,('GetRightEndpoint','Right End point for product API','/roleRights/{0}', 0)
+,('GetPropertyEndpoint','Property End point for product API','/{0}/properties', 0)
+,('GetUserEndpoint','GET User Endpoint for product API','/users?companyId={0}&loginName={1}', 0)
+,('GetListUsersEndpoint','','/{0}/users?filter={1}&startRow={2}&resultsperpage={3}', 0)
+,('PostUserEndpoint','POST User Endpoint for product API','/users', 0)
+,('PutUserEndpoint','PUT User Endpoint for product API','/users', 0)
+,('DeleteUserEndpoint','DELETE User Endpoint for product API','/{0}/users?loginName={0}', 0)
+,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate', 0)
+,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile', 0)
+,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}', 0) -- Made New Setting
+,('AuthenticationType','Used to determine how to log into the product','Redirect', 0)
 
-
-
-SELECT * FROM @ProductConfiguration
+--SELECT * FROM @ProductConfiguration
 
 SET @LoginURL = '';
 IF @ServerName IN ('RCDUSODBSQL001')
@@ -442,50 +513,51 @@ set nocount on
 INSERT INTO @ProductConfiguration
 (SettingName, 
  SettingDescription, 
- SettingValue
+ SettingValue,
+ SettingSensitiveData
 )
 VALUES
-('ClientId','','1')
-,('ClassName','','seniorleadmanagement')
-,('ProductUrl','','/product/seniorleadmanagement')
-,('TitleId','','Senior Lead Management')
-,('TitleUniqueId','','EDFB27F1-6335-4297-B44F-F265204B0538')
-,('IsNewTab','','1')
-,('MetatagUniqueId','','Senior Lead Management')
-,('IsResource','','0')
-,('IsFavorite','','1')
-,('LearnMore','','https://www.realpage.com/senior/')
-,('ApiEndPoint','','https://dev-spmadminbff.realpage.com/api/v1')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
-,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
-,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
-,('ShowInAppSwitcher','Should the product show in the application switcher','1')
-,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
-,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
-,('LockOnProductAccess', '', '0')
-,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+('ClientId','','1', 0)
+,('ClassName','','seniorleadmanagement', 0)
+,('ProductUrl','','/product/seniorleadmanagement', 0)
+,('TitleId','','Senior Lead Management', 0)
+,('TitleUniqueId','','EDFB27F1-6335-4297-B44F-F265204B0538', 0)
+,('IsNewTab','','1', 0)
+,('MetatagUniqueId','','Senior Lead Management', 0)
+,('IsResource','','0', 0)
+,('IsFavorite','','1', 0)
+,('LearnMore','','https://www.realpage.com/senior/', 0)
+,('ApiEndPoint','','https://dev-spmadminbff.realpage.com/api/v1', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8', 0)
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1', 0)
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0', 0)
+,('ShowInAppSwitcher','Should the product show in the application switcher','1', 0)
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1', 0)
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0', 0)
+,('LockOnProductAccess', '', '0', 0)
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0', 0)
 
---,('ApiUserName','','test+rfqarpunity@novelpay.com')
---,('ApiPassword','','7mgp43EIvc8c!@')
-,('ApiKey','','53448358-FC1C-4B30-8C45-1171B06D84D1') -- For DEV Environment
+--,('ApiUserName','','test+rfqarpunity@novelpay.com', 0)
+--,('ApiPassword','','7mgp43EIvc8c!@', 1)
+,('ApiKey','','53448358-FC1C-4B30-8C45-1171B06D84D1', 0) -- For DEV Environment
 
-,('GetRoleEndpoint','Role End point for product API','/{0}/Roles?isIncludeRights={1}')
-,('GetRightEndpoint','Right End point for product API','/roleRights/{0}')
+,('GetRoleEndpoint','Role End point for product API','/{0}/Roles?isIncludeRights={1}', 0)
+,('GetRightEndpoint','Right End point for product API','/roleRights/{0}', 0)
 
-,('GetPropertyEndpoint','Property End point for product API','/properties/{0}')
-,('GetUserEndpoint','GET User Endpoint for product API','/users?loginName={0}')
-,('GetListUsersEndpoint','','/users/{0}?filter={1}&pageNumber={2}&PageSize={3}')
-,('PostUserEndpoint','POST User Endpoint for product API','/users')
-,('PutUserEndpoint','PUT User Endpoint for product API','/users')
-,('DeleteUserEndpoint','DELETE User Endpoint for product API','/users?loginName={0}') 
-,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate')
-,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile')
-,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}') -- Made New Setting
-,('AuthenticationType','Used to determine how to log into the product','Redirect')
+,('GetPropertyEndpoint','Property End point for product API','/properties/{0}', 0)
+,('GetUserEndpoint','GET User Endpoint for product API','/users?loginName={0}', 0)
+,('GetListUsersEndpoint','','/users/{0}?filter={1}&pageNumber={2}&PageSize={3}', 0)
+,('PostUserEndpoint','POST User Endpoint for product API','/users', 0)
+,('PutUserEndpoint','PUT User Endpoint for product API','/users', 0)
+,('DeleteUserEndpoint','DELETE User Endpoint for product API','/users?loginName={0}', 0)
+,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate', 0)
+,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile', 0)
+,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}', 0) -- Made New Setting
+,('AuthenticationType','Used to determine how to log into the product','Redirect', 0)
 --- Not sure about below ones -------
---,('GetCompanyEndpoint','GET Company Endpoint for API','/orgs/{0}')
---,('GetParentCompanyEndpoint','GET Company Endpoint for API','/orgs?parentOrgId={0}')
---,('GetProfileEndpoint','GET User Profile Endpoint for product API','/users/{0}/profile')
+--,('GetCompanyEndpoint','GET Company Endpoint for API','/orgs/{0}', 0)
+--,('GetParentCompanyEndpoint','GET Company Endpoint for API','/orgs?parentOrgId={0}', 0)
+--,('GetProfileEndpoint','GET User Profile Endpoint for product API','/users/{0}/profile', 0)
 
 
 SELECT * FROM @ProductConfiguration

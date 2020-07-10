@@ -1,6 +1,7 @@
 ﻿CREATE PROCEDURE Enterprise.CreateProductSettingType (
     @ProductSettingTypeName VARCHAR(50),
     @ProductSettingTypeDescription VARCHAR(100),
+	@ProductSettingTypeSensitiveData TINYINT,
 	@ProductSettingTypeId INT OUTPUT
 )
 AS
@@ -9,13 +10,15 @@ BEGIN
         BEGIN TRANSACTION;
 		INSERT INTO Enterprise.ProductSettingType (
 			Name,
-			Description
+			Description,
+			SensitiveData
 		)
 		OUTPUT	Inserted.ProductSettingTypeId AS Id,
 				'' AS ErrorMessage
 		VALUES (
 			@ProductSettingTypeName,
-			@ProductSettingTypeDescription
+			@ProductSettingTypeDescription,
+			@ProductSettingTypeSensitiveData
 		);
 
 		SET @ProductSettingTypeId = SCOPE_IDENTITY();

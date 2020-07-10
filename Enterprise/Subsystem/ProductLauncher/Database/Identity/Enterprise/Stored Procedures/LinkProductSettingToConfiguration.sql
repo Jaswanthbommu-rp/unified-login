@@ -6,16 +6,37 @@
 )
 AS
 BEGIN
-	DECLARE @UTCDATE datetime = GETUTCDATE();
+	DECLARE @UTCDATE datetime = dateadd(MINUTE, -1, GETUTCDATE());
 
 	BEGIN TRY
         BEGIN TRANSACTION;
-		UPDATE	Enterprise.ProductConfiguration
-		SET		ThruDate = @UTCDATE
-		WHERE	ConfigurationId = @ConfigurationId
-		AND		ProductSettingId = @ProductSettingId
-		AND		(ThruDate >= @UTCDATE OR ThruDate IS NULL)
 
+		DECLARE @ProductSettingTypeId INT
+		SELECT @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSetting WHERE ProductSettingId = @ProductSettingId
+
+		IF EXISTS (SELECT TOP 1 1 from Enterprise.ProductConfiguration PC 
+					INNER JOIN Enterprise.ProductSetting PS ON PC.ProductSettingId = PS.ProductSettingId
+				   WHERE
+						PC.ConfigurationId = @ConfigurationId
+						AND
+						PS.ProductSettingTypeId = @ProductSettingTypeId
+						AND
+						PC.ThruDate IS NULL
+		)
+		BEGIN
+			UPDATE PC
+			SET		ThruDate = @UTCDATE
+			FROM 
+			Enterprise.ProductConfiguration PC 
+					INNER JOIN Enterprise.ProductSetting PS ON PC.ProductSettingId = PS.ProductSettingId
+				   WHERE
+						PC.ConfigurationId = @ConfigurationId
+						AND
+						PS.ProductSettingTypeId = @ProductSettingTypeId
+						AND 
+						(PC.ThruDate >= @UTCDATE OR PC.ThruDate IS NULL)
+		END
+		
 		INSERT INTO Enterprise.ProductConfiguration (
 			ConfigurationId,
 			ProductSettingId,

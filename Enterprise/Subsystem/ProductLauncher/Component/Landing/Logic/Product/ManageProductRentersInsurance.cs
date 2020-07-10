@@ -1167,10 +1167,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <returns>CompanyMap object</returns>
         private CustomerCompanyMap GetRentersInsuranceCompanyInstanceId()
-        {
-            WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Getting info.");
-            //IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.Insurance);
-            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, BlueBookProductConstants.Insurance);
+		{
+			WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Getting info.");
+			//IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.Insurance);
+            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.Insurance, domain: _editorPersona.Organization.OrganizationDomain.Name);
             CustomerCompanyMap company = new CustomerCompanyMap();
             if (companyProductList.Any(a => a.Source.ToUpper() == BlueBookProductConstants.Insurance))
             {

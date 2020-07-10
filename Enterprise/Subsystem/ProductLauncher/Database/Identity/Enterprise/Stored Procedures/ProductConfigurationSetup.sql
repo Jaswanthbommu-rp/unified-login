@@ -14,6 +14,7 @@ BEGIN
 	DECLARE @ConfigurationID BIGINT;
 	DECLARE @ProductSettingID BIGINT;
 	DECLARE @ProductSettingTypeID INT;
+	DECLARE @SettingSensitiveData TINYINT;
 
 	IF EXISTS (SELECT 1 FROM Enterprise.Product WHERE ProductId = @ProductId)
 	BEGIN
@@ -58,6 +59,7 @@ BEGIN
 				SettingName,
 				SettingDescription,
 				SettingValue,
+				SettingSensitiveData,
 				0 AS PStatus,
 				0 AS SStatus
 			INTO #ProdConfig
@@ -90,6 +92,7 @@ BEGIN
 						 @SettingName = SettingName,
 						 @SettingDescription = SettingDescription,
 						 @SettingValue = SettingValue,
+						 @SettingSensitiveData = SettingSensitiveData,
 						 @PStatus = PStatus
 			FROM #ProdConfig
 			WHERE PStatus = 0;
@@ -104,6 +107,7 @@ BEGIN
 			EXEC Enterprise.CreateProductSettingType
 					@ProductSettingTypeName = @SettingName,
 					@ProductSettingTypeDescription = @SettingDescription,
+					@ProductSettingTypeSensitiveData = @SettingSensitiveData,
 					@ProductSettingTypeID = @ProductSettingTypeID OUTPUT;
 
 			IF EXISTS (

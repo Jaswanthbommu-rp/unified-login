@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin
 {
     public class UnifiedLoginCompany
     {
@@ -22,10 +16,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Is the Company active
         /// </summary>
         public bool IsActive { get; set; }
+
         /// <summary>
         /// Company RealPage Id
         /// </summary>
         public string CompanyRealPageId { get; set; }
+
         /// <summary>
         /// Company Id mapped to BlueBook
         /// </summary>
@@ -45,5 +41,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// User Login As
         /// </summary>
         public string UserLoginAs { get; set; }
+
+        /// <summary>
+        /// The domain of the company
+        /// </summary>
+        public string Domain { get; set; }
     }
 }
