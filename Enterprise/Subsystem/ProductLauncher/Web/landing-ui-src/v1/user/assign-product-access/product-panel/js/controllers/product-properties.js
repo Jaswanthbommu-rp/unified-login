@@ -127,6 +127,10 @@
                     vm.propertySelect = accesstype;
                 }
             }
+            if($scope.$parent.productId === 17){
+                var flag = syncMgr.isProductAllProperties($scope.$parent.productId);
+                return flag;
+            }
             if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
                 return true;
             }
