@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities.UserAssignProductPropertyRole;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -327,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				response.IsError = true;
-				response.ErrorReason = $"There was a problem getting the roles.";
+				response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
 				WriteToErrorLog($"GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
 
@@ -376,8 +377,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				response.IsError = true;
-				response.ErrorReason = $"There was a problem getting the rights.";
-				WriteToErrorLog($"GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+				response.ErrorReason = CommonMessageConstants.RightErrorMessage;
+				WriteToErrorLog($"ManageUnifiedAmenities.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
 
 			return response;
@@ -494,7 +495,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (masterCompany == null || masterCompany?.CustomerCompanyId == 0 || (!masterCompany.IsActive == true && masterCompany.CustomerCompanyId != 0))
                 {
 					WriteToErrorLog($"GetProperties-GetCompanyCustomerInfo - Error looking for company id {_editorPersona.Organization.RealPageId} customermasterid {_editorPersona.Organization.BooksCustomerMasterId} in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+					return new ListResponse { IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage };
 				}
 
 				WriteToDiagnosticLog($"ManageProductProspectContact.GetProperties-GetProductCompanyInstanceId - Found blue book company id {_editorPersona.Organization.RealPageId} - customermasterid {_editorPersona.Organization.BooksCustomerMasterId} for user editorPersona id -{editorPersonaId}");
@@ -528,7 +529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				result.IsError = true;
-				result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+				result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 				WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
 					exception: ex);
 			}
