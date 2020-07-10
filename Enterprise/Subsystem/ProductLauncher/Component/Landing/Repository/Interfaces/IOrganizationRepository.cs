@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
 using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -31,10 +32,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
         /// <param name="organizationPartyId">Optional organization PartyId</param>
-        /// <param name="blueBookId">Optional blueBookId</param>
-        /// <param name="blackBookId">Optional blackBookId</param>
         /// <returns>Organization object</returns>
-        Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null);
+        Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null);
 
         /// <summary>
         /// Used to update any company master id records that match the old id to a new id
@@ -56,13 +55,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRealPageId"></param>
         /// <returns></returns>
         Guid GetOrganizationAdminUserRealPageId(Guid organizationRealPageId);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="realPageId"></param>
-        /// <returns></returns>
-        BooksMaster GetBooksCompanyMaster(Guid realPageId);
 
         /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId
@@ -95,7 +87,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns>Organization object</returns>
         List<OrganizationType> ListOrganizationType();
 
+        /// <summary>
+        /// Used to get the list of all Organization Domains
+        /// </summary>
+        /// <returns>OrganizationDomain list</returns>
         List<OrganizationDomain> ListOrganizationDomain();
+
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain);
+
 
         /// <summary>
         /// Used to get a list of products by company id
@@ -103,6 +107,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationRealPageId"></param>
         /// <returns>List of Products</returns>
         IList<ProductUI> GetProductsByCompany(Guid organizationRealPageId);
+
+        /// <summary>
+        /// List of Unified Login companies
+        /// </summary>       
+        /// <returns>List of Unified Login companies including admin user info</returns>
+        List<UnifiedLoginCompany> GetUnifiedLoginCompanyList();
 
         #endregion
     }

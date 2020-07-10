@@ -965,6 +965,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool gotOpsGuid = GetOpsSessionGuid();
             if (!gotOpsGuid)
             {
+                WriteToErrorLog("DoAdditional - Unable to get Ops guid");
                 response = new ListResponse();
                 response.IsError = true;
                 response.ErrorReason = "Unable to get Ops guid";

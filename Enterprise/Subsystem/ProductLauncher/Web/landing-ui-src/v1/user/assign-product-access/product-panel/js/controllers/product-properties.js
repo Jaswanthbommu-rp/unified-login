@@ -127,10 +127,18 @@
                     vm.propertySelect = accesstype;
                 }
             }
+            if($scope.$parent.productId === 17){
+                var flag = syncMgr.isProductAllProperties($scope.$parent.productId);
+                return flag;
+            }
             if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
                 return true;
             }
             return false;
+        };
+
+        vm.isFinancialSuite = function () {
+            return $scope.$parent.productId == 8;
         };
 
         vm.setSwitchConfig = function () {
@@ -180,6 +188,7 @@
                 var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
                 if(accesstype === "allProperties" && $scope.$parent.productId === 16){
                     syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
                     resp.records.forEach(function (item) {
                         item.isAssigned = false;
                     });

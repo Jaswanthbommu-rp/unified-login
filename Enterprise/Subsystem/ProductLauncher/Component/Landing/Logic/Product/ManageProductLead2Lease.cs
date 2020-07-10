@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -95,7 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-         #region Roles
+        #region Roles
 
         /// <summary>
         /// Used to get roles for Lead2Lease
@@ -117,16 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 RoleInfo result = GetRolesMain();
-                if (result == null)
-                {
-                    response = new ListResponse()
-                    {
-                        IsError = true,
-                        ErrorReason = "Role info is missing"
-                    };
-                    WriteToDiagnosticLog("GetRoles - Error retrieving role info.");
-                    return response;
-                }
+
                 list = result.Roles.ToGBRoles();
                 if (list == null) { list = new List<ProductRole>(); }
 
@@ -179,14 +171,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                // test
-                WriteToErrorLog($"GetRoles - Error", exception: ex);
-                response = new ListResponse()
+                WriteToErrorLog($"GetRoles - Error. {ex.Message} ", exception: ex);
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException)
                 {
-                    IsError = true,
-                    ErrorReason = ex.Message
-                };
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                }
             }
+
             return response;
         }
 
@@ -211,7 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 IList<Property> result = GetPropertyMain();
                 if (result == null)
-                {                      
+                {
                     response = new ListResponse()
                     {
                         IsError = true,
@@ -288,11 +286,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog($"GetProperties - Error", exception: ex);
-                response = new ListResponse()
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException blueBookException)
                 {
-                    IsError = true,
-                    ErrorReason = ex.Message
-                };
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
             }
             return response;
         }
@@ -505,18 +509,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                RoleInfo result = GetRolesMain();
-                if (result == null)
+                RoleInfo result = null;
+
+                try
                 {
-                    response = new ListResponse()
+                    result = GetRolesMain();
+                }
+                catch (Exception ex)
+                {
+                    WriteToErrorLog($"ManageLead2LeaseUser - Error. {ex.Message} ", exception: ex);
+                    response = new ListResponse();
+                    response.IsError = true;
+
+                    if (ex is BlueBookException)
                     {
-                        IsError = true,
-                        ErrorReason = "Role list failed"
-                    };
-                    WriteToDiagnosticLog("ManageLead2LeaseUser - Error getting role list.");
+                        response.ErrorReason = ex.Message;
+                    }
+                    else
+                    {
+                        response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                    }
+
                     return response.ErrorReason;
                 }
-
 
                 List<string> adminRights = new List<string> {
                 "ALLOW USER TO CHANGE PASSWORDS MANUALLY",
@@ -643,6 +658,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Unassign User
         /// </summary>
+        /// <returns></returns>    
         public string UnassignUser(long editorPersonaId, long userPersonaId)
         {
             ListResponse listResponse = new ListResponse();
@@ -724,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog($"Lead2LeaseUser.UpdateUserProfile - Validating email address. Email: {userLogin.LoginName}");
                 if (userPersona.UserTypeId == (int)UserTypeConstants.RegularUserNoEmail)
                 {
-                    userEmailAddress = _productUsername;                
+                    userEmailAddress = _productUsername;
                 }
                 else
                 {
@@ -812,50 +828,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IsError = true,
                 ErrorReason = "No Users."
             };
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.Lead2Lease).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductLead2Lease.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var filter = "NonMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
+                var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
+
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.Lead2Lease).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
                 {
-                    filter = datafilter.FilterBy["filter"];
+                    WriteToErrorLog(
+                        $"ManageProductLead2Lease.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
                 }
-                if (datafilter.Pages != null)
+                var filter = "NonMigrated";
+                var startRow = 0;
+                var resultPerRow = 1000;
+                if (datafilter != null)
                 {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
+                    if (datafilter.FilterBy.ContainsKey("filter"))
+                    {
+                        filter = datafilter.FilterBy["filter"];
+                    }
+                    if (datafilter.Pages != null)
+                    {
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
+                    }
                 }
+
+                var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
+                WriteToDiagnosticLog("ManageProductLead2Lease.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+
+                var allUsers = GetResultFromApi<IList<MigrationUser>>(url);
+
+                if (allUsers == null)
+                {
+                    WriteToErrorLog($"ManageProductLead2Lease.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
+                }
+                WriteToDiagnosticLog($"ManageProductLead2Lease.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = allUsers.Cast<object>().ToList();
+                response.TotalRows = allUsers.Count();
             }
-
-            var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductLead2Lease.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
-
-            var allUsers = GetResultFromApi<IList<MigrationUser>>(url);
-
-            if (allUsers == null)
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductLead2Lease.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductLead2Lease.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
-            WriteToDiagnosticLog($"ManageProductLead2Lease.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = allUsers.Cast<object>().ToList();
-            response.TotalRows = allUsers.Count();
             return response;
         }
 
@@ -872,41 +902,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Status = false
             };
 
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
-
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.Lead2Lease).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductLead2Lease.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
+
+                var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
+
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.Lead2Lease).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductLead2Lease.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    return migrateResponse;
+                }
+
+                var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users";
+                var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                var logData = new Dictionary<string, object>
+                {
+                    { "Url", url },
+                    { "Response", responseContent },
+                    { "EditorPersonaId", editorPersonaId },
+                    { "MigratedUser", migrateUsers }
+                };
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
+                    WriteToDiagnosticLog("ManageProductLead2Lease.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = migrationResponse.Message;
+                    migrateResponse.Status = migrationResponse.Status;
+                    return migrateResponse;
+                }
+                else
+                {
+                    WriteToErrorLog($"ManageProductLead2Lease.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = "Cannot update user status to migrated.";
+                    return migrateResponse;
+                }
             }
+            catch (Exception ex)
+            {
+                migrateResponse = new MigrateResponse
+                { 
+                    Status = false,
+                    Message = ex.Message
+                };
 
-            var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users";
-            var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
-
-            var logData = new Dictionary<string, object>
-            {
-                { "Url", url },
-                { "Response", responseContent },
-                { "EditorPersonaId", editorPersonaId },
-                { "MigratedUser", migrateUsers }
-            };
-            if (response.IsSuccessStatusCode)
-            {
-                var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
-                WriteToDiagnosticLog("ManageProductLead2Lease.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = migrationResponse.Message;
-                migrateResponse.Status = migrationResponse.Status;
-                return migrateResponse;
-            }
-            else
-            {
-                WriteToErrorLog($"ManageProductLead2Lease.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = "Cannot update user status to migrated.";
+                WriteToErrorLog($"ManageProductLead2Lease.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                
                 return migrateResponse;
             }
         }
@@ -1015,20 +1062,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         private RoleInfo GetRolesMain()
         {
+            RoleInfo result;
+
             Dictionary<string, object> logData = new Dictionary<string, object>();
             string baseUrlAndQuery = $"{_apiEndPoint}/Users/ActiveRoles";
             logData.Add("baseUrlAndQuery", baseUrlAndQuery);
             WriteToDiagnosticLog("GetRoles - Getting info.", logData);
-            RoleInfo result = new RoleInfo();
-            try
+
+            result = GetResultFromApi<RoleInfo>(baseUrlAndQuery, false);
+
+            if (result == null)
             {
-                result = GetResultFromApi<RoleInfo>(baseUrlAndQuery, false);
+                throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
             }
-            catch (Exception ex)
+            else
             {
-                WriteToErrorLog($"GetRolesMain - GetRoles failed.", logData, ex);
-                result = null;
+                if (result.Presets?.Any() != true)
+                {
+                    throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
+                }
             }
+
             return result;
         }
 

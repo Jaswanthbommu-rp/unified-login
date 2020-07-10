@@ -58,20 +58,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "realPageId")]
 		public Guid RealPageId { get; set; }
-
-        /// <summary>
-        /// The books Master Data Management (black book) master id
-        /// </summary>
-        [JsonProperty(PropertyName = "booksMasterId")]
-		
-		public long BooksMasterId { get; set; }
-
-		/// <summary>
-		/// The customer master id for the company
-		/// </summary>
-		[JsonProperty(PropertyName = "booksCustomerMasterId")]
-
-		public long BooksCustomerMasterId { get; set; }
-
 	}
 }

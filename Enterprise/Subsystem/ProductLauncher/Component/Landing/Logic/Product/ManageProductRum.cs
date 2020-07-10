@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -183,8 +184,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = $"There was a problem getting the roles.";
+                response = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                }
+
                 WriteToErrorLog($"ManageProductRum.GetPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
@@ -221,7 +234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// get the PMCID from BlueBook because the user doesn't have the PMCID for Marketing Center yet
 				WriteToDiagnosticLog("GetRUMPMCIDFromPersona - Getting info from BlueBook.GetCompanyMap");
                 //IList<CompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.UtilityManagement);
-                IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, BlueBookProductConstants.UtilityManagement);
+                IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.UtilityManagement, domain: _editorPersona.Organization.OrganizationDomain.Name);
                 WriteToDiagnosticLog("GetRUMPMCIDFromPersona - Done getting info from BlueBook.GetCompanyMap");
 				if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.ToUpper() == BlueBookProductConstants.UtilityManagement))
 				{
@@ -277,8 +290,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				result.IsError = true;
-				result.ErrorReason = $"ManageProductRum.GetProperties - There was a problem getting the properties.";
+                result = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
+
 				WriteToErrorLog(
 					$"ManageProductRum.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
 					exception: ex);
@@ -351,8 +376,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = $"There was a problem getting the roles.";
+                response = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                }
                 WriteToErrorLog($"ManageProductRum.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
@@ -424,8 +460,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = $"There was a problem getting the roles.";
+                response = new ListResponse
+                {
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                }
                 WriteToErrorLog($"ManageProductRum.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
@@ -508,9 +555,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                response.IsError = true;
-                response.ErrorReason = $"There was a problem getting the roles.";
                 WriteToErrorLog($"ManageProductRum.GetUMGlobalRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                response = new ListResponse();
+                response.IsError = true;
+
+                if (ex is BlueBookException blueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
             }
 
             return response;
@@ -846,47 +902,60 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductRum.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                response.ErrorReason = "Company Setup Error: Please Contact Support.";
-                return response;
-            }
-            var filter = "NonMigrated";
-            var startRow = 0;
-            var resultPerRow = 1000;
-            if (datafilter != null)
-            {
-                if (datafilter.FilterBy.ContainsKey("filter"))
+
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
                 {
-                    filter = datafilter.FilterBy["filter"];
+                    WriteToErrorLog(
+                        $"ManageProductRum.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
                 }
-                if (datafilter.Pages != null)
+                var filter = "NonMigrated";
+                var startRow = 0;
+                var resultPerRow = 1000;
+                if (datafilter != null)
                 {
-                    startRow = datafilter.Pages.StartRow;
-                    resultPerRow = datafilter.Pages.ResultsPerPage;
+                    if (datafilter.FilterBy.ContainsKey("filter"))
+                    {
+                        filter = datafilter.FilterBy["filter"];
+                    }
+                    if (datafilter.Pages != null)
+                    {
+                        startRow = datafilter.Pages.StartRow;
+                        resultPerRow = datafilter.Pages.ResultsPerPage;
+                    }
                 }
+
+                var url = $"{_apiEndPoint}/migration/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
+                WriteToDiagnosticLog("ManageProductRum.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+
+                var allUsers = GetResultFromApi<IList<MigrationUser>>(_accessToken, url);
+
+                if (allUsers == null)
+                {
+                    WriteToErrorLog($"ManageProductRum.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    return response;
+                }
+                WriteToDiagnosticLog($"ManageProductRum.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                response.RowsPerPage = resultPerRow;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = allUsers.Cast<object>().ToList();
+                response.TotalRows = allUsers.Count();
             }
-
-            var url = $"{_apiEndPoint}/migration/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
-            WriteToDiagnosticLog("ManageProductRum.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
-
-            var allUsers = GetResultFromApi<IList<MigrationUser>>(_accessToken, url);
-
-            if (allUsers == null)
+            catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductRum.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-                return response;
+                response = new ListResponse
+                { 
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+                WriteToErrorLog($"ManageProductRum.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
-            WriteToDiagnosticLog($"ManageProductRum.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-            response.RowsPerPage = resultPerRow;
-            response.ErrorReason = string.Empty;
-            response.IsError = false;
-            response.TotalPages = 1;
-            response.Records = allUsers.Cast<object>().ToList();
-            response.TotalRows = allUsers.Count();
             return response;
         }
 
@@ -904,44 +973,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Message = "Could not migrate users."
             };
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { migrateResponse.Message =  claimResposnse.ErrorReason; return migrateResponse; }            
+            if (claimResposnse.IsError) { migrateResponse.Message =  claimResposnse.ErrorReason; return migrateResponse; }
 
-            int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
-            if (companyInstanceSourceId == 0)
+            try
             {
-                WriteToErrorLog(
-                    $"ManageProductRum.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                migrateResponse.Message = "Company Setup Error: Please Contact Support.";
-                return migrateResponse;
-            }
 
-            var url = $"{_apiEndPoint}/migration/{companyInstanceSourceId}/migrate-users";
-           
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog(
+                        $"ManageProductRum.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    migrateResponse.Message = "Company Setup Error: Please Contact Support.";
+                    return migrateResponse;
+                }
 
-            var response = _client.PostAsJsonAsync($"{_apiEndPoint}/migration/{companyInstanceSourceId}/migrate-users", migrateUsers).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+                var url = $"{_apiEndPoint}/migration/{companyInstanceSourceId}/migrate-users";
 
-            var logData = new Dictionary<string, object>
+                _client.DefaultRequestHeaders.Clear();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+                var response = _client.PostAsJsonAsync($"{_apiEndPoint}/migration/{companyInstanceSourceId}/migrate-users", migrateUsers).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                var logData = new Dictionary<string, object>
             {
                 { "Url", url },
                 { "Response", responseContent },
                 { "EditorPersonaId", editorPersonaId },
                 { "MigratedUser", migrateUsers }
             };
-           
-            if (response.IsSuccessStatusCode)
-            {
-                WriteToDiagnosticLog("ManageProductRum.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = "Success";
-                migrateResponse.Status = true;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToDiagnosticLog("ManageProductRum.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = "Success";
+                    migrateResponse.Status = true;
+                }
+                else
+                {
+                    WriteToErrorLog($"ManageProductRum.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    migrateResponse.Message = "Cannot update user status to migrated.";
+                    migrateResponse.Status = false;
+                }
             }
-            else
+            catch (Exception ex )
             {
-                WriteToErrorLog($"ManageProductRum.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                migrateResponse.Message = "Cannot update user status to migrated.";
-                migrateResponse.Status = false;
+                migrateResponse = new MigrateResponse
+                { 
+                    Status = false,
+                    Message = ex.Message
+                };
+
+                WriteToErrorLog($"ManageProductRum.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
             return migrateResponse;
         }

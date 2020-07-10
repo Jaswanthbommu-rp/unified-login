@@ -119,10 +119,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
 			mockManageBlueBook
-				.Setup(m => m.GetCompanyMap(
-					It.IsAny<long>(),
-					It.IsAny<string>(),
-					It.IsAny<string>(),
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
@@ -255,10 +257,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
 			mockManageBlueBook
-				.Setup(m => m.GetCompanyMap(
-					It.IsAny<long>(),
-					It.IsAny<string>(),
-					It.IsAny<string>(),
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
@@ -393,10 +397,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
 			mockManageBlueBook
-				.Setup(m => m.GetCompanyMap(
-					It.IsAny<long>(),
-					It.IsAny<string>(),
-					It.IsAny<string>(),
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
@@ -547,10 +553,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_editorPersona.Organization.BooksCustomerMasterId = _blueBookId;
 
 			mockManageBlueBook
-				.Setup(m => m.GetCompanyMap(
-					It.IsAny<long>(),
-					It.IsAny<string>(),
-					It.IsAny<string>(),
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
 				 .Returns(companyMapList);
@@ -630,11 +638,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					}
 				}
 			};
-			mockManageBlueBook
-				.Setup(m => m.GetPropertyInstance(
-					It.IsAny<long>()
-				 ))
-				 .Returns(propertyInstanceList);
 
 			mockProductInternalSettingRepository
 				.Setup(m => m.GetProductInternalSettings(
@@ -721,7 +724,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
+                    It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>()
@@ -847,7 +852,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
+                    It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>()

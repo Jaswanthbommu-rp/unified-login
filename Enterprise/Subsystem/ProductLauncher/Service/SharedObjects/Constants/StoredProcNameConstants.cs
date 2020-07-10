@@ -153,6 +153,7 @@
         public const string SP_ListOrganizationStatusByUserId = "Enterprise.ListOrganizationStatusByUserId";
         public const string SP_ListOrganizationType = "Enterprise.ListOrganizationType";
         public const string SP_ListOrganizationDomain = "Enterprise.ListOrganizationDomain";
+        public const string SP_CreateOrganizationDomain = "Enterprise.CreateOrganizationDomain";
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
 
 		//PartyRelationship
@@ -179,6 +180,9 @@
         public const string SP_ListProductSettingsByPersonaId = "Enterprise.ListProductSettingsByPersonaId";
         public const string SP_ListGlobalSettingsForProduct = "Enterprise.ListGlobalSettingsForProduct";
         public const string SP_CreateProductSetting = "Enterprise.CreateProductSetting";
+        public const string SP_CreateProductSettingType = "Enterprise.CreateProductSettingType";
+        public const string SP_LinkProductSettingToConfiguration = "Enterprise.LinkProductSettingToConfiguration";
+
         public const string SP_CreateProductConfigurationbyPersonaId = "Enterprise.CreateProductConfigurationbyPersonaId";
         public const string SP_UpdatePersonaConfiguration = "Enterprise.UpdatePersonaConfiguration";
         public const string SP_ListProductBatchStatusesByRealPageId = "Enterprise.ListProductBatchByRealPageId";
@@ -195,6 +199,7 @@
 
         //ProductSettingType
         public const string SP_ListProductSettingType = "Enterprise.ListProductSettingType";
+
 
         //Contact Mechanism
         public const string SP_CreateContactMechanism = "Person.CreateContactMechanism";
