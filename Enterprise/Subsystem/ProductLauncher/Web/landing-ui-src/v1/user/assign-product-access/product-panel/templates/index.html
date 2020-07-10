@@ -42,11 +42,12 @@
         </div>
     </div>
 
-     <rp-scrolling-tabs-menu model="cpactrl.tabsMenu">
+     <rp-scrolling-tabs-menu model="cpactrl.tabsMenu" ng-if="!cpactrl.isProductDisabled()">
         </rp-scrolling-tabs-menu>
         <ng-include
             src="tab.incUrl"
             ng-show="tab.isActive"
-            ng-repeat="tab in cpactrl.tabsList">
+            ng-repeat="tab in cpactrl.tabsList"
+            ng-if="!cpactrl.isProductDisabled()">
         </ng-include>
 </div>
