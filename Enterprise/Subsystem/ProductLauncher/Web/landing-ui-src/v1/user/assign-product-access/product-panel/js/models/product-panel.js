@@ -293,11 +293,11 @@
                         properties.forEach(function (prop) {
                             if (prop.isAssigned) {
                                 if (productId == 8) {
+                                    if(!s.batchData.inputJson.propertyList.includes(prop.companyId)){
+                                        s.batchData.inputJson.propertyList.push(prop.companyId);
+                                    }
                                     if (prop.propertyId !== "") {
                                         s.batchData.inputJson.propertyList.push(prop.companyId + "|" + prop.propertyId);
-                                    }
-                                    else {
-                                        s.batchData.inputJson.propertyList.push(prop.companyId);
                                     }
                                 }
                                 else {
