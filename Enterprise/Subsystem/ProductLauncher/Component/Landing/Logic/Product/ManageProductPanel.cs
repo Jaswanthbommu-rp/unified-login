@@ -501,6 +501,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
+                    if (ex.Message == CommonMessageConstants.RegionErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
+
                     if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;

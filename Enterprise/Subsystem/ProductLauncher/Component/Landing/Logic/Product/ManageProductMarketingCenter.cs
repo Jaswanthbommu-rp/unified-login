@@ -117,12 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
 				string marketingCompanyId = company.CompanyInstanceSourceId;
-				if (string.IsNullOrEmpty(marketingCompanyId))
-				{
-					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					WriteToDiagnosticLog("GetRoles - Error looking for company id in bluebook.");
-					return result;
-				}
+				
 				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
 				var url = _productUrl + $"/v2/company/{marketingCompanyId}/contact/roles";
 				logData = new Dictionary<string, object>();
@@ -235,20 +230,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					marketingCenterCompanyId = companyMap.First(a => a.Source.Equals(BlueBookProductConstants.MarketingCenter, StringComparison.OrdinalIgnoreCase)).CompanyInstanceSourceId;
 					WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Found PMC ID from BlueBook result: {marketingCenterCompanyId}");
 
-					if (marketingCenterCompanyId == string.Empty || Convert.ToInt32(marketingCenterCompanyId) == 0)
-					{
-						WriteToErrorLog(
-							$"GetMarketingCenterPMCIDFromPersona.GetProperties - Error looking for companyInstanceSourceId in bluebook for user with editorPersona id - {editorPersonaId}.");
-						return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					}
-				}
-
-				if (companyMap == null)
-				{
-					WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - companyMap is NULL");
-
-					WriteToErrorLog($"GetMarketingCenterPMCIDFromPersona.GetProperties - Unable to get companyInstanceSourceId info in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
 				}
 
 				//companyInstanceId = 779893; // LeaseStar id 438
