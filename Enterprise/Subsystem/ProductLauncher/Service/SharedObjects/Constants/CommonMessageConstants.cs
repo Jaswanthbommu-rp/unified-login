@@ -9,7 +9,7 @@
         /// <summary>
         /// PropertyErrorMessage
         /// </summary>
-        public const string PropertyErrorMessage = "There was a problem getting the list of properties.";
+        public const string PropertyErrorMessage = "There was a problem getting the list of properties. If the problem persists, please contact support.";
 
         #endregion
 
@@ -18,7 +18,7 @@
         /// <summary>
         /// RolErrorMessage
         /// </summary>
-        public const string RoleErrorMessage = "There was a problem getting the roles.";
+        public const string RoleErrorMessage = "There was a problem getting the list of roles. If the problem persists, please contact support.";
 
         #endregion
 
@@ -27,8 +27,17 @@
         /// <summary>
         /// PropertyGroupErrorMessage
         /// </summary>
-        public const string PropertyGroupErrorMessage = "There was a problem getting the property group.";
+        public const string PropertyGroupErrorMessage = "There was a problem getting the list of property groups. If the problem persists, please contact support.";
 
+        #endregion
+
+        #region Rights
+
+        /// <summary>
+        /// RightErrorMessage
+        /// </summary>
+        public const string RightErrorMessage = "There was a problem getting the list of rights.  If the problem persists, please contact support.";
+        
         #endregion
 
         #region BlueBook
@@ -37,7 +46,16 @@
         /// CompanyErrorMessage
         /// </summary>
         public const string CompanyErrorMessage = "This product is not yet implemented.  The product access page will be available when your implementation is complete. Thank you for choosing RealPage.";
-        
+
+        #endregion
+
+        #region Regions
+
+        /// <summary>
+        /// RegionErrorMessage
+        /// </summary>
+        public const string RegionErrorMessage = "There was a problem getting the list of regions.  If the problem persists, please contact support.";
+
         #endregion
 
         #endregion
