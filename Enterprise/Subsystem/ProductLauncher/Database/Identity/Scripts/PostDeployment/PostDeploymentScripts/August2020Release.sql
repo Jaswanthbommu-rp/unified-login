@@ -1080,24 +1080,13 @@ SELECT	@RoleValueTypeId = RoleValueTypeId
 FROM	Enterprise.RoleValueType
 WHERE	Value='View Amenities'
 
-IF EXISTS(SELECT TOP 1 1 FROM Enterprise.Role WHERE RoleValueTypeId=@RoleValueTypeId and PartyId in (1566,132790,82532) and DefaultRole=0)
+IF EXISTS(SELECT TOP 1 1 FROM Enterprise.Role WHERE RoleValueTypeId=@RoleValueTypeId and  DefaultRole=0)
 BEGIN
 
 		UPDATE r SET DefaultRole = 1
          FROM enterprise.rolevaluetype rv
               INNER JOIN enterprise.role r ON r.rolevaluetypeid = rv.rolevaluetypeid
          WHERE rv.value = 'view amenities'
-               AND R.PartyId = 1566;
+               AND r.DefaultRole=0
 
-		UPDATE r SET DefaultRole = 1
-         FROM enterprise.rolevaluetype rv
-              INNER JOIN enterprise.role r ON r.rolevaluetypeid = rv.rolevaluetypeid
-         WHERE rv.value = 'view amenities'
-               AND R.PartyId = 82532;
-
-		UPDATE r SET DefaultRole = 1
-         FROM enterprise.rolevaluetype rv
-              INNER JOIN enterprise.role r ON r.rolevaluetypeid = rv.rolevaluetypeid
-         WHERE rv.value = 'view amenities'
-               AND R.PartyId = 132790;
 END
