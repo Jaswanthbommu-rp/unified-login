@@ -17,6 +17,7 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Net.Http;
 using System.Text;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -232,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			// setting roles and properties values if it is not a dynamic panel
-			if (rolePropertyEntityList.RolePropertiesList== null && (rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
+			if (rolePropertyEntityList.RolePropertiesList== null && (rolePropertyEntityList?.RoleList?.Count > 0 || rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
 			{
 				if (rolePropertyEntityList.DepartmentList?.Count > 0 && rolePropertyEntityList.PropertyList?.Count > 0)
 				{
@@ -382,12 +383,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						RPDMUser newUser = GetUserDetails(newid);
 						if (newUser != null)
 						{
-							if (userPersonaId == 0)
-							{
-								var cacheKey = $"DocumentDirector_Roles_{editorPersonaId}_{userPersona.OrganizationPartyId}";
-								MemoryCache.Default.Remove(cacheKey);
-							}
-							
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, newUser.Name);
 							WriteToDiagnosticLog($"ManageRPDMUser - Create user. newid={newid}, login={newUser.Name}");
@@ -469,8 +464,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
 
 					var postUpdateResponse = _client.PostAsJsonAsync(url, manageUser).Result;
-					var cacheKey = $"DocumentDirector_Roles_{editorPersonaId}_{userPersonaId}_{userPersona.OrganizationPartyId}";
-					MemoryCache.Default.Remove(cacheKey);
 					if (postUpdateResponse.IsSuccessStatusCode || postUpdateResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 					{
 						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Success);
@@ -542,9 +535,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private string GetDomain()
 		{
 			string domain = "";
-			CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
 			try
 			{
+				CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
+			
 				IList<InstanceAttribute> listInstanceAttribute = companyMap.CompanyInstance[0].Attributes;
 				if (listInstanceAttribute.ToList().Any(a => a.AttributeName.ToUpper() == "DOMAIN ID"))
 				{
@@ -555,7 +549,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				WriteToErrorLog("ManageRPDMUser - There was a problem getting the DocManagement attribute in BlueBook", exception: ex);
-				return "There was a problem getting the company details from BlueBook.";
+
+				return CommonMessageConstants.CompanyErrorMessage;
 			}
 
 			return domain;
@@ -707,10 +702,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse propertyResponse = new ListResponse();
 			try
 			{
-				RPObjectCache rpCache = new RPObjectCache();
-				string cacheKey = userPersonaId == 0 ? $"DocumentDirector_Roles_{editorPersonaId}_{organizationPartyId}" : $"DocumentDirector_Roles_{editorPersonaId}_{userPersonaId}_{organizationPartyId}";
-				ListResponse lstRolesProperties = rpCache.GetFromCache(cacheKey, 300, () =>
-				{
 					response = GetRoles(editorPersonaId, userPersonaId);
 					if (response.TotalRows > 0)
 					{
@@ -731,7 +722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 									pRole.Roletype = "Property";
 								}
 
-								propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID);
+								propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID, organizationPartyId);
 								if (propertyResponse.Records.Count > 0)
 								{
 									pRole.propertiesList = propertyResponse.Records as List<object>;
@@ -762,8 +753,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						response.ErrorReason = "There was a problem getting the role details";
 					}
 					return response;
-				});
-				return lstRolesProperties;
 			}
 			catch (Exception ex)
 			{
@@ -784,7 +773,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private ListResponse GetRoleClassifierDataset(long editorPersonaId, long userPersonaId, string roleId)
 		{
 			ListResponse response = new ListResponse();
-
 			try
 			{
 				RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + roleId);
@@ -837,6 +825,100 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						TotalPages = 1,
 						ErrorReason = ""
 					};
+				}
+			}
+			catch (Exception ex)
+			{
+				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+				response.IsError = true;
+				response.ErrorReason = "There was a problem getting the classifier";
+			}
+
+			return response;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="roleId"></param>
+		/// <param name="organizationPartyId"></param>
+		/// <returns></returns>
+		private ListResponse GetRoleClassifierDataset(long editorPersonaId, long userPersonaId, string roleId, long organizationPartyId)
+		{
+			ListResponse response = new ListResponse();
+			RPObjectCache rpCache = new RPObjectCache();
+			string cacheKey = $"DocumentDirector_Roles_{organizationPartyId}_{roleId}";
+			
+			try
+			{
+				IList<ProductProperty> list = rpCache.GetFromCache(cacheKey, 300, () =>
+				{
+					RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + roleId);
+					if (rpdmRoleDetail.Scope != null)
+					{
+						// get additional information for the role details
+						if (!string.IsNullOrEmpty(rpdmRoleDetail.Scope.HRef))
+						{
+							RPDMClassifier classifier = GetResultFromApi<RPDMClassifier>(rpdmRoleDetail.Scope.HRef);
+							if (classifier != null && classifier.DataSet.HRef != null)
+							{
+								RPDMResult<RPDMDataset> rpdmResult = GetResultFromApi<RPDMResult<RPDMDataset>>(classifier.DataSet.HRef + "/values", "name");
+								if (rpdmResult?.Page.Count > 0)
+								{
+									return rpdmResult.Page.ToGBProperties();
+								}
+							}
+						}
+					}
+					return null;
+				});
+
+				if (list !=null)
+				{
+					// flag any values that are assigned to the given user
+					if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId))
+					{
+						RPDMUser user = GetUserDetails(_productUserId);
+						if (user.Roles?.Count > 0)
+						{
+							List<RPDMUserRoles> userRoles = user.Roles;
+							foreach (ProductProperty pp in list)
+							{
+								bool isAssigned = false;
+								foreach (RPDMUserRoles ur in userRoles)
+								{
+									if (pp.ID == ur.Entity?.Id?.ToUpper() && roleId == ur.Role?.Id?.ToUpper())
+									{
+										isAssigned = true;
+										break;
+									}
+								}
+								pp.IsAssigned = isAssigned;
+							}
+						}
+					}
+					else
+					{
+						foreach (ProductProperty pp in list)
+						{
+							pp.IsAssigned = false;
+						}
+					}
+					if (list != null)
+					{
+						
+						list = list.OrderBy(p => p.Name).ToList();
+						response = new ListResponse()
+						{
+							Records = list.Cast<object>().ToList(),
+							TotalRows = list.Count,
+							RowsPerPage = list.Count,
+							TotalPages = 1,
+							ErrorReason = ""
+						};
+					}
 				}
 			}
 			catch (Exception ex)

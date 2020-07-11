@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -111,12 +112,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceId =
                     GetProductCompanyInstanceId(BlueBookProductConstants.ClientPortal).CompanyInstanceId;
 
-                if (companyInstanceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductClientPortal.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-				}
                 WriteToDiagnosticLog(
                     $"ManageProductClientPortal.GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
@@ -151,12 +146,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                result.IsError = true;
-                result.ErrorReason =
-                    $"ManageProductClientPortal.GetProperties - There was a problem getting the properties.";
                 WriteToErrorLog(
                     $"ManageProductClientPortal.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
                     exception: ex);
+
+                result = new ListResponse()
+                { 
+                    IsError = true
+                };
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                }
             }
 
             return result;
@@ -218,8 +224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason =
-                    $"There was a problem getting the roles.";
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;                  
                 WriteToErrorLog($"ManageProductClientPortal.GetRoles Error for user with editorPersona id - {editorPersonaId} ",
                     exception: ex);
             }

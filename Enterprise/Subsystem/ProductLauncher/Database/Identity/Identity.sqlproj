@@ -947,7 +947,18 @@
     <Build Include="Person\Stored Procedures\GetProductsByPersonaId.sql" />
     <Build Include="Enterprise\Tables\ProductRight.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdatePersonaConfiguration.sql" />
+	<Build Include="Enterprise\Stored Procedures\CreateOrganizationDomain.sql" />
+
     <Build Include="Security\Security.sql" />
+	<Build Include="RoleRightsManagement\Tables\OrganizationDefaultRole.sql" />
+    <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRight.sql" />
+    <Build Include="RoleRightsManagement\Tables\PersonaRole.sql" />
+    <Build Include="RoleRightsManagement\Tables\Right.sql" />
+    <Build Include="RoleRightsManagement\Tables\RightRoute.sql" />
+    <Build Include="RoleRightsManagement\Tables\Role.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleRight.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleType.sql" />
+    <Build Include="RoleRightsManagement\Tables\Route.sql" />
     <Build Include="RoleRightsManagement\ProductIdType.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\ListRolesByParty.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\CreateRole.sql" />
@@ -963,17 +974,9 @@
     <Build Include="RoleRightsManagement\Stored Procedures\ListRolesByRealPageID.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\ListRolesForProductsByPartyId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\ListRolesForProductsByPersonaId.sql" />
-    <Build Include="RoleRightsManagement\Stored Procedures\UpdateRole.sql" />
-    <Build Include="RoleRightsManagement\Tables\OrganizationDefaultRole.sql" />
-    <Build Include="RoleRightsManagement\Tables\OrganizationOverRideRight.sql" />
-    <Build Include="RoleRightsManagement\Tables\PersonaRole.sql" />
-    <Build Include="RoleRightsManagement\Tables\Right.sql" />
-    <Build Include="RoleRightsManagement\Tables\RightRoute.sql" />
-    <Build Include="RoleRightsManagement\Tables\Role.sql" />
-    <Build Include="RoleRightsManagement\Tables\RoleRight.sql" />
-    <Build Include="RoleRightsManagement\Tables\RoleType.sql" />
-    <Build Include="RoleRightsManagement\Tables\Route.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\UpdateRole.sql" />    
     <Build Include="RoleRightsManagement\Stored Procedures\SetDefaultRole.sql" />
+
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

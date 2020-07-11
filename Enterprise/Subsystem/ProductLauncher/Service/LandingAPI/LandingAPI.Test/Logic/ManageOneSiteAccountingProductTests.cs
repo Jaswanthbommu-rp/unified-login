@@ -137,7 +137,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
+                    It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>()
@@ -247,7 +249,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
+                    It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>()
@@ -583,10 +587,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, managePartyRelationship: null);
 
             ListResponse resp = manageProduct.GetUserRoles(_editorPersonaId, _userPersonaId, null);
-            Assert.True(resp.IsError == true && resp.ErrorReason == "Service exception");
+            Assert.True(resp.IsError == true && (resp.ErrorReason == "Service exception" || resp.ErrorReason == CommonMessageConstants.RoleErrorMessage));
 
             resp = manageProduct.GetUserRoles(_editorPersonaId, 33, null);
-            Assert.True(resp.IsError && resp.ErrorReason == "Invalid user persona");
+            Assert.True(resp.IsError && (resp.ErrorReason == "Invalid user persona" || resp.ErrorReason == CommonMessageConstants.RoleErrorMessage));
 
             // now return an empty property list
             mockService

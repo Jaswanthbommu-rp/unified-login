@@ -76,14 +76,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			}
 
 			ListResponse productResponse;
-			switch (ManageBlueBook.GetBlueBookProductId(productCode))
+			switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
 			{
-				case (int) ProductEnum.OpsBuyer:
+				case ProductEnum.OpsBuyer:
 					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 					productResponse = manageProductOps.GetRoles(_userClaims.PersonaId, persona.PersonaId, "", null);
 					filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
 					break;
-				case (int)ProductEnum.UnifiedPlatform:
+				case ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageProduct = new ManageUnifiedLogin(_userClaims);
 					productResponse = manageProduct.GetUserRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId);
 					filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
@@ -131,14 +131,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			};
 
 			ListResponse productResponse;
-			switch (ManageBlueBook.GetBlueBookProductId(productCode))
+			switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
 			{
-				case (int) ProductEnum.OpsBuyer:
+				case ProductEnum.OpsBuyer:
 					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 					productResponse = manageProductOps.GetRoles(_userClaims.PersonaId, 0, "", null);
 					break;
 
-				case (int) ProductEnum.UnifiedPlatform:
+				case ProductEnum.UnifiedPlatform:
 					IManageUnifiedLogin manageProduct = new ManageUnifiedLogin(_userClaims);
 					productResponse = manageProduct.GetRoles(_userClaims.PersonaId, _userClaims.OrganizationPartyId);
 					break;

@@ -216,8 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             IOrganizationRepository organizationRepository = new OrganizationRepository();
-            //BlueBook MasterId for External Users
-            Organization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
+            Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId:DefaultUserClaim.ExternalCompanyRealPageId);
 
             IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             IList<ContactMechanismUsageType> emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
@@ -2151,7 +2150,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
 
             //BlueBook MasterId for External Users
-            Organization organizationExternalUser = organizationRepository.GetOrganization(blueBookId: DefaultUserClaim.ExternalCompanyMasterId);
+            Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.RealPageId);
 

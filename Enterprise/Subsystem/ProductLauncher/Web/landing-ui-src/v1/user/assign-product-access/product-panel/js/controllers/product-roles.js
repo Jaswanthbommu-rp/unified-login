@@ -485,6 +485,9 @@
                     vm.showAllPropertiesSwitch = (record.name.toLowerCase() == "enterprise standard") ? true : false;
                     vm.allProperties = (record.name.toLowerCase() == "enterprise admin") ? true : false;
                     syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
+                    if(vm.showAllPropertiesSwitch){
+                        syncMgr.allPropertiesSync(record.productId, false);
+                    }
                 }
                 else if (record.productId == "26" || record.productId == "47") {
                     vm.rpRoleSelected = record;
@@ -553,6 +556,7 @@
                     });
                 }
                 else{
+                    syncMgr.allPropertiesSync($scope.$parent.productId, false);
                     pubsub.publish("rp.residentPortalAllPropertiesSet","property");
                 }
 

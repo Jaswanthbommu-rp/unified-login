@@ -44,6 +44,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// </summary>
         public InstanceAddress Address { get; set; }
 
+        public string State { get; set; }
+
         //public string YearBuilt { get; set; }
 
         //public string RenovationStartDate { get; set; }

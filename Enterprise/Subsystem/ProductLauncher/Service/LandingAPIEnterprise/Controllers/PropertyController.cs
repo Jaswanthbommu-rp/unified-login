@@ -72,9 +72,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    }
 
 		    ListResponse productResponse;
-		    switch (ManageBlueBook.GetBlueBookProductId(productCode))
+		    switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
 		    {
-			    case (int) ProductEnum.OpsBuyer:
+			    case ProductEnum.OpsBuyer:
 				    IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
 				    productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, persona.PersonaId, false, null);
 				    List<AssetGroup> opsFilteredList = productResponse.Records.Cast<AssetGroup>().ToList().FindAll(p => p.IsAssigned);
@@ -123,13 +123,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    };
 
             ListResponse productResponse;
-            switch (ManageBlueBook.GetBlueBookProductId(productCode))
+            switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
             {
-                case (int)ProductEnum.OpsBuyer:
+                case ProductEnum.OpsBuyer:
                     IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
                     productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
                     break;
-                case (int)ProductEnum.UnifiedPlatform:
+                case ProductEnum.UnifiedPlatform:
                     ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
                     productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
                     break;

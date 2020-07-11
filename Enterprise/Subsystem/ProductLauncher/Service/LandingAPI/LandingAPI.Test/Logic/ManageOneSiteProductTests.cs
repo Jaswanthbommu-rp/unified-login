@@ -27,6 +27,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using Xunit;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -387,9 +388,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
                  .Returns(mapResource);
@@ -634,9 +637,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, managePersona, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);
             Persona persona = new Persona();
-            var exception = Record.Exception(() => manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, null));
-            Assert.NotNull(exception);
-            Assert.IsType<System.Exception>(exception);
+            var error =  manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, null);
+            Assert.NotNull(error);
+            Assert.True(error.IsError);
         }
 
         [Fact]
@@ -1547,7 +1550,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, null);
 
 			//Assert
-			Assert.True(resp.IsError && resp.ErrorReason.ToUpper() == "THERE WAS A PROBLEM GETTING THE LIST OF PROPERTIES");
+			Assert.True(resp.IsError && (resp.ErrorReason.ToUpper() == "THERE WAS A PROBLEM GETTING THE LIST OF PROPERTIES" ||
+                        resp.ErrorReason == CommonMessageConstants.PropertyErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
         }
 
         [Fact]
@@ -1602,9 +1607,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
                  .Returns(companyMapList);
@@ -4047,9 +4054,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
                  .Returns(mapResource);
@@ -4146,9 +4155,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             mockManageBlueBook
                 .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
                     It.IsAny<long>(),
                     It.IsAny<string>(),
-					It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
                     It.IsAny<bool>()
 				 ))
                  .Returns(mapResource);
@@ -4222,11 +4233,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.EnableUser(It.IsAny<string>()));
 
             mockManageBlueBook
-              .Setup(m => m.GetCompanyMap(
-                  It.IsAny<long>(),
-                  It.IsAny<string>(),
-                  It.IsAny<string>(),
-                  It.IsAny<bool>()
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>()
                ))
                .Returns(mapResource);
 
@@ -4291,11 +4304,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.EnableUser(It.IsAny<string>()));
 
             mockManageBlueBook
-              .Setup(m => m.GetCompanyMap(
-                  It.IsAny<long>(),
-                  It.IsAny<string>(),
-                  It.IsAny<string>(),
-                  It.IsAny<bool>()
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>()
                ))
                .Returns(mapResource);
 

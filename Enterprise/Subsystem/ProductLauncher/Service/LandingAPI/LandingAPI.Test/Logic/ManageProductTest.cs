@@ -11,7 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Castle.Components.DictionaryAdapter;
 using Xunit;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -485,14 +487,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			long blueBookCompanyInstanceId = -1;
 			long personaId = 486;
 
-			Organization organization = new Organization()
-			{
-				PartyId = 10639,
-				Name = "RealPage Employee",
-				RealPageId = new Guid("9A97CCA3-F7FB-400B-AE53-CE601C623031"),
-				CreateDate = DateTime.Parse("2018-01-16 16:51:40.277"),
-				BooksMasterId = -1
-			};
+            Organization organization = new Organization()
+            {
+                PartyId = 10639,
+                Name = "RealPage Employee",
+                RealPageId = new Guid("9A97CCA3-F7FB-400B-AE53-CE601C623031"),
+                CreateDate = DateTime.Parse("2018-01-16 16:51:40.277"),
+                BooksMasterId = -1,
+                OrganizationDomain = new OrganizationDomain() {OrganizationDomainId = 1, Name = "Primary"}
+            };
+
+            UnifiedLoginCompany ulc = new UnifiedLoginCompany(){ CompanyRealPageId = organization.RealPageIdUpperCaseForBooks, CompanyName = organization.Name, BooksCustomerMasterId = blueBookCompanyInstanceId, Domain = organization.OrganizationDomain.Name};
+
+            List<UnifiedLoginCompany> unifiedLoginCompanyList = new List<UnifiedLoginCompany>() {ulc};
 
 			IList<RightRoleDetail> listRightRoleDetail = new List<RightRoleDetail>()
 			{
@@ -599,8 +606,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			productIdList.Add((int)ProductEnum.ProspectContactCenter);
 
 			_mockManageOrganization
-				.Setup(m => m.GetOrganization(It.IsAny<Guid>(),null, It.IsAny<long>(), null))
+				.Setup(m => m.GetOrganization(It.IsAny<Guid>(), null))
 				.Returns(organization);
+
+            _mockManageOrganization
+                .Setup(m => m.GetUnifiedLoginCompanyList())
+                .Returns(unifiedLoginCompanyList);
 
 			_mockProductRepository
 				.Setup(m => m.GetProductIdsByCompany(

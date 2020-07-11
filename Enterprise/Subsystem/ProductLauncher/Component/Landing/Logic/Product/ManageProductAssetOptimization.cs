@@ -21,6 +21,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -300,11 +301,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				response.IsError = true;
-				response.ErrorReason = "There was a problem getting the Product Roles.";
 				WriteToErrorLog($"ManageProductAssetOptimization.GetProductRoles Error for user with " +
 								$"editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}",
 					exception: ex);
+
+				response = new ListResponse();
+				response.IsError = true;
+
+				if (ex is BlueBookException)
+				{
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+				}
 			}
 
 			return response;
@@ -397,12 +408,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
 				string aoCompanyId = company.CompanyInstanceSourceId;
-				if (string.IsNullOrEmpty(aoCompanyId))
-				{
-					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					WriteToDiagnosticLog("ManageProductAssetOptimization.GetProductProperties - Error looking for company id in bluebook.");
-					return result;
-				}
+
 				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductProperties - Found blue book company source id {aoCompanyId}");
 
 				IList<ProductProperty> companyProperties = new List<ProductProperty>();
@@ -426,7 +432,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}					
 				}
 
-
 				response = new ListResponse()
 				{
 					Records = companyProperties.Cast<object>().ToList(),
@@ -442,8 +447,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				response.IsError = true;
-				response.ErrorReason = "There was a problem getting the Product Properties.";
+				response = new ListResponse
+				{
+					IsError = true
+				};
+
+				if (ex is BlueBookException)
+				{
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+				}
 				WriteToErrorLog(
 					$"ManageProductAssetOptimization.GetProductProperties Error for user with editorPersona id - {editorPersonaId} " +
 					$"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
@@ -467,75 +483,89 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				IsError = true,
 				ErrorReason = "No Users."
 			};
-			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-			if (claimResposnse.IsError)
+			try
 			{
-				response.ErrorReason = claimResposnse.ErrorReason;
-				return response;
-			}
-
-			var filter = false;
-			var startRow = 0;
-			var resultPerRow = 1000;
-			if (datafilter != null)
-			{
-				if (datafilter.FilterBy.ContainsKey("filter"))
+				var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+				if (claimResposnse.IsError)
 				{
-					filter = datafilter.FilterBy["filter"].ToLower() == "migrated" ? true : false;
+					response.ErrorReason = claimResposnse.ErrorReason;
+					return response;
 				}
 
-				if (datafilter.Pages != null)
+				var filter = false;
+				var startRow = 0;
+				var resultPerRow = 1000;
+				if (datafilter != null)
 				{
-					startRow = datafilter.Pages.StartRow;
-					resultPerRow = datafilter.Pages.ResultsPerPage;
+					if (datafilter.FilterBy.ContainsKey("filter"))
+					{
+						filter = datafilter.FilterBy["filter"].ToLower() == "migrated" ? true : false;
+					}
+
+					if (datafilter.Pages != null)
+					{
+						startRow = datafilter.Pages.StartRow;
+						resultPerRow = datafilter.Pages.ResultsPerPage;
+					}
 				}
-			}
 
-			var productUserProfileApiUrl = $"{_apiEndPoint}unity/migration/users/{_editorProductUserId.ToLower()}/";
-			var migrationResponse = GetResultFromApi<IList<AssetOptimizationMigrationUser>>(productUserProfileApiUrl);
-			if (migrationResponse == null)
-			{
-				WriteToErrorLog($"ManageProductAssetOptimization.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
-				return response;
-			}
-
-			var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
-			ProductRepository productRepository = new ProductRepository();
-			string product = Convert.ToString((int)ProductEnum.AssetOptimizer);
-			IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
-			List<AssetOptimizationMigrationUser> usersData = new List<AssetOptimizationMigrationUser>();
-			var orgMigrationUsersData = migrationResponse.Where(m => m.CompanySourceInstanceId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
-			if (productUserList?.Count > 0)
-			{
-				orgMigrationUsersData.RemoveAll(o => productUserList.Any(p => p.ProductUserName == o.UserName));
-			}
-			usersData = orgMigrationUsersData;
-
-			var migrationUsers = new List<MigrationUser>();
-			foreach (var user in usersData)
-			{
-				var migrationUser = new MigrationUser
+				var productUserProfileApiUrl = $"{_apiEndPoint}unity/migration/users/{_editorProductUserId.ToLower()}/";
+				var migrationResponse = GetResultFromApi<IList<AssetOptimizationMigrationUser>>(productUserProfileApiUrl);
+				if (migrationResponse == null)
 				{
-					CompanyInstanceSourceId = user.CompanySourceInstanceId,
-					FirstName = user.FirstName,
-					LastName = user.LastName,
-					UserId = user.UserId,
-					Username = user.UserName,
-					Email = user.Email,
-					LastActivity = user.Activity.ToString(),
-					Extra = string.Join("|", user.Products),
-					Status = (string.IsNullOrWhiteSpace(user.Status) || user.Status.ToLower() == "active") ? "Active" : "Disabled"
+					WriteToErrorLog($"ManageProductAssetOptimization.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+					return response;
+				}
+
+				var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				ProductRepository productRepository = new ProductRepository();
+				string product = Convert.ToString((int)ProductEnum.AssetOptimizer);
+				IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
+				List<AssetOptimizationMigrationUser> usersData = new List<AssetOptimizationMigrationUser>();
+				var orgMigrationUsersData = migrationResponse.Where(m => m.CompanySourceInstanceId.Equals(blueAOCompanyInfo.CompanyInstanceSourceId)).ToList();
+				if (productUserList?.Count > 0)
+				{
+					orgMigrationUsersData.RemoveAll(o => productUserList.Any(p => p.ProductUserName == o.UserName));
+				}
+				usersData = orgMigrationUsersData;
+
+				var migrationUsers = new List<MigrationUser>();
+				foreach (var user in usersData)
+				{
+					var migrationUser = new MigrationUser
+					{
+						CompanyInstanceSourceId = user.CompanySourceInstanceId,
+						FirstName = user.FirstName,
+						LastName = user.LastName,
+						UserId = user.UserId,
+						Username = user.UserName,
+						Email = user.Email,
+						LastActivity = user.Activity.ToString(),
+						Extra = string.Join("|", user.Products),
+						Status = (string.IsNullOrWhiteSpace(user.Status) || user.Status.ToLower() == "active") ? "Active" : "Disabled"
+					};
+					migrationUsers.Add(migrationUser);
+				}
+
+				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetMigrationUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+				response.RowsPerPage = migrationResponse.Count;
+				response.ErrorReason = string.Empty;
+				response.IsError = false;
+				response.TotalPages = 1;
+				response.Records = migrationUsers.Cast<object>().ToList();
+				response.TotalRows = migrationResponse.Count;
+			}
+			catch (Exception ex)
+			{
+				response = new ListResponse
+				{
+					IsError = true,
+					ErrorReason = ex.Message
 				};
-				migrationUsers.Add(migrationUser);
-			}
 
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetMigrationUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-			response.RowsPerPage = migrationResponse.Count;
-			response.ErrorReason = string.Empty;
-			response.IsError = false;
-			response.TotalPages = 1;
-			response.Records = migrationUsers.Cast<object>().ToList();
-			response.TotalRows = migrationResponse.Count;
+				WriteToErrorLog($"ManageProductAssetOptimization.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+
+			}
 			return response;
 		}
 
@@ -642,7 +672,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
 				var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
-                bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+                bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
 				if (productUserGbLogin == null)
@@ -759,13 +789,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 						returnResult = CreateUpdateAOBIProduct(userEmailAddress, editorPersonaId, productUserPersonaId, biProductData, persona, person, productUserGbLogin);
 
-						if (string.IsNullOrEmpty(returnResult) && aoGbUserCompanyPropertyRoleDetails.Count == 0)
-						{
-							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productUserGbLogin.LoginName.ToLower());
-							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productUserGbLogin.LoginName.ToLower());
-							UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
-						}
-					}
+                        if (string.IsNullOrEmpty(returnResult) && aoGbUserCompanyPropertyRoleDetails.Count == 0)
+                        {
+                            _samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productUserGbLogin.LoginName.ToLower());
+                            _samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productUserGbLogin.LoginName.ToLower());
+                            UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
+                        }
+                    }
 				}
 
 				//Create/Update single/multi company AO Products
@@ -884,7 +914,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			string biProductUserName = "";
 			string result = "";
-			
+			IList<AoUserCompanyPropertyRoleDetail> existingAoProducts = null;
+			IList<AoUserCompanyPropertyRoleDetail> unAssignedProducts = null;
+
 			biProductUserName = GetSamlProductUserName(productUserPersonaId, "BI");
 
 			var biAOUser = new AOUser
@@ -902,11 +934,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (!string.IsNullOrEmpty(biProductUserName) )
 			{
-				var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
+				 unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false).ToList();
 				if (unAssignedProducts.Count() > 0)
 				{
 					biAOUser.IsEnabled = false;
 					aoGbUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId, biProductUserName);
+					// store existing assigned products
+					 existingAoProducts = aoGbUserCompanyPropertyRoleDetails;
 				}
 				//foreach (var unAssignedProduct in unAssignedProducts)
 				//{
@@ -921,7 +955,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				//		//}
 				//	}
 				//}
-			}		
+
+			}
 
 			biAOUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
 			biAOUser.Divisions = new List<Divisions>();
@@ -960,7 +995,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				biAOUser.Login = biLoginName.ToLower();
 				biAOUser.UserId = biLoginName.ToLower();
 
-				var createBIResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", biAOUser);
+				 var createBIResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", biAOUser);
 
 				if (string.IsNullOrEmpty(createBIResult))
 				{
@@ -992,8 +1027,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
 					}
-					else{
-						UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Deleted);
+                    else { 
+                        UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, unAssignedProducts);
+						updateResult = "unAssignedProducts";
+						//UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Deleted);
 					}
 
 					WriteToDiagnosticLog(
@@ -1034,7 +1071,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				string productUserName = "";
-				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 				bool isExternalUser = persona.Organization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && persona.Organization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 				
 				if (string.IsNullOrEmpty(userEmailAddress))
@@ -1461,8 +1498,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				response.IsError = true;
-				response.ErrorReason = "There was a problem getting the groups.";
+				response = new ListResponse
+				{
+					IsError = true
+				};
+
+				if (ex is BlueBookException)
+				{
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+				}
+
 				WriteToErrorLog($"ManageProductAssetOptimization.GetPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
 
@@ -1578,8 +1627,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				response.IsError = true;
-				response.ErrorReason = "There was a problem getting the groups.";
+				response = new ListResponse
+				{
+					IsError = true
+				};
+
+				if (ex is BlueBookException)
+				{
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+				}
+				
 				WriteToErrorLog($"ManageProductAssetOptimization.GetProductPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
 			}
 
@@ -2661,7 +2722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var modifiedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned);
 
 			IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 
 			// remove products
 			foreach (var unAssignedProduct in unAssignedProducts)
@@ -2714,7 +2775,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
 			
 			IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 
 			// remove roles			
 			if (!hasMultiCompany && persona.Organization.PrimaryOrganization)

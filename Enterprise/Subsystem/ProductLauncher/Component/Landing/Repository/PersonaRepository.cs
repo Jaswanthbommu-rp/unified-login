@@ -175,7 +175,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         private long getPersonaRoleId(long personaId)
         {
-            // ObjectCache groupCache = MemoryCache.Default;
             string cacheKey = $"getPersonaRoleId_{personaId}";
             ObjectCache personaRoleCache = MemoryCache.Default;
             long? roleId;
@@ -191,15 +190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 personaRoleCache.Set(cacheKey, roleId, cachePolicy);
             }
-            //RPObjectCache rpCache = new RPObjectCache();
-            //string cacheKey = $"getPersonaRoleId_{personaId}";
-            //long? roleId = 0;
-            //roleId = rpCache.GetFromCache<long?>(cacheKey, 120, () =>
-            //{
-            //    UserRoleRightRepository urr = new UserRoleRightRepository();
-            //    return urr.GetRoleIdByPersona(personaId, (int)ProductEnum.UnifiedPlatform);
-                
-            //});
+         
             return roleId.GetValueOrDefault();
         }
 
@@ -302,11 +293,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona.hasManagePlatFormSecurity = personaRights.Contains("ManagePlatFormSecurity", StringComparer.OrdinalIgnoreCase);
                 persona.hasAccessSettingsAdmin = personaRights.Contains("AccessSettingsAdmin", StringComparer.OrdinalIgnoreCase);
                 persona.hasManageSettingsTemplates = personaRights.Contains("ManageSettingsTemplates", StringComparer.OrdinalIgnoreCase);
-                persona.hasnotificationsAccess = personaRights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);
-                
+                persona.hasnotificationsAccess = personaRights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);              
 
                 // For Import User Access - Support tool Employee
-                persona.hasImportUsersAccess = persona.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId && personaRights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
+                persona.hasImportUsersAccess = persona.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId && personaRights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
 
                 if (!persona.hasViewOnlySettingsAccess || !persona.hasManageUnifiedSettings || !persona.hasManageCustomFields || !persona.hasManagePlatFormSecurity || !persona.hasManageSettingsTemplates)
                 {
@@ -434,7 +424,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 UserRoleType = userRoleType
             };
 
-            Organization organization = _organizationRepository.GetOrganization(null, organizationPartyId, null, null);
+            Organization organization = _organizationRepository.GetOrganization(null, organizationPartyId);
 
             using (var repository = GetRepository())
             {

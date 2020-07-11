@@ -730,7 +730,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				response.UserStatus = errorStatus.ErrorMsg;
 				response.Status = errorStatus;
 			}
-            else if (_userClaims.CustomerMasterId == DefaultUserClaim.ExternalCompanyMasterId)
+            else if (_userClaims.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "User.CreateUser.36";

@@ -23,20 +23,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Get Product Company Map
 		/// </summary>
-		public CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims)
+		public CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims, string domain)
 		{
-			IManageBlueBook blueBook = new ManageBlueBook(userClaims);
+			try
+			{
+				IManageBlueBook blueBook = new ManageBlueBook(userClaims);
 
-			IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(booksMasterId, blueBookProductCode.ToUpper());
+			IList<CustomerCompanyMap> companyProductList = blueBook.GetCompanyMap(userClaims.OrganizationRealPageGuid, booksMasterId, source: blueBookProductCode.ToUpper(), domain: domain);
 			if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
 
-			CustomerCompanyMap company = new CustomerCompanyMap();
-			if (companyProductList.Any(a => a.Source.ToUpper() == blueBookProductCode.ToUpper()))
-			{
-				company = (from a in companyProductList where a.Source.ToUpper() == blueBookProductCode.ToUpper() select a).FirstOrDefault();
-			}
+				CustomerCompanyMap company = new CustomerCompanyMap();
+				if (companyProductList.Any(a => a.Source.ToUpper() == blueBookProductCode.ToUpper()))
+				{
+					company = (from a in companyProductList where a.Source.ToUpper() == blueBookProductCode.ToUpper() select a).FirstOrDefault();
+				}
 
-			return company;
+				return company;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message , ex);
+			}
 		}
 
 		/// <summary>
