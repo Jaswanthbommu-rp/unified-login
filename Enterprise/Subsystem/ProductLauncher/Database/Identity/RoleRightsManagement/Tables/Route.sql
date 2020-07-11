@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [Security].[Route](
-	[RouteId] [bigint] IDENTITY(1,1) NOT NULL,
+	[RouteId] INT IDENTITY(1,1) NOT NULL,
 	[RouteValue] [nvarchar](50) NOT NULL,
 	[Description] [nvarchar](200) NULL,
 	[CreatedBy] [nvarchar](255) NOT NULL,

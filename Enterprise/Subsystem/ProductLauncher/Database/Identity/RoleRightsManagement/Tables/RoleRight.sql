@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [Security].[RoleRight](
-	[RoleRightId] [bigint] IDENTITY(1,1) NOT NULL,
-	[RoleId] [bigint] NOT NULL,
-	[RightId] [bigint] NOT NULL,
+	[RoleRightId] BIGINT IDENTITY(1,1) NOT NULL,
+	[RoleId] INT NOT NULL,
+	[RightId] INT NOT NULL,
 	[CreatedBy] [nvarchar](255) NOT NULL,
 	[CreatedDate] [datetime] NOT NULL,
  CONSTRAINT [PK_SecurityRoleRight] PRIMARY KEY CLUSTERED 
@@ -29,4 +29,8 @@ REFERENCES [Security].[Role] ([RoleId])
 GO
 
 ALTER TABLE [Security].[RoleRight] CHECK CONSTRAINT [FK_SecurityRightSecurityRole_SecurityRole]
+GO
+CREATE NONCLUSTERED INDEX [IX_Security_RoleRight_RightID]
+ON [Security].[RoleRight] ([RightId])
+INCLUDE ([RoleId])
 GO

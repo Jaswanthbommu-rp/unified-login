@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [Security].[Right](
-	[RightId] [bigint] IDENTITY(1,1) NOT NULL,
+	[RightId] INT IDENTITY(1,1) NOT NULL,
 	[RightName] [nvarchar](100) NOT NULL,
 	[Description] [nvarchar](255) NULL,
 	[Value] [nvarchar](255) NULL,

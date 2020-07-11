@@ -2,7 +2,7 @@ CREATE PROCEDURE [Security].[ListAllRights]
 (
     @PartyID INT,
     @ProductId INT,
-    @TargetProductId PRODUCTIDTYPE READONLY
+    @TargetProductId [Enterprise].[ProductIdType] READONLY
 )
 AS
 BEGIN
@@ -48,6 +48,7 @@ BEGIN
           AND R.TargetProductId IN (SELECT ProductId FROM @TargetProductId)  
 		  AND ST.Name IN (SELECT * FROM @RightType)
 		  AND R.RightId NOT IN  (Select RightId From Security.OrganizationOverRideRight Where OrgPartyId = @PartyID)
+		  And ST.Name <> 'HIDDEN'
     ORDER BY R.RightId;
 
 END;

@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [Security].[Role](
-	[RoleId] [bigint] IDENTITY(1,1) NOT NULL,
+	[RoleId] INT IDENTITY(1,1) NOT NULL,
 	[RoleName] [nvarchar](255) NOT NULL,
 	[ShortName] [nvarchar](255) ,
 	[Description] [nvarchar](255) NULL,	
@@ -35,4 +35,13 @@ GO
 
 ALTER TABLE [Security].[Role]  WITH CHECK ADD  CONSTRAINT [FK_Role_RoleType] FOREIGN KEY([RoleTypeID])
 REFERENCES [Security].[RoleType] ([RoleTypeId])
+GO
+CREATE NONCLUSTERED INDEX [IX_SecurityRole_Productid]
+ON [Security].[Role] ([ProductId])
+INCLUDE ([RoleId],[OrgPartyID])
+GO
+CREATE NONCLUSTERED INDEX [IX_Security_Role_OrgPartyID]
+ON [Security].[Role] ([OrgPartyID])
+INCLUDE ([RoleId],[RoleName],[ShortName])
+
 GO

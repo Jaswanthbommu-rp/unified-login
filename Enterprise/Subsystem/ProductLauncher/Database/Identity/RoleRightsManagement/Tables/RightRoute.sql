@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [Security].[RightRoute](
 	[RightRouteId] [bigint] IDENTITY(1,1) NOT NULL,
-	[RightId] [bigint] NOT NULL,
-	[RouteId] [bigint] NULL,
+	[RightId] INT NOT NULL,
+	[RouteId] INT NULL,
 	[RightName] [varchar](256) NOT NULL,
 	[CreatedBy] [nvarchar](25) NOT NULL,
 	[CreatedDate] [datetime] NOT NULL,

@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [Security].[OrganizationDefaultRole](
 	[OrganizationDefaultRoleId] [bigint] IDENTITY(1,1) NOT NULL,
-	[RoleId] [bigint] NOT NULL,
+	[RoleId] INT NOT NULL,
 	[OrgPartyId] [bigint] NOT NULL,
 	[CreatedBy] [nvarchar](255) NOT NULL,
 	[CreatedDate] [datetime] NOT NULL,

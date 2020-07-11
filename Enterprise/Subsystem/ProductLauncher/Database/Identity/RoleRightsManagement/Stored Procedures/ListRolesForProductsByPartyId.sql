@@ -1,7 +1,7 @@
 CREATE PROCEDURE [Security].[ListRolesForProductsByPartyId]
 (@PartyId         INT,
  @ProductId       INT           = NULL,
- @TargetProductId PRODUCTIDTYPE READONLY
+ @TargetProductId [Enterprise].[ProductIdType] READONLY
 )
 AS
      BEGIN
@@ -31,7 +31,7 @@ AS
                            INNER JOIN Enterprise.ROleAttribute RT ON RVT.RoleValueTYpeId = RT.RoleValueTYpeId
                            INNER JOIN Enterprise.ROleAttributeType RTT ON RT.ROleAttributeTypeId = RTT.ROleAttributeTypeID)
                       SELECT DISTINCT
-                             R.RoleName,
+                             R.RoleName 'value',
                              R.ShortName 'RoleNickName',
                              R.RoleID [RoleId],
                              RT.Value AS RoleType,
@@ -61,7 +61,7 @@ AS
                             AND RG.TargetProductId IN (SELECT ProductId	FROM @TargetProductId)
 					 UNION
 					 SELECT 
-                             R.RoleName,
+                             R.RoleName 'value',
                              R.ShortName 'RoleNickName',
                              R.RoleID [RoleId],
                              RT.Value AS RoleType,

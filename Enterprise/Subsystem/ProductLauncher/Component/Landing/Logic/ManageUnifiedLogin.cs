@@ -306,7 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 UnifiedLoginRepository ocr = new UnifiedLoginRepository();
 
-                var resp = ocr.SetDefaultRole(roleId);
+                var resp = ocr.SetDefaultRole(roleId, _userClaims.UserId);
                 if (resp.ErrorMessage.Trim() != string.Empty)
                 {
                     response.IsError = true;

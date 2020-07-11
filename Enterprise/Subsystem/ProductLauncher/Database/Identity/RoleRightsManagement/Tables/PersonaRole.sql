@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [Security].[PersonaRole](
 	[PersonaRoleId] [bigint] IDENTITY(1,1) NOT NULL,
 	[PersonaId] [bigint] NOT NULL,
-	[RoleId] [bigint] NOT NULL,
+	[RoleId] INT NOT NULL,
 	[FromDate] [datetime],
 	[ThruDate] [datetime],
 	[CreatedBy] [nvarchar](255) NOT NULL,
@@ -31,4 +31,8 @@ REFERENCES [Security].[Role] ([RoleId])
 GO
 
 ALTER TABLE [Security].[PersonaRole] CHECK CONSTRAINT [FK_PersonaSecurityRole_SecurityRole]
+GO
+CREATE NONCLUSTERED INDEX [IX_SecurityPersonaRole_PersonaId]
+ON [Security].[PersonaRole] ([PersonaId])
+INCLUDE ([RoleId])
 GO

@@ -697,17 +697,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="roleId">User Role</param>                    
         /// <returns>Deletes Role Response</returns>
-        public RepositoryResponse SetDefaultRole(long roleId)
+        public RepositoryResponse SetDefaultRole(long roleId, int userId)
         {
             using (var repository = GetRepository())
             {
                 RepositoryResponse repositoryResponse = new RepositoryResponse();
                 string schemaName = getRoleRightsSchemaName();
-                var procName = schemaName?.Length > 0 ? $"{schemaName}.SetDefaulteRole" : StoredProcNameConstants.SP_SetDefaulteRole;
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.SetDefaultRole" : StoredProcNameConstants.SP_SetDefaulteRole;
 
                 dynamic param = new
                 {
-                    RoleId = roleId
+                    RoleId = roleId,
+                    CreatedBy = userId
                 };
 
                 var result = repository.GetOne<dynamic>(procName, param);
