@@ -289,20 +289,46 @@
                         });
 
                     }
-                    else {
+                    else if(productId == "8"){
+                        propertyGroups.forEach(function(comp) {
+                            if (properties[0].mConsoleId !== "") {
+                                if (comp.isAssigned) {
+                                    s.batchData.inputJson.propertyList.push(comp.id);
+                                }
+                                properties.forEach(function(prop) {            
+                                    if (prop.companyId === comp.id) {
+                                        if (prop.isAssigned) {
+                                            if(prop.propertyId !== "") {
+                                                s.batchData.inputJson.propertyList.push(comp.id + "|" + prop.propertyId);
+                                            }
+                                            else{
+                                                s.batchData.inputJson.propertyList.push(comp.id );
+                                            }
+                                        }
+                                    }
+                                });
+                            } 
+                            else {
+                                properties.forEach(function(prop) {                
+                                    if (prop.companyId === comp.id) {
+                                        if (prop.isAssigned) {
+                                            //s.batchData.inputJson.propertyList.push(prop.propertyId);
+                                            if(prop.propertyId !== "") {
+                                                s.batchData.inputJson.propertyList.push(comp.id + "|" + prop.propertyId);
+                                            }
+                                            else{
+                                                s.batchData.inputJson.propertyList.push(comp.id );
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else{
                         properties.forEach(function (prop) {
                             if (prop.isAssigned) {
-                                if (productId == 8) {
-                                    if (prop.propertyId !== "") {
-                                        s.batchData.inputJson.propertyList.push(prop.companyId + "|" + prop.propertyId);
-                                    }
-                                    else {
-                                        s.batchData.inputJson.propertyList.push(prop.companyId);
-                                    }
-                                }
-                                else {
-                                    s.batchData.inputJson.propertyList.push(prop.id);
-                                }
+                                s.batchData.inputJson.propertyList.push(prop.id);
                             }
                             if (!prop.isAssigned && prop.originalProperty) {
                                 s.batchData.inputJson.removedPropertyList.push(prop.id);
