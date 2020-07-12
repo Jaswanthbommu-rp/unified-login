@@ -84,12 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel).CompanyInstanceId;
-                if (companyInstanceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"OmniChannel - ManageProductOmniChannel.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
+                
                 WriteToDiagnosticLog($"OmniChannel - - GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
                 IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
@@ -292,7 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = $"OmniChannel - There was a problem getting the roles.";
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 WriteToErrorLog($"OmniChannel - ManageProductOmniChannel.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
