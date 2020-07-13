@@ -1090,3 +1090,9 @@ BEGIN
                AND r.DefaultRole=0
 
 END
+
+--300049
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.RightValueType WHERE [Value] = 'Ability to manage Platform Notifications')
+BEGIN
+	update Enterprise.RightValueType set [Value] = 'Manage Notifications Configurations' where [Value] = 'Ability to manage Platform Notifications';
+END
