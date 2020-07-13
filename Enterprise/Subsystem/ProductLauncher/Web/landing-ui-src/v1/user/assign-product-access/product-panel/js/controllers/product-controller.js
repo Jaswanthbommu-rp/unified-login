@@ -25,6 +25,7 @@
             vm.tabsList = [];
             vm.tabsData = "";
             vm.distinctRoleType = [];
+            vm.distinctEntityTypes = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
             //Below flag in use for Financial Suite
             vm.hasAccessToSiteSpendManagementOnly = false;
@@ -42,6 +43,7 @@
             vm.productDisabledWatch = pubsub.subscribe("productpanel.userTypeChanged", vm.resetProductDisabled);
             vm.accountingAdditionalSetWatch = pubsub.subscribe("acct.accountingAdditionalDataSet", vm.accountingAdditionalDataSet);
             vm.productAsidePanelWatch = pubsub.subscribe("ppanel.distinct-role-types", vm.setAsidePanelConfig);
+            vm.productAsideFilterWatch = pubsub.subscribe("ppanel.distinct-entity-types", vm.setAsideFilterConfig);
 
         };
 
@@ -168,6 +170,11 @@
             active = true;
             panelModel.setPropertyGridActive(true);
             panelModel.setRoleGridActive(true);
+        };
+
+        vm.setAsideFilterConfig = function(distinctEntities){
+            vm.distinctEntityTypes = distinctEntities;
+            vm.setTabsConfigData(vm.tabsData);
         };
 
         vm.setAsidePanelConfig = function(distinctRoles){
@@ -335,6 +342,16 @@
                                                     });
                                                 }
                                             }
+                                            else if(productId == 44){
+                                                if(vm.distinctEntityTypes.length > 0){
+                                                    var listAsideconf = configData.getListAsideConfig(tab, "");
+                                                    if (listAsideconf !== undefined && listAsideconf.config.length > 0) {
+                                                        var asideGridConf = vm.getGridConfig(listAsideconf.config, asideShowSelectAll);
+                                                        logc("asideGridConfig", asideGridConf);
+                                                        productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConf, listAsideconf.displayName);
+                                                    }
+                                                }
+                                            }
                                             else{
                                                 listAsideconfigs = configData.getListAsideConfig(tab, "");
                                                 if (listAsideconfigs !== undefined &&
@@ -382,7 +399,7 @@
                 var h = configData.getHeaders(data, showSelectAll);
                 hdrCnfgs = h;
 
-                var f = configData.getFilters(data);
+                var f = configData.getFilters(data, vm.distinctEntityTypes);
                 fltrCnfg = f;
 
                 var m = configData.getMain(data);
