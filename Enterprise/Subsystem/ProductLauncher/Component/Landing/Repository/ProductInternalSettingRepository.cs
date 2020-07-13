@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"productinternalsettings_{(int)ProductId}";
-            List<ProductInternalSetting> productInternalSettings = rpcache.GetFromCache<List<ProductInternalSetting>>(cacheKey, 300, () =>
+            IList<ProductInternalSetting> productInternalSettings = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 300, () =>
             {
                 using (var repo = GetRepository())
                 {
