@@ -144,7 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							{
 								// remove the existing role
 								WriteToDiagnosticLog($"ManageUnifiedAmenitiesUser - removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}.");
-								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: existingRoleId, deleteRole: true);
+								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: existingRoleId, userId: _userClaims.UserId, deleteRole: true);
 								if (result.Id < 0)
 								{
 									WriteToErrorLog($"ManageUnifiedAmenitiesUser - Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {existingRoleId}");
@@ -156,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							{
 								// add the role
 								WriteToDiagnosticLog($"ManageUnifiedAmenitiesUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {role.RoleID}.");
-								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: role.RoleID, deleteRole: false);
+								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: role.RoleID, userId: _userClaims.UserId, deleteRole: false);
 								if (result.Id < 0)
 								{
 									WriteToErrorLog($"ManageUnifiedAmenitiesUser - Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {role.RoleID}");
@@ -249,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				long roleId = roleList[0].RoleID;
 				// Delete existing roleId
-				RepositoryResponse result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: roleId, deleteRole: true);
+				RepositoryResponse result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: roleId, userId: _userClaims.UserId, deleteRole: true);
 				if (result.Id < 0)
 				{
 					WriteToErrorLog($"UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");

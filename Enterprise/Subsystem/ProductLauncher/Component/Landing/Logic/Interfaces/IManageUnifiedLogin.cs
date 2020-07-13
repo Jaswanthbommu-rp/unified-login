@@ -60,7 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Set Default Role(Custom/System Role in GB)
         /// </summary>
-        ListResponse SetDefaultRole(long editorPersonaId, long roleId);
+        ListResponse SetDefaultRole(long editorPersonaId, long partyId, long roleId);
         
         /// <summary>
         /// Add/Delete Rights

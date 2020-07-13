@@ -3,6 +3,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using System.Linq;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Security
 {
@@ -32,6 +35,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
         {
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"listRightsAndActionsByPersonaId_{personaId}_{routeId}";
+
+            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
+            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            string schemaName =  productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListPersonaRightsAndActionsByRoute" : StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute;
+
             IEnumerable<PersonaActionRight> personaRights = rpcache.GetFromCache<IEnumerable<PersonaActionRight>>(cacheKey, 120, () =>
             {
                 // load from api
@@ -43,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
 
                 using (var repository = GetRepository())
                 {
-                    var result = repository.GetMany<PersonaActionRight>(StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute, param);
+                    var result = repository.GetMany<PersonaActionRight>(procName, param);
                     return result;
                 }
             });
