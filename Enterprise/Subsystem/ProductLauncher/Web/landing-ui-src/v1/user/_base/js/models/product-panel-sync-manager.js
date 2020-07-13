@@ -712,7 +712,7 @@
             propertyData = s.propertyMap['product' + key].properties;
             propertyData.forEach(function (item) {
                 if(key == 8){
-                    if(item.propertyId == record.propertyId){
+                    if(item.propertyId == record.propertyId && item.companyId == record.companyId){
                         item.isAssigned = record.isAssigned;
                     }
                     //Sync Companies Tab
