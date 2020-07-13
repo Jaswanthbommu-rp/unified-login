@@ -297,17 +297,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="roleId"></param>
 
         /// <returns></returns>
-        public ListResponse SetDefaultRole(long editorPersonaId, long roleId)
+        public ListResponse SetDefaultRole(long editorPersonaId,long partyId, long roleId)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response; }
-
             try
             {
                 UnifiedLoginRepository ocr = new UnifiedLoginRepository();
 
-                var resp = ocr.SetDefaultRole(roleId, _userClaims.UserId);
+                var resp = ocr.SetDefaultRole(roleId,partyId, _userClaims.UserId);
                 if (resp.ErrorMessage.Trim() != string.Empty)
                 {
                     response.IsError = true;
