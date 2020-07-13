@@ -313,7 +313,6 @@
                                         //Check and Set any Aside List Grid
                                         if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
                                             var asideShowSelectAll = false;
-                                            var isassignasideConfig = true;
                                             if (tab.controls) {
                                                 tab.controls.forEach(function (ctrl) {
                                                     if (ctrl.controls) {
@@ -331,8 +330,6 @@
                                             }
                                             
                                             var listAsideconfigs;
-                                            isassignasideConfig = (productId === 44 && vm.distinctEntityTypes.length == 0) ? false : true;
-                                            
                                             if(productId === 20){
                                                 if(vm.distinctRoleType.length > 0){
                                                     vm.distinctRoleType.forEach(function (roletype) {
@@ -345,9 +342,20 @@
                                                     });
                                                 }
                                             }
-                                            else if(isassignasideConfig){
+                                            else if(productId == 44){
+                                                if(vm.distinctEntityTypes.length > 0){
+                                                    var listAsideconf = configData.getListAsideConfig(tab, "");
+                                                    if (listAsideconf !== undefined && listAsideconf.config.length > 0) {
+                                                        var asideGridConf = vm.getGridConfig(listAsideconf.config, asideShowSelectAll);
+                                                        logc("asideGridConfig", asideGridConf);
+                                                        productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConf, listAsideconf.displayName);
+                                                    }
+                                                }
+                                            }
+                                            else{
                                                 listAsideconfigs = configData.getListAsideConfig(tab, "");
-                                                if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
+                                                if (listAsideconfigs !== undefined &&
+                                                    listAsideconfigs.config.length > 0) {
                                                     var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
                                                     logc("asideGridConfig", asideGridConfig);
                                                     productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
