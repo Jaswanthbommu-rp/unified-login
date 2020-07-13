@@ -11,6 +11,7 @@ using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -40,12 +41,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// Update Rights to Role
         /// </summary>
-        public int LinkRightsToRole(IEnumerable<RightRoleAddRem> rightsList)
+        public int LinkRightsToRole(IEnumerable<RightRoleAddRem> rightsList, int userId)
         {
             DynamicParameters param = new DynamicParameters();
 
+            string schemaName = getRoleRightsSchemaName();
+            var procName = schemaName?.Length > 0 ? $"{schemaName}.LinkRightsToRoles" : StoredProcNameConstants.SP_LinkRightsToRoles;
+
             dynamic p = new
-            {               
+            {
+                CreatedBy = userId,
                 NewRightID = 0
             };
             param.AddDynamicParams(p);
@@ -57,7 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 tvp.OrderedColumnName = col;
                 tvp.TableVariableName = "ManageRight";
                 tvp.TableParamTypeName = "dbo.TYPROLE";
-                tvp.StoredProcedureName = StoredProcNameConstants.SP_LinkRightsToRoles;
+                tvp.StoredProcedureName = procName;
 
                 var result = repository.ExecuteStoredProcWithTvp<RightRoleAddRem>(tvp, rightsList, param);
 
@@ -102,7 +107,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 List<ProductRole> rolesList = new List<ProductRole>();
-                IList<dynamic> result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesByParty, new { partyId }).ToList();
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByParty" : StoredProcNameConstants.SP_ListRolesByParty;
+
+                IList<dynamic> result = repository.GetMany<dynamic>(procName, new { partyId }).ToList();
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -127,6 +135,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -135,7 +146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<RightRoleDetail> rolesList = new List<RightRoleDetail>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesAssociatedWithRights, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -160,6 +171,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRightForProductsByPartyId" : StoredProcNameConstants.SP_ListRightForProductsByPartyId;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -167,7 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<ProductRight> rightsList = new List<ProductRight>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRightForProductsByPartyId, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -190,6 +204,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListAllRights" : StoredProcNameConstants.SP_ListAllRights;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -198,7 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<ProductRight> rightsList = new List<ProductRight>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListAllRights, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -221,6 +238,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPartyId" : StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -229,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<ProductRole> rolesList = new List<ProductRole>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPartyId, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -277,6 +297,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRightsAssociatedWithRoles" : StoredProcNameConstants.SP_ListRightsAssociatedWithRoles;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -285,7 +308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<RightRoleDetail> roleRightList = new List<RightRoleDetail>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRightsAssociatedWithRoles, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -308,6 +331,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRightsAssociatedWithRoles" : StoredProcNameConstants.SP_ListRightsAssociatedWithRoles;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -316,7 +342,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<RightRoleDetail> rightsList = new List<RightRoleDetail>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRightsAssociatedWithRoles, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -340,6 +366,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -349,7 +378,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				};
 
                 List<ProductRight> rightsList = new List<ProductRight>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesAssociatedWithRights, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -372,6 +401,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRightsAssociatedWithRoles" : StoredProcNameConstants.SP_ListRightsAssociatedWithRoles;
+
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -380,7 +412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<ProductRole> rolesList = new List<ProductRole>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRightsAssociatedWithRoles, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -402,7 +434,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 List<ProductRole> rolesList = new List<ProductRole>();
-                IList<dynamic> result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesByParty, new { userPersonaId }).ToList();
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByParty" : StoredProcNameConstants.SP_ListRolesByParty;
+
+                IList<dynamic> result = repository.GetMany<dynamic>(procName, new { userPersonaId }).ToList();
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -534,18 +569,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="role">User Role</param>   
         /// <param name="del">isDeleted</param>   
         /// <returns>List of Roles assigned to Persona</returns>
-        public RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, UserAccessGroup role, long del = 0)
+        public RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, UserAccessGroup role, int userId, long del = 0)
         {
             using (var repository = GetRepository())
             {
                 RepositoryResponse repositoryResponse = new RepositoryResponse();
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.LinkPersonaToRole" : StoredProcNameConstants.SP_LinkPersonaToRole;
+
                 dynamic param = new
                 {
                     PersonaID = userPersonaId,
-                    RoleID = int.Parse(role.AccessGroupCode)
+                    RoleID = int.Parse(role.AccessGroupCode),
+                    CreatedBy = userId
                 };
 
-                int i = repository.ExecuteNonQuery(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+                int i = repository.ExecuteNonQuery(procName, param);
                 repositoryResponse.Id = i;
 
                 return repositoryResponse;
@@ -591,11 +630,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="roleCategoryId">isDeleted</param>   
         /// <param name="partyId">isDeleted</param>   
         /// <returns>Add new Role</returns>
-        public RepositoryResponse AddCustomRole(string roleName, string  desc, long roleTypeId, long roleCategoryId , long partyId)
+        public RepositoryResponse AddCustomRole(string roleName, string  desc, long roleTypeId, long roleCategoryId , long partyId, int userId)
         {
             using (var repository = GetRepository())
             {
                 RepositoryResponse repositoryResponse = new RepositoryResponse();
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.CreateRole" : StoredProcNameConstants.SP_CreateRole;
+
                 dynamic param = new
                 {
                     RoleName = roleName,
@@ -603,10 +645,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     RoleTypeID = roleTypeId,
                     RoleCategoryId = roleCategoryId,
                     PartyID = partyId,
+                    CreatedBy = userId,
                     RoleID = 0
                 };
 
-                var result = repository.GetOne<dynamic>(StoredProcNameConstants.SP_CreateRole, param);
+                var result = repository.GetOne<dynamic>(procName, param);
 
                 long roleId = result.RoleID;
                 repositoryResponse.Id = roleId;
@@ -629,12 +672,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 RepositoryResponse repositoryResponse = new RepositoryResponse();
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.DeleteRole" : StoredProcNameConstants.SP_DeleteRole;
+
                 dynamic param = new
                 {                   
                     RoleId = roleId
                 };
 
-                var result = repository.GetOne<dynamic>(StoredProcNameConstants.SP_DeleteRole, param);
+                var result = repository.GetOne<dynamic>(procName, param);
 
                 repositoryResponse.Id = roleId;
                 if (result != null && result.ErrorMessage.Trim() != string.Empty)
@@ -651,17 +697,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="roleId">User Role</param>                    
         /// <returns>Deletes Role Response</returns>
-        public RepositoryResponse SetDefaultRole(long roleId)
+        public RepositoryResponse SetDefaultRole(long roleId,long partyid, int userId)
         {
             using (var repository = GetRepository())
             {
                 RepositoryResponse repositoryResponse = new RepositoryResponse();
-                dynamic param = new
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.SetDefaultRole" : StoredProcNameConstants.SP_SetDefaulteRole;
+                dynamic param;
+                if (schemaName == "Security")
                 {
-                    RoleId = roleId
-                };
+                    param = new
+                    {
+                        RoleId = roleId,
+                        PartyId = partyid,
+                        CreatedBy = userId
+                    };
+                }
+                else {
+                    param = new
+                    {
+                        RoleId = roleId,
+                        CreatedBy = userId
+                    };
+                }
+               
 
-                var result = repository.GetOne<dynamic>(StoredProcNameConstants.SP_SetDefaulteRole, param);
+                var result = repository.GetOne<dynamic>(procName, param);
 
                 repositoryResponse.Id = roleId;
                 if (result != null && result.ErrorMessage.Trim() != string.Empty)
@@ -680,19 +742,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="roleName"></param>
         /// <param name="desc">User Persona ID</param>
         /// <returns>Add new Role Response</returns>
-        public RepositoryResponse UpdateCustomRole(long roleId ,string roleName, string desc)
+        public RepositoryResponse UpdateCustomRole(long roleId ,string roleName, string desc, int userId)
         {
             using (var repository = GetRepository())
             {
                 RepositoryResponse repositoryResponse = new RepositoryResponse();
+                string schemaName = getRoleRightsSchemaName();
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.UpdateRole" : StoredProcNameConstants.SP_UpdateRole;
+
                 dynamic param = new
                 {
                     RoleName = roleName,
                     Description = desc,
-                    RoleId = roleId
+                    RoleId = roleId,
+                    CreatedBy = userId
                 };
 
-                var result = repository.GetOne<dynamic>(StoredProcNameConstants.SP_UpdateRole, param);
+                var result = repository.GetOne<dynamic>(procName, param);
               
                 repositoryResponse.Id = roleId;
                 if (result.ErrorMessage.Trim() != string.Empty)
@@ -702,6 +768,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 return repositoryResponse;
             }
+        }
+        #endregion
+        #region Private Methods
+        private string getRoleRightsSchemaName()
+        {
+            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
+            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
         }
         #endregion
     }

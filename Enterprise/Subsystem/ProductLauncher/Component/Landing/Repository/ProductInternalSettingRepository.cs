@@ -4,6 +4,7 @@ using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
@@ -41,12 +42,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>list product settings</returns>
         public IList<ProductInternalSetting> GetProductInternalSettings(int ProductId)
         {
-            using (var repo = GetRepository())
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"productinternalsettings_{(int)ProductId}";
+            IList<ProductInternalSetting> productInternalSettings = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 300, () =>
             {
-                dynamic param = new
-                { ProductId = ProductId };
-                return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
-            }
+                using (var repo = GetRepository())
+                {
+                    dynamic param = new { ProductId = ProductId };
+                    return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                }
+            });
+
+            return productInternalSettings;
         }
 
         /// <summary>
