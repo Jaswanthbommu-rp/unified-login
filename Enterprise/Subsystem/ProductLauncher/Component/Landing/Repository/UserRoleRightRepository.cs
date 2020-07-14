@@ -231,46 +231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                       splitOn: "RoleId,RightId");
                 return userRoles.Values.ToList<UserRoleRights>();
             }
-        }
-
-        /// <summary>
-		/// Get list of Rights id by Party, product id and role id
-		/// </summary>
-		/// <param name="partyId">Company party id</param>
-		/// <param name="productIdList">Company product id list</param>
-		/// <param name="productId">Product Id</param>
-		/// <param name="roleId">Role Id</param>
-		/// <returns>The list of rights for the given role</returns>
-		public IList<Right> ListRightsByRole(long partyId, IList<int> productIdList, int productId, long roleId)
-        {
-            List<dynamic> result;
-            var productRepository = new ProductInternalSettingRepository();          
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
-            List<Right> roleRightsList = new List<Right>();
-
-            dynamic param = new
-            {
-                PartyId = partyId,
-                ProductId = (int)productId,
-                RoleId = roleId,
-                TargetProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
-            };
-
-            using (var repository = GetRepository())
-            {
-                result = repository.GetMany<dynamic>(procName, param);
-            }
-
-            if (result != null)
-            {
-                foreach (var item in result)
-                {
-                    roleRightsList.Add(new Right { RightId = item.RightId, RightName = item.Right, RightNickName = item.RightNickName, RightValueTypeId = item.RightValueTypeId }); // RightValueTypeId instead of RightId
-                }
-            }
-            return roleRightsList;
-        }
+        }        
 
         #region Private Methods
         private string getRoleRightsSchemaName()

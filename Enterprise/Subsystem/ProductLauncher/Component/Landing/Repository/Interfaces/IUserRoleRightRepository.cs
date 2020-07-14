@@ -57,14 +57,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns></returns>
 		IList<UnifiedLoginRoleRights> GetPlatFormRoleRights(long partyId, IList<int> productIdList, int productId);
 
-		/// <summary>
-		/// Get list of Rights id by Party, product id and role id
-		/// </summary>
-		/// <param name="partyId">Company party id</param>
-		/// <param name="productIdList">Company product id list</param>
-		/// <param name="productId">Product Id</param>
-		/// <param name="roleId">Role Id</param>
-		/// <returns>The list of rights for the given role</returns>
-		IList<Right> ListRightsByRole(long partyId, IList<int> productIdList, int productId, long roleId);
+		
 	}
 }
