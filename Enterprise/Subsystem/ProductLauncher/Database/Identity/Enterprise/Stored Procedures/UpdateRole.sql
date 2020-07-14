@@ -1,7 +1,8 @@
 ﻿CREATE PROCEDURE [Enterprise].UpdateRole
 (@RoleId      INT,
  @Rolename    NVARCHAR(50),
- @Description NVARCHAR(200) NULL
+ @Description NVARCHAR(200) NULL,
+ @CreatedBy nvarchar(50) NULL
 )
 AS
 BEGIN
@@ -13,11 +14,12 @@ BEGIN
 		BEGIN
 			SET NOCOUNT ON;
 			IF EXISTS
-(
-	SELECT 1
-	FROM Enterprise.RoleValueType
-	WHERE Value = LTRIM(RTRIM(@RoleName))
-)
+			(
+				SELECT 1
+				FROM Enterprise.RoleValueType
+				WHERE Value = LTRIM(RTRIM(@RoleName))
+
+			)
 			BEGIN
 				SELECT @RoleId AS RoleId, '' AS ErrorMessage;
 			END;

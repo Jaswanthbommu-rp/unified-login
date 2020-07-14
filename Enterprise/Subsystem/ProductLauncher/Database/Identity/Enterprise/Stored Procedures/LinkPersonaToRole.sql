@@ -2,6 +2,7 @@
 (@PersonaID         BIGINT,
  @RoleID            INT,
  @IsDeleted         BIT    = 0,
+ @CreatedBy nvarchar(50) NULL,
  @PersonaPrivilgeID INT OUTPUT
 )
 AS

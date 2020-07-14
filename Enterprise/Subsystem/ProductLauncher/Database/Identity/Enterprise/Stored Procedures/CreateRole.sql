@@ -5,6 +5,7 @@
  @RoleTypeID     INT,
  @RoleCategoryId INT,
  @PartyID        INT,
+ @CreatedBy nvarchar(50) NULL,
  @RoleID         INT OUTPUT
 )
 AS;
