@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
 			if (roleId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "roleId not supplied.");
-			ListResponse listResponse = _manageUnifiedLogin.SetDefaultRole(editorPersonaId, (long) roleId);
+			ListResponse listResponse = _manageUnifiedLogin.SetDefaultRole(editorPersonaId,_userClaims.OrganizationPartyId, (long) roleId);
 			if (!string.IsNullOrEmpty(listResponse.ErrorReason))
 				return Request.CreateResponse(HttpStatusCode.BadRequest, listResponse);
 			return Request.CreateResponse(HttpStatusCode.OK, listResponse);
