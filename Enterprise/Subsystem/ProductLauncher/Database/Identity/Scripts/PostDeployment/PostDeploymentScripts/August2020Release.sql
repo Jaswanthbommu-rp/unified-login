@@ -1136,7 +1136,7 @@ DECLARE @UserId bigint,
 		-- Create the Value and assign it to the Product and ProductSettingType
 		EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
 		@ProductSettingTypeId = @ProductSettingTypeId, -- int
-		@Value = 'Security', 
+		@Value = 'Enterprise', 
 		@FromDate = @NOW, -- datetime
 		@ThruDate = NULL, -- datetime
 		@ProductSettingId = @ProductSettingId OUTPUT; -- int
@@ -1172,7 +1172,7 @@ DECLARE @UserId bigint,
 		-- Create the Value and assign it to the Product and ProductSettingType
 		EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
 		@ProductSettingTypeId = @ProductSettingTypeId, -- int
-		@Value = 'True', 
+		@Value = '1', 
 		@FromDate = @NOW, -- datetime
 		@ThruDate = NULL, -- datetime
 		@ProductSettingId = @ProductSettingId OUTPUT; -- int

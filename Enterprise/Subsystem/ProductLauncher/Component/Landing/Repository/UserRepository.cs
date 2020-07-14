@@ -37,6 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private IUserLoginRepository _userLoginRepository;
         private IManagePersona _managePersona;
         private IOrganizationRepository _organizationRepository;
+        IProductInternalSettingRepository _productInternalSettingRepository;
 
         #region Ctor
 
@@ -50,6 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _organizationRepository = new OrganizationRepository();
             _managePersona = new ManagePersona();
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         public UserRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
@@ -58,6 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _userLoginRepository = new UserLoginRepository(repository);
             _managePersona = new ManagePersona(repository, userClaim);
             _organizationRepository = new OrganizationRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
         /// <summary>
@@ -74,6 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _userLoginRepository = new UserLoginRepository();
             _managePersona = new ManagePersona(_userClaim);
             _organizationRepository = new OrganizationRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         #endregion
@@ -5406,9 +5410,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         private string getRoleRightsSchemaName()
         {
-            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-            return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
+            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            });
+
+            return schemaName;
         }
 
         #endregion

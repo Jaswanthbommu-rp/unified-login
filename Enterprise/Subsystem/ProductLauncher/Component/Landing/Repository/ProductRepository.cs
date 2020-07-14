@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     public class ProductRepository : BaseRepository, IProductRepository
     {
         private DefaultUserClaim _userClaim;
-
+        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Ctor
         /// <summary>
         /// base Constructor
@@ -40,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public ProductRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -48,6 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public ProductRepository(IRepository repository) : base(repository)
         {
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
         /// <summary>
@@ -60,6 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
 
             _userClaim = userClaim;
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         #endregion
@@ -163,7 +166,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 #region Cache
 
                 RPObjectCache rpcache = new RPObjectCache();
-                var cacheKey = "productGlobalInternalSetting_" + p.ProductId.ToString();
+                var cacheKey = "productInternalSetting_" + p.ProductId.ToString();
                 productInternalSettingList = rpcache.GetFromCache<List<ProductInternalSetting>>(cacheKey, 300, () =>
                 {
                     // load from api
@@ -1941,9 +1944,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         private string getRoleRightsSchemaName()
         {
-            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-            return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
+            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            });
+
+            return schemaName;
         }
         #endregion
     }

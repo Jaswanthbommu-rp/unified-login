@@ -4,10 +4,15 @@ AS
          DECLARE @DefaultRoleId INT;
          DECLARE @SaveEnterpriseRoleData varchar(10);
 		 
-		Select @SaveEnterpriseRoleData = PS.Value from Enterprise.ProductSetting PS
-		Join Enterprise.ProductSettingType PST ON
-			PS.ProductSettingTypeId = PST.ProductSettingTypeId
-		where PS.ProductId = 3
+		SELECT	@SaveEnterpriseRoleData = ps.Value				
+		FROM	Enterprise.GlobalProductConfiguration gpc
+				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+		WHERE  gpc.ProductId = 3
+		AND (gpc.ThruDate IS NULL)
+		AND ( pc.ThruDate IS NULL)
+		AND ( ps.ThruDate IS NULL)
 		And PST.Name = 'SaveRoleDataInEnterprise'
          
 		IF @PartyId IS NOT NULL
@@ -29,7 +34,7 @@ AS
 				SELECT @RoleId AS RoleId,
 					'' AS ErrorMessage;
 
-				IF (@SaveEnterpriseRoleData = 'True')
+				IF (@SaveEnterpriseRoleData = '1')
 				BEGIN
 					SET @DefaultRoleId = @RoleId
 					IF (@RoleId = 1)

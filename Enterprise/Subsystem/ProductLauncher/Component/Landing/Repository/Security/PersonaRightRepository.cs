@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using System.Linq;
 using System;
+using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Security
 {
@@ -14,7 +15,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
     /// </summary>
     public class PersonaRightRepository : BaseRepository, IPersonaRightRepository
     {
-
+        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Ctor
 
         /// <summary>
@@ -22,6 +23,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
         /// </summary>
         public PersonaRightRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
+        }
+
+        public PersonaRightRepository (IRepository repository) : base(repository)
+        {
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
         #endregion
 
@@ -35,9 +42,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
         {
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"listRightsAndActionsByPersonaId_{personaId}_{routeId}";
-
-            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+           
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             string schemaName =  productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
             var procName = schemaName?.Length > 0 ? $"{schemaName}.ListPersonaRightsAndActionsByRoute" : StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute;
 

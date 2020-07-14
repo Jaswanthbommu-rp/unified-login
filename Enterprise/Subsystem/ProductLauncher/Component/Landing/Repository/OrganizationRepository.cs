@@ -310,6 +310,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, IList<int> productIdList)
         {
             RepositoryResponse response = new RepositoryResponse();
+            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
+            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            string schemaName = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            var procName = schemaName?.Length > 0 ? $"{schemaName}.SetupSuperUser" : StoredProcNameConstants.SP_SetupSuperUser;
 
             using (var repository = GetRepository())
             {
@@ -330,7 +334,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         AssignedProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
                     };
 
-                    repository.ExecuteNonQuery(StoredProcNameConstants.SP_SetupSuperUser, param);
+                    repository.ExecuteNonQuery(procName, param);
                 }
                 catch (Exception exception)
                 {

@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
-using System.Runtime.Caching;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -144,71 +143,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return persona;
         }
 
-        private IList<Right> GetPersonaRoleRights(DefaultUserClaim userClaim)
-        {
-            if (userClaim.OrganizationRealPageGuid.Equals(Guid.Empty))
-            {
-                return new List<Right>();
-            }
-            SharedDataRepository sdr = new SharedDataRepository(userClaim);
-            IList<int> productList = sdr.GetProductIdsByCompany(userClaim.OrganizationRealPageGuid);
-            int productListHash = 0;
-            if (productList != null)
-            {
-                productListHash = productList.GetHashCode();
-            }
-
-            long personaId = userClaim.PersonaId;
-            long orgPartyId = userClaim.OrganizationPartyId;
-            long roleId = getPersonaRoleId(personaId);
-
-            RPObjectCache rpCache = new RPObjectCache();
-            string cacheKey = $"getPersonaRoleRights_{orgPartyId}_{personaId}_{roleId}";
-            IList<Right> userRoleRights = rpCache.GetFromCache(cacheKey, 120, () =>
-            {
-                UserRoleRightRepository urr = new UserRoleRightRepository();
-                return urr.ListRightsByRole(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform, roleId);
-            });
-
-            return userRoleRights;
-        }
-
-        private long getPersonaRoleId(long personaId)
-        {
-            string cacheKey = $"getPersonaRoleId_{personaId}";
-            ObjectCache personaRoleCache = MemoryCache.Default;
-            long? roleId;
-            roleId = personaRoleCache[cacheKey] as long?;
-            if (roleId == null || roleId == 0)
-            {
-                UserRoleRightRepository urr = new UserRoleRightRepository();
-                roleId = urr.GetRoleIdByPersona(personaId, (int)ProductEnum.UnifiedPlatform);
-                var cachePolicy = new CacheItemPolicy
-                {
-                     AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(2)
-                };
-
-                personaRoleCache.Set(cacheKey, roleId, cachePolicy);
-            }
-         
-            return roleId.GetValueOrDefault();
-        }
-
-        private static List<string> GetRights(IList<Right> personaRoleRights)
-        {
-            List<string> userRights = new List<string>();
-
-            foreach (Right right in personaRoleRights)
-            {
-                if (!string.IsNullOrWhiteSpace(right.RightNickName) && !string.IsNullOrWhiteSpace(right.RightNickName.Trim()) && !userRights.Contains(right.RightNickName))
-                {
-                    userRights.Add(right.RightNickName);
-                }
-            }
-
-            return userRights;
-        }
-
         private Persona AddRightsToPersona(Persona persona)
         {
             if (persona == null) return null;
@@ -218,12 +152,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             System.Security.Claims.ClaimsPrincipal currentClaimPrincipal = System.Security.Claims.ClaimsPrincipal.Current;
             DefaultUserClaim userClaim = new DefaultUserClaim(currentClaimPrincipal);
 
-           // var personaRights = GetPersonaRoleRights(userClaim);
-            var personaRights = GetRights(GetPersonaRoleRights(userClaim));
             //NOT Super user then check for Right
             if (persona.UserTypeId != UserTypeConstants.SuperUser)
             {
-                persona.hasResidentPortalUserAccess = CheckUserRight.CheckUserHasAccess(personaRights, "AddEditResidentPortalUser");
+                persona.hasResidentPortalUserAccess = CheckUserRight.CheckUserHasAccess(userClaim.Rights, "AddEditResidentPortalUser");
 
                 List<string> editorRights = userClaim.Rights;
                 persona.hasManageAccountingProductAccess = editorRights.Contains(ProductRightEnum.ManageAccountingProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
@@ -286,17 +218,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (currentClaimPrincipal.Identity.IsAuthenticated)
             {
-                persona.hasViewOnlySupportToolAccess = personaRights.Contains("ViewOnlySupportToolAccess", StringComparer.OrdinalIgnoreCase);
-                persona.hasViewOnlySettingsAccess = personaRights.Contains("ViewUnifiedSettings", StringComparer.OrdinalIgnoreCase);
-                persona.hasManageUnifiedSettings = personaRights.Contains("ManageUnifiedSetting", StringComparer.OrdinalIgnoreCase);
-                persona.hasManageCustomFields = personaRights.Contains("ManageCustomFields", StringComparer.OrdinalIgnoreCase);
-                persona.hasManagePlatFormSecurity = personaRights.Contains("ManagePlatFormSecurity", StringComparer.OrdinalIgnoreCase);
-                persona.hasAccessSettingsAdmin = personaRights.Contains("AccessSettingsAdmin", StringComparer.OrdinalIgnoreCase);
-                persona.hasManageSettingsTemplates = personaRights.Contains("ManageSettingsTemplates", StringComparer.OrdinalIgnoreCase);
-                persona.hasnotificationsAccess = personaRights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);              
+                persona.hasViewOnlySupportToolAccess =  userClaim.Rights.Contains("ViewOnlySupportToolAccess", StringComparer.OrdinalIgnoreCase);
+                persona.hasViewOnlySettingsAccess = userClaim.Rights.Contains("ViewUnifiedSettings", StringComparer.OrdinalIgnoreCase);
+                persona.hasManageUnifiedSettings = userClaim.Rights.Contains("ManageUnifiedSetting", StringComparer.OrdinalIgnoreCase);
+                persona.hasManageCustomFields = userClaim.Rights.Contains("ManageCustomFields", StringComparer.OrdinalIgnoreCase);
+                persona.hasManagePlatFormSecurity = userClaim.Rights.Contains("ManagePlatFormSecurity", StringComparer.OrdinalIgnoreCase);
+                persona.hasAccessSettingsAdmin = userClaim.Rights.Contains("AccessSettingsAdmin", StringComparer.OrdinalIgnoreCase);
+                persona.hasManageSettingsTemplates = userClaim.Rights.Contains("ManageSettingsTemplates", StringComparer.OrdinalIgnoreCase);
+                persona.hasnotificationsAccess = userClaim.Rights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);
 
                 // For Import User Access - Support tool Employee
-                persona.hasImportUsersAccess = persona.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId && personaRights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
+                persona.hasImportUsersAccess = persona.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId && userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
 
                 if (!persona.hasViewOnlySettingsAccess || !persona.hasManageUnifiedSettings || !persona.hasManageCustomFields || !persona.hasManagePlatFormSecurity || !persona.hasManageSettingsTemplates)
                 {
@@ -306,16 +238,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         long activePersonaId = GetActivePersonaId(userClaim.ImpersonatedBy);
                         Persona impersonatorPersona = GetPersona(activePersonaId, false);
                         UserRoleRightRepository urr = new UserRoleRightRepository();
-                        List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int) ProductEnum.UnifiedPlatform, impersonatorPersona.PersonaId, impersonatorPersona.OrganizationPartyId);
+                        List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, impersonatorPersona.PersonaId, impersonatorPersona.OrganizationPartyId);
 
                         RPObjectCache rpCache = new RPObjectCache();
-                        var cacheKey = $"getRolesByParty_{impersonatorPersona.OrganizationPartyId}_{(int) ProductEnum.UnifiedPlatform}";
+                        var cacheKey = $"getRolesByParty_{impersonatorPersona.OrganizationPartyId}_{(int)ProductEnum.UnifiedPlatform}";
                         IList<UserRoleRights> roleList = rpCache.GetFromCache<IList<UserRoleRights>>(cacheKey, 180, () =>
                         {
                             SharedDataRepository sdr = new SharedDataRepository();
                             IList<int> productList = sdr.GetProductIdsByCompany(impersonatorPersona.OrganizationPartyId);
                             UserRoleRightRepository urrCache = new UserRoleRightRepository();
-                            return urrCache.GetAllRoleRights(impersonatorPersona.OrganizationPartyId, productList, (int) ProductEnum.UnifiedPlatform);
+                            return urrCache.GetAllRoleRights(impersonatorPersona.OrganizationPartyId, productList, (int)ProductEnum.UnifiedPlatform);
                         });
 
                         foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
@@ -374,7 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             };
 
             IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
-            
+
             using (var repository = GetRepository())
             {
                 IList<Persona> personaList = repository.GetMany<Persona>(StoredProcNameConstants.SP_ListPersona, param);
@@ -455,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public RepositoryResponse UpdateActivePersona(Guid personRealPageId, long personaId)
         {
-            
+
             using (var repository = GetRepository())
             {
                 return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateActivePersona, new { RealPageId = personRealPageId, PersonaId = personaId });

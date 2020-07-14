@@ -42,18 +42,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>list product settings</returns>
         public IList<ProductInternalSetting> GetProductInternalSettings(int ProductId)
         {
-            RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = $"productinternalsettings_{(int)ProductId}";
-            IList<ProductInternalSetting> productInternalSettings = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 300, () =>
+            using (var repo = GetRepository())
             {
-                using (var repo = GetRepository())
-                {
-                    dynamic param = new { ProductId = ProductId };
-                    return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
-                }
-            });
-
-            return productInternalSettings;
+                dynamic param = new { ProductId = ProductId };
+                return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+            }            
         }
 
         /// <summary>

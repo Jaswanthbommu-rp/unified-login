@@ -12,6 +12,7 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
 using System;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -20,12 +21,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 	/// </summary>
 	public class UnifiedLoginRepository : BaseRepository, IUnifiedLoginRepository
 	{
+        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Constructor
         /// <summary>
         /// UserManagement base Constructor
         /// </summary>
         public UnifiedLoginRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -34,6 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="repository"></param>
         public UnifiedLoginRepository(IRepository repository) : base(repository)
         {
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
         #endregion
 
@@ -773,9 +777,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #region Private Methods
         private string getRoleRightsSchemaName()
         {
-            IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-            return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
+            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            });
+
+            return schemaName;
         }
         #endregion
     }
