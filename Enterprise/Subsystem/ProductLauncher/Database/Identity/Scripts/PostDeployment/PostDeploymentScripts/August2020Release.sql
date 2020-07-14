@@ -1040,8 +1040,8 @@ BEGIN
 
 END
 
-SELECT @ProductId = 44
-IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE ControlId = 504)
 BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
 

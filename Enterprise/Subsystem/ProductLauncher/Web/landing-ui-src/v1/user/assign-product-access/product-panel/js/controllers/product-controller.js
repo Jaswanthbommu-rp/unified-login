@@ -313,7 +313,7 @@
                                         //Check and Set any Aside List Grid
                                         if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
                                             var asideShowSelectAll = false;
-                                            var isassignasideConfig = true;
+                                            var isAssignAsideConfig = true;
                                             if (tab.controls) {
                                                 tab.controls.forEach(function (ctrl) {
                                                     if (ctrl.controls) {
@@ -331,7 +331,7 @@
                                             }
                                             
                                             var listAsideconfigs;
-                                            isassignasideConfig = (productId === 44 && vm.distinctEntityTypes.length == 0) ? false : true;
+                                            isAssignAsideConfig = (productId === 44 && vm.distinctEntityTypes.length == 0) ? false : true;
                                             
                                             if(productId === 20){
                                                 if(vm.distinctRoleType.length > 0){
@@ -345,7 +345,7 @@
                                                     });
                                                 }
                                             }
-                                            else if(isassignasideConfig){
+                                            else if(isAssignAsideConfig){
                                                 listAsideconfigs = configData.getListAsideConfig(tab, "");
                                                 if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
                                                     var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
