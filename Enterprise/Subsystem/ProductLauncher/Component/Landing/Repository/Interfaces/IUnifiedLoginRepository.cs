@@ -17,9 +17,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="desc">User Persona ID</param>             
         /// <param name="roleTypeId">User Role</param>   
         /// <param name="roleCategoryId">isDeleted</param>   
-        /// <param name="partyId">isDeleted</param>   
+        /// <param name="partyId">isDeleted</param> 
+        /// <param name="userId"></param>
         /// <returns>Add new Role</returns>
-        RepositoryResponse AddCustomRole(string roleName, string desc, long roleTypeId, long roleCategoryId, long partyId);
+        RepositoryResponse AddCustomRole(string roleName, string desc, long roleTypeId, long roleCategoryId, long partyId, int userId);
 
         /// <summary>
         /// Delete role
@@ -40,8 +41,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="userPersonaId">User Persona ID</param>             
         /// <param name="role">User Role</param>   
         /// <param name="del">isDeleted</param>   
+        /// <param name="userId"></param>
         /// <returns>List of Roles assigned to Persona</returns>
-        RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, UserAccessGroup role, long del = 0);
+        RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, UserAccessGroup role, int userId, long del = 0);
 
         /// <summary>
         /// Insert Property/Role to User
@@ -68,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <summary>
         /// Update Rights to Role
         /// </summary>
-        int LinkRightsToRole(IEnumerable<RightRoleAddRem> rightsList);
+        int LinkRightsToRole(IEnumerable<RightRoleAddRem> rightsList, int userId);
 
         /// <summary>
         /// List ALL Rights by Party Product
@@ -175,7 +177,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="roleId">User Role</param>   
         /// <param name="roleName"></param>
         /// <param name="desc">User Persona ID</param>
+        /// <param name="userId"></param>
         /// <returns>Add new Role Response</returns>
-        RepositoryResponse UpdateCustomRole(long roleId, string roleName, string desc);
+        RepositoryResponse UpdateCustomRole(long roleId, string roleName, string desc, int userId);
     }
 }

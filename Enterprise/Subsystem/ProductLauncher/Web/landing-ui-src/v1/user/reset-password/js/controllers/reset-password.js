@@ -15,7 +15,7 @@
             vm.model = model;
             vm.security = security;
             vm.formConfig = formConfig.setMethodsSrc(vm);
-         
+
             vm.validatePasswordPolicy();
 
             vm.register();
@@ -53,7 +53,11 @@
         };
 
         vm.setControlsState = function() {
-            if (security.isAllowed("editPassWord") || model.editingSelf()) {
+            var allowed = security.isAllowed("editSelf") ||
+                security.isAllowed("editOther") ||
+                security.isAllowed("editUser") ? true : false;
+
+            if (allowed) {
                 formConfig.setControlsDisabledState(false);
             } else {
                 formConfig.setControlsDisabledState(true);
@@ -63,7 +67,7 @@
         };
 
         vm.setControlsStateImp = function() {
-            
+
             if (impersonate.isUserImpersonated() && (session.getRealPageId() === $params.realPageId)) {
                 formConfig.setControlsDisabledState(true);
             }
@@ -98,7 +102,7 @@
         };
 
         vm.onTabActive = function() {
-            var helpWidget = document.querySelector('omnibar-unified-help');            
+            var helpWidget = document.querySelector('omnibar-unified-help');
             helpWidget.helpQuery = 'pg=ul-password&vr=40&scrver=350';
             vm.active = true;
             model.setActive();
