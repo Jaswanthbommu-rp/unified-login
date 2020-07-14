@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -34,7 +36,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			using (var repository = GetRepository())
 			{
 				List<ProductRole> rolesList = new List<ProductRole>();
-				IList<dynamic> result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesByParty, new { partyId }).ToList();
+				string schemaName = getRoleRightsSchemaName();
+				var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByParty" : StoredProcNameConstants.SP_ListRolesByParty;
+				IList<dynamic> result = repository.GetMany<dynamic>(procName, new { partyId }).ToList();
 				if (result != null)
 				{
 					foreach (var item in result)
@@ -60,7 +64,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			using (var repository = GetRepository())
 			{
 				List<ProductRole> rolesList = new List<ProductRole>();
-				IList<dynamic> result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesByParty, new { userPersonaId }).ToList();
+				string schemaName = getRoleRightsSchemaName();
+				var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByParty" : StoredProcNameConstants.SP_ListRolesByParty;
+				IList<dynamic> result = repository.GetMany<dynamic>(procName, new { userPersonaId }).ToList();
 				if (result != null)
 				{
 					foreach (var item in result)
@@ -133,8 +139,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
-
-
+		#endregion
+		#region Private Methods
+		private string getRoleRightsSchemaName()
+		{
+			IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
+			var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+			return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+		}
 		#endregion
 	}
 }
