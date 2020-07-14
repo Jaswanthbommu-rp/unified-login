@@ -1039,6 +1039,17 @@ BEGIN
             SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
+
+SELECT @ProductId = 44
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (138, 504, N'FilterType', N'menu', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+END
 GO
 
 -- Unified Amenities rights in Sentence case instead of Title Case format

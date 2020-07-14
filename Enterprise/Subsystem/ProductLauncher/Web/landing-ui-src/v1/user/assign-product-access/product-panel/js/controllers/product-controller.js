@@ -25,6 +25,7 @@
             vm.tabsList = [];
             vm.tabsData = "";
             vm.distinctRoleType = [];
+            vm.distinctEntityTypes = [];
             vm.tabsMenu = tabsModel.getTabsMenu();
             //Below flag in use for Financial Suite
             vm.hasAccessToSiteSpendManagementOnly = false;
@@ -42,6 +43,7 @@
             vm.productDisabledWatch = pubsub.subscribe("productpanel.userTypeChanged", vm.resetProductDisabled);
             vm.accountingAdditionalSetWatch = pubsub.subscribe("acct.accountingAdditionalDataSet", vm.accountingAdditionalDataSet);
             vm.productAsidePanelWatch = pubsub.subscribe("ppanel.distinct-role-types", vm.setAsidePanelConfig);
+            vm.productAsideFilterWatch = pubsub.subscribe("ppanel.distinct-entity-types", vm.setAsideFilterConfig);
 
         };
 
@@ -168,6 +170,11 @@
             active = true;
             panelModel.setPropertyGridActive(true);
             panelModel.setRoleGridActive(true);
+        };
+
+        vm.setAsideFilterConfig = function(distinctEntities){
+            vm.distinctEntityTypes = distinctEntities;
+            vm.setTabsConfigData(vm.tabsData);
         };
 
         vm.setAsidePanelConfig = function(distinctRoles){
@@ -306,6 +313,7 @@
                                         //Check and Set any Aside List Grid
                                         if (productModel.getProductAsideGridConfig(productId, tabName) === undefined) {
                                             var asideShowSelectAll = false;
+                                            var isassignasideConfig = true;
                                             if (tab.controls) {
                                                 tab.controls.forEach(function (ctrl) {
                                                     if (ctrl.controls) {
@@ -323,6 +331,8 @@
                                             }
                                             
                                             var listAsideconfigs;
+                                            isassignasideConfig = (productId === 44 && vm.distinctEntityTypes.length == 0) ? false : true;
+                                            
                                             if(productId === 20){
                                                 if(vm.distinctRoleType.length > 0){
                                                     vm.distinctRoleType.forEach(function (roletype) {
@@ -335,10 +345,9 @@
                                                     });
                                                 }
                                             }
-                                            else{
+                                            else if(isassignasideConfig){
                                                 listAsideconfigs = configData.getListAsideConfig(tab, "");
-                                                if (listAsideconfigs !== undefined &&
-                                                    listAsideconfigs.config.length > 0) {
+                                                if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
                                                     var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
                                                     logc("asideGridConfig", asideGridConfig);
                                                     productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
@@ -382,7 +391,7 @@
                 var h = configData.getHeaders(data, showSelectAll);
                 hdrCnfgs = h;
 
-                var f = configData.getFilters(data);
+                var f = configData.getFilters(data, vm.distinctEntityTypes);
                 fltrCnfg = f;
 
                 var m = configData.getMain(data);

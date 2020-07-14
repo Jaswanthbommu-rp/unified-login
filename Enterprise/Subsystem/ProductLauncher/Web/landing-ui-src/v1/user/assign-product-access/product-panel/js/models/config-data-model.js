@@ -70,6 +70,7 @@
         p.getListAsideConfig = function (data, roleType) {
             var s = this,
                 displayName = "",
+                filterType,
                 isSlideScreen = false,
                 listasideConfig = {
                     displayName: "",
@@ -90,15 +91,25 @@
                         }
                         if (isSlideScreen) {
                             ctrl.controls.forEach(function (subCtrls) {
+                                filterType = undefined;
                                 logc("sub controls", subCtrls);
                                 if (subCtrls.type === "Grid" || subCtrls.type === "Multi Select Grid") {
                                     listasideConfig.displayName = roleType !== "" ?  roleType : subCtrls.displayName;
                                     subCtrls.controls.forEach(function (gridCtrl) {
                                         var columnName = (roleType !== "" && gridCtrl.dataSource === "name") ? roleType :  gridCtrl.displayName;
+
+                                        if (gridCtrl.attributes !== null) {
+                                            gridCtrl.attributes.forEach(function (data) {
+                                                if (data.key === "FilterType" && data.value === "menu") {
+                                                    filterType = "menu";
+                                                }
+                                            });
+                                        }
                                         listasideConfig.config.push({
                                             "key": gridCtrl.dataSource,
                                             "type": s.isType(gridCtrl.type),
                                             "text": columnName,
+                                            "filterType": filterType,
                                             "idKey": "id"
                                         });
     
@@ -184,7 +195,7 @@
             return [hdr];
         };
 
-        p.getFilters = function (tab) {
+        p.getFilters = function (tab, optionvalues) {
             var s = this;
             var fltr = [];
             tab.forEach(function (item) {
@@ -194,6 +205,28 @@
                         "text": item.text,
                         "type": item.type,
                         "placeholder": "Filter by " + item.text + " Name"
+                    });
+                }
+
+                if (item.type === 'text' && item.key === 'propertyType' && item.filterType === "menu") {
+                    var items = [];
+                    items.push({
+                        value: "",
+                        name: "All"
+                    });
+                    if(optionvalues.length > 0){
+                        optionvalues.forEach(function (item) {
+                            items.push({
+                                value: item,
+                                name: item
+                            });
+                        });
+                    }
+                    fltr.push({
+                        "key": item.key,
+                        "type": "menu",
+                        "value": "",
+                        "options": items
                     });
                 }
 
