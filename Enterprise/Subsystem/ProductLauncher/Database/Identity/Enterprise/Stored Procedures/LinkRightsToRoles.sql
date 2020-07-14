@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [Enterprise].[LinkRightsToRoles]
 ( 
-				@ManageRight typrole READONLY, @NewRightID int OUTPUT
+				@ManageRight typrole READONLY,@CreatedBy nvarchar(50) NULL, @NewRightID int OUTPUT
 )
 AS
 BEGIN
