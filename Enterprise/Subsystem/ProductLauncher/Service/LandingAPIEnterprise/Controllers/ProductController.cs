@@ -40,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetProducts()
         {
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");            
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");
 
             var result = GetAllProducts();
 
@@ -67,7 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
-            var result = GetUsersByCompanyorProductsDetails(companyId , products);
+            var result = GetUsersByCompanyorProductsDetails(companyId, products);
 
             if (result == null)
             {
@@ -108,15 +108,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             productId = result.Where(x => x.BooksProductCode == productUserIDMappingRequest.ProductCode).FirstOrDefault().ProductId;
 
             if (productUserIDMappingRequest == null ||
-                productUserIDMappingRequest.CompanyId <= 0||
+                productUserIDMappingRequest.CompanyId <= 0 ||
                 string.IsNullOrEmpty(productUserIDMappingRequest.ProductCode) ||
-                productId <=0)
-            {                
+                productId <= 0)
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, mappedUnifiedLoginUserDetails);
             }
 
             IProductRepository productRepository = new ProductRepository();
-            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
+            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId,
                                                                                  productId,
                                                                                  productUserIDMappingRequest.ProductUserId);
             var logData = new Dictionary<string, object>();
@@ -139,7 +139,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("users")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
-        public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1)
+        public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1,
+                                                                    [FromUri]List<string> roles = null, [FromUri]List<string> rights = null , [FromUri]List<string> properties = null)
         {
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
@@ -149,7 +150,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             productcode.ForEach(x => productIds.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
 
-            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, 2, rowsPerPage, pageNumber);
+            IList<ProductUsers> result;
+
+            if (roles.Any() || rights.Any() || properties.Any())
+            {
+                result = GetUsersByCompanyorProductsDetails(companyid, productIds, 3, rowsPerPage, pageNumber);
+            }
+            else
+            {
+                result = GetUsersByCompanyorProductsDetails(companyid, productIds, 2, rowsPerPage, pageNumber);
+            }
 
             if (result == null)
             {
