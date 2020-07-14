@@ -4,6 +4,7 @@ using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
@@ -43,10 +44,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repo = GetRepository())
             {
-                dynamic param = new
-                { ProductId = ProductId };
+                dynamic param = new { ProductId = ProductId };
                 return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
-            }
+            }            
         }
 
         /// <summary>
