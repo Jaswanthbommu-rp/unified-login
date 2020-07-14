@@ -208,18 +208,20 @@
                     });
                 }
 
-                if (item.type === 'text' && optionvalues.length > 0 && item.key === 'propertyType' && item.filterType === "menu") {
+                if (item.type === 'text' && item.key === 'propertyType' && item.filterType === "menu") {
                     var items = [];
                     items.push({
                         value: "",
                         name: "All"
                     });
-                    optionvalues.forEach(function (item) {
-                        items.push({
-                            value: item,
-                            name: item
+                    if(optionvalues.length > 0){
+                        optionvalues.forEach(function (item) {
+                            items.push({
+                                value: item,
+                                name: item
+                            });
                         });
-                    });
+                    }
                     fltr.push({
                         "key": item.key,
                         "type": "menu",
