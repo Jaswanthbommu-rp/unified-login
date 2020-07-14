@@ -194,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     int roleCategoryId = catList.FirstOrDefault(c => c.CategoryName.ToUpper() == "ROLE TYPE" && c.Status.ToUpper() == "CUSTOM").StatusTypeid;
 
 
-                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId);
+                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId,_userClaims.UserId);
                     if(resp.ErrorMessage.Trim() != string.Empty )
                     {
                         response.IsError = true;
@@ -208,7 +208,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else // Existing role to Edit/Update
                 {
                    
-                    var resp = ocr.UpdateCustomRole(roleId,roleName, "");
+                    var resp = ocr.UpdateCustomRole(roleId,roleName, "", _userClaims.UserId);
                     if (resp.ErrorMessage.Trim() != string.Empty)
                     {
                         response.IsError = true;
@@ -297,17 +297,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="roleId"></param>
 
         /// <returns></returns>
-        public ListResponse SetDefaultRole(long editorPersonaId, long roleId)
+        public ListResponse SetDefaultRole(long editorPersonaId,long partyId, long roleId)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response; }
-
             try
             {
                 UnifiedLoginRepository ocr = new UnifiedLoginRepository();
 
-                var resp = ocr.SetDefaultRole(roleId);
+                var resp = ocr.SetDefaultRole(roleId,partyId, _userClaims.UserId);
                 if (resp.ErrorMessage.Trim() != string.Empty)
                 {
                     response.IsError = true;
@@ -1324,7 +1323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rightsAddRem.Add(rightDel);
             }
 
-            var result = ocr.LinkRightsToRole(rightsAddRem);
+            var result = ocr.LinkRightsToRole(rightsAddRem, _userClaims.UserId);
         }
 
 
@@ -1357,7 +1356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rightsAddRem.Add(roleDel);
             }
 
-            var result = ocr.LinkRightsToRole(rightsAddRem);
+            var result = ocr.LinkRightsToRole(rightsAddRem, _userClaims.UserId);
         }
 
 

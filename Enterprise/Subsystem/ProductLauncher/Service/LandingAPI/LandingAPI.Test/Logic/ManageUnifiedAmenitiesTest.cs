@@ -302,6 +302,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.InsertAssignedRoleToUser(
 					It.IsAny<long>(),
 					It.IsAny<long>(),
+					It.IsAny<int>(),
 					It.IsAny<bool>()
 				))
 				.Returns(_roleRightResult);
@@ -389,6 +390,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.InsertAssignedRoleToUser(
 					It.IsAny<long>(),
 					It.IsAny<long>(),
+					It.IsAny<int>(),
 					It.IsAny<bool>()
 				))
 				.Returns(_roleRightErrorResult);
@@ -469,6 +471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.InsertAssignedRoleToUser(
 					It.IsAny<long>(),
 					It.IsAny<long>(),
+					It.IsAny<int>(),
 					It.IsAny<bool>()
 				))
 				.Returns(_roleRightErrorResult);
@@ -491,6 +494,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.InsertAssignedRoleToUser(
 					It.IsAny<long>(),
 					It.Is<long>(l => l == 1),
+					It.IsAny<int>(),
 					It.IsAny<bool>()
 				))
 				.Returns(_roleRightErrorResult);
@@ -518,6 +522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.InsertAssignedRoleToUser(
 					It.IsAny<long>(),
 					It.Is<long>(l => l == 1),
+					It.IsAny<int>(),
 					It.IsAny<bool>()
 				))
 				.Returns(roleRightResultSuccess);
@@ -527,6 +532,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.InsertAssignedRoleToUser(
 					It.IsAny<long>(),
 					It.Is<long>(l => l == 3),
+					It.IsAny<int>(),
 					It.IsAny<bool>()
 				))
 				.Returns(roleRightResultFail);
@@ -571,6 +577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Setup(m => m.InsertAssignedRoleToUser(
 					It.IsAny<long>(),
 					It.IsAny<long>(),
+					It.IsAny<int>(),
 					It.IsAny<bool>()
 				))
 				.Returns(_roleRightErrorResult);

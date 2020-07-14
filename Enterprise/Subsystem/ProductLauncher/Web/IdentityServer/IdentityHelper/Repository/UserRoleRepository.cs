@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using DbConnectionEnum = RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Enum.DbConnectionEnum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 {
@@ -35,6 +38,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 		public IList<ProductRole> GetProductRolesByPersona(long personaId, ProductEnum productId)
 		{
 			List<dynamic> result;
+			var productRepository = new ProductInternalSettingRepository();
+			List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>();
+			productInternalSettings = productRepository.GetProductSettings((int)ProductEnum.UnifiedPlatform).ToList();
+			string schemaName = productInternalSettings.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+			var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+
 			dynamic param = new
 			{
 				PersonaID = personaId,
@@ -42,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 			};
 			using (var repository = GetRepository())
 			{
-				result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPersonaId, param);
+				result = repository.GetMany<dynamic>(procName, param);
 			}
 			if (result.Count > 0)
 			{
@@ -73,6 +82,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 		public IList<ProductRight> ListRightsByRole(long partyId, IList<int> productIdList, ProductEnum productId, long roleId)
 		{
 			List<dynamic> result;
+			var productRepository = new ProductInternalSettingRepository();
+			List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>();
+			productInternalSettings = productRepository.GetProductSettings((int)ProductEnum.UnifiedPlatform).ToList();
+			string schemaName = productInternalSettings.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+			var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+
 			dynamic param = new
 			{
 				PartyId = partyId,
@@ -83,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository
 
 			using (var repository = GetRepository())
 			{
-				result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesAssociatedWithRights, param);
+				result = repository.GetMany<dynamic>(procName, param);
 			}
 			
 			if (result != null)
