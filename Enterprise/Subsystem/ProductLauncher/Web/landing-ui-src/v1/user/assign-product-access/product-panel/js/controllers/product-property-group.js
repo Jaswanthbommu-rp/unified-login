@@ -135,8 +135,8 @@
                     vm.setProductTabs(filteredAllTabs);
                 }
                 if (additionalData["hasAccessToAllCurrentFutureProperties"]) {
-                    pubsub.publish("acct.accountingAllPropertiesSet", false);
-                    vm.accountingAllCompaniesSet(false);
+                    pubsub.publish("acct.accountingAllPropertiesSet", true);
+                    vm.accountingAllCompaniesSet(true);
                 }
             }
 
