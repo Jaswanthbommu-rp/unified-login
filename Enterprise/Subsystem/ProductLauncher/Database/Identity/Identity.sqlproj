@@ -976,6 +976,8 @@
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetDefaultRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUser.sql" />
+    <Build Include="Enterprise\Tables\PropertyInstance.sql" />
+    <Build Include="Enterprise\Tables\PropertyInstanceMapping.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
