@@ -61,7 +61,7 @@ AS
 					--	Where RV.Value = 'Basic End User'
 					--	And R.PartyID = @PartyId
 					--End
-					EXEC [Enterprise].[SetDefaultRole] @EnterpriseRoleId
+					EXEC [Enterprise].[SetDefaultRole] @EnterpriseRoleId,@CreatedBy
 				END
 			END TRY
 			BEGIN CATCH

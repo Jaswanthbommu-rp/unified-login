@@ -1202,3 +1202,6 @@ BEGIN
 END
 
 GO
+
+update Enterprise.[RightValueType] set ShortName = 'AccessHelpCenter' 
+where Value = 'Access to Help Center'
