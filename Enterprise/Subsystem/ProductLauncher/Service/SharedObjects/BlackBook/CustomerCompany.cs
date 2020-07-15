@@ -28,6 +28,7 @@
         //[JsonProperty("companyType")]
         public string CompanyType { get; set; }
 
+        /// <summary>
         /// Phone number
         /// </summary>
         //[JsonProperty("phoneNumber")]
@@ -38,15 +39,23 @@
         /// </summary>
         public string MigrationStatus { get; set; }
 
-		/// <summary>
-		/// The category of the company
-		/// </summary>
-		//public string Category { get; set; }
+        /// <summary>
+        /// The category of the company
+        /// </summary>
+        //public string Category { get; set; }
 
+
+        private bool _isActive = false;
 		/// <summary>
 		/// Is the company active
 		/// </summary>
-		public bool IsActive { get; set; }
+		public bool? IsActive {
+            get
+            {
+                return _isActive;
+            }
+            set { _isActive = value.HasValue && value.Value; }
+        }
 		
 	}
 }
