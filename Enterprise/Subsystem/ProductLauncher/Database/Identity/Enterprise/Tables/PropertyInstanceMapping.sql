@@ -12,3 +12,6 @@
  CONSTRAINT [FK_PropertyInstanceMapping_Product] FOREIGN KEY([ProductId]) REFERENCES [Enterprise].[Product] ([ProductId]), 
     CONSTRAINT [PK_PropertyInstanceMapping] PRIMARY KEY ([PropertyInstanceMappingID]),
 ) ON [PRIMARY]
+GO
+
+CREATE INDEX [IX_PropertyInstanceMapping_PersonaId_Active] ON [Enterprise].[PropertyInstanceMapping] ([PersonaId], [Active])
