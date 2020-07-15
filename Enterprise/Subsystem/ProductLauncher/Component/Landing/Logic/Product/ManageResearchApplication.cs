@@ -501,7 +501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository();
             WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.InsertAssignedUserRoleData START - calling DB to Insert Role assigned to user userPersonaId - {userPersonaId}, RoleId - {roleID}.");
 
-            result = userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId, roleID, deleteRole);
+            result = userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId, roleID, _userClaims.UserId , deleteRole);
             if (result.Id < 0)
             {
                 WriteToErrorLog($"ResearchApplication - ManageResearchApplication.InsertAssignedUserRoleData InsertAssignedRoleToUser - Unable to Insert record for user with userPersonaId - {userPersonaId}, RoleId - {roleID}");
