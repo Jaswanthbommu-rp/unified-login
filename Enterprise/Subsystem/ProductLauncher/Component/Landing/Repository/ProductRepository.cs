@@ -76,7 +76,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
         {
             string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.GetProductsByPersonaId" : StoredProcNameConstants.SP_GetProductsByPersonaId;
+            var procName =  StoredProcNameConstants.SP_GetProductsByPersonaId;
+            if (schemaName?.Length > 0 && schemaName == "Security")
+            {
+                procName = $"{schemaName}.GetProductsByPersonaId";
+            }
 
             dynamic param = new
             {
