@@ -1050,6 +1050,11 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 END
 
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 247)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 247
+END
+
 GO
 
 -- Unified Amenities rights in Sentence case instead of Title Case format
