@@ -976,6 +976,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetDefaultRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUser.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetProductsByPersonaId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
