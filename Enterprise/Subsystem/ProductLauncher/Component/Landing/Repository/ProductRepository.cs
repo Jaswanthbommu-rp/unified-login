@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     public class ProductRepository : BaseRepository, IProductRepository
     {
         private DefaultUserClaim _userClaim;
-
+        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Ctor
         /// <summary>
         /// base Constructor
@@ -40,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public ProductRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -48,6 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public ProductRepository(IRepository repository) : base(repository)
         {
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
         /// <summary>
@@ -60,6 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
 
             _userClaim = userClaim;
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         #endregion
@@ -72,6 +75,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
         {
+            string schemaName = getRoleRightsSchemaName();
+            var procName = schemaName?.Length > 0 ? $"{schemaName}.GetProductsByPersonaId" : StoredProcNameConstants.SP_GetProductsByPersonaId;
+
             dynamic param = new
             {
                 PersonaId = personaId,
@@ -80,7 +86,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
-                var result = repository.GetMany<PersonaProduct>(StoredProcNameConstants.SP_GetProductsByPersonaId, param);
+                var result = repository.GetMany<PersonaProduct>(procName, param);
                 return result;
             }
         }
@@ -1573,6 +1579,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <returns>List of Roles by PartyId and Product</returns>
 		public List<ProductRole> ListRolesForProductByParty(long partyId, IList<int> productIdList, int productId)
         {
+            string schemaName = getRoleRightsSchemaName();
+            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPartyId" : StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
+
             using (var repository = GetRepository())
             {
                 dynamic param = new
@@ -1583,7 +1592,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<ProductRole> rolesList = new List<ProductRole>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPartyId, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -1628,6 +1637,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
+                string schemaName = getRoleRightsSchemaName();               
+                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+               
                 dynamic param = new
                 {
                     PartyId = partyId,  
@@ -1636,7 +1648,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 List<RightRoleDetail> rolesList = new List<RightRoleDetail>();
-                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesAssociatedWithRights, param);
+                var result = repository.GetMany<dynamic>(procName, param);
                 if (result != null)
                 {
                     foreach (var item in result)
@@ -1930,6 +1942,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         break;
                 }
             }
+        }
+
+        private string getRoleRightsSchemaName()
+        {
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
+            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            });
+
+            return schemaName;
         }
         #endregion
     }

@@ -17,12 +17,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     /// </summary>
     public class OrganizationRepository : BaseRepository, IOrganizationRepository
     {
+        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Constructor
         /// <summary>
         /// Base constructor
         /// </summary>
         public OrganizationRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -31,6 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="repository"></param>
         public OrganizationRepository(IRepository repository) : base(repository)
         {
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
         #endregion
@@ -310,6 +313,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, IList<int> productIdList)
         {
             RepositoryResponse response = new RepositoryResponse();
+            string schemaName = getRoleRightsSchemaName();
+            var procName = schemaName?.Length > 0 ? $"{schemaName}.SetupSuperUser" : StoredProcNameConstants.SP_SetupSuperUser;
 
             using (var repository = GetRepository())
             {
@@ -330,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         AssignedProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
                     };
 
-                    repository.ExecuteNonQuery(StoredProcNameConstants.SP_SetupSuperUser, param);
+                    repository.ExecuteNonQuery(procName, param);
                 }
                 catch (Exception exception)
                 {
@@ -461,6 +466,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return result;
         }
 
+        #endregion
+
+        #region private methods
+        private string getRoleRightsSchemaName()
+        {
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
+            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            });
+
+            return schemaName;
+
+        }
         #endregion
     }
 }
