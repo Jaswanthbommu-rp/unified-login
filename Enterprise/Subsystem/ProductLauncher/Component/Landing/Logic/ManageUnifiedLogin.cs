@@ -1391,10 +1391,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var roles = umr.ListRolesForProductsByPartyId(partyId, ulProductId, productIdList);
 
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
 
                 foreach (var role in roles)
                 {
@@ -1426,6 +1426,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (list != null && list.Count > 0)
                     {
                         int rights = list.Count;
+                        if (list.Count == 1 && list[0].RightId == 0){
+                            rights = 0;
+                        }
                         list[0].RightsAssigned = rights.ToString();
                         ProductRole pr = new ProductRole {ID = list[0].RoleId.ToString(),IsAssigned = list[0].IsAssigned, Roletype = list[0].RoleType,Name = list[0].RoleName,RightsAssigned = list[0].RightsAssigned,DefaultRole = list[0].IsDefaultRole == true ? "User Default" : "" };
                         result.Add(pr);
