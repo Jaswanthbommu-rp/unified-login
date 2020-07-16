@@ -2204,7 +2204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Success);
 
 				// add activity log
-				WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} assigned product {2} by user {3} {4}.");
+				WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "{0} {1} was assigned {2} by {3} {4}.");
 
 				WriteToDiagnosticLog($"ManageProductAssetOptimization.CreateProductUserInGreenBook - Create user Success. Set product status to Success. productUsername -{productLoginName}, product - {product}");
 			}
@@ -2219,6 +2219,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			var productAssigned = new List<string>();
 			var productUnAssigned = new List<string>();
+			bool isAllProductsUnassigned = true;
+			bool isSuperUser = IsSuperUser(userPersonaId);
 
 			foreach (var aoUserCompanyPropertyRoleDetail in aoUserCompanyPropertyRoleDetails)
 			{
@@ -2226,7 +2228,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					productAssigned.Add(aoUserCompanyPropertyRoleDetail.ProductName);
 				}
-				else
+				if (isSuperUser || !aoUserCompanyPropertyRoleDetail.IsAssigned)
 				{
 					productUnAssigned.Add(aoUserCompanyPropertyRoleDetail.ProductName);
 				}
@@ -2241,8 +2243,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				productUnAssigned.Remove("BM");
 			}
+			
+			foreach(var item in existingAssignedProducts)
+			{
+				if (!productUnAssigned.Contains(item.ProductName))
+				{
+					isAllProductsUnassigned = false;
+				}
+			}
+
 			//set delete status if all products are unassigned.
-			if (existingAssignedProducts.Count == productUnAssigned.Count)
+			if (isAllProductsUnassigned)
 			{
 				// remove all association from GB
 				UpdateProductSettingProductStatus(userPersonaId,
@@ -2260,7 +2271,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 						// add activity log
 						WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName),
-							"User {0} {1} access is removed for product {2} by user {3} {4}.");
+							"{0} {1} was unassigned {2} by {3} {4}.");
 					}
 
 					if (item.IsAssigned)
@@ -2270,7 +2281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 						// add activity log
 						WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName),
-							"User {0} {1} access is assigned for product {2} by user {3} {4}.");
+							"{0} {1} was assigned {2} by {3} {4}.");
 					}
 				}
 			}
@@ -2321,14 +2332,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								(int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
 
 							// add activity log
-							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} assigned for product {2} by user {3} {4}.");
+							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "{0} {1} was assigned {2} by {3} {4}.");
 						}
 						else if (loginNameChanged)
 						{
 							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername, productLoginName);
 							UpdateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
 							// add activity log
-							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} assigned for product {2} by user {3} {4}.");
+							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "{0} {1} was assigned {2} by {3} {4}.");
 						}
 
 						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Success);
@@ -2359,7 +2370,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook -{product} record removed from GB for AO user -{productLoginName}.");
 
 							// add activity log
-							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "User {0} {1} access is removed for product {2} by user {3} {4}.");
+							WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), "{0} {1} was unassigned {2} by {3} {4}.");
 						}
 					}
 				}
