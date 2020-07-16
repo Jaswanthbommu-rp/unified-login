@@ -230,6 +230,7 @@ AS
                              @RoleTypeID = 400, 
                              @PartyID = @OrganizationId, 
                              @RoleCategoryId = @Status_Role, 
+							 @CreatedBy = @UserId,
                              @RoleID = @RoleId OUTPUT;
                         SET @RoleName = 'Basic End User';
                         SELECT @RoleId = RoleID
@@ -388,6 +389,7 @@ AS
                              @RoleTypeID = 402, 
                              @RoleCategoryId = @Status_Role, 
                              @PartyID = @OrganizationId, 
+							  @CreatedBy = @UserId,
                              @RoleID = @RoleId OUTPUT;
                         SET @RoleName = 'Read only for Unified Platform';
                         SET @TargetProductId = 3;
@@ -676,6 +678,7 @@ AS
                              @RoleTypeID = 402, 
                              @RoleCategoryId = @Status_Role, 
                              @PartyID = @OrganizationId, 
+							 @CreatedBy = @UserId,
                              @RoleID = @RoleId OUTPUT;
                         SET @RoleName = 'User Administrator';
                         SET @TargetProductId = 3;
@@ -1498,6 +1501,7 @@ AS
                         EXEC Enterprise.LinkPersonaToRole 
                              @PersonaID = @PersonaId, 
                              @RoleID = @RoleId, 
+							  @CreatedBy = @UserId,
                              @PersonaPrivilgeID = @PerPriv OUTPUT;
                 END;
 				
