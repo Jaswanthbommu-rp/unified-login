@@ -197,6 +197,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             // get the company info
                             var customerCompanyId = Convert.ToInt64(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
                             var customerDomain = thinEvent.Payload?["customerEnvironment"].ToString();
+                            var propertyList = thinEvent.Payload["properties"];
+                            List<int> productIdList = new List<int>();
+                            try
+                            {
+                                foreach (var property in propertyList)
+                                {
+                                    var productList = property["productCenters"];
+                                    foreach (var product in productList)
+                                    {
+                                        int productId = Convert.ToInt32(product["productCenterSourceId"]);
+                                        if (!productIdList.Contains(productId))
+                                        {
+                                            productIdList.Add(productId);
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                logData = new Dictionary<string, object> {{"error", ex.Message}};
+                                WriteToLog(LogType.Error, "Error parsing product list", logData);
+                            }
+
                             if (string.IsNullOrEmpty(customerDomain))
                             {
                                 response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing customerEnvironment");
@@ -206,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                             if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
                             {
-                                string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain);
+                                string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
                                 if (!string.IsNullOrEmpty(createResult) )
                                 {
                                     logData = new Dictionary<string, object> {{"error", createResult}};
@@ -257,7 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return signingSecret ?? "";
         }
 
-        private string CreateCompanyFromBooks(long booksCustomerMasterId, string domain)
+        private string CreateCompanyFromBooks(long booksCustomerMasterId, string domain, List<int> productIdList)
         {
             bool processBlueBookMessage = false;
 
@@ -310,14 +333,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             
             organization.Products = new List<string>();
 
-            // get a list of products from blue
-            var productList = _manageBlueBook.GetCompanyMap(companyRealPageId: Guid.Empty, booksCompanyMasterId: booksCustomerMasterId, source: null, domain: domain, includeGreenBookCares: false);
-            if (productList != null)
+            // get a list of products passed by the event
+            foreach (var productId in productIdList)
             {
-                foreach (var customerCompanyMap in productList)
-                {
-                    organization.Products.Add(customerCompanyMap.Source);
-                }
+                organization.Products.Add(ProductEnumHelper.StringValueOf((ProductEnum) productId));
             }
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);

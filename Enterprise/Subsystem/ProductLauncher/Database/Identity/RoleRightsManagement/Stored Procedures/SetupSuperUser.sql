@@ -8,7 +8,7 @@
  @Email             NVARCHAR(200), 
  @DefaultIDP        BIT           = 1, 
  @IDPTypeId         INT           = NULL, 
- @AssignedProductId PRODUCTIDTYPE READONLY
+ @AssignedProductId [enterprise].PRODUCTIDTYPE READONLY
 )
 AS
     BEGIN
