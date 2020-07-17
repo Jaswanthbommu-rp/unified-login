@@ -1,5 +1,6 @@
 ﻿CREATE PROCEDURE [Enterprise].[GetPropertyInstanceByPersonaId]
-	@PersonaId BIGINT
+	@PersonaId BIGINT,
+	@ProductID INT
 AS
 BEGIN
 	SET NOCOUNT ON
@@ -25,6 +26,8 @@ BEGIN
 	WHERE
 		pim.PersonaId = @PersonaId 
 		AND 
+		pim.ProductId = @ProductID
+		AND
 		pim.Active = 1
 	ORDER BY Name
 END

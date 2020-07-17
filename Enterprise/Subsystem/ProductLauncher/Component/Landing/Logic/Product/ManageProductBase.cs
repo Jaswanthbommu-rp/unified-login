@@ -483,6 +483,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		    return propertyList;
 	    }
 
+        protected List<UPFMPropertyInstance> ListUPFMPropertiesByPersona(long userPersonaId, ProductEnum productEnum)
+        {
+            List<UPFMPropertyInstance> propertyList = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, productEnum);
+            return propertyList;
+        }
+
+        protected List<int> GetAssignedUPFMPropertyIdsForPersona(long userPersonaId, ProductEnum productEnum)
+        {
+            return _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, productEnum);
+        }
+
 		/// <summary>
 		/// Used to add the given property id to the given user
 		/// </summary>

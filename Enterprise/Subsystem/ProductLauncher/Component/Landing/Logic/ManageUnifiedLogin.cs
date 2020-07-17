@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
@@ -47,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Properties and Roles
         /// <summary>
-		/// Used to get the list of properties for the company or for the given user
+		/// Used to get the list of properties for the company or for the given user for user setup
 		/// </summary>
 		/// <param name="editorPersonaId">User making the request</param>
 		/// <param name="userPersonaId">The user id to merge with the property list, if used. 0 for all properties</param>
@@ -57,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
-            WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
 
             try
             {
@@ -112,6 +113,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
+        /// <summary>
+        /// Get the list of properties for the given user to be used by external systems
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="include"></param>
+        /// <returns></returns>
         public ListResponse GetProperties(long userPersonaId, string include = null)
         {
             ListResponse response = new ListResponse();
@@ -166,6 +173,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return response;
         }
+
+        public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            WriteToDiagnosticLog($"ManageUnifiedLogin.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+            try
+            {
+                result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (result.IsError)
+                {
+                    WriteToErrorLog($"ManageUnifiedLogin.GetUPFMProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    return result;
+                }
+
+                //long companyId = _editorPersona.Organization.BooksMasterId;
+                //long companyMasterId = _editorPersona.Organization.BooksCustomerMasterId;
+
+                //if (companyMasterId == 0)
+                //{
+                //    WriteToErrorLog($"ManageUnifiedLogin.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                //    return new ListResponse { IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage };
+                //}
+
+                IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
+                IList<ProductProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
+              
+                WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
+
+                // need to do a filter on the result
+                if (userPersonaId != 0)
+                {
+                    WriteToDiagnosticLog($"GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    result = MergeProductPropertiesWithGreenbook(customerPropertyList, userPersonaId, assignedOnly);
+                    WriteToDiagnosticLog($"GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                }
+                else
+                {
+                    result = new ListResponse() // create new user
+                    {
+                        Records = customerPropertyList.Cast<object>().ToList(),
+                        TotalRows = customerPropertyList.Count,
+                        RowsPerPage = customerPropertyList.Count,
+                        TotalPages = 1,
+                        ErrorReason = string.Empty
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                result.IsError = true;
+                result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+                WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
+                    exception: ex);
+            }
+
+            return result;
+        }
+
 
         /// <summary>
         /// Used to add/update a role in Greenbook
@@ -1796,6 +1862,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
         }
        
+
+        private ListResponse MergeUPFMBooksPropertiesWithUPFMProperties(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
+        {
+            // merge the given user details with the list
+            var propertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+            
+            var propertyOption = new Dictionary<string, bool>();
+            propertyOption.Add("allProperties", false);// Single Property
+
+            foreach (var propertyId in propertyIdList)
+            {
+                if (propertyId == -1)
+                {
+                    // PMC level (all properties)
+                    propertyOption["allProperties"] = true;
+                }
+                else {
+                    if (blueBookUPFMPropertyList.Any(a => a.PropertyInstanceId == propertyId))
+                    {
+                        UPFMPropertyInstance pp = (from a in blueBookUPFMPropertyList
+                            where a.PropertyInstanceId == propertyId
+                            select a).FirstOrDefault();
+                        if (pp != null)
+                        {
+                            pp.IsAssigned = true;
+                        }
+                    }
+                }               
+            }
+
+            if (assignedOnly)
+            {
+                blueBookUPFMPropertyList = blueBookUPFMPropertyList.Where(a => a.IsAssigned == true).ToList();
+            }
+
+            return new ListResponse()
+            {
+                Records = blueBookUPFMPropertyList.Cast<object>().ToList(),
+                TotalRows = blueBookUPFMPropertyList.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1,
+                Additional = propertyOption
+            };
+        }
         #endregion
     }
 	

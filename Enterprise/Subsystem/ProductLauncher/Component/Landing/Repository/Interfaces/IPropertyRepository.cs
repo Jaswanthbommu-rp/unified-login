@@ -19,6 +19,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		List<ProductProperty> ListPropertiesByPersona(long userPersonaId, ProductEnum productId);
 
 		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <returns></returns>
+        List<UPFMPropertyInstance> ListUPFMPropertyInstanceByPersona(long userPersonaId, ProductEnum productId);
+
+        /// <summary>
+		/// 
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <returns></returns>
+        List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, ProductEnum productId);
+
+		/// <summary>
 		/// Insert or Remove a Property for the given User
 		/// </summary>
 		/// <param name="userPersonaId">User Persona ID</param>      

@@ -60,6 +60,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
+        public List<UPFMPropertyInstance> ListUPFMPropertyInstanceByPersona(long userPersonaId, ProductEnum productId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = (int)productId
+                };
+
+                List<UPFMPropertyInstance> propList = repository.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceByPersonaId, param);
+                return propList;
+            }
+        }
+
+        public List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, ProductEnum productId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = (int)productId
+                };
+
+                List<int> propList = repository.GetMany<int>(StoredProcNameConstants.SP_GetPropertyInstanceIdsByPersonaId, param);
+                return propList;
+            }
+        }
+
 		/// <summary>
 		/// Insert or Remove a Property for the given User
 		/// </summary>

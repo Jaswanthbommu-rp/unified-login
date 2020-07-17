@@ -72,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 	    public string Alias { get; set; }
 
         /// <summary>
-	    /// Alias for the property
+	    /// Is the property active
 	    /// </summary>
 	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Active { get; set; }

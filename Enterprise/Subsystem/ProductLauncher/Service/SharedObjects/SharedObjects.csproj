@@ -569,6 +569,7 @@
     <Compile Include="Saml\SamlAttributes.cs" />
     <Compile Include="Swagger\IProvideExamples.cs" />
     <Compile Include="Swagger\SwaggerUtil.cs" />
+    <Compile Include="UPFMPropertyInstance.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyUpdated.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyDeleted.cs" />
     <Compile Include="WebHook\SHA.cs" />

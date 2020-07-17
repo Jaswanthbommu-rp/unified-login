@@ -274,6 +274,9 @@
         public const string SP_ListPropertyMapping = "Enterprise.ListPropertyMapping";
         public const string SP_UpdatePropertyMappingReMap = "Enterprise.UpdatePropertyMappingReMap";
 
+        public const string SP_GetPropertyInstanceByPersonaId = "Enterprise.GetPropertyInstanceByPersonaId";
+        public const string SP_GetPropertyInstanceIdsByPersonaId = "Enterprise.GetPropertyInstanceIdsByPersonaId";
+
         public const string SP_ListRolesByParty = "Enterprise.ListRolesByParty";
         public const string SP_ListRolesForProductsByPersonaId = "Enterprise.ListRolesForProductsByPersonaId";
         public const string SP_ListRolesForProductsByPartyId = "Enterprise.ListRolesForProductsByPartyId";
