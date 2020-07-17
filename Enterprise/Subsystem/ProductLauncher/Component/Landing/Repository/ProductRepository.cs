@@ -511,7 +511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     );
                 }
-                
+
                 if (!productResources.Any(p => p.ProductId == (int)ProductEnum.HelpCenter))
                 {
                     productResources.Add(
@@ -1637,12 +1637,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
-                string schemaName = getRoleRightsSchemaName();               
+                string schemaName = getRoleRightsSchemaName();
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
-               
+
                 dynamic param = new
                 {
-                    PartyId = partyId,  
+                    PartyId = partyId,
                     ProductId = productId,
                     TargetProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
                 };
@@ -1763,23 +1763,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="version"></param>
         /// <param name="rowsPerPage"></param>
         /// <param name="pageNumber"></param>
+        /// <param name="roles"></param>
+        /// <param name="rights"></param>
+        /// <param name="properties"></param>
         /// <returns>List of Users by product or company</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products , int version, int rowsPerPage, int pageNumber)
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
+                                                                IList<string> roles, IList<string> rights, IList<string> properties)
         {
             //Ignoring filter and Sort
             IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
 
-            dynamic param = new
-            {
-                CompanyId = companyId,
-                ProductId = products.Count > 0 ? string.Join(",", products) : null,
-                RowsPerPage = rowsPerPage,
-                PageNumber = pageNumber
-            };
+            dynamic param = CompanyProductParam(companyId, products, version, rowsPerPage, pageNumber , roles, rights, properties);
 
             using (var repository = GetRepository())
             {
-                switch (version)
+                switch ((int)version)
                 {
                     case 2:
                         return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver2, param);
@@ -1803,12 +1801,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             List<ULMappedPersonaIds> mappingUserList = new List<ULMappedPersonaIds>();
 
-             dynamic param = new
+            dynamic param = new
             {
                 CompanyId = companyId,
                 ProductId = productId,
                 TargetProductUserIds = productUserIds.Count > 0 ? string.Join(",", productUserIds) : string.Empty,
-             };
+            };
 
             using (var repository = GetRepository())
             {
@@ -1956,6 +1954,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return schemaName;
+        }
+
+        private dynamic CompanyProductParam(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber, 
+                                            IList<string>roles , IList<string> rights, IList<string> properties)
+        {
+            switch ((int)version)
+            {
+                case 3:
+                    return new
+                    {
+                        CompanyId = companyId,
+                        ProductId = products.Count > 0 ? string.Join(",", products) : null,
+                        RowsPerPage = rowsPerPage,
+                        PageNumber = pageNumber,
+                        Roles = roles.Count > 0 ? string.Join(",", roles) : null,
+                        Rights = rights.Count > 0 ? string.Join(",", rights) : null,
+                        Properties = properties.Count > 0 ? string.Join(",", rights) : null
+                    };
+
+                default:
+                    return new
+                    {
+                        CompanyId = companyId,
+                        ProductId = products.Count > 0 ? string.Join(",", products) : null,
+                        RowsPerPage = rowsPerPage,
+                        PageNumber = pageNumber
+                    };
+            }
         }
         #endregion
     }
