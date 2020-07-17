@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -33,6 +34,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="productId"></param>
 		/// <returns></returns>
         List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, ProductEnum productId);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="propertyInstanceIds"></param>
+		/// <returns></returns>
+        List<UPFMPropertyInstance> ListUPFMPropertyInstanceIdByInstanceIds(List<Guid> propertyInstanceIds);
 
 		/// <summary>
 		/// Insert or Remove a Property for the given User

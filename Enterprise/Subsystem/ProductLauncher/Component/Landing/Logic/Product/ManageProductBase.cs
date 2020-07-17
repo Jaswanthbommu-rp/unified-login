@@ -485,13 +485,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         protected List<UPFMPropertyInstance> ListUPFMPropertiesByPersona(long userPersonaId, ProductEnum productEnum)
         {
-            List<UPFMPropertyInstance> propertyList = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, productEnum);
-            return propertyList;
+            return _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, productEnum);
         }
 
         protected List<int> GetAssignedUPFMPropertyIdsForPersona(long userPersonaId, ProductEnum productEnum)
         {
             return _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, productEnum);
+        }
+
+        protected List<UPFMPropertyInstance> ListUPFMPropertyInstanceIdByInstanceIds(List<Guid> propertyInstanceIds)
+        {
+            return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propertyInstanceIds);
         }
 
 		/// <summary>

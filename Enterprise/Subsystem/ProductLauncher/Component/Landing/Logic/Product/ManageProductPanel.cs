@@ -147,8 +147,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = productDALogic.GetProductProperties(datafilter);
                         break;
                     case (int)ProductEnum.UnifiedPlatform:
+                        
                         IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                        result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+                        //result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+                        result = manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedPlatform, datafilter);
                         break;
                     case (int)ProductEnum.RenovationManager:
                         var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);

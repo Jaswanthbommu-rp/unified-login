@@ -276,6 +276,8 @@
 
         public const string SP_GetPropertyInstanceByPersonaId = "Enterprise.GetPropertyInstanceByPersonaId";
         public const string SP_GetPropertyInstanceIdsByPersonaId = "Enterprise.GetPropertyInstanceIdsByPersonaId";
+        public const string SP_GetPropertyInstanceListById = "Enterprise.GetPropertyInstanceListById";
+
 
         public const string SP_ListRolesByParty = "Enterprise.ListRolesByParty";
         public const string SP_ListRolesForProductsByPersonaId = "Enterprise.ListRolesForProductsByPersonaId";

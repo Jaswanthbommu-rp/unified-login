@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -89,6 +90,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return propList;
             }
         }
+
+        public List<UPFMPropertyInstance> ListUPFMPropertyInstanceIdByInstanceIds(List<Guid> propertyInstanceIds)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    @InstanceList = TableValueParamHelper.ConvertToTableValuedParameter(propertyInstanceIds, "Enterprise.PropertyInstanceType")
+                };
+
+                return repository.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById, param);
+            }
+        }
+
+
 
 		/// <summary>
 		/// Insert or Remove a Property for the given User
