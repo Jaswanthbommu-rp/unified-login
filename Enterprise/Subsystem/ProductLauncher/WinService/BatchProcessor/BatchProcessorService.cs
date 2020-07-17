@@ -6,7 +6,6 @@ using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
-using RealPage.Logging.Serilog;
 //using RP.Enterprise.Foundation.Audit.Core.Component;
 //using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Helper;
