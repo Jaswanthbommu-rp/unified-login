@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using System.Collections.Generic;
@@ -76,6 +77,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 	    /// </summary>
 	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Active { get; set; }
+
+        private string _instanceId = "";
+        /// <summary>
+        /// The UPFM property instance id
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string InstanceId {
+            get => _instanceId;
+            set => _instanceId = value.ToLower();
+        }
+
+        /// <summary>
+        /// The geo latitude of the property
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public decimal Latitude { get; set; }
+        
+        /// <summary>
+        /// The geo longitude of the property
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public decimal Longitude { get; set; }
 
         #region Examples
         /// <summary>

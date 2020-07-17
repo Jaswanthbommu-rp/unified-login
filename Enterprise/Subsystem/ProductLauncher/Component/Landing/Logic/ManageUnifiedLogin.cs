@@ -254,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (userPersonaId != 0)
                 {
                     WriteToDiagnosticLog($"GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
-                    result = MergeUPFMBooksPropertiesWithUPFMProperties(customerPropertyList, userPersonaId, assignedOnly);
+                    result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
                     WriteToDiagnosticLog($"GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
                 }
                 else
@@ -1954,45 +1954,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
 
-        private ListResponse MergeUPFMBooksPropertiesWithUPFMProperties(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
+        private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
         {
             // merge the given user details with the list
             var propertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
 
             var propertyOption = new Dictionary<string, bool>();
-            propertyOption.Add("allProperties", false); // Single Property
+            
+            propertyOption.Add("allProperties", propertyIdList.Any(pl => pl == -1)); // Single Property
+            List<ProductProperty> productPropertyList = new List<ProductProperty>();
 
-            foreach (var propertyId in propertyIdList)
+            foreach (UPFMPropertyInstance upfmPropertyInstance in blueBookUPFMPropertyList)
             {
-                if (propertyId == -1)
+                ProductProperty pp = new ProductProperty()
                 {
-                    // PMC level (all properties)
-                    propertyOption["allProperties"] = true;
-                }
-                else
+                    ID = upfmPropertyInstance.PropertyInstanceId.ToString(),
+                    Name = upfmPropertyInstance.Name,
+                    Street1 = upfmPropertyInstance.Address,
+                    City = upfmPropertyInstance.City,
+                    State = upfmPropertyInstance.State,
+                    Zip = upfmPropertyInstance.PostalCode,
+                    IsAssigned = false,
+                    InstanceId = upfmPropertyInstance.InstanceId.ToString().ToLower(),
+                    Latitude = upfmPropertyInstance.Latitude,
+                    Longitude = upfmPropertyInstance.Longitude,
+                };
+
+                if (blueBookUPFMPropertyList.Any(a => a.PropertyInstanceId == upfmPropertyInstance.PropertyInstanceId))
                 {
-                    if (blueBookUPFMPropertyList.Any(a => a.PropertyInstanceId == propertyId))
-                    {
-                        UPFMPropertyInstance pp = (from a in blueBookUPFMPropertyList
-                            where a.PropertyInstanceId == propertyId
-                            select a).FirstOrDefault();
-                        if (pp != null)
-                        {
-                            pp.IsAssigned = true;
-                        }
-                    }
+                    pp.IsAssigned = true;
                 }
+
+                productPropertyList.Add(pp);
             }
 
             if (assignedOnly)
             {
-                blueBookUPFMPropertyList = blueBookUPFMPropertyList.Where(a => a.IsAssigned == true).ToList();
+                productPropertyList = productPropertyList.Where(a => a.IsAssigned == true).ToList();
             }
 
             return new ListResponse()
             {
-                Records = blueBookUPFMPropertyList.Cast<object>().ToList(),
-                TotalRows = blueBookUPFMPropertyList.Count(),
+                Records = productPropertyList.Cast<object>().ToList(),
+                TotalRows = productPropertyList.Count(),
                 RowsPerPage = 9999,
                 ErrorReason = string.Empty,
                 TotalPages = 1,

@@ -982,6 +982,7 @@
     <Build Include="Enterprise\Stored Procedures\GetPropertyInstanceByPersonaId.sql" />
     <Build Include="Enterprise\Stored Procedures\GetPropertyInstanceListById.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetProductsByPersonaId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPropertyInstanceIdsByPersonaId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
