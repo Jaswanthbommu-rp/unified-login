@@ -67,7 +67,7 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
-            var excludeProducts = [18, 20, 47];
+            var excludeProducts = [18, 20, 47, 8];
             var productId = $scope.$parent.productId;
             if (excludeProducts.indexOf(productId) === -1) {
                 syncMgr.allPropertiesSync($scope.$parent.productId, val);
