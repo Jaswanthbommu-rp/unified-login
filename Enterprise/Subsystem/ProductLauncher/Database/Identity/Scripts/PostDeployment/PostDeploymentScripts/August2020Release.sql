@@ -1510,3 +1510,193 @@ BEGIN
 END;
 
 GO
+--------------------------------------------OmniChannel----------------------------------------------
+--DELETE	OmniChannel Roles and Rights
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+SET @ProductName = 'OmniChannel'
+
+DECLARE @Right TABLE (
+	RightID int,
+	RoleID int,
+	RightValueTypeId int,
+	PartyId bigint
+)
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @Right (
+	RightID,
+	RoleID,
+	RightValueTypeId,
+	PartyId
+)
+SELECT	eri.RightID,
+				eri.RoleID,
+				eri.RightValueTypeId,
+				eri.PartyId
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN Enterprise.[Right] eri ON (eri.RightValueTypeId = erivt.RightValueTypeId)
+WHERE	ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @Right ri ON (ri.RoleID = eri.RoleID)
+
+DELETE
+FROM		Enterprise.RightValueType
+WHERE	ProductId = @ProductId
+
+DELETE	epp
+FROM	Enterprise.PersonaPrivilege epp
+			INNER JOIN @Right ri ON (epp.RoleID = ri.RoleID)
+
+DELETE	ero
+FROM		Enterprise.Role ero
+				INNER JOIN @Right ri ON (ero.RoleID = ri.RoleID)
+
+DELETE	erovt
+FROM		Enterprise.RoleValueType erovt
+				INNER JOIN Enterprise.Role ero ON (ero.RoleValueTypeId = erovt.RoleValueTypeId)
+				INNER JOIN @Right ri ON (ri.RoleID = ero.RoleID)
+GO
+
+--------------------------------------L&R Conversion Utility----------------------------------------
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+DECLARE @RightValueType TABLE (
+	RightValueTypeId int
+)
+
+SET @ProductName = 'L&R Conversion Utility'
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @RightValueType (
+	RightValueTypeId
+)
+SELECT	RightValueTypeId
+FROM		Enterprise.RightValueType
+WHERE	Value IN (
+	'Access to L&R Conversion Utility for OneSite users'
+
+)
+AND		ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @RightValueType rvt ON (eri.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erd
+FROM		Enterprise.RightDependency erd
+				INNER JOIN @RightValueType rvt ON (erd.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erivt
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN @RightValueType rvt ON (erivt.RightValueTypeId = rvt.RightValueTypeId)
+GO
+
+-----------------------------------------Spend Management-------------------------------------------
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+DECLARE @RightValueType TABLE (
+	RightValueTypeId int
+)
+
+SET @ProductName = 'Spend Management'
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @RightValueType (
+	RightValueTypeId
+)
+SELECT	RightValueTypeId
+FROM		Enterprise.RightValueType
+WHERE	Value IN (
+	'Manage Vendor Compliance Product Access'
+)
+AND		ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @RightValueType rvt ON (eri.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erd
+FROM		Enterprise.RightDependency erd
+				INNER JOIN @RightValueType rvt ON (erd.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erivt
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN @RightValueType rvt ON (erivt.RightValueTypeId = rvt.RightValueTypeId)
+GO
+
+-----------------------------------------Unified Platform-------------------------------------------
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+DECLARE @RightValueType TABLE (
+	RightValueTypeId int
+)
+
+SET @ProductName = 'Unified Platform'
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @RightValueType (
+	RightValueTypeId
+)
+SELECT	RightValueTypeId
+FROM		Enterprise.RightValueType
+WHERE	Value IN (
+	'Access to Settings Admin for OneSite',
+	'Ability to edit password',
+	'Ability to Configure Custom Fields for Users',
+	'Ability to view Company page',
+	'Ability to edit Company information',
+	'Ability to view Property page',
+	'Ability to edit Property information',
+	'Access to Green Book Migration Tool',
+	'Access to Amenities Tool',
+	'Access to Employee Management',
+	'Access to Identity Provider Configuration Page',
+	'Access to Leasing & Rents Conversion Tool',
+	'Access to Property Hierarchy Tool',
+	'Impersonate a User',
+	'See All RealPage Products',
+	'Access to Settings Admin for OneSite',
+	'Manage Unified Platform Security Settings',
+	'Manage all Unified Setting',
+	'Employee Access to CIMPL: Standard Implementation Access'
+)
+AND		ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @RightValueType rvt ON (eri.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erd
+FROM		Enterprise.RightDependency erd
+				INNER JOIN @RightValueType rvt ON (erd.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erivt
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN @RightValueType rvt ON (erivt.RightValueTypeId = rvt.RightValueTypeId)
+GO
+
+----------------------------------------------------------------------------------------------------
+--Rename
+ Update Enterprise.RightValueType Set Value = 'Access to Unified Settings'
+ Where  Value = 'View All Unified Settings'
+
+ GO
