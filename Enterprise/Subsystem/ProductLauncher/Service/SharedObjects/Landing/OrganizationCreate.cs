@@ -35,6 +35,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         [Range(1, int.MaxValue, ErrorMessage = "Please enter a Organization Domain Id greater than {0}")]
         public int OrganizationDomainId { get; set; } = 1;
 
+        /// <summary>
+        /// Used to store the domain for the company
+        /// </summary>
+        [Required(ErrorMessage = "The Organization Domain is required")]
+        public string OrganizationDomain { get; set; } = "Primary";
+
 		/// <summary>
 		/// The name of the Organization
 		/// </summary>

@@ -1,5 +1,77 @@
 ﻿-- August 2020 changes
 GO
+
+update enterprise.ProductSettingType set sensitivedata = 1 where name in (
+'ApiSecret'
+,'MTClientSecret'
+,'UnifiedLoginResearchApplicationClientSecret'
+,'TokenClientSecret'
+,'TiboWebHookSigningSecret'
+,'ApiPassword'
+,'IntactPassword'
+
+)
+GO
+
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'BooksUseDomains' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseDomains', 'Use domains for books api calls', 0 )
+end
+GO
+
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'BooksUseUPFMId' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseUPFMId', 'Use UPFM instance for books api calls', 0 )
+end
+go
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseDomains' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseDomains'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseDomains' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseUPFMId'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+-- sync up the employee and external company guids
+update enterprise.party set realpageid = '0D018E46-C20E-477D-ADED-4E5A35FB8F99' where partyid = (select top 1 partyid from enterprise.DataImportMapping where sourceid = '-1')
+update enterprise.party set realpageid = 'EEFACE50-9F75-4DCE-B133-A97EE0E0D723' where partyid = (select top 1 partyid from enterprise.DataImportMapping where sourceid = '-2')
+
+GO
 --Renovation Manager Product
 /*This script is a sample script to create new prodcut in the system.*/
 
@@ -93,51 +165,50 @@ set nocount on
 INSERT INTO @ProductConfiguration
 (SettingName, 
  SettingDescription, 
- SettingValue
+ SettingValue,
+ SettingSensitiveData
 )
 VALUES
- ('ClassName','','renovationmanager')
-,('ProductUrl','','/product/renovationmanager')
-,('TitleId','','Renovation Manager')
-,('TitleUniqueId','','4167CF48-B169-4F4F-A510-0CEB73365334')
-,('IsNewTab','','1')
-,('MetatagUniqueId','','Renovation Manager')
-,('IsResource','','0')
-,('IsFavorite','','1')
-,('LearnMore','','https://www.realpage.com/reno/')
-,('ApiEndPoint','',@apiendpoint)
-,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','7')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
-,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
-,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
-,('ShowInAppSwitcher','Should the product show in the application switcher','1')
-,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
-,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
-,('LockOnProductAccess', '', '0')
-,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+ ('ClassName','','renovationmanager', 0)
+,('ProductUrl','','/product/renovationmanager', 0)
+,('TitleId','','Renovation Manager', 0)
+,('TitleUniqueId','','4167CF48-B169-4F4F-A510-0CEB73365334', 0)
+,('IsNewTab','','1', 0)
+,('MetatagUniqueId','','Renovation Manager', 0)
+,('IsResource','','0', 0)
+,('IsFavorite','','1', 0)
+,('LearnMore','','https://www.realpage.com/reno/', 0)
+,('ApiEndPoint','',@apiendpoint, 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','7', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','10', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','19', 0)
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1', 0)
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0', 0)
+,('ShowInAppSwitcher','Should the product show in the application switcher','1', 0)
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1', 0)
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0', 0)
+,('LockOnProductAccess', '', '0', 0)
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0', 0)
 
-,('CLIENTID','','ulrenoapi') -- For DEV Environment
-,('TOKENENDPOINT','', @tokenEndPoint) -- For DEV Environment
-,('APISECRET','', @apisecret)
+,('CLIENTID','','ulrenoapi', 0) -- For DEV Environment
+,('TOKENENDPOINT','', @tokenEndPoint, 0) -- For DEV Environment
+,('APISECRET','', @apisecret, 1)
 
-,('GetRoleEndpoint','Role End point for product API','/{0}/roles?isIncludeRights={1}')
-,('GetRightEndpoint','Right End point for product API','/roleRights/{0}')
-,('GetPropertyEndpoint','Property End point for product API','/{0}/properties')
-,('GetUserEndpoint','GET User Endpoint for product API','/users?companyId={0}&loginName={1}')
-,('GetListUsersEndpoint','','/{0}/users?filter={1}&startRow={2}&resultsperpage={3}')
-,('PostUserEndpoint','POST User Endpoint for product API','/users')
-,('PutUserEndpoint','PUT User Endpoint for product API','/users')
-,('DeleteUserEndpoint','DELETE User Endpoint for product API','/{0}/users?loginName={0}') 
-,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate')
-,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile')
-,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}') -- Made New Setting
-,('AuthenticationType','Used to determine how to log into the product','Redirect')
+,('GetRoleEndpoint','Role End point for product API','/{0}/roles?isIncludeRights={1}', 0)
+,('GetRightEndpoint','Right End point for product API','/roleRights/{0}', 0)
+,('GetPropertyEndpoint','Property End point for product API','/{0}/properties', 0)
+,('GetUserEndpoint','GET User Endpoint for product API','/users?companyId={0}&loginName={1}', 0)
+,('GetListUsersEndpoint','','/{0}/users?filter={1}&startRow={2}&resultsperpage={3}', 0)
+,('PostUserEndpoint','POST User Endpoint for product API','/users', 0)
+,('PutUserEndpoint','PUT User Endpoint for product API','/users', 0)
+,('DeleteUserEndpoint','DELETE User Endpoint for product API','/{0}/users?loginName={0}', 0)
+,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate', 0)
+,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile', 0)
+,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}', 0) -- Made New Setting
+,('AuthenticationType','Used to determine how to log into the product','Redirect', 0)
 
-
-
-SELECT * FROM @ProductConfiguration
+--SELECT * FROM @ProductConfiguration
 
 SET @LoginURL = '';
 IF @ServerName IN ('RCDUSODBSQL001')
@@ -442,50 +513,51 @@ set nocount on
 INSERT INTO @ProductConfiguration
 (SettingName, 
  SettingDescription, 
- SettingValue
+ SettingValue,
+ SettingSensitiveData
 )
 VALUES
-('ClientId','','1')
-,('ClassName','','seniorleadmanagement')
-,('ProductUrl','','/product/seniorleadmanagement')
-,('TitleId','','Senior Lead Management')
-,('TitleUniqueId','','EDFB27F1-6335-4297-B44F-F265204B0538')
-,('IsNewTab','','1')
-,('MetatagUniqueId','','Senior Lead Management')
-,('IsResource','','0')
-,('IsFavorite','','1')
-,('LearnMore','','https://www.realpage.com/senior/')
-,('ApiEndPoint','','https://dev-spmadminbff.realpage.com/api/v1')
-,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
-,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
-,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
-,('ShowInAppSwitcher','Should the product show in the application switcher','1')
-,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
-,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
-,('LockOnProductAccess', '', '0')
-,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+('ClientId','','1', 0)
+,('ClassName','','seniorleadmanagement', 0)
+,('ProductUrl','','/product/seniorleadmanagement', 0)
+,('TitleId','','Senior Lead Management', 0)
+,('TitleUniqueId','','EDFB27F1-6335-4297-B44F-F265204B0538', 0)
+,('IsNewTab','','1', 0)
+,('MetatagUniqueId','','Senior Lead Management', 0)
+,('IsResource','','0', 0)
+,('IsFavorite','','1', 0)
+,('LearnMore','','https://www.realpage.com/senior/', 0)
+,('ApiEndPoint','','https://dev-spmadminbff.realpage.com/api/v1', 0)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8', 0)
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1', 0)
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0', 0)
+,('ShowInAppSwitcher','Should the product show in the application switcher','1', 0)
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1', 0)
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0', 0)
+,('LockOnProductAccess', '', '0', 0)
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0', 0)
 
---,('ApiUserName','','test+rfqarpunity@novelpay.com')
---,('ApiPassword','','7mgp43EIvc8c!@')
-,('ApiKey','','53448358-FC1C-4B30-8C45-1171B06D84D1') -- For DEV Environment
+--,('ApiUserName','','test+rfqarpunity@novelpay.com', 0)
+--,('ApiPassword','','7mgp43EIvc8c!@', 1)
+,('ApiKey','','53448358-FC1C-4B30-8C45-1171B06D84D1', 0) -- For DEV Environment
 
-,('GetRoleEndpoint','Role End point for product API','/{0}/Roles?isIncludeRights={1}')
-,('GetRightEndpoint','Right End point for product API','/roleRights/{0}')
+,('GetRoleEndpoint','Role End point for product API','/{0}/Roles?isIncludeRights={1}', 0)
+,('GetRightEndpoint','Right End point for product API','/roleRights/{0}', 0)
 
-,('GetPropertyEndpoint','Property End point for product API','/properties/{0}')
-,('GetUserEndpoint','GET User Endpoint for product API','/users?loginName={0}')
-,('GetListUsersEndpoint','','/users/{0}?filter={1}&pageNumber={2}&PageSize={3}')
-,('PostUserEndpoint','POST User Endpoint for product API','/users')
-,('PutUserEndpoint','PUT User Endpoint for product API','/users')
-,('DeleteUserEndpoint','DELETE User Endpoint for product API','/users?loginName={0}') 
-,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate')
-,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile')
-,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}') -- Made New Setting
-,('AuthenticationType','Used to determine how to log into the product','Redirect')
+,('GetPropertyEndpoint','Property End point for product API','/properties/{0}', 0)
+,('GetUserEndpoint','GET User Endpoint for product API','/users?loginName={0}', 0)
+,('GetListUsersEndpoint','','/users/{0}?filter={1}&pageNumber={2}&PageSize={3}', 0)
+,('PostUserEndpoint','POST User Endpoint for product API','/users', 0)
+,('PutUserEndpoint','PUT User Endpoint for product API','/users', 0)
+,('DeleteUserEndpoint','DELETE User Endpoint for product API','/users?loginName={0}', 0)
+,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate', 0)
+,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile', 0)
+,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}', 0) -- Made New Setting
+,('AuthenticationType','Used to determine how to log into the product','Redirect', 0)
 --- Not sure about below ones -------
---,('GetCompanyEndpoint','GET Company Endpoint for API','/orgs/{0}')
---,('GetParentCompanyEndpoint','GET Company Endpoint for API','/orgs?parentOrgId={0}')
---,('GetProfileEndpoint','GET User Profile Endpoint for product API','/users/{0}/profile')
+--,('GetCompanyEndpoint','GET Company Endpoint for API','/orgs/{0}', 0)
+--,('GetParentCompanyEndpoint','GET Company Endpoint for API','/orgs?parentOrgId={0}', 0)
+--,('GetProfileEndpoint','GET User Profile Endpoint for product API','/users/{0}/profile', 0)
 
 
 SELECT * FROM @ProductConfiguration
@@ -967,4 +1039,669 @@ BEGIN
             SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
 END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ControlAttribute] WHERE ControlId = 504)
+BEGIN
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (138, 504, N'FilterType', N'menu', @UserId, @Now)
+
+	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 247)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 247
+END
+
 GO
+
+-- Unified Amenities rights in Sentence case instead of Title Case format
+	IF EXISTS(SELECT * FROM Enterprise.RightValueType WHERE TargetProductId = 26)
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= UPPER(LEFT([VALUE],1))+LOWER(SUBSTRING([VALUE],2,LEN([VALUE]))),
+		  [Description] = UPPER(LEFT([Description],1))+LOWER(SUBSTRING([Description],2,LEN([Description])))
+		WHERE TargetProductId = 26
+	END
+
+	IF EXISTS(select * from enterprise.RightValueType where TargetProductId = 26 and [Value] like'%Un-Assign%')
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= REPLACE([VALUE],  'Un-Assign',  'Unassign' ),
+		  [Description] = REPLACE([Description],  'Un-Assign',  'Unassign' )
+		WHERE TargetProductId = 26 and  [Value] like'%Un-Assign%'
+	END
+
+	IF EXISTS(select * from enterprise.RightValueType where TargetProductId = 26 and [Value] like'%Depriciation%')
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= REPLACE([VALUE],  'Depriciation',  'depreciation' ),
+		  [Description] = REPLACE([Description],  'Depriciation',  'depreciation' )
+		WHERE TargetProductId = 26 and [Value] like'%Depriciation%'
+	END
+
+	IF EXISTS( select * from enterprise.RightValueType where TargetProductId = 26 and [Value] like'%Amenites%')
+	BEGIN
+		UPDATE [Enterprise].[RightValueType]
+		SET [VALUE]= REPLACE([VALUE],  'Amenites',  'amenities' ),
+		  [Description] = REPLACE([Description],  'Amenites',  'amenities' )
+		WHERE TargetProductId = 26 and [Value] like'%Amenites%'
+	END
+
+-- Unified Amenities: "View Amenities" Role is selected as default
+DECLARE @RoleValueTypeId int;
+SELECT	@RoleValueTypeId = RoleValueTypeId
+FROM	Enterprise.RoleValueType
+WHERE	Value='View Amenities'
+
+IF EXISTS(SELECT TOP 1 1 FROM Enterprise.Role WHERE RoleValueTypeId=@RoleValueTypeId and  DefaultRole=0)
+BEGIN
+
+		UPDATE r SET DefaultRole = 1
+         FROM enterprise.rolevaluetype rv
+              INNER JOIN enterprise.role r ON r.rolevaluetypeid = rv.rolevaluetypeid
+         WHERE rv.value = 'view amenities'
+               AND r.DefaultRole=0
+
+END
+
+GO
+DECLARE @UserId bigint,
+	@ProductId int =3,
+	@Now datetime = GETDATE(),
+	@CurrentProductConfigurationID INT,
+	@ProductSettingTypeId INT,
+	@ProductSettingId INT,
+	@roleId INT,
+	@ServerName SYSNAME = @@SERVERNAME;
+		
+		SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+		FROM Enterprise.GlobalProductConfiguration AS gpc
+		WHERE gpc.ProductId = @ProductId AND 
+				( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+				) OR 
+				( @NOW >= gpc.FromDate AND 
+					gpc.ThruDate IS NULL
+				)
+				)
+		ORDER BY GlobalProductConfigurationId DESC;
+
+	IF
+	(
+		SELECT 1
+		FROM Enterprise.ProductSettingType
+		WHERE Name = 'RolesRightsSchemaName'
+	) IS NULL
+	BEGIN
+		EXEC Enterprise.CreateProductSettingType 'RolesRightsSchemaName', 'Unified Platform RolesRights Schema Name',0, @ProductSettingTypeId OUTPUT;
+	END;
+
+	IF @ProductSettingTypeId IS NOT NULL AND 
+		NOT EXISTS
+	(
+		SELECT TOP 1 1
+		FROM Enterprise.ProductSetting
+		WHERE ProductID = @productId AND 
+				ProductSettingTypeId = @ProductSettingTypeId AND 
+				ThruDate IS NULL
+	)
+	BEGIN
+	
+		-- Create the Value and assign it to the Product and ProductSettingType
+		EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+		@ProductSettingTypeId = @ProductSettingTypeId, -- int
+		@Value = 'Enterprise', 
+		@FromDate = @NOW, -- datetime
+		@ThruDate = NULL, -- datetime
+		@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+		-- Link the Product Setting to an actual configuration
+		EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+		@ProductSettingId = @ProductSettingId, -- int
+		@FromDate = @NOW, -- datetime
+		@ThruDate = NULL;   -- datetime
+	END;
+
+	IF
+	(
+		SELECT 1
+		FROM Enterprise.ProductSettingType
+		WHERE Name = 'SaveRoleDataInEnterprise'
+	) IS NULL
+	BEGIN
+		EXEC Enterprise.CreateProductSettingType 'SaveRoleDataInEnterprise', 'Save Role Data in Unified Platform Enterprise RolesRights Schema',0, @ProductSettingTypeId OUTPUT;
+	END;
+
+	IF @ProductSettingTypeId IS NOT NULL AND 
+		NOT EXISTS
+	(
+		SELECT TOP 1 1
+		FROM Enterprise.ProductSetting
+		WHERE ProductID = @productId AND 
+				ProductSettingTypeId = @ProductSettingTypeId AND 
+				ThruDate IS NULL
+	)
+	BEGIN
+	
+		-- Create the Value and assign it to the Product and ProductSettingType
+		EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+		@ProductSettingTypeId = @ProductSettingTypeId, -- int
+		@Value = '1', 
+		@FromDate = @NOW, -- datetime
+		@ThruDate = NULL, -- datetime
+		@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+		-- Link the Product Setting to an actual configuration
+		EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+		@ProductSettingId = @ProductSettingId, -- int
+		@FromDate = @NOW, -- datetime
+		@ThruDate = NULL;   -- datetime
+	END;
+GO
+
+IF EXISTS (SELECT TOP 1 1 FROM Enterprise.RightValueType WHERE [Value] = 'Ability to manage Platform Notifications')
+BEGIN
+	update Enterprise.RightValueType set [Value] = 'Manage Notifications Configurations' where [Value] = 'Ability to manage Platform Notifications';
+END
+
+GO
+
+update Enterprise.[RightValueType] set ShortName = 'AccessHelpCenter' 
+where Value = 'Access to Help Center'
+
+GO
+
+--300025-Add new rights for Unified Notifications -Platform Alerts
+/*ASSIGN VALUES*/
+DECLARE @OrganizationId int;
+DECLARE @PartyRowNum int;
+DECLARE @RightName nvarchar(200);
+DECLARE @RightDescription nvarchar(200);
+DECLARE @RightShortName nvarchar(200);
+DECLARE @ActionName nvarchar(100);
+DECLARE @ActionRouteTarget nvarchar(100);
+DECLARE @ActionValueId int;
+DECLARE @SourceProductId int;
+DECLARE @TargetProductId int;
+DECLARE @RoleCategory int;
+DECLARE @RightCategory int;
+DECLARE @VisibilityStatusId int;
+DECLARE @ActionId int;
+DECLARE @ParentActionId int;
+DECLARE @DefaultRightName nvarchar(200);
+DECLARE @TargetRoleName nvarchar(100);
+DECLARE @RoleId int;
+DECLARE @OutputRightId int;
+DECLARE @UserActionId int;
+DECLARE @RightValueTypeId int;
+DECLARE @DependentRightValueTypeId int;
+
+/*SET BLOCK*/
+SET @TargetRoleName = 'User Administrator'; --- Role to which the new right will be assinged by default.
+SET @RightName = 'Create platform alerts'; -- Name of the right 
+SET @RightDescription = 'Create platform alerts'; --Description of the right as stated in story.
+SET @RightShortName = 'CreatePlatformAlerts'; --Short name of the right that is being used by the application
+SET @ActionName = 'Create platform alerts'; -- This specifically pertains to actions used for routing purposes. 
+SET @ActionRouteTarget = 'SideMenu'; -- Where you want this right to show up. other variation is DashBoard.
+SET @ActionValueID = 1;
+SET @DefaultRightName = 'Default_' + @RightShortName; -- This is used internally for creating right dependency in RightDependency table.
+
+/*CLEANUP  AND LOAD TEMPORARY TABLE FOR ORG LIST*/
+
+IF OBJECT_ID('tempdb..#HoldParty') IS NOT NULL
+BEGIN
+	DROP TABLE #HoldParty;
+END;
+
+SELECT DISTINCT 
+	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId AS OrganizationPartyID, 0 AS PStatus
+INTO #HoldParty
+FROM Enterprise.Organization AS o
+	 INNER JOIN
+	 Enterprise.Party AS p
+	 ON P.PartyId = O.PartyId
+WHERE O.Name = 'RealPage Employee'; 
+
+/*SELECT REQUIRED ATTRIBUTES FOR ROLE, RIGHT, AND ACTIONS*/
+SELECT @SourceProductId = ProductId
+FROM Enterprise.Product
+WHERE name = 'Unified Platform';
+
+SELECT @TargetProductId = ProductId
+FROM Enterprise.Product
+WHERE Name = 'Unified Platform';
+
+SELECT @RoleCategory = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE CategoryName = 'Role Type' AND 
+	  TypeName = 'System';
+
+SELECT @RightCategory = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE CategoryName = 'Right Type' AND 
+	  TypeName = 'System';
+
+SELECT @VisibilityStatusId = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE TypeName = 'ALL' AND 
+	  CategoryType = 'Security';
+
+IF NOT EXISTS (SELECT 1 FROM Enterprise.ACTION WHERE ObjectValue = @ActionName AND ParentActionId IS NULL)
+BEGIN
+	EXEC Enterprise.CreateAction 
+     @ProductID = @SourceProductId, 
+     @Action = @ActionName, 
+     @ActionTarget = N'Right', 
+     @ActionbValueTypeId = 1, 
+     @Description = '', 
+     @ActionID = @ActionID OUTPUT;
+SELECT @ActionID AS N'@ActionID';
+END;
+
+SELECT @ParentActionId = ActionId
+FROM Enterprise.ACTION
+WHERE ObjectValue = @ActionRouteTarget AND 
+	  ObjectType = 'Route' AND 
+	  Description = 'SuperUser';
+
+IF NOT EXISTS(SELECT 1 FROM Enterprise.ACTION WHERE ObjectValue = @ActionName AND ParentActionID = @ParentActionId)
+BEGIN
+EXEC [Enterprise].[CreateAction] 
+     @ProductID = @SourceProductId, 
+     @Action = @ActionName, 
+     @ActionTarget = N'Right', 
+     @ActionbValueTypeId = 1, 
+     @Description = '', 
+     @ParentActionID = @ParentActionId, 
+     @ActionID = @ActionID OUTPUT;
+SELECT @ActionID AS N'@ActionID';
+END;
+
+SELECT @ActionID = ActionID
+FROM Enterprise.ACTION
+WHERE ObjectValue = @ActionName AND 
+	  ObjectType = 'Right' AND 
+	  ParentActionId IS NULL;
+
+WHILE EXISTS (SELECT 1 FROM #HoldParty WHERE PStatus = 0)
+BEGIN
+	SELECT TOP 1 @PartyRowNum = Rownumber, @OrganizationId = OrganizationPartyID
+	FROM #HoldParty
+	WHERE PStatus = 0;
+	SELECT @RoleId = RoleId
+	FROM Enterprise.Role AS R
+		 INNER JOIN
+		 Enterprise.RoleValueType AS RR
+		 ON RR.RoleValueTypeId = R.RoleValueTypeId
+	WHERE RR.Value = @TargetRoleName AND 
+		  R.PartyId = @OrganizationId;
+	EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = @DefaultRightName, @ShortName = @RightShortName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Description = '', @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
+	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
+	EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @RightName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Shortname = @RightShortName, @Description = @RightDescription, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
+	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
+	
+	UPDATE #HoldParty SET PStatus = 1 WHERE RowNumber = @PartyRowNum;
+END;
+
+/*Setup Dependencies for custom roles*/
+
+SELECT @DependentRightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value = @DefaultRightName;
+
+SELECT @RightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value = @RightName;
+
+IF NOT EXISTS (SELECT 1 FROM Enterprise.RightDependency 
+			   WHERE RightValueTypeId = @RightValueTypeId 
+			   AND DependentRightValueTypeId = @DependentRightValueTypeId)
+BEGIN
+	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
+	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
+END;
+
+GO
+
+/*ASSIGN VALUES*/
+DECLARE @OrganizationId int;
+DECLARE @PartyRowNum int;
+DECLARE @RightName nvarchar(200);
+DECLARE @RightDescription nvarchar(200);
+DECLARE @RightShortName nvarchar(200);
+DECLARE @ActionName nvarchar(100);
+DECLARE @ActionRouteTarget nvarchar(100);
+DECLARE @ActionValueId int;
+DECLARE @SourceProductId int;
+DECLARE @TargetProductId int;
+DECLARE @RoleCategory int;
+DECLARE @RightCategory int;
+DECLARE @VisibilityStatusId int;
+DECLARE @ActionId int;
+DECLARE @ParentActionId int;
+DECLARE @DefaultRightName nvarchar(200);
+DECLARE @TargetRoleName nvarchar(100);
+DECLARE @RoleId int;
+DECLARE @OutputRightId int;
+DECLARE @UserActionId int;
+DECLARE @RightValueTypeId int;
+DECLARE @DependentRightValueTypeId int;
+
+/*SET BLOCK*/
+SET @TargetRoleName = 'User Administrator'; --- Role to which the new right will be assinged by default.
+SET @RightName = 'Approve platform alerts'; -- Name of the right 
+SET @RightDescription = 'Approve platform alerts'; --Description of the right as stated in story.
+SET @RightShortName = 'ApprovePlatformAlerts'; --Short name of the right that is being used by the application
+SET @ActionName = 'Approve platform alerts'; -- This specifically pertains to actions used for routing purposes. 
+SET @ActionRouteTarget = 'SideMenu'; -- Where you want this right to show up. other variation is DashBoard.
+SET @ActionValueID = 1;
+SET @DefaultRightName = 'Default_' + @RightShortName; -- This is used internally for creating right dependency in RightDependency table.
+
+/*CLEANUP  AND LOAD TEMPORARY TABLE FOR ORG LIST*/
+
+IF OBJECT_ID('tempdb..#HoldParty') IS NOT NULL
+BEGIN
+	DROP TABLE #HoldParty;
+END;
+
+SELECT DISTINCT 
+	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId AS OrganizationPartyID, 0 AS PStatus
+INTO #HoldParty
+FROM Enterprise.Organization AS o
+	 INNER JOIN
+	 Enterprise.Party AS p
+	 ON P.PartyId = O.PartyId
+WHERE O.Name = 'RealPage Employee'; 
+
+/*SELECT REQUIRED ATTRIBUTES FOR ROLE, RIGHT, AND ACTIONS*/
+SELECT @SourceProductId = ProductId
+FROM Enterprise.Product
+WHERE name = 'Unified Platform';
+
+SELECT @TargetProductId = ProductId
+FROM Enterprise.Product
+WHERE Name = 'Unified Platform';
+
+SELECT @RoleCategory = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE CategoryName = 'Role Type' AND 
+	  TypeName = 'System';
+
+SELECT @RightCategory = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE CategoryName = 'Right Type' AND 
+	  TypeName = 'System';
+
+SELECT @VisibilityStatusId = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE TypeName = 'ALL' AND 
+	  CategoryType = 'Security';
+
+IF NOT EXISTS (SELECT 1 FROM Enterprise.ACTION WHERE ObjectValue = @ActionName AND ParentActionId IS NULL)
+BEGIN
+	EXEC Enterprise.CreateAction 
+     @ProductID = @SourceProductId, 
+     @Action = @ActionName, 
+     @ActionTarget = N'Right', 
+     @ActionbValueTypeId = 1, 
+     @Description = '', 
+     @ActionID = @ActionID OUTPUT;
+SELECT @ActionID AS N'@ActionID';
+END;
+
+SELECT @ParentActionId = ActionId
+FROM Enterprise.ACTION
+WHERE ObjectValue = @ActionRouteTarget AND 
+	  ObjectType = 'Route' AND 
+	  Description = 'SuperUser';
+
+IF NOT EXISTS(SELECT 1 FROM Enterprise.ACTION WHERE ObjectValue = @ActionName AND ParentActionID = @ParentActionId)
+BEGIN
+EXEC [Enterprise].[CreateAction] 
+     @ProductID = @SourceProductId, 
+     @Action = @ActionName, 
+     @ActionTarget = N'Right', 
+     @ActionbValueTypeId = 1, 
+     @Description = '', 
+     @ParentActionID = @ParentActionId, 
+     @ActionID = @ActionID OUTPUT;
+SELECT @ActionID AS N'@ActionID';
+END;
+
+SELECT @ActionID = ActionID
+FROM Enterprise.ACTION
+WHERE ObjectValue = @ActionName AND 
+	  ObjectType = 'Right' AND 
+	  ParentActionId IS NULL;
+
+WHILE EXISTS (SELECT 1 FROM #HoldParty WHERE PStatus = 0)
+BEGIN
+	SELECT TOP 1 @PartyRowNum = Rownumber, @OrganizationId = OrganizationPartyID
+	FROM #HoldParty
+	WHERE PStatus = 0;
+	SELECT @RoleId = RoleId
+	FROM Enterprise.Role AS R
+		 INNER JOIN
+		 Enterprise.RoleValueType AS RR
+		 ON RR.RoleValueTypeId = R.RoleValueTypeId
+	WHERE RR.Value = @TargetRoleName AND 
+		  R.PartyId = @OrganizationId;
+	EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = @DefaultRightName, @ShortName = @RightShortName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Description = '', @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
+	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
+	EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @RightName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Shortname = @RightShortName, @Description = @RightDescription, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
+	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
+	
+	UPDATE #HoldParty SET PStatus = 1 WHERE RowNumber = @PartyRowNum;
+END;
+
+/*Setup Dependencies for custom roles*/
+
+SELECT @DependentRightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value = @DefaultRightName;
+
+SELECT @RightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value = @RightName;
+
+IF NOT EXISTS (SELECT 1 FROM Enterprise.RightDependency 
+			   WHERE RightValueTypeId = @RightValueTypeId 
+			   AND DependentRightValueTypeId = @DependentRightValueTypeId)
+BEGIN
+	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
+	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
+END;
+
+GO
+--------------------------------------------OmniChannel----------------------------------------------
+--DELETE	OmniChannel Roles and Rights
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+SET @ProductName = 'OmniChannel'
+
+DECLARE @Right TABLE (
+	RightID int,
+	RoleID int,
+	RightValueTypeId int,
+	PartyId bigint
+)
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @Right (
+	RightID,
+	RoleID,
+	RightValueTypeId,
+	PartyId
+)
+SELECT	eri.RightID,
+				eri.RoleID,
+				eri.RightValueTypeId,
+				eri.PartyId
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN Enterprise.[Right] eri ON (eri.RightValueTypeId = erivt.RightValueTypeId)
+WHERE	ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @Right ri ON (ri.RoleID = eri.RoleID)
+
+DELETE
+FROM		Enterprise.RightValueType
+WHERE	ProductId = @ProductId
+
+DELETE	epp
+FROM	Enterprise.PersonaPrivilege epp
+			INNER JOIN @Right ri ON (epp.RoleID = ri.RoleID)
+
+DELETE	ero
+FROM		Enterprise.Role ero
+				INNER JOIN @Right ri ON (ero.RoleID = ri.RoleID)
+
+DELETE	erovt
+FROM		Enterprise.RoleValueType erovt
+				INNER JOIN Enterprise.Role ero ON (ero.RoleValueTypeId = erovt.RoleValueTypeId)
+				INNER JOIN @Right ri ON (ri.RoleID = ero.RoleID)
+GO
+
+--------------------------------------L&R Conversion Utility----------------------------------------
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+DECLARE @RightValueType TABLE (
+	RightValueTypeId int
+)
+
+SET @ProductName = 'L&R Conversion Utility'
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @RightValueType (
+	RightValueTypeId
+)
+SELECT	RightValueTypeId
+FROM		Enterprise.RightValueType
+WHERE	Value IN (
+	'Access to L&R Conversion Utility for OneSite users'
+
+)
+AND		ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @RightValueType rvt ON (eri.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erd
+FROM		Enterprise.RightDependency erd
+				INNER JOIN @RightValueType rvt ON (erd.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erivt
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN @RightValueType rvt ON (erivt.RightValueTypeId = rvt.RightValueTypeId)
+GO
+
+-----------------------------------------Spend Management-------------------------------------------
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+DECLARE @RightValueType TABLE (
+	RightValueTypeId int
+)
+
+SET @ProductName = 'Spend Management'
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @RightValueType (
+	RightValueTypeId
+)
+SELECT	RightValueTypeId
+FROM		Enterprise.RightValueType
+WHERE	Value IN (
+	'Manage Vendor Compliance Product Access'
+)
+AND		ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @RightValueType rvt ON (eri.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erd
+FROM		Enterprise.RightDependency erd
+				INNER JOIN @RightValueType rvt ON (erd.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erivt
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN @RightValueType rvt ON (erivt.RightValueTypeId = rvt.RightValueTypeId)
+GO
+
+-----------------------------------------Unified Platform-------------------------------------------
+DECLARE @ProductId int,
+	@ProductName nvarchar(50)
+
+DECLARE @RightValueType TABLE (
+	RightValueTypeId int
+)
+
+SET @ProductName = 'Unified Platform'
+
+SELECT	@ProductId = ProductId
+FROM		Enterprise.Product
+WHERE	Name = @ProductName
+
+INSERT INTO @RightValueType (
+	RightValueTypeId
+)
+SELECT	RightValueTypeId
+FROM		Enterprise.RightValueType
+WHERE	Value IN (
+	'Access to Settings Admin for OneSite',
+	'Ability to edit password',
+	'Ability to Configure Custom Fields for Users',
+	'Ability to view Company page',
+	'Ability to edit Company information',
+	'Ability to view Property page',
+	'Ability to edit Property information',
+	'Access to Green Book Migration Tool',
+	'Access to Amenities Tool',
+	'Access to Employee Management',
+	'Access to Identity Provider Configuration Page',
+	'Access to Leasing & Rents Conversion Tool',
+	'Access to Property Hierarchy Tool',
+	'Impersonate a User',
+	'See All RealPage Products',
+	'Access to Settings Admin for OneSite',
+	'Manage Unified Platform Security Settings',
+	'Manage all Unified Setting',
+	'Employee Access to CIMPL: Standard Implementation Access'
+)
+AND		ProductId = @ProductId
+
+DELETE	eri
+FROM		Enterprise.[Right] eri
+				INNER JOIN @RightValueType rvt ON (eri.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erd
+FROM		Enterprise.RightDependency erd
+				INNER JOIN @RightValueType rvt ON (erd.RightValueTypeId = rvt.RightValueTypeId)
+
+DELETE	erivt
+FROM		Enterprise.RightValueType erivt
+				INNER JOIN @RightValueType rvt ON (erivt.RightValueTypeId = rvt.RightValueTypeId)
+GO
+
+----------------------------------------------------------------------------------------------------
+--Rename
+ Update Enterprise.RightValueType Set Value = 'Access to Unified Settings'
+ Where  Value = 'View All Unified Settings'
+
+ GO

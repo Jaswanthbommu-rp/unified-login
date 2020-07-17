@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Web.Configuration;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
@@ -10,8 +11,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
     /// </summary>
     public class DefaultUserClaim
     {
-        public const int ExternalCompanyMasterId = -2;
-
+        public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
+        public static readonly Guid ExternalCompanyRealPageId = new Guid("EEFACE50-9F75-4DCE-B133-A97EE0E0D723");
+        
         /// <summary>
         /// Default constructor
         /// </summary>

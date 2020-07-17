@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -16,12 +17,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     /// </summary>
     public class OrganizationRepository : BaseRepository, IOrganizationRepository
     {
+        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Constructor
         /// <summary>
         /// Base constructor
         /// </summary>
         public OrganizationRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -30,6 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="repository"></param>
         public OrganizationRepository(IRepository repository) : base(repository)
         {
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
         #endregion
@@ -59,17 +63,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         OrganizationName = organization.Name,
                         BlueBookId = organization.BooksCustomerMasterId,
                         BlackBookId = organization.BooksMasterId,
-                        OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId
+                        OrganizationTypeId = organization?.organizationType?.OrganizationTypeId ?? organizationTypeId,
+                        OrganizationDomainId = organization.OrganizationDomain.OrganizationDomainId
                     };
 
                     newOrganization = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, paramNewOrg);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
                     repository.UnitOfWork.Rollback();
                     newOrganization.ErrorMessage = "Failed to create organization";
                 }
-                repository.UnitOfWork.Commit();
             }
             return newOrganization;
         }
@@ -116,17 +121,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
         /// <param name="organizationPartyId">Optional organization PartyId</param>
-        /// <param name="blueBookId">Optional blueBookId</param>
-        /// <param name="blackBookId">Optional blackBookId</param>
         /// <returns>Organization object</returns>
-        public Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null)
+        public Organization GetOrganization(Guid? realPageId = null, long? organizationPartyId = null)
         {
             dynamic param = new
             {
                 RealPageId = (realPageId == Guid.Empty) ? null : realPageId,
-                PartyId = organizationPartyId,
-                BlueBookId = blueBookId,
-                BlackBookId = blackBookId
+                PartyId = organizationPartyId
             };
 
             using (var repo = GetRepository())
@@ -170,6 +171,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// List of Unified Login companies
+        /// </summary>       
+        /// <returns>List of Unified Login companies including admin user info</returns>
+        public List<UnifiedLoginCompany> GetUnifiedLoginCompanyList()
+        {
+            using (var repository = GetRepository())
+            {
+                List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
+                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListOrganizations, null);
+                if (result != null)
+                {
+                    foreach (var item in result)
+                    {
+                        compList.Add(new UnifiedLoginCompany { CompanyId = long.Parse(item.BooksMasterId.ToString()), BooksCustomerMasterId = long.Parse(item.BooksCustomerMasterId.ToString() == string.Empty ? "0" : item.BooksCustomerMasterId.ToString()), CompanyName = item.Name, IsActive = true, PartyId = item.PartyId, CompanyRealPageId = item.OrganizationRealPageId.ToString(),  UserRealPageId = item.PersonRealPageId.ToString(), UserLoginAs = item.LoginName, Domain = item.Domain });
+                    }
+                    compList = compList.OrderBy(p => p.CompanyName).ToList();
+                }
+                return compList;
+            }
+        }
+
+        /// <summary>
         /// Used to get the RealPageId of the admin user of the organization
         /// </summary>
         /// <param name="organizationRealPageId"></param>
@@ -208,31 +231,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             return realPageEmployeeAccessId;
-        }
-
-        /// <summary>
-        /// Used to get the Books master id for the given organization
-        /// </summary>
-        /// <param name="realPageId">The organization id to get the books master id for</param>
-        /// <returns>the books master id</returns>
-        public BooksMaster GetBooksCompanyMaster(Guid realPageId)
-        {
-            RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"booksMaster_{realPageId}";
-            BooksMaster booksMaster = rpCache.GetFromCache<BooksMaster>(cacheKey, 180, () =>
-            {
-                dynamic param = new
-                {
-                    RealPageId = realPageId,
-                };
-
-                using (var repository = GetRepository())
-                {
-                    return repository.GetOne<BooksMaster>(StoredProcNameConstants.SP_GetBookIdByOrganization, param);
-                }
-            });
-
-            return booksMaster;
         }
 
         /// <summary>
@@ -315,6 +313,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, IList<int> productIdList)
         {
             RepositoryResponse response = new RepositoryResponse();
+            string schemaName = getRoleRightsSchemaName();
+            var procName = schemaName?.Length > 0 ? $"{schemaName}.SetupSuperUser" : StoredProcNameConstants.SP_SetupSuperUser;
 
             using (var repository = GetRepository())
             {
@@ -335,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         AssignedProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
                     };
 
-                    repository.ExecuteNonQuery(StoredProcNameConstants.SP_SetupSuperUser, param);
+                    repository.ExecuteNonQuery(procName, param);
                 }
                 catch (Exception exception)
                 {
@@ -443,6 +443,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return organizationDomainList;
+        }
+
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        public RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain)
+        {
+            RepositoryResponse result;
+            dynamic param = new
+            {
+                DomainName = organizationDomain.Name
+            };
+
+            using (var repository = GetRepository())
+            {
+                result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationDomain, param);
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region private methods
+        private string getRoleRightsSchemaName()
+        {
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
+            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
+            });
+
+            return schemaName;
+
         }
         #endregion
     }

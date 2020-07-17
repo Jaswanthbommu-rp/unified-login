@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -39,10 +40,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// </summary>
 		/// <param name="realPageId">Organization unique identifier</param>
 		/// <param name="organizationPartyId">Optional organization PartyId</param>
-		/// <param name="blueBookId">Optional blueBookId</param>
-		/// <param name="blackBookId">Optional blackBookId</param>
 		/// <returns>Organization object</returns>
-		Organization GetOrganization(Guid realPageId, long? organizationPartyId = null, long? blueBookId = null, long? blackBookId = null);
+		Organization GetOrganization(Guid realPageId, long? organizationPartyId = null);
 
 		/// <summary>
 		/// Used to get a list of Organizations
@@ -56,13 +55,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="organizationRealPageId"></param>
         /// <returns></returns>
         Guid GetOrganizationAdminUserRealPageId(Guid organizationRealPageId);
-
-        /// <summary>
-		/// Used to get the master id for the given organization
-		/// </summary>
-		/// <param name="realPageId"></param>
-		/// <returns></returns>
-        BooksMaster GetBooksCompanyMaster(Guid realPageId);
 
         /// <summary>
         /// Used to get the Organization Identity ProviderType by realPageId
@@ -110,5 +102,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns>list of OrganizationDomain objects</returns>
         List<OrganizationDomain> ListOrganizationDomain();
 
+        /// <summary>
+        /// Used to add a new organization domain
+        /// </summary>
+        /// <param name="organizationDomain"></param>
+        /// <returns></returns>
+        RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain);
+
+        /// <summary>
+        /// List of Unified Login companies
+        /// </summary>       
+        /// <returns>List of Unified Login companies including admin user info</returns>
+        List<UnifiedLoginCompany> GetUnifiedLoginCompanyList();
     }
 }

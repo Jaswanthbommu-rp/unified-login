@@ -14,12 +14,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Security.Claims;
 using System.Web.Http;
 using Thinktecture.IdentityModel.Client;
@@ -215,6 +213,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             output.Status = errorStatus;
             return productInternalSettingsList;
         }
+
+        
+        /// <summary>
+        /// Used to get product internal settings
+        /// </summary>
+        /// <param name="productid">The id of the product to get the settings for</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the product settings", Type = typeof(ProductInternalSetting))]
+        [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
+        [Route("product/{productid}/settings")]
+        [Authorize]
+        [HttpGet]
+        public IList<ProductInternalSetting> GetProductNonSensitiveSettings(int productid)
+        {
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            IList<ProductInternalSetting> productInternalSettingsList = new List<ProductInternalSetting>();
+
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            return manageProduct.GetProductInternalSettings(productid)?.Where(p => !p.SensitiveData).OrderBy(p => p.Name).ToList();
+        }
+
+        /// <summary>
+        /// Used to update a product internal setting
+        /// </summary>
+        /// <param name="productId">The id of the product to get the settings for</param>
+        /// <param name="productInternalSetting"></param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update information about a product setting", Type = typeof(ProductInternalSetting))]
+        [SwaggerResponseExamples(typeof(ProductInternalSetting), typeof(ProductInternalSettingExample))]
+        [Route("product/{productid}/settings")]
+        [Authorize]
+        [HttpPut]
+        public HttpResponseMessage UpdateProductSettingAndLinkToConfiguration(int productId, ProductInternalSetting productInternalSetting)
+        {
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            RepositoryResponse response = manageProduct.CreateProductSettingAndLinkToConfiguration(productId, productInternalSetting);
+
+            if (!String.IsNullOrEmpty(response.ErrorMessage))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response.ErrorMessage);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Get a list of product setting types
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List of product setting types", Type = typeof(ProductSettingType))]
+        [Route("product/settingtypes")]
+        [Authorize]
+        [HttpGet]
+        public IList<ProductSettingType> ListProductSettingType()
+        {
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            return manageProduct.ListProductSettingType();
+        }
+
 
         /// <summary>
         /// Used to get product saml login

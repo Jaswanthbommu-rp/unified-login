@@ -18,8 +18,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// <summary>
         /// The unique id in uppercase for the Organization stored in BlueBook
         /// </summary>
-        [JsonProperty(PropertyName = "realPageIdString")]
-        public string RealPageIdString => RealPageId.ToString().ToUpper();
+        [JsonProperty(PropertyName = "realPageIdUpperCaseForBooks")]
+        public string RealPageIdUpperCaseForBooks => RealPageId.ToString().ToUpper();
 
         /// <summary>
 		/// The unique id for the Organization in GreenBook

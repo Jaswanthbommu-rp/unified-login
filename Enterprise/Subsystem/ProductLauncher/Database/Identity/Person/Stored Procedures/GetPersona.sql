@@ -13,7 +13,8 @@ AS
                 pe.ThruDate,
                 pe.IsDefault,
                 UL.UserId,
-                PR.RoleTypeIdFrom 'UserTypeId'
+                PR.RoleTypeIdFrom 'UserTypeId',
+				OD.Name as OrganizationDomain
 		FROM Person.Persona PE
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId
 		INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId
@@ -22,10 +23,10 @@ AS
 		INNER JOIN Enterprise.PartyRelationship PR ON(PR.PartyIdFrom = UL.PersonPartyId AND PR.PartyIdTo = ULP.OrganizationPartyId
                                                             AND PR.RoleTypeIdTo = 205
                                                             AND PR.ThruDate IS NULL)
+		INNER JOIN Enterprise.Organization O ON ULP.OrganizationPartyId = O.PartyId
+		INNER JOIN Enterprise.OrganizationDomain OD on O.OrganizationDomainId = OD.OrganizationDomainId AND OD.ThruDate IS NULL
          WHERE pe.PersonaId = @PersonaId
                AND ((@NOW BETWEEN pe.FromDate AND pe.ThruDate)
                     OR (@NOW >= pe.FromDate
                         AND pe.ThruDate IS NULL));
      END;
-
-

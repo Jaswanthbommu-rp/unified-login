@@ -86,5 +86,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomerEnvironment { get; set; }
+
+        /// <summary>
+        /// used to store the customer domain
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Domain { get; set; }
 	}
 }

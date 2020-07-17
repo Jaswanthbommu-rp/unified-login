@@ -593,7 +593,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         message = $"Unable to send Welcome Email to user {userLogin.LoginName} by automated system.";
                     }
 
-                    if (organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId)
+                    if (organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
                     {
                         LogActivity.WriteActivity(new ActivityDetails
                         {
@@ -611,7 +611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
-                if (organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId)
+                if (organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
                 {
                     DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
                     AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);

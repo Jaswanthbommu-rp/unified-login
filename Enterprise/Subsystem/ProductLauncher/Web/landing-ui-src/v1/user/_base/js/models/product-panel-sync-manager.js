@@ -706,13 +706,23 @@
         p.multiSelectedPropertySync = function (key, record) {
             var s = this,
                 assignedCount = 0,
-                propertyData;
+                propertyData,
+                productPropertyGroupList;
 
             propertyData = s.propertyMap['product' + key].properties;
             propertyData.forEach(function (item) {
                 if(key == 8){
-                    if(item.propertyId == record.propertyId){
-                        item.isAssigned = true;
+                    if(item.propertyId == record.propertyId && item.companyId == record.companyId){
+                        item.isAssigned = record.isAssigned;
+                    }
+                    //Sync Companies Tab
+                    if (s.propertyGroupMap['product' + key] !== undefined) {
+                        productPropertyGroupList = s.propertyGroupMap['product' + key].propertyGroup;
+                        productPropertyGroupList.forEach(function (companyItem) {
+                            if(companyItem.id == record.companyId){
+                                companyItem.isAssigned = true;
+                            }
+                        });
                     }
                 }
                 else if(item.id == record.id) {

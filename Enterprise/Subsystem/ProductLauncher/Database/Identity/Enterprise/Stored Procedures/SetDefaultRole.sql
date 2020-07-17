@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Enterprise].[SetDefaultRole](@RoleId INT)
+﻿CREATE PROCEDURE [Enterprise].[SetDefaultRole](@RoleId INT, @CreatedBy nvarchar(50) NULL)
 AS
      BEGIN
          DECLARE @DefaultRoleId INT;

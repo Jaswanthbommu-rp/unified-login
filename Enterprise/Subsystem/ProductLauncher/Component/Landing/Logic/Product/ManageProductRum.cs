@@ -234,7 +234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// get the PMCID from BlueBook because the user doesn't have the PMCID for Marketing Center yet
 				WriteToDiagnosticLog("GetRUMPMCIDFromPersona - Getting info from BlueBook.GetCompanyMap");
                 //IList<CompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.UtilityManagement);
-                IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksCustomerMasterId, BlueBookProductConstants.UtilityManagement);
+                IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.UtilityManagement, domain: _editorPersona.Organization.OrganizationDomain.Name);
                 WriteToDiagnosticLog("GetRUMPMCIDFromPersona - Done getting info from BlueBook.GetCompanyMap");
 				if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.ToUpper() == BlueBookProductConstants.UtilityManagement))
 				{
@@ -348,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToErrorLog($"ManageProductRum.GetRegions-no properties received from product for user with editorPersona id - {editorPersonaId}.");
 
                     response.IsError = true;
-                    response.ErrorReason = "No regions received from product.";
+                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
                     return response;
                 }
 
@@ -387,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
                 }
                 WriteToErrorLog($"ManageProductRum.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
@@ -417,12 +417,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
-                if (companyInstanceSourceId == 0)
-                {
-                    WriteToErrorLog(
-                        $"ManageProductRum.GetRoles.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                    return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                }
 
                 // get roles from rum product
                 var allRoles = GetRumRoles(companyInstanceSourceId);

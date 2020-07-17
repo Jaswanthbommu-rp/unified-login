@@ -804,30 +804,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response; }
-            _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
-            //string uniqueIdentifier = GetOneSiteUniqueIdByPersonaId(persona.PersonaId);
 
-            //string pmcID = GetOneSitePMCIDFromPersona(persona);
-            Dictionary<string, string> args = new Dictionary<string, string>();
-            args.Add("PMCID", _pmcID);
-            args.Add("RoleID", roleId.ToString());
-            args.Add("AssignedToRoleOnly", (assignedToRoleOnly ? "1" : "0"));
             try
             {
+                _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
+                //string uniqueIdentifier = GetOneSiteUniqueIdByPersonaId(persona.PersonaId);
+
+                //string pmcID = GetOneSitePMCIDFromPersona(persona);
+                Dictionary<string, string> args = new Dictionary<string, string>();
+                args.Add("PMCID", _pmcID);
+                args.Add("RoleID", roleId.ToString());
+                args.Add("AssignedToRoleOnly", (assignedToRoleOnly ? "1" : "0"));
+
                 _rightList = GetOneSiteRightsMain(args, datafilter, _systemIdentifier);
+
+                if (_rightList == null) { _rightList = new RightList(); }
+                IList<ProductRight> list = _rightList.ToGBRights();
+                if (list == null) { list = new List<ProductRight>(); }
+                response = new ListResponse()
+                {
+                    Records = list.Cast<object>().ToList(),
+                    TotalRows = list.Count,
+                    RowsPerPage = 9999,
+                    ErrorReason = "",
+                    TotalPages = 1
+                };
             }
-            catch (Exception ex) { }
-            if (_rightList == null) { _rightList = new RightList(); }
-            IList<ProductRight> list = _rightList.ToGBRights();
-            if (list == null) { list = new List<ProductRight>(); }
-            response = new ListResponse()
+            catch (Exception ex)
             {
-                Records = list.Cast<object>().ToList(),
-                TotalRows = list.Count,
-                RowsPerPage = 9999,
-                ErrorReason = "",
-                TotalPages = 1
-            };
+                WriteToErrorLog($"ManageProductOneSite.GetOneSiteRights Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = CommonMessageConstants.RightErrorMessage
+                };
+            }
             return response;
         }
 
@@ -1733,7 +1745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         // get the PMCID from BlueBook because the user doesn't have the PMCID for OneSite yet
                         WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Getting info from BlueBook.GetCompanyMapResource");
                         //IList<CompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.BooksMasterId, BlueBookProductConstants.OneSite);
-                        IList<CustomerCompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.BooksCustomerMasterId, BlueBookProductConstants.OneSite);
+                        IList<CustomerCompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.RealPageId, persona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.OneSite, domain: persona.Organization.OrganizationDomain.Name);
                         WriteToDiagnosticLog("GetOneSitePMCIDFromPersona - Done getting info from BlueBook.GetCompanyMapResource");
                         if (companyMapResource != null && companyMapResource.Count > 0 && companyMapResource.Any(a => a.Source.ToUpper() == BlueBookProductConstants.OneSite))
                         {

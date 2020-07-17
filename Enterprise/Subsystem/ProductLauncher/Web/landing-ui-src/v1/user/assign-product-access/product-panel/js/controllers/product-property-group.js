@@ -67,7 +67,7 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
-            var excludeProducts = [18, 20, 47];
+            var excludeProducts = [18, 20, 47, 8];
             var productId = $scope.$parent.productId;
             if (excludeProducts.indexOf(productId) === -1) {
                 syncMgr.allPropertiesSync($scope.$parent.productId, val);
@@ -135,8 +135,8 @@
                     vm.setProductTabs(filteredAllTabs);
                 }
                 if (additionalData["hasAccessToAllCurrentFutureProperties"]) {
-                    pubsub.publish("acct.accountingAllPropertiesSet", false);
-                    vm.accountingAllCompaniesSet(false);
+                    pubsub.publish("acct.accountingAllPropertiesSet", true);
+                    vm.accountingAllCompaniesSet(true);
                 }
             }
 

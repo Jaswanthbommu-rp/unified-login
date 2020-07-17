@@ -127,10 +127,18 @@
                     vm.propertySelect = accesstype;
                 }
             }
+            if($scope.$parent.productId === 17){
+                var flag = syncMgr.isProductAllProperties($scope.$parent.productId);
+                return flag;
+            }
             if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
                 return true;
             }
             return false;
+        };
+
+        vm.isFinancialSuite = function () {
+            return $scope.$parent.productId == 8;
         };
 
         vm.setSwitchConfig = function () {
@@ -172,7 +180,19 @@
             }
         };
 
-
+        vm.configEntityTypeFilters = function (propertyList){
+            var distinctPropertyTypes = [];
+            var propertytype = "";
+            propertyList.forEach(function (property) {
+                if(property.propertyType !== undefined){
+                    propertytype = property.propertyType.replace(/ /g, "");
+                    if(distinctPropertyTypes.indexOf(propertytype) == -1){
+                        distinctPropertyTypes.push(propertytype);
+                    }
+                }
+            });
+            pubsub.publish("ppanel.distinct-entity-types", distinctPropertyTypes);
+        };
 
         vm.setPropertyData = function (resp) {
             propertiesGrid.busy(false);
@@ -186,6 +206,9 @@
                     });
                 }
                 var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
+                if($scope.$parent.productId === 44){
+                    vm.configEntityTypeFilters(resp.records[0].propertiesList);
+                }
                 if (resp.additional && resp.additional.allProperties) {
                     syncMgr.updateProductAllProperties($scope.$parent.productId, true);
                     vm.allProperties = true;

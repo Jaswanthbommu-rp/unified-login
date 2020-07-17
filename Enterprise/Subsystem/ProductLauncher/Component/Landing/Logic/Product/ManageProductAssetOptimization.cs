@@ -672,7 +672,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				IList<Organization> organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(realPageId, null);
 				var personaOrganization = organizationList.FirstOrDefault(i => i.PartyId == persona.OrganizationPartyId);
-                bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+                bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 				bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 
 				if (productUserGbLogin == null)
@@ -789,13 +789,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 						returnResult = CreateUpdateAOBIProduct(userEmailAddress, editorPersonaId, productUserPersonaId, biProductData, persona, person, productUserGbLogin);
 
-						if (string.IsNullOrEmpty(returnResult) && aoGbUserCompanyPropertyRoleDetails.Count == 0)
-						{
-							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productUserGbLogin.LoginName.ToLower());
-							_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productUserGbLogin.LoginName.ToLower());
-							UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
-						}
-					}
+                        if (string.IsNullOrEmpty(returnResult) && aoGbUserCompanyPropertyRoleDetails.Count == 0)
+                        {
+                            _samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productUserGbLogin.LoginName.ToLower());
+                            _samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productUserGbLogin.LoginName.ToLower());
+                            UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
+                        }
+                    }
 				}
 
 				//Create/Update single/multi company AO Products
@@ -914,7 +914,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			string biProductUserName = "";
 			string result = "";
-			
+			IList<AoUserCompanyPropertyRoleDetail> existingAoProducts = null;
+			IList<AoUserCompanyPropertyRoleDetail> unAssignedProducts = null;
+
 			biProductUserName = GetSamlProductUserName(productUserPersonaId, "BI");
 
 			var biAOUser = new AOUser
@@ -932,11 +934,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (!string.IsNullOrEmpty(biProductUserName) )
 			{
-				var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
+				 unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false).ToList();
 				if (unAssignedProducts.Count() > 0)
 				{
 					biAOUser.IsEnabled = false;
 					aoGbUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId, biProductUserName);
+					// store existing assigned products
+					 existingAoProducts = aoGbUserCompanyPropertyRoleDetails;
 				}
 				//foreach (var unAssignedProduct in unAssignedProducts)
 				//{
@@ -951,7 +955,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				//		//}
 				//	}
 				//}
-			}		
+
+			}
 
 			biAOUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
 			biAOUser.Divisions = new List<Divisions>();
@@ -990,7 +995,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				biAOUser.Login = biLoginName.ToLower();
 				biAOUser.UserId = biLoginName.ToLower();
 
-				var createBIResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", biAOUser);
+				 var createBIResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", biAOUser);
 
 				if (string.IsNullOrEmpty(createBIResult))
 				{
@@ -1022,8 +1027,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
 					}
-					else{
-						UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Deleted);
+                    else { 
+                        UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, unAssignedProducts);
+						updateResult = "unAssignedProducts";
+						//UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Deleted);
 					}
 
 					WriteToDiagnosticLog(
@@ -1064,7 +1071,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
 				string productUserName = "";
-				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+				bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 				bool isExternalUser = persona.Organization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && persona.Organization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
 				
 				if (string.IsNullOrEmpty(userEmailAddress))
@@ -2715,7 +2722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var modifiedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned);
 
 			IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 
 			// remove products
 			foreach (var unAssignedProduct in unAssignedProducts)
@@ -2768,7 +2775,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
 			
 			IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.BooksCustomerMasterId != DefaultUserClaim.ExternalCompanyMasterId) > 0;
+			bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
 
 			// remove roles			
 			if (!hasMultiCompany && persona.Organization.PrimaryOrganization)

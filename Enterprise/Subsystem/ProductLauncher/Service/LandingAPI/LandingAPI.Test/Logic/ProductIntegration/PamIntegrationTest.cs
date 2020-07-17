@@ -77,7 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 
 			dataCollector.Setup(m => m.GetUserDetailsByPersona(editorPersonaId, (int)productType)).Returns(editorUserDetails);
 			dataCollector.Setup(m => m.GetBlueBookProductMap((int)productType)).Returns(gbProductMap);
-			dataCollector.Setup(m => m.GetProductCompanyMap(gbProductMap.BooksProductCode, editorUserDetails.BooksMasterId, userClaims)).Returns(customerCompanyMap);
+			dataCollector.Setup(m => m.GetProductCompanyMap(gbProductMap.BooksProductCode, editorUserDetails.BooksMasterId, userClaims, "Primary")).Returns(customerCompanyMap);
 			managePersona.Setup(m => m.GetPersona(editorPersonaId)).Returns(persona);
 			productInternalSettingRepository.Setup(m => m.GetProductInternalSettings((int)productType)).Returns(productInternalSettingList);
 		}

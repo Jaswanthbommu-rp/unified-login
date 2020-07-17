@@ -194,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     int roleCategoryId = catList.FirstOrDefault(c => c.CategoryName.ToUpper() == "ROLE TYPE" && c.Status.ToUpper() == "CUSTOM").StatusTypeid;
 
 
-                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId);
+                    var resp = ocr.AddCustomRole(roleName, "", roleTypeId, roleCategoryId, partyId,_userClaims.UserId);
                     if(resp.ErrorMessage.Trim() != string.Empty )
                     {
                         response.IsError = true;
@@ -208,7 +208,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else // Existing role to Edit/Update
                 {
                    
-                    var resp = ocr.UpdateCustomRole(roleId,roleName, "");
+                    var resp = ocr.UpdateCustomRole(roleId,roleName, "", _userClaims.UserId);
                     if (resp.ErrorMessage.Trim() != string.Empty)
                     {
                         response.IsError = true;
@@ -297,17 +297,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="roleId"></param>
 
         /// <returns></returns>
-        public ListResponse SetDefaultRole(long editorPersonaId, long roleId)
+        public ListResponse SetDefaultRole(long editorPersonaId,long partyId, long roleId)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response; }
-
             try
             {
                 UnifiedLoginRepository ocr = new UnifiedLoginRepository();
 
-                var resp = ocr.SetDefaultRole(roleId);
+                var resp = ocr.SetDefaultRole(roleId,partyId, _userClaims.UserId);
                 if (resp.ErrorMessage.Trim() != string.Empty)
                 {
                     response.IsError = true;
@@ -740,7 +739,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
+                response.ErrorReason = CommonMessageConstants.RightErrorMessage;
                 WriteToErrorLog($"UnifiedLogin - ManageUnifiedLogin.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
@@ -1106,7 +1105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 WriteToErrorLog($"UserManagement - ManageUnifiedLogin.GetUserRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
@@ -1324,7 +1323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rightsAddRem.Add(rightDel);
             }
 
-            var result = ocr.LinkRightsToRole(rightsAddRem);
+            var result = ocr.LinkRightsToRole(rightsAddRem, _userClaims.UserId);
         }
 
 
@@ -1357,7 +1356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rightsAddRem.Add(roleDel);
             }
 
-            var result = ocr.LinkRightsToRole(rightsAddRem);
+            var result = ocr.LinkRightsToRole(rightsAddRem, _userClaims.UserId);
         }
 
 
@@ -1392,10 +1391,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var roles = umr.ListRolesForProductsByPartyId(partyId, ulProductId, productIdList);
 
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
-                allRolesandRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
+                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
 
                 foreach (var role in roles)
                 {
@@ -1427,6 +1426,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (list != null && list.Count > 0)
                     {
                         int rights = list.Count;
+                        if (list.Count == 1 && list[0].RightId == 0){
+                            rights = 0;
+                        }
                         list[0].RightsAssigned = rights.ToString();
                         ProductRole pr = new ProductRole {ID = list[0].RoleId.ToString(),IsAssigned = list[0].IsAssigned, Roletype = list[0].RoleType,Name = list[0].RoleName,RightsAssigned = list[0].RightsAssigned,DefaultRole = list[0].IsDefaultRole == true ? "User Default" : "" };
                         result.Add(pr);
