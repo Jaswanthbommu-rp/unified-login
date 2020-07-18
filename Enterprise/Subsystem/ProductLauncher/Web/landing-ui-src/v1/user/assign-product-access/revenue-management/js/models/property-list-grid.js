@@ -11,10 +11,6 @@
                 {
                     key: "propertyName",
                     type: "text"
-                },
-                {
-                    key: "state",
-                    type: "text"
                 }
                 ];
         };
@@ -24,10 +20,6 @@
                 [{
                         key: "propertyName",
                         text: "Property",
-                },
-                    {
-                        key: "state",
-                        text: "State",
                 }]
             ];
         };
