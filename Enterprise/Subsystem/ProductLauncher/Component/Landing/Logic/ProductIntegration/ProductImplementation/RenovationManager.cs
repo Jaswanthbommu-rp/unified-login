@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
@@ -27,8 +28,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		protected override void ApplySuperUserData(IntegrationProductUser productUser)
 		{
 			// super user related assignments
-			string superUserRoleId = GetProductInternalSettingValue("SuperUserRoleId");
-			productUser.Roles = new List<string> { superUserRoleId };
+			List<string> roleNames = new List<string> { "SuperUserRoleId1", "SuperUserRoleId2" };
+			productUser.Roles = GetProductInternalSettingValue(roleNames);
 			productUser.Properties = new List<string>();
 			productUser.PropertyGroups = new List<string>();
 		}
@@ -136,6 +137,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return result;
 		}
 
+		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups userRolePropertiesRegion)
+		{
+			// Map user info
+			var productUser = new IntegrationProductUser
+			{
+				LoginName = string.IsNullOrEmpty(SubjectUserDetails.LoginName) ? SubjectUserDetails.LoginName : GetUniqueProductLogin(SubjectUserDetails.LoginName),
+				CompanyId = CompanyInstanceSourceId,
+				FirstName = SubjectUserDetails.FirstName,
+				LastName = SubjectUserDetails.LastName,
+				Email = SubjectUserDetails.Email,
+				Phone = SubjectUserDetails.PhoneNumber,
+				IsActive = true,
+				PropertyGroups = userRolePropertiesRegion.PropertyGroupList,
+				Properties = userRolePropertiesRegion.PropertyList,
+				Roles = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
+				PropertyRoles = userRolePropertiesRegion.PropertyRoleList,
+				OrganizationRoles = userRolePropertiesRegion.OrganizationRoleList,
+				CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
+				PropertyRoleList = userRolePropertiesRegion.RolePropertiesList,
+				RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString())
+			};
+
+			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
+			{
+				ApplySuperUserData(productUser);
+			}
+
+			return productUser;
+		}
+
+		protected List<string> GetProductInternalSettingValue(List<string> settingName)
+		{
+			// Get product setting value
+			var settingValue = ProductInternalSettingList.Where(a => settingName.Contains(a.Name)).Select(b => b.Value).ToList(); 
+			return settingValue;
+		}
 		#endregion
 	}
 }

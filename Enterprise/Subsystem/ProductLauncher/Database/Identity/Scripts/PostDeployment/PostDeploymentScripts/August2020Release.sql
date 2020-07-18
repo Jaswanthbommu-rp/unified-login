@@ -1705,3 +1705,223 @@ GO
  Where  Value = 'View All Unified Settings'
 
  GO
+
+--Start For Reno product internal settings
+GO
+
+DECLARE @UserId bigint,
+	@ProductId int =55,
+	@Now datetime = GETDATE(),
+	@CurrentProductConfigurationID INT,
+	@ProductSettingTypeId INT,
+	@ProductSettingId INT,
+	@roleId INT,
+	@ServerName SYSNAME = @@SERVERNAME;
+		
+		SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+		FROM Enterprise.GlobalProductConfiguration AS gpc
+		WHERE gpc.ProductId = @ProductId AND 
+				( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+				) OR 
+				( @NOW >= gpc.FromDate AND 
+					gpc.ThruDate IS NULL
+				)
+				)
+		ORDER BY GlobalProductConfigurationId DESC;
+
+		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
+		BEGIN
+			Select @roleId = 1
+		END
+		IF @ServerName IN ('RCQUSODBSQL001')
+		BEGIN
+			Select @roleId = 1
+		END
+		IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+		BEGIN
+			Select @roleId = 1
+		END
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'SuperUserRoleId1'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId1', 'The role Id to create admin user in  product', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = @roleId, 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'ClientScope'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'ClientScope', 'The client scope to get access token', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = 'renouserapi', 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+GO
+
+GO
+--For Reno product internal settings
+DECLARE @UserId bigint,
+	@ProductId int =55,
+	@Now datetime = GETDATE(),
+	@CurrentProductConfigurationID INT,
+	@ProductSettingTypeId INT,
+	@ProductSettingId INT,
+	@roleId INT,
+	@ServerName SYSNAME = @@SERVERNAME;
+		
+		SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+		FROM Enterprise.GlobalProductConfiguration AS gpc
+		WHERE gpc.ProductId = @ProductId AND 
+				( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+				) OR 
+				( @NOW >= gpc.FromDate AND 
+					gpc.ThruDate IS NULL
+				)
+				)
+		ORDER BY GlobalProductConfigurationId DESC;
+
+		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
+		BEGIN
+			Select @roleId = 34
+		END
+		IF @ServerName IN ('RCQUSODBSQL001')
+		BEGIN
+			Select @roleId = 34
+		END
+		IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+		BEGIN
+			Select @roleId = 34
+		END
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'SuperUserRoleId2'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId2', 'The role Id to create admin user in  product', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = @roleId, 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'ClientScope'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'ClientScope', 'The client scope to get access token', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = 'renouserapi', 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+GO
+--End For Reno product internal settings
