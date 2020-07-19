@@ -200,51 +200,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 List<Guid> properties = new List<Guid>();
 
                 //properties.Add(new Guid(""));
-                //properties.Add(new Guid("061953BE-7BB0-4475-BD14-00077D3BC4A9"));
-                //properties.Add(new Guid("236D3522-8343-4748-AEC1-0008013EEE1A"));
-                //properties.Add(new Guid("C77E5CB2-5B0D-4D73-BE19-000C725DADF2"));
-                //properties.Add(new Guid("1D6AA789-3AD4-4214-8A3A-000F6FCBD11B"));
-                //properties.Add(new Guid("4F76DCC2-B820-4DC0-9FB4-00118F499BF0"));
-                //properties.Add(new Guid("A0315003-E770-4D58-AF88-0013B705EDC5"));
-                //properties.Add(new Guid("5DD4E07E-2D5A-4959-B218-0014F8B130B4"));
-                //properties.Add(new Guid("89A87744-A3E1-4E33-B940-001633ADB840"));
-                //properties.Add(new Guid("F77578E3-C925-43F7-846B-00165AB8D516"));
-                //properties.Add(new Guid("2F0EC3A4-7490-4DE0-B9B4-0019CB80ABA1"));
-                //properties.Add(new Guid("2FFE903A-9627-4DCD-9A59-001A237B6566"));
-                //properties.Add(new Guid("891F0C55-7FAA-442C-B6E4-001C3F0680A0"));
-                //properties.Add(new Guid("5B67D6E4-0D6B-4A18-AA39-001C8C178023"));
-                //properties.Add(new Guid("977944F9-4D0A-4BFB-9E4E-001E404ED7B6"));
-                //properties.Add(new Guid("E59A1169-DC52-458C-A892-001EB0B7EBA4"));
-                //properties.Add(new Guid("EFAC9217-1B03-4121-B528-0020F060BBF7"));
-                //properties.Add(new Guid("67B0647A-706A-440E-A2DE-002134B8332F"));
-                //properties.Add(new Guid("889F2CA4-C5A5-49D3-82FF-002179FEA226"));
-                //properties.Add(new Guid("8F99D210-EC9E-41B1-911B-002293F9BF36"));
-                //properties.Add(new Guid("73F4DD0A-E881-40AC-9E00-00239F4F2404"));
-                //properties.Add(new Guid("534B6546-EA34-4014-B9F1-0024FA1B4BCD"));
-                //properties.Add(new Guid("B6B55101-D062-4ADA-98D5-002A4F98772A"));
-                //properties.Add(new Guid("EA052601-D63B-4A06-A563-002DF1324C7F"));
-                //properties.Add(new Guid("39D1EE59-BFA8-48DA-A45C-002F4B4843BA"));
-                //properties.Add(new Guid("9AF19686-B075-4364-A172-002FC42BE9F2"));
-                //properties.Add(new Guid("F36BCAD4-1075-4030-BF72-0031221B4FF0"));
-                //properties.Add(new Guid("1CA972A9-933C-483E-B3BF-00315F1CCBAB"));
-                //properties.Add(new Guid("DC96D08C-5567-4983-82F0-00331A233965"));
-                //properties.Add(new Guid("7ABC3914-0AB1-435A-9952-0033A8E18E7A"));
-                //properties.Add(new Guid("2710E5C2-436E-44A2-B96E-0034F2AA9952"));
-                //properties.Add(new Guid("FDC64D48-740B-44B2-9FB2-00369E711B3D"));
-                //properties.Add(new Guid("C1153C27-5A65-43F5-A0DE-00378FD5033C"));
-                //properties.Add(new Guid("8E183FEC-8D17-4332-B418-00393D3DA35E"));
-                //properties.Add(new Guid("8A061F8F-A8DC-44F3-B879-003AA59A5668"));
-                //properties.Add(new Guid("6A1C58F5-CFA2-4E7B-B3D8-003D15F09A47"));
-                //properties.Add(new Guid("D2BF5591-D0C5-4E21-B875-0043E5306DB0"));
-                //properties.Add(new Guid("652C1528-E95A-4BE3-992E-00465658F3F2"));
-                //properties.Add(new Guid("80968CD7-D0D4-4A8F-B621-004D96D02323"));
-                //properties.Add(new Guid("28D68079-F233-4ADE-B430-0050119E98F4"));
-                properties.Add(new Guid("71DB6235-E724-49CA-9D35-00515C6352D2"));
-                properties.Add(new Guid("5CFA3726-41F3-4289-BD7D-00524136062E"));
-                properties.Add(new Guid("19C8F72E-95FD-48FA-AAE7-00536FBA8187"));
-                properties.Add(new Guid("19EAFBC8-8132-4575-B14F-0056F664DEC1"));
-                properties.Add(new Guid("6FFDE36D-260D-4BC9-AF68-0057E9E725C4"));
-                properties.Add(new Guid("61A14703-C8ED-4BF6-BE3B-AADDCE33AC20"));
+                properties.Add(new Guid("870B6356-0856-423E-96E2-0000250EC0B6"));
+                properties.Add(new Guid("880A877B-0B02-4345-8EF0-00002B4EC2D8"));
+                properties.Add(new Guid("07094D6C-BAE3-42A7-9148-00007DD013FD"));
+                properties.Add(new Guid("FAFFAA44-EC2E-4AF3-AB76-000095E6681B"));
+                properties.Add(new Guid("674BA6B8-C2B4-4DC9-9088-0000B08001DC"));
+                properties.Add(new Guid("59918B39-BD69-4013-A87C-000145397055"));
+                properties.Add(new Guid("07114FAF-79FD-43B8-85F0-00015D500370"));
+                properties.Add(new Guid("DE6502BC-8BA2-4861-8A89-000181B91F37"));
+                properties.Add(new Guid("95E5DDA9-724F-4C35-AE27-0002FA7C598E"));
+                properties.Add(new Guid("A029F86C-F3E0-4049-8998-00031E89FD5E"));
+                properties.Add(new Guid("518C492D-3B40-423F-9C8D-0003ED7A537D"));
+                properties.Add(new Guid("2AC98BDF-FB2A-4A8E-AC84-000421E28947"));
+                properties.Add(new Guid("8A1026A0-03C9-465A-AC6F-000439215D49"));
+                properties.Add(new Guid("05423507-4498-4135-849B-000536115157"));
+                properties.Add(new Guid("6B6FCC4D-9DC5-4CAD-BC79-0005DBC46CC2"));
+                properties.Add(new Guid("B809BED7-86F4-4B1D-AB62-00064F643FBE"));
+                properties.Add(new Guid("FC0D15CE-DB7B-4648-B3AE-0006B98149BC"));
+                properties.Add(new Guid("14E648EE-BE9F-41C3-88D5-0006C6859553"));
+                properties.Add(new Guid("A7B010C5-2246-493F-97FF-0007A2234FF8"));
+                properties.Add(new Guid("A346AC1C-3C03-4988-BE8E-0007D28247B9"));
+                properties.Add(new Guid("30731061-E5EE-4029-B4C5-00081BCBAC8D"));
+                properties.Add(new Guid("D53E16F6-2157-44EE-9F7F-0008630FDF3E"));
+                properties.Add(new Guid("AA20712F-44E2-44CC-9A55-000888B28522"));
+                properties.Add(new Guid("B8D99477-5D29-427F-80F9-0008A09AD030"));
+                properties.Add(new Guid("65E1F62B-FA6A-418B-B5B3-0008A1B88491"));
+                properties.Add(new Guid("B4F57B9F-4B95-4AAD-AB7D-0008D270EFC8"));
+
+                properties.Add(new Guid("0BEFA18B-18B5-4559-845D-D56A933F8C1E"));
+                properties.Add(new Guid("C03BD5F7-22B5-4E27-B587-72B27185B15C"));
+                properties.Add(new Guid("AFE6230D-5682-4FCE-A812-84B4DE56E3A4"));
+                properties.Add(new Guid("2DEBCF22-C1EA-4202-BAAA-A096FC772915"));
+                properties.Add(new Guid("77E9D5CE-02D0-4591-AC48-9BA10F65C6F0"));
+                properties.Add(new Guid("F2E4F006-48FC-4F7A-B90E-2D0F00C3DF56"));
+                properties.Add(new Guid("5413DB45-E25C-42E0-887E-4373D477DFAA"));
 
                 var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(properties);
 
@@ -1957,11 +1946,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
         {
             // merge the given user details with the list
-            var propertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+            var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
 
             var propertyOption = new Dictionary<string, bool>();
             
-            propertyOption.Add("allProperties", propertyIdList.Any(pl => pl == -1)); // Single Property
+            propertyOption.Add("allProperties", userPropertyIdList.Any(pl => pl == -1)); // Single Property
             List<ProductProperty> productPropertyList = new List<ProductProperty>();
 
             foreach (UPFMPropertyInstance upfmPropertyInstance in blueBookUPFMPropertyList)
@@ -1980,7 +1969,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     Longitude = upfmPropertyInstance.Longitude,
                 };
 
-                if (blueBookUPFMPropertyList.Any(a => a.PropertyInstanceId == upfmPropertyInstance.PropertyInstanceId))
+                if (userPropertyIdList.Any(propertyId => propertyId == upfmPropertyInstance.PropertyInstanceId))
                 {
                     pp.IsAssigned = true;
                 }
