@@ -4825,7 +4825,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             UserBatchEntity userBatchEntity;
             bool isFeatureUser = false;
-         
+            bool usePropertyInstances = getPropertyInstances();
+
+            //We can get this with the oldProfile
+            string schemaName = getRoleRightsSchemaName();
+            
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -4838,10 +4842,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
-                bool usePropertyInstances = getPropertyInstances();
-
-                //We can get this with the oldProfile
-                string schemaName = getRoleRightsSchemaName();
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
                 try
