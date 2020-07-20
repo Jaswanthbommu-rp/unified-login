@@ -273,7 +273,11 @@
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";
         public const string SP_ListPropertyMapping = "Enterprise.ListPropertyMapping";
         public const string SP_UpdatePropertyMappingReMap = "Enterprise.UpdatePropertyMappingReMap";
+        public const string SP_AddUpdatePropertyMapping = "Enterprise.AddUpdatePropertyMapping";
 
+        public const string SP_CreatePropertyInstanceMapping = "Enterprise.CreatePropertyInstanceMapping";
+        public const string SP_AddUpdatePropertyInstanceMapping = "Enterprise.AddUpdatePropertyInstanceMapping";
+        
         public const string SP_GetPropertyInstanceByPersonaId = "Enterprise.GetPropertyInstanceByPersonaId";
         public const string SP_GetPropertyInstanceIdsByPersonaId = "Enterprise.GetPropertyInstanceIdsByPersonaId";
         public const string SP_GetPropertyInstanceListById = "Enterprise.GetPropertyInstanceListById";
@@ -292,7 +296,6 @@
         public const string SP_ListAllRights = "Enterprise.ListAllRights";
         public const string SP_ListSecurityStatus = "Enterprise.ListSecurityStatus";
         public const string SP_SetDefaulteRole = "Enterprise.SetDefaultRole";
-        public const string SP_AddUpdatePropertyMapping = "Enterprise.AddUpdatePropertyMapping";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";

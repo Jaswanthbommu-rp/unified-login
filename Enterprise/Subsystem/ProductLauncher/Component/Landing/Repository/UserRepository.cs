@@ -285,9 +285,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Get the Clone User list of UnifiedLogin Top level properties and Role
                     var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
                     var ulRole = pbRepository.GetMany<dynamic>(procName, new { ProductId = (int)ProductEnum.UnifiedPlatform, PersonaId = cloneUserPersonaId });
-                    var ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new { PersonaId = cloneUserPersonaId, ProductId = (int)ProductEnum.UnifiedPlatform });
+                    IEnumerable<dynamic> ulProperties = null;
+                    IEnumerable<dynamic> ulPropertyInstances = null;
+                    bool usePropertyInstances = getPropertyInstances();
+                    if (!usePropertyInstances)
+                    {
+                        ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new {PersonaId = cloneUserPersonaId, ProductId = (int) ProductEnum.UnifiedPlatform});
+                    }
+                    else
+                    {
+                        ulPropertyInstances = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_GetPropertyInstanceByPersonaId, new {PersonaId = cloneUserPersonaId, ProductId = (int) ProductEnum.UnifiedPlatform});
+                    }
 
-                    if ((ulProperties != null) && (ulRole != null))
+                    if ((ulProperties != null || ulPropertyInstances != null) && ulRole != null)
                     {
                         List<string> roleList = new List<string>();
                         foreach (var role in ulRole)
@@ -297,7 +307,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         List<string> propertyList = new List<string>();
                         foreach (var property in ulProperties)
                         {
-                            propertyList.Add(Convert.ToString(property.PropertyID));
+                            if (!usePropertyInstances)
+                            {
+                                propertyList.Add(Convert.ToString(property.PropertyID));
+                            }
+                            else
+                            {
+                                propertyList.Add(Convert.ToString(property.PropertyInstanceID));
+                            }
                         }
                         ProductBatch unifiedPlatformProductBatch = new ProductBatch()
                         {
@@ -5420,6 +5437,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return schemaName;
+        }
+
+        private bool getPropertyInstances()
+        {
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getPropertyInstances_" + (int)ProductEnum.UnifiedPlatform;
+            string usePropertyInstanceUnifiedLogin = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return (productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase))?.Value);
+            });
+
+            return usePropertyInstanceUnifiedLogin == "1";
         }
 
         #endregion

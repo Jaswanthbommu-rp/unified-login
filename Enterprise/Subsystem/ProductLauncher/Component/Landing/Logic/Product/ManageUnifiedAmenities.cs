@@ -204,16 +204,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 
-					if (unassignedProperties.Count > 0)
-					{
-						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-					}
+                    if (true)
+                    {
+                        if (unassignedProperties.Count > 0)
+                        {
+                            Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+                        }
 
-					if (assignedProperties.Count > 0)
-					{
-						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-					}
-				}
+                        if (assignedProperties.Count > 0)
+                        {
+                            Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+                        }
+                    }
+                    else
+                    {
+                        if (unassignedProperties.Count > 0)
+                        {
+                            Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+                        }
+
+                        if (assignedProperties.Count > 0)
+                        {
+                            Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+                        }
+
+                    }
+                }
 
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
@@ -591,6 +607,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return InsertAssignedUserPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, propertyId);
 		}
 
+        /// <summary>
+        /// Used to assign a property instance to the given user
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="propertyInstanceId"></param>
+        /// <returns></returns>
+        private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+        {
+            return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+        }
+
 		/// <summary>
 		/// Used to unassign a property to the given user
 		/// </summary>
@@ -602,7 +630,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			return DeleteAssignedUserPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, propertyId);
 		}
-		#endregion
+
+        /// <summary>
+        /// Used to unassign a property instance to the given user
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="propertyInstanceId"></param>
+        /// <returns></returns>
+        private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+        {
+            return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+        }
+
+        #endregion
 
 	}
 }

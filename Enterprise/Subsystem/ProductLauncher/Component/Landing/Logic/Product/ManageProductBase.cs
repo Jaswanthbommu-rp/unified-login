@@ -520,6 +520,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return result;
 		}
 
+        /// <summary>
+        /// Used to add the given property instance id to the given user
+        /// </summary>
+        /// <param name="userPersonaId">The persona id of the user where the property will be added</param>
+        /// <param name="productId">The product enum</param>
+        /// <param name="propertyInstanceId">The property instance id to add</param>
+        /// <returns></returns>
+        protected RepositoryResponse InsertAssignedUserPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+        {
+            RepositoryResponse result = new RepositoryResponse();
+            WriteToDiagnosticLog($"InsertAssignedUserPropertyInstanceData START - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyInstanceId}.");
+            result = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(userPersonaId: userPersonaId, productId: productId, propertyInstanceId: propertyInstanceId, remove: 0);
+            if (result.Id < 0)
+            {
+                WriteToErrorLog($"InsertAssignedUserPropertyInstanceData - Unable to Insert record for user with userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}");
+                return result;
+            }
+
+            WriteToDiagnosticLog($"InsertAssignedUserPropertyInstanceData END - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}, result - {result.Id}.");
+            return result;
+        }
+        
 	    /// <summary>
 	    /// Used to remove the given property id from the given user
 	    /// </summary>
@@ -541,6 +563,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			WriteToDiagnosticLog($"DeleteAssignedUserData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
 			return result;
 		}
+
+        /// <summary>
+        /// Used to remove the given property instance id from the given user
+        /// </summary>
+        /// <param name="userPersonaId">The persona id of the user where the property will be removed</param>
+        /// <param name="productId">The product enum</param>
+        /// <param name="propertyInstanceId">The property instance id to remove</param>
+        /// <returns></returns>
+        protected RepositoryResponse DeleteAssignedUserPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+        {
+            RepositoryResponse result = new RepositoryResponse();
+            WriteToDiagnosticLog($"DeleteAssignedUserPropertyInstanceData START - calling DB to delete Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.");
+
+            result = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(userPersonaId:userPersonaId, productId:productId, propertyInstanceId:propertyInstanceId, remove: 1);
+            if (result.Id < 0)
+            {
+                WriteToErrorLog($"DeleteAssignedUserPropertyInstanceData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}");
+                return result;
+            }
+            WriteToDiagnosticLog($"DeleteAssignedUserPropertyInstanceData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.");
+            return result;
+        }
 
         /// <summary>
 		/// Check User product right

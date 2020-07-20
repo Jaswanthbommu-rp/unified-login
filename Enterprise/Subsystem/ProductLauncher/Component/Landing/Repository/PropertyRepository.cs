@@ -104,9 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-
-
-		/// <summary>
+        /// <summary>
 		/// Insert or Remove a Property for the given User
 		/// </summary>
 		/// <param name="userPersonaId">User Persona ID</param>      
@@ -134,44 +132,124 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
-		public RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON)
-		{
-			RepositoryResponse repositoryResponse = new RepositoryResponse();
-			repositoryResponse.Id = 0;
+        /// <summary>
+        /// Insert or Remove a Property instance for the given User
+        /// </summary>
+        /// <param name="userPersonaId">User Persona ID</param>      
+        /// <param name="productId">Product ID</param>      
+        /// <param name="propertyInstanceId">Property Instance ID</param>      
+        /// <param name="remove">isDeleted</param>   
+        /// <returns>List of Roles assigned to Persona</returns>
+        public RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, ProductEnum productId, long propertyInstanceId, int remove = 0)
+        {
+            using (var repository = GetRepository())
+            {
+                RepositoryResponse repositoryResponse = new RepositoryResponse();
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = (int)productId,
+                    PropertyInstanceID = propertyInstanceId,
+                    Deleted = remove
+                };
 
-			using (var repository = GetRepository())
-			{
-				repository.UnitOfWork.BeginTransaction();
-				try
-				{
-					repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { personaId, productId, propertyJSON });
-					if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
-					{
-						repositoryResponse.ErrorMessage = $"Update Property Mapping Error: {repositoryResponse.ErrorMessage}.";
-					}
-				}
-				catch (Exception exception)
-				{
-					repositoryResponse.Id = 0;
-					repositoryResponse.ErrorMessage = "Update Property Mapping Exception: " + exception.Message;
-				}
-				finally
-				{
-					if (repositoryResponse.ErrorMessage.Length == 0)
-					{
-						//Commit and end transaction.
-						repository.UnitOfWork.Commit();
-					}
-					else
-					{
-						//Rollback transaction and dispose it.
-						repository.UnitOfWork.Rollback();
-					}
-				}
-				return repositoryResponse;
-			}
-		}
+                int i = repository.ExecuteNonQuery(StoredProcNameConstants.SP_CreatePropertyInstanceMapping, param);
+                repositoryResponse.Id = i;
 
+                return repositoryResponse;
+            }
+        }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="personaId"></param>
+		/// <param name="productId"></param>
+		/// <param name="propertyJSON"></param>
+		/// <returns></returns>
+		//public RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON)
+		//{
+		//	RepositoryResponse repositoryResponse = new RepositoryResponse();
+		//	repositoryResponse.Id = 0;
+        //
+		//	using (var repository = GetRepository())
+		//	{
+		//		repository.UnitOfWork.BeginTransaction();
+		//		try
+		//		{
+		//			repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { personaId, productId, propertyJSON });
+		//			if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
+		//			{
+		//				repositoryResponse.ErrorMessage = $"Update Property Mapping Error: {repositoryResponse.ErrorMessage}.";
+		//			}
+		//		}
+		//		catch (Exception exception)
+		//		{
+		//			repositoryResponse.Id = 0;
+		//			repositoryResponse.ErrorMessage = "Update Property Mapping Exception: " + exception.Message;
+		//		}
+		//		finally
+		//		{
+		//			if (repositoryResponse.ErrorMessage.Length == 0)
+		//			{
+		//				//Commit and end transaction.
+		//				repository.UnitOfWork.Commit();
+		//			}
+		//			else
+		//			{
+		//				//Rollback transaction and dispose it.
+		//				repository.UnitOfWork.Rollback();
+		//			}
+		//		}
+		//		return repositoryResponse;
+		//	}
+		//}
+
+        /// <summary>
+        /// is this used?
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="propertyInstanceJSON"></param>
+        /// <returns></returns>
+        //public RepositoryResponse AddUpdatePropertyInstanceMapping(long personaId, ProductEnum productId, string propertyInstanceJSON)
+        //{
+        //    RepositoryResponse repositoryResponse = new RepositoryResponse();
+        //    repositoryResponse.Id = 0;
+        //
+        //    using (var repository = GetRepository())
+        //    {
+        //        repository.UnitOfWork.BeginTransaction();
+        //        try
+        //        {
+        //            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { personaId, productId, propertyInstanceJSON });
+        //            if (repositoryResponse.Id == 0 && !string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
+        //            {
+        //                repositoryResponse.ErrorMessage = $"Update Property Instance Mapping Error: {repositoryResponse.ErrorMessage}.";
+        //            }
+        //        }
+        //        catch (Exception exception)
+        //        {
+        //            repositoryResponse.Id = 0;
+        //            repositoryResponse.ErrorMessage = "Update Property Instance Mapping Exception: " + exception.Message;
+        //        }
+        //        finally
+        //        {
+        //            if (repositoryResponse.ErrorMessage.Length == 0)
+        //            {
+        //                //Commit and end transaction.
+        //                repository.UnitOfWork.Commit();
+        //            }
+        //            else
+        //            {
+        //                //Rollback transaction and dispose it.
+        //                repository.UnitOfWork.Rollback();
+        //            }
+        //        }
+        //        return repositoryResponse;
+        //    }
+        //}
+        
 		/// <summary>
 		/// Used to update any property mapping records that match the old id to a new id
 		/// </summary>

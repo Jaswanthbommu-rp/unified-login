@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns>List of Roles assigned to Persona</returns>
 		RepositoryResponse InsertRemoveAssignedPropertyToUser(long userPersonaId, ProductEnum productId, long propertyId, int remove = 0);
 
-		RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON);
+		//RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON);
 
         /// <summary>
         /// Used to update any property mapping records that match the old id to a new id
@@ -61,5 +61,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="newPropertyId"></param>
         /// <returns></returns>
         RepositoryResponse UpdatePropertyMappingReMap(long originalPropertyId, long newPropertyId);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <param name="propertyInstanceId"></param>
+		/// <param name="remove"></param>
+		/// <returns></returns>
+        RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, ProductEnum productId, long propertyInstanceId, int remove = 0);
+
     }
 }
