@@ -33,6 +33,7 @@
             "panelName.clickPay",
             "panelName.depositAlternative",
             "panelName.renovationManager",
+            "panelName.intelligentBuilding",
             "panelName.comingSoon"
         ];
 

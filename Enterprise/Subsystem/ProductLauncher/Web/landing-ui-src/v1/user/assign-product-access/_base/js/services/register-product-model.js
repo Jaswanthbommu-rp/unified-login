@@ -231,6 +231,14 @@
                 });
             }
 
+            if (templateModel.isProductExists(57)) {
+                list.push({
+                    model: ppModel,
+                    key: "soln113",
+                    product: "57"
+                });
+            }
+
              list.push({
                 model: cmsModel,
                 key: "default"
