@@ -2411,7 +2411,7 @@ BEGIN
             SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
             
 			INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
-			VALUES (43, 34, 549, @UserId, @Now)
+			VALUES (44, 34, 549, @UserId, @Now)
           
             SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 
