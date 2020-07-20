@@ -110,13 +110,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
+        public ListResponse GetProperties(long userPersonaId, string include = null)
+        {
+            ListResponse response = new ListResponse();
+            var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
+            bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+            if (!usePropertyInstances)
+            {
+                response = GetCustomerProperties(userPersonaId, include);
+            }
+            else
+            {
+                response = GetUPFMProperties(userPersonaId, include);
+            }
+            return response;
+        }
+
         /// <summary>
         /// Get the list of properties for the given user to be used by external systems
         /// </summary>
         /// <param name="userPersonaId"></param>
         /// <param name="include"></param>
         /// <returns></returns>
-        public ListResponse GetProperties(long userPersonaId, string include = null)
+        public ListResponse GetCustomerProperties(long userPersonaId, string include = null)
         {
             ListResponse response = new ListResponse();
 
@@ -171,6 +187,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="assignedOnly"></param>
+        /// <param name="product"></param>
+        /// <param name="datafilter"></param>
+        /// <returns></returns>
         public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
@@ -185,57 +210,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return result;
                 }
 
-                //long companyId = _editorPersona.Organization.BooksMasterId;
-                //long companyMasterId = _editorPersona.Organization.BooksCustomerMasterId;
-
-                //if (companyMasterId == 0)
-                //{
-                //    WriteToErrorLog($"ManageUnifiedLogin.GetProperties-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
-                //    return new ListResponse { IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage };
-                //}
-
-                //IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
-                //IList<ProductProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
-
-                List<Guid> properties = new List<Guid>();
-
-                //properties.Add(new Guid(""));
-                properties.Add(new Guid("870B6356-0856-423E-96E2-0000250EC0B6"));
-                properties.Add(new Guid("880A877B-0B02-4345-8EF0-00002B4EC2D8"));
-                properties.Add(new Guid("07094D6C-BAE3-42A7-9148-00007DD013FD"));
-                properties.Add(new Guid("FAFFAA44-EC2E-4AF3-AB76-000095E6681B"));
-                properties.Add(new Guid("674BA6B8-C2B4-4DC9-9088-0000B08001DC"));
-                properties.Add(new Guid("59918B39-BD69-4013-A87C-000145397055"));
-                properties.Add(new Guid("07114FAF-79FD-43B8-85F0-00015D500370"));
-                properties.Add(new Guid("DE6502BC-8BA2-4861-8A89-000181B91F37"));
-                properties.Add(new Guid("95E5DDA9-724F-4C35-AE27-0002FA7C598E"));
-                properties.Add(new Guid("A029F86C-F3E0-4049-8998-00031E89FD5E"));
-                properties.Add(new Guid("518C492D-3B40-423F-9C8D-0003ED7A537D"));
-                properties.Add(new Guid("2AC98BDF-FB2A-4A8E-AC84-000421E28947"));
-                properties.Add(new Guid("8A1026A0-03C9-465A-AC6F-000439215D49"));
-                properties.Add(new Guid("05423507-4498-4135-849B-000536115157"));
-                properties.Add(new Guid("6B6FCC4D-9DC5-4CAD-BC79-0005DBC46CC2"));
-                properties.Add(new Guid("B809BED7-86F4-4B1D-AB62-00064F643FBE"));
-                properties.Add(new Guid("FC0D15CE-DB7B-4648-B3AE-0006B98149BC"));
-                properties.Add(new Guid("14E648EE-BE9F-41C3-88D5-0006C6859553"));
-                properties.Add(new Guid("A7B010C5-2246-493F-97FF-0007A2234FF8"));
-                properties.Add(new Guid("A346AC1C-3C03-4988-BE8E-0007D28247B9"));
-                properties.Add(new Guid("30731061-E5EE-4029-B4C5-00081BCBAC8D"));
-                properties.Add(new Guid("D53E16F6-2157-44EE-9F7F-0008630FDF3E"));
-                properties.Add(new Guid("AA20712F-44E2-44CC-9A55-000888B28522"));
-                properties.Add(new Guid("B8D99477-5D29-427F-80F9-0008A09AD030"));
-                properties.Add(new Guid("65E1F62B-FA6A-418B-B5B3-0008A1B88491"));
-                properties.Add(new Guid("B4F57B9F-4B95-4AAD-AB7D-0008D270EFC8"));
-
-                properties.Add(new Guid("0BEFA18B-18B5-4559-845D-D56A933F8C1E"));
-                properties.Add(new Guid("C03BD5F7-22B5-4E27-B587-72B27185B15C"));
-                properties.Add(new Guid("AFE6230D-5682-4FCE-A812-84B4DE56E3A4"));
-                properties.Add(new Guid("2DEBCF22-C1EA-4202-BAAA-A096FC772915"));
-                properties.Add(new Guid("77E9D5CE-02D0-4591-AC48-9BA10F65C6F0"));
-                properties.Add(new Guid("F2E4F006-48FC-4F7A-B90E-2D0F00C3DF56"));
-                properties.Add(new Guid("5413DB45-E25C-42E0-887E-4373D477DFAA"));
-
-                var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(properties);
+                IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
+                var booksPropertyList = manageBlueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+                var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
                 WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
 
@@ -269,6 +246,76 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
+        /// <summary>
+        /// Get the list of property instances for the given user to be used by external systems
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="include"></param>
+        /// <returns></returns>
+        public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
+        {
+            ListResponse response = new ListResponse();
+
+            var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
+            List<ProductProperty> userPropertyList = new List<ProductProperty>();
+            List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
+
+            if (userPropertyIdList != null)
+            {
+                var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+                if (booksPropertyList != null)
+                {
+                    customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+                }
+
+                if (userPropertyIdList.Count == 1 && userPropertyIdList[0] == -1 )
+                {
+                    customerPropertyList.ForEach(cp =>
+                    {
+                        userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true));
+                    });
+                }
+                else
+                {
+                    customerPropertyList.ToList().FindAll(b => userPropertyIdList.Any(p => p == b.PropertyInstanceId)).ForEach(cp => { userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true)); });
+                }
+            }
+
+            if (userPropertyIdList?.Count > 0)
+            {
+                string includeFields = string.Empty;
+
+                bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] {','}).Length > 0);
+
+                if (bIncludeFields)
+                {
+                    DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
+                    string productPropertySerializableProperties = JsonConvert.SerializeObject(
+                        userPropertyList,
+                        new JsonSerializerSettings()
+                        {
+                            ContractResolver = dynamicContractResolver
+                        }
+                    );
+                    userPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+                }
+
+                userPropertyList.ForEach(p =>
+                {
+                    p.IsAssigned = null;
+                    p.disableSelection = null;
+                });
+
+                response.IsError = false;
+                response.Records = userPropertyList.Cast<object>().ToList();
+                response.TotalRows = userPropertyList.Count;
+                response.RowsPerPage = userPropertyList.Count;
+                response.TotalPages = 1;
+                response.ErrorReason = string.Empty;
+            }
+
+            return response;
+        }
 
         /// <summary>
         /// Used to add/update a role in Greenbook
@@ -1955,19 +2002,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             foreach (UPFMPropertyInstance upfmPropertyInstance in blueBookUPFMPropertyList)
             {
-                ProductProperty pp = new ProductProperty()
-                {
-                    ID = upfmPropertyInstance.PropertyInstanceId.ToString(),
-                    Name = upfmPropertyInstance.Name,
-                    Street1 = upfmPropertyInstance.Address,
-                    City = upfmPropertyInstance.City,
-                    State = upfmPropertyInstance.State,
-                    Zip = upfmPropertyInstance.PostalCode,
-                    IsAssigned = false,
-                    InstanceId = upfmPropertyInstance.InstanceId.ToString().ToLower(),
-                    Latitude = upfmPropertyInstance.Latitude,
-                    Longitude = upfmPropertyInstance.Longitude,
-                };
+                var pp = ConvertUPFMPropertyInstanceToProductProperty(upfmPropertyInstance, false);
 
                 if (userPropertyIdList.Any(propertyId => propertyId == upfmPropertyInstance.PropertyInstanceId))
                 {
@@ -1991,6 +2026,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 TotalPages = 1,
                 Additional = propertyOption
             };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="upfmPropertyInstance"></param>
+        /// <param name="isAssigned"></param>
+        /// <returns></returns>
+        private static ProductProperty ConvertUPFMPropertyInstanceToProductProperty(UPFMPropertyInstance upfmPropertyInstance, bool isAssigned)
+        {
+            ProductProperty pp = new ProductProperty()
+            {
+                ID = upfmPropertyInstance.PropertyInstanceId.ToString(),
+                Name = upfmPropertyInstance.Name,
+                Street1 = upfmPropertyInstance.Address,
+                City = upfmPropertyInstance.City,
+                State = upfmPropertyInstance.State,
+                Zip = upfmPropertyInstance.PostalCode,
+                IsAssigned = isAssigned,
+                InstanceId = upfmPropertyInstance.InstanceId.ToString().ToLower(),
+                Latitude = upfmPropertyInstance.Latitude,
+                Longitude = upfmPropertyInstance.Longitude,
+            };
+            return pp;
         }
 
         #endregion

@@ -498,7 +498,6 @@
     <Compile Include="Product\AssetOptimization\UserProfile.cs" />
     <Compile Include="Product\ClientPortal\ClientPortalPropertyRole.cs" />
     <Compile Include="Product\IProductInterface.cs" />
-    <Compile Include="Product\IProductProperty.cs" />
     <Compile Include="Product\IProductLearningPortal.cs" />
     <Compile Include="Product\IProductRight.cs" />
     <Compile Include="Product\IProductRole.cs" />

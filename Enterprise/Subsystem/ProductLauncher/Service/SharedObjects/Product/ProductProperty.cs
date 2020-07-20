@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using System.Collections.Generic;
@@ -8,10 +7,10 @@ using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product
 {
-	/// <summary>
-	/// Used to store information about a property
-	/// </summary>
-	public class ProductProperty : IProductProperty
+    /// <summary>
+    /// Used to store information about a property
+    /// </summary>
+    public class ProductProperty
     {
         /// <summary>
         /// The id of the property in the product
@@ -78,7 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Active { get; set; }
 
-        private string _instanceId = "";
+        private string _instanceId = null;
         /// <summary>
         /// The UPFM property instance id
         /// </summary>
@@ -92,13 +91,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// The geo latitude of the property
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public decimal Latitude { get; set; }
+        public decimal? Latitude { get; set; }
         
         /// <summary>
         /// The geo longitude of the property
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public decimal Longitude { get; set; }
+        public decimal? Longitude { get; set; }
 
         #region Examples
         /// <summary>

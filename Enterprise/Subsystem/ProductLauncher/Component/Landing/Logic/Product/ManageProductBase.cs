@@ -235,7 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			RPObjectCache rpcache = new RPObjectCache();
 			var cacheKey = "productInternalSetting_" + productId.ToString();
-			listProductInternalSettings = rpcache.GetFromCache<IList<IC.ProductInternalSetting>>(cacheKey, 600, () =>
+			listProductInternalSettings = rpcache.GetFromCache<IList<IC.ProductInternalSetting>>(cacheKey, 120, () =>
 			{
 				// load from database
 				return _productInternalSettingRepository.GetProductInternalSettings(productId);

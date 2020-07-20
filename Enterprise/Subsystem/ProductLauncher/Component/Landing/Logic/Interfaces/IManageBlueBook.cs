@@ -76,6 +76,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         CompanyPropertyRootObject GetCompanyPropertyInstance(long companyInstanceId);
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        List<Guid> GetUPFMPropertyInstances(string companyRealPageId);
+
+        /// <summary>
         /// Used to get the information about the list of companies by companyIds from the BlueBook system
         /// </summary>
         /// <param name="booksCompanyMasterList"></param>        

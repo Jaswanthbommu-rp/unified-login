@@ -103,8 +103,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <summary>
         /// Get a list of properties for the given product
         /// </summary>
-        /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops</param>
-        /// <param name="include">Optional List of serialize properties names (comma delimited) to return in the response: ID, Name, Street1, City, State, Zip.  Supported products: Unified Login only</param>
+        /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops, UPFM-Unified Login</param>
+        /// <param name="include">Optional List of serialize properties names (comma delimited) to return in the response: ID, Name, Street1, City, State, Zip, InstanceId, Longitude, Latitude.  Supported products: Unified Login only</param>
         /// <returns>http Response</returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 	    [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
