@@ -102,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog($"ManageIntelligentBuildingUser - new user is Super user with userPersonaId id - {userPersonaId}.");
 					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
 					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
-					string superUserRoleId = gbAllRoles.Find(p => p.Name.ToUpper() == "MANAGE AMENITY WITH PRICING").ID;
+					string superUserRoleId = gbAllRoles.Find(p => p.Name.ToUpper() == "PORTFOLIO MANAGER").ID;
 
 					userAssignProductPropertyRole = new UnifiedAmenitiesPropertyRole
 					{
