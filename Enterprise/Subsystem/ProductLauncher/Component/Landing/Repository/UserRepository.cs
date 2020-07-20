@@ -234,6 +234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             string schemaName = getRoleRightsSchemaName();
+            bool usePropertyInstances = getPropertyInstances();
 
             //NOTE TO DEVELOPERS
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
@@ -287,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var ulRole = pbRepository.GetMany<dynamic>(procName, new { ProductId = (int)ProductEnum.UnifiedPlatform, PersonaId = cloneUserPersonaId });
                     IEnumerable<dynamic> ulProperties = null;
                     IEnumerable<dynamic> ulPropertyInstances = null;
-                    bool usePropertyInstances = getPropertyInstances();
+                    
                     if (!usePropertyInstances)
                     {
                         ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new {PersonaId = cloneUserPersonaId, ProductId = (int) ProductEnum.UnifiedPlatform});
@@ -1120,10 +1121,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 };
                             }
 
-                            if ((gbProductBatch != null) && ((gbProductBatch.InputJson?.PropertyList?.Count > 0) || (gbProductBatch.InputJson?.RemovedPropertyList?.Count > 0)))
+                            if (gbProductBatch != null && ((gbProductBatch.InputJson?.PropertyList?.Count > 0) || (gbProductBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(gbProductBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = personaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON });
+                                if (!usePropertyInstances)
+                                {
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new {PersonaId = personaId, ProductId = (int) ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON});
+                                }
+                                else
+                                {
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new {PersonaId = personaId, ProductId = (int) ProductEnum.UnifiedPlatform, PropertyInstanceJSON = propertyJSON});
+                                }
+
                                 if (repositoryResponse.Id == 0)
                                 {
                                     repository.UnitOfWork.Rollback();
@@ -4829,6 +4838,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
+                bool usePropertyInstances = getPropertyInstances();
 
                 //We can get this with the oldProfile
                 string schemaName = getRoleRightsSchemaName();
@@ -5363,7 +5373,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if ((gbProdBatch != null) && ((productBatch.InputJson?.PropertyList?.Count > 0) || (productBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(productBatch);
-                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON });
+                                if (!usePropertyInstances)
+                                {
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new {PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int) ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON});
+                                }
+                                else
+                                {
+                                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new {PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int) ProductEnum.UnifiedPlatform, PropertyInstanceJSON = propertyJSON});
+                                }
                             }
                         }
                     }
