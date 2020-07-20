@@ -7,7 +7,21 @@
 AS
 BEGIN
 	DECLARE @RoleValueTypeId int;
-	SELECT @RoleValueTypeId = RoleValueTypeId
+	DECLARE @SchemaName varchar(25);
+	Declare @OrgPartyId INT,@SecurityRoleId INT
+
+	SELECT	@SchemaName = ps.Value				
+	FROM	Enterprise.GlobalProductConfiguration gpc
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+	WHERE  gpc.ProductId = 3
+	AND (gpc.ThruDate IS NULL)
+	AND ( pc.ThruDate IS NULL)
+	AND ( ps.ThruDate IS NULL)
+	And PST.Name = 'RolesRightsSchemaName'
+
+	SELECT @RoleValueTypeId = RoleValueTypeId,@OrgPartyId = PartyID
 	FROM Enterprise.Role
 	WHERE RoleId = @RoleId;
 	BEGIN TRY
@@ -40,4 +54,14 @@ BEGIN
 		FROM dbo.ErrorLog
 		WHERE ErrorLogID = @ErrorLogID;
 	END CATCH;
+	--update from security schema 
+		IF (@SchemaName = 'Enterprise')
+		BEGIN
+			
+			Select @SecurityRoleId = R.RoleID From Security.Role R 							
+			Where R.RoleName = @Rolename
+			AND R.OrgPartyID = @OrgPartyId
+
+			EXEC [Security].[UpdateRole] @SecurityRoleId,@Rolename,@Description,@CreatedBy
+		END
 END;
