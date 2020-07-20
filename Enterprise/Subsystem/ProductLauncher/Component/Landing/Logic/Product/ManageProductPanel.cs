@@ -423,6 +423,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
                     result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
+                case (int)ProductEnum.IntelligentBuilding:
+                    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
+                    result = manageIntelligentBuilding.GetRightsByRole(editorPersonaId, partyId, roleId);
+                    break;
                 default:
                     break;
             }
