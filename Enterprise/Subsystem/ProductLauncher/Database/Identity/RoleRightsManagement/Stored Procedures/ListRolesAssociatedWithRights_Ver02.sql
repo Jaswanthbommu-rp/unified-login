@@ -6,49 +6,59 @@ CREATE PROCEDURE [Security].[ListRolesAssociatedWithRights_Ver02] (
 	)
 AS
 BEGIN
-	IF ((LEN(@TargetProductId) = 0) OR (ISJSON(@TargetProductId) = 0))
+	DECLARE @csvTargetProductId varchar(max)
+
+	IF (ISJSON(@TargetProductId) = 1)
+	BEGIN
+		SELECT	@csvTargetProductId = ColumnValue
+		FROM	OPENJSON (JSON_QUERY(@TargetProductId, '$.targetProducts'))
+		WITH	(
+						ColumnValue nvarchar(max) '$.productIds'
+					)
+	END
+
+	IF (ISNULL(LEN(@csvTargetProductId), 0) = 0)
 	BEGIN
 		SELECT 0 AS Id
 			,'Target ProductId list is empty.';
-
 		RETURN;
 	END;
 	Declare @VisibleStatusId INT
-
-	Select @VisibleStatusId = StatusTypeId
-	From Enterprise.StatusType Where Name = 'All'
 
 	Declare @OrgDefaultRole AS TABLE (
 			RoleId int,
 			DefaultRole bit default 0);
 
-		Insert Into @OrgDefaultRole(RoleId,DefaultRole)
-		Select RoleId,1 From Security.OrganizationDefaultRole
-		Where OrgPartyId = @PartyId
-
 	DECLARE @TargetProductIds TABLE (
 		ProductId int PRIMARY KEY
 	)
 
-	SELECT	@TargetProductId = ColumnValue
-	FROM	OPENJSON (JSON_QUERY(@TargetProductId, '$.targetProducts'))
-	WITH	(
-					ColumnValue nvarchar(max) '$.productIds'
-				)
+	Select @VisibleStatusId = StatusTypeId
+	From Enterprise.StatusType
+	Where Name = 'All'
+
+	Insert Into @OrgDefaultRole(
+		RoleId,
+		DefaultRole
+	)
+	Select	RoleId,
+				1
+	From Security.OrganizationDefaultRole
+	Where OrgPartyId = @PartyId
 
 	INSERT INTO @TargetProductIds (
 		ProductId
 	)
 	SELECT	CONVERT(int, value)
-	FROM		STRING_SPLIT(@TargetProductId, ',');
+	FROM	STRING_SPLIT(@csvTargetProductId, ',');
 		
 	SELECT DISTINCT R.rolename [Role]
 		,R.ShortName [RoleNickName]
-		,Convert(int,r.RoleID) [RoleId]
+		,r.RoleID [RoleId]
 		,RG.Value [Right]
 		,RG.RightName [RightNickName]
-		,ISNULL(Convert(int,RG.RightID), 0) [RightId]
-		,ISNULL(Convert(int,RG.RightId), 0) [RightValueTypeId]
+		,ISNULL(RG.RightID, 0) [RightId]
+		,ISNULL(RG.RightId, 0) [RightValueTypeId]
 		,RT.Value [RoleType]
 		,ISNULL(OD.DefaultRole, 0) AS DefaultRole  
 	FROM [Security].ROLE r
@@ -72,11 +82,11 @@ BEGIN
 	UNION
 	SELECT DISTINCT R.rolename [Role]
 		,R.ShortName [RoleNickName]
-		,Convert(int,r.RoleID) [RoleId]
+		,r.RoleID [RoleId]
 		,RG.Value [Right]
 		,RG.RightName [RightNickName]
-		,Convert(int,RG.RightID) [RightId]
-		,Convert(int,RG.RightId) [RightValueTypeId]
+		,RG.RightID AS [RightId]
+		,RG.RightId AS [RightValueTypeId]
 		,RT.Value [RoleType]
 		,ISNULL(OD.DefaultRole, 0) AS DefaultRole  
 	FROM [Security].ROLE r
