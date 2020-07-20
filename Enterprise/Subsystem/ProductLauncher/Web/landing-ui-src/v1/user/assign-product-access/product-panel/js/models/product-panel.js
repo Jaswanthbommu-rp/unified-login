@@ -152,8 +152,8 @@
             else {
                 roles = dataSyncManager.getProductRolesData(productId);
             }
-            
-                
+
+
             var properties = dataSyncManager.getProductPropertiesData(productId);
             var propertyGroups = dataSyncManager.getProductPropertyGroupData(productId);
 
@@ -295,7 +295,7 @@
                                 if (comp.isAssigned) {
                                     s.batchData.inputJson.propertyList.push(comp.id);
                                 }
-                                properties.forEach(function(prop) {            
+                                properties.forEach(function(prop) {
                                     if (prop.companyId === comp.id) {
                                         if (prop.isAssigned) {
                                             if(prop.propertyId !== "") {
@@ -307,9 +307,9 @@
                                         }
                                     }
                                 });
-                            } 
+                            }
                             else {
-                                properties.forEach(function(prop) {                
+                                properties.forEach(function(prop) {
                                     if (prop.companyId === comp.id) {
                                         if (prop.isAssigned) {
                                             //s.batchData.inputJson.propertyList.push(prop.propertyId);
@@ -527,6 +527,12 @@
                 }
                 else {
                     return null;
+                }
+            }
+
+            if (productId == "57") {
+                if (hasRoleSelected) {
+                    return s.batchData;
                 }
             }
 
