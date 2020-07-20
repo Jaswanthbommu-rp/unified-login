@@ -1933,3 +1933,52 @@ DECLARE @UserId bigint,
 			END;
 GO
 --End For Reno product internal settings
+
+--START: 305141-Display Top level Properties tab when the users role contains rights to Settings
+DECLARE @UserId bigint,	@Now datetime = GETDATE();
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
+	
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Managecompanylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (62, 139, 145, N'Managecompanylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Managepropertylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (63, 139, 145, N'Managepropertylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Viewallcompanylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (64, 139, 145, N'Viewallcompanylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Viewallpropertylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (65, 139, 145, N'Viewallpropertylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewallUnifiedSettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (66, 139, 145, N'ViewallUnifiedSettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewUnifiedSettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (67, 139, 145, N'ViewUnifiedSettings', 1, @UserId, @Now)
+	END
+
+SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
+GO
+--END: 305141-Display Top level Properties tab when the users role contains rights to Settings
