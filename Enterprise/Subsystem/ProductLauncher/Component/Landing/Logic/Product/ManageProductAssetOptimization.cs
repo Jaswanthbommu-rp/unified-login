@@ -2219,8 +2219,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			var productAssigned = new List<string>();
 			var productUnAssigned = new List<string>();
-			bool isAllProductsUnassigned = true;
-			bool isSuperUser = IsSuperUser(userPersonaId);
 
 			foreach (var aoUserCompanyPropertyRoleDetail in aoUserCompanyPropertyRoleDetails)
 			{
@@ -2228,7 +2226,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					productAssigned.Add(aoUserCompanyPropertyRoleDetail.ProductName);
 				}
-				if (isSuperUser || !aoUserCompanyPropertyRoleDetail.IsAssigned)
+				else
 				{
 					productUnAssigned.Add(aoUserCompanyPropertyRoleDetail.ProductName);
 				}
@@ -2244,21 +2242,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				productUnAssigned.Remove("BM");
 			}
 			
-			foreach(var item in existingAssignedProducts)
-			{
-				if (!productUnAssigned.Contains(item.ProductName))
-				{
-					isAllProductsUnassigned = false;
-				}
-			}
-
 			//set delete status if all products are unassigned.
-			if (isAllProductsUnassigned)
+			if (existingAssignedProducts.Count == productUnAssigned.Count)
 			{
 				// remove all association from GB
 				UpdateProductSettingProductStatus(userPersonaId,
 					_productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Deleted);
-
 				// add activity log
 				WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is disabled in product {2} by user {3} {4}.");
 
@@ -2266,9 +2255,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					if (!item.IsAssigned)
 					{
+						DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName));
 						UpdateProductSettingProductStatus(userPersonaId,
 							_productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName), (int)ProductBatchStatusType.Deleted);
-
 						// add activity log
 						WriteActivityLogWithMessageByProduct(editorPersonaId, userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName),
 							"{0} {1} was unassigned {2} by {3} {4}.");
