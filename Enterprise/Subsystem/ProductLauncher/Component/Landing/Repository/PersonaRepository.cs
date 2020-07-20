@@ -214,6 +214,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 persona.hasManageRenovationManagerProductAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString(), StringComparer.OrdinalIgnoreCase);
 
+                persona.hasManageIntelligentBuildingProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+
             }
 
             if (currentClaimPrincipal.Identity.IsAuthenticated)

@@ -136,6 +136,7 @@
     <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
     <Compile Include="Logic\IManageUserLoginPersona.cs" />
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
+    <Compile Include="Logic\Interfaces\IManageIntelligentBuilding.cs" />
     <Compile Include="Logic\Interfaces\IManageProductPanel.cs" />
     <Compile Include="Logic\Interfaces\IManageStatusType.cs" />
     <Compile Include="Logic\Interfaces\IManageBlueBook.cs" />
@@ -174,6 +175,7 @@
     <Compile Include="Logic\ProductIntegration\ProductImplementation\DepositAlternativeManagement.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\RenovationManager.cs" />
     <Compile Include="Logic\ProductIntegration\ProductImplementation\SeniorLeadManagement.cs" />
+    <Compile Include="Logic\Product\ManageIntelligentBuilding.cs" />
     <Compile Include="Logic\Product\ManageProductOneSiteAccounting.cs" />
     <Compile Include="Logic\ManageSecuritySettings.cs" />
     <Compile Include="Logic\ManageStatusType.cs" />
