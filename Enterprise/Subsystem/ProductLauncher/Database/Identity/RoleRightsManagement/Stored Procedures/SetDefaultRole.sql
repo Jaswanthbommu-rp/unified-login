@@ -4,6 +4,18 @@ AS
          DECLARE @DefaultRoleId INT;
          DECLARE @SaveEnterpriseRoleData varchar(10);
 		 Declare @EnterpriseRolename    NVARCHAR(50),@EnterpriseRoleId INT
+		 DECLARE @SchemaName varchar(25);
+		
+		SELECT	@SchemaName = ps.Value				
+		FROM	Enterprise.GlobalProductConfiguration gpc
+				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+		WHERE  gpc.ProductId = 3
+		AND (gpc.ThruDate IS NULL)
+		AND ( pc.ThruDate IS NULL)
+		AND ( ps.ThruDate IS NULL)
+		And PST.Name = 'RolesRightsSchemaName'
 
 		SELECT	@SaveEnterpriseRoleData = ps.Value				
 		FROM	Enterprise.GlobalProductConfiguration gpc
@@ -37,30 +49,14 @@ AS
 				SELECT @RoleId AS RoleId,
 					'' AS ErrorMessage;
 
-				IF (@SaveEnterpriseRoleData = '1')
+				IF (@SaveEnterpriseRoleData = '1' AND @SchemaName = 'Security')
 				BEGIN					
 					Select @EnterpriseRoleId = R.RoleID from Enterprise.Role R 
 					Join Enterprise.RoleValueType RV ON
 						RV.RoleValueTypeId = R.RoleValueTypeId
 						AND R.PartyID = @PartyId
 					Where RV.Value = @EnterpriseRolename
-
-					--IF (@RoleId = 1)
-					--Begin
-					--	Select @EnterpriseRoleId = RoleId From Enterprise.Role R
-					--	Join Enterprise.RoleValueType RV ON
-					--		RV.RoleValueTypeId = R.RoleValueTypeId
-					--	Where RV.Value = 'User Administrator'
-					--	And R.PartyID = @PartyId
-					--End
-					--IF (@RoleId = 2)
-					--Begin
-					--	Select @EnterpriseRoleId = RoleId From Enterprise.Role R
-					--	Join Enterprise.RoleValueType RV ON
-					--		RV.RoleValueTypeId = R.RoleValueTypeId
-					--	Where RV.Value = 'Basic End User'
-					--	And R.PartyID = @PartyId
-					--End
+					
 					EXEC [Enterprise].[SetDefaultRole] @EnterpriseRoleId,@CreatedBy
 				END
 			END TRY
