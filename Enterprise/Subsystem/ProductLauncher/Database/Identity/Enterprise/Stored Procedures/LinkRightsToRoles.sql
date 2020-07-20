@@ -20,6 +20,19 @@ BEGIN
 	DECLARE @PartyId int;
 	DECLARE @DefaultRoute nvarchar(200);
 	DECLARE @ActionValueID int;
+	DECLARE @SchemaName varchar(25);
+	
+	SELECT	@SchemaName = ps.Value				
+	FROM	Enterprise.GlobalProductConfiguration gpc
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+	WHERE  gpc.ProductId = 3
+	AND (gpc.ThruDate IS NULL)
+	AND ( pc.ThruDate IS NULL)
+	AND ( ps.ThruDate IS NULL)
+	And PST.Name = 'RolesRightsSchemaName'
+
 	SELECT @Status = StatusType.StatusTypeID
 	FROM Enterprise.StatusTypeCategoryType
 		 JOIN
@@ -197,6 +210,11 @@ BEGIN
 		  SET PStatus = 1
 		WHERE RowNum = @RowNum;
 	END;
+	IF (@SchemaName = 'Enterprise')
+	BEGIN
+		EXEC [Security].[LinkRightsToRoles] @ManageRight,@CreatedBy, @NewRightID OUTPUT
+	END
+
 	SELECT *
 	FROM #ProcessedList;
 END;
