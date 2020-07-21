@@ -201,6 +201,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
+                    //UI calls GetProperty but sometimes it diplays the data in PropertyGroup tab for some products, that's why this validation was added
+                    if (ex.Message == CommonMessageConstants.PropertyGroupErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
                     if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
@@ -347,6 +353,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetAllRights(datafilter);
                         break;
+                    case (int)ProductEnum.IntelligentBuilding:
+                        IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
+                        result = manageIntelligentBuilding.GetRoles(editorPersonaId, userPersonaId, partyId);
+                        break;
                     case (int)ProductEnum.ClickPay:
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
@@ -395,6 +405,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
+                    //UI calls GetRoles but sometimes it diplays the data in Right tab for some products, that's why this validation was added
+                    if (ex.Message == CommonMessageConstants.RightErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
+
                     if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
@@ -440,6 +457,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.UnifiedAmenities:
                     IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
                     result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
+                    break;
+                case (int)ProductEnum.IntelligentBuilding:
+                    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
+                    result = manageIntelligentBuilding.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
                 default:
                     break;

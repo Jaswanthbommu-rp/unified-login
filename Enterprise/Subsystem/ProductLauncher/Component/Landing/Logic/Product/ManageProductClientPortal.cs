@@ -109,8 +109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceId =
-                    GetProductCompanyInstanceId(BlueBookProductConstants.ClientPortal).CompanyInstanceId;
+                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ClientPortal, useTranslate: false).CompanyInstanceId;
 
                 WriteToDiagnosticLog(
                     $"ManageProductClientPortal.GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");

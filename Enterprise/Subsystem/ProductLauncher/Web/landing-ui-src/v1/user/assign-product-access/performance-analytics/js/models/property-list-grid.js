@@ -30,11 +30,6 @@
                     key: "propertyName",
                     type: "text",
                     placeholder: "Find by Property"
-                },
-                {
-                    key: "state",
-                    type: "text",
-                    placeholder: "Find by State"
                 }
             ];
         };
