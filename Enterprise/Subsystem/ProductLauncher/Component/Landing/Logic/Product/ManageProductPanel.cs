@@ -383,6 +383,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
+                    //UI calls GetRoles but sometimes it diplays the data in Right tab for some products, that's why this validation was added
+                    if (ex.Message == CommonMessageConstants.RightErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
+
                     if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;

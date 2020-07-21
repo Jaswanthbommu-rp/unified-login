@@ -181,7 +181,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                    //UI is displaying the message in Right tab, so that's why the message should be right in this case
+                    response.ErrorReason = CommonMessageConstants.RightErrorMessage;
                 }
             }
 
