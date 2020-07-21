@@ -812,30 +812,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("IB")]
 		ManageIntelligentBuildingProductAccess = 57
 	}
-}
-
 	public enum ProductProcVersion
-	{ 
+	{
 		/// <summary>
 		/// Version1
 		/// </summary>
-		[Description ("Ver1")]
+		[Description("Ver1")]
 		Version1 = 1,
 
 		/// <summary>
 		/// Version2
 		/// </summary>
-		[Description ("Ver2")]
+		[Description("Ver2")]
 		Version2 = 2,
 
 		/// <summary>
 		/// Version
 		/// </summary>
-		[Description ("Ver 3")]
+		[Description("Ver 3")]
 		Version3 = 3
 	}
-        
 }
+
+	
 
 //public static class EnumHelper
 //{
