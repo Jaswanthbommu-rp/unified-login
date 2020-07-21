@@ -2939,7 +2939,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.DepositAlternative,
                     (int) ProductEnum.ClickPay,
                     (int) ProductEnum.RenovationManager,
-                    (int) ProductEnum.SeniorLeadManagement
+                    (int) ProductEnum.SeniorLeadManagement,
+                    (int) ProductEnum.IntelligentBuilding
                 };
             }
 
