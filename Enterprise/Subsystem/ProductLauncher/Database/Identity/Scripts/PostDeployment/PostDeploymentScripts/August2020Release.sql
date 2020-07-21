@@ -1063,6 +1063,10 @@ BEGIN
 	ALTER TABLE [UserManagement].[Control] CHECK CONSTRAINT [FK_Control_Control]
 END
 
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 266)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 266
+END
 GO
 
 -- Unified Amenities rights in Sentence case instead of Title Case format
