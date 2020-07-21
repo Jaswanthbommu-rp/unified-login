@@ -266,7 +266,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             ListResponse resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.IsError == true && (resp.ErrorReason == "Role info is missing" || 
-                        resp.ErrorReason == CommonMessageConstants.RoleErrorMessage || 
+                        resp.ErrorReason == CommonMessageConstants.RoleErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.RightErrorMessage ||
                         resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
@@ -280,6 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             resp = mpL2L.GetRoles(_editorPersonaId, _userPersonaId, null);
             Assert.True(resp.IsError == true && (resp.ErrorReason == "Role info is missing" ||
                         resp.ErrorReason == CommonMessageConstants.RoleErrorMessage ||
+                        resp.ErrorReason == CommonMessageConstants.RightErrorMessage ||
                         resp.ErrorReason == CommonMessageConstants.CompanyErrorMessage));
 
             resp = mpL2L.GetProperties(_editorPersonaId, _userPersonaId, null);
