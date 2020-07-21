@@ -92,7 +92,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return listResponse.ErrorReason;
 				}
 
-                
+                var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
+                bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+
                 var userPersona = _managePersona.GetPersona(userPersonaId);
 				var realPageId = userPersona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
@@ -204,7 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 
-                    if (true)
+                    if (!usePropertyInstances)
                     {
                         if (unassignedProperties.Count > 0)
                         {
@@ -220,7 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (unassignedProperties.Count > 0)
                         {
-                            Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+                            Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
                         }
 
                         if (assignedProperties.Count > 0)

@@ -51,6 +51,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result = new ListResponse();
             try
             {
+                IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+
                 //IProduct product;
                 string productName = Enum.GetName(typeof(ProductEnum), productId);
                 string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
@@ -106,7 +108,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                     case (int)ProductEnum.UnifiedAmenities:
                         IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
-                        result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
+                        bool usePropertyInstanceUnifiedAmenities = false;
+                        if (_productInternalSettingList.Any(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            usePropertyInstanceUnifiedAmenities = (_productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase))?.Value == "1");
+                        }
+
+                        if (!usePropertyInstanceUnifiedAmenities)
+                        {
+                            result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
+                        }
+                        else
+                        {
+                            result = manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedAmenities, datafilter);
+                        }
+
                         break;
                     case (int)ProductEnum.AoBusinessIntelligence:
                     case (int)ProductEnum.AoInvestmentAnalytics:
@@ -140,14 +156,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = productDALogic.GetProductProperties(datafilter);
                         break;
                     case (int)ProductEnum.UnifiedPlatform:
-                        IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                        bool useUPFMPropertyInstance = false;
+                        bool usePropertyInstanceUnifiedLogin = false;
                         if (_productInternalSettingList.Any(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase)))
                         {
-                            useUPFMPropertyInstance = (_productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase))?.Value == "1");
+                            usePropertyInstanceUnifiedLogin = (_productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase))?.Value == "1");
                         }
 
-                        if (!useUPFMPropertyInstance)
+                        if (!usePropertyInstanceUnifiedLogin)
                         {
                             result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
                         }

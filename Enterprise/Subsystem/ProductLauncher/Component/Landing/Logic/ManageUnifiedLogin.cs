@@ -2029,7 +2029,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// 
+        /// Used to convert a UPFM property instance to a Product Property 
         /// </summary>
         /// <param name="upfmPropertyInstance"></param>
         /// <param name="isAssigned"></param>
