@@ -86,7 +86,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
             //_authTokenInfo.Data.Password = "P>qx3g6MEkt(G:-";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIPASSWORD").Value;
-            useUPFMId = true;
+            
             _httpClient = new HttpClient {BaseAddress = new Uri(bbUri)};
         }
 
@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 useUPFMId = Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase)).Value));
             }
-            useUPFMId = true;
+            
             //bbUri = "https://booksapi.realpage.com";
             //_authTokenInfo.Data.Name = "OS";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIUSER").Value;
             //_authTokenInfo.Data.Password = "P>qx3g6MEkt(G:-";//productInternalSettingList.First(a => a.Name.ToUpper() == "BLUEBOOKAPIPASSWORD").Value;
