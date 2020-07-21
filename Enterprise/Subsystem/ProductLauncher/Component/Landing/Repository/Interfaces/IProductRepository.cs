@@ -156,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         GbProductMap GetBooksMasterProductDetail(int gbProductId);
 
 		/// <summary>
-		/// Returns product properties roles details for given product code and persona.		
+		/// Returns product propertyId roles details for given product code and persona.		
 		/// </summary> 
 		RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId);
 		
@@ -203,7 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="properties"></param>
         /// <returns>List of Users by product or company</returns>
         IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products , ProductProcVersion version, int rowsPerPage, int pageNumber, 
-                                                                IList<string> roles, IList<string> rights, IList<string> properties);
+                                                                IList<string> roles, IList<string> rights, Guid? propertyId);
 
         /// <summary>
         /// Get Unified Login mapping PersonaId for Product UserId by company and product id

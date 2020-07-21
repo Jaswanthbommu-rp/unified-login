@@ -1713,7 +1713,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Returns product properties roles details for given product code and persona.		
+        /// Returns product propertyId roles details for given product code and persona.		
         /// </summary> 
         public RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId)
         {
@@ -1768,12 +1768,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="properties"></param>
         /// <returns>List of Users by product or company</returns>
         public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
-                                                                IList<string> roles, IList<string> rights, IList<string> properties)
+                                                                IList<string> roles, IList<string> rights, Guid? propertyId)
         {
             //Ignoring filter and Sort
             IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
 
-            dynamic param = CompanyProductParam(companyId, products, version, rowsPerPage, pageNumber , roles, rights, properties);
+            dynamic param = CompanyProductParam(companyId, products, version, rowsPerPage, pageNumber , roles, rights, propertyId);
 
             using (var repository = GetRepository())
             {
@@ -1957,7 +1957,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         private dynamic CompanyProductParam(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber, 
-                                            IList<string>roles , IList<string> rights, IList<string> properties)
+                                            IList<string>roles , IList<string> rights, Guid? propertyId)
         {
             switch ((int)version)
             {
@@ -1970,7 +1970,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PageNumber = pageNumber,
                         Roles = roles.Count > 0 ? string.Join(",", roles) : null,
                         Rights = rights.Count > 0 ? string.Join(",", rights) : null,
-                        Properties = properties.Count > 0 ? string.Join(",", rights) : null
+                        Properties = propertyId.Value
                     };
 
                 default:
