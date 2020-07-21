@@ -909,7 +909,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal, useTranslate:false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
                         WriteToErrorLog($"ManageProductResidentPortal.UnassignResidentPortalUser-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
@@ -1522,7 +1522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal, useTranslate:false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
                         WriteToErrorLog($"ManageProductResidentPortal.DeleteUser-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");

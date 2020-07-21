@@ -96,6 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()
                 ))
                 .Returns(mapCompany);

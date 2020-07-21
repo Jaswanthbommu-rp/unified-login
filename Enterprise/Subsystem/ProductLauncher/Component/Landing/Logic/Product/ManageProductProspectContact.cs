@@ -105,13 +105,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				var compnayDetails = GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter);
+				var companyDetails = GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter, useTranslate:false);
 
 				// blue book company Id
-				int companyInstanceId = compnayDetails.CompanyInstanceId;
+				int companyInstanceId = companyDetails.CompanyInstanceId;
 
 				// product side company Id
-				int companyInstanceSourceId = Convert.ToInt32(compnayDetails.CompanyInstanceSourceId);
+				int companyInstanceSourceId = Convert.ToInt32(companyDetails.CompanyInstanceSourceId);
 
 				WriteToDiagnosticLog(
 					$"ManageProductProspectContact.GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}; companyInstanceSourceId {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}");
