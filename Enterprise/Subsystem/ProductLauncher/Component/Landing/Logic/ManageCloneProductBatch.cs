@@ -39,7 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Gets Product Batch
 		/// </summary> 
-		public IList<ProductBatch> GetUserProductBatchData(long personaId, DefaultUserClaim userClaim, List<PersonaProductUserDetails> userProducts, long createUserPersonaId, bool externalUser = false)
+		public IList<ProductBatch> GetUserProductBatchData(long personaId, DefaultUserClaim userClaim, List<PersonaProductUserDetails> userProducts, long createUserPersonaId, bool externalUser = false, bool usePropertyInstanceUnifiedAmenities = false)
 		{
 			IList<ProductBatch> productListToCreate = new List<ProductBatch>();
 
@@ -149,7 +149,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)
 					{
 						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(userClaim);
-                        propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
+                        if (!usePropertyInstanceUnifiedAmenities)
+                        {
+                            propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
+                        }
+                        else
+                        {
+							ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(userClaim);
+                            propertiesResponse = manageUnifiedLogin.GetUPFMProperties(createUserPersonaId, personaId, true, ProductEnum.UnifiedAmenities, null);
+                        }
+
                         rolesResponse = manageUnifiedAmenities.GetRoles(createUserPersonaId, personaId, product.OrganizationPartyId);
 
                         productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));

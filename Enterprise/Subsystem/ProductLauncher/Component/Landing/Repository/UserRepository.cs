@@ -234,7 +234,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             string schemaName = getRoleRightsSchemaName();
-            bool usePropertyInstances = getPropertyInstances();
+            bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
+            bool usePropertyInstanceUnifiedAmenities = getPropertyInstanceUnifiedAmenities();
 
             //NOTE TO DEVELOPERS
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
@@ -268,7 +269,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Then Get Product Batch Data
-                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, isExternalUser);
+                        IList<ProductBatch> pbData = manageProductBatch.GetUserProductBatchData(cloneUserPersonaId, userClaim, userProducts, createUserPersonaId, isExternalUser, usePropertyInstanceUnifiedAmenities);
 
                         foreach (ProductBatch pb in pbData)
                         {
@@ -289,7 +290,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     IEnumerable<dynamic> ulProperties = null;
                     IEnumerable<dynamic> ulPropertyInstances = null;
                     
-                    if (!usePropertyInstances)
+                    if (!usePropertyInstanceUnifiedLogin)
                     {
                         ulProperties = pbRepository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPropertyMapping, new {PersonaId = cloneUserPersonaId, ProductId = (int) ProductEnum.UnifiedPlatform});
                     }
@@ -308,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         List<string> propertyList = new List<string>();
                         foreach (var property in ulProperties)
                         {
-                            if (!usePropertyInstances)
+                            if (!usePropertyInstanceUnifiedLogin)
                             {
                                 propertyList.Add(Convert.ToString(property.PropertyID));
                             }
@@ -1124,7 +1125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (gbProductBatch != null && ((gbProductBatch.InputJson?.PropertyList?.Count > 0) || (gbProductBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(gbProductBatch);
-                                if (!usePropertyInstances)
+                                if (!usePropertyInstanceUnifiedLogin)
                                 {
                                     repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new {PersonaId = personaId, ProductId = (int) ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON});
                                 }
@@ -4858,7 +4859,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             UserBatchEntity userBatchEntity;
             bool isFeatureUser = false;
-            bool usePropertyInstances = getPropertyInstances();
+            bool usePropertyInstances = getPropertyInstanceUnifiedLogin();
 
             //We can get this with the oldProfile
             string schemaName = getRoleRightsSchemaName();
@@ -5488,11 +5489,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return schemaName;
         }
 
-        private bool getPropertyInstances()
+        private bool getPropertyInstanceUnifiedLogin()
         {
             RPObjectCache rpcache = new RPObjectCache();
 
-            var cacheKey = "getPropertyInstances_" + (int)ProductEnum.UnifiedPlatform;
+            var cacheKey = "getPropertyInstanceUnifiedLogin_" + (int)ProductEnum.UnifiedPlatform;
             string usePropertyInstanceUnifiedLogin = rpcache.GetFromCache<string>(cacheKey, 60, () =>
             {
                 var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
@@ -5502,6 +5503,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return usePropertyInstanceUnifiedLogin == "1";
         }
 
+        private bool getPropertyInstanceUnifiedAmenities()
+        {
+            RPObjectCache rpcache = new RPObjectCache();
+
+            var cacheKey = "getPropertyInstanceUnifiedAmenities_" + (int)ProductEnum.UnifiedPlatform;
+            string usePropertyInstanceUnifiedAmenities = rpcache.GetFromCache<string>(cacheKey, 60, () =>
+            {
+                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                return (productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase))?.Value);
+            });
+
+            return usePropertyInstanceUnifiedAmenities == "1";
+        }
         #endregion
     }
 }

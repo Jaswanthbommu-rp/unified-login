@@ -403,23 +403,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
         /// <summary>
-        /// Get Product Ids by Org
-        /// </summary>        
-        /// <returns></returns>
-        private List<int> GetProductIdsByOrg()
-        {
-            ProductRepository pr = new ProductRepository();
-            IList<int> productList = pr.GetProductIdsByCompany(_userClaims.OrganizationRealPageGuid);
-            
-            List<int> productIds = new List<int>();
-            foreach (var item in productList)
-            {
-                productIds.Add(item);
-            }
-            return productIds;
-        }
-
-        /// <summary>
         /// Used to unassign a role assigned to the user
         /// </summary>
         /// <param name="userProductPropertyRole"></param>
