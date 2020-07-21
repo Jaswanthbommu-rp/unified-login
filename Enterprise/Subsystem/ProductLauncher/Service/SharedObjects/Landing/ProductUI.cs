@@ -165,6 +165,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// </summary>
 		[JsonProperty(PropertyName = "ShowInUserListFilter")]
 		public bool ShowInUserListFilter { get; set; } = false;
-		
+
+		/// <summary>
+		/// Product Code
+		/// </summary>
+		[JsonProperty(PropertyName = "ProductCode")]
+		public string ProductCode { get; set; } = string.Empty;
 	}
 }
