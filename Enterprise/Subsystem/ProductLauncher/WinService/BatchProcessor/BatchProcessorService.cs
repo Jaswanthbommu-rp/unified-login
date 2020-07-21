@@ -6,8 +6,6 @@ using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
-//using RP.Enterprise.Foundation.Audit.Core.Component;
-//using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Repository;
@@ -67,19 +65,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         {
             try
             {
-                //Logger.Write(LogType.Information, new LogDetails { Message = $"Batch Processor Windows Service Starting... Database used -{_dbServerName}" });
                 Log.Information($"Batch Processor Windows Service Starting... Database used -{_dbServerName}");
 
                 Task assignPendingProductTask = new Task(RunPendingProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 assignPendingProductTask.Start();
 
-                //Logger.Write(LogType.Information, new LogDetails { Message = "Launched polling task..." });
                 Log.Information("Launched polling task...");
 
                 Task assignRetryProductsTask = new Task(RunRetryProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 assignRetryProductsTask.Start();
 
-                //Logger.Write(LogType.Information, new LogDetails { Message = "Launched retry polling task..." });
                 Log.Information("Launched retry polling task...");
 #if (DEBUG)
                 Console.WriteLine("-------------------------------------------------------------------------------");
@@ -87,8 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             }
             catch (Exception ex)
             {
-                // Log the exception.
-                //Logger.Write(LogType.Error, new LogDetails { Message = "Exception in OnStart task.", Exception = ex });
+                // Log the exception.                
                 Log.Error(ex, "Exception in OnStart task.");
             }
         }
@@ -99,8 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         }
 
         protected override void OnStop()
-        {
-            //Logger.Write(LogType.Information, new LogDetails { Message = "Batch Processor Windows Service Stopping..." });
+        {            
             Log.Information("Batch Processor Windows Service Stopping...");
             _cts.Cancel();
         }
@@ -110,8 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         #region Retry-Polling Tasks-Threads
 
         private void RunRetryProcess()
-        {
-            //Logger.Write(LogType.Information, new LogDetails { Message = $"RunRetryProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {RetryPollingInterval}" });
+        {            
             Log.Information($"RunRetryProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {RetryPollingInterval}");
             TimeSpan interval = TimeSpan.Zero;
             CancellationToken cancellation = _cts.Token;
@@ -148,7 +140,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
                     {
-                        //Logger.Write(LogType.Information, new LogDetails { Message = "RunRetryProcess - Thread cancellation requested." });
                         Log.Information( "RunRetryProcess - Thread cancellation requested." );
                         break;
                     }
@@ -158,7 +149,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 catch (Exception ex)
                 {
                     // Log the exception.
-                    //Logger.Write(LogType.Error, new LogDetails { Message = "RunRetryProcess - Exception in main task.", Exception = ex });
                     Log.Error(ex, "RunRetryProcess - Exception in main task.");
 
                     // update complete batch with error status
@@ -297,16 +287,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 var landingApiCaller = new ProductApiCaller();
                 var result = landingApiCaller.ProcessBatchRecord(input);
 
-                //Logger.Write(LogType.Information, new LogDetails
-                //{
-                //    Message = $"CallApiToAssignProducts-Result received for Product {input.ProductName} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductName} to user {batch.SubjectUserPersonaId }."
-                //});
                 Log.Information($"CallApiToAssignProducts-Result received for Product {input.ProductName} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductName} to user {batch.SubjectUserPersonaId }.");
             }
             catch (Exception ex)
             {
                 // Log the exception. 
-                //Logger.Write(LogType.Error, new LogDetails { Message = $"Exception while calling API for ProductId {batch.ProductId}.", Exception = ex, AdditionalInfo = additionalInfo });
                 Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
                 // update a batch records with error status
                 if (batch.BatchProcessorId > 0)
