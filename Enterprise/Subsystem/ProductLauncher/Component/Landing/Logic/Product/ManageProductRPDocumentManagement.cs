@@ -14,10 +14,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RP
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Net.Http;
 using System.Text;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -27,7 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     public class ManageProductRPDocumentManagement : ManageProductBase, IManageProductRPDocumentManagement
 	{
 		private DefaultUserClaim _userClaims;
-
+        private IList<ProductInternalSetting> _unifiedLoginSettings;
 		#region Ctor
 
 		/// <summary>
@@ -40,7 +38,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new ManageBlueBook(userClaims);
 			_productUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-			string _apiUser = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));
+            _unifiedLoginSettings = GetProductSetting((int) ProductEnum.UnifiedPlatform);
+            string _apiUser = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));
 			string _apiPassword = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value));
 			
 			_client.SetBasicAuthentication(_apiUser, _apiPassword);
@@ -537,15 +536,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string domain = "";
 			try
 			{
-				CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
-			
-				IList<InstanceAttribute> listInstanceAttribute = companyMap.CompanyInstance[0].Attributes;
-				if (listInstanceAttribute.ToList().Any(a => a.AttributeName.ToUpper() == "DOMAIN ID"))
-				{
-					InstanceAttribute instanceAttribute = listInstanceAttribute.ToList().Find(a => a.AttributeName.ToUpper() == "DOMAIN ID");
-					domain = instanceAttribute.AttributeValue;
-				}
-			}
+                CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
+                var useUPFMInstance = _unifiedLoginSettings?.FirstOrDefault(a => a.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase))?.Value == "1";
+                if (!useUPFMInstance)
+                {
+                    IList<InstanceAttribute> listInstanceAttribute = companyMap.CompanyInstance[0].Attributes;
+                    if (listInstanceAttribute.ToList().Any(a => a.AttributeName.ToUpper() == "DOMAIN ID"))
+                    {
+                        InstanceAttribute instanceAttribute = listInstanceAttribute.ToList().Find(a => a.AttributeName.ToUpper() == "DOMAIN ID");
+                        domain = instanceAttribute.AttributeValue;
+                    }
+                }
+                else
+                {
+                    domain = companyMap.CompanyInstanceSourceId;
+                }
+            }
 			catch (Exception ex)
 			{
 				WriteToErrorLog("ManageRPDMUser - There was a problem getting the DocManagement attribute in BlueBook", exception: ex);
