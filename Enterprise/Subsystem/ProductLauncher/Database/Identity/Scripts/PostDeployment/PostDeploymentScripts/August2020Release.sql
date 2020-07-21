@@ -1055,12 +1055,9 @@ BEGIN
 	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 247
 END
 
-IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 347)
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 374)
 BEGIN
-	DELETE FROM [UserManagement].[ControlAttribute] where ControlId = 347;
-	ALTER TABLE [UserManagement].[Control] NOCHECK CONSTRAINT [FK_Control_Control]
-	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 347
-	ALTER TABLE [UserManagement].[Control] CHECK CONSTRAINT [FK_Control_Control]
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 374
 END
 
 GO
