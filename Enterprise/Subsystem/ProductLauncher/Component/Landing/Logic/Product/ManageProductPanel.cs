@@ -179,6 +179,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
+                    //UI calls GetProperty but sometimes it diplays the data in PropertyGroup tab for some products, that's why this validation was added
+                    if (ex.Message == CommonMessageConstants.PropertyGroupErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
                     if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
