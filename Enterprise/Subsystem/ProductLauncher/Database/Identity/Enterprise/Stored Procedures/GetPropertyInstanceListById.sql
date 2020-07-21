@@ -15,6 +15,7 @@ BEGIN
 		,[Latitude]
 		,[Longitude]
 		,PI1.[InstanceId]
+		,PI1.CustomerPropertyId
 
 	FROM 
 		[Enterprise].[PropertyInstance] pi1

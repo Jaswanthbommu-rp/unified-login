@@ -23,5 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         public bool IsAssigned { get; set; }
 
+        public string CustomerPropertyId { get; set; }
+
     }
 }

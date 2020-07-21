@@ -2048,6 +2048,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 InstanceId = upfmPropertyInstance.InstanceId.ToString().ToLower(),
                 Latitude = upfmPropertyInstance.Latitude,
                 Longitude = upfmPropertyInstance.Longitude,
+                Alias = upfmPropertyInstance.CustomerPropertyId
             };
             return pp;
         }
