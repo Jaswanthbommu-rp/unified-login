@@ -96,6 +96,7 @@
                 if(tb != undefined){
                     vm.setProductTabs([tb]);
                 }
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
             }
         };
 
@@ -480,14 +481,17 @@
             if (record.productId == "3" || record.productId == "17" || record.productId == "18" || record.productId == "26" || record.productId == "47") {
                 var dependencyControlId = syncMgr.getProductDependencyControlId(record.productId, record.radname);
                 if (record.productId == "17") {
-                    vm.rpRoleSelected = record;
-                    //vm.allProperties = false;
+                    var existingRole = vm.rpRoleSelected.name ?  vm.rpRoleSelected.name : "";
                     vm.showAllPropertiesSwitch = (record.name.toLowerCase() == "enterprise standard") ? true : false;
                     vm.allProperties = (record.name.toLowerCase() == "enterprise admin") ? true : false;
                     syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
-                    if(vm.showAllPropertiesSwitch){
+                    if(record.name.toLowerCase().includes('staff') && existingRole.toLowerCase().includes('enterprise')) {
                         syncMgr.allPropertiesSync(record.productId, false);
                     }
+                    else if(vm.showAllPropertiesSwitch && existingRole.toLowerCase() == "enterprise admin"){
+                        syncMgr.allPropertiesSync(record.productId, false);
+                    }
+                    vm.rpRoleSelected = record;
                 }
                 else if (record.productId == "26" || record.productId == "47") {
                     vm.rpRoleSelected = record;
