@@ -1765,10 +1765,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="pageNumber"></param>
         /// <param name="roles"></param>
         /// <param name="rights"></param>
-        /// <param name="properties"></param>
+        /// <param name="propertyId"></param>
         /// <returns>List of Users by product or company</returns>
         public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
-                                                                IList<string> roles, IList<string> rights, Guid? propertyId)
+                                                                IList<string> roles, IList<string> rights, Guid? propertyId = null)
         {
             //Ignoring filter and Sort
             IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
@@ -1785,7 +1785,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3, param);
                     default:
                         return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
-
                 }
             }
         }
@@ -1970,7 +1969,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PageNumber = pageNumber,
                         Roles = roles.Count > 0 ? string.Join(",", roles) : null,
                         Rights = rights.Count > 0 ? string.Join(",", rights) : null,
-                        Properties = propertyId.Value
+                        PropertyId = propertyId.HasValue? propertyId.Value.ToString() : null
                     };
 
                 default:

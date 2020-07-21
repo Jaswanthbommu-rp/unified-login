@@ -140,8 +140,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
         public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1,
-                                                                    [FromUri]List<string> roles = null, [FromUri]List<string> rights = null , Guid? propertyId = null)
+                                                                    [FromUri]List<string> roles = null, [FromUri]List<string> rights = null)
         {
+            //It will be implemented soon
+            Guid? propertyId = null;
+
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
@@ -150,7 +153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             productcode.ForEach(x => productIds.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
 
-            ProductProcVersion version = (roles.Any() || rights.Any() || propertyId.Value.ToString() != string.Empty || propertyId.Value != null) ? ProductProcVersion.Version3 : ProductProcVersion.Version2;
+            ProductProcVersion version = (roles.Any() || rights.Any() || propertyId.HasValue) ? ProductProcVersion.Version3 : ProductProcVersion.Version2;
 
             //Add validation to verify the propertyId
 
