@@ -16,6 +16,8 @@ Post-Deployment Script Template
 --:r .\Data.Logging.Organization.sql
 --:r .\2019-September-Release.sql
 
-:r .\2020-February-Release.sql
+--:r .\2020-February-Release.sql
+
+:r .\2020-August-Release.sql
 
 
