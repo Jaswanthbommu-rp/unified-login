@@ -804,8 +804,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Senior Lead Management
 		/// </summary>
 		[Description("SLM")]
-        ManageSeniorLeadManagement = 50
-    }
+        ManageSeniorLeadManagement = 50,
+			
+		/// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		[Description("IB")]
+		ManageIntelligentBuildingProductAccess = 57
+	}
+}
 
 	public enum ProductProcVersion
 	{ 
