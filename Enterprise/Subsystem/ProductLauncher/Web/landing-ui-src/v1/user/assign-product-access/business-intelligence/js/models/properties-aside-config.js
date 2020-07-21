@@ -10,9 +10,6 @@
             return [{
                 key: "propertyName",
                 type: "text"
-            }, {
-                key: "statecode",
-                type: "text"
             }];
         };
 
@@ -21,9 +18,6 @@
                 [{
                     key: "propertyName",
                     text: "Property",
-                }, {
-                    key: "statecode",
-                    text: "State"
                 }]
             ];
         };
@@ -34,11 +28,6 @@
                     key: "propertyName",
                     type: "text",
                     placeholder: "Filter by Property Name"
-                },
-                {
-                    key: "statecode",
-                    type: "text",
-                    placeholder: "Filter by State"
                 }
             ];
         };

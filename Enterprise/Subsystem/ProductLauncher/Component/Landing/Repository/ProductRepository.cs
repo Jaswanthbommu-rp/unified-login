@@ -12,6 +12,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
@@ -76,7 +77,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
         {
             string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.GetProductsByPersonaId" : StoredProcNameConstants.SP_GetProductsByPersonaId;
+            var procName =  StoredProcNameConstants.SP_GetProductsByPersonaId;
+            if (schemaName?.Length > 0 && schemaName == "Security")
+            {
+                procName = $"{schemaName}.GetProductsByPersonaId";
+            }
 
             dynamic param = new
             {
@@ -416,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 p.HasAccess = (!productSelectType.HasValue || (productSelectType.HasValue && productSelectType.Value != ProductSelectType.ResourcesOnly)) ? true : p.HasAccess;
                 p.ActivitiesList = new List<Activities>() { new Activities() { MetatagUniqueId = new List<string>() { p.MetatagUniqueId } } };
-
+                p.ProductCode = ((ProductEnum)p.ProductId).ToEnumDescription();
                 if (p.HasAccess && p.ProductUrl != null)
                 {
                     if (p.ProductId != (int)ProductEnum.SupportTool)

@@ -1050,6 +1050,20 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 END
 
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 247)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 247
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 374)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 374
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 266)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 266
+END
 GO
 
 -- Unified Amenities rights in Sentence case instead of Title Case format
@@ -1700,3 +1714,707 @@ GO
  Where  Value = 'View All Unified Settings'
 
  GO
+
+--Start For Reno product internal settings
+GO
+
+DECLARE @UserId bigint,
+	@ProductId int =55,
+	@Now datetime = GETDATE(),
+	@CurrentProductConfigurationID INT,
+	@ProductSettingTypeId INT,
+	@ProductSettingId INT,
+	@roleId INT,
+	@ServerName SYSNAME = @@SERVERNAME;
+		
+		SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+		FROM Enterprise.GlobalProductConfiguration AS gpc
+		WHERE gpc.ProductId = @ProductId AND 
+				( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+				) OR 
+				( @NOW >= gpc.FromDate AND 
+					gpc.ThruDate IS NULL
+				)
+				)
+		ORDER BY GlobalProductConfigurationId DESC;
+
+		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
+		BEGIN
+			Select @roleId = 1
+		END
+		IF @ServerName IN ('RCQUSODBSQL001')
+		BEGIN
+			Select @roleId = 1
+		END
+		IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+		BEGIN
+			Select @roleId = 1
+		END
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'SuperUserRoleId1'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId1', 'The role Id to create admin user in  product', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = @roleId, 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'ClientScope'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'ClientScope', 'The client scope to get access token', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = 'renouserapi', 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+GO
+
+GO
+--For Reno product internal settings
+DECLARE @UserId bigint,
+	@ProductId int =55,
+	@Now datetime = GETDATE(),
+	@CurrentProductConfigurationID INT,
+	@ProductSettingTypeId INT,
+	@ProductSettingId INT,
+	@roleId INT,
+	@ServerName SYSNAME = @@SERVERNAME;
+		
+		SELECT TOP 1 @CurrentProductConfigurationID = ConfigurationId
+		FROM Enterprise.GlobalProductConfiguration AS gpc
+		WHERE gpc.ProductId = @ProductId AND 
+				( ( @NOW BETWEEN gpc.FromDate AND gpc.ThruDate
+				) OR 
+				( @NOW >= gpc.FromDate AND 
+					gpc.ThruDate IS NULL
+				)
+				)
+		ORDER BY GlobalProductConfigurationId DESC;
+
+		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
+		BEGIN
+			Select @roleId = 34
+		END
+		IF @ServerName IN ('RCQUSODBSQL001')
+		BEGIN
+			Select @roleId = 34
+		END
+		IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+		BEGIN
+			Select @roleId = 34
+		END
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'SuperUserRoleId2'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId2', 'The role Id to create admin user in  product', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = @roleId, 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+
+
+		IF
+		(
+			SELECT 1
+			FROM Enterprise.ProductSettingType
+			WHERE Name = 'ClientScope'
+		) IS NULL
+		BEGIN
+			EXEC Enterprise.CreateProductSettingType 'ClientScope', 'The client scope to get access token', 0,@ProductSettingTypeId OUTPUT;
+		END;
+
+		IF @ProductSettingTypeId IS NOT NULL AND 
+			   NOT EXISTS
+			(
+				SELECT TOP 1 1
+				FROM Enterprise.ProductSetting
+				WHERE ProductID = @productId AND 
+					  ProductSettingTypeId = @ProductSettingTypeId AND 
+					  ThruDate IS NULL
+			)
+			BEGIN
+	
+				-- Create the Value and assign it to the Product and ProductSettingType
+				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
+				@ProductSettingTypeId = @ProductSettingTypeId, -- int
+				@Value = 'renouserapi', 
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL, -- datetime
+				@ProductSettingId = @ProductSettingId OUTPUT; -- int
+
+				-- Link the Product Setting to an actual configuration
+				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
+				@ProductSettingId = @ProductSettingId, -- int
+				@FromDate = @NOW, -- datetime
+				@ThruDate = NULL;   -- datetime
+			END;
+GO
+--End For Reno product internal settings
+
+--START: 305141-Display Top level Properties tab when the users role contains rights to Settings
+DECLARE @UserId bigint,	@Now datetime = GETDATE();
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON 
+	
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Managecompanylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (62, 139, 145, N'Managecompanylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Managepropertylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (63, 139, 145, N'Managepropertylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Viewallcompanylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (64, 139, 145, N'Viewallcompanylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'Viewallpropertylevelsettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (65, 139, 145, N'Viewallpropertylevelsettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewallUnifiedSettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (66, 139, 145, N'ViewallUnifiedSettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewUnifiedSettings')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (67, 139, 145, N'ViewUnifiedSettings', 1, @UserId, @Now)
+	END
+
+SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
+GO
+--END: 305141-Display Top level Properties tab when the users role contains rights to Settings
+
+--IB Product
+/*This script is a sample script to create new prodcut in the system.*/
+
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'Intelligent Building',  -- Produact Name
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@apiendpoint NVARCHAR(1000), 
+		@tokenEndPoint NVARCHAR(1000), 
+		@apisecret NVARCHAR(1000),
+		@ServerName SYSNAME = @@SERVERNAME;
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+/*Validate what product type ths new product belongs to. 'Administration' in the following block 
+need to be chnanged to desired prodcut type. You can query Enterprise.ProductType table for more details.
+*/
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Property Management'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE Name = 'Intelligent Building'
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 113, -- Thsi value may change based on the root prodcut type
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeGUID = 'D8DD4D6E-00F6-4453-8AF2-6EFF7E3F87B5'; -- Use newid() to generate new uniqueidentifier.
+END;
+SET @ProductId = 57; -- Assign new product Id
+
+--Following block will create the new prodcut in the database
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = 'D76B2F90-283F-4D58-937C-247A13A82D45', -- Use newid() to generate new uniqueidentifier.
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeId = 113;
+        
+		UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'IB'
+        WHERE ProductId = @ProductId;
+END;
+
+--The following block picks up all the detail frm Enterprise.ProductSettingType table
+--To set up the product, bunch of these settings are required.
+SET @apiendpoint = '';
+Set @tokenEndPoint = '';
+SET @apisecret = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @apiendpoint = '';
+--END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @apiendpoint = '';
+	SET @tokenEndPoint = '';
+	SET @apisecret = '';
+END
+set nocount on
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+ ('ClassName','','intelligentbuilding')
+,('ProductUrl','','/product/intelligentbuilding')
+,('TitleId','','Intelligent Building')
+,('TitleUniqueId','','420A65CD-970B-498D-9CC8-8A861518EC78')
+,('IsNewTab','','1')
+,('MetatagUniqueId','','Intelligent Building')
+,('IsResource','','0')
+,('IsFavorite','','1')
+,('LearnMore','','https://www.realpage.com/waste/')
+,('ApiEndPoint','',@apiendpoint)
+,('ProductStatus','Show if the external application was configured for the dashboard user.','8')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','7')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','10')
+,('ProductStatus','Show if the external application was configured for the dashboard user.','19')
+,('ShowInUserDetails','Should the product show in the New/Edit user pages','1')
+,('ShowInRolesAndRights','Should the product show in the Role/Rights page','0')
+,('ShowInAppSwitcher','Should the product show in the application switcher','1')
+,('ShowInUserListFilter','Should the product show in the user list product pick list','1')
+,('ProductAPIRequiresUser','Does the product require a user for api calls','0')
+,('LockOnProductAccess', '', '0')
+,('ProductNotAvailableForRegularUserNoEmail','Product Attribute for Product Not Available for Regular User No Email.','0')
+,('CLIENTID','','bosswasteapi') -- For DEV Environment
+,('TOKENENDPOINT','', '') -- For DEV Environment
+,('APISECRET','', '')
+,('AuthenticationType','Used to determine how to log into the product','Redirect')
+
+
+
+SELECT * FROM @ProductConfiguration
+
+SET @LoginURL = '';
+IF @ServerName IN ('RCDUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'www.dev-abctrash.realpage.com';
+END
+IF @ServerName IN ('rctusodbsql001')
+BEGIN
+	SET @LoginURL = '';
+END
+--IF @ServerName IN ('RCQUSODBSQL001')
+--BEGIN
+--	SET @LoginURL = '';
+--END
+IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
+BEGIN
+	SET @LoginURL = '';
+END
+
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+
+--Setup the product configurations.
+if not exists (select top 1 1 from Enterprise.ProductSetting where ProductId = @ProductId)
+begin
+
+	EXEC Enterprise.ProductConfigurationSetup 
+		 @ProductId, 
+		 @LoginURI, 
+		 @SigningCertificateThumbprint, 
+		 @ProductConfiguration;
+end;
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
+GO
+
+
+/*ASSIGN VALUES*/
+
+DECLARE @OrganizationId int;
+DECLARE @PartyRowNum int;
+DECLARE @RightName nvarchar(200);
+DECLARE @RightDescription nvarchar(200);
+DECLARE @RightShortName nvarchar(200);
+DECLARE @ActionName nvarchar(100);
+DECLARE @ActionRouteTarget nvarchar(100);
+DECLARE @ActionValueId int;
+DECLARE @SourceProductId int;
+DECLARE @TargetProductId int;
+DECLARE @RoleCategory int;
+DECLARE @RightCategory int;
+DECLARE @VisibilityStatusId int;
+DECLARE @ActionId int;
+DECLARE @ParentActionId int;
+DECLARE @DetaulRightName nvarchar(200);
+DECLARE @TargetRoleName nvarchar(100);
+DECLARE @RoleId int;
+DECLARE @OutputRightId int;
+DECLARE @UserActionId int;
+DECLARE @RightValueTypeId int;
+DECLARE @DependentRightValueTypeId int;
+
+/*SET BLOCK*/
+SET @TargetRoleName = 'User Administrator'; --- Role to which the new right will be assinged by default.
+SET @RightName = 'Manage Intelligent Building Product Access'; -- Name of the right 
+SET @RightDescription = 'Manage Intelligent Building Product Access'; --Description of the right as stated in story.
+SET @RightShortName = 'ManageIntelligentBuilding'; --Short name of the right that is being used by the application
+SET @ActionName = 'Manage Intelligent Building'; -- This specifically pertains to actions used for routing purposes. 
+SET @ActionRouteTarget = 'SideMenu'; -- Where you want this right to show up. other variation is DashBoard.
+SET @ActionValueID = 1;
+SET @DetaulRightName = 'Default_' + @RightShortName; -- This is used internally for creating right dependency in RightDependency table.
+
+/*CLEANUP  AND LOAD TEMPORARY TABLE FOR ORG LIST*/
+
+IF OBJECT_ID('tempdb..#HoldParty') IS NOT NULL
+BEGIN
+	DROP TABLE #HoldParty;
+END;
+
+SELECT DISTINCT 
+	   IDENTITY(int, 1, 1) AS RowNumber, o.PartyId AS OrganizationPartyID, 0 AS PStatus
+INTO #HoldParty
+FROM Enterprise.Organization AS o
+	 INNER JOIN
+	 Enterprise.Party AS p
+	 ON P.partyid = O.PartyId
+WHERE O.Name <> 'RealPage Employee'; 
+--1. If rigths need in all organization then no condition 
+--2. If needed in all except RP Employee company then O.Name <> 'RealPage Employee'
+--3. If needed in just RP Employee and not in any other company, then  O.Name = 'RealPage Employee'
+
+/*SELECT REQUIRED ATTRIBUTES FOR ROLE, RIGHT, AND ACTIONS*/
+SELECT @SourceProductId = ProductId
+FROM Enterprise.Product
+WHERE name = 'Unified Platform';
+
+SELECT @TargetProductId = ProductId
+FROM Enterprise.Product
+WHERE Name = 'Intelligent Building';
+
+SELECT @RoleCategory = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE CategoryName = 'Role Type' AND 
+	  TypeName = 'System';
+
+SELECT @RightCategory = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE CategoryName = 'Right Type' AND 
+	  TypeName = 'System';
+
+SELECT @VisibilityStatusId = TypeId
+FROM Enterprise.RoleRightStatus AS rrs
+WHERE TypeName = 'ALL' AND 
+	  CategoryType = 'Security';
+
+IF NOT EXISTS
+(
+	SELECT 1
+	FROM Enterprise.ACTION
+	WHERE ObjectValue = @ActionName AND 
+		  ParentActionId IS NULL
+)
+BEGIN
+	EXEC Enterprise.CreateAction 
+     @ProductID = @SourceProductId, 
+     @Action = @ActionName, 
+     @ActionTarget = N'Right', 
+     @ActionbValueTypeId = 1, 
+     @Description = '', 
+     @ActionID = @ActionID OUTPUT;
+SELECT @ActionID AS N'@ActionID';
+END;
+
+SELECT @ParentActionId = ActionId
+FROM Enterprise.ACTION
+WHERE ObjectValue = @ActionRouteTarget AND 
+	  ObjectType = 'Route' AND 
+	  Description = 'SuperUser';
+
+IF NOT EXISTS
+(
+	SELECT 1
+	FROM Enterprise.ACTION
+	WHERE ObjectValue = @ActionName AND 
+		  ParentActionID = @ParentActionId
+)
+BEGIN
+EXEC [Enterprise].[CreateAction] 
+     @ProductID = @SourceProductId, 
+     @Action = @ActionName, 
+     @ActionTarget = N'Right', 
+     @ActionbValueTypeId = 1, 
+     @Description = '', 
+     @ParentActionID = @ParentActionId, 
+     @ActionID = @ActionID OUTPUT;
+SELECT @ActionID AS N'@ActionID';
+END;
+
+SELECT @ActionID = ActionID
+FROM Enterprise.ACTION
+WHERE ObjectValue = @ActionName AND 
+	  ObjectType = 'Right' AND 
+	  ParentActionId IS NULL;
+
+WHILE EXISTS
+(
+	SELECT 1
+	FROM #HoldParty
+	WHERE PStatus = 0
+)
+BEGIN
+	SELECT TOP 1 @PartyRowNum = Rownumber, @OrganizationId = OrganizationPartyID
+	FROM #HoldParty
+	WHERE PStatus = 0;
+	SELECT @RoleId = RoleId
+	FROM Enterprise.Role AS R
+		 INNER JOIN
+		 Enterprise.RoleValueType AS RR
+		 ON RR.RoleValueTypeId = R.RoleValueTypeId
+	WHERE RR.Value = @TargetRoleName AND 
+		  R.PartyId = @OrganizationId;
+	EXECUTE Enterprise.CreateRight @RoleId = -1, @RightName = @DetaulRightName, @ShortName = @RightShortName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Description = '', @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
+	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
+	EXECUTE Enterprise.CreateRight @RoleId = @RoleId, @RightName = @RightName, @RightCategoryId = @RightCategory, @PartyId = @OrganizationId, @ProductId = @SourceProductId, @Shortname = @RightShortName, @Description = @RightDescription, @TargetProductId = @TargetProductId, @VisibilityStatusId = @VisibilityStatusId, @RightId = @OutputRightId OUTPUT;
+	EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID, @RightId = @OutputRightId, @StatusId = @VisibilityStatusId, @UserActionId = @UserActionId OUTPUT;
+	UPDATE #HoldParty
+	  SET PStatus = 1
+	WHERE RowNumber = @PartyRowNum;
+END;
+
+/*Setup Dependencies for custom roles*/
+
+SELECT @DependentRightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value = @DetaulRightName;
+
+SELECT @RightValueTypeId = RightValueTypeId
+FROM Enterprise.RightValueType
+WHERE value = @RightName;
+
+IF NOT EXISTS
+(
+	SELECT 1
+	FROM Enterprise.RightDependency
+	WHERE RightValueTypeId = @RightValueTypeId AND 
+		  DependentRightValueTypeId = @DependentRightValueTypeId
+)
+BEGIN
+	INSERT INTO Enterprise.RightDependency( RightValueTypeId, DependentRightValueTypeId )
+	VALUES( @RightValueTypeId, @DependentRightValueTypeId );
+END;
+
+GO
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+SELECT @ProductId = 57
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+            SET IDENTITY_INSERT [UserManagement].[Control] ON 
+			--Parent
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
+			VALUES (549, NULL, 8, N'IntelligentBuildingProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+			--Roles
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (550, 549, 9, N'IntelligentBuildingProductAccessRolesTabUIId', N'Roles', NULL, 2, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (551, 550, 2, N'IntelligentBuildingProductAccessRolesSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (552, 551, 7, N'IntelligentBuildingProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (553, 551, 5, N'IntelligentBuildingProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (554, 551, 5, N'IntelligentBuildingProductAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (555, 551, 11, N'IntelligentBuildingProductAccessIconUIId', NULL, N'InfoIcon', 4, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (556, 555, 5, N'IntelligentBuildingProductAccessRoleDetailsLabelUIId', N'Role Details', NULL, 1, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (557, 555, 12, N'IntelligentBuildingProductAccessGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+			INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+			VALUES (558, 557, 5, N'IntelligentBuildingProductAccessRightLabelUIId', N'Right', N'description', 1, @UserId, @Now)	
+				
+			SET IDENTITY_INSERT [UserManagement].[Control] OFF
+              
+            SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+            INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
+			VALUES (139, 550, N'Default', N'True', @UserId, @Now)
+
+			INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+			VALUES (140, 555, N'InfoIcon', N'Slide', @UserId, @Now)
+
+            SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+            SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+              
+			INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive])
+			VALUES (34, 57, N'Intelligent Building Product Access', @UserId, @Now, 1)
+  
+            SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+              
+            SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+            
+			INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+			VALUES (44, 34, 549, @UserId, @Now)
+          
+            SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+
+END
+GO

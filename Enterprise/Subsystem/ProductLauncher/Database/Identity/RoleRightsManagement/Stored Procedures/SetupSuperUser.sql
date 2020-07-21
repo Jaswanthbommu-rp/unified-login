@@ -182,6 +182,7 @@ AS
         SELECT @RoleId = RoleID
         FROM Security.Role 
         WHERE RoleName = @RoleName
+        AND OrgPartyID IS NULL
 		--Set default role
 		IF NOT EXISTS  (Select 1 From Security.OrganizationDefaultRole Where OrgPartyId = @OrganizationId)
 		BEGIN
@@ -199,6 +200,8 @@ AS
         SELECT @RoleId = RoleID
         FROM Security.Role 
         WHERE RoleName = @RoleName
+        AND OrgPartyID IS NULL
+
 		IF NOT EXISTS  (Select 1 From Security.PersonaRole Where PersonaId = @PersonaId)
 		BEGIN
 			INSERT INTO Security.PersonaRole(PersonaId,RoleId,CreatedBy,CreatedDate)

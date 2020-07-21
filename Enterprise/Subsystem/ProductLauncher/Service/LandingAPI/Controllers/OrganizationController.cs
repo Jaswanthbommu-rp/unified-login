@@ -41,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
         }
-        
+
         /// <summary>
         /// Unit test constructor
         /// </summary>
@@ -129,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, bookMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int) BookMasterType.CustomerMasterId);
+            IList<CustomField> customFieldList = _manageCustomFields.GetCustomField(globals: globals, bookMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
 
             ListResponse response = new ListResponse()
             {
@@ -167,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!organizationDomainList.Any(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
             {
-                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() {Name = organization.OrganizationDomain});
+                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = organization.OrganizationDomain });
                 if (response.Id > 0)
                 {
                     organization.OrganizationDomainId = Convert.ToInt32(response.Id);
@@ -177,7 +177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
-            
+
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
 
             if (!result.Status.Success)
@@ -185,8 +185,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, result.Status.ErrorMsg);
             }
 
-            IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: result.obj.Org.OrganizationDomain.Name, includeGreenBookCares: false);
-            
+            IList<CustomerCompanyMap> companyMapResource = null;
+            try
+            {
+                companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: result.obj.Org.OrganizationDomain.Name, includeGreenBookCares: false);
+            }
+            catch (Exception ex) { }
+
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
@@ -218,7 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                     if (deleteInstance)
                     {
-                        _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                        _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
                     }
                 }
             }
@@ -329,7 +334,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (orgNameChanged)
             {
                 // update the name in MDM
-                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId:org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomainName, includeGreenBookCares: false);
+                IList<CustomerCompanyMap> companyMapResource = null;
+                try
+                {
+                    companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomainName, includeGreenBookCares: false);
+                }
+                catch (Exception ex) { }
+
                 if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdUpperCaseForBooks))
                 {
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdUpperCaseForBooks);
@@ -413,7 +424,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         public HttpResponseMessage SyncBooksOrganizations(bool commit = false)
         {
-            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int) ProductEnum.UnifiedPlatform);
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
             var booksUrl = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             if (booksUrl.Contains("booksapi.realpage.com"))
             {
@@ -422,7 +433,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IList<Organization> orgList = _manageOrganization.GetOrganizationList();
             ConcurrentDictionary<string, CompanyInstanceAdd> result = new ConcurrentDictionary<string, CompanyInstanceAdd>();
-            Parallel.ForEach(orgList, new ParallelOptions {MaxDegreeOfParallelism = 5}, companyList => { SyncBooksCompany(commit, companyList).ForEach(x => result.TryAdd(x.Key, x.Value)); });
+            Parallel.ForEach(orgList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { SyncBooksCompany(commit, companyList).ForEach(x => result.TryAdd(x.Key, x.Value)); });
 
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
@@ -437,7 +448,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             try
             {
-                IList<CustomerCompanyMap> companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: "", includeGreenBookCares: false);
+                IList<CustomerCompanyMap> companyMapResource = null;
+                try
+                {
+                    companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organization.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: "", includeGreenBookCares: false);
+                }
+                catch (Exception ex) { }
 
                 // add the missing company to books
                 var companyInstance = new CompanyInstanceAdd()
@@ -479,7 +495,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         {
                             if (commit)
                             {
-                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"});
+                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
                             }
                         }
                     }
@@ -496,7 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     result.Add(organization.BooksCustomerMasterId.ToString(), companyInstance);
                 }
             }
-            catch (Exception ex){}
+            catch (Exception ex) { }
 
             return result;
         }
@@ -542,7 +558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
 
-                ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>() {list = organizationList};
+                ObjectListOutput<Organization, IErrorData> output = new ObjectListOutput<Organization, IErrorData>() { list = organizationList };
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
 
@@ -916,7 +932,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     AuthenticationType = "ID3"
                 };
 
-                IdentityProviderTypeOutput output = new IdentityProviderTypeOutput() {identityProviderType = example};
+                IdentityProviderTypeOutput output = new IdentityProviderTypeOutput() { identityProviderType = example };
 
                 return output;
             }
@@ -980,7 +996,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 productList.Add(product);
 
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-                ObjectListOutput<ProductUI, IErrorData> output = new ObjectListOutput<ProductUI, IErrorData>() {list = productList, Status = errorStatus};
+                ObjectListOutput<ProductUI, IErrorData> output = new ObjectListOutput<ProductUI, IErrorData>() { list = productList, Status = errorStatus };
 
                 return output;
             }

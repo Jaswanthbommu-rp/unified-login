@@ -19,7 +19,20 @@ BEGIN
 	DECLARE @ActionId2 int;
 	DECLARE @Status int;
 	DECLARE @UserActionId int;
-	
+	DECLARE @SchemaName varchar(25);
+	DECLARE @EnterpriseRoleID INT;
+
+	SELECT	@SchemaName = ps.Value				
+	FROM	Enterprise.GlobalProductConfiguration gpc
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+	WHERE  gpc.ProductId = 3
+	AND (gpc.ThruDate IS NULL)
+	AND ( pc.ThruDate IS NULL)
+	AND ( ps.ThruDate IS NULL)
+	And PST.Name = 'RolesRightsSchemaName'
+
 	IF @RoleName IN ('SystemRole', 'SystemRight')
 	BEGIN
 		SELECT 0 AS RoleID, 'Role with this name cannot be created.' as ErrorMessage;
@@ -144,14 +157,14 @@ BEGIN
 		FROM Enterprise.ACTION
 		WHERE ObjectValue = 'SideMenu' AND 
 			  Description = 'User';
-		IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.[Right]
-	WHERE RoleId = @RoleId AND 
+	IF NOT EXISTS
+	(
+		SELECT 1
+		FROM Enterprise.[Right]
+		WHERE RoleId = @RoleId AND 
 		  PartyId = @PartyId AND 
 		  RightValueTypeID IN( @DefaultRightValueTypeId1, @DefaultRightValueTypeId2 )
-)
+	)
 		BEGIN
 			INSERT INTO Enterprise.[Right]( RoleId, PartyId, RightValueTypeId )
 			VALUES( @RoleId, @PartyId, @DefaultRightValueTypeId1 );
@@ -163,4 +176,8 @@ BEGIN
 			EXEC [Enterprise].[LinkActionToRights] @ActionID = @ActionID2, @RightId = @RightId, @StatusId = @Status, @UserActionId = @UserActionId OUTPUT;
 		END;
 	END;
+	IF (@SchemaName = 'Enterprise')
+	BEGIN
+		EXEC [Security].[CreateRole] @RoleName, @ShortName, @Description, @RoleTypeID, @RoleCategoryId, @PartyID, @CreatedBy, @EnterpriseRoleID OUTPUT
+	END
 END;
