@@ -110,6 +110,7 @@
     <Build Include="dbo\Stored Procedures\LogError_1.sql" />
     <Build Include="Logging\Stored Procedures\ListActivityDetails.sql" />
     <Build Include="Logging\Stored Procedures\InsertActivity_v2.sql" />
+    <None Include="Logging\Scripts\PostDeployment\2020-August-Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Logging\Scripts\PostDeployment\Data.Logging.LogType.sql" />
