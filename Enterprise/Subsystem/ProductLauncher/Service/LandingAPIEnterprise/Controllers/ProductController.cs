@@ -40,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetProducts()
         {
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");            
+            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");
 
             var result = GetAllProducts();
 
@@ -67,7 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
-            var result = GetUsersByCompanyorProductsDetails(companyId , products);
+            var result = GetUsersByCompanyorProductsDetails(companyId, products);
 
             if (result == null)
             {
@@ -108,15 +108,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             productId = result.Where(x => x.BooksProductCode == productUserIDMappingRequest.ProductCode).FirstOrDefault().ProductId;
 
             if (productUserIDMappingRequest == null ||
-                productUserIDMappingRequest.CompanyId <= 0||
+                productUserIDMappingRequest.CompanyId <= 0 ||
                 string.IsNullOrEmpty(productUserIDMappingRequest.ProductCode) ||
-                productId <=0)
-            {                
+                productId <= 0)
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, mappedUnifiedLoginUserDetails);
             }
 
             IProductRepository productRepository = new ProductRepository();
-            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId, 
+            mappedUnifiedLoginUserDetails.ULMappedPersonaId = productRepository.GetULMappingPersonaIDsByCompanyAndProducts(productUserIDMappingRequest.CompanyId,
                                                                                  productId,
                                                                                  productUserIDMappingRequest.ProductUserId);
             var logData = new Dictionary<string, object>();
@@ -139,8 +139,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("users")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
-        public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1)
+        public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1,
+                                                                    [FromUri]List<string> roles = null, [FromUri]List<string> rights = null)
         {
+            //It will be implemented soon
+            Guid? propertyId = null;
+
             WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
@@ -149,7 +153,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             productcode.ForEach(x => productIds.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
 
-            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, 2, rowsPerPage, pageNumber);
+            ProductProcVersion version = (roles.Any() || rights.Any() || propertyId.HasValue) ? ProductProcVersion.Version3 : ProductProcVersion.Version2;
+
+            //Add validation to verify the propertyId
+
+            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, version, rowsPerPage, pageNumber , roles , rights , propertyId);
 
             if (result == null)
             {
@@ -166,7 +174,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             response.Data = result.Cast<object>().ToList();
             response.Meta.CurrentPage = pageNumber.Value;
-            response.Meta.TotalRows = result[0].TotalRecords;
+            response.Meta.TotalRows =  result.Any() ? result[0].TotalRecords : 0;
             response.Meta.RowsPerPage = rowsPerPage.Value;
 
             var logData = new Dictionary<string, object>
@@ -227,7 +235,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
         }
 
-        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId , IList<int?> products = null , int? version = 1, int? rowsPerPage = 0, int? pageNumber = 1)
+        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId , IList<int?> products = null , ProductProcVersion version = ProductProcVersion.Version1, int? rowsPerPage = 0, int? pageNumber = 1,
+                                                                      IList<string> roles = null , IList<string> rights = null, Guid? propertyId = null)
         {
             if (string.IsNullOrEmpty(companyId) && products == null)
             {
@@ -239,7 +248,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return null;
             }
             IProductRepository productRepository = new ProductRepository();
-            return productRepository.GetUsersByCompanyorProducts(companyId, products , version.Value , rowsPerPage.Value , pageNumber.Value);
+            return productRepository.GetUsersByCompanyorProducts(companyId, products , version, rowsPerPage.Value , pageNumber.Value, roles , rights, propertyId);
         }
         #endregion
 
