@@ -1,5 +1,5 @@
 <div class="property-groups-wrapper" ng-controller="ProductPropertyGroupsGridCtrl as ppg">
-    <div class="product-panel-property-group-body" ng-if="!ppg.isPropertyGroupsError && ppg.showPGGrid && !ppg.hideTab">
+    <div class="product-panel-property-group-body" ng-if="!ppg.isDataError && ppg.showPGGrid && !ppg.hideTab">
         <div class="grid-controls">
             <div class="grid-control-item">
                 <rp-toggle model="ppg.grid.filtersModel.state.active" options="{
@@ -20,8 +20,8 @@
         This user will be assigned current and new companies automatically.
     </div>
 
-    <div class="product-panel-property-group-error" ng-if="ppg.isPropertyGroupsError">
-        {{::ppg.propertyGroupsError}}
+    <div class="product-panel-property-group-error" ng-if="ppg.isDataError">
+        {{::ppg.dataErrorReason}}
     </div>
 
 </div>
