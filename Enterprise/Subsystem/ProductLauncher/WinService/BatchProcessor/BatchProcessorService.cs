@@ -135,7 +135,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBatchRecord);
 
                     //Logger.Write(LogType.Diagnostic, new LogDetails { Message = "RunRetryProcess - All threads processed." });
-                    Log.Verbose( "RunRetryProcess - All threads processed." );
+                    Log.Verbose("RunRetryProcess - All threads processed." );
 
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
@@ -312,7 +312,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             //    Message = $"GetBatchConfigurationByType - Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}"
             //});
 
-            Log.Verbose($"GetBatchConfigurationByType - Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}");
+            Log.Debug($"GetBatchConfigurationByType - Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}");
 
             var batchConfigList = new BatchRepository().GetBatchConfigurations();
 
