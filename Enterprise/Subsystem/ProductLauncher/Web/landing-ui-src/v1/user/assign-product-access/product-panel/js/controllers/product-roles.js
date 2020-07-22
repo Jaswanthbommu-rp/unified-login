@@ -483,13 +483,12 @@
                 if (record.productId == "17") {
                     var existingRole = vm.rpRoleSelected.name ?  vm.rpRoleSelected.name : "";
                     vm.showAllPropertiesSwitch = (record.name.toLowerCase() == "enterprise standard") ? true : false;
-                    vm.allProperties = (record.name.toLowerCase() == "enterprise admin") ? true : false;
-                    syncMgr.updateProductAllProperties($scope.$parent.productId, vm.allProperties);
-                    if(record.name.toLowerCase().includes('staff') && existingRole.toLowerCase().includes('enterprise')) {
+                    var isAllProperties = (record.name.toLowerCase() == "enterprise admin") ? true : false;
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, isAllProperties);
+                    
+                    if((vm.allProperties && record.name.toLowerCase().indexOf('staff') !== -1 && existingRole.toLowerCase().indexOf('enterprise') !== -1) ||(existingRole.toLowerCase() == "enterprise admin")) {
                         syncMgr.allPropertiesSync(record.productId, false);
-                    }
-                    else if(vm.showAllPropertiesSwitch && existingRole.toLowerCase() == "enterprise admin"){
-                        syncMgr.allPropertiesSync(record.productId, false);
+                        vm.allProperties = false;
                     }
                     vm.rpRoleSelected = record;
                 }
