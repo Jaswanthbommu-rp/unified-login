@@ -2939,7 +2939,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.DepositAlternative,
                     (int) ProductEnum.ClickPay,
                     (int) ProductEnum.RenovationManager,
-                    (int) ProductEnum.SeniorLeadManagement
+                    (int) ProductEnum.SeniorLeadManagement,
+                    (int) ProductEnum.IntelligentBuilding
                 };
             }
 
@@ -4193,7 +4194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
 
             bool userIsExternalEverywhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
-
+            string schemaName = getRoleRightsSchemaName();
             #region UserType Changed To External OR From External
 
             if ((userTypeChangedToFromExternal.Equals("ToExternal", StringComparison.OrdinalIgnoreCase)) && (userPersonaOrganizationList.Count > 1) && (userPersonaOrganizationList.ToList().Any(x => x.OrganizationPartyId.Equals(persona.OrganizationPartyId) && x.PrimaryOrganization == true)))
@@ -4234,8 +4235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, param);
                 personaId = repositoryResponse.Id;
 
-                // Linking Persona to a Role based on user type for External Users
-                string schemaName = getRoleRightsSchemaName();
+                // Linking Persona to a Role based on user type for External Users                
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 param = new
                 {
@@ -4832,7 +4832,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             UserBatchEntity userBatchEntity;
             bool isFeatureUser = false;
-         
+            string schemaName = getRoleRightsSchemaName();
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -4847,7 +4847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 
                 //We can get this with the oldProfile
-                string schemaName = getRoleRightsSchemaName();
+               
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
                 try
@@ -5351,8 +5351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     greenBookRole = enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId;
                                 }
                                 else
-                                {
-                                    schemaName = getRoleRightsSchemaName();
+                                {                                   
                                     procName = schemaName?.Length > 0 ? $"{schemaName}.GetUnifiedLoginDefaultRole" : StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole;
 
                                     var paramDefaultRole = new
