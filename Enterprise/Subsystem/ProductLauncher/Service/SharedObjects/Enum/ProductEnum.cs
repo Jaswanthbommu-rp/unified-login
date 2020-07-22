@@ -89,6 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
 				case ProductEnum.AoRentControl: return "rent-control";
 				case ProductEnum.RenovationManager: return "renovation-manager";
+				case ProductEnum.IntelligentBuilding: return "truck-dump";
 			}
 			return null;
 		}
@@ -575,8 +576,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// UnifiedSettings
 		/// </summary>
 		[Description("SET")]
-		UnifiedSettings = 56
-
+		UnifiedSettings = 56,
+		/// <summary>
+		/// UnifiedSettings
+		/// </summary>
+		[Description("IB")]
+		IntelligentBuilding = 57
 	}
 
 	/// <summary>
@@ -794,13 +799,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("RENO")]
 		ManageRenovationManager = 55,
+
         /// <summary>
 		/// Senior Lead Management
 		/// </summary>
 		[Description("SLM")]
-        ManageSeniorLeadManagement = 50
-    }
+        ManageSeniorLeadManagement = 50,
+			
+		/// <summary>
+		/// Senior Lead Management
+		/// </summary>
+		[Description("IB")]
+		ManageIntelligentBuildingProductAccess = 57
+	}
+	public enum ProductProcVersion
+	{
+		/// <summary>
+		/// Version1
+		/// </summary>
+		[Description("Ver1")]
+		Version1 = 1,
+
+		/// <summary>
+		/// Version2
+		/// </summary>
+		[Description("Ver2")]
+		Version2 = 2,
+
+		/// <summary>
+		/// Version
+		/// </summary>
+		[Description("Ver 3")]
+		Version3 = 3
+	}
 }
+
+	
 
 //public static class EnumHelper
 //{

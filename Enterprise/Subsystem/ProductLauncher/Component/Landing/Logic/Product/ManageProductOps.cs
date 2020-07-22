@@ -1522,7 +1522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             result = new ListResponse()
                             {
                                 IsError = true,
-                                ErrorReason = "There was a problem getting the asset group."
+                                ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage
                             };
                             return result;
                         }
@@ -1644,7 +1644,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = new ListResponse()
                     {
                         IsError = true,
-                        ErrorReason = "There was a problem getting the asset group"
+                        ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage
                     };
                     return result;
                 }
@@ -1655,7 +1655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 result = new ListResponse()
                 {
                     IsError = true,
-                    ErrorReason = "There was a problem getting the asset group"
+                    ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage
                 };
                 return result;
             }

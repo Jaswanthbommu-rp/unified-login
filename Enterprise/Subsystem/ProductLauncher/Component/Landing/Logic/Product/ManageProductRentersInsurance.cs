@@ -309,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance, useTranslate:false).CompanyInstanceId;
                 }
                 WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties.GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
@@ -393,7 +393,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return outputList;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceId;
+                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance, useTranslate:false).CompanyInstanceId;
                 if (companyInstanceId == 0)
                 {
                     WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");

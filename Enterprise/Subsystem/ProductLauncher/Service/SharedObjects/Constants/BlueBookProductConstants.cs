@@ -262,6 +262,9 @@
 		/// UnifiedSettings
 		/// </summary>
 		public const string UnifiedSettings = "SET";
-		
+		/// <summary>
+		/// IntelligentBuilding
+		/// </summary>
+		public const string IntelligentBuilding = "IB";
 	}
 }
