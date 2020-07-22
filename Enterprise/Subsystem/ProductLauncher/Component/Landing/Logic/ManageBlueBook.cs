@@ -247,11 +247,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     }
-                    else
-                    {
-                        //response.EnsureSuccessStatusCode();
-                        return null;
-                    }
+
+                    return null;
                 }
             }
 
