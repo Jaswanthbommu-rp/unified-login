@@ -93,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         }
 
         protected override void OnStop()
-        {            
+        {
             Log.Information("Batch Processor Windows Service Stopping...");
             _cts.Cancel();
         }
@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         #region Retry-Polling Tasks-Threads
 
         private void RunRetryProcess()
-        {            
+        {
             Log.Information($"RunRetryProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {RetryPollingInterval}");
             TimeSpan interval = TimeSpan.Zero;
             CancellationToken cancellation = _cts.Token;
@@ -113,8 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
-                    //Logger.Write(LogType.Diagnostic, new LogDetails { Message = "RunRetryProcess - Getting product batch to retry process." });
-                    Log.Verbose("RunRetryProcess - Getting product batch to retry process.");
+                    Log.Debug("RunRetryProcess - Getting product batch to retry process.");
 
                     // Get Db data by batchSize
                     var repository = new BatchRepository();
@@ -122,25 +121,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     if (batch == null || batch.Count <= 0)
                     {
-                        //Logger.Write(LogType.Diagnostic, new LogDetails { Message = "RunRetryProcess - No items to process in the batch." });
-                        Log.Verbose("RunRetryProcess - No items to process in the batch.");
+                        Log.Debug("RunRetryProcess - No items to process in the batch.");
                         interval = _waitForRetryInterval;
                         continue;
                     }
-
-                    //Logger.Write(LogType.Diagnostic, new LogDetails { Message = $"RunRetryProcess - Launching threads to process {batch.Count} products." });
-                    Log.Verbose($"RunRetryProcess - Launching threads to process {batch.Count} products.");
+                                        
+                    Log.Debug($"RunRetryProcess - Launching threads to process {batch.Count} products.");
 
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBatchRecord);
-
-                    //Logger.Write(LogType.Diagnostic, new LogDetails { Message = "RunRetryProcess - All threads processed." });
-                    Log.Verbose("RunRetryProcess - All threads processed." );
+                                        
+                    Log.Debug("RunRetryProcess - All threads processed.");
 
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
                     {
-                        Log.Information( "RunRetryProcess - Thread cancellation requested." );
+                        Log.Information("RunRetryProcess - Thread cancellation requested.");
                         break;
                     }
 
@@ -171,9 +167,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         #region Normal Polling Tasks-Threads
 
         private void RunPendingProcess()
-        {
-            //Logger.Write(LogType.Diagnostic, new LogDetails { Message = $"RunPendingProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
-            Log.Verbose($"RunPendingProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}");
+        {            
+            Log.Debug($"RunPendingProcess - Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}");
 #if (DEBUG)
             Console.WriteLine("-------------------------------------------------------------------------------");
 #endif
@@ -184,29 +179,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             while (!cancellation.WaitHandle.WaitOne(interval))
             {
                 try
-                {
-                    //Logger.Write(LogType.Diagnostic, new LogDetails { Message = "RunPendingProcess - Getting product batch to process." });
-                    Log.Verbose("RunPendingProcess - Getting product batch to process.");
+                {                   
+                    Log.Debug("RunPendingProcess - Getting product batch to process.");
 
                     // Get Db data by batchSize
                     var repository = new BatchRepository();
                     batch = repository.GetBatchToProcess(BatchSize, false);
 
                     if (batch == null || batch.Count <= 0)
-                    {
-                        //Logger.Write(LogType.Diagnostic, new LogDetails { Message = "RunPendingProcess - No items to process in the batch." });
-                        Log.Verbose("RunPendingProcess - No items to process in the batch.");
+                    {                        
+                        Log.Debug("RunPendingProcess - No items to process in the batch.");
                         interval = _waitAfterSuccessInterval;
                         continue;
                     }
-
-                    //Logger.Write(LogType.Diagnostic, new LogDetails { Message = $"RunPendingProcess - Launching threads to process {batch.Count} products." });
-                    Log.Verbose($"RunPendingProcess - Launching threads to process {batch.Count} products.");
+                                        
+                    Log.Debug($"RunPendingProcess - Launching threads to process {batch.Count} products.");
 
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBatchRecord);
 
-                    Log.Verbose("RunPendingProcess - All threads processed.");
+                    Log.Debug("RunPendingProcess - All threads processed.");
 
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
@@ -263,13 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     {"processEndpoint",processEndpoint }
                 };
 
-                //Logger.Write(LogType.Diagnostic, new LogDetails
-                //{
-                //    Message = $"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.",
-                //    AdditionalInfo = additionalInfo
-                //});
-
-                Log.Write(LogEventLevel.Verbose, $"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
+                Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
 
                 var input = new BatchProcessorInput
                 {
@@ -307,11 +293,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         private string GetBatchConfigurationByType(int batchBatchProcessTypeId, string configurationTypeName)
         {
-            //Logger.Write(LogType.Diagnostic, new LogDetails
-            //{
-            //    Message = $"GetBatchConfigurationByType - Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}"
-            //});
-
             Log.Debug($"GetBatchConfigurationByType - Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}");
 
             var batchConfigList = new BatchRepository().GetBatchConfigurations();
@@ -328,12 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 throw new Exception($"GetBatchConfigurationByType - No endpoint received for batchBatchProcessTypeId {batchBatchProcessTypeId}");
             }
 
-            //Logger.Write(LogType.Diagnostic, new LogDetails
-            //{
-            //    Message = $"GetBatchConfigurationByType - Endpoint received for {batchBatchProcessTypeId} - {endpoint}"
-            //});
-
-            Log.Verbose($"GetBatchConfigurationByType - Endpoint received for {batchBatchProcessTypeId} - {endpoint}");
+            Log.Debug($"GetBatchConfigurationByType - Endpoint received for {batchBatchProcessTypeId} - {endpoint}");
 
             return endpoint;
         }
