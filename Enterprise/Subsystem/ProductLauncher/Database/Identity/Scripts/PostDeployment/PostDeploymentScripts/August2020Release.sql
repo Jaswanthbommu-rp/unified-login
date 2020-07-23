@@ -2458,3 +2458,13 @@ BEGIN
 
 END
 GO
+
+DECLARE @ControlId int;
+IF EXISTS(SELECT * FROM UserManagement.[Control] WHERE UIId='MarketingCenterProductAccessPropertyGroupTabUIId')
+BEGIN
+	SELECT @ControlId=ControlId FROM 
+	UserManagement.[Control] WHERE UIId='MarketingCenterProductAccessPropertyGroupTabUIId'
+
+    UPDATE UserManagement.[Control] SET ParentControlId=null WHERE ControlId=@ControlId
+
+END
