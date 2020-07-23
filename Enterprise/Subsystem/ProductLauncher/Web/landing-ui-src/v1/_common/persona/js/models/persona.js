@@ -106,6 +106,10 @@
             return model.data.hasnotificationsAccess;
         };
 
+        model.hasPlatformAlertsAccess = function(){
+            return model.data.hasPlatformAlertsAccess;
+        };
+
         model.isReady = function () {
             return model.ready;
         };

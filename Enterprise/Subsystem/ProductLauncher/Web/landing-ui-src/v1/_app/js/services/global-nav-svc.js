@@ -83,6 +83,7 @@
         svc.updateSettings = function (data) {
             if (personaReady && navListReady) {
                 svc.updateNotificationsLink();
+                svc.updatePlatformAlertsLink();
                 svc.updateSettingsLink();
 
                 var leftNav = document.querySelector('omnibar-navigation');
@@ -115,11 +116,7 @@
                 };
 
                 if (!(compId === -1 || compId === -2) && (persona.hasViewOnlySettingsAccess() || persona.hasManagePlatFormSecurity() || persona.hasManageCustomFields() || persona.hasManageUnifiedSettings())) {
-
                     if (navModel.data !== undefined && (navModel.data.length > 0) && !settingsAdded) {
-
-
-
                         if (persona.hasManageSettingsTemplates()) {
 
                             setting.items.splice(1, 0, {
@@ -134,8 +131,6 @@
                         svc.personaWatch();
                     }
                 }
-
-
 
                 // Cog for Employee Company ONLY
                 if ((compId === -1) && (persona.hasAccessSettingsAdmin())) {
@@ -177,6 +172,22 @@
                 if (navModel.data !== undefined && (navModel.data.length > 0)) {
 
                     navModel.data.push(notifications);
+                    svc.personaWatch();
+                }
+            }
+        };
+
+        svc.updatePlatformAlertsLink = function () {
+            var platformAlerts = {
+                title: "Platform Alerts",
+                icon: "alarm-timeout",
+                pageId: "platform-alerts",
+                url: "/notifications/platformalerts"
+            };
+
+            if ((persona.hasPlatformAlertsAccess())) {
+                if (navModel.data !== undefined && (navModel.data.length > 0)) {
+                    navModel.data.push(platformAlerts);
                     svc.personaWatch();
                 }
             }
