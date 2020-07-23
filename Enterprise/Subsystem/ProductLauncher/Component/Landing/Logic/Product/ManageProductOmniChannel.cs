@@ -83,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel).CompanyInstanceId;
+                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel, useTranslate:false).CompanyInstanceId;
                 
                 WriteToDiagnosticLog($"OmniChannel - - GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
@@ -168,7 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel).CompanyInstanceId;
+                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.OmniChannel, useTranslate:false).CompanyInstanceId;
                 if (companyInstanceId == 0)
                 {
                     WriteToErrorLog(

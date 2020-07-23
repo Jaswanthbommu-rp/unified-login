@@ -23,6 +23,7 @@
             "text.solnTitle.110",
             "text.solnTitle.111",
             "text.solnTitle.112",
+            "text.solnTitle.113",
             "text.solnTitle.201",
             "text.solnTitle.204",
             "text.solnTitle.205",

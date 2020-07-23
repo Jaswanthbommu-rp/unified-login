@@ -2939,7 +2939,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.DepositAlternative,
                     (int) ProductEnum.ClickPay,
                     (int) ProductEnum.RenovationManager,
-                    (int) ProductEnum.SeniorLeadManagement
+                    (int) ProductEnum.SeniorLeadManagement,
+                    (int) ProductEnum.IntelligentBuilding
                 };
             }
 
@@ -3293,52 +3294,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         expandoList.IsAssigned = true;
                         expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
 
-                        // Collect ALL Json(s) for AO products based on assigned or un-assigned
+                        // unassign all AO products
                         foreach (var aoProduct in aoUserProductList)
                         {
                             dynamic expandoAo = new ExpandoObject();
-
-                            if (productBatchData.All(p => p.ProductId != aoProduct.ProductId))
-                            {
-                                // user has removed specific product
-                                expandoAo.SelectedRoleValues = null;
-                                expandoAo.SelectedPortfolioValues = null;
-                                expandoAo.CompanyId = 0;
-
-                                expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
-                                expandoAo.DivisionName =
-                                    ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
-                                expandoAo.PropertyGroups = null;
-
-                                expandoAo.IsAssigned = false;
-                            }
-                            else
-                            {
-                                // user has added specific product
-                                // Get product details from one added in batch
-                                var batchRecord =
-                                    productBatchData.FirstOrDefault(p => p.ProductId == aoProduct.ProductId);
-
-                                if (batchRecord != null)
-                                {
-                                    expandoAo.SelectedRoleValues = batchRecord.InputJson.RoleList;
-                                    expandoAo.SelectedPortfolioValues = batchRecord.InputJson.PropertyList;
-                                    expandoAo.CompanyId = batchRecord.InputJson.CompanyId;
-                                    expandoAo.PropertyGroups = batchRecord.InputJson.PropertyGroupList;
-                                }
-
-                                expandoAo.Product =
-                                    ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
-                                expandoAo.DivisionName =
-                                    ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
-
-                                expandoAo.IsAssigned = true;
-                            }
-
-                            // add in collection
+                            // user has removed specific product
+                            expandoAo.SelectedRoleValues = null;
+                            expandoAo.SelectedPortfolioValues = null;
+                            expandoAo.CompanyId = 0;
+                            expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
+                            expandoAo.DivisionName =
+                            ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
+                            expandoAo.PropertyGroups = null;
+                            expandoAo.IsAssigned = false;
                             expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
                         }
-
                         // add record to remove AO products
                         sb.Append(JsonConvert.SerializeObject(expandoList));
 
@@ -3346,6 +3316,70 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         SaveProductBatch(repository, aoProductsBatch, createUserResponse,
                             saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
                             sb.ToString(), (int)BatchProcessType.CreateUpdateProductUser);
+
+                        // Collect ALL Json(s) for AO products based on assigned
+
+                        if (aoUserProductList.Any(aoProduct => productBatchData.Any(p => (p.ProductId == aoProduct.ProductId))))
+                        {
+                            sb = new StringBuilder();
+                            expandoList = new ExpandoObject();
+                            expandoList.IsAssigned = true;
+                            expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
+                            foreach (var aoProduct in aoUserProductList)
+                            {
+                                dynamic expandoAo = new ExpandoObject();
+
+                                if (productBatchData.Any(p => p.ProductId == aoProduct.ProductId))
+                                {
+                                    // user has added specific product
+                                    // Get product details from one added in batch
+                                    var batchRecord =
+                                        productBatchData.FirstOrDefault(p => p.ProductId == aoProduct.ProductId);
+
+                                    if (batchRecord != null)
+                                    {
+                                        expandoAo.SelectedRoleValues = batchRecord.InputJson.RoleList;
+                                        expandoAo.SelectedPortfolioValues = batchRecord.InputJson.PropertyList;
+                                        expandoAo.CompanyId = batchRecord.InputJson.CompanyId;
+                                        expandoAo.PropertyGroups = batchRecord.InputJson.PropertyGroupList;
+                                    }
+
+                                    expandoAo.Product =
+                                        ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
+                                    expandoAo.DivisionName =
+                                        ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
+
+                                    expandoAo.IsAssigned = true;
+                                }
+                                else
+                                {
+                                    //dynamic expandoAo = new ExpandoObject();
+                                    // user has removed specific product
+                                    expandoAo.SelectedRoleValues = null;
+                                    expandoAo.SelectedPortfolioValues = null;
+                                    expandoAo.CompanyId = 0;
+                                    expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
+                                    expandoAo.DivisionName =
+                                    ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
+                                    expandoAo.PropertyGroups = null;
+                                    expandoAo.IsAssigned = false;
+                                    //expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
+                                }
+                                // add in collection
+                                expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
+
+                            }
+
+                            // add record to Add AO products
+                            sb.Append(JsonConvert.SerializeObject(expandoList));
+
+                            // save AO specific records in batch
+                            SaveProductBatch(repository, aoProductsBatch, createUserResponse,
+                            saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
+                            sb.ToString(), (int)BatchProcessType.CreateUpdateProductUser);
+                        }
+                        
+                            
                     }
 
                     if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
@@ -4160,7 +4194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
 
             bool userIsExternalEverywhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
-
+            string schemaName = getRoleRightsSchemaName();
             #region UserType Changed To External OR From External
 
             if ((userTypeChangedToFromExternal.Equals("ToExternal", StringComparison.OrdinalIgnoreCase)) && (userPersonaOrganizationList.Count > 1) && (userPersonaOrganizationList.ToList().Any(x => x.OrganizationPartyId.Equals(persona.OrganizationPartyId) && x.PrimaryOrganization == true)))
@@ -4201,8 +4235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, param);
                 personaId = repositoryResponse.Id;
 
-                // Linking Persona to a Role based on user type for External Users
-                string schemaName = getRoleRightsSchemaName();
+                // Linking Persona to a Role based on user type for External Users                
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 param = new
                 {
@@ -4799,7 +4832,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             UserBatchEntity userBatchEntity;
             bool isFeatureUser = false;
-         
+            string schemaName = getRoleRightsSchemaName();
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -4814,7 +4847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 
                 //We can get this with the oldProfile
-                string schemaName = getRoleRightsSchemaName();
+               
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
                 try
@@ -5318,8 +5351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     greenBookRole = enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId;
                                 }
                                 else
-                                {
-                                    schemaName = getRoleRightsSchemaName();
+                                {                                   
                                     procName = schemaName?.Length > 0 ? $"{schemaName}.GetUnifiedLoginDefaultRole" : StoredProcNameConstants.SP_GetUnifiedLoginDefaultRole;
 
                                     var paramDefaultRole = new

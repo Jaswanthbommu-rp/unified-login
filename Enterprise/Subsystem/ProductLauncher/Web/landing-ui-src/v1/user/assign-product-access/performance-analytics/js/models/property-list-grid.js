@@ -11,10 +11,6 @@
                 {
                     key: "propertyName",
                     type: "text"
-                },
-                {
-                    key: "state",
-                    type: "text"
                 }
                 ];
         };
@@ -24,10 +20,6 @@
                 [{
                         key: "propertyName",
                         text: "Property",
-                },
-                    {
-                        key: "state",
-                        text: "State",
                 }]
             ];
         };
@@ -38,11 +30,6 @@
                     key: "propertyName",
                     type: "text",
                     placeholder: "Find by Property"
-                },
-                {
-                    key: "state",
-                    type: "text",
-                    placeholder: "Find by State"
                 }
             ];
         };

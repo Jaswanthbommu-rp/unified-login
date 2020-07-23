@@ -743,10 +743,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="blueBookProductName">The BlueBook product name to request the company information for</param>
         /// <param name="includeExtra">Additional information to filter bluebook data returned</param>
+        /// <param name="useTranslate">Only get the product instance id by translating UPFM if available</param>
         /// <returns>The blue book company instance information</returns>
-        protected CustomerCompanyMap GetProductCompanyInstanceId(string blueBookProductName, string includeExtra = "")
+        protected CustomerCompanyMap GetProductCompanyInstanceId(string blueBookProductName, string includeExtra = "", bool useTranslate = true)
         {
-            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: blueBookProductName.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name, includeExtra: includeExtra);
+            IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: blueBookProductName.ToUpper(), domain: _editorPersona.Organization.OrganizationDomain.Name, includeExtra: includeExtra, useTranslate: useTranslate);
             if (companyProductList == null) { companyProductList = new List<CustomerCompanyMap>(); }
             CustomerCompanyMap company = new CustomerCompanyMap();
             if (companyProductList.Any(a => a.Source.Equals(blueBookProductName, StringComparison.OrdinalIgnoreCase)))

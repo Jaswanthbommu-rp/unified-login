@@ -1,7 +1,27 @@
 ﻿CREATE PROCEDURE [Enterprise].[DeleteRole](@RoleId INT)
 AS
      BEGIN
-         DECLARE @ErrorLogID INT;
+        DECLARE @ErrorLogID INT;
+		 Declare @OrgPartyId INT,@SecurityRoleId INT
+		 DECLARE @SchemaName varchar(25);
+		 DECLARE @Rolename varchar(256)
+		
+		Select @Rolename = RV.Value, @OrgPartyId = R.PartyID 
+		From Enterprise.Role R
+		Join Enterprise.RoleValueType RV ON
+			RV.RoleValueTypeId = R.RoleValueTypeId
+		Where RoleId = @RoleId
+
+		SELECT	@SchemaName = ps.Value				
+		FROM	Enterprise.GlobalProductConfiguration gpc
+				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+		WHERE  gpc.ProductId = 3
+		AND (gpc.ThruDate IS NULL)
+		AND ( pc.ThruDate IS NULL)
+		AND ( ps.ThruDate IS NULL)
+		And PST.Name = 'RolesRightsSchemaName'
     --validate if role is assinged to user.
          IF EXISTS
          (
@@ -62,4 +82,14 @@ AS
                  SELECT @RoleId AS RoleId,
                         'Role does not exist.';
          END;
+		--delete from security schema 
+		IF (@SchemaName = 'Enterprise')
+		BEGIN
+			
+			Select @SecurityRoleId = R.RoleID from Security.Role R 							
+			Where R.RoleName = @Rolename
+			AND R.OrgPartyID = @OrgPartyId
+
+			EXEC [Security].[DeleteRole] @SecurityRoleId
+		END
      END;
