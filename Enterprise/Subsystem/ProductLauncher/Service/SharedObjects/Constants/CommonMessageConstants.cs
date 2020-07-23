@@ -58,6 +58,24 @@
 
         #endregion
 
+        #region Entities
+
+        /// <summary>
+        /// EntityErrorMessage
+        /// </summary>
+        public const string EntityErrorMessage = "There was a problem getting the list of entities.  If the problem persists, please contact support.";
+
+        #endregion
+
+        #region Companies
+
+        /// <summary>
+        /// EntityErrorMessage
+        /// </summary>
+        public const string CompanyTabErrorMessage = "There was a problem getting the list of companies.  If the problem persists, please contact support.";
+
+        #endregion
+
         #endregion
     }
 }

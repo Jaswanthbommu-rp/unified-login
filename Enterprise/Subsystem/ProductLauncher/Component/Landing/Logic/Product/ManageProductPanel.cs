@@ -207,6 +207,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result.ErrorReason = ex.Message;
                         return result;
                     }
+
+                    //UI calls GetProperty but sometimes it diplays the data in Entities tab for some products, that's why this validation was added
+                    if (ex.Message == CommonMessageConstants.EntityErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
+
                     if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
                     {
                         result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
@@ -544,7 +552,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
+                    //UI calls GetPropertyGroups but sometimes it diplays the data in Region tab for some products, that's why this validation was added
                     if (ex.Message == CommonMessageConstants.RegionErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
+
+                    //UI calls GetPropertyGroups but sometimes it diplays the data in Companies tab for some products, that's why this validation was added
+                    if (ex.Message == CommonMessageConstants.CompanyTabErrorMessage)
                     {
                         result.ErrorReason = ex.Message;
                         return result;

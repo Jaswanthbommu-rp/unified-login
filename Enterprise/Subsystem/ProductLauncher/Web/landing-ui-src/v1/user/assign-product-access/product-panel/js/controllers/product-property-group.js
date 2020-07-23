@@ -8,11 +8,12 @@
             userLoginName = "",
             pgGrid = gridModel(),
             pgGridTransform = gridTransformSvc(),
-            pgGridPagination = gridPaginationModel();
+            pgGridPagination = gridPaginationModel(),
+            genericDataErrorReason = "";
 
         vm.init = function () {
             vm.grid = pgGrid;
-            vm.propertyGroupsError = $filter("productPanelText")("panelError.generic");
+            genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             vm.config = syncMgr.getProductGridConfig($scope.$parent.productId, "PropertyGroup");
             pgGridTransform.watch(pgGrid);
             pgGrid.setConfig(vm.config);
@@ -195,7 +196,13 @@
             }
 
             if (resp.isError) {
-                vm.isPropertyGroupsError = true;
+                vm.isDataError = true;
+                if (resp.errorReason !== "") {
+                    vm.dataErrorReason = resp.errorReason;
+                }
+                else {
+                    vm.dataErrorReason = genericDataErrorReason;
+                }
             }
             if (resp.additional && resp.additional != undefined) {
                 var accesstype = resp.additional.accessType;
