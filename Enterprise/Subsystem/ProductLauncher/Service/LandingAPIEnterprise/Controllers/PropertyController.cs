@@ -121,6 +121,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		    {
 			    Errors = new List<Error>()
 		    };
+            ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
 
             ListResponse productResponse;
             switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
@@ -129,10 +130,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
                     productResponse = manageProductOps.GetCompanyAssets(_userClaims.PersonaId, 0, false, null);
                     break;
+                case ProductEnum.CIMPL:
                 case ProductEnum.UnifiedPlatform:
-                    ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
                     productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
                     break;
+                
                 default:
                     error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, error);

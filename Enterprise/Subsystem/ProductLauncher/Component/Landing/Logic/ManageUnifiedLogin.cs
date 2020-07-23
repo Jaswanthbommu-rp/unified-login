@@ -2038,14 +2038,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             ProductProperty pp = new ProductProperty()
             {
-                ID = upfmPropertyInstance.PropertyInstanceId.ToString(),
+                ID = upfmPropertyInstance.InstanceId.ToString().ToLower(),
                 Name = upfmPropertyInstance.Name,
                 Street1 = upfmPropertyInstance.Address,
                 City = upfmPropertyInstance.City,
                 State = upfmPropertyInstance.State,
                 Zip = upfmPropertyInstance.PostalCode,
                 IsAssigned = isAssigned,
-                InstanceId = upfmPropertyInstance.InstanceId.ToString().ToLower(),
+                InstanceId = upfmPropertyInstance.CustomerPropertyId,
                 Latitude = upfmPropertyInstance.Latitude,
                 Longitude = upfmPropertyInstance.Longitude,
                 Alias = upfmPropertyInstance.CustomerPropertyId
