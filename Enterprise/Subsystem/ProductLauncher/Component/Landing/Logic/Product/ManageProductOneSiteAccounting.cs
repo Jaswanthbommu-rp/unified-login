@@ -274,10 +274,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog($"GetUserPropertiesNew - Error", exception: ex);
+				//UI calls GetProperty but sometimes it's diplaying the data in Entities tab, that's why this message should be Entity instead of Property
 				response = new ListResponse()
 				{
 					IsError = true,
-					ErrorReason = CommonMessageConstants.PropertyErrorMessage
+					ErrorReason = CommonMessageConstants.EntityErrorMessage
                 };
             }
             return response;
@@ -445,11 +446,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog($"GetUserProperties - Error", exception: ex);
-                response = new ListResponse()
-                {
-                    IsError = true,
-                    ErrorReason = ex.Message
-                };
+				response = new ListResponse
+				{
+					IsError = true
+				};
+
+				if (ex is BlueBookException)
+				{
+					response.ErrorReason = ex.Message;
+				}
+				else
+				{
+					//UI calls GetPropertyGroup but it's dispalying the data in Companies Tab, so that's why the message should be "Companies"
+					response.ErrorReason = CommonMessageConstants.CompanyTabErrorMessage;
+				}
             }
 
             return response;
