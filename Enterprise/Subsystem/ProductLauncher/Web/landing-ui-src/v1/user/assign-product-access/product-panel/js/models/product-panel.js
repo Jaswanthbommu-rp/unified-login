@@ -212,7 +212,7 @@
                             s.propertyRoleListData = angular.copy(s._propertyRoleListData);
                             s.propertyRoleListData.RoleId = role.id;
                             s.propertyRoleListData.RoleType = role.roletype;
-                            if(role.roletype !== 'Domain Admin')
+                            if(role.propertiesList !== null)
                             {
                                 var propList = role.propertiesList;
                                 propList.forEach(function (item){
