@@ -27,16 +27,17 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         /// <returns>A list of Organization(s) Details for a person</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "List diffrent search metadata to populate drop-down boxes on UI", Type = typeof(SearchMetadata))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List different search metadata to populate drop-down boxes on UI", Type = typeof(SearchMetadata))]
         [Route("api/listsearchmetadata")]
         [HttpGet]
         public HttpResponseMessage ListSearchMetadata()
         {
             try
-            {
+            {             
+
                 var readerRepository = new ReaderRepository();
                 var result = readerRepository.GetSearchMetadata();
-
+                
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
