@@ -11,6 +11,7 @@
 
             vm.menuConfig = menuConfig;
             vm.personaWatch = angular.noop;
+            vm.companyName='';
 
             if (persona.isReady()) {
                 compMenu.getCompData();
@@ -46,6 +47,7 @@
 
         vm.setSelMenu = function() {
             vm.filterMenuVal = compMenu.getSelCompId();
+            vm.companyName = compMenu.getSelComp(compMenu.getSelCompId())[0].companyName;
         };
 
 
