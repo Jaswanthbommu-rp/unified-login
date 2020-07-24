@@ -2428,3 +2428,9 @@ BEGIN
     UPDATE UserManagement.[Control] SET ParentControlId=null WHERE ControlId=@ControlId
 
 END
+
+--Fix for 381679
+IF EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewallUnifiedSettings')
+BEGIN
+    UPDATE [UserManagement].[ControlDependency] SET    MasterControlValue = 'ManageSettingsTemplates' where MasterControlValue = 'ViewallUnifiedSettings';
+END
