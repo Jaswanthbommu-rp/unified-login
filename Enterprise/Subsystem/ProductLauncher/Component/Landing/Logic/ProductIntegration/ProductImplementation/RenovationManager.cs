@@ -156,7 +156,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				OrganizationRoles = userRolePropertiesRegion.OrganizationRoleList,
 				CanReceiveMonthlyReport = userRolePropertiesRegion.CanReceiveMonthlyReport,
 				PropertyRoleList = userRolePropertiesRegion.RolePropertiesList,
-				RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString())
+				RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
+				IsMigratedUser = true
 			};
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
