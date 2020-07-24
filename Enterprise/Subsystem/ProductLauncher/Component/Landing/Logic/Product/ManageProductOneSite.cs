@@ -609,14 +609,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string roleIDRemoveList = "";
             List<string> rolesToRemove = new List<string>();
             string resultCount = "";
-
-            // check to see if the user is a superuser and if so don't update the roles
+            
             bool superUser = IsSuperUser(userPersonaId);
-            if (superUser)
-            {
-                WriteToDiagnosticLog("UpdateRolesForUser - User is superuser so no change");
-                return resultCount;
-            }
+            
 
             string PMCID = _systemIdentifier.Split('|')[0];
             Dictionary<string, string> args = new Dictionary<string, string>();
@@ -640,7 +635,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 if (!(rolesToAssign.Contains(role.RoleID)))
                 {
-                    if (role.IsAssigned)
+                    // check to see if the user is a superuser if so then add e-doc signer role
+                    if (superUser && role.RoleName.ToUpper().Equals("E-DOC SIGNER"))
+                    {
+                        if (!role.IsAssigned)
+                        {
+                            rolesToAssign.Add(role.RoleID);
+                        }
+                    }
+                    else if (role.IsAssigned)
                     {
                         // role doesn't exist, so add it to the list
                         rolesToRemove.Add(role.RoleID);
@@ -1455,7 +1458,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
                 WriteToDiagnosticLog("ManageOneSiteUser - Beginning update to roles and properties");
-                if (RoleList.Count > 0 && !isUserProfileChanged)
+                if ((RoleList.Count > 0 || isSuperUser) && !isUserProfileChanged)
                 {
                     UpdateRolesForUser(editorPersonaId, userPersonaId, RoleList);
                 }
