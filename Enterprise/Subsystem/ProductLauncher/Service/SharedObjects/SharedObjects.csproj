@@ -101,6 +101,7 @@
     <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyLocation.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
+    <Compile Include="BlackBook\CompanyPropertyInstanceRootObject.cs" />
     <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
     <Compile Include="BlackBook\CustomerCompany.cs" />
     <Compile Include="BlackBook\CustomerProperty.cs" />
