@@ -222,10 +222,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Audit\Audit.Core\Audit.Core.csproj">
-      <Project>{6f35c5e7-05ce-48d8-8ed5-fa191f57ae46}</Project>
-      <Name>Audit.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\DataAccess\DataAccess.csproj">
       <Project>{255a94dc-a434-47cc-a472-e162ebde6bce}</Project>
       <Name>DataAccess</Name>
