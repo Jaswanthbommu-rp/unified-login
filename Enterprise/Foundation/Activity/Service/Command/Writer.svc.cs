@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceModel.MsmqIntegration;
+using RealPage.Logging.Serilog;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository;
 using Serilog;
 using ActivityDetailMessage = RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.ActivityDetailMessage;
@@ -10,6 +11,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
     {
         public void ReadMqActivity(MsmqMessage<ActivityDetailMessage> mqMessage)
         {
+            SerilogHelpers.ConfigureSerilog("Unified Login");
+
             ActivityDetailMessage activity = null;
             try
             {
