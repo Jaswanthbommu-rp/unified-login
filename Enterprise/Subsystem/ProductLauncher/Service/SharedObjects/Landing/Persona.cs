@@ -205,6 +205,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public bool hasManageIntelligentBuildingProductAccess { get; set; } = true;
 
+        /// <summary>
+        /// Persona Has Platform Alerts Access
+        /// </summary>
+        public bool hasPlatformAlertsAccess { get; set; } = false;
+
         #region Examples
         /// <summary>
         /// Example for New Persona method
