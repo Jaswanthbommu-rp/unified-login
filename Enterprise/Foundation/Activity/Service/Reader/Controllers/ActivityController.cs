@@ -233,8 +233,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             catch (Exception ex)
             {
                 // log exceptin in elastic
-                //Log.Write(LogType.Error, new LogDetails { Exception = ex, Message = "Exception in Activity Logging" });
-
                 Log.Error(ex, "Exception in Activity Logging");
 
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError);
