@@ -484,8 +484,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	            UserLoginOnly ul = new UserLoginOnly() {RealPageId = realPageId.Value};
 	            userLogins.Add(ul);
                 Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before UpdateUserProductStatus() method" });
-                repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
-                Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before UpdateUserProductStatus() method" });
+                //repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
+                Log.Write(LogType.Diagnostic, new LogDetails { Message = $"After UpdateUserProductStatus() method" });
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
 

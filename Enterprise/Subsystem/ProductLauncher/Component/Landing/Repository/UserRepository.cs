@@ -1939,6 +1939,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         using (var repository = GetRepository())
                         {
+                            Log.Write(LogType.Diagnostic, new LogDetails { Message = $"DisableUserProductData PersonaId={adminPersona.PersonaId}" });
                             ProcessDisableUserProductData(repository, persona.PersonaId, realPageEmployeeAccessID, adminPersona.PersonaId, persona.UserTypeId);
                         }
                     }
@@ -1952,6 +1953,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     persona = managePersona.GetFirstAvailablePersonaByCompany(userLoginOnly.RealPageId, _userClaim.OrganizationPartyId);
                     using (var repository = GetRepository())
                     {
+                        Log.Write(LogType.Diagnostic, new LogDetails { Message = $"DisableUserProductData2 PersonaId={adminPersona.PersonaId}" });
                         ProcessDisableUserProductData(repository, persona.PersonaId, createUserRealPageId, createUserPersonaId, persona.UserTypeId);
                     }
                 }
@@ -2350,6 +2352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
+                            Log.Write(LogType.Diagnostic, new LogDetails { Message = $"ProcessDisabledUsers PersonaId={editorPersona.PersonaId}" });
                             ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId);
                         }
                     }
@@ -4454,7 +4457,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     editorPersonaId = createUserPersonaId;
                     editorRealPageId = loggedInUserRealPageId;
                 }
-
+                Log.Write(LogType.Diagnostic, new LogDetails { Message = $"DisableAllCompanyProducts PersonaId={editorPersonaId}" });
                 ProcessDisableUserProductData(repository, companyPersona.PersonaId, editorRealPageId, editorPersonaId, profile.UserTypeId);
             }
         }
