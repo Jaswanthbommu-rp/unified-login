@@ -475,7 +475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
             Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before CreateUpdateUserStatus() method" });
-            bool response = userLoginLogic.CreateUpdateUserStatus(realPageId.Value, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
+            bool response = userLoginLogic.CreateUpdateUserStatus(_userClaims.UserRealPageGuid, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
             Log.Write(LogType.Diagnostic, new LogDetails { Message = $"After CreateUpdateUserStatus() method" });
 
             if (response)
@@ -484,7 +484,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	            UserLoginOnly ul = new UserLoginOnly() {RealPageId = realPageId.Value};
 	            userLogins.Add(ul);
                 Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before UpdateUserProductStatus() method" });
-                //repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
+                if (statusTypeName != UserUiStatusType.Disabled)
+                {
+                    repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
+                }
                 Log.Write(LogType.Diagnostic, new LogDetails { Message = $"After UpdateUserProductStatus() method" });
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }

@@ -1953,7 +1953,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     persona = managePersona.GetFirstAvailablePersonaByCompany(userLoginOnly.RealPageId, _userClaim.OrganizationPartyId);
                     using (var repository = GetRepository())
                     {
-                        Log.Write(LogType.Diagnostic, new LogDetails { Message = $"DisableUserProductData2 PersonaId={adminPersona.PersonaId}" });
+                        Log.Write(LogType.Diagnostic, new LogDetails { Message = $"DisableUserProductData2 PersonaId" });
                         ProcessDisableUserProductData(repository, persona.PersonaId, createUserRealPageId, createUserPersonaId, persona.UserTypeId);
                     }
                 }
