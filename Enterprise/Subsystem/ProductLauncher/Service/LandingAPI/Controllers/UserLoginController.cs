@@ -472,18 +472,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
-            bool response = userLoginLogic.CreateUpdateUserStatus(realPageId.Value, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
+            //bool response = userLoginLogic.CreateUpdateUserStatus(realPageId.Value, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
+            IList<UserLoginOnly> userLogins = new List<UserLoginOnly>();
+            UserLoginOnly ul = new UserLoginOnly() { RealPageId = realPageId.Value };
+            userLogins.Add(ul);
+            repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
 
-            if (response)
+            if (repositoryResponse.ErrorMessage.Length == 0)
             {
-	            IList<UserLoginOnly> userLogins = new List<UserLoginOnly>();
-	            UserLoginOnly ul = new UserLoginOnly() {RealPageId = realPageId.Value};
-	            userLogins.Add(ul);
-				repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
-				return Request.CreateResponse(HttpStatusCode.OK, response);
+				return Request.CreateResponse(HttpStatusCode.OK, repositoryResponse);
             }
 
-            return Request.CreateResponse(HttpStatusCode.ExpectationFailed, response);
+            return Request.CreateResponse(HttpStatusCode.ExpectationFailed, repositoryResponse);
         }
 
 		/// <summary>
