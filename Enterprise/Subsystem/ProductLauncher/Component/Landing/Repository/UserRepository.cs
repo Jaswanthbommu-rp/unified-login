@@ -24,6 +24,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -1904,6 +1905,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userLogins"></param>
         public void DisableUserProduct(Guid createUserRealPageId, long createUserPersonaId, IList<UserLoginOnly> userLogins)
         {
+            Log.Write(LogType.Diagnostic, new LogDetails { Message = $"DisableUserProduct userLogins count = {userLogins.Count}" });
             Parallel.ForEach(userLogins, new ParallelOptions { MaxDegreeOfParallelism = 5 }, userLoginOnly => { DisableUserProductData(createUserRealPageId, createUserPersonaId, userLoginOnly); });
         }
 
@@ -3660,6 +3662,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //Set the Logged-in and New User PeronaIds
                 product.CreateUserPersonaId = CreateUserPersonaId;
                 product.AssignUserPersonaId = AssignUserPersonaId;
+                Log.Write(LogType.Diagnostic, new LogDetails { Message = $"SaveProductBatch CreateUserPersonaId ={CreateUserPersonaId} and AssignUserPersonaId = {AssignUserPersonaId}" });
                 //Assign the 
                 //product.InputJson.IsAssigned = true;
                 //Create the Product Batch data to be processed by the Queuing
@@ -3878,7 +3881,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //Save latest previous product batch to process again when user is re activated.
 
             IList<ProductBatch> productListToDisable = GetListOfProductsToRemoveByPersonaId(repository, assignUserPersonaId);
-
+            Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Process Disable User Prouct data={createUserPersonaId}" });
             if (productListToDisable != null)
             {
                 if (userTypeId != (int)UserRoleType.UserNoEmail)

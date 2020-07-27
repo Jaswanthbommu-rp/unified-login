@@ -13,6 +13,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Foundation.Audit.Core.Component;
+using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RepositoryResponse = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.RepositoryResponse;
 using UserLogin = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.UserLogin;
 
@@ -472,18 +474,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
-            //bool response = userLoginLogic.CreateUpdateUserStatus(realPageId.Value, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
-            IList<UserLoginOnly> userLogins = new List<UserLoginOnly>();
-            UserLoginOnly ul = new UserLoginOnly() { RealPageId = realPageId.Value };
-            userLogins.Add(ul);
-            repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
+            Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before CreateUpdateUserStatus() method" });
+            bool response = userLoginLogic.CreateUpdateUserStatus(realPageId.Value, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
+            Log.Write(LogType.Diagnostic, new LogDetails { Message = $"After CreateUpdateUserStatus() method" });
 
-            if (repositoryResponse.ErrorMessage.Length == 0)
+            if (response)
             {
-				return Request.CreateResponse(HttpStatusCode.OK, repositoryResponse);
+	            IList<UserLoginOnly> userLogins = new List<UserLoginOnly>();
+	            UserLoginOnly ul = new UserLoginOnly() {RealPageId = realPageId.Value};
+	            userLogins.Add(ul);
+                Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before UpdateUserProductStatus() method" });
+                repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
+                Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before UpdateUserProductStatus() method" });
+                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
 
-            return Request.CreateResponse(HttpStatusCode.ExpectationFailed, repositoryResponse);
+            return Request.CreateResponse(HttpStatusCode.ExpectationFailed, response);
         }
 
 		/// <summary>
