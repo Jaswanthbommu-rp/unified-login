@@ -1064,6 +1064,26 @@ IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 266)
 BEGIN
 	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 266
 END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 294)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 294
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 313)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 313
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 332)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 332
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 351)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 351
+END
 GO
 
 -- Unified Amenities rights in Sentence case instead of Title Case format
@@ -2008,16 +2028,34 @@ SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON
 		VALUES (65, 139, 145, N'Viewallpropertylevelsettings', 1, @UserId, @Now)
 	END
 
-	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewallUnifiedSettings')
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ManageSettingsTemplates')
 	BEGIN
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
-		VALUES (66, 139, 145, N'ViewallUnifiedSettings', 1, @UserId, @Now)
+		VALUES (66, 139, 145, N'ManageSettingsTemplates', 1, @UserId, @Now)
 	END
 
 	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewUnifiedSettings')
 	BEGIN
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
 		VALUES (67, 139, 145, N'ViewUnifiedSettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'AbilitytoanswercompanylevelquestionnairesinCIMPL')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (68, 139, 145, N'AbilitytoanswercompanylevelquestionnairesinCIMPL', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'CIMPLESubmitQuestionnaires')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (69, 139, 145, N'CIMPLESubmitQuestionnaires', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ManageCIMPLTemplates')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (70, 139, 145, N'ManageCIMPLTemplates', 1, @UserId, @Now)
 	END
 
 SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
@@ -2467,10 +2505,4 @@ BEGIN
 
     UPDATE UserManagement.[Control] SET ParentControlId=null WHERE ControlId=@ControlId
 
-END
-
---Fix for 381679
-IF EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewallUnifiedSettings')
-BEGIN
-    UPDATE [UserManagement].[ControlDependency] SET    MasterControlValue = 'ManageSettingsTemplates' where MasterControlValue = 'ViewallUnifiedSettings';
 END
