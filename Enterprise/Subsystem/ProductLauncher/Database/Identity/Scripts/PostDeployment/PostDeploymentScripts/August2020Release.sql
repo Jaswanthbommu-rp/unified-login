@@ -25,6 +25,12 @@ begin
 end
 go
 
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'BooksUseTranslatev2' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseTranslatev2', 'Use v2 of the books translate endpoint', 0 )
+end
+GO
+
 if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
@@ -61,6 +67,27 @@ Begin
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
 				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseTranslatev2' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseTranslatev2'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseTranslatev2' and ps.ProductId= 3
 
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
 		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
