@@ -283,8 +283,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (userPropertyIdList?.Count > 0)
             {
-                string includeFields = string.Empty;
-
                 bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] {','}).Length > 0);
 
                 if (bIncludeFields)
@@ -1989,7 +1987,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="blueBookUPFMPropertyList"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="assignedOnly"></param>
+        /// <returns></returns>
         private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
         {
             // merge the given user details with the list

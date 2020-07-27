@@ -18,6 +18,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 string[] returnFields = serializableProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 _serializableProperties = returnFields.ToList();
+                if (!_serializableProperties.Any(p => p.Equals("id", StringComparison.OrdinalIgnoreCase)))
+                {
+                    _serializableProperties.Add("id");
+                }
             }
         }
 

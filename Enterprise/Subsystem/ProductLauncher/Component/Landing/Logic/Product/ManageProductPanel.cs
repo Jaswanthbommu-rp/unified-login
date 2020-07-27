@@ -108,21 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                     case (int)ProductEnum.UnifiedAmenities:
                         IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
-                        bool usePropertyInstanceUnifiedAmenities = false;
-                        if (_productInternalSettingList.Any(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            usePropertyInstanceUnifiedAmenities = (_productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase))?.Value == "1");
-                        }
-
-                        if (!usePropertyInstanceUnifiedAmenities)
-                        {
-                            result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
-                        }
-                        else
-                        {
-                            result = manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedAmenities, datafilter);
-                        }
-
+                        result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
                         break;
                     case (int)ProductEnum.AoBusinessIntelligence:
                     case (int)ProductEnum.AoInvestmentAnalytics:
