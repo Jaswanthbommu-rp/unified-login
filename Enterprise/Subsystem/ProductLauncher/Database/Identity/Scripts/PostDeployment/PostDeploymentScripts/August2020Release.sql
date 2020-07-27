@@ -1064,6 +1064,26 @@ IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 266)
 BEGIN
 	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 266
 END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 294)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 294
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 313)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 313
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 332)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 332
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 351)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 351
+END
 GO
 
 -- Unified Amenities rights in Sentence case instead of Title Case format
