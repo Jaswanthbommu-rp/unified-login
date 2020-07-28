@@ -127,7 +127,7 @@
                     vm.propertySelect = accesstype;
                 }
             }
-            if($scope.$parent.productId === 17){
+            if($scope.$parent.productId === 17 || $scope.$parent.productId === 23){
                 var flag = syncMgr.isProductAllProperties($scope.$parent.productId);
                 return flag;
             }

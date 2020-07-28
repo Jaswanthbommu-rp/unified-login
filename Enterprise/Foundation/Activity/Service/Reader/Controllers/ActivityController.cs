@@ -2,8 +2,7 @@
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using Serilog;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -16,480 +15,482 @@ using System.Security.Claims;
 using System.Web.Http;
 using ActivityDetailMessage = RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.ActivityDetailMessage;
 
-	 
+
 namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 {
-	public class ActivityController : BaseApiController
-	{
-		#region Public Methods
-		/// <summary>
-		/// List diffrent search metadata to populate drop-down boxes on UI
-		/// </summary>  
-		/// <returns>A list of Organization(s) Details for a person</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List diffrent search metadata to populate drop-down boxes on UI", Type = typeof(SearchMetadata))]
-		[Route("api/listsearchmetadata")]
-		[HttpGet]
-		public HttpResponseMessage ListSearchMetadata()
-		{
-			try
-			{
-				var readerRepository = new ReaderRepository();
-				var result = readerRepository.GetSearchMetadata();
+    public class ActivityController : BaseApiController
+    {
+        #region Public Methods
+        /// <summary>
+        /// List diffrent search metadata to populate drop-down boxes on UI
+        /// </summary>  
+        /// <returns>A list of Organization(s) Details for a person</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List different search metadata to populate drop-down boxes on UI", Type = typeof(SearchMetadata))]
+        [Route("api/listsearchmetadata")]
+        [HttpGet]
+        public HttpResponseMessage ListSearchMetadata()
+        {
+            try
+            {             
 
-				return Request.CreateResponse(HttpStatusCode.OK, result);
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog(exception: ex);
-				throw new HttpResponseException(HttpStatusCode.InternalServerError);
-			}
-		}
+                var readerRepository = new ReaderRepository();
+                var result = readerRepository.GetSearchMetadata();
+                
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog(exception: ex);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
+        }
 
-		/// <summary>
-		/// List activity log based on search criteria
-		/// </summary>
-		/// <param name="filterCriteria">Activity Log Filter Criteria</param>
-		/// <returns>Response message including the status code and data</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria", Type = typeof(ActivityDetailMessage))]
-		[Route("api/listactivitylog")]
-		[HttpPost]
-		public HttpResponseMessage ListActivityLog(ActivityLogFilterCriteria filterCriteria)
-		{
-			try
-			{
-				if (filterCriteria == null)
-				{
-					return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
-				}
+        /// <summary>
+        /// List activity log based on search criteria
+        /// </summary>
+        /// <param name="filterCriteria">Activity Log Filter Criteria</param>
+        /// <returns>Response message including the status code and data</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria", Type = typeof(ActivityDetailMessage))]
+        [Route("api/listactivitylog")]
+        [HttpPost]
+        public HttpResponseMessage ListActivityLog(ActivityLogFilterCriteria filterCriteria)
+        {
+            try
+            {
+                if (filterCriteria == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
+                }
 
-				// Add booksMaster id from claims
-				ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-				if (currentClaimPrincipal.Identity.IsAuthenticated)
-				{
-					var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
-					if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
-					{
-						var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
+                // Add booksMaster id from claims
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                if (currentClaimPrincipal.Identity.IsAuthenticated)
+                {
+                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
+                    if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
+                    {
+                        var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
 
-						filterCriteria.ActivitySearchCriteria.Add(
-							new ActivitySearchCriteria
-							{
-								Name = "BooksMasterOrganizationId",
-								Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
-							});
-					};
-				}
+                        filterCriteria.ActivitySearchCriteria.Add(
+                            new ActivitySearchCriteria
+                            {
+                                Name = "BooksMasterOrganizationId",
+                                Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
+                            });
+                    };
+                }
 
-				var readerRepository = new ReaderRepository();
-				var result = readerRepository.ListActivityLog(filterCriteria);
+                var readerRepository = new ReaderRepository();
+                var result = readerRepository.ListActivityLog(filterCriteria);
 
-				if (result != null)
-				{
-					ObjectListOutput<ActivityDetailMessage, IErrorData> output = new ObjectListOutput<ActivityDetailMessage, IErrorData>() { list = result };
-					return Request.CreateResponse(HttpStatusCode.OK, output);
-				}
+                if (result != null)
+                {
+                    ObjectListOutput<ActivityDetailMessage, IErrorData> output = new ObjectListOutput<ActivityDetailMessage, IErrorData>() { list = result };
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
 
-				return Request.CreateResponse(HttpStatusCode.InternalServerError, "No data.");
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog(exception: ex);
-				throw new HttpResponseException(HttpStatusCode.InternalServerError);
-			}
-		}
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "No data.");
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog(exception: ex);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
+        }
 
-		/// <summary>
-		/// Export activity log based on search criteria
-		/// </summary>
-		/// <param name="filterCriteria">Activity Log Filter Criteria</param>
-		/// <returns>Response message including the status code and data</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Export activity log by search criteria in excel.", Type = typeof(ActivityDetailMessage))]
-		[Route("api/exportactivitylog")]
-		[HttpPost]
-		public HttpResponseMessage ExportActivityLog(ActivityLogFilterCriteria filterCriteria)
-		{
-			try
-			{
-				byte[] plainBytes;
-				SaveFormat saveFormat = SaveFormat.CSV;
+        /// <summary>
+        /// Export activity log based on search criteria
+        /// </summary>
+        /// <param name="filterCriteria">Activity Log Filter Criteria</param>
+        /// <returns>Response message including the status code and data</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Export activity log by search criteria in excel.", Type = typeof(ActivityDetailMessage))]
+        [Route("api/exportactivitylog")]
+        [HttpPost]
+        public HttpResponseMessage ExportActivityLog(ActivityLogFilterCriteria filterCriteria)
+        {
+            try
+            {
+                byte[] plainBytes;
+                SaveFormat saveFormat = SaveFormat.CSV;
 
-				ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
-				Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-				if (filterCriteria == null)
-				{
-					return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
-				}
+                if (filterCriteria == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
+                }
 
-				// Add booksMaster id from claims
-				ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-				if (currentClaimPrincipal.Identity.IsAuthenticated)
-				{
-					var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
-					if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
-					{
-						var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
+                // Add booksMaster id from claims
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                if (currentClaimPrincipal.Identity.IsAuthenticated)
+                {
+                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
+                    if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
+                    {
+                        var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
 
-						filterCriteria.ActivitySearchCriteria.Add(
-							new ActivitySearchCriteria
-							{
-								Name = "BooksMasterOrganizationId",
-								Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
-							});
-					};
-				}
+                        filterCriteria.ActivitySearchCriteria.Add(
+                            new ActivitySearchCriteria
+                            {
+                                Name = "BooksMasterOrganizationId",
+                                Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
+                            });
+                    };
+                }
 
-				ReaderRepository readerRepository = new ReaderRepository();
-				IList<ActivityDetailMessage> listActivityDetailMessage = readerRepository.ListActivityLog(filterCriteria);
+                ReaderRepository readerRepository = new ReaderRepository();
+                IList<ActivityDetailMessage> listActivityDetailMessage = readerRepository.ListActivityLog(filterCriteria);
 
-				if (listActivityDetailMessage != null)
-				{
-					errorStatus = SetAsposeLicense();
-					if (errorStatus.Success)
-					{
-						saveFormat = filterCriteria.DataFormat;
-						plainBytes = ExportActivityData(listActivityDetailMessage, saveFormat);
-						output = new ObjectOutput<string, IErrorData>()
-						{
-							obj = Convert.ToBase64String(plainBytes),
-							Status = errorStatus
-						};
-						return Request.CreateResponse(HttpStatusCode.OK, output);
-					}
-					else
-					{
-						output.Status = errorStatus;
-						return Request.CreateResponse(HttpStatusCode.OK, output);
-					}
-				}
-				else
-				{
-					errorStatus.Success = false;
-					errorStatus.ErrorCode = "Activity.ExportActivityLog.1";
-					errorStatus.ErrorMsg = "List Activities Export: No data";
-					output.Status = errorStatus;
-					return Request.CreateResponse(HttpStatusCode.OK, output);
-				}
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog(exception: ex);
-				throw new HttpResponseException(HttpStatusCode.InternalServerError);
-			}
-		}
+                if (listActivityDetailMessage != null)
+                {
+                    errorStatus = SetAsposeLicense();
+                    if (errorStatus.Success)
+                    {
+                        saveFormat = filterCriteria.DataFormat;
+                        plainBytes = ExportActivityData(listActivityDetailMessage, saveFormat);
+                        output = new ObjectOutput<string, IErrorData>()
+                        {
+                            obj = Convert.ToBase64String(plainBytes),
+                            Status = errorStatus
+                        };
+                        return Request.CreateResponse(HttpStatusCode.OK, output);
+                    }
+                    else
+                    {
+                        output.Status = errorStatus;
+                        return Request.CreateResponse(HttpStatusCode.OK, output);
+                    }
+                }
+                else
+                {
+                    errorStatus.Success = false;
+                    errorStatus.ErrorCode = "Activity.ExportActivityLog.1";
+                    errorStatus.ErrorMsg = "List Activities Export: No data";
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog(exception: ex);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
+        }
 
-		/// <summary>
-		/// Write activity log
-		/// </summary>
-		/// <param name="activityDetailMessage">Activity Detail Message</param>
-		/// <returns>Response message including the status code and data</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Export activity log by search criteria in excel.", Type = typeof(ActivityDetailMessage))]
-		[Route("api/write")]
-		[HttpPost]
-		public HttpResponseMessage WriteActivityLog(ActivityDetailMessage activityDetailMessage)
-		{
-			try
-			{
-				if (activityDetailMessage == null)
-				{
-					return Request.CreateResponse(HttpStatusCode.BadRequest, "No activityDetailMessage received.");
-				}
+        /// <summary>
+        /// Write activity log
+        /// </summary>
+        /// <param name="activityDetailMessage">Activity Detail Message</param>
+        /// <returns>Response message including the status code and data</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Export activity log by search criteria in excel.", Type = typeof(ActivityDetailMessage))]
+        [Route("api/write")]
+        [HttpPost]
+        public HttpResponseMessage WriteActivityLog(ActivityDetailMessage activityDetailMessage)
+        {
+            try
+            {
+                if (activityDetailMessage == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "No activityDetailMessage received.");
+                }
 
-				// Add booksMaster id from claims if not exists
-				ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-				if (currentClaimPrincipal.Identity.IsAuthenticated)
-				{
-					if (activityDetailMessage.BooksMasterOrganizationId == 0)
-					// If booksMasterOrganizationId passed then bypass adding from claim
-					{
-						var booksMasterOrganizationId =
-						((from nvp in currentClaimPrincipal.Claims
-						  where nvp.Type.ToUpper() == "ORGMASTERID"
-						  select nvp.Value).FirstOrDefault());
-						activityDetailMessage.BooksMasterOrganizationId = Convert.ToInt64(booksMasterOrganizationId);
-					}
-				}
+                // Add booksMaster id from claims if not exists
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                if (currentClaimPrincipal.Identity.IsAuthenticated)
+                {
+                    if (activityDetailMessage.BooksMasterOrganizationId == 0)
+                    // If booksMasterOrganizationId passed then bypass adding from claim
+                    {
+                        var booksMasterOrganizationId =
+                        ((from nvp in currentClaimPrincipal.Claims
+                          where nvp.Type.ToUpper() == "ORGMASTERID"
+                          select nvp.Value).FirstOrDefault());
+                        activityDetailMessage.BooksMasterOrganizationId = Convert.ToInt64(booksMasterOrganizationId);
+                    }
+                }
 
-				activityDetailMessage.ApplicationTimestamp = DateTime.UtcNow;
-				if (string.IsNullOrEmpty(ConfigReader.ActivityMQName))
-				{
-					throw new Exception($"ActivityMQName is missing check config file.");
-				}
+                activityDetailMessage.ApplicationTimestamp = DateTime.UtcNow;
+                if (string.IsNullOrEmpty(ConfigReader.ActivityMQName))
+                {
+                    throw new Exception($"ActivityMQName is missing check config file.");
+                }
 
-				using (var queue = new MessageQueue(ConfigReader.ActivityMQName))
-				{
-					var logMessage = new Message(activityDetailMessage);
-					queue.Send(logMessage);
-				}
-			}
-			catch (Exception ex)
-			{
-				// log exceptin in elastic
-				Log.Write(LogType.Error, new LogDetails { Exception = ex, Message = "Exception in Activity Logging" });
-				return Request.CreateResponse(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError);
-			}
+                using (var queue = new MessageQueue(ConfigReader.ActivityMQName))
+                {
+                    var logMessage = new Message(activityDetailMessage);
+                    queue.Send(logMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                // log exceptin in elastic
+                Log.Error(ex, "Exception in Activity Logging");
 
-			return Request.CreateResponse(HttpStatusCode.NoContent);
-		}
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError);
+            }
 
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Returns additional details (key-value) data for particular activity.", Type = typeof(List<RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.AdditionalParameters>))]
-		[Route("api/additionalparams")]
-		[HttpGet]
-		public HttpResponseMessage ListActivityAdditionalParams(long activityId)
-		{
-			try
-			{
-				if (activityId == 0)
-					return Request.CreateResponse(HttpStatusCode.BadRequest, "0 activity Id received.");
+            return Request.CreateResponse(HttpStatusCode.NoContent);
+        }
 
-				var readerRepository = new ReaderRepository();
-				var result = readerRepository.ListActivityAdditionalParams(activityId);
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Returns additional details (key-value) data for particular activity.", Type = typeof(List<RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.AdditionalParameters>))]
+        [Route("api/additionalparams")]
+        [HttpGet]
+        public HttpResponseMessage ListActivityAdditionalParams(long activityId)
+        {
+            try
+            {
+                if (activityId == 0)
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "0 activity Id received.");
 
-				return Request.CreateResponse(HttpStatusCode.OK, result);
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog(exception: ex);
-				throw new HttpResponseException(HttpStatusCode.InternalServerError);
-			}
-		}
+                var readerRepository = new ReaderRepository();
+                var result = readerRepository.ListActivityAdditionalParams(activityId);
 
-		#endregion
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog(exception: ex);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
+        }
 
-		#region Migration Tool
-		/// <summary>
-		/// List activity log based on search criteria to send data related to Pagination
-		/// </summary>
-		/// <param name="filterCriteria">Activity Log Filter Criteria</param>
-		/// <returns>Response message including the status code and data</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria to send data related to Pagination", Type = typeof(ListResponse<ActivityDetailMessage>))]
-		[Route("api/v1/listactivitylog")]
-		[HttpPost]
-		public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria)
-		{
-			var result = new ListResponse<ActivityDetailMessage>();
-			try
-			{
+        #endregion
 
-				if (filterCriteria == null)
-				{
-					result.IsError = true;
-					result.ErrorReason = "No filterCriteria received.";
-					return Request.CreateResponse(HttpStatusCode.BadRequest, result);
-				}
+        #region Migration Tool
+        /// <summary>
+        /// List activity log based on search criteria to send data related to Pagination
+        /// </summary>
+        /// <param name="filterCriteria">Activity Log Filter Criteria</param>
+        /// <returns>Response message including the status code and data</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List activity by criteria to send data related to Pagination", Type = typeof(ListResponse<ActivityDetailMessage>))]
+        [Route("api/v1/listactivitylog")]
+        [HttpPost]
+        public HttpResponseMessage ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria)
+        {
+            var result = new ListResponse<ActivityDetailMessage>();
+            try
+            {
 
-				// Add booksMaster id from claims
-				ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-				if (currentClaimPrincipal.Identity.IsAuthenticated)
-				{
-					var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
-					if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
-					{
-						var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
+                if (filterCriteria == null)
+                {
+                    result.IsError = true;
+                    result.ErrorReason = "No filterCriteria received.";
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, result);
+                }
 
-						filterCriteria.ActivitySearchCriteria.Add(
-							new ActivitySearchCriteria
-							{
-								Name = "BooksMasterOrganizationId",
-								Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
-							});
-					};
-				}
+                // Add booksMaster id from claims
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                if (currentClaimPrincipal.Identity.IsAuthenticated)
+                {
+                    var orgFilter = filterCriteria.ActivitySearchCriteria.Where(x => x.Value.ToUpper() == "BOOKSMASTERORGANIZATIONID");
+                    if (!orgFilter.Any()) // If booksMasterOrganizationId passed then bypass adding from claim
+                    {
+                        var booksMasterOrganizationId = ((from nvp in currentClaimPrincipal.Claims where nvp.Type.ToUpper() == "ORGMASTERID" select nvp.Value).FirstOrDefault());
 
-				var readerRepository = new ReaderRepository();
-				result = readerRepository.ListActivityLogDetails(filterCriteria);
+                        filterCriteria.ActivitySearchCriteria.Add(
+                            new ActivitySearchCriteria
+                            {
+                                Name = "BooksMasterOrganizationId",
+                                Value = booksMasterOrganizationId //e.g. orgMasterId: 4638
+                            });
+                    };
+                }
 
-				if (result != null)
-				{
-					return Request.CreateResponse(HttpStatusCode.OK, result);
-				}
+                var readerRepository = new ReaderRepository();
+                result = readerRepository.ListActivityLogDetails(filterCriteria);
 
-				return Request.CreateResponse(HttpStatusCode.InternalServerError, "No data.");
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog(exception: ex);
-				throw new HttpResponseException(HttpStatusCode.InternalServerError);
-			}
-		}
+                if (result != null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, result);
+                }
 
-		#endregion
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "No data.");
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog(exception: ex);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
+        }
 
-		#region Private Methods
-		/// <summary>
-		/// Set Aspose License
-		/// </summary>
-		/// <returns>Error Status object</returns>
-		private static Status<IErrorData> SetAsposeLicense()
-		{
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			try
-			{
-				Aspose.Cells.License asposeCellsLicense = new Aspose.Cells.License();
-				//Gets the base directory that the assembly resolver uses to probe for assemblies + Aspose license file location
-				asposeCellsLicense.SetLicense(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"ThirdParty\Aspose.Total.Lic"));
-			}
-			catch (Exception ex)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "Person.SetAsposeLicense.1";
-				errorStatus.ErrorMsg = "Set Aspose License: " + ex.Message;
-			}
+        #endregion
 
-			return errorStatus;
-		}
+        #region Private Methods
+        /// <summary>
+        /// Set Aspose License
+        /// </summary>
+        /// <returns>Error Status object</returns>
+        private static Status<IErrorData> SetAsposeLicense()
+        {
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            try
+            {
+                Aspose.Cells.License asposeCellsLicense = new Aspose.Cells.License();
+                //Gets the base directory that the assembly resolver uses to probe for assemblies + Aspose license file location
+                asposeCellsLicense.SetLicense(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"ThirdParty\Aspose.Total.Lic"));
+            }
+            catch (Exception ex)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Person.SetAsposeLicense.1";
+                errorStatus.ErrorMsg = "Set Aspose License: " + ex.Message;
+            }
 
-		/// <summary>
-		/// Create Excel WorkSheet
-		/// </summary>
-		/// <param name="workbook">Aspose Cells Workbook</param>
-		/// <param name="worksheet">Aspose Cells WorkSheet</param>
-		private static void CreateExcelWorkSheet(out Workbook workbook, out Worksheet worksheet)
-		{
-			//Instantiate a new Workbook
-			workbook = new Workbook();
-			//Clear all the worksheets
-			workbook.Worksheets.Clear();
-			//Add a new Sheet "Data"
-			worksheet = workbook.Worksheets.Add("Data");
-		}
+            return errorStatus;
+        }
 
-		/// <summary>
-		/// Export data in a list in a the the specified format
-		/// </summary>
-		/// <param name="listActivityDetailMessage">List of activities to export</param>
-		/// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
-		/// <returns>Array of bytes</returns>
-		private byte[] ExportActivityData(IList<ActivityDetailMessage> listActivityDetailMessage, SaveFormat dataFormat = SaveFormat.CSV)
-		{
-			Workbook workbook;
-			Worksheet worksheet;
-			MemoryStream memorystream = new MemoryStream();
+        /// <summary>
+        /// Create Excel WorkSheet
+        /// </summary>
+        /// <param name="workbook">Aspose Cells Workbook</param>
+        /// <param name="worksheet">Aspose Cells WorkSheet</param>
+        private static void CreateExcelWorkSheet(out Workbook workbook, out Worksheet worksheet)
+        {
+            //Instantiate a new Workbook
+            workbook = new Workbook();
+            //Clear all the worksheets
+            workbook.Worksheets.Clear();
+            //Add a new Sheet "Data"
+            worksheet = workbook.Worksheets.Add("Data");
+        }
 
-			string[] propertyNames = new string[]
-			{
-				"LogActivityTypeName", "FromUserFirstName", "FromUserLastName", "FromUserLoginName", "Message", "ApplicationTimestampOffset"
-			};
+        /// <summary>
+        /// Export data in a list in a the the specified format
+        /// </summary>
+        /// <param name="listActivityDetailMessage">List of activities to export</param>
+        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <returns>Array of bytes</returns>
+        private byte[] ExportActivityData(IList<ActivityDetailMessage> listActivityDetailMessage, SaveFormat dataFormat = SaveFormat.CSV)
+        {
+            Workbook workbook;
+            Worksheet worksheet;
+            MemoryStream memorystream = new MemoryStream();
 
-			CreateExcelWorkSheet(out workbook, out worksheet);
+            string[] propertyNames = new string[]
+            {
+                "LogActivityTypeName", "FromUserFirstName", "FromUserLastName", "FromUserLoginName", "Message", "ApplicationTimestampOffset"
+            };
 
-			//Manually add the row titles
-			int col = 0;
-			Cells cells = worksheet.Cells;
+            CreateExcelWorkSheet(out workbook, out worksheet);
 
-			Cell cell = cells[0, col++];
-			cell.PutValue("Activity type");
+            //Manually add the row titles
+            int col = 0;
+            Cells cells = worksheet.Cells;
 
-			worksheet.Cells[0, col++].PutValue("First name");
-			worksheet.Cells[0, col++].PutValue("Last name");
-			worksheet.Cells[0, col++].PutValue("Username");
-			worksheet.Cells[0, col++].PutValue("Description");
-			worksheet.Cells[0, col++].PutValue("Date");
-			int totalColumns = col;
+            Cell cell = cells[0, col++];
+            cell.PutValue("Activity type");
 
-			// Get the pagesetup object
-			PageSetup pageSetup = worksheet.PageSetup;
+            worksheet.Cells[0, col++].PutValue("First name");
+            worksheet.Cells[0, col++].PutValue("Last name");
+            worksheet.Cells[0, col++].PutValue("Username");
+            worksheet.Cells[0, col++].PutValue("Description");
+            worksheet.Cells[0, col++].PutValue("Date");
+            int totalColumns = col;
 
-			// Set bottom,left,right and top page margins
-			pageSetup.BottomMarginInch = 0.5;
-			pageSetup.LeftMarginInch = 0.25;
-			pageSetup.RightMarginInch = 0.25;
-			pageSetup.TopMarginInch = 0.5;
+            // Get the pagesetup object
+            PageSetup pageSetup = worksheet.PageSetup;
 
-			worksheet.Cells.ImportCustomObjects(
-				(System.Collections.ICollection)listActivityDetailMessage,
-				propertyNames,
-				false, //Don't show the field names
-				1, //Start at second row
-				0,
-				listActivityDetailMessage.Count,
-				true,
-				"",
-				false
-			);
+            // Set bottom,left,right and top page margins
+            pageSetup.BottomMarginInch = 0.5;
+            pageSetup.LeftMarginInch = 0.25;
+            pageSetup.RightMarginInch = 0.25;
+            pageSetup.TopMarginInch = 0.5;
 
-			switch (dataFormat)
-			{
-				case SaveFormat.CSV:
-					//Autofits the columns width
-					workbook.Worksheets[0].AutoFitColumns();
-					break;
-				case SaveFormat.Pdf:
-					//Set the width columns
-					col = 0;
-					worksheet.Cells.SetColumnWidthInch(col++, 1);
-					worksheet.Cells.SetColumnWidthInch(col++, 1.25);
-					worksheet.Cells.SetColumnWidthInch(col++, 1.25);
-					worksheet.Cells.SetColumnWidthInch(col++, 2);
-					worksheet.Cells.SetColumnWidthInch(col++, 3);
-					worksheet.Cells.SetColumnWidthInch(col++, 2);
+            worksheet.Cells.ImportCustomObjects(
+                (System.Collections.ICollection)listActivityDetailMessage,
+                propertyNames,
+                false, //Don't show the field names
+                1, //Start at second row
+                0,
+                listActivityDetailMessage.Count,
+                true,
+                "",
+                false
+            );
 
-					//Create a StyleFlag object.
-					StyleFlag styleFlag = new StyleFlag
-					{
-						//Make the corresponding attributes ON.
-						Font = true,
-						VerticalAlignment = true
-					};
+            switch (dataFormat)
+            {
+                case SaveFormat.CSV:
+                    //Autofits the columns width
+                    workbook.Worksheets[0].AutoFitColumns();
+                    break;
+                case SaveFormat.Pdf:
+                    //Set the width columns
+                    col = 0;
+                    worksheet.Cells.SetColumnWidthInch(col++, 1);
+                    worksheet.Cells.SetColumnWidthInch(col++, 1.25);
+                    worksheet.Cells.SetColumnWidthInch(col++, 1.25);
+                    worksheet.Cells.SetColumnWidthInch(col++, 2);
+                    worksheet.Cells.SetColumnWidthInch(col++, 3);
+                    worksheet.Cells.SetColumnWidthInch(col++, 2);
 
-					Style style = workbook.CreateStyle();
-					Range range = worksheet.Cells.CreateRange(0, 0, 1, totalColumns);
-					style.Font.IsBold = true;
-					style.VerticalAlignment = TextAlignmentType.Top;
-					range.ApplyStyle(style, styleFlag);
+                    //Create a StyleFlag object.
+                    StyleFlag styleFlag = new StyleFlag
+                    {
+                        //Make the corresponding attributes ON.
+                        Font = true,
+                        VerticalAlignment = true
+                    };
 
-					styleFlag = new StyleFlag
-					{
-						WrapText = true,
-						VerticalAlignment = true
+                    Style style = workbook.CreateStyle();
+                    Range range = worksheet.Cells.CreateRange(0, 0, 1, totalColumns);
+                    style.Font.IsBold = true;
+                    style.VerticalAlignment = TextAlignmentType.Top;
+                    range.ApplyStyle(style, styleFlag);
 
-					};
-					range = worksheet.Cells.CreateRange(1, 0, 1048575, totalColumns);
-					style.VerticalAlignment = TextAlignmentType.Top;
-					style.IsTextWrapped = true;
-					range.ApplyStyle(style, styleFlag);
+                    styleFlag = new StyleFlag
+                    {
+                        WrapText = true,
+                        VerticalAlignment = true
 
-					foreach (Worksheet sheet in workbook.Worksheets)
-					{
-						sheet.PageSetup.Orientation = PageOrientationType.Landscape;
-						sheet.PageSetup.FitToPagesWide = 1;
-						sheet.PageSetup.FitToPagesTall = 0;
-					}
-					break;
-				default:
-					break;
-			}
+                    };
+                    range = worksheet.Cells.CreateRange(1, 0, 1048575, totalColumns);
+                    style.VerticalAlignment = TextAlignmentType.Top;
+                    style.IsTextWrapped = true;
+                    range.ApplyStyle(style, styleFlag);
 
-			//Autofits all rows in this worksheet
-			workbook.Worksheets[0].AutoFitRows(true);
+                    foreach (Worksheet sheet in workbook.Worksheets)
+                    {
+                        sheet.PageSetup.Orientation = PageOrientationType.Landscape;
+                        sheet.PageSetup.FitToPagesWide = 1;
+                        sheet.PageSetup.FitToPagesTall = 0;
+                    }
+                    break;
+                default:
+                    break;
+            }
 
-			//Convert to bytes array
-			workbook.Save(memorystream, dataFormat);
+            //Autofits all rows in this worksheet
+            workbook.Worksheets[0].AutoFitRows(true);
 
-			//FileStream file = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Export." + dataFormat.ToString()), FileMode.Create, FileAccess.Write);
-			//memorystream.WriteTo(file);
-			//file.Close();
+            //Convert to bytes array
+            workbook.Save(memorystream, dataFormat);
 
-			//Get bytes
-			byte[] bytes = memorystream.ToArray();
+            //FileStream file = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Export." + dataFormat.ToString()), FileMode.Create, FileAccess.Write);
+            //memorystream.WriteTo(file);
+            //file.Close();
 
-			memorystream.Dispose();
-			memorystream.Close();
+            //Get bytes
+            byte[] bytes = memorystream.ToArray();
 
-			return bytes;
-		}
-		#endregion
-	}
+            memorystream.Dispose();
+            memorystream.Close();
+
+            return bytes;
+        }
+        #endregion
+    }
 }

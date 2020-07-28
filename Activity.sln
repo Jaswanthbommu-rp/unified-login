@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Enterprise\Founda
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "Enterprise\Foundation\DataAccess\DataAccess.csproj", "{255A94DC-A434-47CC-A472-E162EBDE6BCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.Core", "Enterprise\Foundation\Audit\Audit.Core\Audit.Core.csproj", "{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,16 +74,6 @@ Global
 		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.SAT|Any CPU.ActiveCfg = Fortify|Any CPU
 		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.SAT|Any CPU.Build.0 = Fortify|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.DEV|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.DEV|Any CPU.Build.0 = Debug|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.SAT|Any CPU.ActiveCfg = Fortify|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.SAT|Any CPU.Build.0 = Fortify|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,30 +83,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {59ECC07B-045E-46AF-AD56-A9C2524DF4DB}
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 7
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://rcetfseisweb001:8080/tfs/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Enterprise\\Foundation\\Activity\\Service\\ActivityTester\\ActivityTester.csproj
-		SccProjectTopLevelParentUniqueName1 = Activity.sln
-		SccProjectName1 = Enterprise/Foundation/Activity/Service/ActivityTester
-		SccLocalPath1 = Enterprise\\Foundation\\Activity\\Service\\ActivityTester
-		SccProjectUniqueName2 = Enterprise\\Foundation\\Activity\\Service\\Reader\\Reader.csproj
-		SccProjectName2 = Enterprise/Foundation/Activity/Service/Reader
-		SccLocalPath2 = Enterprise\\Foundation\\Activity\\Service\\Reader
-		SccProjectUniqueName3 = Enterprise\\Foundation\\Activity\\Service\\Command\\Command.csproj
-		SccProjectName3 = Enterprise/Foundation/Activity/Service/Command
-		SccLocalPath3 = Enterprise\\Foundation\\Activity\\Service\\Command
-		SccProjectUniqueName4 = Enterprise\\Foundation\\Activity\\Service\\Shared\\Shared.csproj
-		SccProjectName4 = Enterprise/Foundation/Activity/Service/Shared
-		SccLocalPath4 = Enterprise\\Foundation\\Activity\\Service\\Shared
-		SccProjectUniqueName5 = Enterprise\\Foundation\\DataAccess\\DataAccess.csproj
-		SccProjectName5 = Enterprise/Foundation/DataAccess
-		SccLocalPath5 = Enterprise\\Foundation\\DataAccess
-		SccProjectUniqueName6 = Enterprise\\Foundation\\Audit\\Audit.Core\\Audit.Core.csproj
-		SccProjectName6 = Enterprise/Foundation/Audit/Audit.Core
-		SccLocalPath6 = Enterprise\\Foundation\\Audit\\Audit.Core
 	EndGlobalSection
 EndGlobal
