@@ -2503,3 +2503,31 @@ BEGIN
 	values(@ApproveAlertId,@OrganizationPartyId,9,@UserId,@Now);
 END
 GO
+
+--Fix for 381988
+DECLARE @ManageNotificationRightId INT, @UserId BIGINT, @OrganizationPartyId INT, @Now datetime = GETDATE();
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%';
+
+SELECT  @OrganizationPartyId = o.PartyId
+FROM Enterprise.Organization AS o
+	 INNER JOIN
+	 Enterprise.Party AS p
+	 ON P.PartyId = O.PartyId
+WHERE O.Name = 'RealPage Employee';
+
+select @ManageNotificationRightId = RightId from [security].[right] where rightname ='ManageNotifications';
+
+update [security].[right] set VisibilityStatusId = 10 where RightId in (@ManageNotificationRightId);
+
+IF EXISTS(SELECT TOP 1 1 FROM [security].[roleright] where roleid = 1 and RightId in (@ManageNotificationRightId))
+BEGIN
+	delete [security].[roleright] where roleid = 1 and RightId in (@ManageNotificationRightId);
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [security].[organizationoverrideright] where RightId = @ManageNotificationRightId)
+BEGIN
+	insert into [security].[organizationoverrideright](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
+	values(@ManageNotificationRightId,@OrganizationPartyId,9,@UserId,@Now);
+END
