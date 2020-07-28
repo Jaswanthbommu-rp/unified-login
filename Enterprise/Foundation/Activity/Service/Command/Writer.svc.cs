@@ -1,8 +1,7 @@
 ﻿using System;
 using System.ServiceModel.MsmqIntegration;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using Serilog;
 using ActivityDetailMessage = RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.ActivityDetailMessage;
 
 namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
@@ -12,17 +11,14 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
         public void ReadMqActivity(MsmqMessage<ActivityDetailMessage> mqMessage)
         {
             ActivityDetailMessage activity = null;
+
             try
             {
                 activity = (ActivityDetailMessage)mqMessage.Body;
 
                 if (activity.BooksMasterOrganizationId == 0)
                 {
-                    Log.Write(LogType.Error, new LogDetails
-                    {
-                        Message = $"Activity Message with no organization. Message -{activity?.Message}",// accept message even orgId 0  
-                        ProductModule = this.GetType().ToString(),
-                    });
+                    Log.Error( $"Activity Message with no organization. Message -{activity?.Message}");
                 }
 
                 var repo = new ActivityRepository();
@@ -30,15 +26,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
             }
             catch (Exception ex)
             {
-                // Log in elastic search
-                Log.Write(LogType.Error, new LogDetails
-                {
-                    Message = $"Error in Activity Command - {ex.Message}",
-                    ProductModule = this.GetType().ToString(),
-                    UserId = activity?.FromUserLoginId.ToString(),
-                    PmcId = activity?.BooksMasterOrganizationId.ToString(),
-                    Exception = ex,
-                });
+                Log.Error(ex, $"Error in Activity Command - {ex.Message}. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.BooksMasterOrganizationId.ToString()}");
             }
         }
     }
