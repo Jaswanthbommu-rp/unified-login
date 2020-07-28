@@ -475,7 +475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
             Log.Write(LogType.Diagnostic, new LogDetails { Message = $"Before CreateUpdateUserStatus() method" });
-            bool response = userLoginLogic.CreateUpdateUserStatus(_userClaims.UserRealPageGuid, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
+            bool response = userLoginLogic.CreateUpdateUserStatus(realPageId.Value, statusTypeName);//, fromUtcDateTime, thruUtcDateTime);
             Log.Write(LogType.Diagnostic, new LogDetails { Message = $"After CreateUpdateUserStatus() method" });
 
             if (response)
