@@ -131,7 +131,7 @@
                 var flag = syncMgr.isProductAllProperties($scope.$parent.productId);
                 return flag;
             }
-            if (vm.propertySelect === 'allProperties' && $scope.$parent.productId !== 9) {
+            if (vm.allProperties && $scope.$parent.productId !== 9) {
                 return true;
             }
             return false;
