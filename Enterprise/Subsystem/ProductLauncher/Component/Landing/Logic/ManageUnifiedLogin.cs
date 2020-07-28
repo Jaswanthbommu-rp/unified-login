@@ -75,8 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return new ListResponse {IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage};
                 }
 
-                IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
-                IList<ProductProperty> customerPropertyList = manageBlueBook.GetCustomerProperty(companyMasterId, null, null);
+                IList<ProductProperty> customerPropertyList = _blueBook.GetCustomerProperty(companyMasterId, null, null);
 
                 WriteToDiagnosticLog($"ManageUnifiedLogin.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
 
@@ -188,7 +187,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// 
+        /// Get a list of UPFM property instances for the give user
         /// </summary>
         /// <param name="editorPersonaId"></param>
         /// <param name="userPersonaId"></param>
@@ -210,8 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return result;
                 }
 
-                IManageBlueBook manageBlueBook = new ManageBlueBook(_userClaims);
-                var booksPropertyList = manageBlueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+                var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
                 var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
                 WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
@@ -2052,7 +2050,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 InstanceId = upfmPropertyInstance.CustomerPropertyId,
                 Latitude = upfmPropertyInstance.Latitude,
                 Longitude = upfmPropertyInstance.Longitude,
-                Alias = upfmPropertyInstance.CustomerPropertyId
+                Alias = null
             };
             return pp;
         }
