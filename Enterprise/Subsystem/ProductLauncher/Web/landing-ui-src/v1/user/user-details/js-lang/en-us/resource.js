@@ -34,6 +34,7 @@
             "label.firstName": "First Name",
             "label.middleName": "Middle Initial",
             "label.lastName": "Last Name",
+            "label.employeeId": "Employee ID",
             "label.userTypeId": "User Type",
             "label.loginName": usernameLabel,
             "label.password": "Password",
