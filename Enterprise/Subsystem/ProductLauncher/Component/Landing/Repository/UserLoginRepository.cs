@@ -22,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     {
         private OrganizationRepository _organizationRepository;
         private CredentialRepository _credentialRepository;
-
+        
         #region Constructor
         /// <summary>
         /// UserRepository Constructor
@@ -192,8 +192,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			RepositoryResponse repositoryResponse = new RepositoryResponse();
 
 			IUserRepository userRepository = new UserRepository();
-
-			using (var repository = GetRepository())
+            
+            using (var repository = GetRepository())
             {
 				dynamic param = new
 				{
@@ -204,10 +204,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					StatusThruDate = thruDate
 				};
 				repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserStatusByCompany, param);
-
-				//remove products
-				//If Primary Organization - List all Persona(s) across all user companies
-				//Else List Persona(s) for a company
+                
+                //remove products
+                //If Primary Organization - List all Persona(s) across all user companies
+                //Else List Persona(s) for a company
                 if (statusTypeId == (int) UserUiStatusType.Disabled)
                 {
                     param = new
