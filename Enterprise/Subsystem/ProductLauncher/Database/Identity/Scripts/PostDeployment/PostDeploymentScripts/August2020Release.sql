@@ -1802,6 +1802,20 @@ Begin
 end
 GO
 
+-- migrate data from old table to new
+if not exists ( select top 1 1 from Enterprise.PropertyInstanceMapping )
+BEGIN
+	insert into enterprise.PropertyInstanceMapping ( PersonaId, PropertyInstanceId, ProductId, fromdate, thrudate, active )
+	select personaid, pi1.PropertyInstanceId, productid, fromdate, thrudate, case when pm.ThruDate is null then 1 else 0 end
+		from enterprise.PropertyMapping PM 
+		inner join enterprise.PropertyInstance pi1 on PM.PropertyId = pi1.CustomerPropertyId
+		where pm.ThruDate is null
+		and pi1.Domain = 'primary'
+	and pm.ProductId NOT IN ( 26 )
+END
+GO
+
+
 --Start For Reno product internal settings
 GO
 
