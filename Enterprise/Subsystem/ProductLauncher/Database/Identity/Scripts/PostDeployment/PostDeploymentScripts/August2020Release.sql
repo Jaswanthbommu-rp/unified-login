@@ -1768,18 +1768,6 @@ begin
 end
 GO
 
-if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'UsePropertyInstanceUnifiedAmenities' )
-begin
-	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UsePropertyInstanceUnifiedAmenities', 'Use property instances for Unified Amenities property list', 0 )
-end
-go
-
---if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'UsePropertyInstanceCIMPL' )
---begin
---	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UsePropertyInstanceCIMPL', 'Use property instances for CIMPL property list', 0 )
---end
---
---GO
 
 if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
 				inner join Enterprise.ProductSettingType pst
