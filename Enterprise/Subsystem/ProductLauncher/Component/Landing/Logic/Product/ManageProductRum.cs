@@ -465,7 +465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                    response.ErrorReason = CommonMessageConstants.AdditionalRightErrorMessage;
                 }
                 WriteToErrorLog($"ManageProductRum.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
@@ -559,7 +559,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                    response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 }
             }
 

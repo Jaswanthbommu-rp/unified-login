@@ -1064,6 +1064,26 @@ IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 266)
 BEGIN
 	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 266
 END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 294)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 294
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 313)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 313
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 332)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 332
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] WHERE ControlId = 351)
+BEGIN
+	DELETE FROM [UserManagement].[Control] WHERE  ControlId = 351
+END
 GO
 
 -- Unified Amenities rights in Sentence case instead of Title Case format
@@ -1968,16 +1988,34 @@ SET IDENTITY_INSERT [UserManagement].[ControlDependency] ON
 		VALUES (65, 139, 145, N'Viewallpropertylevelsettings', 1, @UserId, @Now)
 	END
 
-	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewallUnifiedSettings')
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ManageSettingsTemplates')
 	BEGIN
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
-		VALUES (66, 139, 145, N'ViewallUnifiedSettings', 1, @UserId, @Now)
+		VALUES (66, 139, 145, N'ManageSettingsTemplates', 1, @UserId, @Now)
 	END
 
 	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ViewUnifiedSettings')
 	BEGIN
 		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
 		VALUES (67, 139, 145, N'ViewUnifiedSettings', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'AbilitytoanswercompanylevelquestionnairesinCIMPL')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (68, 139, 145, N'AbilitytoanswercompanylevelquestionnairesinCIMPL', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'CIMPLESubmitQuestionnaires')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (69, 139, 145, N'CIMPLESubmitQuestionnaires', 1, @UserId, @Now)
+	END
+
+	IF NOT EXISTS(select top 1 1 from [UserManagement].[ControlDependency] where mastercontrolvalue = 'ManageCIMPLTemplates')
+	BEGIN
+		INSERT [UserManagement].[ControlDependency] ([ControlDependencyId], [MasterControlId], [SlaveControlID], [MasterControlValue], [ComparatorId], [CreatedBy], [CreatedDate])
+		VALUES (70, 139, 145, N'ManageCIMPLTemplates', 1, @UserId, @Now)
 	END
 
 SET IDENTITY_INSERT [UserManagement].[ControlDependency] OFF
@@ -2427,4 +2465,69 @@ BEGIN
 
     UPDATE UserManagement.[Control] SET ParentControlId=null WHERE ControlId=@ControlId
 
+END
+
+--FIX for 375675
+GO
+DECLARE @CreateAlertId INT, @ApproveAlertId INT, @UserId BIGINT, @OrganizationPartyId INT, @Now datetime = GETDATE();
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%';
+
+SELECT  @OrganizationPartyId = o.PartyId
+FROM Enterprise.Organization AS o
+	 INNER JOIN
+	 Enterprise.Party AS p
+	 ON P.PartyId = O.PartyId
+WHERE O.Name = 'RealPage Employee';
+
+select @CreateAlertId = RightId from [security].[right] where rightname ='CreatePlatformAlerts';
+select @ApproveAlertId = RightId from [security].[right] where rightname ='ApprovePlatformAlerts';
+
+update [security].[right] set VisibilityStatusId = 10 where RightId in (@CreateAlertId,@ApproveAlertId);
+
+IF EXISTS(SELECT TOP 1 1 FROM [security].[roleright] where roleid = 1 and RightId in (@CreateAlertId,@ApproveAlertId))
+BEGIN
+	delete [security].[roleright] where roleid = 1 and RightId in (@CreateAlertId,@ApproveAlertId);
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [security].[organizationoverrideright] where RightId = @CreateAlertId)
+BEGIN
+	insert into [security].[organizationoverrideright](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
+	values(@CreateAlertId,@OrganizationPartyId,9,@UserId,@Now);
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [security].[organizationoverrideright] where RightId = @ApproveAlertId)
+BEGIN
+	insert into [security].[organizationoverrideright](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
+	values(@ApproveAlertId,@OrganizationPartyId,9,@UserId,@Now);
+END
+GO
+
+--Fix for 381988
+DECLARE @ManageNotificationRightId INT, @UserId BIGINT, @OrganizationPartyId INT, @Now datetime = GETDATE();
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%';
+
+SELECT  @OrganizationPartyId = o.PartyId
+FROM Enterprise.Organization AS o
+	 INNER JOIN
+	 Enterprise.Party AS p
+	 ON P.PartyId = O.PartyId
+WHERE O.Name = 'RealPage Employee';
+
+select @ManageNotificationRightId = RightId from [security].[right] where rightname ='ManageNotifications';
+
+update [security].[right] set VisibilityStatusId = 10 where RightId in (@ManageNotificationRightId);
+
+IF EXISTS(SELECT TOP 1 1 FROM [security].[roleright] where roleid = 1 and RightId in (@ManageNotificationRightId))
+BEGIN
+	delete [security].[roleright] where roleid = 1 and RightId in (@ManageNotificationRightId);
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [security].[organizationoverrideright] where RightId = @ManageNotificationRightId)
+BEGIN
+	insert into [security].[organizationoverrideright](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
+	values(@ManageNotificationRightId,@OrganizationPartyId,9,@UserId,@Now);
 END

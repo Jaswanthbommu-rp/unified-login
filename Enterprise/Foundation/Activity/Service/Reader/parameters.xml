@@ -1,35 +1,41 @@
 ﻿<?xml version="1.0"?>
-<parameters>
+<parameters>  
+  <!-- appSettings -->
+  <parameter name="Environment"
+           description="Activity Command environment"
+           defaultValue="#{Environment}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='logging:environment']/@value" />
+  </parameter>
+  <parameter name="LogPath"
+             description="Local path for writing logs"
+             defaultValue="#{LogPath}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='logging:filePath']/@value" />
+    <parameterValidation kind="AllowEmpty" />
+  </parameter>
+  <parameter name="KafkaTopicName"
+             description="Index Kafka Topic Name to search"
+             defaultValue="#{KafkaTopicName}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='logging:elasticIndexFormatRoot']/@value" />
+  </parameter>
+  <parameter name="KafkaCluster"
+             description="Kafka Cluster Urls"
+             defaultValue="#{KafkaCluster}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='logging:kafkaCluster']/@value" />
+  </parameter>
+  <parameter name="LoggingExcludedProperties"
+             description="Excluded Properties"
+             defaultValue="#{LoggingExcludedProperties}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='logging:excludedProperties']/@value" />
+  </parameter>
+  <parameter name="LoggingMinimumLevel"
+             description="Serilog Logging Minimum Level"
+             defaultValue="#{LoggingMinimumLevel}#">
+    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='serilog:minimum-level']/@value" />
+  </parameter>  
   <parameter name="IssuerUri"
              description="Used to identity the identity server used"
              defaultValue="#{IssuerUri}#">
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/IdentityConfig/add[@key='IssuerUri']/@value" />
-  </parameter>
-  <!-- appSettings -->
-  <parameter name="Environment"
-             description="Activity Reader environment"
-             defaultValue="#{Environment}#">
-    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Environment']/@value" />
-  </parameter>
-  <parameter name="ElasticSearchUri"
-             description="URL for Elastic Search"
-             defaultValue="#{ElasticSearchUri}#">
-    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchUri']/@value" />
-  </parameter>
-  <parameter name="ElasticSearchIndexTypeName"
-             description="Product name to use for elastic search indexing"
-             defaultValue="#{ElasticSearchIndexTypeName_ActivityReader}#">
-    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchIndexTypeName']/@value" />
-  </parameter>
-  <parameter name="ElasticSearchAuthDetails"
-             description="Authentication details for Elastic Search"
-             defaultValue="#{ElasticSearchAuthDetails}#">
-    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ElasticSearchAuthDetails']/@value" />
-  </parameter>
-  <parameter name="ShouldWriteInFile"
-             description="Product name to use for elastic search indexing"
-             defaultValue="#{ShouldWriteInFile}#">
-    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='ShouldWriteInFile']/@value" />
   </parameter>
   <parameter name="CorsUrls"
              description="Urls for servers allowed to post to the api"
