@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product
 {
     /// <summary>
     /// The Unified Login instance of the property

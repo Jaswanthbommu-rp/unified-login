@@ -61,6 +61,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
+        /// <summary>
+        /// Used to get the list of UPFM property instances for the given persona and product
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
         public List<UPFMPropertyInstance> ListUPFMPropertyInstanceByPersona(long userPersonaId, ProductEnum productId)
         {
             using (var repository = GetRepository())
@@ -76,6 +82,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// Used to get the list of the internal UPFM property instance ids for the given persona and product
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
         public List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, ProductEnum productId)
         {
             using (var repository = GetRepository())
@@ -90,6 +102,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return propList;
             }
         }
+
+        /// <summary>
+        /// Used to get the UPFM property details for the given instance ids
+        /// </summary>
+        /// <param name="propertyInstanceIds"></param>
+        /// <returns></returns>
 
         public List<UPFMPropertyInstance> ListUPFMPropertyInstanceIdByInstanceIds(List<Guid> propertyInstanceIds)
         {
@@ -159,96 +177,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return repositoryResponse;
             }
         }
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="personaId"></param>
-		/// <param name="productId"></param>
-		/// <param name="propertyJSON"></param>
-		/// <returns></returns>
-		//public RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON)
-		//{
-		//	RepositoryResponse repositoryResponse = new RepositoryResponse();
-		//	repositoryResponse.Id = 0;
-        //
-		//	using (var repository = GetRepository())
-		//	{
-		//		repository.UnitOfWork.BeginTransaction();
-		//		try
-		//		{
-		//			repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { personaId, productId, propertyJSON });
-		//			if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
-		//			{
-		//				repositoryResponse.ErrorMessage = $"Update Property Mapping Error: {repositoryResponse.ErrorMessage}.";
-		//			}
-		//		}
-		//		catch (Exception exception)
-		//		{
-		//			repositoryResponse.Id = 0;
-		//			repositoryResponse.ErrorMessage = "Update Property Mapping Exception: " + exception.Message;
-		//		}
-		//		finally
-		//		{
-		//			if (repositoryResponse.ErrorMessage.Length == 0)
-		//			{
-		//				//Commit and end transaction.
-		//				repository.UnitOfWork.Commit();
-		//			}
-		//			else
-		//			{
-		//				//Rollback transaction and dispose it.
-		//				repository.UnitOfWork.Rollback();
-		//			}
-		//		}
-		//		return repositoryResponse;
-		//	}
-		//}
-
-        /// <summary>
-        /// is this used?
-        /// </summary>
-        /// <param name="personaId"></param>
-        /// <param name="productId"></param>
-        /// <param name="propertyInstanceJSON"></param>
-        /// <returns></returns>
-        //public RepositoryResponse AddUpdatePropertyInstanceMapping(long personaId, ProductEnum productId, string propertyInstanceJSON)
-        //{
-        //    RepositoryResponse repositoryResponse = new RepositoryResponse();
-        //    repositoryResponse.Id = 0;
-        //
-        //    using (var repository = GetRepository())
-        //    {
-        //        repository.UnitOfWork.BeginTransaction();
-        //        try
-        //        {
-        //            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyInstanceMapping, new { personaId, productId, propertyInstanceJSON });
-        //            if (repositoryResponse.Id == 0 && !string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
-        //            {
-        //                repositoryResponse.ErrorMessage = $"Update Property Instance Mapping Error: {repositoryResponse.ErrorMessage}.";
-        //            }
-        //        }
-        //        catch (Exception exception)
-        //        {
-        //            repositoryResponse.Id = 0;
-        //            repositoryResponse.ErrorMessage = "Update Property Instance Mapping Exception: " + exception.Message;
-        //        }
-        //        finally
-        //        {
-        //            if (repositoryResponse.ErrorMessage.Length == 0)
-        //            {
-        //                //Commit and end transaction.
-        //                repository.UnitOfWork.Commit();
-        //            }
-        //            else
-        //            {
-        //                //Rollback transaction and dispose it.
-        //                repository.UnitOfWork.Rollback();
-        //            }
-        //        }
-        //        return repositoryResponse;
-        //    }
-        //}
         
 		/// <summary>
 		/// Used to update any property mapping records that match the old id to a new id

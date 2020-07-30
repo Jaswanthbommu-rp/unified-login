@@ -1934,7 +1934,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Used to merge product property data with Unifed Login property data for the user
+        /// Used to merge product property data with Unified Login property data for the user
         /// </summary>
         /// <param name="blueBookPropertyList">The list of properties from BlueBook</param>
         /// <param name="userPersonaId">The user id to filter on</param>
@@ -1986,12 +1986,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// 
+        /// Used to get the list of UPFM property instances for the given personaid
         /// </summary>
         /// <param name="blueBookUPFMPropertyList"></param>
         /// <param name="userPersonaId"></param>
         /// <param name="assignedOnly"></param>
-        /// <returns></returns>
+        /// <returns>A list of product properties</returns>
         private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
         {
             // merge the given user details with the list
