@@ -121,6 +121,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// get all properties
 			var allProperties = GetPortfolioProperties().ToList();
 
+			// get all property groups
+			var allPropertyGroups = GetPortfolioPropertyGroups().ToList();
+
 			// get all non-global roles
 			var allPropertiesRoles = GetPortfolioPropertySpecificRoles().ToList();
 
@@ -213,6 +216,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// call API
 			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
+		}
+
+		private IList<ProductPropertyGroups> GetPortfolioPropertyGroups()
+		{
+			// Get end point for properties
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
+			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/gandk/UserPropertyGroups";
+
+			// call API
+			return GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
 		}
 
 		private void MergePropertyRoles(IList<PortfolioRoleProperty> portfolioPropertyRoles, List<PAMRolePropertyList> userPropertyRoles)
