@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using Microsoft.Owin.Extensions;
+using RealPage.Logging.Serilog;
 
 [assembly: OwinStartup("RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Startup", typeof(RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Startup))]
 
@@ -23,6 +24,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
         /// <param name="app"></param>
         public void Configuration(IAppBuilder app)
         {
+
+            SerilogHelpers.ConfigureSerilog("Unified Login");
+
             System.Net.ServicePointManager.SecurityProtocol =
                 SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
