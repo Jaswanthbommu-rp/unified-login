@@ -218,8 +218,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListPersonaToDisableUserProduct, param);
                     foreach (var item in result)
                     {
-                        Log.Write(LogType.Diagnostic, new LogDetails { Message = $"UpdateUserStatusByCompany PersonaId={item.EditorPersonaId}" });
-                        userRepository.ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
+                        if (!item.PrimaryOrganization) 
+                        {
+                            Log.Write(LogType.Diagnostic, new LogDetails { Message = $"UpdateUserStatusByCompany PersonaId={item.EditorPersonaId}" });
+                            userRepository.ProcessDisableUserProductData(repository, item.PersonaId, item.EditorRealPageId, item.EditorPersonaId, item.UserTypeId);
+                        }
+                        
                     }
                 }
 
