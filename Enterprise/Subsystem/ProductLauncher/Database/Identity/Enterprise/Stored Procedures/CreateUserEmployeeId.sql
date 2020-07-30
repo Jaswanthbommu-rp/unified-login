@@ -4,7 +4,6 @@
 AS
     BEGIN
         BEGIN TRY
-            BEGIN TRAN;
 			INSERT INTO Enterprise.UserEmployeeId (
                 UserLoginPersonaId ,
                 Employee
@@ -14,7 +13,6 @@ AS
                      @UserLoginPersonaId ,
 					 @EmployeeId
                  );
-            COMMIT;
         END TRY
         BEGIN CATCH
             DECLARE @ErrorLogID INT;
@@ -25,7 +23,5 @@ AS
                    ErrorMessage
             FROM   dbo.ErrorLog
             WHERE  ErrorLogID = @ErrorLogID;
-
-            ROLLBACK;
         END CATCH;
     END;

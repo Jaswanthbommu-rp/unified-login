@@ -7,7 +7,6 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	 BEGIN TRY
-            BEGIN TRAN;
 				UPDATE [Enterprise].[UserEmployeeId]
 				   SET 
 					   Employee = @EmployeeId
@@ -15,7 +14,6 @@ BEGIN
 						UserEmployeeId = @UserEmployeeId
 
 				SELECT @UserEmployeeId as Id, '' AS ErrorMessage
-			COMMIT;
         END TRY
         BEGIN CATCH
             DECLARE @ErrorLogID INT;
@@ -25,7 +23,5 @@ BEGIN
                    ErrorMessage
             FROM   dbo.ErrorLog
             WHERE  ErrorLogID = @ErrorLogID;
-
-            ROLLBACK;
         END CATCH;
 END;
