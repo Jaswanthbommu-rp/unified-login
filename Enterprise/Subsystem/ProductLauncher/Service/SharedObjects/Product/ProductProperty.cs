@@ -7,10 +7,10 @@ using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product
 {
-	/// <summary>
-	/// Used to store information about a property
-	/// </summary>
-	public class ProductProperty : IProductProperty
+    /// <summary>
+    /// Used to store information about a property
+    /// </summary>
+    public class ProductProperty
     {
         /// <summary>
         /// The id of the property in the product
@@ -65,19 +65,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool? disableSelection { get; set; } = false;
 
-	    /// <summary>
-	    /// Alias for the property
-	    /// </summary>
-	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-	    public string Alias { get; set; }
+        /// <summary>
+        /// Alias for the property
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Alias { get; set; }
 
         /// <summary>
-	    /// Alias for the property
-	    /// </summary>
-	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        /// Is the property active
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Active { get; set; }
 
+        private string _instanceId = null;
+
+        /// <summary>
+        /// The UPFM property instance id
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string InstanceId
+        {
+            get => _instanceId;
+            set => _instanceId = value.ToLower();
+        }
+
+        /// <summary>
+        /// The geo latitude of the property
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public decimal? Latitude { get; set; }
+
+        /// <summary>
+        /// The geo longitude of the property
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public decimal? Longitude { get; set; }
+
         #region Examples
+
         /// <summary>
         /// Used to document examples of the Property Model webapi result
         /// </summary>
@@ -114,36 +139,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
             }
         }
 
-	    /// <summary>
-	    /// Used to document examples of the Property Model webapi result
-	    /// </summary>
-	    [ExcludeFromCodeCoverage]
-	    public class PropertySimpleExample : IProvideExamples
-	    {
-		    /// <summary>
-		    /// Example object data used by Swagger to document the output of the webapi method
-		    /// </summary>
-		    /// <returns>Property example</returns>
-		    public object GetExamples()
-		    {
-			    IList<ProductProperty> list = new List<ProductProperty>();
-			    ProductProperty example = new ProductProperty()
-			    {
-				    ID = "123",
-				    Name = "Test Property",
-				    IsAssigned = true
-			    };
-			    list.Add(example);
-			    ListResponse output = new ListResponse()
-			    {
-				    Records = list.Cast<object>().ToList(),
-				    TotalRows = 1,
-				    RowsPerPage = 1000,
-				    TotalPages = 1,
-			    };
-			    return output;
-		    }
-	    }
+        /// <summary>
+        /// Used to document examples of the Property Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class PropertySimpleExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Property example</returns>
+            public object GetExamples()
+            {
+                IList<ProductProperty> list = new List<ProductProperty>();
+                ProductProperty example = new ProductProperty()
+                {
+                    ID = "123",
+                    Name = "Test Property",
+                    IsAssigned = true
+                };
+                list.Add(example);
+                ListResponse output = new ListResponse()
+                {
+                    Records = list.Cast<object>().ToList(),
+                    TotalRows = 1,
+                    RowsPerPage = 1000,
+                    TotalPages = 1,
+                };
+                return output;
+            }
+        }
 
         /// <summary>
         /// Used to document examples of the Property Model webapi result
@@ -161,23 +186,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 {
                     new Portfolio()
                     {
-                      ID = "1321743",
-                      Name = "Archstone Lexington",
-                      Code = "TX527",
-                      Status = "active",
-                      ParentAssetId = null,
-                      AssetType = null,
-                      IsAssigned = false
+                        ID = "1321743",
+                        Name = "Archstone Lexington",
+                        Code = "TX527",
+                        Status = "active",
+                        ParentAssetId = null,
+                        AssetType = null,
+                        IsAssigned = false
                     },
                     new Portfolio()
                     {
-                      ID = "1322948",
-                      Name = "Archstone Redmond Lakeview",
-                      Code = "WA539",
-                      Status = "active",
-                      ParentAssetId = null,
-                      AssetType = null,
-                      IsAssigned = false
+                        ID = "1322948",
+                        Name = "Archstone Redmond Lakeview",
+                        Code = "WA539",
+                        Status = "active",
+                        ParentAssetId = null,
+                        AssetType = null,
+                        IsAssigned = false
                     }
                 };
                 ListResponse listResponse = new ListResponse()
@@ -209,25 +234,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 {
                     new AssetGroup()
                     {
-                      ID = "19984",
-                      Name = "AVA Back Bay fna Avalon Prudential Center III",
-                      Code = "MA040",
-                      Description = string.Empty,
-                      Status = "active",
-                      GroupType = "property",
-                      AssetID = "1316308",
-                      IsAssigned = false
+                        ID = "19984",
+                        Name = "AVA Back Bay fna Avalon Prudential Center III",
+                        Code = "MA040",
+                        Description = string.Empty,
+                        Status = "active",
+                        GroupType = "property",
+                        AssetID = "1316308",
+                        IsAssigned = false
                     },
                     new AssetGroup()
                     {
-                      ID = "19607",
-                      Name = "AVA Ballard",
-                      Code = "WA023",
-                      Description = string.Empty,
-                      Status = "active",
-                      GroupType = "property",
-                      AssetID = "1307920",
-                      IsAssigned = false
+                        ID = "19607",
+                        Name = "AVA Ballard",
+                        Code = "WA023",
+                        Description = string.Empty,
+                        Status = "active",
+                        GroupType = "property",
+                        AssetID = "1307920",
+                        IsAssigned = false
                     }
                 };
                 ListResponse listResponse = new ListResponse()
@@ -331,6 +356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 return listResponse;
             }
         }
+
         #endregion
     }
 }
