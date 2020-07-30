@@ -1,8 +1,7 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Helper;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Repository;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ServiceProcess;
@@ -15,7 +14,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
     {
         static readonly string _productName = "User Service Multi Company";
 
-        static readonly string timeString;
         private System.ComponentModel.IContainer components;
         private Timer _timer;
 
@@ -39,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
         {
             try
             {
-                Log.Write(LogType.Information, new LogDetails {Message = $"{_productName} Windows Service Starting..."});
+                Log.Information($"{_productName} Windows Service Starting...");
 
                 _timer.Elapsed += new ElapsedEventHandler(ServiceTimer_Tick);
                 _timer.AutoReset = true;
@@ -49,8 +47,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Write(LogType.Information, new LogDetails {Message = $"{_productName} Exception in OnStart task."});
-                Log.Write(LogType.Error, new LogDetails {Exception = ex});
+                Log.Information($"{_productName} Exception in OnStart task.");
+                Log.Error(ex, ex.Message);
                 Logger.ConsoleOut(ex.Message);
             }
         }
@@ -62,7 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
         protected override void OnStop()
         {
-            Log.Write(LogType.Information, new LogDetails {Message = $"{_productName} Windows Service Stopped..."});
+            Log.Information($"{_productName} Windows Service Stopped...");
             _timer.AutoReset = false;
             _timer.Enabled = false;
             _timer.Dispose();
@@ -74,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             string correlationId = Guid.NewGuid().ToString();
             try
             {
-                Log.Write(LogType.Information, new LogDetails {Message = $"SendRegularUserNotification - Getting user list to process.", CorrelationId = correlationId});
+                Log.Information($"SendRegularUserNotification - Getting user list to process. CorrelationId = " + correlationId);
 
                 // Get Db data by batchSize
                 var repository = new UserListRepository();
@@ -83,26 +81,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                 if (usersList == null || usersList.Count <= 0)
                 {
                     Logger.ConsoleOut($"{_productName} - No users to process.");
-                    Log.Write(LogType.Information, new LogDetails {Message = $"SendRegularUserNotification - No Users to process in the batch.", CorrelationId = correlationId});
+                    Log.Information($"SendRegularUserNotification - No Users to process in the batch. CorrelationId = " + correlationId);
                     return;
                 }
 
                 Logger.ConsoleOut($"SendRegularUserNotification - Launching threads to process {usersList.Count} users.");
-                Log.Write(LogType.Information, new LogDetails {Message = $"SendRegularUserNotification - Launching threads to process {usersList.Count} users.", CorrelationId = correlationId});
+                Log.Information($"SendRegularUserNotification - Launching threads to process {usersList.Count} users. CorrelationId =" + correlationId);
 
                 var splitUserList = SplitList<ProcessUserLogin>(usersList, 20);
 
                 // Launch threads
-                Parallel.ForEach(splitUserList, new ParallelOptions {MaxDegreeOfParallelism = _threadCount}, CallApiToSendNotification);
+                Parallel.ForEach(splitUserList, new ParallelOptions { MaxDegreeOfParallelism = _threadCount }, CallApiToSendNotification);
 
-                Log.Write(LogType.Information, new LogDetails {Message = $"SendRegularUserNotification - All threads processed.", CorrelationId = correlationId});
+                Log.Information($"SendRegularUserNotification - All threads processed. CorrelationId = " + correlationId);
                 Logger.ConsoleOut($"{_productName} - All threads processed.");
             }
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Write(LogType.Information, new LogDetails {Message = $"SendRegularUserNotification - Exception in main task.", CorrelationId = correlationId});
-                Log.Write(LogType.Error, new LogDetails {Exception = ex, CorrelationId = correlationId});
+                Log.Information($"SendRegularUserNotification - Exception in main task. CorrelationId = " + correlationId);
+                Log.Error(ex, ex.Message + ". CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"SendRegularUserNotification - {ex.InnerException.Message}"
@@ -115,7 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             string correlationId = Guid.NewGuid().ToString();
             try
             {
-                Log.Write(LogType.Information, new LogDetails {Message = "ProcessPendingUsers - Getting user list to  process.", CorrelationId = correlationId});
+                Log.Information("ProcessPendingUsers - Getting user list to  process. CorrelationId = " + correlationId);
 
                 // Get Db data by batchSize
                 var repository = new UserListRepository();
@@ -124,39 +122,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                 if (usersList?.Count == 0)
                 {
                     Logger.ConsoleOut("ProcessPendingUsers - No users to process.");
-                    Log.Write(LogType.Information, new LogDetails {Message = "ProcessPendingUsers - No Users to process in the batch.", CorrelationId = correlationId });
+                    Log.Information("ProcessPendingUsers - No Users to process in the batch. CorrelationId = " + correlationId);
                     return;
                 }
 
                 Logger.ConsoleOut($"ProcessPendingUsers - Launching threads to process {usersList.Count} users.");
-                Log.Write(LogType.Information, new LogDetails {Message = $"ProcessPendingUsers - Launching threads to process {usersList.Count} users.", CorrelationId = correlationId });
+                Log.Information($"ProcessPendingUsers - Launching threads to process {usersList.Count} users. CorrelationId = " + correlationId);
 
                 var splitUserList = SplitList(usersList, 50);
 
                 // Launch threads
-                Parallel.ForEach(splitUserList, new ParallelOptions {MaxDegreeOfParallelism = _threadCount}, CallApiToSetPendingToExpireUserStatus);
+                Parallel.ForEach(splitUserList, new ParallelOptions { MaxDegreeOfParallelism = _threadCount }, CallApiToSetPendingToExpireUserStatus);
 
-                Log.Write(LogType.Information, new LogDetails {Message = "ProcessPendingUsers - All threads processed.", CorrelationId = correlationId });
+                Log.Information("ProcessPendingUsers - All threads processed. CorrelationId = " + correlationId);
                 Logger.ConsoleOut("ProcessPendingUsers - All threads processed.");
             }
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Write(LogType.Information, new LogDetails {Message = "ProcessPendingUsers - Exception in main task.", CorrelationId = correlationId });
-                Log.Write(LogType.Error, new LogDetails {Exception = ex, CorrelationId = correlationId });
+                Log.Information("ProcessPendingUsers - Exception in main task. CorrelationId = " + correlationId);
+                Log.Error(ex, ex.Message + ". CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"ProcessPendingUsers - {ex.InnerException.Message}"
                     : $"ProcessPendingUsers - {ex.Message}");
             }
         }
-        
+
         private void ProcessDisableUsersinProducts()
         {
             string correlationId = Guid.NewGuid().ToString();
             try
             {
-                Log.Write(LogType.Information, new LogDetails { Message = $"ProcessDisableUsersinProducts - Getting user list to process.", CorrelationId = correlationId });
+                Log.Information($"ProcessDisableUsersinProducts - Getting user list to process. CorrelationId = " + correlationId);
 
                 // Get Db data by batchSize
                 var repository = new UserListRepository();
@@ -165,26 +163,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                 if (usersList?.Count == 0)
                 {
                     Logger.ConsoleOut($"ProcessDisableUsersinProducts - No users to process.");
-                    Log.Write(LogType.Information, new LogDetails { Message = $"ProcessDisableUsersinProducts - No Users to process in the batch.", CorrelationId = correlationId });
+                    Log.Information($"ProcessDisableUsersinProducts - No Users to process in the batch. CorrelationId = " + correlationId);
                     return;
                 }
 
                 Logger.ConsoleOut($"ProcessDisableUsersinProducts - Launching threads to process {usersList.Count} users.");
-                Log.Write(LogType.Information, new LogDetails { Message = $"ProcessDisableUsersinProducts - Launching threads to process {usersList.Count} users.", CorrelationId = correlationId });
+                Log.Information($"ProcessDisableUsersinProducts - Launching threads to process {usersList.Count} users. CorrelationId = " + correlationId);
 
                 var splitUserList = SplitList(usersList, 20);
 
                 // Launch threads
                 Parallel.ForEach(splitUserList, new ParallelOptions { MaxDegreeOfParallelism = _threadCount }, CallApiToDisableUsers);
 
-                Log.Write(LogType.Information, new LogDetails { Message = $"ProcessDisableUsersinProducts - All threads processed.", CorrelationId = correlationId });
+                Log.Information($"ProcessDisableUsersinProducts - All threads processed. CorrelationId = " + correlationId);
                 Logger.ConsoleOut($"ProcessDisableUsersinProducts - All threads processed.");
             }
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Write(LogType.Information, new LogDetails { Message = $"ProcessDisableUsersinProducts - Exception in main task.", CorrelationId = correlationId });
-                Log.Write(LogType.Error, new LogDetails { Exception = ex, CorrelationId = correlationId });
+                Log.Information($"ProcessDisableUsersinProducts - Exception in main task. CorrelationId = " + correlationId);
+                Log.Error(ex, ex.Message + ". CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"ProcessDisableUsersinProducts - {ex.InnerException.Message}"
@@ -203,39 +201,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
             try
             {
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}",
-                    CorrelationId = correlationId,
-                    AdditionalInfo = additionalInfo
-                });
+                Log.Information(
+                     $"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId,
+                     additionalInfo);
 
                 var notificationApiCaller = new UserApiCaller();
                 var result = notificationApiCaller.ProcessUserLogins(userList);
 
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToSendNotification - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.",
-                    CorrelationId = correlationId
-                });
+                Log.Information($"CallApiToSendNotification - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}. CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut($"CallApiToSendNotification - Calling API Completed for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.");
             }
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToSendNotification - Exception while calling API for product hashCode: {userList.GetHashCode()}.",
-                    CorrelationId = correlationId,
-                    AdditionalInfo = additionalInfo
-                });
-                Log.Write(LogType.Error, new LogDetails
-                {
-                    Exception = ex,
-                    CorrelationId = correlationId,
-                    AdditionalInfo = additionalInfo
-                });
+                Log.Information(
+                    $"CallApiToSendNotification - Exception while calling API for product hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId,
+                    additionalInfo);
+
+                Log.Error(ex, ex.Message + ". CorrelationId = " + correlationId, additionalInfo);
+
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToSendNotification - {ex.InnerException.Message}"
                     : $"CallApiToSendNotification - {ex.Message}");
@@ -253,12 +238,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
             try
             {
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToSetPendingToExpireUserStatus - Working to set status to {userList.Count} users hashCode: {userList.GetHashCode()}",
-                    AdditionalInfo = additionalInfo,
-                    CorrelationId = correlationId
-                });
+                Log.Information($"CallApiToSetPendingToExpireUserStatus - Working to set status to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId, additionalInfo);
 
                 var apiCaller = new UserApiCaller();
                 var result = apiCaller.ProcessUserLogins(userList);
@@ -268,29 +248,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                     throw new Exception("CallApiToSetPendingToExpireUserStatus - Null response posting to API");
                 }
 
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToSetPendingToExpireUserStatus - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.",
-                    CorrelationId = correlationId
-                });
+                Log.Information($"CallApiToSetPendingToExpireUserStatus - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}" + ".CorrelationId = " + correlationId, additionalInfo);
 
                 Logger.ConsoleOut($"CallApiToSetPendingToExpireUserStatus - Calling API Completed for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.");
             }
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToSetPendingToExpireUserStatus - Exception while calling API for product hashCode: {userList.GetHashCode()}.",
-                    AdditionalInfo = additionalInfo,
-                    CorrelationId = correlationId
-                });
-                Log.Write(LogType.Error, new LogDetails
-                {
-                    Exception = ex,
-                    AdditionalInfo = additionalInfo,
-                    CorrelationId = correlationId
-                });
+                Log.Information($"CallApiToSetPendingToExpireUserStatus - Exception while calling API for product hashCode: {userList.GetHashCode()}" + ".CorrelationId = " + correlationId, additionalInfo);
+
+                Log.Error(ex, ex.Message + ". CorrelationId = " + correlationId, additionalInfo);
+
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToSetPendingToExpireUserStatus - {ex.InnerException.Message}"
                     : $"CallApiToSetPendingToExpireUserStatus - {ex.Message}");
@@ -308,39 +276,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
             try
             {
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToDisableUsers - Working to disable user to {userList.Count} users hashCode: {userList.GetHashCode()}",
-                    CorrelationId = correlationId,
-                    AdditionalInfo = additionalInfo
-                });
+                Log.Information($"CallApiToDisableUsers - Working to disable user to {userList.Count} users hashCode: {userList.GetHashCode()}"+ ".CorrelationId = " + correlationId, additionalInfo);
 
                 var disableUserApiCaller = new UserApiCaller();
                 var result = disableUserApiCaller.DisableExpiredUsers(userList);
 
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = $"CallApiToDisableUsers - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.",
-                    CorrelationId = correlationId
-                });
+                Log.Information($"CallApiToDisableUsers - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}" + ".CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut($"CallApiToDisableUsers - Calling API Completed for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.");
             }
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Write(LogType.Information, new LogDetails
-                {
-                    Message = "CallApiToDisableUsers - Exception while calling API for product {}.",
-                    CorrelationId = correlationId,
-                    AdditionalInfo = additionalInfo
-                });
-                Log.Write(LogType.Error, new LogDetails
-                {
-                    Exception = ex,
-                    AdditionalInfo = additionalInfo,
-                    CorrelationId = correlationId
-                });
+                Log.Information("CallApiToDisableUsers - Exception while calling API for product {}" + ".CorrelationId = " + correlationId, additionalInfo);
+
+                Log.Error(ex, ex.Message + ".CorrelationId = " + correlationId, additionalInfo);
+
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToDisableUsers - {ex.InnerException.Message}"
                     : $"CallApiToDisableUsers - {ex.Message}");
@@ -349,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
         private void ServiceTimer_Tick(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Log.Write(LogType.Information, new LogDetails {Message = $"{_productName} process started..."});
+            Log.Information($"{_productName} process started..." );
             string _CurrentTime = String.Format("{0:t}", DateTime.UtcNow);
 
             if (Environment.UserInteractive || DateTime.Now.Minute % 15 == 0)
@@ -377,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             }
             catch (Exception ex)
             {
-                Log.Write(LogType.Error, new LogDetails {Exception = ex});
+                Log.Error(ex, ex.Message);
             }
         }
 

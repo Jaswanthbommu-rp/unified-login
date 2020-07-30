@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserNotification", "WinServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "..\..\Foundation\DataAccess\DataAccess.csproj", "{255A94DC-A434-47CC-A472-E162EBDE6BCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audit.Core", "..\..\Foundation\Audit\Audit.Core\Audit.Core.csproj", "{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,32 +26,11 @@ Global
 		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Token|Any CPU.ActiveCfg = Release|Any CPU
 		{255A94DC-A434-47CC-A472-E162EBDE6BCE}.Token|Any CPU.Build.0 = Release|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Token|Any CPU.ActiveCfg = Release|Any CPU
-		{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}.Token|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8224DBBE-A57C-4893-A1F3-523A4F5789B0}
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://rcetfseisweb001:8080/tfs/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = ..\\..\\Foundation\\DataAccess\\DataAccess.csproj
-		SccProjectName1 = ../../Foundation/DataAccess
-		SccLocalPath1 = ..\\..\\Foundation\\DataAccess
-		SccProjectUniqueName2 = ..\\..\\Foundation\\Audit\\Audit.Core\\Audit.Core.csproj
-		SccProjectName2 = ../../Foundation/Audit/Audit.Core
-		SccLocalPath2 = ..\\..\\Foundation\\Audit\\Audit.Core
-		SccProjectUniqueName3 = WinService\\UserNotification\\UserNotification.csproj
-		SccProjectName3 = WinService/UserNotification
-		SccLocalPath3 = WinService\\UserNotification
 	EndGlobalSection
 EndGlobal

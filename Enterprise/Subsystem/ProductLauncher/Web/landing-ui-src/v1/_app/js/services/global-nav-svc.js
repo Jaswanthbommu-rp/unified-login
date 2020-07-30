@@ -182,7 +182,7 @@
                 title: "Platform Alerts",
                 icon: "alarm-timeout",
                 pageId: "platform-alerts",
-                url: "/notifications/platformalerts"
+                url: "/home/notifications/platformalerts"
             };
 
             if ((persona.hasPlatformAlertsAccess())) {
