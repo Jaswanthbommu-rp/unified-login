@@ -1790,8 +1790,9 @@ Begin
 end
 GO
 
+
 -- migrate data from old table to new
-if not exists ( select top 1 1 from Enterprise.PropertyInstanceMapping )
+if not exists ( select top 1 1 from Enterprise.PropertyInstanceMapping ) AND exists ( select top 1 1 from enterprise.PropertyInstance )
 BEGIN
 	insert into enterprise.PropertyInstanceMapping ( PersonaId, PropertyInstanceId, ProductId, fromdate, thrudate, active )
 	select personaid, pi1.PropertyInstanceId, productid, fromdate, thrudate, case when pm.ThruDate is null then 1 else 0 end
