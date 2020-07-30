@@ -101,6 +101,7 @@
     <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyLocation.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
+    <Compile Include="BlackBook\CompanyPropertyInstanceRootObject.cs" />
     <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
     <Compile Include="BlackBook\CustomerCompany.cs" />
     <Compile Include="BlackBook\CustomerProperty.cs" />
@@ -498,7 +499,6 @@
     <Compile Include="Product\AssetOptimization\UserProfile.cs" />
     <Compile Include="Product\ClientPortal\ClientPortalPropertyRole.cs" />
     <Compile Include="Product\IProductInterface.cs" />
-    <Compile Include="Product\IProductProperty.cs" />
     <Compile Include="Product\IProductLearningPortal.cs" />
     <Compile Include="Product\IProductRight.cs" />
     <Compile Include="Product\IProductRole.cs" />
@@ -569,6 +569,7 @@
     <Compile Include="Saml\SamlAttributes.cs" />
     <Compile Include="Swagger\IProvideExamples.cs" />
     <Compile Include="Swagger\SwaggerUtil.cs" />
+    <Compile Include="Product\UPFMPropertyInstance.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyUpdated.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyDeleted.cs" />
     <Compile Include="WebHook\SHA.cs" />
