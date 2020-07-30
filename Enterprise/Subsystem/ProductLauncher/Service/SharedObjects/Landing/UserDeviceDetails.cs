@@ -3,8 +3,8 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using Serilog;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
@@ -100,12 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 			catch (Exception ex)
 			{
 				// add log   
-				Log.Write(Foundation.Audit.Core.Component.Enums.LogType.Error, new LogDetails
-				{
-					Message = ex.Message,
-					ProductModule = "UserDeviceDetails.ParseUserDeviceDetails",
-					Exception = ex,
-				});
+				Log.Error(ex, ex.Message, "UserDeviceDetails.ParseUserDeviceDetails");
 			}
 
 			return deviceDetails;
