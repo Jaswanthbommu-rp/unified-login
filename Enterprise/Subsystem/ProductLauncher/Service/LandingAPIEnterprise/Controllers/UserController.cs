@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.User;
@@ -36,6 +34,8 @@ using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using Serilog;
+using Serilog.Events;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -239,7 +239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				}
 
 				// elastic logging
-				WriteToLog(LogType.Error,
+				WriteToLog(LogEventLevel.Error,
 					"Error while creating new user." +
 					$" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
 					$"new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
@@ -380,7 +380,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				}
 
 				// elastic logging
-				WriteToLog(LogType.Error,
+				WriteToLog(LogEventLevel.Error,
 					"Error while updating user." +
 					$" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
 					$"update user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
@@ -475,7 +475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				}
 
 				// elastic logging
-				WriteToLog(LogType.Error,
+				WriteToLog(LogEventLevel.Error,
 					"Error while changing user status." +
 					$" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
 					$"update user RealPage id {unityRealPageUserId}", exception: ex);
@@ -591,7 +591,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			catch (Exception exception)
 			{
 				// elastic logging
-				WriteToLog(LogType.Error,
+				WriteToLog(LogEventLevel.Error,
 					"Error while Get/List user(s)." +
 					$" BooksMasterOrganizationId{_userClaims.OrganizationName}," +
 					$" Get/List user(s) ", exception: exception);
@@ -1158,21 +1158,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		/// <param name="message">Message to log</param>
 		/// <param name="logData">Data to log</param>
 		/// <param name="exception">Exception details</param>
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null,
+		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null,
 			Exception exception = null)
 		{
 			try
 			{
-				Log.Write(logType, new LogDetails
-				{
-					Message = message,
-					AdditionalInfo = logData,
-					ProductModule = this.GetType().ToString(),
-					UserId = _userClaims.UserId.ToString(),
-					PmcId = _userClaims?.OrganizationPartyId.ToString(),
-					Exception = exception,
-					CorrelationId = _userClaims.CorrelationId.ToString(),
-				});
+				string finalMessage = string.Concat(message, ". ProductModule: ", this.GetType().ToString(), ". UserId: ", _userClaims.UserId.ToString(), ". PmcId: ", _userClaims?.OrganizationPartyId.ToString(), ". CorrelationId: ", _userClaims.CorrelationId.ToString());
+
+				Log.Write(logType, exception, finalMessage, logData);
 			}
 			catch
 			{
