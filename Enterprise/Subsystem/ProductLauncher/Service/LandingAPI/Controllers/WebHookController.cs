@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -21,6 +19,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private ProductInternalSettingRepository _productInternalSettingRepository;
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
-        
+
         public WebHookController()
         {
             // DONT USE USERCLAIM IN BASE, IT IS NULL AT THIS POINT. MOVE TO Initialize FUNCTION
@@ -71,18 +71,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             var response = Request.CreateResponse(HttpStatusCode.Accepted);
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
-            Dictionary<string, object> logData = new Dictionary<string, object>() {{"signature", signature ?? "null"}};
-            WriteToLog(LogType.Diagnostic, "PostBooks : Begin", logData);
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "signature", signature ?? "null" } };
+            WriteToLog(LogEventLevel.Debug, "PostBooks : Begin", logData);
 
             if (thinEvent == null)
             {
-                WriteToLog(LogType.Error, "Missing Content.");
+                WriteToLog(LogEventLevel.Error, "Missing Content.");
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
             }
 
             if (signature == null)
             {
-                WriteToLog(LogType.Error, "Missing Signature.");
+                WriteToLog(LogEventLevel.Error, "Missing Signature.");
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signature.");
             }
 
@@ -92,26 +92,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (string.IsNullOrEmpty(signingSecret))
                 {
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signing Secret.");
-                    WriteToLog(LogType.Error, "Signing secret was empty");
+                    WriteToLog(LogEventLevel.Error, "Signing secret was empty");
                     return response;
                 }
                 var hashed = SHA.GenerateHMACSHA256String(signingSecret, requestBody);
                 logData.Add("requestBody", requestBody);
 
                 logData.Add("hashed", hashed ?? "null");
-                WriteToLog(LogType.Diagnostic, "Hash compare begin", logData);
+                WriteToLog(LogEventLevel.Debug, "Hash compare begin", logData);
 
                 if (!string.Equals(signature, hashed, StringComparison.CurrentCultureIgnoreCase))
                 {
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid Signature.");
-                    WriteToLog(LogType.Error, "Hash compare failed");
+                    WriteToLog(LogEventLevel.Error, "Hash compare failed");
                     return response;
                 }
 
                 try
                 {
                     logData = new Dictionary<string, object>();
-                    WriteToLog(LogType.Diagnostic, thinEvent.Topic.ToLowerInvariant());
+                    WriteToLog(LogEventLevel.Debug, thinEvent.Topic.ToLowerInvariant());
                     switch (thinEvent.Topic.ToLowerInvariant())
                     {
                         case "books.customerproperty.deleted":
@@ -124,9 +124,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     RepositoryResponse result = _propertyRepository.UpdatePropertyMappingReMap(customerPropertyIdDeleted, newCustomerPropertyId);
                                     if (result.ErrorMessage.Length != 0)
                                     {
-                                        logData = new Dictionary<string, object> {{"error", result}};
+                                        logData = new Dictionary<string, object> { { "error", result } };
 
-                                        WriteToLog(LogType.Error, "Error", logData);
+                                        WriteToLog(LogEventLevel.Error, "Error", logData);
                                         return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
                                     }
                                 }
@@ -144,7 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             break;
                         case "books.customercompany.deleted":
                             var customerCompanyIdDeleted = Convert.ToInt64(thinEvent.Payload?["payload"]["customerCompanyId"] == null || thinEvent.Payload["payload"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["customerCompanyId"]);
-                            
+
                             // NEED TO GET ALL COMPANIES WITH BLUE ID
                             var orgList = _organizationRepository.GetUnifiedLoginCompanyList();
                             //var organization = _organizationRepository.GetOrganization(blueBookId: customerCompanyIdDeleted);
@@ -159,13 +159,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         var newCustomerCompanyId = Convert.ToInt64(thinEvent.Payload?["payload"]["replacementCustomerCompanyId"] == null || thinEvent.Payload["payload"]["replacementCustomerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["replacementCustomerCompanyId"]);
                                         if (newCustomerCompanyId != 0)
                                         {
-                                            Organization oldOrganization = new Organization() {PartyId = p.PartyId, BooksCustomerMasterId = p.BooksCustomerMasterId};
-                                            Organization newOrganization = new Organization() {PartyId = p.PartyId, BooksCustomerMasterId = newCustomerCompanyId};
+                                            Organization oldOrganization = new Organization() { PartyId = p.PartyId, BooksCustomerMasterId = p.BooksCustomerMasterId };
+                                            Organization newOrganization = new Organization() { PartyId = p.PartyId, BooksCustomerMasterId = newCustomerCompanyId };
                                             RepositoryResponse result = _organizationRepository.UpdateOrganizationBooksCompanyMasterId(oldOrganization, newOrganization);
                                             if (result.ErrorMessage.Length != 0 || result.Id == 0)
                                             {
-                                                logData = new Dictionary<string, object> {{"error", result}};
-                                                WriteToLog(LogType.Error, "Error", logData);
+                                                logData = new Dictionary<string, object> { { "error", result } };
+                                                WriteToLog(LogEventLevel.Error, "Error", logData);
                                                 errorResponseList.Add(result);
                                             }
                                         }
@@ -182,7 +182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     {
                                         errorText += ResultErrorMessage(p);
                                     });
-                                    
+
                                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorText);
                                 }
                             }
@@ -216,25 +216,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
                             catch (Exception ex)
                             {
-                                logData = new Dictionary<string, object> {{"error", ex.Message}};
-                                WriteToLog(LogType.Error, "Error parsing product list", logData);
+                                logData = new Dictionary<string, object> { { "error", ex.Message } };
+                                WriteToLog(LogEventLevel.Error, "Error parsing product list", logData);
                             }
 
                             if (string.IsNullOrEmpty(customerDomain))
                             {
                                 response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing customerEnvironment");
-                                WriteToLog(LogType.Error, "Missing customerEnvironment");
+                                WriteToLog(LogEventLevel.Error, "Missing customerEnvironment");
                                 return response;
                             }
 
                             if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
                             {
                                 string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
-                                if (!string.IsNullOrEmpty(createResult) )
+                                if (!string.IsNullOrEmpty(createResult))
                                 {
-                                    logData = new Dictionary<string, object> {{"error", createResult}};
+                                    logData = new Dictionary<string, object> { { "error", createResult } };
 
-                                    WriteToLog(LogType.Error, "Error", logData);
+                                    WriteToLog(LogEventLevel.Error, "Error", logData);
                                     if (!createResult.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
                                     {
                                         return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
@@ -252,9 +252,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
                 }
             }
-            
+
             logData.Add("response.StatusCode", response.StatusCode);
-            WriteToLog(LogType.Diagnostic, "PostBooks : Complete", logData);
+            WriteToLog(LogEventLevel.Debug, "PostBooks : Complete", logData);
             return response;
         }
 
@@ -296,9 +296,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return "";
             }
 
-            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain:null, booksCompanyMasterId:booksCustomerMasterId );
-            if (customerCompany == null){ return "Company not found in books environment"; }
-            
+            var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: booksCustomerMasterId);
+            if (customerCompany == null) { return "Company not found in books environment"; }
+
             OrganizationCreate organization = new OrganizationCreate()
             {
                 Name = customerCompany.CompanyName,
@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!organizationDomainList.Any(d => d.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)))
             {
-                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() {Name = domain});
+                RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = domain });
                 if (response.Id > 0)
                 {
                     organization.OrganizationDomainId = Convert.ToInt32(response.Id);
@@ -330,13 +330,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
-            
+
             organization.Products = new List<string>();
 
             // get a list of products passed by the event
             foreach (var productId in productIdList)
             {
-                organization.Products.Add(ProductEnumHelper.StringValueOf((ProductEnum) productId));
+                organization.Products.Add(ProductEnumHelper.StringValueOf((ProductEnum)productId));
             }
 
             var result = _manageOrganization.CreateOrganization(organization, processBlueBookMessage);
@@ -345,7 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return result.Status.ErrorMsg;
             }
-            var companyInstance= new CompanyInstanceAdd()
+            var companyInstance = new CompanyInstanceAdd()
             {
                 CustomerCompanyId = booksCustomerMasterId,
                 CompanyInstanceSourceId = result.obj.Org.RealPageIdUpperCaseForBooks,
@@ -383,20 +383,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             try
             {
-                Log.Write(logType, new LogDetails
-                {
-                    Message = message,
-                    AdditionalInfo = logData,
-                    ProductModule = this.GetType().ToString(),
-                    UserId = "0",
-                    PmcId = "0",
-                    Exception = exception,
-                    CorrelationId = _userClaims?.CorrelationId.ToString(),
-                });
+                string finalMessage = string.Concat(message, ". ProductModule: ", this.GetType().ToString(), ". CorrelationId: ", _userClaims.CorrelationId.ToString());
+
+                Log.Write(logType, exception, finalMessage, logData);
             }
             catch
             {

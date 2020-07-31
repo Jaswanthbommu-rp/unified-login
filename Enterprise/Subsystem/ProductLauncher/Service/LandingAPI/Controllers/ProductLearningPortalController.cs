@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -19,6 +18,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using Serilog;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -284,22 +284,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 var productRepository = new ProductRepository();
                 var booksProductDetail = productRepository.GetBooksMasterProductDetail((int)ProductEnum.ProductLearningPortal);
 
-                LogActivity.WriteActivity(new ActivityDetails
-                {
-                    LogActivityTypeName = "Product Access",
-                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
-                    CorrelationId = _userClaims.CorrelationId.ToString(),
-                    BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
-                    Message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.",
+                string message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.";
 
-                    FromUserLoginName = _userClaims.LoginName,
-                    FromUserLoginId = _userClaims.UserId,
-                    FromUserFirstName = _userClaims.FirstName,
-                    FromUserLastName = _userClaims.LastName,
-                    FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
+                string finalMessage ="LogActivityTypeName = Product Access" +
+                    " LogCategoryName = " + LogActivityCategoryType.ProductAccess.ToString() +
+                    " CorrelationId = " + _userClaims.CorrelationId.ToString() +
+                    " BooksMasterOrganizationId =  " + _userClaims.OrganizationMasterId.ToString() +
+                    " FromUserLoginName = " + _userClaims.LoginName +
+                    " FromUserLoginId =  " + _userClaims.UserId.ToString() +
+                    " FromUserFirstName =  " + _userClaims.FirstName +
+                    " FromUserLastName =  " + _userClaims.LastName +
+                    " FromUserRealpageId = " + _userClaims.UserRealPageGuid.ToString() +
+                    " BooksProductCode = " + booksProductDetail.BooksProductCode;
 
-                    BooksProductCode = booksProductDetail.BooksProductCode
-                });
+                Log.Information(message, finalMessage);
             }
             catch { }
         }

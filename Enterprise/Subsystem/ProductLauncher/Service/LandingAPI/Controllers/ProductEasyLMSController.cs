@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
@@ -21,6 +20,7 @@ using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using Serilog;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -242,20 +242,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			output.obj = productEasyLMS;
 			output.Status = errorStatus;
 
-			LogActivity.WriteActivity(new ActivityDetails
-			{
-				LogActivityTypeName = "Product Access",
-				LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
-				CorrelationId = _userClaims.CorrelationId.ToString(),
-				BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
-				Message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {manageProductEasyLMS.getProductName(ProductEnum.EasyLMS)}.",
-				FromUserLoginName = _userClaims.LoginName,
-				FromUserLoginId = _userClaims.UserId,
-				FromUserFirstName = _userClaims.FirstName,
-				FromUserLastName = _userClaims.LastName,
-				FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
-				BooksProductCode = BlueBookProductConstants.EasyLMS
-			});
+			string message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {manageProductEasyLMS.getProductName(ProductEnum.EasyLMS)}.";
+			string finalMessage= "LogActivityTypeName = Product Access" +
+				" LogCategoryName = " + LogActivityCategoryType.ProductAccess.ToString()+
+				" CorrelationId =  " + _userClaims.CorrelationId.ToString()+
+				" BooksMasterOrganizationId = " + _userClaims.OrganizationMasterId.ToString()+
+				" FromUserLoginName =  " + _userClaims.LoginName+
+				" FromUserLoginId =  " + _userClaims.UserId.ToString() +
+				" FromUserFirstName =  " + _userClaims.FirstName+
+				" FromUserLastName =  " + _userClaims.LastName+
+				" FromUserRealpageId =  " + _userClaims.UserRealPageGuid.ToString()+
+				" BooksProductCode =  " + BlueBookProductConstants.EasyLMS.ToString();
+
+			Log.Information(message, finalMessage);
 
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}

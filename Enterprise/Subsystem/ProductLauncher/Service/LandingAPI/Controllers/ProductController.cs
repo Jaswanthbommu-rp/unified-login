@@ -1,5 +1,4 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -11,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -634,22 +634,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (string.IsNullOrEmpty(message))
                     message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.";
 
-                LogActivity.WriteActivity(new ActivityDetails
-                {
-                    LogActivityTypeName = logActivityTypeName,
-                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
-                    CorrelationId = _userClaims.CorrelationId.ToString(),
-                    BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
-                    Message = message,
+                string finalMessage = "LogActivityTypeName = " + logActivityTypeName +
+                    " LogCategoryName = " + LogActivityCategoryType.ProductAccess.ToString() +
+                    " CorrelationId = " + _userClaims.CorrelationId.ToString() +
+                    " BooksMasterOrganizationId = " + _userClaims.OrganizationMasterId.ToString() +
+                    " FromUserLoginName = " + _userClaims.LoginName +
+                    " FromUserLoginId =  " + _userClaims.UserId.ToString() +
+                    " FromUserFirstName = " + _userClaims.FirstName +
+                    " FromUserLastName = " + _userClaims.LastName +
+                    " FromUserRealpageId = " + _userClaims.UserRealPageGuid.ToString() +
+                    " BooksProductCode =  " + booksProductDetail.BooksProductCode;                
 
-                    FromUserLoginName = _userClaims.LoginName,
-                    FromUserLoginId = _userClaims.UserId,
-                    FromUserFirstName = _userClaims.FirstName,
-                    FromUserLastName = _userClaims.LastName,
-                    FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
-
-                    BooksProductCode = booksProductDetail.BooksProductCode
-                });
+                Log.Information(message, finalMessage);
             }
             catch
             {
