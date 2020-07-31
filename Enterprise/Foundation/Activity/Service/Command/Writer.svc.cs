@@ -14,6 +14,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
 
             try
             {
+                Log.Information($"Starting Activity Insertion");
+
                 activity = (ActivityDetailMessage)mqMessage.Body;
 
                 if (activity.BooksMasterOrganizationId == 0)
