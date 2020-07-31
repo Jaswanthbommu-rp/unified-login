@@ -33,8 +33,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         public HttpResponseMessage ListSearchMetadata()
         {
             try
-            {             
-
+            {
                 var readerRepository = new ReaderRepository();
                 var result = readerRepository.GetSearchMetadata();
                 
@@ -61,6 +60,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         {
             try
             {
+                Log.Information($"Getting Activity Log");
+
                 if (filterCriteria == null)
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "No filterCriteria received.");
@@ -283,6 +284,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             var result = new ListResponse<ActivityDetailMessage>();
             try
             {
+                Log.Information($"Getting Activity Log Detail");
 
                 if (filterCriteria == null)
                 {
