@@ -18,93 +18,62 @@ BEGIN
 	DECLARE @ActionId2 int;
 	DECLARE @Status int;
 	DECLARE @UserActionId int;
-	
+
+	SELECT @RoleId = ISNULL(RoleId,0)
+	FROM ENterprise.Role R
+			INNER JOIN
+			Enterprise.RoleValueType RVT
+			ON RVT.RoleValueTypeId = R.RoleValuetypeId
+	WHERE RVT.Value = @RoleName AND 
+			R.PartyId = @PartyId;
+	IF (@RoleId > 0)
+	BEGIN
+		SELECT @RoleId AS RoleID, 'Role already exists under Organization.' as ErrorMessage;
+		RETURN;
+	END
+
 	IF @RoleName IN ('SystemRole', 'SystemRight')
 	BEGIN
 		SELECT 0 AS RoleID, 'Role with this name cannot be created.' as ErrorMessage;
 		RETURN;
 	END
-	IF NOT EXISTS
-	(
-		SELECT 1
-		FROM Enterprise.RoleValueType
-		WHERE value = @RoleName
-	)
-	BEGIN
-		BEGIN TRY
-			INSERT INTO Enterprise.RoleValueType( Value, ShortName, Description, StatusTypeId )
-			VALUES( @RoleName, @ShortName, @Description, @RoleCategoryId );
-			SELECT @RoleValueTypeId = SCOPE_IDENTITY();
-		END TRY
-		BEGIN CATCH
-			EXEC dbo.LogError @ErrorLogID = @ErrorLogID OUTPUT;
-			SELECT 0 AS RoleID, ErrorMessage
-			FROM dbo.ErrorLog
-			WHERE ErrorLogID = @ErrorLogID;
-		END CATCH;
-	END;
-	ELSE
-	BEGIN
-		SELECT @RoleValueTypeID = RoleValueTypeId
-		FROM Enterprise.RoleValueType
-		WHERE Value = @RoleName;
-	END;
-	IF NOT EXISTS
-	(
-		SELECT 1
-		FROM Enterprise.Role AS R
-			 INNER JOIN
-			 Enterprise.RoleValueType AS RV
-			 ON R.RoleValueTypeId = RV.RoleValueTypeId
-		WHERE RV.Value = @RoleName AND 
-			  R.PartyID = @PartyID
-	)
-	BEGIN
-		BEGIN TRY
-			INSERT INTO Enterprise.Role( RoleTypeID, RoleValueTypeId, PartyID )
-			VALUES( @RoleTypeID, @RoleValueTypeId, @PartyID );
-			SELECT @RoleID = SCOPE_IDENTITY();
-			SELECT @RoleID AS RoleID, '' AS ErrorMessage;
-		END TRY
-		BEGIN CATCH
-			EXEC dbo.LogError @ErrorLogID = @ErrorLogID OUTPUT;
-			SELECT 0 AS Id, ErrorMessage
-			FROM dbo.ErrorLog
-			WHERE ErrorLogID = @ErrorLogID;
-		END CATCH;
-	END;
-	ELSE
-	BEGIN
-		SELECT @RoleId = RoleId
-		FROM ENterprise.Role R
-			 INNER JOIN
-			 Enterprise.RoleValueType RVT
-			 ON RVT.RoleValueTypeId = R.RoleValuetypeId
-		WHERE RVT.Value = @RoleName AND 
-			  R.PartyId = @PartyId;
-		SELECT @RoleId AS RoleID, 'Role already exists under Organization.' AS ErrorMessage;
-		RETURN;
-	END;
+
+	BEGIN TRY
+		INSERT INTO Enterprise.RoleValueType( Value, ShortName, Description, StatusTypeId )
+		VALUES( @RoleName, @ShortName, @Description, @RoleCategoryId );
+		SELECT @RoleValueTypeId = SCOPE_IDENTITY();
+
+		INSERT INTO Enterprise.Role( RoleTypeID, RoleValueTypeId, PartyID )
+		VALUES( @RoleTypeID, @RoleValueTypeId, @PartyID );
+		SELECT @RoleID = SCOPE_IDENTITY();
+
+		SELECT @RoleID AS RoleID, '' AS ErrorMessage;
+	END TRY
+	BEGIN CATCH
+		EXEC dbo.LogError @ErrorLogID = @ErrorLogID OUTPUT;
+		SELECT 0 AS RoleID, ErrorMessage
+		FROM dbo.ErrorLog
+		WHERE ErrorLogID = @ErrorLogID;
+	END CATCH;	
 	    
 /*Assign Default Right*/
 
-	IF
-(
-	SELECT ST.StatusTypeId
-	FROM Enterprise.StatusTypeCategoryType AS STCT
-		 JOIN
-		 Enterprise.StatusTypeCategory AS STC
-		 ON STC.StatusTypeCategoryTypeId = STCT.StatusTypeCategoryTypeId
-		 JOIN
-		 Enterprise.StatusTypeCategoryClassification AS STCC
-		 ON STCC.StatusTypeCategoryId = STC.StatusTypeCategoryId
-		 JOIN
-		 Enterprise.StatusType AS ST
-		 ON ST.StatusTypeId = STCC.StatusTypeId
-	WHERE STCT.name = 'Security' AND 
-		  STC.Name = 'Role Type' AND 
-		  ST.Name = 'Custom'
-) = @RoleCategoryId
+	IF(
+		SELECT ST.StatusTypeId
+		FROM Enterprise.StatusTypeCategoryType AS STCT
+			 JOIN
+			 Enterprise.StatusTypeCategory AS STC
+			 ON STC.StatusTypeCategoryTypeId = STCT.StatusTypeCategoryTypeId
+			 JOIN
+			 Enterprise.StatusTypeCategoryClassification AS STCC
+			 ON STCC.StatusTypeCategoryId = STC.StatusTypeCategoryId
+			 JOIN
+			 Enterprise.StatusType AS ST
+			 ON ST.StatusTypeId = STCC.StatusTypeId
+		WHERE STCT.name = 'Security' AND 
+			  STC.Name = 'Role Type' AND 
+			  ST.Name = 'Custom'
+	) = @RoleCategoryId
 	BEGIN
 		SELECT @Status = StatusType.StatusTypeID
 		FROM Enterprise.StatusTypeCategoryType
@@ -144,13 +113,13 @@ BEGIN
 		WHERE ObjectValue = 'SideMenu' AND 
 			  Description = 'User';
 		IF NOT EXISTS
-(
-	SELECT 1
-	FROM Enterprise.[Right]
-	WHERE RoleId = @RoleId AND 
-		  PartyId = @PartyId AND 
-		  RightValueTypeID IN( @DefaultRightValueTypeId1, @DefaultRightValueTypeId2 )
-)
+		(
+			SELECT 1
+			FROM Enterprise.[Right]
+			WHERE RoleId = @RoleId AND 
+				  PartyId = @PartyId AND 
+				  RightValueTypeID IN( @DefaultRightValueTypeId1, @DefaultRightValueTypeId2 )
+		)
 		BEGIN
 			INSERT INTO Enterprise.[Right]( RoleId, PartyId, RightValueTypeId )
 			VALUES( @RoleId, @PartyId, @DefaultRightValueTypeId1 );
