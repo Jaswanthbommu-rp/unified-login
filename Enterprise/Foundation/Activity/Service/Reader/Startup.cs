@@ -7,6 +7,7 @@ using RP.Enterprise.Foundation.Activity.Service.Logging.Reader;
 using IdentityServer3.AccessTokenValidation;
 using Newtonsoft.Json.Serialization;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
+using RealPage.Logging.Serilog;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -16,7 +17,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
     {
         public void Configuration(IAppBuilder app)
         {
-	        System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            SerilogHelpers.ConfigureSerilog("Unified Login");
+
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
 			HttpConfiguration config = new HttpConfiguration();
 

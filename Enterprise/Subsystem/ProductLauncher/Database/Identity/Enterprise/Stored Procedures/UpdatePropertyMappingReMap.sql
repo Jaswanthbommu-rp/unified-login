@@ -33,6 +33,13 @@ BEGIN
 		FROM 
 		@UpdatedPropertyList
 
+	-- MAY REMOVE EVENTUALLY
+	UPDATE Enterprise.PropertyInstance
+		SET CustomerPropertyId = @NewPropertyID
+	
+	WHERE
+		CustomerPropertyId = @OriginalPropertyID
+	
 	SELECT
 		1 As Id,
 		ErrorMessage = ''

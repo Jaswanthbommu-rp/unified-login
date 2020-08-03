@@ -976,7 +976,16 @@
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetDefaultRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUser.sql" />
+    <Build Include="Enterprise\Tables\PropertyInstance.sql" />
+    <Build Include="Enterprise\Tables\PropertyInstanceMapping.sql" />
+    <Build Include="Enterprise\PropertyInstanceType.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPropertyInstanceByPersonaId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPropertyInstanceListById.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetProductsByPersonaId.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetPropertyInstanceIdsByPersonaId.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateEnterpriseUserCredential_V2.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreatePropertyInstanceMapping.sql" />
+    <Build Include="Enterprise\Stored Procedures\AddUpdatePropertyInstanceMapping.sql" />
     <Build Include="Ident\Stored Procedures\UpdateEnterpriseUserCredential_V2.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUserStatus.sql" />
     <Build Include="Auth\Stored Procedures\SearchClient.sql" />
@@ -995,6 +1004,9 @@
     <Build Include="Ident\Stored Procedures\UpdateActivityAttemptOnLoginSuccess.sql" />
     <Build Include="Person\Stored Procedures\ListAvailablePersona.sql" />
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId_Ver3.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreateUserEmployeeId.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateUserEmployeeId.sql" />
+    <Build Include="Enterprise\Tables\UserEmployeeId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

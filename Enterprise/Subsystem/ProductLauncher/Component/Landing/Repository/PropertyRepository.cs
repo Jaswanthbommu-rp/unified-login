@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -60,7 +61,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Used to get the list of UPFM property instances for the given persona and product
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        public List<UPFMPropertyInstance> ListUPFMPropertyInstanceByPersona(long userPersonaId, ProductEnum productId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = (int)productId
+                };
+
+                List<UPFMPropertyInstance> propList = repository.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceByPersonaId, param);
+                return propList;
+            }
+        }
+
+        /// <summary>
+        /// Used to get the list of the internal UPFM property instance ids for the given persona and product
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        public List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, ProductEnum productId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = (int)productId
+                };
+
+                List<int> propList = repository.GetMany<int>(StoredProcNameConstants.SP_GetPropertyInstanceIdsByPersonaId, param);
+                return propList;
+            }
+        }
+
+        /// <summary>
+        /// Used to get the UPFM property details for the given instance ids
+        /// </summary>
+        /// <param name="propertyInstanceIds"></param>
+        /// <returns></returns>
+
+        public List<UPFMPropertyInstance> ListUPFMPropertyInstanceIdByInstanceIds(List<Guid> propertyInstanceIds)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    @InstanceList = TableValueParamHelper.ConvertToTableValuedParameter(propertyInstanceIds, "Enterprise.PropertyInstanceType")
+                };
+
+                return repository.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById, param);
+            }
+        }
+
+        /// <summary>
 		/// Insert or Remove a Property for the given User
 		/// </summary>
 		/// <param name="userPersonaId">User Persona ID</param>      
@@ -88,44 +150,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
-		public RepositoryResponse AddUpdatePropertyMapping(long personaId, ProductEnum productId, string propertyJSON)
-		{
-			RepositoryResponse repositoryResponse = new RepositoryResponse();
-			repositoryResponse.Id = 0;
+        /// <summary>
+        /// Insert or Remove a Property instance for the given User
+        /// </summary>
+        /// <param name="userPersonaId">User Persona ID</param>      
+        /// <param name="productId">Product ID</param>      
+        /// <param name="propertyInstanceId">Property Instance ID</param>      
+        /// <param name="remove">isDeleted</param>   
+        /// <returns>List of Roles assigned to Persona</returns>
+        public RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, ProductEnum productId, long propertyInstanceId, int remove = 0)
+        {
+            using (var repository = GetRepository())
+            {
+                RepositoryResponse repositoryResponse = new RepositoryResponse();
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = (int)productId,
+                    PropertyInstanceID = propertyInstanceId,
+                    Deleted = remove
+                };
 
-			using (var repository = GetRepository())
-			{
-				repository.UnitOfWork.BeginTransaction();
-				try
-				{
-					repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { personaId, productId, propertyJSON });
-					if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
-					{
-						repositoryResponse.ErrorMessage = $"Update Property Mapping Error: {repositoryResponse.ErrorMessage}.";
-					}
-				}
-				catch (Exception exception)
-				{
-					repositoryResponse.Id = 0;
-					repositoryResponse.ErrorMessage = "Update Property Mapping Exception: " + exception.Message;
-				}
-				finally
-				{
-					if (repositoryResponse.ErrorMessage.Length == 0)
-					{
-						//Commit and end transaction.
-						repository.UnitOfWork.Commit();
-					}
-					else
-					{
-						//Rollback transaction and dispose it.
-						repository.UnitOfWork.Rollback();
-					}
-				}
-				return repositoryResponse;
-			}
-		}
+                int i = repository.ExecuteNonQuery(StoredProcNameConstants.SP_CreatePropertyInstanceMapping, param);
+                repositoryResponse.Id = i;
 
+                return repositoryResponse;
+            }
+        }
+        
 		/// <summary>
 		/// Used to update any property mapping records that match the old id to a new id
 		/// </summary>
