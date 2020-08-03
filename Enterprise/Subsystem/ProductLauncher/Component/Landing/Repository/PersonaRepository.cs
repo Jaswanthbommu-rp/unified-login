@@ -218,6 +218,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 persona.hasPlatformAlertsAccess = (editorRights.Contains("CreatePlatformAlerts", StringComparer.OrdinalIgnoreCase) 
                                                 || editorRights.Contains("ApprovePlatformAlerts", StringComparer.OrdinalIgnoreCase));
+
+                persona.hasImportUsersAccess = editorRights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
             }
 
             if (currentClaimPrincipal.Identity.IsAuthenticated)
@@ -233,8 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 persona.hasPlatformAlertsAccess = (userClaim.Rights.Contains("CreatePlatformAlerts", StringComparer.OrdinalIgnoreCase)
                                                 || userClaim.Rights.Contains("ApprovePlatformAlerts", StringComparer.OrdinalIgnoreCase));
 
-                // For Import User Access - Support tool Employee
-                persona.hasImportUsersAccess = persona.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId && userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
+                persona.hasImportUsersAccess = userClaim.Rights.Contains("AbilityToImportUsers", StringComparer.OrdinalIgnoreCase);
 
                 if (!persona.hasViewOnlySettingsAccess || !persona.hasManageUnifiedSettings || !persona.hasManageCustomFields || !persona.hasManagePlatFormSecurity || !persona.hasManageSettingsTemplates)
                 {
