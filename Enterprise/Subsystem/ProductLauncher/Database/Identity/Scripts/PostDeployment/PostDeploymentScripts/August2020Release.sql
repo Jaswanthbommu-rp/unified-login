@@ -25,6 +25,12 @@ begin
 end
 go
 
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'BooksUseTranslatev2' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseTranslatev2', 'Use v2 of the books translate endpoint', 0 )
+end
+GO
+
 if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
@@ -61,6 +67,27 @@ Begin
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
 				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseTranslatev2' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseTranslatev2'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseTranslatev2' and ps.ProductId= 3
 
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
 		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
@@ -1734,6 +1761,49 @@ GO
  Where  Value = 'View All Unified Settings'
 
  GO
+ 
+ if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'UsePropertyInstanceUnifiedLogin' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UsePropertyInstanceUnifiedLogin', 'Use property instances for Unified Login property list', 0 )
+end
+GO
+
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UsePropertyInstanceUnifiedLogin' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '0', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'UsePropertyInstanceUnifiedLogin'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UsePropertyInstanceUnifiedLogin' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+
+-- migrate data from old table to new
+if not exists ( select top 1 1 from Enterprise.PropertyInstanceMapping ) AND exists ( select top 1 1 from enterprise.PropertyInstance )
+BEGIN
+	insert into enterprise.PropertyInstanceMapping ( PersonaId, PropertyInstanceId, ProductId, fromdate, thrudate, active )
+	select personaid, pi1.PropertyInstanceId, productid, fromdate, thrudate, case when pm.ThruDate is null then 1 else 0 end
+		from enterprise.PropertyMapping PM 
+		inner join enterprise.PropertyInstance pi1 on PM.PropertyId = pi1.CustomerPropertyId
+		where pm.ThruDate is null
+		and pi1.Domain = 'primary'
+	and pm.ProductId NOT IN ( 26 )
+END
+GO
+
 
 --Start For Reno product internal settings
 GO
