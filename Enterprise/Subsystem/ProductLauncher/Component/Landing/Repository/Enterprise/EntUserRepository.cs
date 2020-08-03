@@ -81,10 +81,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 				//Add EmployeeId
 				if (!string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId) || !string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId))
 				{
+					dynamic paramULP = new
+					{
+						UserLoginId = userId,
+						userProductDetails.UserProfileDetails.OrganizationPartyId
+					};
 
-					IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
-
-					IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userId, organizationPartyId: userProductDetails.UserProfileDetails.OrganizationPartyId);
+					var userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona , paramULP);
 
 					var sEmployeeResult = repository.GetOne<dynamic>(StoredProcNameConstants.SP_CreateEmployeeId, new { userLoginPersonaList[0].UserLoginPersonaId , userProductDetails.UserProfileDetails.EmployeeId });
 				}
