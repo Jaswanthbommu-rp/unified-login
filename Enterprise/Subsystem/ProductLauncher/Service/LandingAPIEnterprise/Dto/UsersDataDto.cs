@@ -32,11 +32,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		/// </summary>
 		[JsonProperty("Product")]
 		public IList<UserProductSAMLDetail> Product { get; set; }
-
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
-		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
-		public string EmployeeId { get; set; }
+			
 	}
 }
