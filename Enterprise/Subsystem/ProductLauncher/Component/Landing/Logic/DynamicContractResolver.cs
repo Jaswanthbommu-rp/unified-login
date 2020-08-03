@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -17,6 +18,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 string[] returnFields = serializableProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 _serializableProperties = returnFields.ToList();
+                if (!_serializableProperties.Any(p => p.Equals("id", StringComparison.OrdinalIgnoreCase)))
+                {
+                    _serializableProperties.Add("id");
+                }
             }
         }
 
@@ -25,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             JsonProperty property = base.CreateProperty(member, memberSerialization);
             if (_serializableProperties.Count > 0)
             {
-                bool serialize = _serializableProperties.Contains(property.PropertyName);
+                bool serialize = _serializableProperties.Any(sp => sp.TrimStart().TrimEnd().Equals(property.PropertyName, StringComparison.OrdinalIgnoreCase));
                 property.ShouldSerialize = i => serialize;
                 property.Ignored = !serialize;
             }

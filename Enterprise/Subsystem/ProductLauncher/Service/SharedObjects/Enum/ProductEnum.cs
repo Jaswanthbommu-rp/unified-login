@@ -224,7 +224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 						object[] descriptionAttrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
 						DescriptionAttribute description = (DescriptionAttribute)descriptionAttrs[0];
 						result = (description.Description);
-						if (result == productCode)
+						if (result.Equals(productCode, StringComparison.OrdinalIgnoreCase))
 							return (ProductEnum)pEnum;
 					}
 					catch
