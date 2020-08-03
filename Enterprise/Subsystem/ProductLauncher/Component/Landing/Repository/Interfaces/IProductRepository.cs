@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using System;
+using System.Collections.Generic;
 using EnterpriseProductUser = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise.ProductUsers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
@@ -75,22 +74,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns>Repository response object</returns>
         RepositoryResponse CreateProductSetting(long PersonaId, int ProductId, int ProductSettingTypeId, string Value);
 
-		/// <summary>
-		/// Create ProductSetting
-		/// </summary>
-		/// <param name="repository"></param>
-		/// <param name="PersonaId"></param>
-		/// <param name="ProductId"></param>
-		/// <param name="ProductSettingTypeId"></param>
-		/// <param name="Value"></param>
-		/// <returns>Repository response object</returns>
-		RepositoryResponse CreateProductSetting(IRepository repository, long PersonaId, int ProductId, int ProductSettingTypeId, string Value);
+        /// <summary>
+        /// Create ProductSetting
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="PersonaId"></param>
+        /// <param name="ProductId"></param>
+        /// <param name="ProductSettingTypeId"></param>
+        /// <param name="Value"></param>
+        /// <returns>Repository response object</returns>
+        RepositoryResponse CreateProductSetting(IRepository repository, long PersonaId, int ProductId, int ProductSettingTypeId, string Value);
 
-		/// <summary>
-		/// Returns a list of productSettingType
-		/// </summary>
-		/// <returns></returns>
-		IList<ProductSettingType> ListProductSettingType();
+        /// <summary>
+        /// Returns a list of productSettingType
+        /// </summary>
+        /// <returns></returns>
+        IList<ProductSettingType> ListProductSettingType();
 
         /// <summary>
         /// Create a new Product Batch
@@ -116,16 +115,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         int GetProductSettingType(string productSettingName);
 
-		/// <summary>
-		/// Returns a list of productfamilies
-		/// </summary>
-		/// <param name="personRealPageId">Edited User enterprise Id</param>
-		/// <param name="accessFilter">Filter products</param>
-		/// <param name="loginName">User Login Name</param>
-		/// <returns>List of Product Families</returns>
-		//IList<ProductFamily> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null);
+        /// <summary>
+        /// Returns a list of productfamilies
+        /// </summary>
+        /// <param name="personRealPageId">Edited User enterprise Id</param>
+        /// <param name="accessFilter">Filter products</param>
+        /// <param name="loginName">User Login Name</param>
+        /// <returns>List of Product Families</returns>
+        //IList<ProductFamily> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null);
 
-		IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null, string loginName = null);
+        IList<ProductFamily> GetProductFamilies(Guid organizationRealPageId, Guid editorRealPageId, Guid? personRealPageId = null, string accessFilter = null, string loginName = null);
+
         /// <summary>
         /// List of Roles by Party ID, Product List and Product ID
         /// </summary>
@@ -142,7 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="productId">Product ID</param>   
         /// <param name="productIdList">Product ID's by Org</param>        
         /// <returns>List of Roles and rights count by PartyId and Product</returns>
-        IList<RightRoleDetail> ListRoleWithRights(long partyId, int productId, List<int> productIdList); 
+        IList<RightRoleDetail> ListRoleWithRights(long partyId, int productId, List<int> productIdList);
 
         /// <summary>
         /// List GB products
@@ -155,39 +155,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary> 
         GbProductMap GetBooksMasterProductDetail(int gbProductId);
 
-		/// <summary>
-		/// Returns product propertyId roles details for given product code and persona.		
-		/// </summary> 
-		RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId);
-		
-	    /// <summary>
-	    /// Used to get a list of products ids for a company by the company guid
-	    /// </summary>
-	    /// <param name="organizationRealPageId"></param>
-	    /// <returns></returns>
-	    IList<int> GetProductIdsByCompany(Guid organizationRealPageId);
-
-	    /// <summary>
-	    /// Used to get a list of products ids for a company by the company party id
-	    /// </summary>
-	    /// <param name="organizationPartyId"></param>
-	    /// <returns></returns>
-	    IList<int> GetProductIdsByCompany(long organizationPartyId);
-
-		/// <summary>
-		/// Used to update the persona product setting type for the given user and setting
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="userPersonaId"></param>
-		/// <param name="productId"></param>
-		/// <param name="settingType"></param>
-		/// <param name="value"></param>
-		void UpdateProductSettingProductStatus<T>(long userPersonaId, int productId, string settingType, T value);
+        /// <summary>
+        /// Returns product propertyId roles details for given product code and persona.		
+        /// </summary> 
+        RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId);
 
         /// <summary>
-	    /// Returns all the products
-	    /// </summary>
-	    IList<GbProductMap> GetAllProducts();
+        /// Used to get a list of products ids for a company by the company guid
+        /// </summary>
+        /// <param name="organizationRealPageId"></param>
+        /// <returns></returns>
+        IList<int> GetProductIdsByCompany(Guid organizationRealPageId);
+
+        /// <summary>
+        /// Used to get a list of products ids for a company by the company party id
+        /// </summary>
+        /// <param name="organizationPartyId"></param>
+        /// <returns></returns>
+        IList<int> GetProductIdsByCompany(long organizationPartyId);
+
+        /// <summary>
+        /// Used to update the persona product setting type for the given user and setting
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <param name="settingType"></param>
+        /// <param name="value"></param>
+        void UpdateProductSettingProductStatus<T>(long userPersonaId, int productId, string settingType, T value);
+
+        /// <summary>
+        /// Returns all the products
+        /// </summary>
+        IList<GbProductMap> GetAllProducts();
 
         /// <summary>
         /// Search by company and product ids and returns userlist
@@ -202,8 +202,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="rights"></param>
         /// <param name="properties"></param>
         /// <returns>List of Users by product or company</returns>
-        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products , ProductProcVersion version, int rowsPerPage, int pageNumber, 
-                                                                IList<string> roles, IList<string> rights, Guid? propertyId);
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
+            IList<string> roles, IList<string> rights, Guid? propertyId);
 
         /// <summary>
         /// Get Unified Login mapping PersonaId for Product UserId by company and product id
