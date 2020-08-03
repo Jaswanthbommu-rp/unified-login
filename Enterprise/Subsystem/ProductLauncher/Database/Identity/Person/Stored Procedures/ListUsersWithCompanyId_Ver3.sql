@@ -1,4 +1,3 @@
-
 CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3] 
 (@CompanyId   INT, 
  @Source      NVARCHAR(50)  = 'BlueBook', 
@@ -12,13 +11,13 @@ CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3]
 BEGIN
 	
 	DECLARE @Now DATETIME= GETUTCDATE();
-	DECLARE @ProductIdList TABLE(ProductId INT);
 	DECLARE @RoleList TABLE(RoleShortName NVARCHAR(255));
 	DECLARE @RightList TABLE(RightName NVARCHAR(255));
 	DECLARE @ProductCount INT= 1;
 	DECLARE @RoleCount INT= 1;
 	DECLARE @RightCount INT= 1;
 	DECLARE @OrganizationPartyId BIGINT
+	DECLARE @ProductIds Enterprise.ProductIdType
 
 	DECLARE @ProductsList2 TABLE
 	(
@@ -37,7 +36,7 @@ BEGIN
 		PersonaId     BIGINT
 	);
 
-	INSERT INTO @ProductIdList(ProductId)
+	INSERT INTO @ProductIds(ProductId)
     (
 		SELECT *
 		FROM STRING_SPLIT(@ProductId, ',')
@@ -57,7 +56,7 @@ BEGIN
     );
 
 	IF (SELECT COUNT(*)
-        FROM @ProductIdList) = 0
+        FROM @ProductIds) = 0
 	BEGIN
 		SET @ProductCount = NULL;
     END;
@@ -82,7 +81,7 @@ BEGIN
     END;
 
 	IF EXISTS (SELECT TOP 1 ProductId
-				FROM @ProductIdList)
+				FROM @ProductIds)
     BEGIN
 		
 		SELECT
@@ -92,9 +91,7 @@ BEGIN
 			dim.SourceId = @companyid;
 
 		INSERT INTO @ProductsList2
-			EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductId = @ProductId, @OrganizationPartyId = @OrganizationPartyId;
-		
-		DELETE FROM @ProductsList2 WHERE ProductId NOT IN (SELECT ProductId FROM @ProductIdList) AND TargetProductId NOT IN (SELECT ProductId FROM @ProductIdList);
+			EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
 
 		WITH Users
 		AS 
