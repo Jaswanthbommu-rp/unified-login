@@ -210,6 +210,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				userProductDetails.UserProfileDetails.UserExpirationDate =
 					userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? Convert.ToDateTime("12/31/9999");
 
+				//EmployeeId
+				userProductDetails.UserProfileDetails.EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId;
+
 				// Call Logic
 				var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
 				var response = userManagement.CreateEnterpriseUnityUser(userProductDetails);

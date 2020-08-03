@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Enterprise
 {
@@ -76,6 +78,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 				if (userProductDetails.ProductList.Any()) //TODO: remove UL product from list?
 					SaveProductBatch(repository, _userClaim.PersonaId, newUserPersonaId, _userClaim.UserRealPageGuid, userProductDetails.ProductList);
 
+				//Add EmployeeId
+				if (!string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId) || !string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId))
+				{
+
+					IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
+
+					IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userId, organizationPartyId: userProductDetails.UserProfileDetails.OrganizationPartyId);
+
+					var sEmployeeResult = repository.GetOne<dynamic>(StoredProcNameConstants.SP_CreateEmployeeId, new { userLoginPersonaList[0].UserLoginPersonaId , userProductDetails.UserProfileDetails.EmployeeId });
+				}
 				repository.UnitOfWork.Commit();
 
 				return newUserRealPageId;
