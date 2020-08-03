@@ -264,7 +264,7 @@
                 s.batchData.inputJson.RolePropertiesList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14" || productId == "3" || productId == "23" || productId == "16") {
+                    if (productId == "14" || productId == "3" || productId == "23" || productId == "16" || productId =="26") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
                     else {
