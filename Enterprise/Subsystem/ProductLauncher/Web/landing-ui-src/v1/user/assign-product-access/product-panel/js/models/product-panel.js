@@ -460,7 +460,7 @@
 
             if (aoFamilyProduct) {
                 if (productId == "30" && bmroles && bmroles.length > 0) {
-                    if (hasRoleSelected && hasPropertySelected) {
+                    if (hasRoleSelected && (hasPropertySelected || hasPropertyGroupSelected)) {
                         return s.data.records;
                     }
                 }
