@@ -129,6 +129,7 @@
     <Compile Include="Attribute\SwaggerResponseExamplesAttribute.cs" />
     <Compile Include="Attribute\VersionedRouteAttribute.cs" />
     <Compile Include="Audit\Common\AuditRecord.cs" />
+    <Compile Include="Audit\Common\LogDetails.cs" />
     <Compile Include="Audit\Dtos\UserAuditDto.cs" />
     <Compile Include="Base\BaseType.cs" />
     <Compile Include="Base\IRequestParameter.cs" />
@@ -191,11 +192,13 @@
     <Compile Include="Enum\UserLoginUpdateType.cs" />
     <Compile Include="Enum\UserLoginStatusType.cs" />
     <Compile Include="Enum\UserRoleType.cs" />
+    <Compile Include="Exceptions\ApiExceptionLogger.cs" />
     <Compile Include="Exceptions\BlueBookException.cs" />
     <Compile Include="Extensions\ExtensionMethods.cs" />
     <Compile Include="Extensions\HashingExtensions.cs" />
     <Compile Include="Extensions\MultiQueryMapperExtension.cs" />
     <Compile Include="Extensions\ProfileExtensions.cs" />
+    <Compile Include="Handlers\ApiExceptionHandler.cs" />
     <Compile Include="Handlers\NoCacheHandler.cs" />
     <Compile Include="Handlers\TibcoRequestHandler.cs" />
     <Compile Include="Helper\CheckUserRight.cs" />

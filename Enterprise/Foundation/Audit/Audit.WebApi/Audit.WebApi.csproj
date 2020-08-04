@@ -65,9 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiExceptionLogger.cs" />
+    <Compile Include="ApiExceptionLoggerOld.cs" />
     <Compile Include="Filters\ApiPerformanceFilter.cs" />
-    <Compile Include="Handler\ApiExceptionHandler.cs" />
+    <Compile Include="Handler\ApiExceptionHandlerOld.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

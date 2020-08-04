@@ -210,10 +210,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Foundation\Audit\Audit.WebApi\Audit.WebApi.csproj">
-      <Project>{FFAD1EF8-C442-499B-9959-8F8D43A84515}</Project>
-      <Name>Audit.WebApi</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Foundation\DataAccess\DataAccess.csproj">
       <Project>{255a94dc-a434-47cc-a472-e162ebde6bce}</Project>
       <Name>DataAccess</Name>
