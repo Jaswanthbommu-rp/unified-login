@@ -2382,6 +2382,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
+		/// </summary>
+		/// <param name="UserLoginPersonaId"></param>
+		/// <param name="OrganizationPartyId"></param>
+		/// <returns>IUserEmployeeId</returns>
+		public IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    UserLoginPersonaId,
+                    OrganizationPartyId
+                };
+
+                return repository.GetOne<UserEmployee>(StoredProcNameConstants.SP_GetEmployeeId, param);
+            }
+        }
+
         #endregion
 
         #region Private methods
@@ -4869,6 +4889,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //Begin the transaction
                 repository.UnitOfWork.BeginTransaction();
 
+                param = new
+                {
+                    UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
+                    OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId
+                };
+                IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
+
                 int greenBookRole = 0;
 
                 userBatchEntity = GetUserBatch(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile, updateUserProfileEntity.UserIsExternalEverywhere);
@@ -4960,12 +4987,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 if (updateUserProfileEntity.NewProfile.CustomFields.ToList().Any(c => c.UserLoginPersonaId.Equals(0)))
                                 {
-                                    param = new
-                                    {
-                                        UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
-                                        OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId
-                                    };
-                                    IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
+                                    //param = new
+                                    //{
+                                    //    UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
+                                    //    OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId
+                                    //};
+                                    //IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
 
                                     updateUserProfileEntity.NewProfile.CustomFields.ToList().ForEach(c => c.UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId);
                                 }
@@ -5329,6 +5356,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
+
+                        #region Update UserEmployeeId
+                        if (!string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.EmployeeId))
+                        {
+                            //If the old user has EmployeeId so update if not create the EmployeeId
+                            if (!string.IsNullOrEmpty(updateUserProfileEntity.OldProfile.EmployeeId))
+                            {
+                                if (updateUserProfileEntity.OldProfile.EmployeeId != updateUserProfileEntity.NewProfile.EmployeeId)
+                                {
+                                    dynamic update = new
+                                    {
+                                        updateUserProfileEntity.OldProfile.UserEmployeeId,
+                                        updateUserProfileEntity.NewProfile.EmployeeId
+                                    };
+
+                                    RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateEmployeeId, update);
+
+                                    if (employeeResult.Id == 0)
+                                    {
+                                        repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
+                                        throw new Exception(employeeResult.ErrorMessage);
+                                    }
+                                }
+                                
+                            }
+                            else
+                            {
+                                dynamic create = new
+                                {
+                                    userLoginPersonaList[0].UserLoginPersonaId,
+                                    updateUserProfileEntity.NewProfile.EmployeeId,
+                                };
+
+                                RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, create);
+
+                                if (employeeResult.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
+                                    throw new Exception(employeeResult.ErrorMessage);
+                                }
+                            }
+                        }
+                        #endregion
+
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)

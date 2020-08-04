@@ -381,6 +381,7 @@
         //EmployeeId
         public const string SP_CreateEmployeeId = "Enterprise.CreateUserEmployeeId";
         public const string SP_UpdateEmployeeId = "Enterprise.UpdateUserEmployeeId";
+        public const string SP_GetEmployeeId = "Enterprise.GetUserEmployeeIdByUserLoginPersonaId";
     }
 
     public static class EnterpriseStoredProcNameConstants

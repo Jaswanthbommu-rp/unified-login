@@ -210,9 +210,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				userProductDetails.UserProfileDetails.UserExpirationDate =
 					userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? Convert.ToDateTime("12/31/9999");
 
-				//EmployeeId
-				userProductDetails.UserProfileDetails.EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId;
-
 				// Call Logic
 				var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
 				var response = userManagement.CreateEnterpriseUnityUser(userProductDetails);
@@ -1112,7 +1109,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
 					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
 					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields
+					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
+					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId
 				},
 				ProductList = new List<ProductDetail>()
 			};
