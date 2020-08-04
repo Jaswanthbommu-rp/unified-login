@@ -16,7 +16,7 @@ GO
 ALTER TABLE [Security].[PersonaRole] ADD  CONSTRAINT [DF_PersonaSecurityRole_CreatedBy]  DEFAULT ('00000000-0000-0000-0000-000000000000') FOR [CreatedBy]
 GO
 
-ALTER TABLE [Security].[PersonaRole] ADD  CONSTRAINT [DF_PersonaSecurityRole_CreatedDate]  DEFAULT (getdate()) FOR [CreatedDate]
+ALTER TABLE [Security].[PersonaRole] ADD  CONSTRAINT [DF_PersonaSecurityRole_CreatedDate]  DEFAULT (GETUTCDATE()) FOR [CreatedDate]
 GO
 
 ALTER TABLE [Security].[PersonaRole]  WITH CHECK ADD  CONSTRAINT [FK_PersonaRole_Persona] FOREIGN KEY([PersonaId])
@@ -35,4 +35,9 @@ GO
 CREATE NONCLUSTERED INDEX [IX_SecurityPersonaRole_PersonaId]
 ON [Security].[PersonaRole] ([PersonaId])
 INCLUDE ([RoleId])
+GO
+
+CREATE NONCLUSTERED INDEX [IX_SecurityPersonaRole_RoleId]
+ON [Security].[PersonaRole] ([RoleId])
+INCLUDE ([PersonaId])
 GO

@@ -1004,6 +1004,7 @@
     <Build Include="Ident\Stored Procedures\UpdateActivityAttemptOnLoginSuccess.sql" />
     <Build Include="Person\Stored Procedures\ListAvailablePersona.sql" />
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId_Ver3.sql" />
+    <Build Include="Person\Stored Procedures\GetPersonaProductsByOrganizationPartyId.sql" />
     <Build Include="Enterprise\Stored Procedures\CreateUserEmployeeId.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdateUserEmployeeId.sql" />
     <Build Include="Enterprise\Tables\UserEmployeeId.sql" />
