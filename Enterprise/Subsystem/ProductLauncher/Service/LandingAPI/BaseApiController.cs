@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -152,9 +153,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
         /// </summary>
         protected void WriteToErrorLog(string message = null, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            string finalMessage = string.Concat(message, ". ProductModule: ", this.GetType().ToString(), ". UserId: ", _realpageUserId.ToString(), ". PmcId: ", _orgPartyId.ToString(), ". CorrelationId: ", _correlationId.ToString());
+            LogDetails logDetails = new LogDetails
+            {
+                Message = message,
+                AdditionalInfo = logData,
+                ProductModule = this.GetType().ToString(),
+                UserId = _realpageUserId.ToString(),
+                PmcId = _orgPartyId.ToString(),
+                Exception = exception,
+                CorrelationId = _correlationId.ToString()
+            };
 
-            Log.Error(exception, finalMessage, logData);
+            Log.Error(exception, message, logDetails);
         }
 
         /// <summary>
@@ -164,9 +174,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
         /// <param name="logData"></param>
         protected void WriteToDiagnosticLog(string message = null, Dictionary<string, object> logData = null)
         {
-            string finalMessage = string.Concat(message, ". ProductModule: ", this.GetType().ToString(), ". UserId: ", _realpageUserId.ToString(), ". PmcId: ", _orgPartyId.ToString(), ". CorrelationId: ", _correlationId.ToString());
+            LogDetails logDetails = new LogDetails
+            {
+                Message = message,
+                AdditionalInfo = logData,
+                ProductModule = this.GetType().ToString(),
+                UserId = _realpageUserId.ToString(),
+                PmcId = _orgPartyId.ToString(),
+                CorrelationId = _correlationId.ToString()
+            };
 
-            Log.Information(finalMessage, logData);
+            Log.Information(message, logDetails);
         }
 
     }

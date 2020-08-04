@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -100,10 +101,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             catch (Exception ex)
             {
+                string message = $"User {_userClaims.LoginName} failed to signout.";
 
-                string finalMessage = string.Concat($"User {_userClaims.LoginName} failed to signout.", ". ProductModule: ", this.GetType().ToString(), ". CorrelationId: ", _userClaims.CorrelationId.ToString());
+                LogDetails logDetails = new LogDetails
+                {
+                    Message = message,
+                    ProductModule = this.GetType().ToString(),
+                    CorrelationId = _userClaims.CorrelationId.ToString(),
+                    Exception = ex
+                };
 
-                Log.Error(ex, finalMessage);
+                Log.Error(ex,  message, logDetails);
             }
         }
     }
