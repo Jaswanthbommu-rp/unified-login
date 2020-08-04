@@ -1,8 +1,5 @@
-﻿using RP.Enterprise.Foundation.Audit.WebApi.Component.Filters;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Handlers;
-using System;
-using System.Configuration;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 
@@ -19,10 +16,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
             //    routeTemplate: "api/{controller}/{id}",
             //    defaults: new { id = RouteParameter.Optional }
             //);
-
-            // global performace handling / logging
-            if (Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogPerformance"]))
-                config.Filters.Add(new ApiPerformanceFilter()); // used for WebApi only (ApiController) & not MVC based API (Controller)
 
             // global error handling / logging
             // used for WebApi only (ApiController) & not MVC based API (Controller)
