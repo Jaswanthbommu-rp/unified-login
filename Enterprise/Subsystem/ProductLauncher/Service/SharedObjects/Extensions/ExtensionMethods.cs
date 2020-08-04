@@ -191,6 +191,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 }
             }
 
+            newCustomField = newCustomField != null ? newCustomField : new List<CustomFieldValue>();
+
             List<CustomFieldValue> newEnabledFields = newCustomField.Where(n => !oldCustomField.Any(o => o.FieldId == n.FieldId)).ToList();
 
             foreach (CustomFieldValue customField in newEnabledFields)
