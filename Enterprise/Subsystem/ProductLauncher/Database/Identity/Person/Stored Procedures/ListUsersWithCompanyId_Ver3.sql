@@ -22,8 +22,8 @@ BEGIN
 	DECLARE @ProductsList2 TABLE
 	(
 		PersonaId			BIGINT,
-		ProductId			BIGINT,
-		TargetProductId		BIGINT
+		ProductId			INT,
+		TargetProductId		INT
 	)
 
 	CREATE TABLE #UserList
@@ -89,11 +89,9 @@ BEGIN
 		FROM Enterprise.DataImportMapping AS dim
 		WHERE
 			dim.SourceId = @companyid;
-
 		INSERT INTO @ProductsList2
 			EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
-
-		WITH Users
+		;WITH Users
 		AS 
 			(
 			
@@ -104,15 +102,15 @@ BEGIN
 				p.PersonaId
                         
 			FROM @ProductsList2 AS cp
-				INNER JOIN [Security].[PersonaRole] AS pr ON cp.PersonaId = pr.PersonaId
+				INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
+				INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId
 				INNER JOIN [Security].[Role] AS r ON pr.RoleId = r.RoleId AND cp.ProductId = r.ProductId
 				INNER JOIN [Security].[RoleRight] AS rr ON r.RoleId = rr.RoleId
 				INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId
-				INNER JOIN Person.Persona AS p ON pr.PersonaId = p.PersonaId
 				INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
 				INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId
 				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
-				INNER JOIN Enterprise.PersonaConfiguration AS pc ON pr.PersonaId = pc.PersonaId 
+				INNER JOIN Enterprise.PersonaConfiguration AS pc ON p.PersonaId = pc.PersonaId 
 			
 			WHERE 
 				ulp.StatusTypeId = 1
@@ -142,11 +140,12 @@ BEGIN
 				p.PersonaId
                         
 			FROM @ProductsList2 AS cp
-				INNER JOIN [Security].[PersonaRole] AS pr ON cp.PersonaId = pr.PersonaId
+				INNER JOIN Person.Persona AS p ON CP.PersonaId = p.PersonaId
+				INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId
 				INNER JOIN [Security].[Role] AS r ON pr.RoleId = r.RoleId
 				INNER JOIN [Security].[RoleRight] AS rr ON r.RoleId = rr.RoleId
 				INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId 
-				INNER JOIN Person.Persona AS p ON pr.PersonaId = p.PersonaId
+				
 				INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
 				INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId
 				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
@@ -154,7 +153,7 @@ BEGIN
 			
 			WHERE
 				r2.TargetProductId IN (SELECT TargetProductId FROM @ProductsList2 )
-				AND r2.TargetProductId <> r2.ProductId
+				AND r2.TargetProductId <> r2.ProductId 
 				AND ulp.OrganizationPartyId = @OrganizationPartyId
 				AND ulp.StatusTypeId = 1
 				AND (@RoleCount IS NULL OR r.ShortName IN (SELECT * FROM @RoleList))
