@@ -36,6 +36,7 @@ using System.Web.Http.Controllers;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using Serilog;
 using Serilog.Events;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -1163,9 +1164,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		{
 			try
 			{
-				string finalMessage = string.Concat(message, ". ProductModule: ", this.GetType().ToString(), ". UserId: ", _userClaims.UserId.ToString(), ". PmcId: ", _userClaims?.OrganizationPartyId.ToString(), ". CorrelationId: ", _userClaims.CorrelationId.ToString());
+				LogDetails logDetails =new LogDetails
+				{
+					Message = message,
+					AdditionalInfo = logData,
+					ProductModule = this.GetType().ToString(),
+					UserId = _userClaims.UserId.ToString(),
+					PmcId = _userClaims?.OrganizationPartyId.ToString(),
+					Exception = exception,
+					CorrelationId = _userClaims.CorrelationId.ToString()
+				};
 
-				Log.Write(logType, exception, finalMessage, logData);
+				Log.Write(logType, message, logDetails);
 			}
 			catch
 			{

@@ -3,6 +3,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -140,7 +141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
         public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1,
-                                                                    [FromUri]List<string> roles = null, [FromUri]List<string> rights = null)
+                                                                    [FromUri] List<string> roles = null, [FromUri] List<string> rights = null)
         {
             //It will be implemented soon
             Guid? propertyId = null;
@@ -157,7 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             //Add validation to verify the propertyId
 
-            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, version, rowsPerPage, pageNumber , roles , rights , propertyId);
+            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, version, rowsPerPage, pageNumber, roles, rights, propertyId);
 
             if (result == null)
             {
@@ -174,7 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             response.Data = result.Cast<object>().ToList();
             response.Meta.CurrentPage = pageNumber.Value;
-            response.Meta.TotalRows =  result.Any() ? result[0].TotalRecords : 0;
+            response.Meta.TotalRows = result.Any() ? result[0].TotalRecords : 0;
             response.Meta.RowsPerPage = rowsPerPage.Value;
 
             var logData = new Dictionary<string, object>
@@ -218,9 +219,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
-                string finalMessage = string.Concat(message, ". ProductModule: ", this.GetType().ToString(), ". UserId: ", _userClaims.UserId.ToString(), ". PmcId: ", _userClaims?.OrganizationPartyId.ToString(), ". CorrelationId: ", _userClaims.CorrelationId.ToString());
+                LogDetails logDetails = new LogDetails
+                {
+                    Message = message,
+                    AdditionalInfo = logData,
+                    ProductModule = this.GetType().ToString(),
+                    UserId = _userClaims.UserId.ToString(),
+                    PmcId = _userClaims?.OrganizationPartyId.ToString(),
+                    Exception = exception,
+                    CorrelationId = _userClaims.CorrelationId.ToString()
+                };
 
-                Log.Write(logType, exception, finalMessage, logData);
+                Log.Write(logType, message, logDetails);
             }
             catch
             {
@@ -228,8 +238,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
         }
 
-        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId , IList<int?> products = null , ProductProcVersion version = ProductProcVersion.Version1, int? rowsPerPage = 0, int? pageNumber = 1,
-                                                                      IList<string> roles = null , IList<string> rights = null, Guid? propertyId = null)
+        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId, IList<int?> products = null, ProductProcVersion version = ProductProcVersion.Version1, int? rowsPerPage = 0, int? pageNumber = 1,
+                                                                      IList<string> roles = null, IList<string> rights = null, Guid? propertyId = null)
         {
             if (string.IsNullOrEmpty(companyId) && products == null)
             {
@@ -241,7 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return null;
             }
             IProductRepository productRepository = new ProductRepository();
-            return productRepository.GetUsersByCompanyorProducts(companyId, products , version, rowsPerPage.Value , pageNumber.Value, roles , rights, propertyId);
+            return productRepository.GetUsersByCompanyorProducts(companyId, products, version, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyId);
         }
         #endregion
 
