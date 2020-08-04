@@ -4800,7 +4800,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="newProfile">New Profile</param>
         /// <param name="repository">IRepository Object</param>
         /// <returns>RepositoryResponse object</returns>
-        private RepositoryResponse UptatePerson(IProfileDetail newProfile, IRepository repository)
+        private RepositoryResponse UpdatePerson(IProfileDetail newProfile, IRepository repository)
         {
             //Setup the parameter values to update the person's info
             var param = new
@@ -4913,7 +4913,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if ((profileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
                     {
-                        repositoryResponse = UptatePerson(updateUserProfileEntity.NewProfile, repository);
+                        repositoryResponse = UpdatePerson(updateUserProfileEntity.NewProfile, repository);
 
                         if (repositoryResponse.Id == 0)
                         {
@@ -4987,13 +4987,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 if (updateUserProfileEntity.NewProfile.CustomFields.ToList().Any(c => c.UserLoginPersonaId.Equals(0)))
                                 {
-                                    //param = new
-                                    //{
-                                    //    UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
-                                    //    OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId
-                                    //};
-                                    //IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
-
                                     updateUserProfileEntity.NewProfile.CustomFields.ToList().ForEach(c => c.UserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId);
                                 }
 
@@ -5363,7 +5356,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //If the old user has EmployeeId so update if not create the EmployeeId
                             if (updateUserProfileEntity.OldProfile.UserEmployeeId > 0)
                             {
-                                updateUserProfileEntity.NewProfile.EmployeeId = !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.EmployeeId) ? updateUserProfileEntity.NewProfile.EmployeeId : null;
                                 dynamic update = new
                                 {
                                     updateUserProfileEntity.OldProfile.UserEmployeeId,
