@@ -5,7 +5,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mapper
 {
     public static class ProfileDetailsMapper
     {
-        #region From IProfileDetail to UserAuditDto
+        #region From IProfileDetail to UserAuditDt
         /// <summary>
         /// IProfileDetail becomes a UserAuditDto object
         /// </summary>
