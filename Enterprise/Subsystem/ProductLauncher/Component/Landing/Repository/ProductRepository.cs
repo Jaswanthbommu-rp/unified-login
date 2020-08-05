@@ -1,7 +1,5 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
@@ -9,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -18,6 +17,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1323,14 +1324,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 // Exception can occur if AO is down, in such case don't impact other products
                 // Nav bar will not show any AO products
-                Log.Write(LogType.Error, new LogDetails
+
+                string message = "Exception while getting AO products.";
+
+                LogDetails logDetails = new LogDetails
                 {
-                    Message = "Exception while getting AO products.",
+                    Message = message,
                     ProductModule = this.GetType().ToString(),
                     UserId = _userClaim.UserId.ToString(),
                     PmcId = _userClaim.OrganizationPartyId.ToString(),
                     Exception = ex
-                });
+                };
+
+                Log.Write(LogEventLevel.Error, ex, message, logDetails);
             }
 
             //get the active personaId for the edited enterprise UserId
@@ -1824,7 +1830,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #endregion
 
         #region Private Methods
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             Log.Write(logType, new LogDetails
             {

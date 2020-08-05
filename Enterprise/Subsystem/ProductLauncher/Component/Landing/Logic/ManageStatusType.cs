@@ -1,9 +1,10 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,16 +99,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="logData">logData</param>
 		/// <param name="exception">exception</param>
 		/// <param name="correlationId">correlationId</param>
-		private void WriteToLog(LogType logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
+		private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, new LogDetails
+			LogDetails logDetails = new LogDetails
 			{
 				Message = message,
 				AdditionalInfo = logData,
 				ProductModule = this.GetType().ToString(),
 				CorrelationId = correlationId.ToString(),
 				Exception = exception
-			});
+			};
+
+			Log.Write(logType, exception, message, logDetails);
 		}
 		#endregion
 	}

@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using Serilog;
+using Serilog.Events;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {  /// <summary>
@@ -1106,13 +1108,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var additionalInfo = new Dictionary<string, object> {{"ActivityToken", setPassword.ActivityToken}};
 
-                Log.Write(LogType.Error, new LogDetails
+                LogDetails logDetails = new LogDetails
                 {
                     Message = "Activity Token is expired.",
                     ProductModule = this.GetType().ToString(),
                     UserName = setPassword.EnterpriseUserName,
                     AdditionalInfo = additionalInfo
-                });
+                };
+
+                Log.Write(LogEventLevel.Error, logDetails.Message, logDetails);
+
                 return setPasswordResponse;
             }
 

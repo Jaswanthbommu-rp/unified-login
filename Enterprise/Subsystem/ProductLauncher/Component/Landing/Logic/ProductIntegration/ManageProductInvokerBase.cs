@@ -1,11 +1,10 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
@@ -13,6 +12,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1069,20 +1070,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Information, message, logData);
+            WriteToLog(LogEventLevel.Information, message, logData);
         }
 
         protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            WriteToLog(LogType.Error, message, logData, exception);
+            WriteToLog(LogEventLevel.Error, message, logData, exception);
         }
 
         protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Diagnostic, message, logData);
+            WriteToLog(LogEventLevel.Debug, message, logData);
         }
 
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             if (logData == null)
             {
@@ -1092,7 +1093,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var editorUserDictionary = EditorUserDetails?.ToDictionary();
             logData.AddRange(editorUserDictionary);
 
-            Log.Write(logType, new LogDetails
+            LogDetails logDetails = new LogDetails
             {
                 Message = message,
                 AdditionalInfo = logData,
@@ -1102,7 +1103,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 UserName = EditorUserDetails?.LoginName,
                 Exception = exception,
                 CorrelationId = CorrelationId.ToString(),
-            });
+            };
+
+            Log.Write(logType, exception, message, logDetails);
         }
 
         #endregion
