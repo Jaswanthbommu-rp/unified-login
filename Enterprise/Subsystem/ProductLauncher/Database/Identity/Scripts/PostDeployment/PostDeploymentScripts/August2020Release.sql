@@ -3347,3 +3347,45 @@ BEGIN
 	VALUES ('reno-pmcid','PMCID', 55);
 END
 GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Managecompanylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Managecompanylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Managepropertylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Managepropertylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Viewallcompanylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Viewallcompanylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Viewallpropertylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Viewallpropertylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'ViewUnifiedSettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'ViewUnifiedSettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 39 AND RightShortName = 'AccessIntegrationMarketplace')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (39,'AccessIntegrationMarketplace');
+END
+GO
