@@ -18,11 +18,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		string LastName { get; set; }
 
 		/// <summary>
-		/// Lastname
-		/// </summary>
-		string EmployeeId { get; set; }
-
-		/// <summary>
 		/// Middle initial
 		/// </summary>
 		string MiddleName { get; set; }
