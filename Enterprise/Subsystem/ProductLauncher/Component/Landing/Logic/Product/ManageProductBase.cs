@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
@@ -568,7 +569,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="logData"></param>
         protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Information, message, logData);
+            WriteToLog(LogEventLevel.Information, message, logData);
         }
 
         /// <summary>
@@ -579,7 +580,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="exception"></param>
         protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            WriteToLog(LogType.Error, message, logData, exception);
+            WriteToLog(LogEventLevel.Error, message, logData, exception);
         }
 
         /// <summary>
@@ -589,7 +590,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="logData"></param>
         public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Diagnostic, message, logData);
+            WriteToLog(LogEventLevel.Debug, message, logData);
         }
 
         /// <summary>

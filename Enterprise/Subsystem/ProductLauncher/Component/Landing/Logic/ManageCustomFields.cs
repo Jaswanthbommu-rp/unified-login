@@ -179,7 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.GetCustomFields: Data", "Exception" }
                 };
-                WriteToLog(LogType.Error, "GetCustomFields: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "GetCustomFields: Exception", _userClaim.CorrelationId, logData, exception);
             }
 
             logData = new Dictionary<string, object>
@@ -228,7 +228,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.GetCustomField", "Exception" }
                 };
-                WriteToLog(LogType.Error, "ManageCustomFields.GetCustomField: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "ManageCustomFields.GetCustomField: Exception", _userClaim.CorrelationId, logData, exception);
             }
 
             logData = new Dictionary<string, object>
@@ -265,7 +265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.GetCustomFieldType", "Exception" }
                 };
-                WriteToLog(LogType.Error, "ManageCustomFields.GetCustomField: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "ManageCustomFields.GetCustomField: Exception", _userClaim.CorrelationId, logData, exception);
             }
 
             return customFieldTypeList;
@@ -304,7 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.GetCustomFieldsValues", "Exception" }
                 };
-                WriteToLog(LogType.Error, "ManageCustomFields.GetCustomFieldsValues: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "ManageCustomFields.GetCustomFieldsValues: Exception", _userClaim.CorrelationId, logData, exception);
             }
 
             logData = new Dictionary<string, object>
