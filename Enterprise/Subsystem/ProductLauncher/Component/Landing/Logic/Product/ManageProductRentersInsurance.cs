@@ -600,11 +600,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 userEmail = string.IsNullOrWhiteSpace(userEmailAddress) ? userEmailAddress : userEmailAddress.Substring(0, Math.Min(userEmailAddress.Length, 155));
 
                 WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Begin create/update user userPersonaId - {userPersonaId}");
-
                 // create user
                 if (string.IsNullOrWhiteSpace(_productUserId))
                 {
-                    _productUsername = productUserName;
+                    // get a login name that isn't in use for the new user
+                    bool foundUserName = false;
+                    int incrementor = 0;
+                    string newproductUsername = productUserName;
+
+                    CheckUserLogin checkUserLogin = new CheckUserLogin()
+                    {
+                        Login = _username,
+                        Password = _password,
+                        RequestedBy = _requestedBy,
+                        UserLogin = newproductUsername
+                    };
+
+                    // give up after 10 tries
+                    while (!foundUserName)
+                    {
+                        if (CheckIfUserLoginIsUsed(checkUserLogin))
+                        {
+                            incrementor++;
+                            string[] loginNameSubStrings = newproductUsername.Split('@');
+                            newproductUsername = loginNameSubStrings.Length == 2 ?
+                                                 string.Concat(loginNameSubStrings[0], incrementor.ToString(), "@", loginNameSubStrings[1]) :
+                                                 string.Concat(userEmailAddress, incrementor.ToString());
+                            checkUserLogin.UserLogin = newproductUsername;
+                        }
+                        else
+                        {
+                            foundUserName = true;
+                        }
+
+                        if (incrementor == 10)
+                        {
+                            // after 10 tries something might be wrong, so bail out.
+                            WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Error checking for username in use {newproductUsername}");
+                            errorStatus.Success = false;
+                            errorStatus.ErrorMsg = "An error occurred. Unable to get username.";
+                            output.Status = errorStatus;
+                        }
+                    }
+                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - generated RentersInsuranceLoginName = {newproductUsername}");
+                    productUserName = newproductUsername;
+
+                    _productUsername = newproductUsername;
                 }
                 else
                 {
@@ -1160,7 +1201,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #endregion
 
-
         #region Private Methods
         /// <summary>
         /// Get Renters Insurance Company InstanceId from BlueBook
@@ -1248,6 +1288,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 TotalPages = 1,
                 Additional = additionalDictionary
             };
+        }
+
+        /// <summary>
+        /// Used to see if a new user login being added already exists or not
+        /// </summary>
+        /// <param name="checkUserLogin"></param>
+        /// <returns></returns>
+        private bool CheckIfUserLoginIsUsed(CheckUserLogin checkUserLogin)
+        {
+            bool userExists = false;
+            try
+            {
+                WriteToDiagnosticLog($"CheckIfUserLoginIsUsed start={checkUserLogin}");
+                var result = _insuranceService.CheckUserLogin(checkUserLogin);
+                WriteToDiagnosticLog($"CheckIfUserLoginIsUsed result={result}");
+                if (result != null && result.ErrorCode == "-1")
+                {
+                    userExists = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToDiagnosticLog($"CheckIfUserLoginIsUsed exception. ex={ex.Message}");
+            }
+            return userExists;
         }
         #endregion
     }
