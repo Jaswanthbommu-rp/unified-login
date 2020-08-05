@@ -155,5 +155,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Total number of records count (without any paging if the response is limited by paging)
 		/// </summary>
 		public int TotalRecords { get; set; }
+
+		/// <summary>
+		/// EmployeeId
+		/// </summary>
+		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
+		public string EmployeeId { get; set; }
+
+		/// <summary>
+		/// EmployeeId
+		/// </summary>
+		[JsonProperty("UserEmployee", NullValueHandling = NullValueHandling.Ignore)]
+		public int UserEmployeeId { get; set; }
 	}
 }
