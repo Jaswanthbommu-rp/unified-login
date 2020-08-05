@@ -4,9 +4,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Comm
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
-using Serilog.Events;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -85,18 +85,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     GbProductMap booksProductDetail = GetBooksMasterProductDetail(_userClaims, (int)ProductEnum.UnifiedPlatform);
 
-                    string finalMessage = "LogActivityTypeName = " + LogActivityTypeConstants.SIGNOUT.ToString() +
-                        " LogCategoryName = " + LogActivityCategoryType.Security.ToString() +
-                        " CorrelationId = " + _userClaims.CorrelationId.ToString() +
-                        " BooksMasterOrganizationId = " + _userClaims.OrganizationMasterId.ToString() +
-                        " FromUserLoginName = " + _userClaims.LoginName +
-                        " FromUserLoginId =" + _userClaims.UserId.ToString() +
-                        " FromUserFirstName =" + _userClaims.FirstName +
-                        " FromUserLastName = " + _userClaims.LastName +
-                        " FromUserRealpageId =" + _userClaims.UserRealPageGuid.ToString() +
-                        " BooksProductCode =" + booksProductDetail.BooksProductCode;
-
-                    Log.Information($"User {_userClaims.FirstName} {_userClaims.LastName} signout successfully.", finalMessage);
+                    LogActivity.WriteActivity(new ActivityDetails
+                    {
+                        LogActivityTypeName = LogActivityTypeConstants.SIGNOUT,
+                        LogCategoryName = LogActivityCategoryType.Security.ToString(),
+                        CorrelationId = _userClaims.CorrelationId.ToString(),
+                        BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                        Message = $"User {_userClaims.FirstName} {_userClaims.LastName} signout successfully.",
+                        FromUserLoginName = _userClaims.LoginName,
+                        FromUserLoginId = _userClaims.UserId,
+                        FromUserFirstName = _userClaims.FirstName,
+                        FromUserLastName = _userClaims.LastName,
+                        FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
+                        ToUserLoginName = null,
+                        ToUserLoginId = null,
+                        BooksProductCode = booksProductDetail.BooksProductCode
+                    });
                 }
             }
             catch (Exception ex)

@@ -16,6 +16,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using System.Linq;
 using Serilog;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -478,20 +480,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     try
                     {
-                        string message = string.Format("User {0} {1} unable to change password.", _userClaims.FirstName, _userClaims.LastName);
-
                         // log only if user claims & org id
-                        string finalMessage = "LogActivityTypeName = " + LogActivityTypeConstants.CHANGE_PASSWORD_FAILURE.ToString() +
-                            " LogCategoryName = " +  LogActivityCategoryType.Security.ToString() +
-                            " CorrelationId = " + _userClaims.CorrelationId.ToString() +
-                            " BooksMasterOrganizationId = " + _userClaims.OrganizationMasterId.ToString() +
-                            " FromUserLoginName = " + _userClaims.LoginName +
-                            " FromUserLoginId = " + _userClaims.UserId.ToString() +
-                            " FromUserFirstName = " + _userClaims.FirstName +
-                            " FromUserLastName = " + _userClaims.LastName +
-                            " FromUserRealpageId = " + _userClaims.UserRealPageGuid.ToString();                        
+                        LogActivity.WriteActivity(new ActivityDetails
+                        {
+                            LogActivityTypeName = LogActivityTypeConstants.CHANGE_PASSWORD_FAILURE,
+                            LogCategoryName = LogActivityCategoryType.Security.ToString(),
+                            CorrelationId = _userClaims.CorrelationId.ToString(),
+                            BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                            Message = string.Format("User {0} {1} unable to change password.", _userClaims.FirstName, _userClaims.LastName),
+                            FromUserLoginName = _userClaims.LoginName,
+                            FromUserLoginId = _userClaims.UserId,
 
-                        Log.Information(message, finalMessage);
+                            FromUserFirstName = _userClaims.FirstName,
+                            FromUserLastName = _userClaims.LastName,
+                            FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
+
+                            ToUserLoginId = null,
+                            ToUserLoginName = null
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -547,20 +553,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         var userLogin = manageUserLogin.GetUserLoginOnly(userResetPassword.RealPageId.Value);
 
                         // log only if user claims & org id
-                        string message = string.Format("User {0} {1} unable to insert temporary password for {2} {3}.", _userClaims.FirstName, _userClaims.LastName, person.FirstName, person.LastName);
-                        string finalMessage = "LogActivityTypeName = " + LogActivityTypeConstants.CHANGE_PASSWORD_FAILURE.ToString() +
-                            " LogCategoryName = " + LogActivityCategoryType.Security.ToString() +
-                            " CorrelationId = " + _userClaims.CorrelationId.ToString() +
-                            " BooksMasterOrganizationId = " + _userClaims.OrganizationMasterId.ToString() +
-                            " FromUserLoginName = " + _userClaims.LoginName +
-                            " FromUserLoginId = " + _userClaims.UserId.ToString() +
-                            " FromUserFirstName = " + _userClaims.FirstName +
-                            " FromUserLastName =  " + _userClaims.LastName +
-                            " FromUserRealpageId =  " + _userClaims.UserRealPageGuid.ToString() +
-                            " ToUserLoginId =  " + userLogin.UserId.ToString() +
-                            " ToUserLoginName =  " + userLogin.LoginName;
+                        LogActivity.WriteActivity(new ActivityDetails
+                        {
+                            LogActivityTypeName = LogActivityTypeConstants.CHANGE_PASSWORD_FAILURE,
+                            LogCategoryName = LogActivityCategoryType.Security.ToString(),
+                            CorrelationId = _userClaims.CorrelationId.ToString(),
+                            BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                            Message = string.Format("User {0} {1} unable to insert temporary password for {2} {3}.", _userClaims.FirstName, _userClaims.LastName, person.FirstName, person.LastName),
+                            FromUserLoginName = _userClaims.LoginName,
+                            FromUserLoginId = _userClaims.UserId,
 
-                         Log.Information(message, finalMessage);
+                            FromUserFirstName = _userClaims.FirstName,
+                            FromUserLastName = _userClaims.LastName,
+                            FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
+
+                            ToUserLoginId = userLogin.UserId,
+                            ToUserLoginName = userLogin.LoginName
+                        });
                     }
                     catch (Exception ex)
                     {

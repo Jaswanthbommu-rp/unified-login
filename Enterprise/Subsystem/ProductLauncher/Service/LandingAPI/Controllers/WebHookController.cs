@@ -21,6 +21,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -387,9 +388,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             try
             {
-                string finalMessage = string.Concat(message, ". ProductModule: ", this.GetType().ToString(), ". CorrelationId: ", _userClaims.CorrelationId.ToString());
+                LogDetails logDetails = new LogDetails
+                {
+                    Message = message,
+                    AdditionalInfo = logData,
+                    ProductModule = this.GetType().ToString(),
+                    UserId = "0",
+                    PmcId = "0",
+                    Exception = exception,
+                    CorrelationId = _userClaims?.CorrelationId.ToString(),
+                };
 
-                Log.Write(logType, exception, finalMessage, logData);
+                Log.Write(logType, exception, message, logDetails);
             }
             catch
             {

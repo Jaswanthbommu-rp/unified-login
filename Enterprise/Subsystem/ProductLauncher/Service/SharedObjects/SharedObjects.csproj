@@ -102,6 +102,7 @@
     <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Memory.4.5.0\lib\netstandard1.1\System.Memory.dll</HintPath>
     </Reference>
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
@@ -128,6 +129,7 @@
     <Compile Include="Attribute\AuditLogAttribute.cs" />
     <Compile Include="Attribute\SwaggerResponseExamplesAttribute.cs" />
     <Compile Include="Attribute\VersionedRouteAttribute.cs" />
+    <Compile Include="Audit\Common\ActivityDetails.cs" />
     <Compile Include="Audit\Common\AuditRecord.cs" />
     <Compile Include="Audit\Common\LogDetails.cs" />
     <Compile Include="Audit\Dtos\UserAuditDto.cs" />
@@ -196,6 +198,7 @@
     <Compile Include="Exceptions\BlueBookException.cs" />
     <Compile Include="Extensions\ExtensionMethods.cs" />
     <Compile Include="Extensions\HashingExtensions.cs" />
+    <Compile Include="Extensions\LogActivity.cs" />
     <Compile Include="Extensions\MultiQueryMapperExtension.cs" />
     <Compile Include="Extensions\ProfileExtensions.cs" />
     <Compile Include="Handlers\ApiExceptionHandler.cs" />

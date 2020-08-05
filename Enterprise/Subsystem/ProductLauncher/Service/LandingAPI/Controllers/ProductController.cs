@@ -5,8 +5,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -634,18 +636,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (string.IsNullOrEmpty(message))
                     message = $"User {_userClaims.FirstName} {_userClaims.LastName} accessed product {booksProductDetail.Name}.";
 
-                string finalMessage = "LogActivityTypeName = " + logActivityTypeName +
-                    " LogCategoryName = " + LogActivityCategoryType.ProductAccess.ToString() +
-                    " CorrelationId = " + _userClaims.CorrelationId.ToString() +
-                    " BooksMasterOrganizationId = " + _userClaims.OrganizationMasterId.ToString() +
-                    " FromUserLoginName = " + _userClaims.LoginName +
-                    " FromUserLoginId =  " + _userClaims.UserId.ToString() +
-                    " FromUserFirstName = " + _userClaims.FirstName +
-                    " FromUserLastName = " + _userClaims.LastName +
-                    " FromUserRealpageId = " + _userClaims.UserRealPageGuid.ToString() +
-                    " BooksProductCode =  " + booksProductDetail.BooksProductCode;                
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = logActivityTypeName,
+                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    CorrelationId = _userClaims.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                    Message = message,
 
-                Log.Information(message, finalMessage);
+                    FromUserLoginName = _userClaims.LoginName,
+                    FromUserLoginId = _userClaims.UserId,
+                    FromUserFirstName = _userClaims.FirstName,
+                    FromUserLastName = _userClaims.LastName,
+                    FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
+
+                    BooksProductCode = booksProductDetail.BooksProductCode
+                });
             }
             catch
             {

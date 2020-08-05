@@ -12,11 +12,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
     {
         private static readonly NameValueCollection ConfigSection;
 
+        private static readonly NameValueCollection AppSection;
+
         #region Ctor
 
         static ConfigReader()
         {
             ConfigSection = ConfigurationManager.GetSection("IdentityConfig") as NameValueCollection;
+            AppSection = ConfigurationManager.GetSection("AppSetting") as NameValueCollection;
         }
 
         #endregion
@@ -166,6 +169,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 		/// Used to store the RealPage company master company id
 		/// </summary>
 	    public static string OrgMasterId => ConfigSection["OrgMasterId"];
+
+        /// <summary>
+        /// Used to store the MQ Name
+        /// </summary>
+        public static string GetActivityMQName => AppSection["ActivityMQName"];
 
         #endregion
     }
