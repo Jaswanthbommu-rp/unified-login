@@ -12,14 +12,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
     {
         private static readonly NameValueCollection ConfigSection;
 
-        private static readonly NameValueCollection AppSection;
-
         #region Ctor
 
         static ConfigReader()
         {
             ConfigSection = ConfigurationManager.GetSection("IdentityConfig") as NameValueCollection;
-            AppSection = ConfigurationManager.GetSection("AppSetting") as NameValueCollection;
         }
 
         #endregion
@@ -28,7 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
         /// <summary>
         /// Get the enviroment of the system
         /// </summary>
-        public static string Environment { get; } = ConfigurationManager.AppSettings["Environment"];
+        public static string Environment { get; } = ConfigurationManager.AppSettings["logging:environment"];
         
         /// <summary>
         /// Get API Secret
@@ -173,7 +170,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
         /// <summary>
         /// Used to store the MQ Name
         /// </summary>
-        public static string GetActivityMQName => AppSection["ActivityMQName"];
+        public static string GetActivityMQName { get; } = ConfigurationManager.AppSettings["ActivityMQName"];
 
         #endregion
     }
