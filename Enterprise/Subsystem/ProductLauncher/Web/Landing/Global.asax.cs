@@ -5,6 +5,7 @@ using System.Web.Helpers;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
+using RealPage.Logging.Serilog;
 using RP.Enterprise.Foundation.Audit.MvcWeb.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers;
 
@@ -14,6 +15,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
     {
         protected void Application_Start()
         {
+            SerilogHelpers.ConfigureSerilog("Unified Login");
+
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);

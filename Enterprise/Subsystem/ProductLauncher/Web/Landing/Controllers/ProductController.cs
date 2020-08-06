@@ -1,7 +1,4 @@
-﻿using Microsoft.Owin;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -22,11 +19,11 @@ using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Pro
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 {
-	//[RequireHttps]
-	/// <summary>
-	/// Product Controller
-	/// </summary>
-	public class ProductController : BaseController
+    //[RequireHttps]
+    /// <summary>
+    /// Product Controller
+    /// </summary>
+    public class ProductController : BaseController
 	{
 		/// <summary>
 		/// Used to log into the OneSite system

@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 				CorrelationId = _userClaims?.CorrelationId.ToString(),
 			};
 
-			Log.Write(logType, message, logDetails);
+			Log.Write(logType, exception, message, logDetails);
 		}
 
 		#endregion
