@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -47,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity.Logging
                 CorrelationId = Guid.NewGuid().ToString(),
                 ServerName = Environment.MachineName,
                 AdditionalInfo = dict,
-                LogLevel = (Foundation.Audit.Core.Component.Enums.LogLevel)((int)logEvent.Level),
+                LogLevel = (LogEventLevel)((int)logEvent.Level),
                 Exception = exception,
             };
 
@@ -55,20 +55,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity.Logging
             {
                 if (Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogDiagnostic"]))
                 {
-                    Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, logDetails);
+                    Log.Write(LogEventLevel.Debug, "", logDetails);
                 }
                 return; // no need to log the "signature validation errors
             }
 
             if (exception != null)
             {
-                Foundation.Audit.Core.Component.Log.Write(LogType.Error, logDetails);
+                Log.Write(LogEventLevel.Error, exception, exception.Message, logDetails);
             }
 
             if (Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogDiagnostic"]))
             {
                 // add dignostic info including exception
-                Foundation.Audit.Core.Component.Log.Write(LogType.Diagnostic, logDetails);
+                Log.Write(LogEventLevel.Debug, "" ,logDetails);
             }
         }
     }

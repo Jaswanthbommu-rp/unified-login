@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog.Events;
+using System;
 using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common
@@ -10,7 +11,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
     {
         public string LocalTimezone { get; }
         public DateTime LocalTime { get; }
-        //public LogLevel LogLevel { get; set; }
+        public LogEventLevel LogLevel { get; set; }
         public string ProductName { get; set; }
         public string ProductLocation { get; set; }
         public string ProductModule { get; set; }
