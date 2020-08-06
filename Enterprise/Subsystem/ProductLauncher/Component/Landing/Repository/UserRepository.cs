@@ -1154,6 +1154,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
+                        #region Create UserEmployeeId
+
+                        if (newProfile.UserTypeId != (int)UserRoleType.ExternalUser && userLoginPersonaId > 0)
+                        {
+                            param = new
+                            {
+                                UserLoginPersonaId = userLoginPersonaId,
+                                EmployeeId = newProfile.EmployeeId
+                            };
+
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, param);
+
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repository.UnitOfWork.Rollback();
+                                errorStatus.Success = false;
+                                errorStatus.ErrorCode = "User.CreateUser.28";
+                                errorStatus.ErrorMsg = "Error creating EmployeeId to the user login perosna: {userLoginPersonaId}";
+                                createUserResponse.Status = errorStatus;
+                                createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                return createUserResponse;
+                            }
+                        }
+                        
+                        #endregion
+
                         #region Set Default Employment Role
 
                         processTracker = "Set Default Employment Role";
