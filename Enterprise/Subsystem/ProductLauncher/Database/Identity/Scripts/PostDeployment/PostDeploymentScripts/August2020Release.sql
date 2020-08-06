@@ -3391,7 +3391,13 @@ END
 GO
 
 --Financial Suite Product Access panel
-SELECT @ProductId = 8
+DECLARE @UserId bigint,
+	@ProductId int = 8,
+	@Now datetime = GETDATE();
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
 IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
 BEGIN
  IF NOT EXISTS (SELECT * FROM UserManagement.[Control] WHERE UIId like '%Financial%')
@@ -3505,6 +3511,7 @@ BEGIN
 	END
 	
 END
+GO
 
 DECLARE @Now DATETIME = GETUTCDATE(),
 	@OrganizationPartyId bigint,
