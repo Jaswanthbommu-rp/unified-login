@@ -3505,3 +3505,164 @@ BEGIN
 	END
 	
 END
+
+DECLARE @Now DATETIME = GETUTCDATE(),
+	@OrganizationPartyId bigint,
+	@ProductId int,
+	@TargetProductId int,
+	@ActionId int,
+	@RoleId int,
+	@OutputRightId int,
+	@UserActionId int,
+	@RightValueTypeValue nvarchar(200),
+	@DetaulRightName nvarchar(200),
+	@RightShortName nvarchar(50),
+	@RightCategory int,
+	@VisibilityStatusTypeId int,
+	@ConfigurationId int
+	--@RoleName nvarchar(200) = N'User Administrator'
+
+DECLARE @NewRightValueType TABLE (
+	Value nvarchar(200)
+)
+
+SELECT @RightCategory = TypeId
+FROM	Enterprise.RoleRightStatus
+WHERE	CategoryName = 'Right Type'
+AND			TypeName = 'System'
+
+SELECT	@VisibilityStatusTypeId = TypeId
+FROM	Enterprise.RoleRightStatus AS rrs
+WHERE	TypeName = 'ALL'
+AND			CategoryType = 'Security'
+
+INSERT INTO @NewRightValueType (
+	Value
+)
+VALUES (
+	'Manage help center administrator'
+),
+(
+	'Manage help center knowledge base'
+),
+(
+	'Manage help center videos'
+),
+(
+	'Manage help center online help'
+),
+(
+	'Manage help center product updates'
+)
+
+---For QA RealPage Employee
+SELECT	@OrganizationPartyId = PartyId
+FROM	Enterprise.Organization
+WHERE	Name = N'RealPage Employee'
+
+if(@OrganizationPartyId is NULL)
+begin
+print ('Cant find company, please validate the company name for that enviroment')
+return
+end
+
+SELECT	@ProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'Unified Platform'
+
+SELECT	@TargetProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'Help Center'
+
+DECLARE curNewRightValueType CURSOR FOR
+SELECT Value
+FROM @NewRightValueType
+
+OPEN curNewRightValueType
+FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ACTION WHERE ObjectValue = @RightValueTypeValue AND ParentActionId IS NULL)
+	BEGIN
+		EXEC Enterprise.CreateAction
+			@ProductID = @ProductId, 
+			@Action = @RightValueTypeValue, 
+			@ActionTarget = N'Right', 
+			@ActionbValueTypeId = 1, 
+			@Description = '', 
+			@ActionID = @ActionId OUTPUT;
+	END;
+	FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+END
+CLOSE curNewRightValueType
+DEALLOCATE curNewRightValueType
+
+DECLARE curOrganizationRight CURSOR FOR
+
+
+
+SELECT eo.PartyId,
+			x.Value
+FROM	Enterprise.Organization eo
+			CROSS JOIN (
+				SELECT Value
+				FROM @NewRightValueType
+			) x
+WHERE	Name = N'RealPage Employee'
+
+
+
+OPEN curOrganizationRight
+FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SET @ActionID = NULL
+
+	SELECT @DetaulRightName = 'Default_' + @RightValueTypeValue,
+		@RightShortName = REPLACE(REPLACE(@RightValueTypeValue, ' ', ''), '-', '')
+
+	EXEC Enterprise.CreateRight
+		@RoleId = -1,
+		@RightName = @DetaulRightName,
+		@ShortName = @RightShortName,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Description = '',
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	SELECT @ActionID = ActionId
+	FROM	Enterprise.Action
+	WHERE	ParentActionId IS NULL 
+	AND		ObjectValue = @RightValueTypeValue
+	AND		ObjectType = 'Right'
+
+	EXEC [Enterprise].[LinkActionToRights]
+		@ActionID = @ActionID,
+		@RightId = @OutputRightId,
+		@StatusId = @VisibilityStatusTypeId,
+		@UserActionId = @UserActionId OUTPUT;
+
+	EXEC Enterprise.CreateRight
+		@RoleId = -1,
+		@RightName = @RightValueTypeValue,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Shortname = @RightShortName,
+		@Description = @RightValueTypeValue,
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+END
+CLOSE curOrganizationRight
+DEALLOCATE curOrganizationRight
+
+GO
+
