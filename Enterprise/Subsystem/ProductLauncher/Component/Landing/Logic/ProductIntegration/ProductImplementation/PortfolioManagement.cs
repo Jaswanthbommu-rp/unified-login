@@ -130,7 +130,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			//build roles-entities object
 			foreach (var role in allPropertiesRoles)
 			{
-				propertiesList.Add(new PortfolioRoleProperty(role, allProperties));
+				propertiesList.Add(new PortfolioRoleProperty(role, allProperties, allPropertyGroups));
 			}
 
 			// if user already exists in product
@@ -218,7 +218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 		}
 
-		private IList<ProductPropertyGroups> GetPortfolioPropertyGroups()
+		private IList<ProductAssetGroup> GetPortfolioPropertyGroups()
 		{
 			// Get end point for properties
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
@@ -226,7 +226,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/gandk/UserPropertyGroups";
 
 			// call API
-			return GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
+			return GetResultFromApi<IList<ProductAssetGroup>>(baseUrlAndQuery);
 		}
 
 		private void MergePropertyRoles(IList<PortfolioRoleProperty> portfolioPropertyRoles, List<PAMRolePropertyList> userPropertyRoles)
@@ -255,18 +255,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 	public class PortfolioRoleProperty : ProductRole
 	{
-		public PortfolioRoleProperty(ProductRole role, List<ProductProperties> properties)
+		public PortfolioRoleProperty(ProductRole role, List<ProductProperties> properties, List<ProductAssetGroup> Groups)
 		{
 			SetName = role.GetName;
 			SetRoleId = role.GetRoleId;
 			PropertiesList = new List<ProductProperties>();
+			GroupList = new List<ProductAssetGroup>();
 			PropertiesList.AddRange(properties.Select(a => new ProductProperties
 			{
 				SetPropertyId = a.GetPropertyId,
 				SetName = a.GetName,
 				PropertyType = a.PropertyType
 			}));
+
+			GroupList.AddRange(Groups.Select(a => new ProductAssetGroup
+			{
+				Id = a.Id,
+				Name= a.Name
+			}));
 		}
 		public List<ProductProperties> PropertiesList { get; set; }
+		public List<ProductAssetGroup> GroupList { get; set; }
 	}
 }

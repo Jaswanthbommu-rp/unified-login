@@ -23,6 +23,7 @@
             };
             s.propertyRoleListData = {
                 "PropertyIds": [],
+                "PropertyGroupList": [],
                 "RoleType": "",
                 "RoleId": ""
             };
@@ -280,6 +281,7 @@
                                 propRole.propertiesList.forEach(function (prop) {
                                     if (prop.isAssigned) {
                                         s.propertyRoleListData.PropertyIds.push(prop.id);
+                                        s.propertyRoleListData.PropertyGroupList.push(1);
                                     }
                                 });
                                 if (s.propertyRoleListData.PropertyIds.length > 0) {

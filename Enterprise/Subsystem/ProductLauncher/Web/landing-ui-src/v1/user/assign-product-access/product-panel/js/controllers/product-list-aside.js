@@ -18,11 +18,17 @@
             vm.asideGrid = asideGrid;
             vm.properteiesData = {};
             vm._properteiesData = {};
+            vm.groupsData = {};
+            vm._groupsData = {};
             vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
-            
+            vm.groupRecords = listAsideModel.getSelectedGroupRoleData();
+
             asidegridTransform.watch(asideGrid);
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
             syncMgr.setAsidePropertyList(listAsideModel.getSelectedPropertyRoleData(), vm.productId);
+            if(vm.productId == 44){
+                syncMgr.setAsideGroupList(listAsideModel.getSelectedGroupRoleData(), vm.productId);
+            }
             var configTab = "";
             if (vm.tabName.toLowerCase() === "property") {
                 if(vm.productId == 44){
@@ -33,6 +39,13 @@
                     configTab = "Properties";
                     vm.title = "Property Details";
                 }              
+            }
+            else if (vm.tabName.toLowerCase() === "group") {
+                if(vm.productId == 44){
+                    configTab = "Groups";
+                    vm.title = "Assigned Groups";
+                    vm.subtitle= persona.data.organization.name;
+                }
             }
             else if (vm.tabName.toLowerCase() === "propertygroup") {
                 configTab = "PropertyGroup";
@@ -108,9 +121,17 @@
 
                 vm.dataReq = groupSvc.get(params, vm.setData);
             }else if(productId == "20" || productId == "44"){
-                vm._properteiesData = angular.copy(vm.propertyRecords.propertiesList);
-                vm.properteiesData.records = vm.propertyRecords.propertiesList;
-                vm.setData(vm.properteiesData);
+                if(vm.tabName.toLowerCase() === "group"){
+                    vm._groupsData = angular.copy(vm.groupRecords.groupList);
+                    vm.groupsData.records = vm.groupRecords.groupList;
+                    vm.setData(vm.groupsData);
+                }
+                else{
+                    vm._properteiesData = angular.copy(vm.propertyRecords.propertiesList);
+                    vm.properteiesData.records = vm.propertyRecords.propertiesList;
+                    vm.setData(vm.properteiesData);
+                }
+                
             }
             else {
                 params = {
@@ -134,7 +155,12 @@
         };
 
         vm.cancel = function () {
-            vm.propertyRecords.propertiesList = vm._properteiesData;
+            if(vm.tabName.toLowerCase() === 'group') {
+                vm.groupRecords.groupList = vm._groupsData;    
+            }
+            else {
+                vm.propertyRecords.propertiesList = vm._properteiesData;
+            }
             aside.hide();
         };
         

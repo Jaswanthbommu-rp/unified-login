@@ -267,11 +267,29 @@
                             }
                         }
                     }
-                    if (productId == "44" && item.propertiesList) {
-                        var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
-                            return prop.isAssigned === true;
-                        });
-                        item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
+                    if (productId == "44") {
+                        if(item.propertiesList){
+                            var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
+                                return prop.isAssigned === true;
+                            });
+                            item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
+                        }
+                        if(item.groupList){
+                            var assignedGroupsCount = item.groupList.filter(function (Group) {
+                                return Group.isAssigned === true;
+                            });
+                            
+                            item.assignedGroups = assignedGroupsCount.length + " of " + item.groupList.length;
+                            item.groupList.forEach(function (group) {
+                                angular.extend(group, {
+                                    disableSelection: vm.hasViewOnlyAccess(),
+                                    radname: "Group",
+                                    productId: productId,
+                                    tabname: "EntityGroup"
+                                });
+                            });
+                        }
+                        
                     }
                 });
 

@@ -39,6 +39,7 @@
             s.notificationsMap={};
             s.originalPropertyListMap = {};
             s.asidePropertyMap = {};
+            s.asideGroupMap = {};
 
             s.productControlsList = {
                 products: []
@@ -56,6 +57,7 @@
             s.presetRoleList = [];
             s.sidePanelDataList = [];
             s.asidePropertyList = [];
+            s.asideGroupList = [];
             s.canReceiveMonthlyReport = false;
             s.productAdditionalMap = [];
         };
@@ -284,6 +286,16 @@
             return asidePropertyList;
         };
 
+        p.getProductAsideGroupData = function (product) {
+            var s = this,
+                asideGroupList;
+
+            if (s.asideGroupMap['product' + product] !== undefined) {
+                asideGroupList = s.asideGroupMap['product' + product].asideGroups;
+            }
+            return asideGroupList;
+        };
+
         p.getProductPropertyGroupData = function (product) {
             var s = this,
                 productPropertyGroupList;
@@ -363,6 +375,13 @@
             var s = this;
             s.asidePropertyList = list;
             s.renderAsidePropertyMap(key);
+            return s;
+        };
+
+        p.setAsideGroupList = function (list, key) {
+            var s = this;
+            s.asideGroupList = list;
+            s.renderAsideGroupMap(key);
             return s;
         };
 
@@ -1036,6 +1055,15 @@
             if (!angular.equals({}, s.asidePropertyList)) {
                 s.asidePropertyMap['product' + key] = {
                     asideProperties: s.asidePropertyList,
+                };
+            }
+        };
+
+        p.renderAsideGroupMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.asideGroupList)) {
+                s.asideGroupMap['product' + key] = {
+                    asideGroups: s.asideGroupList,
                 };
             }
         };
