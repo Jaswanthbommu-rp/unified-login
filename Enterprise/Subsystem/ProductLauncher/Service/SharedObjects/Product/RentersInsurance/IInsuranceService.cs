@@ -31,6 +31,7 @@
         void ChangeClaimStatusAsync(string SystemIdentifier, bool IsLinked);
         void ChangeClaimStatusAsync(string SystemIdentifier, bool IsLinked, object userState);
         UserAPIResponse DisableUser(UserActionRequest aRequest);
+        ErrorInfoType CheckUserLogin(CheckUserLogin UserLogin);
         void DisableUserAsync(UserActionRequest aRequest);
         void DisableUserAsync(UserActionRequest aRequest, object userState);
         UserAPIResponse EnableUser(UserActionRequest aRequest);
