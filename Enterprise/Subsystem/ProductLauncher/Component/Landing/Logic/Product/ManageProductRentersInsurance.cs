@@ -644,8 +644,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - generated RentersInsuranceLoginName = {newproductUsername}");
                     productUserName = newproductUsername;
-
-                    _productUsername = newproductUsername;
                 }
                 else
                 {
