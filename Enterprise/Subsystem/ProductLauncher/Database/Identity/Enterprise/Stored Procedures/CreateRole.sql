@@ -19,6 +19,7 @@ BEGIN
 	DECLARE @Status int;
 	DECLARE @UserActionId int;
 
+	SET @RoleId = 0
 	SELECT @RoleId = ISNULL(RoleId,0)
 	FROM ENterprise.Role R
 			INNER JOIN
@@ -39,9 +40,20 @@ BEGIN
 	END
 
 	BEGIN TRY
-		INSERT INTO Enterprise.RoleValueType( Value, ShortName, Description, StatusTypeId )
-		VALUES( @RoleName, @ShortName, @Description, @RoleCategoryId );
-		SELECT @RoleValueTypeId = SCOPE_IDENTITY();
+		IF Exists(SELECT 1 RoleValueTypeId
+				FROM Enterprise.RoleValueType
+				WHERE Value = @RoleName AND @RoleCategoryId = 13)
+			BEGIN
+				SELECT @RoleValueTypeID = RoleValueTypeId
+				FROM Enterprise.RoleValueType
+				WHERE Value = @RoleName;
+			END
+		ELSE
+			BEGIN
+				INSERT INTO Enterprise.RoleValueType( Value, ShortName, Description, StatusTypeId )
+				VALUES( @RoleName, @ShortName, @Description, @RoleCategoryId );
+				SELECT @RoleValueTypeId = SCOPE_IDENTITY();
+			END
 
 		INSERT INTO Enterprise.Role( RoleTypeID, RoleValueTypeId, PartyID )
 		VALUES( @RoleTypeID, @RoleValueTypeId, @PartyID );
