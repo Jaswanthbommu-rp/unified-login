@@ -124,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>CompanyMap object</returns>
 		private CustomerCompanyMap GetEasyLMSCompanyInstanceId()
 		{
-			return GetProductCompanyInstanceId(BlueBookProductConstants.EasyLMS, null);
+            return GetProductCompanyInstanceId(BlueBookProductConstants.EasyLMS, null, useTranslate: false);
 		}
 		#endregion
 	}
