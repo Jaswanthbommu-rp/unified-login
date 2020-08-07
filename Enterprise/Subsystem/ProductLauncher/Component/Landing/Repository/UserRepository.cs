@@ -4166,6 +4166,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// isEmployeeIdChanged
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="oldProfile"></param>
+        /// <returns></returns>
+        private bool isEmployeeIdChanged(IProfileDetail profile, IProfileDetail oldProfile)
+        {
+            bool isChanged = (!string.IsNullOrEmpty(profile.EmployeeId) && !profile.EmployeeId.Equals(oldProfile.EmployeeId));
+            return isChanged;
+        }
+
+        /// <summary>
         /// isNotificationEmailChanged
         /// </summary>
         /// <param name="priorNotificationEmail"></param>
@@ -4927,6 +4939,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
+                bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
@@ -5427,7 +5440,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
                         }
 
-                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged))
+                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
                         {
                             updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
                             {
