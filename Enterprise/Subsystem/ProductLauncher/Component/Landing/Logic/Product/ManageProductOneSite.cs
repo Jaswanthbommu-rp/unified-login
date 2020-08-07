@@ -1231,7 +1231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var userLogin = _manageUserLogin.GetUserLoginOnly(userRealPageId);
             IList<IC.UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
-           
+
             var employeeId = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
             person.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
 
@@ -1273,7 +1273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 NameValuePair[] response;
                 string errorMessage = "";
-                //Here need to add condition for Employeeid
+               
                 if (!string.IsNullOrWhiteSpace(_systemIdentifier))
                 {
                     var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
