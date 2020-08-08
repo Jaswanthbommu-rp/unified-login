@@ -625,7 +625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             string[] loginNameSubStrings = newproductUsername.Split('@');
                             newproductUsername = loginNameSubStrings.Length == 2 ?
                                                  string.Concat(loginNameSubStrings[0], incrementor.ToString(), "@", loginNameSubStrings[1]) :
-                                                 string.Concat(userEmailAddress, incrementor.ToString());
+                                                 string.Concat(newproductUsername, incrementor.ToString());
                             checkUserLogin.UserLogin = newproductUsername;
                         }
                         else
