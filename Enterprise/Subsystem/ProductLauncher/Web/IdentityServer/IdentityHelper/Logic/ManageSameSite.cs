@@ -6,9 +6,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Owin;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using Serilog;
+using Serilog.Events;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
 {
@@ -123,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
 
             info.Add("userAgent", userAgent);
 #if (DEBUG)
-            Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies", AdditionalInfo = info});
+            Log.Write(LogEventLevel.Debug, "IdentityServerConfig.SuppressSameSiteNoneCookies", new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies", AdditionalInfo = info});
 #endif
             List<bool> andResults = new List<bool>();
 
@@ -152,7 +153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
                     if (andResults.All(p => p == true))
                     {
 #if (DEBUG)
-                        Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true andResults.All", AdditionalInfo = info});
+                        Log.Write(LogEventLevel.Debug, "IdentityServerConfig.SuppressSameSiteNoneCookies - true andResults.All", new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true andResults.All", AdditionalInfo = info});
 #endif
                         return true;
                     }
@@ -163,13 +164,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic
                 if (current.LogicalOperator == null && CompareAgent(userAgent, current.ComparatorLeft, current.SameSiteValueLeft))
                 {
 #if (DEBUG)
-                    Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true CompareAgent", AdditionalInfo = info});
+                    Log.Write(LogEventLevel.Debug, "IdentityServerConfig.SuppressSameSiteNoneCookies - true CompareAgent", new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - true CompareAgent", AdditionalInfo = info});
 #endif
                     return true;
                 }
             }
 #if (DEBUG)
-            Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - false", AdditionalInfo = info});
+            Log.Write(LogEventLevel.Debug, "IdentityServerConfig.SuppressSameSiteNoneCookies - false", new LogDetails() {CorrelationId = correlationId, Message = $"IdentityServerConfig.SuppressSameSiteNoneCookies - false", AdditionalInfo = info});
 #endif
             return false;
         }

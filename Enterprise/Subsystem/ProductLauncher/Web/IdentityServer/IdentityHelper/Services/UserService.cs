@@ -4,12 +4,12 @@ using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
 using IdentityServer3.Core.Services.Default;
 using Microsoft.Owin;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -18,6 +18,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -131,7 +133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             {
                 loggedInUserRPID = _ctx.Authentication.User.Claims.ImpersonatedBy();
             }
-            WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Begin change user context", new Guid(correlationId),
+            WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: Begin change user context", new Guid(correlationId),
                 new Dictionary<string, object>
                 {
                     { "User data", $"userContext:{userContext} newUser:{newUserRealPageId} loggedInUserRPID:{loggedInUserRPID} newPersonaId:{newPersonaIdString}" }
@@ -139,7 +141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 
             if (string.IsNullOrEmpty(impersonatingRealPageId) || string.IsNullOrEmpty(loggedInUserRPID))
             {
-                WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Invalid attempt to change user context 1", new Guid(correlationId));
+                WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: Invalid attempt to change user context 1", new Guid(correlationId));
                 context.AuthenticateResult = new AuthenticateResult("Invalid attempt to change user context");
                 await base.PreAuthenticateAsync(context);
                 return;
@@ -155,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             if (!(userMatchesNewUserContext || userFromParamsMatchesLoggedInUser) && !UserIsAllowedToChangeContext(impersonator, impersonatorPersona.Organization.BooksMasterId, newUserRealPageId))
             //if (!UserIsAllowedToChangeContext(impersonator, impersonatorPersona.Organization.BooksMasterId, newUserRealPageId))
             {
-                WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Invalid attempt to change user context 2", new Guid(correlationId));
+                WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: Invalid attempt to change user context 2", new Guid(correlationId));
                 context.AuthenticateResult = new AuthenticateResult("Invalid attempt to change user context");
             }
             
@@ -181,7 +183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             }
             var userPersona = _personaManager.GetPersona(user.PersonaId);
 
-            WriteToLog(LogType.Diagnostic, $"PreAuthenticateAsync: loggedInUserRPID:{loggedInUserRPID} newUser:{newUserRealPageId} impersonatorPersona.Organization.BooksMasterId:{impersonatorPersona.Organization.BooksMasterId} ConfigReader.OrgMasterId:{ConfigReader.OrgMasterId}", new Guid(correlationId));
+            WriteToLog(LogEventLevel.Debug, $"PreAuthenticateAsync: loggedInUserRPID:{loggedInUserRPID} newUser:{newUserRealPageId} impersonatorPersona.Organization.BooksMasterId:{impersonatorPersona.Organization.BooksMasterId} ConfigReader.OrgMasterId:{ConfigReader.OrgMasterId}", new Guid(correlationId));
 
             var claims = GetClaimsForUser(user, userPersona.OrganizationPartyId, context.SignInMessage.ClientId);
             if (revertUser != null)
@@ -252,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 }
             }
 
-            WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Success ", new Guid(correlationId), new Dictionary<string, object>
+            WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: Success ", new Guid(correlationId), new Dictionary<string, object>
             {
                 {"userid", user.UserId.ToString()},
                 {"user.LoginName", user.LoginName},
@@ -261,7 +263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             
             context.AuthenticateResult = new AuthenticateResult(user.UserId.ToString(), user.LoginName, claims, idp);
 
-            WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: AuthenticateResult ", new Guid(correlationId), new Dictionary<string, object>
+            WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: AuthenticateResult ", new Guid(correlationId), new Dictionary<string, object>
                 { { "AuthenticateResult", context.AuthenticateResult } });
         }
 
@@ -315,13 +317,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 var claims = GetClaimsForUser(user, userPersona.OrganizationPartyId, context.SignInMessage.ClientId);
                 var logData = new Dictionary<string, object> {{"User data", $"revertedUserId:{userId}"}};
 
-                WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Revert impersonation", new Guid(correlationId), logData);
+                WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: Revert impersonation", new Guid(correlationId), logData);
                 context.SignInMessage.AcrValues = new List<string>();
                 context.AuthenticateResult = new AuthenticateResult(user.UserId.ToString(), user.LoginName, claims, idp);
             }
             else
             {
-                WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Revert impersonation failed, no userId", new Guid(correlationId));
+                WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: Revert impersonation failed, no userId", new Guid(correlationId));
                 //context.AuthenticateResult = new AuthenticateResult("Could not revert back to original login.");
                 context.SignInMessage.IdP = null;
                 context.SignInMessage.AcrValues = new List<string>();
@@ -530,7 +532,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     .ToDictionary(claim => $"CLAIM-{claim.Type} (Issuer={claim.Issuer})", claim => claim.Value);
                 logData.Add("context.ExternalIdentity.Claims", claimList);
 
-                WriteToLog(LogType.Diagnostic, $"AuthenticateExternalAsync: {errorReason}", Guid.NewGuid(), logData);
+                WriteToLog(LogEventLevel.Debug, $"AuthenticateExternalAsync: {errorReason}", Guid.NewGuid(), logData);
             }
             catch (Exception)
             {
@@ -944,9 +946,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                     BooksProductCode = ProductEnum.UnifiedPlatform.ToEnumDescription()
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Log.Write(LogType.Error, new LogDetails
+                Log.Write(LogEventLevel.Error, ex, message, new LogDetails
                 {
                     Message = message,
                     ProductModule = GetType().ToString(),
@@ -963,9 +965,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         /// <param name="logData">logData</param>
         /// <param name="exception">exception</param>
         /// <param name="correlationId">correlationId</param>
-        private void WriteToLog(LogType logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            Log.Write(logType, new LogDetails
+            Log.Write(logType, exception, message, new LogDetails
             {
                 Message = message,
                 AdditionalInfo = logData,

@@ -7,16 +7,17 @@ using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Google;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services;
+using Serilog;
+using Serilog.Events;
 using Sustainsys.Saml2;
 using Sustainsys.Saml2.Configuration;
 using Sustainsys.Saml2.Owin;
@@ -29,8 +30,6 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using Log = RP.Enterprise.Foundation.Audit.Core.Component.Log;
-
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configuration
 {
@@ -110,7 +109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             options.Factory.ClientPermissionsService = new Registration<IClientPermissionsService, ClientPermissionsService>();
             options.Factory.CorsPolicyService = new Registration<ICorsPolicyService, CorsPolicyService>();
             options.Factory.EventService = new Registration<IEventService, AuditEventService>();
-            
+
             options.EventsOptions.RaiseSuccessEvents = true;
         }
 
@@ -145,12 +144,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             var azureConfiguration = GetProviderDetails(ProviderEnum.AzureActiveDirectory).FirstOrDefault();
             if (azureConfiguration != null)
             {
-                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Azure - Start"});
+                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Azure - Start", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Azure - Start" });
                 var azureOptions = GetOIDCOptions(azureConfiguration, signInAsType, correlationId);
                 if (azureOptions != null)
                 {
                     app.UseOpenIdConnectAuthentication(azureOptions);
-                    Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Azure - Loaded"});
+                    Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Azure - Loaded", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Azure - Loaded" });
                 }
             }
 
@@ -158,9 +157,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             var googleOptions = GetGoogleOptions(signInAsType, correlationId);
             if (googleOptions != null)
             {
-                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start"});
+                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Google - Start", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start" });
                 app.UseGoogleAuthentication(googleOptions);
-                Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded"});
+                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Google - Loaded", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded" });
             }
 
             // SAML
@@ -169,12 +168,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 foreach (var provider in samlProviderList)
                 {
-                    Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.SAML - Start {provider.AuthenticationType}"});
+                    Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.SAML - Start {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.SAML - Start {provider.AuthenticationType}" });
                     var samlpvd = GetSAMLOptions(provider, signInAsType, correlationId);
                     if (samlpvd != null)
                     {
                         app.UseSaml2Authentication(samlpvd);
-                        Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.SAML - Loaded {provider.AuthenticationType}"});
+                        Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.SAML - Loaded {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.SAML - Loaded {provider.AuthenticationType}" });
                     }
                 }
             }
@@ -184,12 +183,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 foreach (var provider in oidcList)
                 {
-                    Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.OIDC - Start {provider.AuthenticationType}"});
+                    Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.OIDC - Start {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.OIDC - Start {provider.AuthenticationType}" });
                     var oidcpvd = GetOIDCOptions(provider, signInAsType, correlationId);
                     if (oidcpvd != null)
                     {
                         app.UseOpenIdConnectAuthentication(oidcpvd);
-                        Log.Write(LogType.Diagnostic, new LogDetails() {CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.OIDC - Loaded {provider.AuthenticationType}"});
+                        Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.OIDC - Loaded {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.OIDC - Loaded {provider.AuthenticationType}" });
                     }
                 }
             }
@@ -224,10 +223,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                         ReturnUrl = new Uri(provider.RedirectUri),
                         ModulePath = $"/{provider.AuthenticationType}",
                         PublicOrigin = new Uri(ConfigReader.GetIssuerUri),
-                        Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true}
+                        Compatibility = new Compatibility() { UnpackEntitiesDescriptorInIdentityProviderMetadata = true }
                     },
                 };
-                if ((SigningBehavior) provider.SigningBehavior != SigningBehavior.Never)
+                if ((SigningBehavior)provider.SigningBehavior != SigningBehavior.Never)
                 {
                     authServicesOptions.SPOptions.ServiceCertificates.Add(GetSigningCertificate());
                 }
@@ -238,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                 };
 
 
-                 // keep for debugging purposes
+                // keep for debugging purposes
                 //authServicesOptions.Notifications.GetPublicOrigin = (request) =>
                 //{
                 //    Dictionary<string, object> logData = new Dictionary<string, object>();
@@ -246,12 +245,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                 //    Log.Write(LogType.Diagnostic, new LogDetails() { Message = $"IdentityServerConfig.GetSAMLOptions", AdditionalInfo = logData });
                 //    return new Uri("https://asdsad");
                 //};
-                
+
                 if (!ConfigReader.Environment.Equals("prod", StringComparison.OrdinalIgnoreCase))
                 {
                     authServicesOptions.SPOptions.Logger = new TestLogger();// enable to log Saml2AuthenticationOptions issues
                 }
-                
+
                 IdentityProvider idp = new IdentityProvider(new EntityId(provider.EntityId), authServicesOptions.SPOptions)
                 {
                     MetadataLocation = provider.MetadataLocation,
@@ -264,7 +263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
             catch (Exception ex)
             {
-                Log.Write(LogType.Error, new LogDetails() {CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetSAMLOptions - " + ex.Message});
+                Log.Write(LogEventLevel.Error, ex, ex.Message, new LogDetails() { CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetSAMLOptions - " + ex.Message });
             }
 
             return null;
@@ -289,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     Authority = provider.AuthorityUri,
                     PostLogoutRedirectUri = provider.PostLogoutRedirectUri,
                     RedirectUri = provider.RedirectUri,
-                    AuthenticationMode = (AuthenticationMode) provider.AuthenticationMode,
+                    AuthenticationMode = (AuthenticationMode)provider.AuthenticationMode,
 
                     TokenValidationParameters = new TokenValidationParameters
                     {
@@ -301,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     MetadataAddress = (!string.IsNullOrEmpty(provider.MetadataLocation) ? provider.MetadataLocation : null),
                     Notifications = new OpenIdConnectAuthenticationNotifications()
                     {
-                        
+
                         SecurityTokenValidated = n =>
                         {
                             //Making available new claim id_token_serverUID in the AuthenticateExternalAsync to 
@@ -310,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             if (n.AuthenticationTicket.Properties.Dictionary.ContainsKey("signinid"))
                             {
                                 var signinid = n.AuthenticationTicket.Properties.Dictionary["signinid"];
-                                if (n.OwinContext.Request.Cookies["userinfo."+ signinid] != null || n.OwinContext.Request.Cookies["ss-userinfo."+ signinid] != null)
+                                if (n.OwinContext.Request.Cookies["userinfo." + signinid] != null || n.OwinContext.Request.Cookies["ss-userinfo." + signinid] != null)
                                 {
                                     if (n.OwinContext.Request.Cookies["userinfo." + signinid] != null)
                                     {
@@ -323,8 +322,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                             n.AuthenticationTicket.Identity.AddClaim(new System.Security.Claims.Claim("login_username", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Cookies["ss-userinfo." + signinid]))));
                                         }
                                     }
-                                    n.OwinContext.Response.Cookies.Delete("userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
-                                    n.OwinContext.Response.Cookies.Delete("ss-userinfo."+ signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
+                                    n.OwinContext.Response.Cookies.Delete("userinfo." + signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
+                                    n.OwinContext.Response.Cookies.Delete("ss-userinfo." + signinid, new Microsoft.Owin.CookieOptions() { Path = "/", HttpOnly = true, Secure = true });
                                 }
                             }
 
@@ -335,7 +334,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                             //n.ProtocolMessage.MaxAge = "10"; // using an age of 5 didn't work with Azure so upping to 10
                             if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
                             {
-                                if (!ManageSameSite.SuppressSameSiteNoneCookies((OwinContext)n.OwinContext,null))
+                                if (!ManageSameSite.SuppressSameSiteNoneCookies((OwinContext)n.OwinContext, null))
                                 {
                                     var hold = n.OwinContext.Response.Headers["Set-Cookie"];
                                     n.OwinContext.Response.Headers["Set-Cookie"] = hold + "; SameSite=None";
@@ -344,8 +343,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                                 {
                                     n.ProtocolMessage.Parameters.Add("login_hint", Encoding.UTF8.GetString(Convert.FromBase64String(n.OwinContext.Request.Query.Get("info"))));
                                     var signinId = n.OwinContext.Request.Query["signin"];
-                                    n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/; SameSite=None", Secure = true, HttpOnly = true});
-                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions(){ Path = "/", Secure = true, HttpOnly = true});
+                                    n.OwinContext.Response.Cookies.Append("ss-userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions() { Path = "/; SameSite=None", Secure = true, HttpOnly = true });
+                                    n.OwinContext.Response.Cookies.Append("userinfo." + signinId, n.OwinContext.Request.Query.Get("info"), new Microsoft.Owin.CookieOptions() { Path = "/", Secure = true, HttpOnly = true });
                                 }
 
                                 if (n.OwinContext.Get<string>("prompt") != "" && !string.IsNullOrEmpty(n.OwinContext.Get<string>("prompt")))
@@ -381,12 +380,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
             catch (Exception ex)
             {
-                Log.Write(LogType.Error, new LogDetails() {CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetOIDCOptions - " + ex.Message});
+                Log.Write(LogEventLevel.Error, ex, ex.Message, new LogDetails() { CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetOIDCOptions - " + ex.Message });
             }
 
             return null;
         }
-       
+
         /// <summary>
         /// Used to set up a Google IDP
         /// </summary>
@@ -407,16 +406,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
                     AuthenticationType = googleConfiguration.AuthenticationType, //"Google",
                     Caption = googleConfiguration.Caption, //"Sign-in with Google",
                     //Scope = googleConfiguration.Scope,
-                    ClientId = googleConfiguration.ProviderClientId, 
-                    ClientSecret = googleConfiguration.ClientSecret, 
-                    AuthenticationMode = (AuthenticationMode) googleConfiguration.AuthenticationMode, // AuthenticationMode.Active,
+                    ClientId = googleConfiguration.ProviderClientId,
+                    ClientSecret = googleConfiguration.ClientSecret,
+                    AuthenticationMode = (AuthenticationMode)googleConfiguration.AuthenticationMode, // AuthenticationMode.Active,
                     SignInAsAuthenticationType = signInAsType
                 };
                 return options;
             }
             catch (Exception ex)
             {
-                Log.Write(LogType.Error, new LogDetails() {CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetGoogleOptions - " + ex.Message});
+                Log.Write(LogEventLevel.Error, ex, ex.Message, new LogDetails() { CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetGoogleOptions - " + ex.Message });
             }
 
             return null;

@@ -1,6 +1,7 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using Serilog;
+using Serilog.Events;
 using Sustainsys.Saml2;
 using System;
 
@@ -31,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 				ProductWorkflow = null,
 				ProductStep = null,
 			};
-			Log.Write(LogType.Error, infoDetails);
+			Log.Write(LogEventLevel.Error, message, infoDetails);
 		}
 
 		public void WriteInformation(string message)
@@ -56,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 				ProductWorkflow = null,
 				ProductStep = null,
 			};
-			Log.Write(LogType.Diagnostic, infoDetails);
+			Log.Write(LogEventLevel.Debug, message, infoDetails);
 		}
 
 		public void WriteVerbose(string message)
@@ -81,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Logging
 				ProductWorkflow = null,
 				ProductStep = null,
 			};
-			Log.Write(LogType.Diagnostic, infoDetails);
+			Log.Write(LogEventLevel.Debug, message, infoDetails);
 		}
 	}
 }
