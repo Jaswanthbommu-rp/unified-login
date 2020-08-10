@@ -2965,7 +2965,7 @@ BEGIN
 	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
 	  Select @adminRole,RightId,@UserId,@Now  from [Security].[Right]
 	  where   productid = 3 
-	  and Value NOT IN ('View only access to Unified Platform from Support Tool','Approve platform alerts','Create platform alerts')
+	  and Value NOT IN ('View only access to Unified Platform from Support Tool','Approve platform alerts','Create platform alerts','Manage Notifications Configurations')
 	
 
 	  --Basic user role
