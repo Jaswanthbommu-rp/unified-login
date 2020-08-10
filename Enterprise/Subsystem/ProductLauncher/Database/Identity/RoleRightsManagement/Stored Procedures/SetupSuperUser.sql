@@ -212,6 +212,23 @@ AS
 			UPDATE Security.PersonaRole SET RoleId = @RoleId
 			WHERE PersonaId = @PersonaId
 		END
+        --------------------------------
+		Declare @SaveEnterpriseRoleData Varchar(10)
+		SELECT	@SaveEnterpriseRoleData = ps.Value				
+			FROM	Enterprise.GlobalProductConfiguration gpc
+					JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+					JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+					JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+			WHERE  gpc.ProductId = 3
+			AND (gpc.ThruDate IS NULL)
+			AND ( pc.ThruDate IS NULL)
+			AND ( ps.ThruDate IS NULL)
+			And PST.Name = 'SaveRoleDataInEnterprise'
+		IF (@SaveEnterpriseRoleData = '1')
+		Begin
+			Exec [Security].[SetupSuperUserEnterpriseRoles] @OrganizationId, @PersonaId
+		End
+		----------------------------------
 		----------------------------------
      	--INSERT all properties indicator for UPFM
 		IF NOT EXISTS
