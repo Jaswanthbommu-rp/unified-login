@@ -2587,7 +2587,7 @@ BEGIN
 	  FROM [Enterprise].[RightValueType]
 	  where ShortName is not null and LEN(LTRIM(rtrim(shortname))) > 0
 	  and value not like 'Default%'
-	  and ShortName not in ('Access to L&R Conversion Utility for OneSite users','Manage Vendor Compliance Product Access','Access to Settings Admin for OneSite','Ability to edit password',
+	  and value not in ('Access to L&R Conversion Utility for OneSite users','Manage Vendor Compliance Product Access','Access to Settings Admin for OneSite','Ability to edit password',
 							'Ability to Configure Custom Fields for Users','Ability to view Company page','Ability to edit Company information','Ability to view Property page',
 							'Ability to edit Property information','Access to Green Book Migration Tool','Access to Amenities Tool','Access to Employee Management',
 							'Access to Identity Provider Configuration Page','Access to Leasing & Rents Conversion Tool','Access to Property Hierarchy Tool',
@@ -2616,16 +2616,17 @@ BEGIN
 		select 'Settings','Settings',11,'Ability to view Settings page',GETUTCDATE(),10,3,3,@UserId
 	  END
   
-
+	  
 	  Update [Security].[Right] Set VisibilityStatusId = 10
 	  Where Value IN ('Manage Notifications Configurations',
-					  'Ability to Import users',
+					  --'Ability to Import users',
 					  'View only access to Unified Platform from Support Tool',
 					  'Access to Settings Admin',
 					  'Manage Settings Templates',
 					  'Employee Access to Design Questionnaires in CIMPL',
 					  'Employee Access to CIMPL',
 					  'Employee Access to add Implementation Records in CIMPL',
+					  'Employee Access to Vendor Marketplace',
 					  'Manage Custom User fields settings',
 					  'Manage Unified Platform Security Settings',
 					  'Access to Unified Settings',
@@ -2964,14 +2965,14 @@ BEGIN
 	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
 	  Select @adminRole,RightId,@UserId,@Now  from [Security].[Right]
 	  where   productid = 3 
-	  and Value NOT IN ('View only access to Unified Platform from Support Tool','Approve platform alerts','Create platform alerts')
+	  and Value NOT IN ('View only access to Unified Platform from Support Tool','Approve platform alerts','Create platform alerts','Manage Notifications Configurations')
 	
 
 	  --Basic user role
 	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
 	  Select @basicUserRole,RightId,@UserId,@Now From [Security].[Right] 
 	  Where ProductId = 3 
-	  And Value  in ('View Audit Trail on Profile Data','Ability to edit my own profile','Access to Product Learning Portal','Dashboard','Products','People')
+	  And Value  in ('Access to Vendor Marketplace','Ability to edit my own profile','Access to Product Learning Portal','Dashboard','Products','People')
 
 	  --Read only Role
 	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
@@ -3246,6 +3247,7 @@ BEGIN
 					  'Employee Access to Design Questionnaires in CIMPL',
 					  'Employee Access to CIMPL',
 					  'Employee Access to add Implementation Records in CIMPL',
+					  'Employee Access to Vendor Marketplace',
 					  'Manage Custom User fields settings',
 					  'Manage Unified Platform Security Settings',
 					  'Access to Unified Settings',
@@ -3257,7 +3259,7 @@ BEGIN
 					  'Manage help center product updates',
 					  'Approve platform alerts',
 					  'Create platform alerts')
-  
+
 	 select @OrgId = PartyId from [Enterprise].[Organization] where Name = 'RP Northstar Management Demo'
 	 Insert Into [Security].[OrganizationOverRideRight](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
 	 Select RightId, @OrgId ,9,@userId,@now
