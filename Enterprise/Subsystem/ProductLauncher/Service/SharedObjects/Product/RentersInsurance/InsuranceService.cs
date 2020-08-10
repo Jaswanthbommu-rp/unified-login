@@ -452,7 +452,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                         aRequest});
             return ((UserAPIResponse)(results[0]));
         }
-        
+
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://webservices.leasingdesk.com/CheckUserLogin", RequestNamespace = "http://webservices.leasingdesk.com/", ResponseNamespace = "http://webservices.leasingdesk.com/", Use = System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle = System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public ErrorInfoType CheckUserLogin(CheckUserLogin UserLogin)
+        {
+            object[] results = this.Invoke("CheckUserLogin", new object[] {
+                        UserLogin});
+            return ((ErrorInfoType)(results[0]));
+        }
+
         /// <remarks/>
         public void DisableUserAsync(UserActionRequest aRequest) {
             this.DisableUserAsync(aRequest, null);
@@ -1411,7 +1420,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
             }
         }
     }
-    
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.2102.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://webservices.leasingdesk.com/")]
+    public class CheckUserLogin : AuthenticationType
+    {
+        private string userLoginField;
+        public string UserLogin
+        {
+            get
+            {
+                return this.userLoginField;
+            }
+            set
+            {
+                this.userLoginField = value;
+            }
+        }
+    }
+
+
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2046.0")]
     public delegate void ValidateUserCompletedEventHandler(object sender, ValidateUserCompletedEventArgs e);
