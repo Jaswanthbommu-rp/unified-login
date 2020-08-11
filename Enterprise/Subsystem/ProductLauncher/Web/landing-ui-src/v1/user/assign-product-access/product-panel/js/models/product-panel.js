@@ -333,6 +333,7 @@
                             if (!prop.isAssigned && prop.originalProperty) {
                                 s.batchData.inputJson.removedPropertyList.push(prop.alias);
                             }
+
                         });
                     }
                     else {
