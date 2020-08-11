@@ -16,6 +16,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities.UserAssignProductPropertyRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -94,6 +95,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var realPageId = userPersona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
+				bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
 
 				// super user
 				// TODO what to do here?
@@ -178,7 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					}
 
-					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedAmenities);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 
 					List<string> unassignedProperties = new List<string>();
@@ -201,14 +204,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 
-					if (unassignedProperties.Count > 0)
+					if (!usePropertyInstances)
 					{
-						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
-					}
+						if (unassignedProperties.Count > 0)
+						{
+							Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+						}
 
-					if (assignedProperties.Count > 0)
+						if (assignedProperties.Count > 0)
+						{
+							Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+						}
+					}
+					else
 					{
-						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
+						if (unassignedProperties.Count > 0)
+						{
+							Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+						}
+
+						if (assignedProperties.Count > 0)
+						{
+							Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+						}
+
 					}
 				}
 
@@ -467,59 +486,117 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		#endregion
 
 		#region Property
+		/// <summary>
+		/// Get the list of property instances for the given user to be used by external systems
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <param name="include"></param>
+		/// <returns></returns>
+		public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
+		{
+			ListResponse response = new ListResponse();
+
+			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+			List<ProductProperty> userPropertyList = new List<ProductProperty>();
+			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
+
+			if (userPropertyIdList != null)
+			{
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				if (booksPropertyList != null)
+				{
+					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
+				}
+
+				if (userPropertyIdList.Count == 1 && userPropertyIdList[0] == -1)
+				{
+					customerPropertyList.ForEach(cp =>
+					{
+						userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true));
+					});
+				}
+				else
+				{
+					customerPropertyList.ToList().FindAll(b => userPropertyIdList.Any(p => p == b.PropertyInstanceId)).ForEach(cp => { userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true)); });
+				}
+			}
+
+			if (userPropertyIdList?.Count > 0)
+			{
+				bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] { ',' }).Length > 0);
+
+				if (bIncludeFields)
+				{
+					DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
+					string productPropertySerializableProperties = JsonConvert.SerializeObject(
+						userPropertyList,
+						new JsonSerializerSettings()
+						{
+							ContractResolver = dynamicContractResolver
+						}
+					);
+					userPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+				}
+
+				userPropertyList.ForEach(p =>
+				{
+					p.IsAssigned = null;
+					p.disableSelection = null;
+				});
+
+				response.IsError = false;
+				response.Records = userPropertyList.Cast<object>().ToList();
+				response.TotalRows = userPropertyList.Count;
+				response.RowsPerPage = userPropertyList.Count;
+				response.TotalPages = 1;
+				response.ErrorReason = string.Empty;
+			}
+
+			return response;
+		}
 
 		/// <summary>
-		/// Used to get the list of properties for the company or for the given user
+		/// Get a list of UPFM property instances for the give user
 		/// </summary>
-		/// <param name="editorPersonaId">User making the request</param>
-		/// <param name="userPersonaId">The user id to merge with the property list, if used. 0 for all properties</param>
-		/// <param name="assignedOnly">Only return the properties assigned to the given user persona id</param>
-		/// <param name="datafilter">A datafilter used to filter the properties. Not currently used</param>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="assignedOnly"></param>
+		/// <param name="product"></param>
+		/// <param name="datafilter"></param>
 		/// <returns></returns>
-		public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+		public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
 		{
 			ListResponse result = new ListResponse();
-			WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
+			WriteToDiagnosticLog($"ManageUnifiedLogin.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
 
 			try
 			{
 				result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 				if (result.IsError)
 				{
-					WriteToErrorLog($"ManageIntelligentBuildingUser.GetProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					WriteToErrorLog($"ManageUnifiedLogin.GetUPFMProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
 					return result;
 				}
 
-				CustomerCompany masterCompany = _blueBook.GetCompanyCustomerInfo(_editorPersona.Organization.RealPageId, _editorPersona.Organization.OrganizationDomain.Name, _editorPersona.Organization.BooksCustomerMasterId);
-				if (masterCompany == null || masterCompany?.CustomerCompanyId == 0 || (!masterCompany.IsActive == true && masterCompany.CustomerCompanyId != 0))
-				{
-					WriteToErrorLog($"ManageIntelligentBuildingUser.GetProperties-GetCompanyCustomerInfo - Error looking for company id {_editorPersona.Organization.RealPageId} customermasterid {_editorPersona.Organization.BooksCustomerMasterId} in bluebook for user with editorPersona id - {editorPersonaId}.");
-					return new ListResponse { IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage };
-				}
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
-				WriteToDiagnosticLog($"ManageIntelligentBuildingUser.ManageProductProspectContact.GetProperties-GetProductCompanyInstanceId - Found blue book company id {_editorPersona.Organization.RealPageId} - customermasterid {_editorPersona.Organization.BooksCustomerMasterId} for user editorPersona id -{editorPersonaId}");
-
-				//IList<CustomerCompanyPropertyMap> propertyList = _blueBook.GetVCompanyPropertyMap(masterCompany.CustomerCompany.FirstOrDefault(p => p.IsActive == true && p.CustomerCompanyId != 0).CustomerCompanyId, "");
-				IList<CustomerCompanyPropertyMap> propertyList = _blueBook.GetVCompanyPropertyMap((masterCompany.IsActive == true && masterCompany.CustomerCompanyId != 0) ? masterCompany.CustomerCompanyId : 0, "");
-				WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetProperties-GetPropertyInstance - Found total {propertyList?.Count} properties with blue book company id {_editorPersona.Organization.RealPageId} customermasterid {_editorPersona.Organization.BooksCustomerMasterId} for user with editorPersona id - {editorPersonaId}.");
-
-				IList<ProductProperty> blueBookPropertyList = propertyList.FromBlueBookMasterPropertyToGBProperties() ?? new List<ProductProperty>();
-				WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetProperties-FromBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
+				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
 
 				// need to do a filter on the result
 				if (userPersonaId != 0)
 				{
-					WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-					result = MergeProductPropertiesWithGreenbook(blueBookPropertyList, userPersonaId, assignedOnly);
-					WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+					WriteToDiagnosticLog($"GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
+					result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
+					WriteToDiagnosticLog($"GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
 				}
 				else
 				{
 					result = new ListResponse() // create new user
 					{
-						Records = blueBookPropertyList.Cast<object>().ToList(),
-						TotalRows = blueBookPropertyList.Count,
-						RowsPerPage = blueBookPropertyList.Count,
+						Records = customerPropertyList.Cast<object>().ToList(),
+						TotalRows = customerPropertyList.Count,
+						RowsPerPage = customerPropertyList.Count,
 						TotalPages = 1,
 						ErrorReason = string.Empty
 					};
@@ -528,14 +605,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				result.IsError = true;
-				result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
-				WriteToErrorLog($"ManageIntelligentBuildingUser.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
+				result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
+				WriteToErrorLog($"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
 					exception: ex);
 			}
 
 			return result;
 		}
 
+		/// <summary>
+		/// Used to convert a UPFM property instance to a Product Property 
+		/// </summary>
+		/// <param name="upfmPropertyInstance"></param>
+		/// <param name="isAssigned"></param>
+		/// <returns></returns>
+		private static ProductProperty ConvertUPFMPropertyInstanceToProductProperty(UPFMPropertyInstance upfmPropertyInstance, bool isAssigned)
+		{
+			ProductProperty pp = new ProductProperty()
+			{
+				ID = upfmPropertyInstance.InstanceId.ToString().ToLower(),
+				Name = upfmPropertyInstance.Name,
+				Street1 = upfmPropertyInstance.Address,
+				City = upfmPropertyInstance.City,
+				State = upfmPropertyInstance.State,
+				Zip = upfmPropertyInstance.PostalCode,
+				IsAssigned = isAssigned,
+				InstanceId = upfmPropertyInstance.CustomerPropertyId,
+				Latitude = upfmPropertyInstance.Latitude,
+				Longitude = upfmPropertyInstance.Longitude,
+				Alias = null
+			};
+			return pp;
+		}
 		/// <summary>
 		/// Used to merge product property data with Unifed Login property data for the user
 		/// </summary>
@@ -600,6 +701,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private RepositoryResponse DeleteAssignedPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
 		{
 			return DeleteAssignedUserPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, propertyId);
+		}
+		/// <summary>
+		/// Used to unassign a property instance to the given user
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <param name="propertyInstanceId"></param>
+		/// <returns></returns>
+		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+		{
+			return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+		}
+		/// <summary>
+		/// Used to assign a property instance to the given user
+		/// </summary>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <param name="propertyInstanceId"></param>
+		/// <returns></returns>
+		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
+		{
+			return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+		}
+
+		/// <summary>
+		/// Used to get the list of UPFM property instances for the given personaid
+		/// </summary>
+		/// <param name="blueBookUPFMPropertyList"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="assignedOnly"></param>
+		/// <returns>A list of product properties</returns>
+		private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
+		{
+			// merge the given user details with the list
+			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+
+			var propertyOption = new Dictionary<string, bool>();
+
+			propertyOption.Add("allProperties", userPropertyIdList.Any(pl => pl == -1)); // Single Property
+			List<ProductProperty> productPropertyList = new List<ProductProperty>();
+
+			foreach (UPFMPropertyInstance upfmPropertyInstance in blueBookUPFMPropertyList)
+			{
+				var pp = ConvertUPFMPropertyInstanceToProductProperty(upfmPropertyInstance, false);
+
+				if (userPropertyIdList.Any(propertyId => propertyId == upfmPropertyInstance.PropertyInstanceId))
+				{
+					pp.IsAssigned = true;
+				}
+
+				productPropertyList.Add(pp);
+			}
+
+			if (assignedOnly)
+			{
+				productPropertyList = productPropertyList.Where(a => a.IsAssigned == true).ToList();
+			}
+
+			return new ListResponse()
+			{
+				Records = productPropertyList.Cast<object>().ToList(),
+				TotalRows = productPropertyList.Count(),
+				RowsPerPage = 9999,
+				ErrorReason = string.Empty,
+				TotalPages = 1,
+				Additional = propertyOption
+			};
 		}
 		#endregion
 	}
