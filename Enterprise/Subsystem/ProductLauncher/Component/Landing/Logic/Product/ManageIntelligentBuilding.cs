@@ -566,25 +566,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
-
-				// need to do a filter on the result
-				if (userPersonaId != 0)
-				{
-					WriteToDiagnosticLog($"GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
-					result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
-					WriteToDiagnosticLog($"GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
-				}
-				else
-				{
-					result = new ListResponse() // create new user
-					{
-						Records = customerPropertyList.Cast<object>().ToList(),
-						TotalRows = customerPropertyList.Count,
-						RowsPerPage = customerPropertyList.Count,
-						TotalPages = 1,
-						ErrorReason = string.Empty
-					};
-				}
+				WriteToDiagnosticLog($"GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
+				result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
+				WriteToDiagnosticLog($"GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
+				
 			}
 			catch (Exception ex)
 			{
@@ -607,7 +592,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			ProductProperty pp = new ProductProperty()
 			{
-				ID = upfmPropertyInstance.InstanceId.ToString().ToLower(),
+				ID = upfmPropertyInstance.CustomerPropertyId.ToString(),
 				Name = upfmPropertyInstance.Name,
 				Street1 = upfmPropertyInstance.Address,
 				City = upfmPropertyInstance.City,
@@ -617,7 +602,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				InstanceId = upfmPropertyInstance.CustomerPropertyId,
 				Latitude = upfmPropertyInstance.Latitude,
 				Longitude = upfmPropertyInstance.Longitude,
-				Alias = null
+				Alias = upfmPropertyInstance.PropertyInstanceId.ToString()
 			};
 			return pp;
 		}

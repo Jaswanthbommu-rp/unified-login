@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Enterprise].[CreatePropertyInstanceMapping](
+﻿Create PROCEDURE [Enterprise].[CreatePropertyInstanceMapping](
     @PersonaID  BIGINT,
     @ProductID  INT,
     @PropertyInstanceID BIGINT,
@@ -20,9 +20,9 @@ AS
                            AND Active = 1
                  )
                      BEGIN TRY
-                         INSERT INTO Enterprise.PropertyMapping
+                         INSERT INTO Enterprise.PropertyInstanceMapping
                          ( PersonaId,
-                           PropertyId,
+                           PropertyInstanceId,
                            ProductId
                          )
                          VALUES
@@ -71,6 +71,3 @@ AS
                  END;
          END;
      END;
-GO
-
-
