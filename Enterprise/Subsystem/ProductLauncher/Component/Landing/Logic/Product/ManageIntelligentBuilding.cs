@@ -96,7 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-				bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+				bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceIntelligentBuilding", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
 
 				// super user
 				// TODO what to do here?
