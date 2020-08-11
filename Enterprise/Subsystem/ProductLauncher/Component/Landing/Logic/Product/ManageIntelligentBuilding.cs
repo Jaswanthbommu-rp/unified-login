@@ -96,7 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-				bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedAmenities", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+				//bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceIntelligentBuilding", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
 
 				// super user
 				// TODO what to do here?
@@ -204,30 +204,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 
-					if (!usePropertyInstances)
+					if (unassignedProperties.Count > 0)
 					{
-						if (unassignedProperties.Count > 0)
-						{
-							Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-						}
-
-						if (assignedProperties.Count > 0)
-						{
-							Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-						}
+						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
 					}
-					else
+
+					if (assignedProperties.Count > 0)
 					{
-						if (unassignedProperties.Count > 0)
-						{
-							Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-						}
-
-						if (assignedProperties.Count > 0)
-						{
-							Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-						}
-
+						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
 					}
 				}
 
