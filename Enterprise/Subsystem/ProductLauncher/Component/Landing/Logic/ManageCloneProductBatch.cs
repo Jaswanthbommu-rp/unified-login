@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
@@ -15,11 +13,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using Serilog;
+using Serilog.Events;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -236,9 +234,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 				catch (Exception ex)
 				{
-					Log.Write(LogType.Error, new LogDetails
+					string message = $"Exception during clone user for product - {product?.ProductName}";
+
+					Log.Write(LogEventLevel.Error, ex, message, new LogDetails
 					{
-						Message = $"Exception during clone user for product - {product?.ProductName}",
+						Message = message,
 						ProductModule = this.GetType().ToString(),
 						UserId = userClaim?.UserId.ToString(),
 						PmcId = userClaim?.OrganizationPartyId.ToString(),

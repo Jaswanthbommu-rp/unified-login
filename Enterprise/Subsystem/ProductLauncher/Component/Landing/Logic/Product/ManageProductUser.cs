@@ -1,18 +1,19 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProspectContactCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
@@ -23,12 +24,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -1004,7 +1004,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        public void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        public void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             string correlationId = "";
             if (_defaultUserClaim != null)
@@ -1013,7 +1013,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             }
 
-            Log.Write(logType, new LogDetails
+            Log.Write(logType, exception, message, new LogDetails
             {
                 Message = message,
                 AdditionalInfo = logData,
