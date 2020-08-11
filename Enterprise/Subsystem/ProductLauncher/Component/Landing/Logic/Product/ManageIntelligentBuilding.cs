@@ -5,7 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
-using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities.UserAssignProductPropertyRole;
+using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using Newtonsoft.Json;
 
@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="manageUserLogin"></param>
 		/// <param name="unifiedLoginRepository"></param>
 		/// <param name="propertyRepository"></param>
-		public ManageIntelligentBuilding(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.UnifiedAmenities, defaultUserClaim, productInternalSettingRepository)
+		public ManageIntelligentBuilding(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.IntelligentBuilding, defaultUserClaim, productInternalSettingRepository)
 		{
 			_userClaims = defaultUserClaim;
 			_editorRealPageId = defaultUserClaim.UserRealPageGuid;
@@ -78,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <param name="userAssignProductPropertyRole"></param>
 		/// <returns></returns>
-		public string ManageIntelligentBuildingUser(long editorPersonaId, long userPersonaId, UnifiedAmenitiesPropertyRole userAssignProductPropertyRole)
+		public string ManageIntelligentBuildingUser(long editorPersonaId, long userPersonaId, IBPropertyRole userAssignProductPropertyRole)
 		{
 			WriteToDiagnosticLog($"ManageIntelligentBuildingUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
 			try
@@ -107,7 +107,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
 					string superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;
 
-					userAssignProductPropertyRole = new UnifiedAmenitiesPropertyRole
+					userAssignProductPropertyRole = new IBPropertyRole
 					{
 						PropertyList = new List<string> { "-1" },
 						RoleList = new List<string>() { superUserRoleId }
@@ -181,7 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					}
 
-					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedAmenities);
+					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 
 					List<string> unassignedProperties = new List<string>();
@@ -233,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Unassign User
 		/// </summary> 
-		public string UnassignUser(long editorPersonaId, long userPersonaId, UnifiedAmenitiesPropertyRole userAssignProductPropertyRole)
+		public string UnassignUser(long editorPersonaId, long userPersonaId, IBPropertyRole userAssignProductPropertyRole)
 		{
 			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError)
@@ -406,7 +406,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		/// <param name="userProductPropertyRole"></param>
 		/// <returns></returns>
-		private UserAssignProductPropertyRole MapGbObjectToProduct(UnifiedAmenitiesPropertyRole userProductPropertyRole)
+		private UserAssignProductPropertyRole MapGbObjectToProduct(IBPropertyRole userProductPropertyRole)
 		{
 			var result = new UserAssignProductPropertyRole();
 
@@ -621,71 +621,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 			return pp;
 		}
-		/// <summary>
-		/// Used to merge product property data with Unifed Login property data for the user
-		/// </summary>
-		/// <param name="blueBookPropertyList">The list of properties from BlueBook</param>
-		/// <param name="userPersonaId">The user id to filter on</param>
-		/// <param name="assignedOnly">Only return assigned records</param>
-		/// <returns></returns>
-		private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList, long userPersonaId, bool assignedOnly)
-		{
-			// merge the given user details with the list
-			List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.UnifiedAmenities);
+		
 
-			foreach (var property in propertyList)
-			{
-				if (blueBookPropertyList.Any(a => a.ID == property.ID.ToString()))
-				{
-					ProductProperty pp = (from a in blueBookPropertyList
-										  where a.ID == property.ID.ToString()
-										  select a).FirstOrDefault();
-					if (pp != null)
-					{
-						pp.IsAssigned = true;
-					}
-				}
-			}
-
-			if (assignedOnly)
-			{
-				blueBookPropertyList = blueBookPropertyList.Where(a => a.IsAssigned == true).ToList();
-			}
-
-			return new ListResponse()
-			{
-				Records = blueBookPropertyList.Cast<object>().ToList(),
-				TotalRows = blueBookPropertyList.Count(),
-				RowsPerPage = 9999,
-				ErrorReason = string.Empty,
-				TotalPages = 1,
-				Additional = null
-			};
-		}
-
-		/// <summary>
-		/// Used to assign a property to the given user
-		/// </summary>
-		/// <param name="userPersonaId"></param>
-		/// <param name="productId"></param>
-		/// <param name="propertyId"></param>
-		/// <returns></returns>
-		private RepositoryResponse InsertAssignedPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
-		{
-			return InsertAssignedUserPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, propertyId);
-		}
-
-		/// <summary>
-		/// Used to unassign a property to the given user
-		/// </summary>
-		/// <param name="userPersonaId"></param>
-		/// <param name="productId"></param>
-		/// <param name="propertyId"></param>
-		/// <returns></returns>
-		private RepositoryResponse DeleteAssignedPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
-		{
-			return DeleteAssignedUserPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, propertyId);
-		}
+		
 		/// <summary>
 		/// Used to unassign a property instance to the given user
 		/// </summary>
@@ -695,7 +633,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
 		{
-			return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+			return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, propertyInstanceId);
 		}
 		/// <summary>
 		/// Used to assign a property instance to the given user
@@ -706,7 +644,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
 		{
-			return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, propertyInstanceId);
+			return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, propertyInstanceId);
 		}
 
 		/// <summary>
