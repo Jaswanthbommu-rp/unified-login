@@ -726,7 +726,7 @@
                     }
                 }
                 else if(key == 57) {
-                    if(item.instanceId == record.instanceId) {
+                    if(item.propertyInstanceId == record.propertyInstanceId) {
                         item.isAssigned = record.isAssigned;
                     }
                 }
