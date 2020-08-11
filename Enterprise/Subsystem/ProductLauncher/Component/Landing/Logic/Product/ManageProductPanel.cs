@@ -10,6 +10,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Re
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -17,6 +21,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         #region Private Variables		
         private DefaultUserClaim _userClaims;
+        readonly IProductInternalSettingRepository _productInternalSettingRepository;
+        readonly IList<ProductInternalSetting> _productInternalSettingList;
 
         #endregion
 
@@ -27,9 +33,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ManageProductPanel(DefaultUserClaim userClaims)
         {
             _userClaims = userClaims;
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSettingPanel_{(int)ProductEnum.UnifiedPlatform}";
+            _productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 60, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform).ToList();
+            });
         }
 
-        public ManageProductOneSite IManageProductOneSite_manageProductOneSite { get; private set; }
         #endregion
 
         #region public methods
@@ -38,7 +51,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse result = new ListResponse();
             try
             {
-                IProduct product;
+                IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+
+                //IProduct product;
                 string productName = Enum.GetName(typeof(ProductEnum), productId);
                 string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
                 switch (productId)
@@ -127,8 +142,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = productDALogic.GetProductProperties(datafilter);
                         break;
                     case (int)ProductEnum.UnifiedPlatform:
-                        IManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-                        result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+                        bool usePropertyInstanceUnifiedLogin = false;
+                        if (_productInternalSettingList.Any(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            usePropertyInstanceUnifiedLogin = (_productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceUnifiedLogin", StringComparison.OrdinalIgnoreCase))?.Value == "1");
+                        }
+
+                        if (!usePropertyInstanceUnifiedLogin)
+                        {
+                            result = manageUnifiedLogin.GetProperties(editorPersonaId, userPersonaId, false, datafilter);
+                        }
+                        else
+                        {
+                            result = manageUnifiedLogin.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.UnifiedPlatform, datafilter);
+                        }
+
                         break;
                     case (int)ProductEnum.RenovationManager:
                         var productRMLogic = ManageProductFactory.GetProductLogic(ProductEnum.RenovationManager, editorPersonaId, userPersonaId, _userClaims);
@@ -137,6 +165,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.SeniorLeadManagement:
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetProductProperties(datafilter);
+                        break;
+                    case (int)ProductEnum.IntelligentBuilding:
+                        IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
+                        result = manageIntelligentBuilding.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.IntelligentBuilding, datafilter);
                         break;
                     default:
                         break;

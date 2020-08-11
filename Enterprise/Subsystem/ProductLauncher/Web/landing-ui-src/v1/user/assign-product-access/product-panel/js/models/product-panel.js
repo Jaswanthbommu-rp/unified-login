@@ -165,7 +165,7 @@
 
             if (productId == "8") {
                 var additionalData = dataSyncManager.getProductAdditionalData(productId);
-                if(additionalData != undefined){
+                if (additionalData != undefined) {
                     s.batchData.inputJson.hasAccessToAllCurrentFutureProperties = additionalData['hasAccessToAllCurrentFutureProperties'];
                     s.batchData.inputJson.hasAccessToSiteSpendManagementOnly = additionalData['hasAccessToSiteSpendManagementOnly'];
                     s.batchData.inputJson.isAccountingAdmin = additionalData['isAccountingAdmin'];
@@ -212,11 +212,10 @@
                             s.propertyRoleListData = angular.copy(s._propertyRoleListData);
                             s.propertyRoleListData.RoleId = role.id;
                             s.propertyRoleListData.RoleType = role.roletype;
-                            if(role.propertiesList !== null)
-                            {
+                            if (role.propertiesList !== null) {
                                 var propList = role.propertiesList;
-                                propList.forEach(function (item){
-                                    if(item.isAssigned) {
+                                propList.forEach(function (item) {
+                                    if (item.isAssigned) {
                                         s.propertyRoleListData.PropertyIds.push(item.id);
                                     }
                                 });
@@ -251,7 +250,7 @@
                         }
                     }
                 });
-                if(productId == "20") {
+                if (productId == "20") {
                     hasRoleSelected = s.batchData.inputJson.RolePropertiesList.length > 0;
                 }
                 else {
@@ -264,7 +263,8 @@
                 s.batchData.inputJson.RolePropertiesList = [];
 
                 if (dataSyncManager.isProductAllProperties(productId)) {
-                    if (productId == "14" || productId == "3" || productId == "23" || productId == "16") {
+                    if (productId == "14" || productId == "3" || productId == "23" || productId == "16" || productId == "26" ||
+                        productId == "57") {
                         s.batchData.inputJson.propertyList.push("-1");
                     }
                     else {
@@ -289,35 +289,35 @@
                         });
 
                     }
-                    else if(productId == "8"){
-                        propertyGroups.forEach(function(comp) {
+                    else if (productId == "8") {
+                        propertyGroups.forEach(function (comp) {
                             if (properties[0].mConsoleId !== "") {
                                 if (comp.isAssigned) {
                                     s.batchData.inputJson.propertyList.push(comp.id);
                                 }
-                                properties.forEach(function(prop) {
+                                properties.forEach(function (prop) {
                                     if (prop.companyId === comp.id) {
                                         if (prop.isAssigned) {
-                                            if(prop.propertyId !== "") {
+                                            if (prop.propertyId !== "") {
                                                 s.batchData.inputJson.propertyList.push(comp.id + "|" + prop.propertyId);
                                             }
-                                            else{
-                                                s.batchData.inputJson.propertyList.push(comp.id );
+                                            else {
+                                                s.batchData.inputJson.propertyList.push(comp.id);
                                             }
                                         }
                                     }
                                 });
                             }
                             else {
-                                properties.forEach(function(prop) {
+                                properties.forEach(function (prop) {
                                     if (prop.companyId === comp.id) {
                                         if (prop.isAssigned) {
                                             //s.batchData.inputJson.propertyList.push(prop.propertyId);
-                                            if(prop.propertyId !== "") {
+                                            if (prop.propertyId !== "") {
                                                 s.batchData.inputJson.propertyList.push(comp.id + "|" + prop.propertyId);
                                             }
-                                            else{
-                                                s.batchData.inputJson.propertyList.push(comp.id );
+                                            else {
+                                                s.batchData.inputJson.propertyList.push(comp.id);
                                             }
                                         }
                                     }
@@ -325,7 +325,17 @@
                             }
                         });
                     }
-                    else{
+                    else if (productId == "57") {
+                        properties.forEach(function (prop) {
+                            if (prop.isAssigned) {
+                                s.batchData.inputJson.propertyList.push(prop.propertyInstanceId);
+                            }
+                            if (!prop.isAssigned && prop.originalProperty) {
+                                s.batchData.inputJson.removedPropertyList.push(prop.propertyInstanceId);
+                            }
+                        });
+                    }
+                    else {
                         properties.forEach(function (prop) {
                             if (prop.isAssigned) {
                                 s.batchData.inputJson.propertyList.push(prop.id);
@@ -377,7 +387,7 @@
                             }
                         }
                         else if (productId == "47" && group.groupType === "region") {
-                                s.batchData.inputJson.propertyGroupList.push(group.id);
+                            s.batchData.inputJson.propertyGroupList.push(group.id);
                         }
                         else {
                             s.batchData.inputJson.regionList.push(group.id);
@@ -460,7 +470,7 @@
 
             if (aoFamilyProduct) {
                 if (productId == "30" && bmroles && bmroles.length > 0) {
-                    if (hasRoleSelected && hasPropertySelected) {
+                    if (hasRoleSelected && (hasPropertySelected || hasPropertyGroupSelected)) {
                         return s.data.records;
                     }
                 }
@@ -515,14 +525,14 @@
                 }
             }
 
-            if (productId == "47"){
+            if (productId == "47") {
                 s.batchData.inputJson.canReceiveMonthlyReport = dataSyncManager.getCanReceiveMonthlyReport();
-                if (hasRoleSelected && roleWithoutPropTabs){
+                if (hasRoleSelected && roleWithoutPropTabs) {
                     return s.batchData;
                 }
                 else if (hasRoleSelected && ((needsProperties && hasPropertySelected) ||
-                                             (needAreas && hasPropertyGroupSelected) ||
-                                             (needRegions && hasPropertyGroupSelected))){
+                        (needAreas && hasPropertyGroupSelected) ||
+                        (needRegions && hasPropertyGroupSelected))) {
                     return s.batchData;
                 }
                 else {
@@ -531,7 +541,7 @@
             }
 
             if (productId == "57") {
-                if (hasRoleSelected) {
+                if (hasRoleSelected && hasPropertySelected) {
                     return s.batchData;
                 }
             }

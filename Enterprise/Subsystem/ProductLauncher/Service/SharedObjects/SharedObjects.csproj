@@ -144,6 +144,7 @@
     <Compile Include="BlackBook\CompanyInstanceAddress.cs" />
     <Compile Include="BlackBook\CompanyLocation.cs" />
     <Compile Include="BlackBook\CompanyPropertyInstanceMap.cs" />
+    <Compile Include="BlackBook\CompanyPropertyInstanceRootObject.cs" />
     <Compile Include="BlackBook\CompanyPropertyRootObject.cs" />
     <Compile Include="BlackBook\CustomerCompany.cs" />
     <Compile Include="BlackBook\CustomerProperty.cs" />
@@ -288,6 +289,7 @@
     <Compile Include="Landing\ISecuritySettings.cs" />
     <Compile Include="Landing\ISortTableType.cs" />
     <Compile Include="Landing\IStatusType.cs" />
+    <Compile Include="Landing\IUserEmployeeId.cs" />
     <Compile Include="Landing\OrganizationCreateResult.cs" />
     <Compile Include="Landing\OrganizationDomain.cs" />
     <Compile Include="Landing\OrganizationRole.cs" />
@@ -320,6 +322,7 @@
     <Compile Include="Landing\SecuritySettings.cs" />
     <Compile Include="Landing\SortTableType.cs" />
     <Compile Include="Landing\StatusType.cs" />
+    <Compile Include="Landing\UserEmployee.cs" />
     <Compile Include="Landing\UserOrganizationExists.cs" />
     <Compile Include="IdentityConfig\UserLoginCommon.cs" />
     <Compile Include="Landing\UserOrganization.cs" />
@@ -404,6 +407,7 @@
     <Compile Include="Product\EmployeeAccess\UserDetail.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplacePropertyRole.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplaceUser.cs" />
+    <Compile Include="Product\IntelligentBuilding\IBPropertyRole.cs" />
     <Compile Include="Product\MarketingCenter\IMarketingCenterUserStatus.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterRoleAndPropertyList.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterUserStatus.cs" />
@@ -544,7 +548,6 @@
     <Compile Include="Product\AssetOptimization\UserProfile.cs" />
     <Compile Include="Product\ClientPortal\ClientPortalPropertyRole.cs" />
     <Compile Include="Product\IProductInterface.cs" />
-    <Compile Include="Product\IProductProperty.cs" />
     <Compile Include="Product\IProductLearningPortal.cs" />
     <Compile Include="Product\IProductRight.cs" />
     <Compile Include="Product\IProductRole.cs" />
@@ -615,6 +618,7 @@
     <Compile Include="Saml\SamlAttributes.cs" />
     <Compile Include="Swagger\IProvideExamples.cs" />
     <Compile Include="Swagger\SwaggerUtil.cs" />
+    <Compile Include="Product\UPFMPropertyInstance.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyUpdated.cs" />
     <Compile Include="WebHook\Books\CustomerCompanyDeleted.cs" />
     <Compile Include="WebHook\SHA.cs" />

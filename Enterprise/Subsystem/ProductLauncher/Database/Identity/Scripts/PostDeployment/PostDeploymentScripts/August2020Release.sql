@@ -25,6 +25,12 @@ begin
 end
 go
 
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'BooksUseTranslatev2' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'BooksUseTranslatev2', 'Use v2 of the books translate endpoint', 0 )
+end
+GO
+
 if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
@@ -61,6 +67,27 @@ Begin
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
 				where pst.Name = 'BooksUseUPFMId' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseTranslatev2' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '1', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'BooksUseTranslatev2'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'BooksUseTranslatev2' and ps.ProductId= 3
 
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
 		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
@@ -151,15 +178,17 @@ BEGIN
 	SET @tokenEndPoint = 'https://www-qa.realpage.com/login/identity/connect/token';
 	SET @apisecret = 'CA6527EE-FB3C-4D15-8A82-735CAAD3E8E4';
 END
---IF @ServerName IN ('RCQUSODBSQL001')
---BEGIN
---	SET @apiendpoint = '';
---END
+IF @ServerName IN ('RCQUSODBSQL001')
+BEGIN
+	SET @apiendpoint = 'https://rl-valueadd-sat.herokuapp.com/api/v1/unified-login';
+	SET @tokenEndPoint = 'https://www-sat.realpage.com/login/identity/connect/token';
+	SET @apisecret = '1E0761CB-FACE-483E-8933-BA8B2C778ABB';
+END
 IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
 	SET @apiendpoint = 'https://reno.rentlytics.com/api/v1/unified-login/';
 	SET @tokenEndPoint = 'https://www.realpage.com/login/identity/connect/token';
-	SET @apisecret = '';
+	SET @apisecret = '981B367E-8F98-47BA-8CC0-CA1B317CAB0E';
 END
 set nocount on
 INSERT INTO @ProductConfiguration
@@ -204,7 +233,7 @@ VALUES
 ,('PutUserEndpoint','PUT User Endpoint for product API','/users', 0)
 ,('DeleteUserEndpoint','DELETE User Endpoint for product API','/{0}/users?loginName={0}', 0)
 ,('PatchMigrateUsersEndpoint','Patch Migrate Users Endpoint', '/users/{0}/migrate', 0)
-,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/userprofile', 0)
+,('PatchProfileEndpoint','PATCH Profile Endpoint for product API','/users/profiles', 0)
 ,('GetUserExistEndpoint','Get User Exist Endpoint for product API','/userexists?loginName={0}', 0) -- Made New Setting
 ,('AuthenticationType','Used to determine how to log into the product','Redirect', 0)
 
@@ -219,10 +248,10 @@ IF @ServerName IN ('rctusodbsql001')
 BEGIN
 	SET @LoginURL = 'https://rl-valueadd-qa.herokuapp.com/auth-callback';
 END
---IF @ServerName IN ('RCQUSODBSQL001')
---BEGIN
---	SET @LoginURL = '';
---END
+IF @ServerName IN ('RCQUSODBSQL001')
+BEGIN
+	SET @LoginURL = 'https://rl-valueadd-sat.herokuapp.com/auth-callback';
+END
 IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
 	SET @LoginURL = 'https://reno.rentlytics.com/auth-callback';
@@ -1734,6 +1763,49 @@ GO
  Where  Value = 'View All Unified Settings'
 
  GO
+ 
+ if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'UsePropertyInstanceUnifiedLogin' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UsePropertyInstanceUnifiedLogin', 'Use property instances for Unified Login property list', 0 )
+end
+GO
+
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UsePropertyInstanceUnifiedLogin' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '0', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'UsePropertyInstanceUnifiedLogin'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UsePropertyInstanceUnifiedLogin' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+
+-- migrate data from old table to new
+if not exists ( select top 1 1 from Enterprise.PropertyInstanceMapping ) AND exists ( select top 1 1 from enterprise.PropertyInstance )
+BEGIN
+	insert into enterprise.PropertyInstanceMapping ( PersonaId, PropertyInstanceId, ProductId, fromdate, thrudate, active )
+	select personaid, pi1.PropertyInstanceId, productid, fromdate, thrudate, case when pm.ThruDate is null then 1 else 0 end
+		from enterprise.PropertyMapping PM 
+		inner join enterprise.PropertyInstance pi1 on PM.PropertyId = pi1.CustomerPropertyId
+		where pm.ThruDate is null
+		and pi1.Domain = 'primary'
+	and pm.ProductId NOT IN ( 26 )
+END
+GO
+
 
 --Start For Reno product internal settings
 GO
@@ -2466,7 +2538,739 @@ BEGIN
     UPDATE UserManagement.[Control] SET ParentControlId=null WHERE ControlId=@ControlId
 
 END
+GO
+--***************************************************************************************************************************************
+--New Roles and Rights data migration
+DECLARE @UserId bigint,
+	@ProductId int ,
+	@Now datetime = GETDATE()
 
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[Route])
+BEGIN
+	SET IDENTITY_INSERT [Security].[Route] ON 
+
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (1, N'ActivityLog', N'ActivityLog',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (2, N'AddUser', N'AddUser',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (3, N'CloneUser', N'CloneUser',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (4, N'DashBoard', N'DashBoard',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (5, N'EditUser', N'EditUser',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (6, N'MigrationTool', N'MigrationTool',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (7, N'RolesAndRights', N'RolesAndRights',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (8, N'Settings', N'Settings',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (9, N'SideMenu', N'SideMenu',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (10, N'SupportTool', N'SupportTool',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (11, N'Unified Settings', N'Unified Settings',@UserId, @Now)
+	INSERT [Security].[Route] ([RouteId], [RouteValue], [Description], [CreatedBy], [CreatedDate]) VALUES (12, N'UsersList', N'UsersList',@UserId, @Now)
+
+	SET IDENTITY_INSERT [Security].[Route] OFF
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[Right])
+BEGIN
+	SET IDENTITY_INSERT [Security].[Right] ON 
+
+	  insert into Security.[Right](RightId,RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+	  SELECT RightValueTypeId
+		  ,[ShortName]
+		  ,[Description]
+		  ,[Value]
+		  ,[StatusTypeId]
+		  ,[VisibilityStatusId]
+		  ,[ProductId]
+		  ,[TargetProductId]
+		  ,@UserId
+		  ,@Now
+	  FROM [Enterprise].[RightValueType]
+	  where ShortName is not null and LEN(LTRIM(rtrim(shortname))) > 0
+	  and value not like 'Default%'
+	  and value not in ('Access to L&R Conversion Utility for OneSite users','Manage Vendor Compliance Product Access','Access to Settings Admin for OneSite','Ability to edit password',
+							'Ability to Configure Custom Fields for Users','Ability to view Company page','Ability to edit Company information','Ability to view Property page',
+							'Ability to edit Property information','Access to Green Book Migration Tool','Access to Amenities Tool','Access to Employee Management',
+							'Access to Identity Provider Configuration Page','Access to Leasing & Rents Conversion Tool','Access to Property Hierarchy Tool',
+							'Impersonate a User','See All RealPage Products','Access to Client Portal','Manage all Unified Settings')
+	--Accesstoclientportal needs to be removed
+	 SET IDENTITY_INSERT [Security].[Right] OFF
+
+	  IF NOT EXISTS(Select 1 From [Security].[Right] Where RightName = 'Dashboard')
+	  BEGIN
+		  insert into [Security].[Right](Value,RightName,StatusTypeId,Description,CreatedDate,VisibilityStatusId,ProductId,TargetProductId,CreatedBy)
+		  select 'Dashboard','Dashboard',11,'Ability to view Dashboard page',GETUTCDATE(),10,3,3,@UserId
+	  END
+	  IF NOT EXISTS(Select 1 From [Security].[Right] Where RightName = 'People')
+	  BEGIN
+		insert into [Security].[Right](Value,RightName,StatusTypeId,Description,CreatedDate,VisibilityStatusId,ProductId,TargetProductId,CreatedBy)
+		select 'People','People',11,'Ability to view People page',GETUTCDATE(),10,3,3,@UserId
+	  END
+	  IF NOT EXISTS(Select 1 From [Security].[Right] Where RightName = 'Products')
+	  BEGIN
+		insert into [Security].[Right](Value,RightName,StatusTypeId,Description,CreatedDate,VisibilityStatusId,ProductId,TargetProductId,CreatedBy)
+		select 'Products','Products',11,'Ability to view Products page',GETUTCDATE(),10,3,3,@UserId
+	  END
+	  IF NOT EXISTS(Select 1 From [Security].[Right] Where RightName = 'Settings')
+	  BEGIN
+		insert into [Security].[Right](Value,RightName,StatusTypeId,Description,CreatedDate,VisibilityStatusId,ProductId,TargetProductId,CreatedBy)
+		select 'Settings','Settings',11,'Ability to view Settings page',GETUTCDATE(),10,3,3,@UserId
+	  END
+  
+	  
+	  Update [Security].[Right] Set VisibilityStatusId = 10
+	  Where Value IN ('Manage Notifications Configurations',
+					  --'Ability to Import users',
+					  'View only access to Unified Platform from Support Tool',
+					  'Access to Settings Admin',
+					  'Manage Settings Templates',
+					  'Employee Access to Design Questionnaires in CIMPL',
+					  'Employee Access to CIMPL',
+					  'Employee Access to add Implementation Records in CIMPL',
+					  'Employee Access to Vendor Marketplace',
+					  'Manage Custom User fields settings',
+					  'Manage Unified Platform Security Settings',
+					  'Access to Unified Settings',
+					  'Create platform alerts',
+					  'Approve platform alerts',
+					  'Access to Unified Platform via Support Tool',
+					  'Manage help center administrator',
+					  'Manage help center knowledge base',
+					  'Manage help center videos',
+					  'Manage help center online help',
+					  'Manage help center product updates')
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RightRoute])
+BEGIN
+	declare @routeid int
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'SideMenu'
+
+	--Side Menu
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'Dashboard'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'Products'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'People',@userId,@now From [Security].[Right] Where Value = 'Ability to view users'
+	--Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'People'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'Settings'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Roles and rights',@userId,@now From [Security].[Right] Where Value = 'Ability to view roles and rights'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'Access to Unified Settings'
+
+	--insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	--Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'Manage all Unified Settings'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Activity Log',@userId,@now From [Security].[Right] Where Value = 'Ability to view audit trail on user data'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'Access Settings Admin'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,Value,@userId,@now From [Security].[Right] Where Value = 'Manage Settings Templates'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Manage Notifications',@userId,@now From [Security].[Right] Where Value = 'Manage Notifications Configurations'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Access HelpCenter',@userId,@now From [Security].[Right] Where Value = 'Access to Help Center'
+
+
+	--Users List
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'UsersList'
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Activate Deactivate User',@userId,@now From [Security].[Right] Where Value = 'Ability to Activate/Deactivate User'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Clone User',@userId,@now From [Security].[Right] Where Value = 'Ability to clone users (all products)'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Create User',@userId,@now From [Security].[Right] Where Value = 'Ability to create user details'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Edit User',@userId,@now From [Security].[Right] Where Value = 'Ability to edit User Details'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Lock/Unlock User',@userId,@now From [Security].[Right] Where Value = 'Ability to lock/unlock users'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Resend Invitation',@userId,@now From [Security].[Right] Where Value = 'Ability to Resend Invite'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'View User',@userId,@now From [Security].[Right] Where Value = 'Ability to view users'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Import users',@userId,@now From [Security].[Right] Where Value = 'Ability to Import users'
+
+	--Edit User
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'EditUser'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Activate Deactivate User',@userId,@now From [Security].[Right] Where Value = 'Ability to Activate/Deactivate User'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Edit Other User Profile',@userId,@now From [Security].[Right] Where Value = 'Ability to edit profile of other users'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Edit Own Profile',@userId,@now From [Security].[Right] Where Value = 'Ability to edit my own profile'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Manage Resident Portal Users',@userId,@now From [Security].[Right] Where Value = 'Manage Resident Portals Product Access'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'View Audit Trail User Data',@userId,@now From [Security].[Right] Where Value = 'Ability to view audit trail on user data'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Resend Invitation',@userId,@now From [Security].[Right] Where Value = 'Ability to Resend Invite'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'View User',@userId,@now From [Security].[Right] Where Value = 'Ability to view users'
+
+
+	--Add User
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'AddUser'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Activate Deactivate User',@userId,@now From [Security].[Right] Where Value = 'Ability to Activate/Deactivate User'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Create User',@userId,@now From [Security].[Right] Where Value = 'Ability to create user details'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Manage Resident Portal Users',@userId,@now From [Security].[Right] Where Value = 'Manage Resident Portals Product Access'
+
+
+	--Clone User
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'CloneUser'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Edit User',@userId,@now From [Security].[Right] Where Value = 'Ability to edit User Details'
+
+
+	--RolesAndRights
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'RolesAndRights'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Manage Role Right',@userId,@now From [Security].[Right] Where Value = 'Ability to manage roles and rights'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'View Role Right',@userId,@now From [Security].[Right] Where Value = 'Ability to view roles and rights'
+
+	--ActivityLog
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'ActivityLog'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'View Audit Trail',@userId,@now From [Security].[Right] Where Value = 'Ability to view audit trail on user data'
+
+	--SupportTool
+	Select @routeid = RouteId From [Security].[Route] Where RouteValue = 'SupportTool'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'Access to Unified Platform',@userId,@now From [Security].[Right] Where Value = 'Access to Unified Platform via Support Tool'
+
+	insert into Security.RightRoute(RouteId,RightId,RightName,CreatedBy,CreatedDate)
+	Select @routeid,RightId,'View Only Support Tool Access',@userId,@now From [Security].[Right] Where Value = 'View only access to Unified Platform from Support Tool'
+
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RoleType])
+BEGIN
+	SET IDENTITY_INSERT [Security].[RoleType] ON
+	Insert Into [Security].[RoleType] (RoleTypeId,ParentRoleTypeId, Value,Description,CreatedBy,CreatedDate)
+	Select 1,NULL, 'System','System Role',@UserId,@now
+
+	Insert Into [Security].[RoleType] (RoleTypeId,ParentRoleTypeId,Value,Description,CreatedBy,CreatedDate)
+	Select 2,NULL,'Custom','Custom Role',@UserId,@now
+
+	Insert Into [Security].[RoleType] (RoleTypeId,ParentRoleTypeId,Value,Description,CreatedBy,CreatedDate)
+	Select 3,NULL,'Product','Product Role',@UserId,@now
+	SET IDENTITY_INSERT [Security].[RoleType] OFF
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[Role])
+BEGIN
+	SET IDENTITY_INSERT [Security].[Role] ON 
+	Insert Into [Security].[Role] (RoleId, RoleName,Description,ShortName,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	Select 1,'User Administrator','User Administrator','SuperUser',1,NULL,3,@userId,@now
+
+	Insert Into [Security].[Role] (RoleId,RoleName,Description,ShortName,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	Select 2,'Basic End User','Basic End User','User',1,NULL,3,@userId,@now
+
+	Insert Into [Security].[Role] (RoleId,RoleName,Description,ShortName,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	Select 3,'Read only for Unified Platform','Read only for Unified Platform','ROForUnifiedPlatform',1,NULL,3,@userId,@now
+
+	 --custom roles for product 3
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,2,r.PartyID,3,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+			R.RoleValueTypeId = RV.RoleValueTypeId
+	    Join Enterprise.Organization O ON
+			o.PartyId = R.PartyID
+	  where RoleTypeID IN (400,402)
+	  and RV.Value  not in ('SystemRight','User Administrator','Basic End User','Read only for Unified Platform')	 
+	  and rv.StatusTypeId = 14
+
+	  --Basic End User & CIMPL product 3
+	   INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,2,r.PartyID,3,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID IN (400,402)
+	  and RV.Value  not in ('SystemRight','User Administrator','Basic End User','Read only for Unified Platform')	 
+	  and rv.StatusTypeId = 13
+
+	  --product role
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID  = 500
+	  and rv.Value = 'Black-Book Director'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500
+	   and rv.Value = 'CSM Read-Only'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500	 
+	  and rv.Value = 'Executive'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500 
+	  and rv.Value = 'Implementation'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500
+	  and rv.Value = 'Read Only Research'
+	  and rv.StatusTypeId = 13
+  
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500	  
+	  and rv.Value = 'Research Analyst'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500	  
+	  and rv.Value = 'Research Manager'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500 
+	  and rv.Value = 'Research QA'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500 
+	  and rv.Value = 'White Space'
+	  and rv.StatusTypeId = 13
+
+	  INSERT INTO [Security].[Role](RoleId,RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	  SELECT r.RoleID ,RV.Value,RV.ShortName,RV.Description,1,r.PartyID,24,@userId,@now
+	  From [Enterprise].[Role] R
+		JOIN [Enterprise].[RoleValueType] RV ON
+		R.RoleValueTypeId = RV.RoleValueTypeId
+	  where RoleTypeID = 500	  
+	  and rv.Value = 'White Space Campaign SME'
+	  and rv.StatusTypeId = 13
+
+	SET IDENTITY_INSERT [Security].[Role] OFF
+
+	Insert Into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	SELECT 'Manage Amenity Status','Amenity.Status','Ability to inactivate master amenities',1,NULL,26,@userId,GETDATE()
+
+	Insert Into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	SELECT 'Manage Amenity No Pricing','Amenity.No.Pricing','Create and update master amenity marketing content but not pricing',1,NULL,26,@userId,GETDATE()
+
+	Insert Into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	SELECT 'Manage Amenity With Pricing','Amenity.With.Pricing','Create and update master amenity pricing content',1,NULL,26,@userId,GETDATE()
+
+	Insert Into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	SELECT 'Manage Property Amenity No Pricing','Prop.Amenity.No.Pricing','Create and update property amenity marketing content but not pricing',1,NULL,26,@userId,GETDATE()
+
+	Insert Into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	SELECT 'Manage Property Amenity With Pricing','Prop.Amenity.With.Pricing','Create and update property amenity pricing',1,NULL,26,@userId,GETDATE()
+
+	Insert Into Security.Role(RoleName,ShortName,Description,RoleTypeID,OrgPartyID,ProductId,CreatedBy,CreatedDate)
+	SELECT 'View Amenities','View.Amenities','View master amenities (default access to application - only allows users to view (read-only) amenities list)',1,NULL,26,@userId,GETDATE()
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[RoleRight])
+BEGIN
+	Declare @adminRole int,@basicUserRole int,@ROUserRole int
+	Declare @UAProductRole1 int,@UAProductRole2 int,@UAProductRole3 int,@UAProductRole4 int,@UAProductRole5 int,@UAProductRole6 int
+	DECLARE @dashBoardRightId int;	
+	DECLARE @peopleRightId int;	
+	DECLARE @settingsRightId int;
+
+	  Select @adminRole = RoleId from [Security].Role where ShortName = 'SuperUser'
+	  Select @basicUserRole = RoleId from [Security].Role where ShortName = 'User'
+	  Select @ROUserRole = RoleId from [Security].Role where ShortName = 'ROForUnifiedPlatform'
+	  Select @UAProductRole1 = RoleId from [Security].Role where ShortName = 'Amenity.Status'
+	  Select @UAProductRole2 = RoleId from [Security].Role where ShortName = 'Amenity.No.Pricing'
+	  Select @UAProductRole3 = RoleId from [Security].Role where ShortName = 'Amenity.With.Pricing'
+	  Select @UAProductRole4 = RoleId from [Security].Role where ShortName = 'Prop.Amenity.No.Pricing'
+	  Select @UAProductRole5 = RoleId from [Security].Role where ShortName = 'Prop.Amenity.With.Pricing'
+	  Select @UAProductRole6 = RoleId from [Security].Role where ShortName = 'View.Amenities'
+	  Select @dashBoardRightId = [RightId] from Security.[Right] Where Value = 'Dashboard'
+	  Select @peopleRightId = [RightId] from Security.[Right] Where Value = 'People'
+	  Select @settingsRightId = [RightId] from Security.[Right] Where Value = 'Settings'
+
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @adminRole,RightId,@UserId,@Now  from [Security].[Right]
+	  where   productid = 3 
+	  and Value NOT IN ('View only access to Unified Platform from Support Tool','Approve platform alerts','Create platform alerts','Manage Notifications Configurations')
+	
+
+	  --Basic user role
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @basicUserRole,RightId,@UserId,@Now From [Security].[Right] 
+	  Where ProductId = 3 
+	  And Value  in ('Access to Vendor Marketplace','Ability to edit my own profile','Access to Product Learning Portal','Dashboard','Products','People')
+
+	  --Read only Role
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @ROUserRole,RightId,@UserId,@Now From [Security].[Right] 
+	  Where ProductId = 3 
+	  And Value  in ('Ability to edit my own profile','Ability to view audit trail on user data','Ability to view roles and rights',
+	  'Ability to view users','Access to Product Learning Portal','Access to Vendor Marketplace','Dashboard','Products','People')
+
+	  --All
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  SELECT R.RoleId,SR.RightId,@UserId,@Now
+	  FROM [Security].[Role] R
+	  Join [Enterprise].[Right] RI On
+		R.RoleId = RI.RoleID and
+		R.OrgPartyID = RI.PartyId
+	  Join [Security].[Right] SR On
+		RI.RightValueTypeId = SR.RightId
+	  Where  R.RoleId NOT IN (@adminRole,@basicUserRole,@ROUserRole)
+
+	  --dashboard
+	   Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  SELECT Distinct R.RoleId,@dashBoardRightId,@UserId,@Now
+	  FROM [Security].[Role] R
+	  Join [Enterprise].[Right] RI On
+		R.RoleId = RI.RoleID and
+		R.OrgPartyID = RI.PartyId
+	  Join [Security].[Right] SR On
+		RI.RightValueTypeId = SR.RightId
+	   Where  R.RoleId NOT IN (@adminRole,@basicUserRole,@ROUserRole)
+	 --people
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  SELECT Distinct R.RoleId,@peopleRightId,@UserId,@Now
+	  FROM [Security].[Role] R
+	  Join [Enterprise].[Right] RI On
+		R.RoleId = RI.RoleID and
+		R.OrgPartyID = RI.PartyId
+	  Join [Security].[Right] SR On
+		RI.RightValueTypeId = SR.RightId
+	   Where  R.RoleId NOT IN (@adminRole,@basicUserRole,@ROUserRole)
+	  and sr.Value = 'Ability to view users'
+--settings
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  SELECT Distinct R.RoleId,@settingsRightId,@UserId,@Now
+	  FROM [Security].[Role] R
+	  Join [Enterprise].[Right] RI On
+		R.RoleId = RI.RoleID and
+		R.OrgPartyID = RI.PartyId
+	  Join [Security].[Right] SR On
+		RI.RightValueTypeId = SR.RightId
+	   Where  R.RoleId NOT IN (@adminRole,@basicUserRole,@ROUserRole)
+	  and (sr.RightName = 'ViewUnifiedSettings' or sr.RightName = 'ManageCustomFields' or sr.RightName ='AccessSettingsAdmin')
+
+	  --UA Product Role and rights mapping
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @UAProductRole1,RightId,@UserId,@Now
+	  From [Security].[Right]
+	  Where ProductId = 26
+	  AND RightName IN ('assign.unit','unassign.unit','assign.floorplan','unassign.floorplan', 'ca.master.view','ca.property.view', 'fpu.master.view','fpu.property.view','activity.view')
+
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @UAProductRole2,RightId,@UserId,@Now
+	  From [Security].[Right]
+	  Where ProductId = 26
+	  AND RightName IN ('assign.unit','unassign.unit','assign.floorplan','unassign.floorplan','ca.add','ca.edit','ca.delete','fpu.add','fpu.edit','fpu.delete',
+		'ca.merge','fpu.merge','ca.export','fpu.export','assignto.prop','prop.ca.add','prop.ca.edit','prop.ca.delete', 'prop.fpu.add','prop.fpu.edit',
+		'prop.fpu.delete','prop.ca.merge','prop.fpu.merge','prop.ca.export','prop.fpu.export','ca.master.view','ca.property.view','fpu.master.view','fpu.property.view','activity.view')
+
+	 Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	 Select @UAProductRole3,RightId,@UserId,@Now
+	 From [Security].[Right] Where ProductId = 26 and VisibilityStatusId = 9
+
+	 Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @UAProductRole4,RightId,@UserId,@Now
+	  From [Security].[Right]
+	  Where ProductId = 26
+	  AND RightName IN ('assign.unit','unassign.unit','assign.floorplan','unassign.floorplan','prop.ca.add','prop.ca.edit','prop.ca.delete',
+		   'prop.fpu.add','prop.fpu.edit','prop.fpu.delete','prop.ca.merge','prop.fpu.merge','prop.ca.export','prop.fpu.export',
+		   'ca.master.view','ca.property.view','fpu.master.view','fpu.property.view','activity.view')
+
+	Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @UAProductRole5,RightId,@UserId,@Now
+	  From [Security].[Right]
+	  Where ProductId = 26
+	  AND RightName IN ('assign.unit','unassign.unit','assign.floorplan','unassign.floorplan','prop.ca.add','prop.ca.edit','prop.ca.delete','prop.fpu.add',
+			'prop.fpu.edit','prop.fpu.delete','prop.ca.merge','prop.fpu.merge','prop.ca.export','prop.fpu.export', 'price.point.add', 'price.point.edit',
+			 'price.point.delete', 'depreciation.add','depreciation.edit','ca.master.view','ca.property.view','fpu.master.view','fpu.property.view','activity.view')
+
+	  Insert into [Security].RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+	  Select @UAProductRole6,RightId,@UserId,@Now
+	  From [Security].[Right]
+	  Where ProductId = 26
+	  AND RightName IN ('ca.master.view','ca.property.view', 'fpu.master.view','fpu.property.view','activity.view')
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationDefaultRole])
+BEGIN
+	  Declare @basic1RoleID int,@UAPRole int
+	  Select @basic1RoleID = RoleId From [Security].[Role] Where ShortName = 'User'
+	  Select @UAPRole = RoleId from [Security].Role where ShortName = 'View.Amenities'
+	  -- --Default Role
+	  INSERT INTO [Security].[OrganizationDefaultRole](RoleId,OrgPartyId,CreatedBy,CreatedDate)
+	  SELECT @basic1RoleID ,r.PartyID,@userId,@now
+	   from [Enterprise].[Role] R 
+	   JOIN [Enterprise].[RoleValueType] RV ON
+			R.RoleValueTypeId = RV.RoleValueTypeId	
+	  where Rv.value  = 'Basic End User' 
+	  And DefaultRole = 1
+
+	   INSERT INTO [Security].[OrganizationDefaultRole](RoleId,OrgPartyId,CreatedBy,CreatedDate)
+	  SELECT @basic1RoleID ,r.PartyID,@userId,@now
+	   from [Enterprise].[Role] R 
+	   JOIN [Enterprise].[RoleValueType] RV ON
+			R.RoleValueTypeId = RV.RoleValueTypeId	
+	  where Rv.value  = 'Read only for Unified Platform' 
+	  And DefaultRole = 1
+
+	  INSERT INTO [Security].[OrganizationDefaultRole](RoleId,OrgPartyId,CreatedBy,CreatedDate)
+	  Select R.RoleID, PartyID ,@userId,@now 
+	  from [Enterprise].[Role] R 
+	   JOIN [Enterprise].[RoleValueType] RV ON
+			R.RoleValueTypeId = RV.RoleValueTypeId	
+	 where Rv.value  not in ('Basic End User','Read only for Unified Platform' ,'View Amenities')
+	  And DefaultRole = 1
+
+	   --UA product default
+	  INSERT INTO [Security].[OrganizationDefaultRole](RoleId,OrgPartyId,CreatedBy,CreatedDate)
+	  Select @UAPRole, o.PartyId ,@userId,@now from Enterprise.Organization o
+	  join Enterprise.OrganizationProduct op on
+		o.PartyId = op.PartyId
+	  and ProductId = 26 
+	  and ThruDate is null
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[PersonaRole])
+BEGIN
+	Declare @UARole1 int,@UARole2 int,@UARole3 int,@UARole4 int,@UARole5 int,@UARole6 int
+	Declare @adminRoleID int,@basicRoleID int,@RORoleID int
+    Select @adminRoleID = RoleId From [Security].[Role] Where ShortName = 'SuperUser'	 
+	Select @basicRoleID = RoleId From [Security].[Role] Where ShortName = 'User'	
+	Select @RORoleID = RoleId From [Security].[Role] Where ShortName = 'ROForUnifiedPlatform'
+	Select @UARole1 = RoleId from [Security].Role where ShortName = 'Amenity.Status'
+	Select @UARole2 = RoleId from [Security].Role where ShortName = 'Amenity.No.Pricing'
+	Select @UARole3 = RoleId from [Security].Role where ShortName = 'Amenity.With.Pricing'
+	Select @UARole4 = RoleId from [Security].Role where ShortName = 'Prop.Amenity.No.Pricing'
+	Select @UARole5 = RoleId from [Security].Role where ShortName = 'Prop.Amenity.With.Pricing'
+	Select @UARole6 = RoleId from [Security].Role where ShortName = 'View.Amenities'
+	--admin user
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate) 
+	Select PersonaId,@adminRoleID,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value = 'User Administrator'
+
+  --Basic user Role
+	
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@basicRoleID,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value = 'Basic End User'
+	and PersonaId is not null
+
+	--Read only user Role
+	
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@basicRoleID,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value ='ROForUnifiedPlatform'
+	and PersonaId is not null
+
+	  --all other Role
+	  INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	  Select PersonaId,P.RoleID,FromDate,ThruDate,@userId,@now 
+	  from [Enterprise].[PersonaPrivilege] P
+		Join [Enterprise].[Role] R On
+			R.RoleID = P.RoleID
+		Join [Enterprise].[RoleValueType] RV ON
+			R.RoleValueTypeId = RV.RoleValueTypeId
+		join [Security].[Role] SR on
+			r.RoleID = sr.RoleId
+	  Where  RV.Value  not in ('User Administrator','Basic End User','Read only for Unified Platform','Manage Amenity Status','Manage Amenity No Pricing','Manage Amenity With Pricing',
+	  'Manage Property Amenity No Pricing','Manage Property Amenity With Pricing','View Amenities')	
+	  and PersonaId is not null
+
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@UARole1,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value ='Manage Amenity Status'
+	and PersonaId is not null
+
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@UARole1,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value ='Manage Amenity No Pricing'
+	and PersonaId is not null
+
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@UARole1,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value ='Manage Amenity With Pricing'
+	and PersonaId is not null
+
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@UARole1,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value ='Manage Property Amenity No Pricing'
+	and PersonaId is not null
+
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@UARole1,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value ='Manage Property Amenity With Pricing'
+	and PersonaId is not null
+
+	INSERT INTO [Security].[PersonaRole] (PersonaId,RoleId,FromDate,ThruDate,CreatedBy,CreatedDate)  
+	Select PersonaId,@UARole1,FromDate,ThruDate,@userId,@now 
+	from [Enterprise].[PersonaPrivilege] P
+	Join [Enterprise].[Role] R On
+		R.RoleID = P.RoleID
+	Join  [Enterprise].[RoleValueType] RV ON
+		RV.RoleValueTypeId = R.RoleValueTypeId
+	Where RV.Value ='View Amenities'
+	and PersonaId is not null
+END
+
+IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight])
+BEGIN
+	Declare @RightId int
+	Declare @OrgId int
+
+	  select @OrgId = PartyId from [Enterprise].[Organization] where Name = 'RealPage Employee'
+
+	  --Notification turned on only for employee comp
+	 Insert Into [Security].[OrganizationOverRideRight](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
+	 Select RightId, @OrgId ,9,@userId,@now
+	 FROM [Security].[Right]
+	 Where Value IN ('Manage Notifications Configurations',
+					  'Ability to Import users',
+					  'View only access to Unified Platform from Support Tool',
+					  'Access to Settings Admin',
+					  'Manage Settings Templates',
+					  'Employee Access to Design Questionnaires in CIMPL',
+					  'Employee Access to CIMPL',
+					  'Employee Access to add Implementation Records in CIMPL',
+					  'Employee Access to Vendor Marketplace',
+					  'Manage Custom User fields settings',
+					  'Manage Unified Platform Security Settings',
+					  'Access to Unified Settings',
+					  'Access to Unified Platform via Support Tool',
+					  'Manage help center administrator',
+					  'Manage help center knowledge base',
+					  'Manage help center videos',
+					  'Manage help center online help',
+					  'Manage help center product updates',
+					  'Approve platform alerts',
+					  'Create platform alerts')
+
+	 select @OrgId = PartyId from [Enterprise].[Organization] where Name = 'RP Northstar Management Demo'
+	 Insert Into [Security].[OrganizationOverRideRight](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
+	 Select RightId, @OrgId ,9,@userId,@now
+	 FROM [Security].[Right]
+	 Where Value IN ( 'Manage Settings Templates',
+					  'Manage Unified Platform Security Settings',
+					  'Access to Unified Settings')
+	
+END
+
+--****************************************************************************************************************************************
 --FIX for 375675
 GO
 DECLARE @CreateAlertId INT, @ApproveAlertId INT, @UserId BIGINT, @OrganizationPartyId INT, @Now datetime = GETDATE();
@@ -2531,3 +3335,59 @@ BEGIN
 	insert into [security].[organizationoverrideright](RightId,OrgPartyId,VisibilityStatusId,CreatedBy,CreatedDate)
 	values(@ManageNotificationRightId,@OrganizationPartyId,9,@UserId,@Now);
 END
+
+GO
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Auth].[Claim]  where ClaimName = 'reno-username')
+BEGIN
+	INSERT INTO [Auth].[Claim]([ClaimName], [SAMLAttributeName], [ProductId])
+	VALUES ('reno-username','productUsername', 55);
+END
+GO
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Auth].[Claim]  where ClaimName = 'reno-pmcid')
+BEGIN
+	INSERT INTO [Auth].[Claim]([ClaimName], [SAMLAttributeName], [ProductId])
+	VALUES ('reno-pmcid','PMCID', 55);
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Managecompanylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Managecompanylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Managepropertylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Managepropertylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Viewallcompanylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Viewallcompanylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'Viewallpropertylevelsettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'Viewallpropertylevelsettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 56 AND RightShortName = 'ViewUnifiedSettings')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (56,'ViewUnifiedSettings');
+END
+GO
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 39 AND RightShortName = 'AccessIntegrationMarketplace')
+BEGIN
+	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
+	VALUES (39,'AccessIntegrationMarketplace');
+END
+GO

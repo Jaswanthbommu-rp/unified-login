@@ -1,25 +1,22 @@
 ﻿using Moq;
+using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
-using JsonApiSerializer;
-using Newtonsoft.Json;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
-using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
 using Xunit;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -58,7 +55,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
-                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"}
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
             };
 
             Mock<IRepository> _mockRepository = new Mock<IRepository>();
@@ -189,6 +187,131 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.Equal(ProductEnum.OneSite.ToEnumDescription(), result[0].Source);
             Assert.Equal("1051412", result[0].CompanyInstanceSourceId);
         }
-        
+
+        [Fact]
+        public void GetUPFMPropertyInstances_Valid()
+        {
+            var organizationList = new List<Organization>()
+            {
+                new Organization()
+                {
+                    RealPageId = _RealPageId,
+                    CreateDate = _CreateDate,
+                    Name = _CompanyName,
+                    PartyId = _PartyId,
+                    BooksMasterId = _BooksMasterId,
+                    BooksCustomerMasterId = _BooksCompanyMasterId,
+                    organizationType = new OrganizationType()
+                    {
+                        OrganizationTypeId = _organizationTypeId,
+                        Name = "Multifamily",
+                        CreateDate = new DateTime()
+                    },
+                    OrganizationTypeId = _organizationTypeId,
+                    OrganizationDomainId = 1,
+                    OrganizationDomain = new OrganizationDomain()
+                    {
+                        OrganizationDomainId = 1,
+                        Name = "Primary",
+                        CreateDate = new DateTime()
+                    },
+                }
+            };
+
+            DefaultUserClaim _userClaims = new DefaultUserClaim()
+            {
+                LoginName = "MocTest",
+                CorrelationId = Guid.NewGuid(),
+                OrganizationName = "MocTest",
+                OrganizationPartyId = 1,
+                OrganizationRealPageGuid = Guid.NewGuid(),
+                OrganizationMasterId = 1,
+                UserRealPageGuid = Guid.NewGuid(),
+                PersonaId = 33
+            };
+            
+            TranslateCompanyInstance translate = new TranslateCompanyInstance()
+            {
+                Data = new TranslateCompanyInstanceData()
+                {
+                    Type = "companyinstanceids",
+                    Attributes = new TranslateCompanyInstanceAttributes()
+                    {
+                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), 
+                        CompanyInstanceSourceId = organizationList[0].RealPageId.ToString(),
+                        TranslatedCompanyInstances = new List<TranslatedCompanyInstanceData>()
+                        {
+                            new TranslatedCompanyInstanceData()
+                            {
+                                Source = ProductEnumHelper.StringValueOf(ProductEnum.OneSite),
+                                CompanyInstanceSourceId = "1051412",
+                                CustomerEnvironment = "Primary",
+                                Domain = "Primary"
+                            }
+                        }
+                    }
+                }
+            };
+
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"}, 
+                new ProductInternalSetting() {Name = "BooksUseUPFMId", Value = "1"},
+                new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "1"}
+            };
+
+            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(translate);
+            responseMapResource.Content = new StringContent(jsonToSave);
+
+            List<PropertyInstance> propertyInstances = new List<PropertyInstance>()
+            {
+                new PropertyInstance() {PropertyInstanceSourceId = "cb1f5a51-56cc-415c-9d8e-3d5e3f0f8b68"},
+                new PropertyInstance() {PropertyInstanceSourceId = "b6f475fc-7408-424b-a749-129035dcf57b"},
+                new PropertyInstance() {PropertyInstanceSourceId = "a61481fc-5779-4546-8d5a-b29ecf139095"},
+                new PropertyInstance() {PropertyInstanceSourceId = "d0ab0e33-4c04-4028-97f8-cda5a8423a30"},
+            };
+
+            UPFMPropertyInstanceRootObject propertyInstanceRoot = new UPFMPropertyInstanceRootObject(){ data = new List<UPFMPropertyInstanceData>() { new UPFMPropertyInstanceData() { attributes = new UPFMPropertyInstanceAttributes() { propertyInstance = propertyInstances }}}};
+            
+            jsonToSave = JsonConvert.SerializeObject(propertyInstanceRoot);
+            HttpResponseMessage responsePropertyInstance = new HttpResponseMessage(HttpStatusCode.OK);
+            responsePropertyInstance.Content = new StringContent(jsonToSave);
+
+            Mock<IRepository> _mockRepository = new Mock<IRepository>();
+            Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            //Arrange
+            long booksCompanyMasterId = 0;
+            string include = null;
+            string filter = null;
+            string productSource = "OS";
+            string domain = "Primary";
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/v2/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={organizationList[0].RealPageIdUpperCaseForBooks}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999", responsePropertyInstance);
+
+            _mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
+
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+
+            //Act
+            var result = _manageBlueBook.GetCompanyMap(organizationList[0].RealPageId, 0, ProductEnum.OneSite.ToEnumDescription(), domain);
+
+            //Assert
+            Assert.True(result.Count == 1);
+            Assert.Equal(ProductEnum.OneSite.ToEnumDescription(), result[0].Source);
+            Assert.Equal("1051412", result[0].CompanyInstanceSourceId);
+
+            var propertyListResult = _manageBlueBook.GetUPFMPropertyInstances(organizationList[0].RealPageIdUpperCaseForBooks);
+
+            Assert.True(propertyListResult.Count == 4);
+
+        }
+
     }
 }

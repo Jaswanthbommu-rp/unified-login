@@ -547,7 +547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
 				IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
-				if (usersDataList != null)
+				if (usersDataList != null && usersDataList.Any())
 				{
 					usersDataList.ToList().ForEach(u =>
 					{
@@ -577,7 +577,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 								CustomFields = dictionaryCustomFields,
 								UserType = u.UserType,
 								IsExternalIdp = u.IsExternalIdp,
-								Product = DeserializeUserProduct(u.Product ?? "")
+								Product = DeserializeUserProduct(u.Product ?? ""),
+								EmployeeId = u.EmployeeId
 							}
 						);
 					});
@@ -1109,7 +1110,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
 					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
 					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields
+					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
+					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId
 				},
 				ProductList = new List<ProductDetail>()
 			};
@@ -1743,7 +1745,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						UserEffectiveDate = DateTime.Now,
 						UserExpirationDate = DateTime.Now,
 						CustomFields = dictionaryCustomFields,
-						Product = UserProductSAMLDetaillist
+						Product = UserProductSAMLDetaillist,
+						EmployeeId = "2020EmployeeId"
 					}
 				};
 
