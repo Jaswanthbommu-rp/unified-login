@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
 
@@ -45,12 +46,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 
 		/// <summary>
 		/// Used to get the list of properties for the company or for the given user
+		/// </summary>		
+		/// <param name="userPersonaId"></param>		
+		/// <param name="include"></param>
+		/// <returns></returns>
+		ListResponse GetUPFMProperties(long userPersonaId, string include = null);
+
+		/// <summary>
+		/// Get a list of UPFM property instances for the give user
 		/// </summary>
 		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="assignedOnly"></param>
+		/// <param name="product"></param>
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
-		ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
+		ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter);
 	}
 }
