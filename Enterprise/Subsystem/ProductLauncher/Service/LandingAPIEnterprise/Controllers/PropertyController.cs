@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <summary>
         /// Get a list of properties for the given product
         /// </summary>
-        /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops, UPFM-Unified Login</param>
+        /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops, UPFM-Unified Login, IB-Intelligent Building</param>
         /// <param name="include">Optional List of serialize properties names (comma delimited) to return in the response: ID, Name, Street1, City, State, Zip, InstanceId, Longitude, Latitude.  Supported products: Unified Login only</param>
         /// <returns>http Response</returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
@@ -134,7 +134,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 case ProductEnum.UnifiedPlatform:
                     productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
                     break;
-                
+                case ProductEnum.IntelligentBuilding:
+                    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
+                    productResponse = manageIntelligentBuilding.GetUPFMProperties(_userClaims.PersonaId, include);
+                    break;
                 default:
                     error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, error);
