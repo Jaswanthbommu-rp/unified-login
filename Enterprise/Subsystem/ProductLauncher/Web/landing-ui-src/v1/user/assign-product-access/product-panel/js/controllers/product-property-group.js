@@ -50,7 +50,7 @@
         };
 
         vm.filter = function (filterBy) {
-            vm.filteredRecords = $filter("filter")(vm.propertyGroupData, filterBy);
+            vm.filteredRecords = $filter("filter")(vm.dataPropReq.records, filterBy);
             pgGridPagination.setData(vm.filteredRecords).goToPage({
                 number: 0
             });
@@ -93,6 +93,7 @@
             pgGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var propertyGrpData = syncMgr.getProductPropertyGroupData(productId);
+
                 if (propertyGrpData === undefined) {
 
                     var params = {
@@ -187,7 +188,6 @@
         vm.setPropertyGroupData = function (resp) {
             pgGrid.busy(false);
             if (resp.records && resp.records.length) {
-                vm.propertyGroupData = resp.records;
                 if(resp.additional && resp.additional != undefined){
                     syncMgr.setAccessTypeValue($scope.$parent.productId, resp.additional.accessType);
                 }
