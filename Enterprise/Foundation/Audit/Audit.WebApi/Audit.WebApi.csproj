@@ -77,12 +77,6 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Audit.Core\Audit.Core.csproj">
-      <Project>{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}</Project>
-      <Name>Audit.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
