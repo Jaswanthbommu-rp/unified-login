@@ -37,7 +37,16 @@
         /// RightErrorMessage
         /// </summary>
         public const string RightErrorMessage = "There was a problem getting the list of rights.  If the problem persists, please contact support.";
-        
+
+        #endregion
+
+        #region Additional Rights
+
+        /// <summary>
+        /// AdditionalRightErrorMessage
+        /// </summary>
+        public const string AdditionalRightErrorMessage = "There was a problem getting the list of additional rights.  If the problem persists, please contact support.";
+
         #endregion
 
         #region BlueBook

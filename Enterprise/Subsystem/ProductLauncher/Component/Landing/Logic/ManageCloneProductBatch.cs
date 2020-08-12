@@ -39,7 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Gets Product Batch
 		/// </summary> 
-		public IList<ProductBatch> GetUserProductBatchData(long personaId, DefaultUserClaim userClaim, List<PersonaProductUserDetails> userProducts, long createUserPersonaId, bool externalUser = false)
+		public IList<ProductBatch> GetUserProductBatchData(long personaId, DefaultUserClaim userClaim, List<PersonaProductUserDetails> userProducts, long createUserPersonaId, bool externalUser = false, bool usePropertyInstanceUnifiedAmenities = false)
 		{
 			IList<ProductBatch> productListToCreate = new List<ProductBatch>();
 
@@ -149,7 +149,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)
 					{
 						ManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(userClaim);
-                        propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
+                        if (!usePropertyInstanceUnifiedAmenities)
+                        {
+                            propertiesResponse = manageUnifiedAmenities.GetProperties(createUserPersonaId, personaId, true, null);
+                        }
+                        else
+                        {
+							ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(userClaim);
+                            propertiesResponse = manageUnifiedLogin.GetUPFMProperties(createUserPersonaId, personaId, true, ProductEnum.UnifiedAmenities, null);
+                        }
+
                         rolesResponse = manageUnifiedAmenities.GetRoles(createUserPersonaId, personaId, product.OrganizationPartyId);
 
                         productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
@@ -1072,17 +1081,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			List<string> propertyList = new List<string>();
 			List<string> departmentList = new List<string>();
+			List<PAMRolePropertyList> lstRoleProperties = new List<PAMRolePropertyList>();
+			
 			//List<string> roleList = new List<string>();
 			RolePropertyList inputJson = new RolePropertyList() { IsAssigned = true };
 
-			ListResponse result = manageProductRpDocumentManagement.GetRoles(createUserPersonaId, personaId, null);
+			ListResponse result = manageProductRpDocumentManagement.GetPropertyRoles(createUserPersonaId, personaId, null);
 			if (result != null && result.Records.Count > 0)
 			{
 				IList<ProductRole> roleList = result.Records.Cast<ProductRole>().ToList().FindAll(p => p.IsAssigned);
-				inputJson.RoleList = new List<string>();
 				foreach (ProductRole role in roleList)
 				{
-					inputJson.RoleList.Add(role.ID);
+					PAMRolePropertyList objRole = new PAMRolePropertyList();
+					objRole.RoleId = role.ID;
 					if (role.Roletype != null)
 					{
 						// get the additional role info that is assigned to the user
@@ -1090,26 +1101,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						if (result != null && result.Records.Count > 0)
 						{
 							IList<ProductProperty> assignedList = result.Records.Cast<ProductProperty>().ToList().FindAll(p => p.IsAssigned.Value);
-							if (role.Roletype.ToUpper() == "SITE NAME")
+							List<string> propertyIds = new List<string>();
+							foreach (ProductProperty pp in assignedList)
 							{
-								inputJson.PropertyList = new List<string>();
-								foreach (ProductProperty pp in assignedList)
-								{
-									inputJson.PropertyList.Add(pp.ID);
-								}
+								propertyIds.Add(pp.ID);
 							}
-
-							if (role.Roletype.ToUpper() == "DEPARTMENT")
-							{
-								inputJson.DepartmentList = new List<string>();
-								foreach (ProductProperty pp in assignedList)
-								{
-									inputJson.DepartmentList.Add(pp.ID);
-								}
-							}
+							objRole.PropertyIds = propertyIds;
 						}
 					}
+					lstRoleProperties.Add(objRole);
 				}
+				inputJson.RolePropertiesList = lstRoleProperties;
 			}
 
 			ProductBatch productBatch = new ProductBatch()

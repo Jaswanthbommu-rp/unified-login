@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -305,7 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuilding:
                         product = new IntelligentBuildingProduct(_defaultUserClaim);
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(productUser.InputJson);
+                            GetProductPropertiesRoles<IBPropertyRole>(productUser.InputJson);
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
@@ -3912,7 +3913,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
-            var rpList = rolePropList as UnifiedAmenitiesPropertyRole;
+            var rpList = rolePropList as IBPropertyRole;
 
             if (rpList == null)
             {
@@ -3958,7 +3959,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string changeProductUserTypeResponse = string.Empty;
 
-            var rpList = rolePropList as UnifiedAmenitiesPropertyRole;
+            var rpList = rolePropList as IBPropertyRole;
 
             if (rpList == null)
             {
