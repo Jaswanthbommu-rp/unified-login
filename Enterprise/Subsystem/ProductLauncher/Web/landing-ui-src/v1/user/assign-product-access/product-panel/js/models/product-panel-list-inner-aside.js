@@ -3,14 +3,14 @@
 (function (angular, undefined) {
     "use strict";
 
-    function factory(asideInnerModal) {
+    function factory(asideModal) {
         var modalData = {
             keyboard: false,
             backdrop: "static",
             templateUrl: "user/assign-product-access/product-panel/templates/product-panel-list-aside.html"
     };
 
-        return asideInnerModal().setData(modalData);
+        return asideModal().setData(modalData);
     }
 
     angular

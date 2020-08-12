@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPanelListAsideCtrl($scope, $filter, aside, dataSvc, groupSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
+    function ProductPanelListAsideCtrl($scope, $filter, aside, innerAside, dataSvc, groupSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
         var vm = this,
             asideGrid = gridModel(),
             asidegridTransform = gridTransformSvc(),
@@ -45,6 +45,13 @@
                     configTab = "Groups";
                     vm.title = "Assigned Groups";
                     vm.subtitle= persona.data.organization.name;
+                }
+            }
+            else if (vm.tabName.toLowerCase() === "entitygroup") {
+                if(vm.productId == 44){
+                    configTab = "EntityProperties";
+                    vm.title = "Entity Group Details";
+                    vm.subtitle= vm.propertyRecords.name;
                 }
             }
             else if (vm.tabName.toLowerCase() === "propertygroup") {
@@ -126,6 +133,16 @@
                     vm.groupsData.records = vm.groupRecords.groupList;
                     vm.setData(vm.groupsData);
                 }
+                else if(vm.tabName.toLowerCase() === "entitygroup"){
+                    params = {
+                        editorPersonaId: persona.getId(),
+                        userPersonaId: "0",
+                        productId: productId,
+                        propertyGroupId: vm.propertyRecords.id
+                    };
+                    vm.dataReq = groupSvc.get(params, vm.setData);
+                    //vm.setData(vm.groupsData);
+                }
                 else{
                     vm._properteiesData = angular.copy(vm.propertyRecords.propertiesList);
                     vm.properteiesData.records = vm.propertyRecords.propertiesList;
@@ -155,17 +172,28 @@
         };
 
         vm.cancel = function () {
-            if(vm.tabName.toLowerCase() === 'group') {
-                vm.groupRecords.groupList = vm._groupsData;    
+            if(vm.tabName.toLowerCase() === 'entitygroup'){
+                innerAside.hide();
             }
-            else {
-                vm.propertyRecords.propertiesList = vm._properteiesData;
-            }
-            aside.hide();
+            else
+            {
+                if(vm.tabName.toLowerCase() === 'group') {
+                    vm.groupRecords.groupList = vm._groupsData;    
+                }
+                else {
+                    vm.propertyRecords.propertiesList = vm._properteiesData;
+                }
+                aside.hide();
+            } 
         };
         
         vm.update = function(){
-            syncMgr.updateAssignedProperties(vm.productId);
+            if(vm.tabName.toLowerCase() === 'group') {
+                syncMgr.updateAssignedGroups(vm.productId);    
+            }
+            else {
+                syncMgr.updateAssignedProperties(vm.productId);
+            }
             aside.hide();
         };
 
@@ -209,6 +237,7 @@
             "$scope",
             "$filter",
             "productPanelListAside",
+            "productPanelListInnerAside",
             "productRoleRightsSvc",
             "productGroupPropertiesSvc",
             "productDataSyncManager",

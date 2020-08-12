@@ -14,11 +14,11 @@
             logc("console.info()",record);
             listModel.setName(record.name);
             if(record.tabname !== undefined){
-                listModel.setTabName(record.tabname);
-            }
-            else{
+                tabname = record.tabname;
                 listModel.setTabName(tabname);
             }
+            
+            listModel.setTabName(tabname);
             listModel.setListID(record.id);
             listModel.setProductID(record.productId);
             if(record.productId === 20) {
@@ -26,12 +26,17 @@
              }
             if(tabname === 'group'){
                 listModel.setSelectedGroupRoleData(record);
+                aside.show();
             }
-            else{
+            else if(tabname === 'EntityGroup'){
                 listModel.setSelectedPropertyRoleData(record);
                 innerAside.show();
             }
-            aside.show();
+            else{
+                listModel.setSelectedPropertyRoleData(record);
+                aside.show();
+            }
+            
         };
 
         vm.destroy = function () {

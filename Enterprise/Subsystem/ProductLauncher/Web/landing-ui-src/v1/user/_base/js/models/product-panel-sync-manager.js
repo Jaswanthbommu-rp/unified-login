@@ -845,6 +845,22 @@
             propertyList.assignedProperties = assignedList.length + " of " + propertyList.propertiesList.length;
             return s;
         };
+
+        p.updateAssignedGroups = function (productId) {
+            var s = this,
+                groupList,
+                assignedList;
+            groupList = s.asidePropertyMap['product' + productId].asideGroups;
+            
+            assignedList = groupList.groupList.filter(function (data) {
+                return data.isAssigned === true;
+            });
+
+            groupList.isAssigned = assignedList.length > 0 ? true : false;
+            groupList.assignedGroups = assignedList.length + " of " + groupList.groupList.length;
+            return s;
+        };
+
         p.setAllPropertyGroupSync = function (productId, bool) {
             var s = this,
                 propertyGroupList;

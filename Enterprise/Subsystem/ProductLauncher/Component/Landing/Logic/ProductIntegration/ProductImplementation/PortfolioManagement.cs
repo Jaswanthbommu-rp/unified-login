@@ -154,6 +154,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Get Portfolio Properties by GroupId
+		/// </summary> 
+		public ListResponse GetProductPropertiesByGroup(string groupId, RequestParameter dataFilter, string apiQuery = null)
+		{
+			// get properties by GroupId
+			var propertiesList = GetPortfolioPropertiesByGroup(groupId).ToList();
+
+			return new ListResponse
+			{
+				Records = propertiesList.Cast<object>().ToList(),
+				TotalRows = propertiesList.Count,
+				RowsPerPage = 9999,
+				ErrorReason = string.Empty,
+				TotalPages = 1
+			};
+		}
+
+		/// <summary>
 		/// Override this in product implementation if any product requires to create additional saml settings
 		/// e.g. used in PAM
 		/// </summary>
@@ -214,6 +232,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
 			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
 
+			// call API
+			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
+		}
+
+		private IList<ProductProperties> GetPortfolioPropertiesByGroup(string propertyGroupId)
+		{
+			// Get end point for properties
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
+			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/gandk/UserPropertyGroupsById?propertyGroupId={0}";
+			baseUrlAndQuery = string.Format(baseUrlAndQuery, propertyGroupId);
+			
 			// call API
 			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 		}

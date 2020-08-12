@@ -369,12 +369,17 @@
                                                                                     listAsideconfigs = configData.getListAsideConfig(asidectrl, "",subctrl.dataSource.toLowerCase());
                                                                                     if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
                                                                                         tabName = "EntityProperties"; 
-                                                                                        var cnfg = configData.getGridConfigTypes(asidectrl, tabName);
-                                                                                        var gridConfig = vm.getGridConfig(cnfg, asideShowSelectAll);
-                                                                                        //var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
+                                                                                        subctrl.controls.forEach(function (ctrl) {
+                                                                                            if(ctrl.type === "Grid"){
+                                                                                                var cnfg = configData.getGridConfigTypes(ctrl, tabName);
+                                                                                                var gridConfig = vm.getGridConfig(cnfg, asideShowSelectAll);
+                                                                                                //var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
+                                                                                                
+                                                                                                logc("asideGridConfig", asideGridConfig);
+                                                                                                productModel.renderProductAsideGridConfigMap(productId, tabName, gridConfig, listAsideconfigs.displayName);
+                                                                                            }
                                                                                         
-                                                                                        logc("asideGridConfig", asideGridConfig);
-                                                                                        productModel.renderProductAsideGridConfigMap(productId, tabName, gridConfig, listAsideconfigs.displayName);
+                                                                                        });
                                                                                     }
                                                                                 }
                                                                             });

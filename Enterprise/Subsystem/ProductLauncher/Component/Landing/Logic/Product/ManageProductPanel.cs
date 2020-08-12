@@ -591,6 +591,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, propertyGroupId);
                     break;
+                case (int)ProductEnum.PortfolioManagement:
+                    var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
+                    result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId.ToString(), datafilter);
+                    break;
 
                 default:
                     break;

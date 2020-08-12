@@ -21,7 +21,8 @@
                 filterType,
                 config = [];
             // logc("griddata--", gridData,gridData.Type);
-            if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid" || gridData.type === "Grid") {
+            
+            if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid" || gridData.type === "Grid" ) {
                 filterType = undefined;
                 gridData.controls.forEach(function (item) {
                     if (item.attributes !== null) {
