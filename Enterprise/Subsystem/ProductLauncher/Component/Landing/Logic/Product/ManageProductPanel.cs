@@ -166,6 +166,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetProductProperties(datafilter);
                         break;
+                    case (int)ProductEnum.IntelligentBuilding:
+                        IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
+                        result = manageIntelligentBuilding.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.IntelligentBuilding, datafilter);
+                        break;
                     default:
                         break;
                 }
