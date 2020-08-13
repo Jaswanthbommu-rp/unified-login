@@ -1,4 +1,6 @@
-﻿using Serilog;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
@@ -43,7 +45,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                     { "key", key }
                 };
 
-                Log.Error(ex, ex.Message, logData, this.GetType().ToString());
+                Log.Write(LogEventLevel.Error, ex, ex.Message, new LogDetails
+                {
+                    Message = ex.Message,
+                    AdditionalInfo = logData,
+                    ProductModule = this.GetType().ToString(),
+                    Exception = ex
+                });
 
                 cache.Remove(key);
                 return null;
@@ -73,7 +81,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                     { "key", key }
                 };
 
-                Log.Error(ex, ex.Message, logData, this.GetType().ToString());
+                Log.Write(LogEventLevel.Error, ex, ex.Message, new LogDetails
+                {
+                    Message = ex.Message,
+                    AdditionalInfo = logData,
+                    ProductModule = this.GetType().ToString(),
+                    Exception = ex
+                });
 
                 cache.Remove(key);
                 return null;
