@@ -223,6 +223,7 @@ VALUES
 ,('CLIENTID','','ulrenoapi', 0) -- For DEV Environment
 ,('TOKENENDPOINT','', @tokenEndPoint, 0) -- For DEV Environment
 ,('APISECRET','', @apisecret, 1)
+,('ClientScope', 'The client scope to get access token','renouserapi',0)
 
 ,('GetRoleEndpoint','Role End point for product API','/{0}/roles?isIncludeRights={1}', 0)
 ,('GetRightEndpoint','Right End point for product API','/roleRights/{0}', 0)
@@ -250,11 +251,11 @@ BEGIN
 END
 IF @ServerName IN ('RCQUSODBSQL001')
 BEGIN
-	SET @LoginURL = 'https://rl-valueadd-sat.herokuapp.com/auth-callback';
+	SET @LoginURL = 'https://rl-valueadd-sat.herokuapp.com/value-add';
 END
 IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
-	SET @LoginURL = 'https://reno.rentlytics.com/auth-callback';
+	SET @LoginURL = 'https://reno.rentlytics.com/value-add';
 END
 
 SET @LoginURI = @LoginURL;
@@ -880,43 +881,7 @@ DECLARE @UserId bigint,
 				@FromDate = @NOW, -- datetime
 				@ThruDate = NULL;   -- datetime
 			END;
-
-
-		IF
-		(
-			SELECT 1
-			FROM Enterprise.ProductSettingType
-			WHERE Name = 'ClientScope'
-		) IS NULL
-		BEGIN
-			EXEC Enterprise.CreateProductSettingType 'ClientScope', 'The client scope to get access token', @ProductSettingTypeId OUTPUT;
-		END;
-
-		IF @ProductSettingTypeId IS NOT NULL AND 
-			   NOT EXISTS
-			(
-				SELECT TOP 1 1
-				FROM Enterprise.ProductSetting
-				WHERE ProductID = @productId AND 
-					  ProductSettingTypeId = @ProductSettingTypeId AND 
-					  ThruDate IS NULL
-			)
-			BEGIN
-	
-				-- Create the Value and assign it to the Product and ProductSettingType
-				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
-				@ProductSettingTypeId = @ProductSettingTypeId, -- int
-				@Value = 'renouserapi', 
-				@FromDate = @NOW, -- datetime
-				@ThruDate = NULL, -- datetime
-				@ProductSettingId = @ProductSettingId OUTPUT; -- int
-
-				-- Link the Product Setting to an actual configuration
-				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
-				@ProductSettingId = @ProductSettingId, -- int
-				@FromDate = @NOW, -- datetime
-				@ThruDate = NULL;   -- datetime
-			END;
+		
 GO
 
 DECLARE @UserId bigint,
