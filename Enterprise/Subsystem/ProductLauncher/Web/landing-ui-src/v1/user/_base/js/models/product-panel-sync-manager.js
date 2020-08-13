@@ -725,6 +725,11 @@
                         });
                     }
                 }
+                else if(key == 57) {
+                    if(item.alias == record.alias) {
+                        item.isAssigned = record.isAssigned;
+                    }
+                }
                 else if(item.id == record.id) {
                     item.isAssigned = record.isAssigned;
                     if(item.propertiesList && !record.isAssigned)
@@ -772,7 +777,7 @@
                         item["isAssigned"] = group.isAssigned;
                     }
                 });
-    
+
                 pubsub.publish("pplpropertygroup.updateGrids");
             }
             return s;
@@ -804,11 +809,11 @@
                 propertyList;
 
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
-            
+
             record.forEach(function (item) {
                    item.isAssigned = bool;
             });
-            
+
             return s;
         };
 
@@ -817,7 +822,7 @@
                 propertyList,
                 assignedList;
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
-            
+
             assignedList = propertyList.propertiesList.filter(function (data) {
                 return data.isAssigned === true;
             });

@@ -1,6 +1,6 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+﻿using RealPage.Logging.Serilog;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Helper;
+using Serilog;
 using System;
 using System.Net;
 using System.ServiceProcess;
@@ -14,13 +14,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
         /// </summary>
         static void Main()
         {
+            SerilogHelpers.ConfigureSerilog("Unified Login");
+
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
             var userNotificationService = new UserNotificationService();
 
             if (Environment.UserInteractive)
             {
-                Log.Write(LogType.Information, new LogDetails { Message = "UserServiceMC Running in console mode" });
+                Log.Information("UserServiceMC Running in console mode");
 
                 userNotificationService.Start();
                 Logger.ConsoleOut("Press any key to stop program");
@@ -29,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             }
             else
             {
-                Log.Write(LogType.Information, new LogDetails { Message = "UserServiceMC Running in windows Service mode" });
+                Log.Information("UserServiceMC Running in windows Service mode");
                 ServiceBase.Run(userNotificationService);
             }
         }

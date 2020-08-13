@@ -16,7 +16,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Caching;
 using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using Xunit;
 
@@ -202,6 +204,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_missing_customercompanyid);
 
             //Act
+            var cacheKey = "productInternalSetting_" + (int)ProductEnum.UnifiedPlatform;
+            ObjectCache cache = MemoryCache.Default;
+            cache.Remove(cacheKey);
+
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
 

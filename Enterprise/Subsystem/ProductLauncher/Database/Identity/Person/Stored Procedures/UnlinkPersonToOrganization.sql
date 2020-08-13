@@ -42,6 +42,16 @@ BEGIN
 		AND			((@RoleTypeIdTo IS NULL) OR (RoleTypeIdTo = @RoleTypeIdTo))
 		AND			ThruDate IS NULL
 
+		DELETE PR
+		FROM Security.PersonaRole PR
+			INNER JOIN Person.Persona P ON PR.PersonaId = P.PersonaId
+			INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId
+			INNER JOIN Ident.UserLogin UL ON ULP.UserLoginId = UL.UserId
+			WHERE
+				UL.PersonPartyId = @PartyIdFrom
+				AND
+				ULP.OrganizationPartyId = @PartyIdTo
+
 		DELETE P
 		FROM Person.Persona P
 			INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId
