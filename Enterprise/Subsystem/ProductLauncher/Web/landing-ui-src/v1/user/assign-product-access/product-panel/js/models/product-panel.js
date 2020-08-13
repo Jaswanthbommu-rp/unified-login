@@ -328,11 +328,12 @@
                     else if (productId == "57") {
                         properties.forEach(function (prop) {
                             if (prop.isAssigned) {
-                                s.batchData.inputJson.propertyList.push(prop.propertyInstanceId);
+                                s.batchData.inputJson.propertyList.push(prop.alias);
                             }
                             if (!prop.isAssigned && prop.originalProperty) {
-                                s.batchData.inputJson.removedPropertyList.push(prop.propertyInstanceId);
+                                s.batchData.inputJson.removedPropertyList.push(prop.alias);
                             }
+
                         });
                     }
                     else {

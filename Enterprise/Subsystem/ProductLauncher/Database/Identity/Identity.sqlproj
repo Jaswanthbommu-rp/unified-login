@@ -1010,6 +1010,7 @@
     <Build Include="Enterprise\Tables\UserEmployeeId.sql" />
     <Build Include="Enterprise\Stored Procedures\ListOrganizationByRealPageId_Ver03.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserEmployeeIdByUserLoginPersonaId.sql" />
+    <Build Include="Ident\Stored Procedures\GetCurrentUserStatus.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

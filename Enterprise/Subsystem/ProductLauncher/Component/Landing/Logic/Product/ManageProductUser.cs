@@ -306,7 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuilding:
                         product = new IntelligentBuildingProduct(_defaultUserClaim);
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(productUser.InputJson);
+                            GetProductPropertiesRoles<IBPropertyRole>(productUser.InputJson);
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
