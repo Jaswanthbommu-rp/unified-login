@@ -221,11 +221,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}");
 
-				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName) && Convert.ToBoolean(SubjectUserDetails?.IsActive))
+				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
 					WriteToDiagnosticLog(
 						$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
-					var user = GetProductUser();
+					var user = GetProductUser(null, false);
 
 					// map user roles
 					if (user != null)
@@ -285,12 +285,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {propertyList?.Count}");
 
-				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName) && Convert.ToBoolean(SubjectUserDetails?.IsActive))
+				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
 					WriteToDiagnosticLog(
 						$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
 
-					var user = GetProductUser();
+					var user = GetProductUser(null, false);
 
 					// map user properties
 					if (user != null && user.Properties != null)
