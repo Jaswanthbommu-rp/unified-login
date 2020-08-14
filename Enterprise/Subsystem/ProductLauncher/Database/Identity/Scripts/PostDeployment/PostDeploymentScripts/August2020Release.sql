@@ -3350,12 +3350,6 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 39 AND RightShortName = 'AccessIntegrationMarketplace')
-BEGIN
-	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
-	VALUES (39,'AccessIntegrationMarketplace');
-END
-GO
 
 --Financial Suite Product Access panel
 DECLARE @UserId bigint,
