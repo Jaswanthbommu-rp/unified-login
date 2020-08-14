@@ -246,6 +246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="subjectPersonaId">Subject user persona id</param>
 		/// <param name="productType">Product Type</param>
 		/// <param name="dataFilter">A dataFilter used to filter the roles.</param>
+		/// <param name="TabName">Tab Name</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
@@ -255,7 +256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[Route("products/propertygroups")]
 		[HttpGet]
 		public HttpResponseMessage GetPropertyGroups(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
-			[FromUri] RequestParameter dataFilter , string TabName)
+			[FromUri] RequestParameter dataFilter , string TabName = null)
 		{
 			ListResponse result;
 			try

@@ -77,7 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		public override ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null , string tabName = "")
+		public override ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null , string tabName = null)
 		{
 			try
 			{
@@ -134,16 +134,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IsError = true
 				};
 
-				if (ex is BlueBookException)
+				if (!string.IsNullOrEmpty(tabName))
 				{
-					response.ErrorReason = ex.Message;
-				}
-				else
-				{
-					//
-					response.ErrorReason = $"{CommonMessageConstants.RegionErrorMessage},{CommonMessageConstants.RegionErrorMessage}";
+					if (tabName == TabEnum.AREA.ToString())
+					{
+						response.ErrorReason = CommonMessageConstants.AreaErrorMessage;
+						return response;
+					}
+
+					if (tabName == TabEnum.REGION.ToString())
+					{
+						response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
+						return response;
+					}
 				}
 
+				response.ErrorReason = ex.Message;
 				return response;
 			}
 		}
