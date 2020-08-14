@@ -239,8 +239,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private IList<ProductProperties> GetPortfolioPropertiesByGroup(string propertyGroupId)
 		{
 			// Get end point for properties
-			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
-			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/gandk/UserPropertyGroupsById?propertyGroupId={0}";
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyByGroupEndpoint);
+			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/lindemann/UserPropertyGroupsById?propertyGroupId={0}";
 			baseUrlAndQuery = string.Format(baseUrlAndQuery, propertyGroupId);
 			
 			// call API
@@ -250,9 +250,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private IList<ProductAssetGroup> GetPortfolioPropertyGroups()
 		{
 			// Get end point for properties
-			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyGroupsEndpoint);
 			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
-			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/gandk/UserPropertyGroups";
+			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/lindemann/UserPropertyGroups";
 
 			// call API
 			return GetResultFromApi<IList<ProductAssetGroup>>(baseUrlAndQuery);

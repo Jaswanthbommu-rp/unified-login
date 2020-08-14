@@ -25,16 +25,27 @@
 
             asidegridTransform.watch(asideGrid);
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
-            syncMgr.setAsidePropertyList(listAsideModel.getSelectedPropertyRoleData(), vm.productId);
             if(vm.productId == 44){
-                syncMgr.setAsideGroupList(listAsideModel.getSelectedGroupRoleData(), vm.productId);
+                if(vm.tabName === "EntityGroup"){
+                    vm.isBtnFooterRequired = false;
+                }
+                if(vm.propertyRecords !== undefined){
+                    syncMgr.setAsidePropertyList(vm.propertyRecords, vm.productId);
+                }
+                else{
+                    syncMgr.setAsidePropertyList(vm.groupRecords, vm.productId);
+                }
+                
+            }
+            else{
+                syncMgr.setAsidePropertyList(vm.propertyRecords, vm.productId);
             }
             var configTab = "";
             if (vm.tabName.toLowerCase() === "property") {
                 if(vm.productId == 44){
                     configTab = "Properties";
                     vm.title = "Assigned Entities";
-                    vm.subtitle= persona.data.organization.name;
+                    //vm.subtitle= persona.data.organization.name;
                 }else{
                     configTab = "Properties";
                     vm.title = "Property Details";
@@ -44,7 +55,7 @@
                 if(vm.productId == 44){
                     configTab = "Groups";
                     vm.title = "Assigned Groups";
-                    vm.subtitle= persona.data.organization.name;
+                    //vm.subtitle= persona.data.organization.name;
                 }
             }
             else if (vm.tabName.toLowerCase() === "entitygroup") {
@@ -188,12 +199,12 @@
         };
         
         vm.update = function(){
-            if(vm.tabName.toLowerCase() === 'group') {
-                syncMgr.updateAssignedGroups(vm.productId);    
-            }
-            else {
+            // if(vm.tabName.toLowerCase() === 'group') {
+            //     syncMgr.updateAssignedGroups(vm.productId);    
+            // }
+            // else {
                 syncMgr.updateAssignedProperties(vm.productId);
-            }
+            //}
             aside.hide();
         };
 

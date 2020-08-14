@@ -314,12 +314,8 @@
                                 properties.forEach(function(prop) {
                                     if (prop.companyId === comp.id) {
                                         if (prop.isAssigned) {
-                                            //s.batchData.inputJson.propertyList.push(prop.propertyId);
                                             if(prop.propertyId !== "") {
-                                                s.batchData.inputJson.propertyList.push(comp.id + "|" + prop.propertyId);
-                                            }
-                                            else{
-                                                s.batchData.inputJson.propertyList.push(comp.id );
+                                                s.batchData.inputJson.propertyList.push(prop.propertyId);
                                             }
                                         }
                                     }

@@ -290,8 +290,8 @@
             var s = this,
                 asideGroupList;
 
-            if (s.asideGroupMap['product' + product] !== undefined) {
-                asideGroupList = s.asideGroupMap['product' + product].asideGroups;
+            if (s.asidePropertyMap['product' + product] !== undefined) {
+                asideGroupList = s.asidePropertyMap['product' + product].asideGroups;
             }
             return asideGroupList;
         };
@@ -751,8 +751,13 @@
                         item.propertiesList.forEach(function (prop) {
                             prop.isAssigned = false;
                         });
-
+                        if(item.groupList !== undefined) {
+                            item.groupList.forEach(function (group) {
+                                group.isAssigned = false;
+                            }); 
+                        }
                         item.assignedProperties = assignedCount + " of " + item.propertiesList.length;
+                        item.assignedGroups = assignedCount + " of " + item.groupList.length;
                     }
                 }
             });
@@ -834,15 +839,23 @@
         p.updateAssignedProperties = function (productId) {
             var s = this,
                 propertyList,
-                assignedList;
+                assignedPropertiesList = [],
+                assignedGroupsList = [];
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
             
-            assignedList = propertyList.propertiesList.filter(function (data) {
+            assignedPropertiesList = propertyList.propertiesList.filter(function (data) {
                 return data.isAssigned === true;
             });
 
-            propertyList.isAssigned = assignedList.length > 0 ? true : false;
-            propertyList.assignedProperties = assignedList.length + " of " + propertyList.propertiesList.length;
+            if(propertyList.groupList !== undefined){
+                assignedGroupsList = propertyList.groupList.filter(function (data) {
+                    return data.isAssigned === true;
+                });
+                propertyList.assignedGroups = assignedGroupsList.length + " of " + propertyList.groupList.length;
+            }
+
+            propertyList.isAssigned = (assignedPropertiesList.length > 0 || assignedGroupsList.length > 0) ? true : false;
+            propertyList.assignedProperties = assignedPropertiesList.length + " of " + propertyList.propertiesList.length;
             return s;
         };
 
@@ -850,7 +863,7 @@
             var s = this,
                 groupList,
                 assignedList;
-            groupList = s.asidePropertyMap['product' + productId].asideGroups;
+            groupList = s.asidePropertyMap['product' + productId].asideProperties;
             
             assignedList = groupList.groupList.filter(function (data) {
                 return data.isAssigned === true;
@@ -1078,7 +1091,7 @@
         p.renderAsideGroupMap = function (key) {
             var s = this;
             if (!angular.equals({}, s.asideGroupList)) {
-                s.asideGroupMap['product' + key] = {
+                s.asidePropertyMap['product' + key] = {
                     asideGroups: s.asideGroupList,
                 };
             }
