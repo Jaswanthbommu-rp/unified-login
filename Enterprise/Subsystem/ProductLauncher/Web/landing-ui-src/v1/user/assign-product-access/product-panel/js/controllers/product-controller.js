@@ -158,9 +158,9 @@
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
             if ($scope.productId == 8) {
-                vm.accountingSMSwitchModel = productModel.getProductSwitchConfig($scope.productId, "AccesstoSiteSpendManagementonly")[0];
-                vm.accountingAllPropertiesSwitchModel = productModel.getProductSwitchConfig($scope.productId, "Allowaccesstoallcurrentandfutureentities")[0];
-                vm.accountingAdminSwitchModel = productModel.getProductSwitchConfig($scope.productId, "AccountingAdmin")[0];
+                vm.accountingSMSwitchModel = productModel.getProductSwitchConfig($scope.productId, "hasAccessToSiteSpendManagementOnly")[0];
+                vm.accountingAllPropertiesSwitchModel = productModel.getProductSwitchConfig($scope.productId, "hasAccessToAllCurrentFutureProperties")[0];
+                vm.accountingAdminSwitchModel = productModel.getProductSwitchConfig($scope.productId, "isAccountingAdmin")[0];
             }
 
             vm.tabsList = tabs.tabsList;
@@ -420,6 +420,7 @@
                             aSwitch = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if ($scope.productId == 8) {
+                                tabName = tabGrp.dataSource;
                                 if (tabGrp.type === 'Switch') {
                                     var c = {};
                                     if (tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly") {

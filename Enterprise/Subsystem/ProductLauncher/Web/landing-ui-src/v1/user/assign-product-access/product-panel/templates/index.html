@@ -11,7 +11,7 @@
 
     <div  class="row" ng-if="cpactrl.isAccountingProduct()">
         <div class="row marg-r">
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <div class="options"> Options: </div>
             </div>
             <div class="col-md-5">
@@ -21,7 +21,7 @@
                     rp-label-text="cpactrl.accountingSMSwitchModel.text">
                 </rp-switch>
             </div>
-            <div class="col-md-5">
+            <div class="col-md-6">
                 <rp-switch class="col-md-12 inline label-1"
                     config="cpactrl.accountingAllPropertiesSwitchModel.configData"
                     rp-model="cpactrl.hasAccessToAllCurrentFutureProperties"
@@ -30,7 +30,7 @@
             </div>
         </div>
         <div class="row marg-r">
-            <div class="col-md-2">            
+            <div class="col-md-1">            
             </div>
             <div class="col-md-5">
                 <rp-switch class="col-md-12 inline label-1"
@@ -38,6 +38,8 @@
                     rp-model="cpactrl.isAccountingAdmin"
                     rp-label-text="cpactrl.accountingAdminSwitchModel.text">
                 </rp-switch>
+            </div>
+            <div class="col-md-6">            
             </div>
         </div>
     </div>
