@@ -39,7 +39,6 @@
             s.notificationsMap={};
             s.originalPropertyListMap = {};
             s.asidePropertyMap = {};
-            s.asideGroupMap = {};
 
             s.productControlsList = {
                 products: []
@@ -856,21 +855,6 @@
 
             propertyList.isAssigned = (assignedPropertiesList.length > 0 || assignedGroupsList.length > 0) ? true : false;
             propertyList.assignedProperties = assignedPropertiesList.length + " of " + propertyList.propertiesList.length;
-            return s;
-        };
-
-        p.updateAssignedGroups = function (productId) {
-            var s = this,
-                groupList,
-                assignedList;
-            groupList = s.asidePropertyMap['product' + productId].asideProperties;
-            
-            assignedList = groupList.groupList.filter(function (data) {
-                return data.isAssigned === true;
-            });
-
-            groupList.isAssigned = assignedList.length > 0 ? true : false;
-            groupList.assignedGroups = assignedList.length + " of " + groupList.groupList.length;
             return s;
         };
 

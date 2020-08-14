@@ -30,12 +30,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public string GroupType { get; set; }
 
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        //public int Id { get; set; }
-
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        //public string Name { get; set; }
-
         public bool IsAssigned { get; set; }
     }
 }
