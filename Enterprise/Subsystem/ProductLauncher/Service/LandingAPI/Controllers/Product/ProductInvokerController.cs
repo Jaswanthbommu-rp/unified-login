@@ -255,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[Route("products/propertygroups")]
 		[HttpGet]
 		public HttpResponseMessage GetPropertyGroups(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
-			[FromUri] RequestParameter dataFilter)
+			[FromUri] RequestParameter dataFilter , string TabName)
 		{
 			ListResponse result;
 			try
@@ -267,7 +267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 				var productLogic = ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-				result = productLogic.GetProductPropertyGroups(dataFilter);
+				result = productLogic.GetProductPropertyGroups(dataFilter , null, TabName);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);

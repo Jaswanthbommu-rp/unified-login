@@ -77,7 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		public override ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null)
+		public override ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null , string tabName = "")
 		{
 			try
 			{

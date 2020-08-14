@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Get Product Regions
 		/// </summary>
-		ListResponse GetProductPropertyGroups(RequestParameter datafilter, string baseUrlAndQuery = null);
+		ListResponse GetProductPropertyGroups(RequestParameter datafilter, string baseUrlAndQuery = null , string tabName = "");
 
 		/// <summary>
 		/// UnassignUser
