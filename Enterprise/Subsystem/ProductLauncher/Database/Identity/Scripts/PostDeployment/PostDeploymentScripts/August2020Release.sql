@@ -815,7 +815,7 @@ GO
 --For Reno product internal settings
 DECLARE @UserId bigint,
 	@ProductId int =55,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -833,6 +833,8 @@ DECLARE @UserId bigint,
 				)
 		ORDER BY GlobalProductConfigurationId DESC;
 
+		Select @roleId = 34
+	
 		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
 		BEGIN
 			Select @roleId = 34
@@ -853,7 +855,7 @@ DECLARE @UserId bigint,
 			WHERE Name = 'SuperUserRoleId'
 		) IS NULL
 		BEGIN
-			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId', 'The role Id to create admin user in  product', @ProductSettingTypeId OUTPUT;
+			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId', 'The role Id to create admin user in  product',0, @ProductSettingTypeId OUTPUT;
 		END;
 
 		IF @ProductSettingTypeId IS NOT NULL AND 
@@ -886,7 +888,7 @@ GO
 
 DECLARE @UserId bigint,
 	@ProductId int =17,
-	@Now datetime = GETDATE();
+	@Now datetime = GETUTCDATE();
 
 SELECT	@UserId = UserId
 FROM	Ident.UserLogin
@@ -945,7 +947,7 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
 
-	IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductPageId = 33)
+	IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductPageId = 33)
 	BEGIN
 		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
 		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
@@ -953,16 +955,11 @@ BEGIN
 		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
 	END
 	
-
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
 	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
 	VALUES (43, 33, 537, @UserId, @Now)
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
-
-	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
-	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
-	VALUES (33, 50, N'Senior Lead Management Product Access', @UserId, @Now, 1)
-	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+	
 	
 END
 
@@ -1133,7 +1130,7 @@ END
 GO
 DECLARE @UserId bigint,
 	@ProductId int =3,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -1777,7 +1774,7 @@ GO
 
 DECLARE @UserId bigint,
 	@ProductId int =55,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -1794,6 +1791,8 @@ DECLARE @UserId bigint,
 				)
 				)
 		ORDER BY GlobalProductConfigurationId DESC;
+
+		Select @roleId = 1
 
 		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
 		BEGIN
@@ -1886,7 +1885,7 @@ GO
 --For Reno product internal settings
 DECLARE @UserId bigint,
 	@ProductId int =55,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -1903,7 +1902,9 @@ DECLARE @UserId bigint,
 				)
 				)
 		ORDER BY GlobalProductConfigurationId DESC;
-
+			
+		Select @roleId = 34
+			
 		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
 		BEGIN
 			Select @roleId = 34
