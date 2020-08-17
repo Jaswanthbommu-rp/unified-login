@@ -1230,10 +1230,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IC.Person person = _managePerson.GetPerson(userRealPageId);
 
             var userLogin = _manageUserLogin.GetUserLoginOnly(userRealPageId);
+
             IList<IC.UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
 
             var employeeId = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
             person.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+           
 
             if (string.IsNullOrEmpty(_systemIdentifier))
             {
@@ -1273,18 +1275,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 NameValuePair[] response;
                 string errorMessage = "";
-               
-                if (!string.IsNullOrWhiteSpace(_systemIdentifier))
-                {
-                    var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
-                    userThirdPartyReference = onesiteuser.UserThirdPartyReference;
-                }
-
                 userThirdPartyReference = person.EmployeeId;
 
                 if (!string.IsNullOrWhiteSpace(_systemIdentifier))
                 {
                     var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
+
                     if(person.EmployeeId != onesiteuser.UserThirdPartyReference)
                     {
                         userThirdPartyReference = person.EmployeeId;
