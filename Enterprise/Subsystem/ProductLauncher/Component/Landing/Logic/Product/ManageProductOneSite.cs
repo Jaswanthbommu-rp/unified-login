@@ -147,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="managePartyRelationship"></param>
         /// <param name="manageElectronicAddress"></param>
-        public ManageProductOneSite(Guid editorRealPageId, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress) : base((int)ProductEnum.OneSite, productInternalSettingRepository)
+        public ManageProductOneSite(Guid editorRealPageId, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository) : base((int)ProductEnum.OneSite, productInternalSettingRepository)
         {
             _editorRealPageId = editorRealPageId;
             _service = service;
@@ -165,6 +165,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
             _manageElectronicAddress = manageElectronicAddress;
+            _userRepository = userRepository;
+            _userLoginPersonaRepository = userLoginPersonaRepository;
         }
 
         #region Property
@@ -1228,6 +1230,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IC.Person person = _managePerson.GetPerson(userRealPageId);
 
             var userLogin = _manageUserLogin.GetUserLoginOnly(userRealPageId);
+            IList<IC.UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
+           
+            var employeeId = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
+            person.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
 
             if (string.IsNullOrEmpty(_systemIdentifier))
             {
@@ -1267,11 +1273,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 NameValuePair[] response;
                 string errorMessage = "";
+
                 //Here need to add condition for Employeeid
                 if (!string.IsNullOrWhiteSpace(_systemIdentifier))
                 {
                     var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
                     userThirdPartyReference = onesiteuser.UserThirdPartyReference;
+                }
+
+                userThirdPartyReference = person.EmployeeId;
+
+                if (!string.IsNullOrWhiteSpace(_systemIdentifier))
+                {
+                    var onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
+                    if(person.EmployeeId != onesiteuser.UserThirdPartyReference)
+                    {
+                        userThirdPartyReference = person.EmployeeId;
+                    }
+                    else
+                    {
+                        userThirdPartyReference = onesiteuser.UserThirdPartyReference;
+                    }
                 }
 
                 if (!isSuperUser)

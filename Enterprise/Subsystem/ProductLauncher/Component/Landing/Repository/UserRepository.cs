@@ -4219,6 +4219,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// isEmployeeIdChanged
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="oldProfile"></param>
+        /// <returns></returns>
+        private bool isEmployeeIdChanged(IProfileDetail profile, IProfileDetail oldProfile)
+        {
+            return !profile.EmployeeId.Equals(oldProfile.EmployeeId);
+        }
+
+        /// <summary>
         /// isNotificationEmailChanged
         /// </summary>
         /// <param name="priorNotificationEmail"></param>
