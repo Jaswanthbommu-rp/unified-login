@@ -361,6 +361,7 @@
     <Compile Include="Product\EmployeeAccess\UserDetail.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplacePropertyRole.cs" />
     <Compile Include="Product\IntegrationsMarketplace\IntegrationsMarketplaceUser.cs" />
+    <Compile Include="Product\IntelligentBuilding\IBPropertyRole.cs" />
     <Compile Include="Product\MarketingCenter\IMarketingCenterUserStatus.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterRoleAndPropertyList.cs" />
     <Compile Include="Product\MarketingCenter\MarketingCenterUserStatus.cs" />
