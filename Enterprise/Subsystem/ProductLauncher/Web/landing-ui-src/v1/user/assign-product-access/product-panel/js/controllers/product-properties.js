@@ -62,6 +62,7 @@
             vm.propertySelect = "";
             if(bool){
                 vm.propertySelect = 'allProperties';
+                syncMgr.setAccessTypeValue($scope.productId,vm.propertySelect);
             }
         };
 
@@ -121,7 +122,7 @@
         };
 
         vm.hidePropertiesGrid = function () {
-            if($scope.$parent.productId === 16){
+            if($scope.$parent.productId === 16 ||(vm.propertySelect === undefined && $scope.$parent.productId === 8)){
                 var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
                 if(accesstype){
                     vm.propertySelect = accesstype;
