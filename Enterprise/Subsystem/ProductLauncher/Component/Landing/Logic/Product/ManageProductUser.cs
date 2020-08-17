@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -305,7 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuilding:
                         product = new IntelligentBuildingProduct(_defaultUserClaim);
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(productUser.InputJson);
+                            GetProductPropertiesRoles<IBPropertyRole>(productUser.InputJson);
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
@@ -1321,7 +1322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 //Do Nothing
             }
-            
+
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var os = new ManageProductOneSite(base.UserClaim);
             Dictionary<string, object> logData = new Dictionary<string, object>();
@@ -1335,7 +1336,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 changeProductUserTypeResponse = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, false);
             }
-            
+
             var lead2leaseresult = "";
             if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
             {
@@ -1356,7 +1357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     changeProductUserTypeResponse += lead2leaseresult;
                 }
-                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Lead2Lease result:"+lead2leaseresult);
+                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Lead2Lease result:" + lead2leaseresult);
             }
 
             var slmresult = "";
@@ -1371,7 +1372,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // assign user
                 // need to finish
             }
-            
+
             return changeProductUserTypeResponse;
         }
     }
@@ -3871,8 +3872,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Input JSON parsing issue; Null object.";
             }
 
-            var userClaims = new DefaultUserClaim {CorrelationId = Guid.NewGuid()};
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum) _productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
@@ -3912,7 +3913,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
-            var rpList = rolePropList as UnifiedAmenitiesPropertyRole;
+            var rpList = rolePropList as IBPropertyRole;
 
             if (rpList == null)
             {
@@ -3958,7 +3959,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string changeProductUserTypeResponse = string.Empty;
 
-            var rpList = rolePropList as UnifiedAmenitiesPropertyRole;
+            var rpList = rolePropList as IBPropertyRole;
 
             if (rpList == null)
             {

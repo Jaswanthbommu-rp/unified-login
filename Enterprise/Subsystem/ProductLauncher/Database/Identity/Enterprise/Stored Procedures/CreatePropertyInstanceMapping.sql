@@ -20,9 +20,9 @@ AS
                            AND Active = 1
                  )
                      BEGIN TRY
-                         INSERT INTO Enterprise.PropertyMapping
+                         INSERT INTO Enterprise.PropertyInstanceMapping
                          ( PersonaId,
-                           PropertyId,
+                           PropertyInstanceId,
                            ProductId
                          )
                          VALUES
@@ -70,7 +70,4 @@ AS
                                AND Active = 1
                  END;
          END;
-     END;
-GO
-
-
+END;
