@@ -3391,3 +3391,9 @@ BEGIN
 	VALUES (39,'AccessIntegrationMarketplace');
 END
 GO
+
+IF EXISTS (SELECT TOP 1 1 FROM UserManagement.[Control] WHERE ControlId = 519)
+BEGIN
+	update UserManagement.[Control] set DisplayName = 'Assign current and new entities automatically' where ControlId = 519;
+END
+GO
