@@ -1714,7 +1714,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public GbProductMap GetBooksMasterProductDetail(string blueBookProductCode)
         {
             var gbProductMap = GetAllProducts();
-            return gbProductMap.FirstOrDefault(x => x.BooksProductCode == blueBookProductCode);
+            return gbProductMap.FirstOrDefault(x => x.BooksProductCode.ToUpper() == blueBookProductCode.ToUpper());
         }
 
         /// <summary>
