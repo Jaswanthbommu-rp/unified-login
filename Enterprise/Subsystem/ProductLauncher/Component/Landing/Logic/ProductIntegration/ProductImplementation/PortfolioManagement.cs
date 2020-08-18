@@ -240,22 +240,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			// Get end point for properties
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyByGroupEndpoint);
-			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/lindemann/UserPropertyGroupsById?propertyGroupId={0}";
-			baseUrlAndQuery = string.Format(baseUrlAndQuery, propertyGroupId);
+			//baseUrlAndQuery = "https://wmu-books.asseteye.net/api/lindemann/UserPropertyGroupsById?propertyGroupId={0}";
+			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId,propertyGroupId);
 			
 			// call API
 			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 		}
 
-		private IList<ProductAssetGroup> GetPortfolioPropertyGroups()
+		private IList<ProductPropertyGroups> GetPortfolioPropertyGroups()
 		{
 			// Get end point for properties
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyGroupsEndpoint);
 			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
-			baseUrlAndQuery = "https://wmu-books.asseteye.net/api/lindemann/UserPropertyGroups";
+			//baseUrlAndQuery = "https://wmu-books.asseteye.net/api/lindemann/UserPropertyGroups";
 
 			// call API
-			return GetResultFromApi<IList<ProductAssetGroup>>(baseUrlAndQuery);
+			return GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
 		}
 
 		private void MergePropertyRoles(IList<PortfolioRoleProperty> portfolioPropertyRoles, List<PAMRolePropertyList> userPropertyRoles)
@@ -284,12 +284,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 	public class PortfolioRoleProperty : ProductRole
 	{
-		public PortfolioRoleProperty(ProductRole role, List<ProductProperties> properties, List<ProductAssetGroup> Groups)
+		public PortfolioRoleProperty(ProductRole role, List<ProductProperties> properties, List<ProductPropertyGroups> Groups)
 		{
 			SetName = role.GetName;
 			SetRoleId = role.GetRoleId;
 			PropertiesList = new List<ProductProperties>();
-			GroupList = new List<ProductAssetGroup>();
+			GroupList = new List<ProductPropertyGroups>();
 			PropertiesList.AddRange(properties.Select(a => new ProductProperties
 			{
 				SetPropertyId = a.GetPropertyId,
@@ -297,13 +297,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				PropertyType = a.PropertyType
 			}));
 
-			GroupList.AddRange(Groups.Select(a => new ProductAssetGroup
+			GroupList.AddRange(Groups.Select(a => new ProductPropertyGroups
 			{
-				Id = a.Id,
-				Name= a.Name
+				SetGroupId = a.GetGroupId,
+				SetGroupName= a.GetGroupName
 			}));
 		}
 		public List<ProductProperties> PropertiesList { get; set; }
-		public List<ProductAssetGroup> GroupList { get; set; }
+		public List<ProductPropertyGroups> GroupList { get; set; }
 	}
 }

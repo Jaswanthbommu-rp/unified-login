@@ -21,7 +21,7 @@
             vm.groupsData = {};
             vm._groupsData = {};
             vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
-            vm.groupRecords = listAsideModel.getSelectedGroupRoleData();
+            //vm.groupRecords = listAsideModel.getSelectedGroupRoleData();
 
             asidegridTransform.watch(asideGrid);
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
@@ -32,9 +32,9 @@
                 if(vm.propertyRecords !== undefined){
                     syncMgr.setAsidePropertyList(vm.propertyRecords, vm.productId);
                 }
-                else{
-                    syncMgr.setAsidePropertyList(vm.groupRecords, vm.productId);
-                }
+                // else{
+                //     syncMgr.setAsidePropertyList(vm.groupRecords, vm.productId);
+                // }
                 
             }
             else{
@@ -140,9 +140,9 @@
                 vm.dataReq = groupSvc.get(params, vm.setData);
             }else if(productId == "20" || productId == "44"){
                 if(vm.tabName.toLowerCase() === "group"){
-                    vm._groupsData = angular.copy(vm.groupRecords.groupList);
-                    vm.groupsData.records = vm.groupRecords.groupList;
-                    vm.setData(vm.groupsData);
+                    vm._properteiesData = angular.copy(vm.propertyRecords.groupList);
+                    vm.properteiesData.records = vm.propertyRecords.groupList;
+                    vm.setData(vm.properteiesData);
                 }
                 else if(vm.tabName.toLowerCase() === "entitygroup"){
                     params = {
@@ -188,12 +188,7 @@
             }
             else
             {
-                if(vm.tabName.toLowerCase() === 'group') {
-                    vm.groupRecords.groupList = vm._groupsData;    
-                }
-                else {
-                    vm.propertyRecords.propertiesList = vm._properteiesData;
-                }
+                vm.propertyRecords.propertiesList = vm._properteiesData;
                 aside.hide();
             } 
         };

@@ -23,14 +23,14 @@
             if(record.productId === 20) {
                  listModel.setRoleType(record.roletype);
              }
-            if(tabname === 'group'){
-                listModel.setSelectedGroupRoleData(record);
-                aside.show();
-            }
-            else if(tabname === 'EntityGroup'){
+            if(tabname === 'EntityGroup'){
                 listModel.setSelectedPropertyRoleData(record);
                 innerAside.show();
-            }
+            } 
+            // if(tabname === 'group'){
+            //     listModel.setSelectedGroupRoleData(record);
+            //     aside.show();
+            // }
             else{
                 listModel.setSelectedPropertyRoleData(record);
                 aside.show();
