@@ -1,4 +1,4 @@
-﻿Alter PROCEDURE [Ident].[CreateUser_Ver01] (
+﻿Create PROCEDURE [Ident].[CreateUser_Ver01] (
 	@OrganizationId int,
 	@FirstName nvarchar(200),
 	@MiddleName nvarchar(100),
