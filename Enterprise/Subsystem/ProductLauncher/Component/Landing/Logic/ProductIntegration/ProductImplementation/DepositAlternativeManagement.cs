@@ -136,13 +136,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (!string.IsNullOrEmpty(tabName))
 				{
-					if (tabName == TabEnum.AREA.ToString())
+					if (tabName == TabEnum.Area.ToString())
 					{
 						response.ErrorReason = CommonMessageConstants.AreaErrorMessage;
 						return response;
 					}
 
-					if (tabName == TabEnum.REGION.ToString())
+					if (tabName == TabEnum.Region.ToString())
 					{
 						response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
 						return response;

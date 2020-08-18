@@ -5,11 +5,11 @@
         /// <summary>
         /// Area Tab
         /// </summary>
-        AREA = 1,
+        Area = 1,
 
         /// <summary>
         /// Region Tab
         /// </summary>
-        REGION = 2
+        Region = 2
     }
 }
