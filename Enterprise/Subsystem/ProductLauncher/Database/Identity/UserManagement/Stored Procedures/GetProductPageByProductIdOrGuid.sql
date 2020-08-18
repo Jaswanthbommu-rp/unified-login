@@ -6,7 +6,7 @@
 CREATE PROCEDURE [UserManagement].[GetProductPageByProductIdOrGuid] (
 	@ProductId INT = NULL
 	,@ProductGUID uniqueidentifier
-	,@ProductPageType varchar(100) = 'ProductAccess'
+	,@PageType varchar(100) = 'ProductAccess'
 )
 AS
 
@@ -24,7 +24,7 @@ BEGIN
 		ep.[ProductId] = umpp.[ProductId]
 	INNER JOIN [UserManagement].[ProductPageType] PGT ON
 		PGT.ProductPageTypeId = umpp.ProductPageTypeId
-	WHERE PGT.Value = @ProductPageType
+	WHERE PGT.Value = @PageType
 	AND	(ep.[ProductId] IS NULL OR ep.[ProductId] = @ProductId)
 		OR
 		(ep.[ProductGUID] IS NULL OR ep.[ProductGUID] = @ProductGUID)
