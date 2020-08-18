@@ -266,6 +266,7 @@ BEGIN
 			EXEC Enterprise.LinkPersonaToRole
 				@PersonaID = @PersonaId,
 				@RoleID = @RoleId,
+				@CreatedBy = NULL,
 				@PersonaPrivilgeID = @PerPriv OUTPUT;
 		END;
 	END;
