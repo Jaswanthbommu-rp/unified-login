@@ -212,7 +212,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToErrorLog($"ManageProductOnSite.GetRegions-no properties received from product for user with editorPersona id - {editorPersonaId}.");
 
                     response.IsError = true;
-                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
+                    //UI calls getregions but diplays the results in the propertygroup tab
+                    response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
                     return response;
                 }
 
@@ -251,7 +252,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
+                    //UI calls getregions but diplays the results in the propertygroup tab
+                    response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
                 }
 
                 WriteToErrorLog($"ManageProductOnSite.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
