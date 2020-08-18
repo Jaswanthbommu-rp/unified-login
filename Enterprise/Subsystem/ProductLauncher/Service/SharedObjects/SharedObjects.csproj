@@ -138,6 +138,7 @@
     <Compile Include="Enum\PersonaType.cs" />
     <Compile Include="Enum\ProductBatchStatusType.cs" />
     <Compile Include="Enum\RoleCategoryType.cs" />
+    <Compile Include="Enum\TabEnum.cs" />
     <Compile Include="Enum\UserStatusType.cs" />
     <Compile Include="Enum\ProductSelectType.cs" />
     <Compile Include="Enum\ActivityType.cs" />
