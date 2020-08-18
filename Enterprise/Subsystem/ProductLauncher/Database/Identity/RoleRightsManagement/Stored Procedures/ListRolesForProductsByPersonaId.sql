@@ -5,30 +5,65 @@ CREATE PROCEDURE [Security].[ListRolesForProductsByPersonaId] (
 )
 AS
 BEGIN
-	SELECT	DISTINCT
-					R.RoleName 'Role',
-					R.ShortName 'RoleNickName',
-					R.RoleID 'RoleId',
-					p.ProductId 'Product',
-					RT.Value AS RoleType,
-					pe.PersonaId,
-					ULP.OrganizationPartyId
-	FROM		Security.Role R
-					INNER JOIN Security.RoleRight RR ON 
-						R.RoleId = RR.RoleId
-					INNER JOIN Security.[Right] RG ON 
-						RR.RightID = RG.RightID
-					INNER JOIN Security.RoleType RT ON 
-						RT.RoleTypeId = R.RoleTypeID
-					INNER JOIN Enterprise.Product P ON 
-						P.ProductId = R.ProductId
-					INNER JOIN Security.PersonaRole PR ON 
-						PR.RoleID = R.RoleID
-					INNER JOIN Person.Persona PE ON 
-						PE.PersonaId = PR.PersonaId
-					INNER JOIN Ident.UserLoginPersona ULP ON 
-						ULP.UserLoginPersonaId = PE.UserLoginPersonaId
-	WHERE	P.ProductId = @ProductId
-	AND			((@PersonaId IS NULL) OR (pe.PersonaId = @PersonaId))
-	AND			((@PartyId IS NULL) OR (ULP.OrganizationPartyId = @PartyId))
+	   DECLARE @PersonaRoleId INT
+       DECLARE @final NVARCHAR(MAX)
+       DECLARE @result_sp TABLE (results NVARCHAR(MAX))
+       DECLARE @json VARCHAR(max)
+
+       SELECT @PersonaRoleId = SPR.RoleId
+       FROM Security.PersonaRole SPR
+       INNER JOIN Security.ROLE SR ON SR.RoleId = SPR.RoleId
+       WHERE SR.ProductId = @ProductId
+              AND SPR.PersonaId = @PersonaId
+			  
+	IF(@PersonaRoleId IS NULL AND @ProductId = 26) --26 is for Unified Amenities
+       BEGIN
+              INSERT INTO @result_sp
+              EXEC [Enterprise].[GetUserProductBatchJsonData] @ProductId,@PersonaId
+
+              SELECT @json = results
+              FROM @result_sp
+
+              SELECT DISTINCT 
+					  R.RoleName 'Role'
+                     ,R.ShortName 'RoleNickName'
+                     ,CONVERT(BIGINT,JSON_VALUE(@JSON, '$.RoleList[0]')) 'RoleId'
+                     ,r.ProductId 'Product'
+                     ,RT.Value AS RoleType
+                     ,@PersonaId AS PersonaId
+                     ,OrgPartyID OrganizationPartyId
+              FROM  Security.Role R
+              INNER JOIN Security.RoleType RT ON RT.RoleTypeId = R.RoleTypeID
+              WHERE r.ProductId = @ProductId
+                     AND R.RoleId = CONVERT(BIGINT,JSON_VALUE(@JSON, '$.RoleList[0]')) 
+       END    
+    ELSE
+		BEGIN
+			  SELECT DISTINCT
+						R.RoleName 'Role',
+						R.ShortName 'RoleNickName',
+						R.RoleID 'RoleId',
+						p.ProductId 'Product',
+						RT.Value AS RoleType,
+						pe.PersonaId,
+						ULP.OrganizationPartyId
+			  FROM	Security.Role R
+			  INNER JOIN Security.RoleRight RR ON
+					R.RoleId = RR.RoleId
+			  INNER JOIN Security.[Right] RG ON
+					RR.RightID = RG.RightID
+			  INNER JOIN Security.RoleType RT ON
+					RT.RoleTypeId = R.RoleTypeID
+			  INNER JOIN Enterprise.Product P ON
+					P.ProductId = R.ProductId
+			  INNER JOIN Security.PersonaRole PR ON 
+					PR.RoleID = R.RoleID
+			  INNER JOIN Person.Persona PE ON 
+					PE.PersonaId = PR.PersonaId
+			  INNER JOIN Ident.UserLoginPersona ULP ON 
+					ULP.UserLoginPersonaId = PE.UserLoginPersonaId
+			  WHERE	P.ProductId = @ProductId
+			    AND	((@PersonaId IS NULL) OR (pe.PersonaId = @PersonaId))
+			    AND	((@PartyId IS NULL) OR (ULP.OrganizationPartyId = @PartyId))
+		END
 END;
