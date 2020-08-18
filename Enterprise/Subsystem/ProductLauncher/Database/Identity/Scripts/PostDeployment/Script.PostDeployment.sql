@@ -21,7 +21,7 @@ Post-Deployment Script Template
 
 --:r .\PostDeploymentScripts\UserManagementData.sql
 
-:r .\PostDeploymentScripts\August2020Release.sql
+--:r .\PostDeploymentScripts\August2020Release.sql
 
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
