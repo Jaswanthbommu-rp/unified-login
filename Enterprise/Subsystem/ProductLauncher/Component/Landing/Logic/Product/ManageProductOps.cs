@@ -208,7 +208,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (response.IsError) { return response; }
+            if (response.IsError) 
+            {
+                response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                return response; 
+            }
 
             response = GetCompanyAssetDetails(editorPersonaId, userPersonaId, includeDisabled, updateAssetNames: true);
 
@@ -228,7 +232,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse response = new ListResponse();
 
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (response.IsError) { return response; }
+            if (response.IsError) 
+            {
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                return response; 
+            }
 
             response = GetRoles(editorPersonaId, userPersonaId, assetCode);
 
