@@ -21,6 +21,10 @@
         @include grid-col(6);
     }
 
+    &-employee-Id {
+        @include grid-col(4);
+    }
+
     &-user-type {
         @include grid-col(6);
     }
