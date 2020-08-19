@@ -25,6 +25,10 @@
                 "text": $filter("userDetailsText")("err_last_name_required")
             }]
         });
+        model.employeeId = inputTextConfig({
+            id: "employeeid",
+            fieldName: "employeeid",
+        });
 
         model.middleInitial = inputTextConfig({
             id: "middleInitial",

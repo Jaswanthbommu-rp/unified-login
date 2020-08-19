@@ -12,6 +12,7 @@
             "label.firstName",
             "label.middleName",
             "label.lastName",
+            "label.employeeId",
             "label.userTypeId",
             "label.loginName",
             "label.password",
