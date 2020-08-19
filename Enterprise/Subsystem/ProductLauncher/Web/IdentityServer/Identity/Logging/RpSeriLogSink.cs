@@ -53,10 +53,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity.Logging
 
             if (message.Contains("IDX10500") || (exception != null && exception.Message.Contains("IDX10500")))
             {
-                if (Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogDiagnostic"]))
-                {
-                    Log.Write(LogEventLevel.Debug, "", logDetails);
-                }
+                Log.Write(LogEventLevel.Debug, message, logDetails);
+
                 return; // no need to log the "signature validation errors
             }
 
@@ -65,11 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity.Logging
                 Log.Write(LogEventLevel.Error, exception, exception.Message, logDetails);
             }
 
-            if (Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogDiagnostic"]))
-            {
-                // add dignostic info including exception
-                Log.Write(LogEventLevel.Debug, "" ,logDetails);
-            }
+            // add dignostic info including exception
+            Log.Write(LogEventLevel.Debug, exception, message, logDetails);
         }
     }
 }
