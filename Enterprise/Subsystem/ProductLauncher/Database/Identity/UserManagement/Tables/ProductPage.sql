@@ -9,6 +9,7 @@
     CONSTRAINT [PK_ProductPage] PRIMARY KEY CLUSTERED ([ProductPageId] ASC)
 );
 GO
+
 ALTER TABLE [UserManagement].[ProductPage]  WITH CHECK ADD  CONSTRAINT [FK_ProductPage_Type] FOREIGN KEY([ProductPageTypeId])
 REFERENCES [UserManagement].[ProductPageType] ([ProductPageTypeId])
 GO
