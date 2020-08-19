@@ -85,6 +85,14 @@
 
         #endregion
 
+        #region Areas
+
+        /// <summary>
+        /// AreaErrorMessage
+        /// </summary>
+        public const string AreaErrorMessage = "There was a problem getting the list of areas.  If the problem persists, please contact support.";
+
+        #endregion
         #endregion
     }
 }

@@ -21,6 +21,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Middle initial
 		/// </summary>
 		string MiddleName { get; set; }
+		/// <summary>
+		/// EmployeeId
+		/// </summary>
+		string EmployeeId { get; set; }
 
 		/// <summary>
 		/// PartyId

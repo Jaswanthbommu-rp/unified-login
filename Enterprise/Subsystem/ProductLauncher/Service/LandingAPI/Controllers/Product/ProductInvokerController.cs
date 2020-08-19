@@ -246,6 +246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="subjectPersonaId">Subject user persona id</param>
 		/// <param name="productType">Product Type</param>
 		/// <param name="dataFilter">A dataFilter used to filter the roles.</param>
+		/// <param name="TabName">Tab Name</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
@@ -255,7 +256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[Route("products/propertygroups")]
 		[HttpGet]
 		public HttpResponseMessage GetPropertyGroups(ProductEnum productType, long editorPersonaId, long subjectPersonaId,
-			[FromUri] RequestParameter dataFilter)
+			[FromUri] RequestParameter dataFilter , string TabName = null)
 		{
 			ListResponse result;
 			try
@@ -267,7 +268,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 				var productLogic = ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, _userClaims);
-				result = productLogic.GetProductPropertyGroups(dataFilter);
+				result = productLogic.GetProductPropertyGroups(dataFilter , null, TabName);
 
 				if (result.IsError)
 					Request.CreateResponse(HttpStatusCode.Forbidden, result);

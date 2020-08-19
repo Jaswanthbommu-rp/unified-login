@@ -144,6 +144,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected IUserLoginRepository _userLoginRepository = new UserLoginRepository();
 
         /// <summary>
+        /// User login persona repository
+        /// </summary>
+        protected IUserLoginPersonaRepository _userLoginPersonaRepository = new UserLoginPersonaRepository();
+
+        /// <summary>
+        /// User repository
+        /// </summary>
+        protected IUserRepository _userRepository = new UserRepository();
+
+        /// <summary>
         /// List of Product InternalSetting
         /// </summary>
         protected IList<IC.ProductInternalSetting> _productInternalSettingList = new List<IC.ProductInternalSetting>();
