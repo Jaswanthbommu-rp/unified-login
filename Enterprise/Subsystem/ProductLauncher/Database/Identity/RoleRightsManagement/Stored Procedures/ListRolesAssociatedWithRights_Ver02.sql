@@ -6,12 +6,13 @@ CREATE PROCEDURE [Security].[ListRolesAssociatedWithRights_Ver02] (
  )  
 AS  
 BEGIN  
- IF ((LEN(@TargetProductId) = 0) OR (ISJSON(@TargetProductId) = 0))  
+ IF (LEN(@TargetProductId) = 0)  
  BEGIN  
   SELECT 0 AS Id  
    ,'Target ProductId list is empty.';  
   RETURN;  
  END;  
+
  Declare @VisibleStatusId INT  
   
  Declare @OrgDefaultRole AS TABLE (  
@@ -34,12 +35,6 @@ BEGIN
     1  
  From Security.OrganizationDefaultRole  
  Where OrgPartyId = @PartyId  
-  
- SELECT @TargetProductId = ColumnValue  
- FROM OPENJSON (JSON_QUERY(@TargetProductId, '$.targetProducts'))  
- WITH (  
-     ColumnValue nvarchar(max) '$.productIds'  
-    )  
   
  INSERT INTO @TargetProductIds (  
   ProductId  
