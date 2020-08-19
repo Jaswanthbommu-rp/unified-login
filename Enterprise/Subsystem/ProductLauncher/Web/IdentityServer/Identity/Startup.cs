@@ -50,12 +50,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity
 
                 var levelSwitch = new LoggingLevelSwitch {MinimumLevel = (LogEventLevel) IdentityServerConfig.GetIdentityServerLogEventLevel()};
 
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.ControlledBy(levelSwitch)
-                    //.Enrich.WithProperty("UserName", System.Security.Principal.WindowsIdentity.GetCurrent().Name)
-                    .Enrich.WithProperty("MachineName", Environment.MachineName)
-                    .WriteTo.RpEntLibQueue()
-                    .CreateLogger();
+                //Removed cause the new kibana strategy
+                //Log.Logger = new LoggerConfiguration()
+                //    .MinimumLevel.ControlledBy(levelSwitch)
+                //    //.Enrich.WithProperty("UserName", System.Security.Principal.WindowsIdentity.GetCurrent().Name)
+                //    .Enrich.WithProperty("MachineName", Environment.MachineName)
+                //    .WriteTo.RpEntLibQueue()
+                //    .CreateLogger();
                 
                 var options = IdentityServerConfig.GetIdentityServerOptions();
 

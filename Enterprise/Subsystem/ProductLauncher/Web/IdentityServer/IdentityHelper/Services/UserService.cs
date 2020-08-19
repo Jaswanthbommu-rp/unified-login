@@ -342,6 +342,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var providerName = ProviderEnum.All.ToString().ToLower();
             var providerConfiguration = rpcache.GetFromCache(cacheKey, 600, () => _manageProvider.GetProviderConfigurationByName(providerName));
 
+            LogExternalUserClaims(context, providerName);
+
             if (providerConfiguration.Any(p => string.Equals(p.AuthenticationType, context.ExternalIdentity.Provider, StringComparison.CurrentCultureIgnoreCase)))
             {
                 var pc = (from a in providerConfiguration
