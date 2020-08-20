@@ -233,6 +233,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
 					}
+					else if (product.ProductId == (int)ProductEnum.IntelligentBuilding)
+					{
+						ManageIntelligentBuilding ib = new ManageIntelligentBuilding(userClaim);
+						propertiesResponse = ib.GetUPFMProperties(createUserPersonaId, personaId, false, ProductEnum.IntelligentBuilding,null);
+						rolesResponse = ib.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+					}
 				}
 				catch (Exception ex)
 				{
@@ -502,7 +509,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (allProperties)
 			{
-				if (productID == (int)ProductEnum.ClientPortal)
+				if (productID == (int)ProductEnum.ClientPortal || productID == (int)ProductEnum.IntelligentBuilding)
 				{
 					PropertyList.Add("-1");
 				}
