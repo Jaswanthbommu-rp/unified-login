@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		protected DefaultUserClaim _editorUserClaim;
 
 		protected long _userPersonaId = 5;
-		protected long _userUserId = 15;
+        protected long _userUserId = 15;
         protected Guid _userRealPageId = new Guid("623C6677-D20D-5E6A-B4CC-1DE5781F0D5C");
         protected Guid _userOrganizationRealPageId = new Guid("12345678-C20D-4E6A-A4CC-0DE5781F0D5C");
         private int _userOrganizationPartyId = 1234;
@@ -98,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_editorPersona = new Persona() { PersonaId = _editorPersonaId, RealPageId = _editorRealPageId, OrganizationPartyId = _editorOrganizationPartyId, UserId = _editorUserId};
 			_editorPersona.Organization = new Organization() { PartyId = _editorOrganizationPartyId, RealPageId = _editorOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
 
-			_userPersona = new Persona() { PersonaId = _userPersonaId, RealPageId = _userRealPageId, OrganizationPartyId = _userOrganizationPartyId, UserId = _userUserId};
+			_userPersona = new Persona() { PersonaId = _userPersonaId, RealPageId = _userRealPageId, OrganizationPartyId = _userOrganizationPartyId};
 			_userPersona.Organization = new Organization() { PartyId = _userOrganizationPartyId, RealPageId = _userOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
 
 			_newUserPersona = new Persona() { PersonaId = _newUserPersonaId, RealPageId = _newUserRealPageId, OrganizationPartyId = _newUserOrganizationPartyId };
