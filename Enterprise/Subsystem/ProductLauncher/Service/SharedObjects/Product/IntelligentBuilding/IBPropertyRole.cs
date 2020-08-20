@@ -20,6 +20,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		/// Role assigned to the user
 		/// </summary>
 		public List<string> RoleList { get; set; }
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> RemovedPropertyList { get; set; }
 	}
 	/// <summary>
 	/// Object to map with Input Json from UI
@@ -40,5 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		/// Is product assigned or removed
 		/// </summary>
 		public bool IsAssigned { get; set; }
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public List<string> RemovedPropertyList { get; set; }
 	}
 }
