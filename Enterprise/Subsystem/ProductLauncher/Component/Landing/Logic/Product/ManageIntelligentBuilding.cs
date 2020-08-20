@@ -183,6 +183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
+					List<string> unAssignedPropertyList = userAssignProductPropertyRole.RemovedPropertyList;
 
 					List<string> unassignedProperties = new List<string>();
 					List<string> assignedProperties = new List<string>();
@@ -198,7 +199,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					foreach (ProductProperty prop in propertyList)
 					{
-						if (assignedPropertyList.All(p => p != prop.ID.ToString()))
+						if (unAssignedPropertyList.All(p => p.Equals(prop.ID.ToString())))
 						{
 							unassignedProperties.Add(prop.ID.ToString());
 						}
@@ -254,6 +255,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					WriteToErrorLog($"ManageIntelligentBuildingUser-UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");
 					return result.ErrorMessage;
+				}
+
+				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+				List<string> unassignedProperties = new List<string>();			
+
+				foreach (var property in propertyList)
+				{
+					unassignedProperties.Add(property.ID.ToString());
+				}
+				
+				if (unassignedProperties.Count > 0)
+				{
+					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
 				}
 			}
 
