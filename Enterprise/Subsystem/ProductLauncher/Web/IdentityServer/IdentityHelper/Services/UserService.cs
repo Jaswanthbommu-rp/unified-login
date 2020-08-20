@@ -333,7 +333,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         {
             var userLoginField = "";
             var externalIdToken = "";
-            
+            LogExternalUserClaims(context, "user idp claims");
+
             // get the claim type for the login name based on the external identity
             var rpcache = new RPObjectCache();
             const string cacheKey = "providerConfigurations";
@@ -523,19 +524,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         
         private void LogExternalUserClaims(ExternalAuthenticationContext context, string errorReason)
         {
+            var logData = new Dictionary<string, object>();
             try
             {
-                var logData = new Dictionary<string, object>();
                 var claimList = context.ExternalIdentity.Claims
                     .ToDictionary(claim => $"CLAIM-{claim.Type} (Issuer={claim.Issuer})", claim => claim.Value);
                 logData.Add("context.ExternalIdentity.Claims", claimList);
-
-                WriteToLog(LogType.Diagnostic, $"AuthenticateExternalAsync: {errorReason}", Guid.NewGuid(), logData);
             }
             catch (Exception)
             {
                 // ignored
             }
+            WriteToLog(LogType.Diagnostic, $"AuthenticateExternalAsync: {errorReason}", Guid.NewGuid(), logData);
         }
 
         
