@@ -836,6 +836,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                 if (person != null)
                 {
+                    IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+
+                    persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
+                    persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
+
                     productResult.User = new User()
                     {
                         FullName = $"{person.FirstName} {person.LastName}",
@@ -890,6 +895,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		{
             return GetUserProductDetails_v2(_userClaims.UserRealPageGuid, null);
 		}
+
+
+		/// <summary>
+        /// Get Persona company list
+        /// </summary>
+        /// <returns>List of persona for the given user</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when Persona object have invalid entries)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List of personas", Type = typeof(PersonaCompany))]
+        [SwaggerResponseExamples(typeof(PersonaCompany), typeof(PersonaCompanyListExample))]
+        [Route("user/personas")]
+        [AuthorizeScope("userinfoapi")]
+        [HttpGet]
+        public HttpResponseMessage GetPersonasList()
+        {
+            ObjectListOutput<PersonaCompany, IErrorData> output = new ObjectListOutput<PersonaCompany, IErrorData>();
+            var personaList = _managePersona.ListActivePersona(_realpageUserId, true);
+            List<PersonaCompany> pcl = new List<PersonaCompany>();
+            foreach (var persona in personaList)
+            {
+                if (persona.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId)
+                {
+                    if (pcl.All(p => p.CompanyRealPageId != persona.Organization.RealPageId))
+                    {
+                        pcl.Add(new PersonaCompany() {CompanyName = persona.Organization.Name, CompanyRealPageId = persona.Organization.RealPageId, Personas = new List<PersonaCompanyDetails>()});
+                    }
+
+                    IList<PersonaCompanyDetails> currentCompanyPersonaList = pcl.Find(p => p.CompanyRealPageId == persona.Organization.RealPageId).Personas;
+                    currentCompanyPersonaList.Add(new PersonaCompanyDetails()
+                    {
+                        PersonaId = persona.PersonaId,
+                        Name = persona.Name,
+                    });
+                }
+            }
+
+            pcl = pcl.OrderBy(p => p.CompanyName).ToList();
+            output.list = pcl;
+
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
 
 		#region Private Methods
 
@@ -1812,6 +1859,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				return response;
 			}
 		}
+
+        /// <summary>
+        /// Used to document examples of the PersonaCompany webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class PersonaCompanyListExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Persona example</returns>
+            public object GetExamples()
+            {
+                List<PersonaCompany> pclList = new List<PersonaCompany>();
+                pclList.Add(new PersonaCompany() {CompanyName = "Company A", CompanyRealPageId = Guid.NewGuid(), Personas = new List<PersonaCompanyDetails>() {new PersonaCompanyDetails() {PersonaId = 1111, Name = "Persona"}}});
+                pclList.Add(new PersonaCompany() {CompanyName = "Company B", CompanyRealPageId = Guid.NewGuid(), Personas = new List<PersonaCompanyDetails>() {new PersonaCompanyDetails() {PersonaId = 2222, Name = "Other Persona" } }});
+                ObjectOutput<List<PersonaCompany>, IErrorData> output = new ObjectOutput<List<PersonaCompany>, IErrorData>() { obj = pclList };
+
+                return output;
+            }
+        }
 		#endregion
 	}
 }

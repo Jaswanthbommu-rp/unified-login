@@ -322,47 +322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, roleList);
 		}
         #endregion
-
-        /// <summary>
-        /// The company persona details
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public class PersonaCompany
-        {
-            /// <summary>
-            /// the company name
-            /// </summary>
-
-            public string CompanyName { get; set; }
-
-            /// <summary>
-            /// the company name
-            /// </summary>
-            public Guid CompanyRealPageId { get; set; }
-
-            /// <summary>
-            /// A list of personas for the company
-            /// </summary>
-            public List<PersonaCompanyDetails> Personas { get; set; }
-        }
-
-        /// <summary>
-        /// The details about the persona
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public class PersonaCompanyDetails
-        {
-            /// <summary>
-            /// The persona id
-            /// </summary>
-            public long PersonaId { get; set; }
-
-            /// <summary>
-            /// The persona name
-            /// </summary>
-
-            public string Name { get; set; }
-        }
+        
 
         #region Get Examples
         /// <summary>

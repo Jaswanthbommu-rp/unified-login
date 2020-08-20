@@ -252,6 +252,8 @@
     <Compile Include="Landing\OrganizationType.cs" />
     <Compile Include="Landing\PagingSummary.cs" />
     <Compile Include="Landing\PasswordPolicyCommon.cs" />
+    <Compile Include="Landing\PersonaCompany.cs" />
+    <Compile Include="Landing\PersonaCompanyDetails.cs" />
     <Compile Include="Landing\PropertyRoleList.cs" />
     <Compile Include="Landing\IUserOrganizationExists.cs" />
     <Compile Include="Landing\IUserOrganization.cs" />
