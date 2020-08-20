@@ -145,12 +145,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             var azureConfiguration = GetProviderDetails(ProviderEnum.AzureActiveDirectory).FirstOrDefault();
             if (azureConfiguration != null)
             {
-                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Azure - Start", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Azure - Start" });
+                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Azure - Start");
                 var azureOptions = GetOIDCOptions(azureConfiguration, signInAsType, correlationId);
                 if (azureOptions != null)
                 {
                     app.UseOpenIdConnectAuthentication(azureOptions);
-                    Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Azure - Loaded", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Azure - Loaded" });
+                    Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Azure - Loaded");
                 }
             }
 
@@ -158,9 +158,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             var googleOptions = GetGoogleOptions(signInAsType, correlationId);
             if (googleOptions != null)
             {
-                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Google - Start", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Start" });
+                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Google - Start");
                 app.UseGoogleAuthentication(googleOptions);
-                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Google - Loaded", new LogDetails() { CorrelationId = correlationId, Message = "ConfigureIdentityProviders.Google - Loaded" });
+                Log.Write(LogEventLevel.Debug, "ConfigureIdentityProviders.Google - Loaded");
             }
 
             // SAML
@@ -169,12 +169,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 foreach (var provider in samlProviderList)
                 {
-                    Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.SAML - Start {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.SAML - Start {provider.AuthenticationType}" });
+                    Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.SAML - Start {provider.AuthenticationType}");
                     var samlpvd = GetSAMLOptions(provider, signInAsType, correlationId);
                     if (samlpvd != null)
                     {
                         app.UseSaml2Authentication(samlpvd);
-                        Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.SAML - Loaded {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.SAML - Loaded {provider.AuthenticationType}" });
+                        Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.SAML - Loaded {provider.AuthenticationType}");
                     }
                 }
             }
@@ -184,12 +184,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             {
                 foreach (var provider in oidcList)
                 {
-                    Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.OIDC - Start {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.OIDC - Start {provider.AuthenticationType}" });
+                    Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.OIDC - Start {provider.AuthenticationType}");
                     var oidcpvd = GetOIDCOptions(provider, signInAsType, correlationId);
                     if (oidcpvd != null)
                     {
                         app.UseOpenIdConnectAuthentication(oidcpvd);
-                        Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.OIDC - Loaded {provider.AuthenticationType}", new LogDetails() { CorrelationId = correlationId, Message = $"ConfigureIdentityProviders.OIDC - Loaded {provider.AuthenticationType}" });
+                        Log.Write(LogEventLevel.Debug, $"ConfigureIdentityProviders.OIDC - Loaded {provider.AuthenticationType}");
                     }
                 }
             }
@@ -265,7 +265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
             catch (Exception ex)
             {
-                Log.Write(LogEventLevel.Error, ex, "IdentityServerConfig.GetSAMLOptions - " + ex.Message, new LogDetails() { CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetSAMLOptions - " + ex.Message });
+                Log.Write(LogEventLevel.Error, ex, "IdentityServerConfig.GetSAMLOptions - " + ex.Message);
             }
 
             return null;
@@ -382,7 +382,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
             catch (Exception ex)
             {
-                Log.Write(LogEventLevel.Error, ex, "IdentityServerConfig.GetOIDCOptions - " + ex.Message, new LogDetails() { CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetOIDCOptions - " + ex.Message });
+                Log.Write(LogEventLevel.Error, ex, "IdentityServerConfig.GetOIDCOptions - " + ex.Message);
             }
 
             return null;
@@ -417,7 +417,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Configurati
             }
             catch (Exception ex)
             {
-                Log.Write(LogEventLevel.Error, ex, "IdentityServerConfig.GetGoogleOptions - " + ex.Message, new LogDetails() { CorrelationId = correlationId, Exception = ex, Message = "IdentityServerConfig.GetGoogleOptions - " + ex.Message });
+                Log.Write(LogEventLevel.Error, ex, "IdentityServerConfig.GetGoogleOptions - " + ex.Message);
             }
 
             return null;

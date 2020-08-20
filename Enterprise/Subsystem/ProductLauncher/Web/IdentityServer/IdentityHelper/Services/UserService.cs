@@ -950,12 +950,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             }
             catch (Exception ex)
             {
-                Log.Write(LogEventLevel.Error, ex, message, new LogDetails
-                {
-                    Message = message,
-                    ProductModule = GetType().ToString(),
-                    CorrelationId = correlationId.ToString()
-                });
+                Log.Write(LogEventLevel.Error, ex, message);
             }
         }
 
@@ -969,15 +964,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         /// <param name="correlationId">correlationId</param>
         private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            Log.Write(logType, exception, message, new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                CorrelationId = correlationId.ToString(),
-                Exception = exception,
-
-            });
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
 
         /// <summary>

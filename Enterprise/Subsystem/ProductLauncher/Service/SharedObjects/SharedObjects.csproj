@@ -131,7 +131,6 @@
     <Compile Include="Attribute\VersionedRouteAttribute.cs" />
     <Compile Include="Audit\Common\ActivityDetails.cs" />
     <Compile Include="Audit\Common\AuditRecord.cs" />
-    <Compile Include="Audit\Common\LogDetails.cs" />
     <Compile Include="Audit\Dtos\UserAuditDto.cs" />
     <Compile Include="Base\BaseType.cs" />
     <Compile Include="Base\IRequestParameter.cs" />

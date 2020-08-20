@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
+using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory
 {
@@ -65,18 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     string message = $"ManageProductFactory.GetProductLogic - Exception in Factory, mostly causes if exception in constructor. Message={ex.Message}";
 
-                    LogDetails logDetails = new LogDetails
-                    {
-                        Message = message,
-                        ProductModule = "ManageProductFactory.GetProductLogic",
-                        UserId = userClaims?.UserId.ToString(),
-                        PmcId = userClaims?.OrganizationPartyId.ToString(),
-                        UserName = userClaims?.LoginName,
-                        Exception = ex,
-                        CorrelationId = userClaims?.CorrelationId.ToString(),
-                    };
-
-                    Log.Write(LogEventLevel.Error, ex, message, logDetails);
+                    Log.Write(LogEventLevel.Error, ex, message);
                 }
                 catch (Exception)
                 { }
@@ -102,18 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     string message = $"ManageProductFactory.GetProductLogic - Exception in Factory, mostly causes if exception in constructor. Message={ex.Message}";
 
-                    LogDetails logDetails = new LogDetails
-                    {
-                        Message = message,
-                        ProductModule = "ManageProductFactory.GetProductLogic",
-                        UserId = userClaims?.UserId.ToString(),
-                        PmcId = userClaims?.OrganizationPartyId.ToString(),
-                        UserName = userClaims?.LoginName,
-                        Exception = ex,
-                        CorrelationId = userClaims?.CorrelationId.ToString(),
-                    };
-
-                    Log.Write(LogEventLevel.Error, ex, message, logDetails);
+                    Log.Write(LogEventLevel.Error, ex, message);
                 }
                 catch (Exception)
                 { }

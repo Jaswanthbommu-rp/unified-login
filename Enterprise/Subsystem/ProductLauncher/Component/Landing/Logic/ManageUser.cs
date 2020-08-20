@@ -784,13 +784,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="exception">Exception</param>
 		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, exception, message, new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				Exception = exception
-			});
+			Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
 		}
 		#endregion
 	}

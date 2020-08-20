@@ -236,16 +236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					string message = $"Exception during clone user for product - {product?.ProductName}";
 
-					Log.Write(LogEventLevel.Error, ex, message, new LogDetails
-					{
-						Message = message,
-						ProductModule = this.GetType().ToString(),
-						UserId = userClaim?.UserId.ToString(),
-						PmcId = userClaim?.OrganizationPartyId.ToString(),
-						UserName = userClaim?.LoginName,
-						Exception = ex,
-						CorrelationId = userClaim?.CorrelationId.ToString(),
-					});
+					Log.Write(LogEventLevel.Error, ex, message);
 				}
 			}
 

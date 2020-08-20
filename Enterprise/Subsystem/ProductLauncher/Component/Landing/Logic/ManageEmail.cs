@@ -362,23 +362,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="exception">Exception</param>
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            string correlationId = "";
-            if (_defaultUserClaim != null)
-            {
-                correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
-            }
-
-            LogDetails logDetails = new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                Exception = exception,
-                CorrelationId = correlationId
-            };
-
-            Log.Write(logType, exception, message, logDetails);
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
+
         #endregion
     }
 }

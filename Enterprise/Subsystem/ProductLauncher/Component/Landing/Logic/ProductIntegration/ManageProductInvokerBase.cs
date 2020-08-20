@@ -4,7 +4,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
@@ -1093,19 +1092,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var editorUserDictionary = EditorUserDetails?.ToDictionary();
             logData.AddRange(editorUserDictionary);
 
-            LogDetails logDetails = new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                UserId = EditorUserDetails?.UserId.ToString(),
-                PmcId = EditorUserDetails?.OrganizationPartyId.ToString(),
-                UserName = EditorUserDetails?.LoginName,
-                Exception = exception,
-                CorrelationId = CorrelationId.ToString(),
-            };
-
-            Log.Write(logType, exception, message, logDetails);
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
 
         #endregion

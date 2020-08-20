@@ -144,16 +144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="correlationId">correlationId</param>
         private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            LogDetails logDetails = new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                CorrelationId = correlationId.ToString(),
-                Exception = exception
-            };
-
-            Log.Write(logType, exception, message, logDetails);
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
         #endregion
     }

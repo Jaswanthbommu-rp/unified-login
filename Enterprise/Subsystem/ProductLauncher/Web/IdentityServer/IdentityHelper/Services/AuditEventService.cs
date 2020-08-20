@@ -1,6 +1,5 @@
 ﻿using IdentityServer3.Core.Events;
 using IdentityServer3.Core.Services;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -66,15 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 
 		private void WriteToLog(LogEventLevel logType, string message, string correlationId, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, exception, message, new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				CorrelationId = correlationId,
-				Exception = exception,
-
-			});
+			Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
 		}
 	}
 }

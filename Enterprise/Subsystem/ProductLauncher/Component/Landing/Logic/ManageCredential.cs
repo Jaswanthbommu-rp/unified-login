@@ -1108,15 +1108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var additionalInfo = new Dictionary<string, object> {{"ActivityToken", setPassword.ActivityToken}};
 
-                LogDetails logDetails = new LogDetails
-                {
-                    Message = "Activity Token is expired.",
-                    ProductModule = this.GetType().ToString(),
-                    UserName = setPassword.EnterpriseUserName,
-                    AdditionalInfo = additionalInfo
-                };
-
-                Log.Write(LogEventLevel.Error, logDetails.Message, logDetails);
+                Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, "Activity Token is expired.");
 
                 return setPasswordResponse;
             }

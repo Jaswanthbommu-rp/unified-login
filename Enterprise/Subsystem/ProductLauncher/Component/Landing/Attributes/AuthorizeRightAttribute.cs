@@ -76,29 +76,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes
                             {
                                 string message = $"User right has been verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
 
-                                LogDetails logDetails = new LogDetails
-                                {
-                                    Message = message,
-                                    ProductModule = GetType().ToString(),
-                                    UserId = claimDetails?.UserRealPageGuid.ToString(),
-                                    PmcId = claimDetails?.OrganizationPartyId.ToString()
-                                };
-
-                                Log.Write(LogEventLevel.Debug, message, logDetails);
+                                Log.Write(LogEventLevel.Debug, message);
                             }
                             else
                             {
                                 string message = $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
 
-                                LogDetails logDetails = new LogDetails
-                                {
-                                    Message = message,
-                                    ProductModule = GetType().ToString(),
-                                    UserId = claimDetails?.UserRealPageGuid.ToString(),
-                                    PmcId = claimDetails?.OrganizationPartyId.ToString()
-                                };
-
-                                Log.Write(LogEventLevel.Debug, message, logDetails);
+                                  Log.Write(LogEventLevel.Debug, message);
 
                                 // handle unauthorized request
                                 this.HandleUnauthorizedRequest(actionContext);
@@ -112,17 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes
                     {
                         string message = $"Error while evaluating user rights. Roles - {claimDetails?.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
 
-                        LogDetails logDetails = new LogDetails
-                        {
-                            Message = message,
-                            ProductModule = GetType().ToString(),
-                            UserId = claimDetails?.UserRealPageGuid.ToString(),
-                            PmcId = claimDetails?.OrganizationPartyId.ToString(),
-
-                            Exception = ex,
-                        };
-
-                        Log.Write(LogEventLevel.Error, ex, message, logDetails);
+                        Log.Write(LogEventLevel.Error, ex, message);
 
                         this.HandleUnauthorizedRequest(actionContext);
                     }

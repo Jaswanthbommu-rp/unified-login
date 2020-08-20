@@ -131,18 +131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            LogDetails logDetails = new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                UserId = "",
-                PmcId = "",
-                Exception = exception,
-                CorrelationId = Guid.Empty.ToString(),
-            };
-
-            Log.Write(logType, exception, message, logDetails);
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
     }
 }

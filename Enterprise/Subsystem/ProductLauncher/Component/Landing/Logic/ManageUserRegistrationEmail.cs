@@ -161,16 +161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     string message = $"SendNewUserRegistrationEmail - email template generated - {userLoginOnly.RealPageId}";
 
-                    Log.Write(LogEventLevel.Information, message, new LogDetails
-                    {
-                        CorrelationId = _userClaim.CorrelationId.ToString(),
-                        Message = message,
-                        AdditionalInfo = null,
-                        ProductModule = this.GetType().ToString(),
-                        UserId = userLoginOnly.LoginName,
-                        PmcId = organizationPartyId.ToString(),
-                        Exception = null
-                    });
+                    Log.Write(LogEventLevel.Information, message);
 
                     IList<CommonAddress> contactMechanismList = _contactMechanismRepository.ListContactMechanismForPerson(orgRealPageId, "Email Notification");
                     IList<CommonAddress> contactMechanismToList = _contactMechanismRepository.ListContactMechanismForPerson(userLoginOnly.RealPageId, "Email Notification");
@@ -184,16 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         message = $"SendNewUserRegistrationEmail - email body generated - {userLoginOnly.RealPageId}";
                         
-                        Log.Write(LogEventLevel.Information, message, new LogDetails
-                        {
-                            CorrelationId = _userClaim.CorrelationId.ToString(),
-                            Message = message,
-                            AdditionalInfo = logData,
-                            ProductModule = this.GetType().ToString(),
-                            UserId = userLoginOnly.LoginName,
-                            PmcId = organizationPartyId.ToString(),
-                            Exception = null
-                        });
+                        Log.ForContext("AdditionalInfo", logData).Write(LogEventLevel.Information, message);
                     }
 
                     DateTime utcStarted = DateTime.UtcNow;
@@ -253,16 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
                     }
 
-                    Log.Write(LogEventLevel.Information, message, new LogDetails
-                    {
-                        CorrelationId = _userClaim.CorrelationId.ToString(),
-                        Message = message,
-                        AdditionalInfo = null,
-                        ProductModule = this.GetType().ToString(),
-                        UserId = userLoginOnly.LoginName,
-                        PmcId = organizationPartyId.ToString(),
-                        Exception = null
-                    });
+                    Log.Write(LogEventLevel.Information, message);
 
                     long communicationEventId = communicationEventResponse.Id;
                     if (communicationEventResponse.Id != 0)
@@ -281,18 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     string message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
 
-                    LogDetails logDetails = new LogDetails
-                    {
-                        CorrelationId = _userClaim.CorrelationId.ToString(),
-                        Message = message,
-                        AdditionalInfo = null,
-                        ProductModule = this.GetType().ToString(),
-                        UserId = userLoginOnly.LoginName,
-                        PmcId = organizationPartyId.ToString(),
-                        Exception = ex
-                    };
-
-                    Log.Write(LogEventLevel.Error, ex, message, logDetails);
+                    Log.Write(LogEventLevel.Error, ex, message);
 
                     return false;
                 }

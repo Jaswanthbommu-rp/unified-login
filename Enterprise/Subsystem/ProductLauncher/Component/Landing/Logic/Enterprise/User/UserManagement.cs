@@ -615,18 +615,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		{
 			try
 			{
-				LogDetails logDetails = new LogDetails
-				{
-					Message = message,
-					AdditionalInfo = logData,
-					ProductModule = this.GetType().ToString(),
-					UserId = _userClaims.UserId.ToString(),
-					PmcId = _userClaims?.OrganizationPartyId.ToString(),
-					Exception = exception,
-					CorrelationId = _userClaims.CorrelationId.ToString(),
-				};
-
-				Log.Write(logType, exception, message, logDetails);
+				Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
 			}
 			catch
 			{

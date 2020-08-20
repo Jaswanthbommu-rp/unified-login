@@ -232,9 +232,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Logging\AuditLogHelper.cs" />
-    <Compile Include="Logging\LoggerConfigExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Logging\RpSeriLogSink.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

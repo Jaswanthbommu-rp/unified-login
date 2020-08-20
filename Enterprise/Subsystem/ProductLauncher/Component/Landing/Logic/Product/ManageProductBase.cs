@@ -618,16 +618,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="exception"></param>
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            Log.Write(logType, exception, message, new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                UserId = _editorRealPageId.ToString(),
-                PmcId = _editorPersona?.OrganizationPartyId.ToString(),
-                Exception = exception,
-                CorrelationId = _correlationId,
-            });
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
 
         /// <summary>

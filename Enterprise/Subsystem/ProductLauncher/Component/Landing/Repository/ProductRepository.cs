@@ -1328,16 +1328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 string message = "Exception while getting AO products.";
 
-                LogDetails logDetails = new LogDetails
-                {
-                    Message = message,
-                    ProductModule = this.GetType().ToString(),
-                    UserId = _userClaim.UserId.ToString(),
-                    PmcId = _userClaim.OrganizationPartyId.ToString(),
-                    Exception = ex
-                };
-
-                Log.Write(LogEventLevel.Error, ex, message, logDetails);
+                Log.Write(LogEventLevel.Error, ex, message);
             }
 
             //get the active personaId for the edited enterprise UserId
@@ -1571,16 +1562,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 string message = "Exception while getting AO products.";
 
-                LogDetails logDetails = new LogDetails
-                {
-                    Message = message,
-                    ProductModule = this.GetType().ToString(),
-                    UserId = _userClaim.UserId.ToString(),
-                    PmcId = _userClaim.OrganizationPartyId.ToString(),
-                    Exception = ex
-                };
-
-                Log.Write(LogEventLevel.Error, ex, message, logDetails);
+                Log.Write(LogEventLevel.Error, ex, message);
             }
 
             return productFamilyList;
@@ -1838,18 +1820,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #region Private Methods
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            LogDetails logDetails = new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                UserId = "",
-                PmcId = "",
-                Exception = exception,
-                CorrelationId = _userClaim.CorrelationId.ToString(),
-            };
-
-            Log.Write(logType, exception, message, logDetails);
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
 
         private void CheckProductRight(ref ProductFamily productFamily)
