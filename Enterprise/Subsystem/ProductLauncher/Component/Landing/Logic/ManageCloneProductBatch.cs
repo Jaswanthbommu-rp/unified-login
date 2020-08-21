@@ -531,10 +531,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						{
 							PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
 						}
-					}
+					}					
 					else if (((ProductProperty)item).IsAssigned.Value)
 					{
-						PropertyList.Add(((ProductProperty)item).ID);
+						if (productID == (int)ProductEnum.IntelligentBuilding)
+						{
+							PropertyList.Add(((ProductProperty)item).Alias);
+						}
+						else
+						{
+							PropertyList.Add(((ProductProperty)item).ID);
+						}							
 					}
 				}
 

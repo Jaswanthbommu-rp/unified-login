@@ -321,17 +321,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="companyRealPageId"></param>
         /// <param name="productSource"></param>
         /// <returns></returns>
-        private bool GetTranslatePropertiesFromUPFMToProductv3(List<UPFMProperty> upfmProperties, ProductEnum productSource)
+        public TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, ProductEnum productSource)
         {
             //https://booksapi-stg.realpage.com/translate/v3/propertyinstance/UPFM/IB
             //{"propertyInstanceSourceIds": ["5972c050-7072-4b3f-8b6a-e280b5e36eb0","5972c050-7072-4b3f-8b6a-e280b5e36eb0","ef1fad66-b1f6-4981-8bec-e2d12279aba2"]}
-
+            TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
             string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource.ToEnumDescription()}";
-            //Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", uri } };
-           // WriteToLog(LogType.Diagnostic, $"GetTranslatePropertiesFromUPFMToProductv3 - Getting info. {productSource}", logData);
-
-            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
-            WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+                      Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
+            WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
 
             var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -342,34 +339,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
-            {
-                var data = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-                return true;
+            {               
+                translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
+                logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
+                WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
+                return translatePropertyInstance;
             }
 
-
-            //RPObjectCache rpcache = new RPObjectCache();
-            //var cacheKey = $"GetTranslatePropertiesFromUPFMToProductv3_{upfmProperties.}_{productSource}";
-            //List<CustomerCompanyMap> booksCustomerMaster = rpcache.GetFromCache<List<CustomerCompanyMap>>(cacheKey, 180, () =>
-            //{
-            //    List<CustomerCompanyMap> companyListCache = new List<CustomerCompanyMap>();
-            //    var response = GetAsync(uri).Result;
-            //    if (response.IsSuccessStatusCode)
-            //    {
-            //        var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
-            //        logData = new Dictionary<string, object>() { { "response", translateCompanyInstance } };
-            //        WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
-            //        CustomerCompanyMap map = new CustomerCompanyMap() { CompanyInstance = new List<CompanyInstance>() };
-            //        map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
-            //        map.Source = productSource;
-            //        companyListCache.Add(map);
-            //        return companyListCache;
-            //    }
-
-            //    return null;
-            //});
-
-            return true;
+            return translatePropertyInstance;            
         }
 
         /// <summary>
@@ -558,10 +535,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var rpcache = new RPObjectCache();
             var cacheKey = $"getPropertiesPerProductCenter_{companyRealPageId}_{product}";
 
-            var companyPropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
+            var PropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
             {
                 // http://booksapi-qa.realpage.com/propertiesperproductcenter/UPFM/F5C090FA-78AB-452F-B504-98AAFEE09121/57
-                string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{(int)product}&page[size]=9999";
+                string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{(int)product}";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogType.Diagnostic, "GetPropertiesPerProductCenter - Getting info.", logData);
                 var response = GetAsync(uri).Result;
@@ -569,15 +546,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     List<Guid> properties = new List<Guid>();
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    var propertyInstanceList = JsonConvert.DeserializeObject(jsonContent, typeof(UPFMPropertyInstanceRootObject)) as UPFMPropertyInstanceRootObject;
-                    if (propertyInstanceList != null && propertyInstanceList.data.Any())
+                    var propertyInstanceList = JsonConvert.DeserializeObject(jsonContent, typeof(UPFMProductPropertyInstanceMap)) as UPFMProductPropertyInstanceMap;
+                    if (propertyInstanceList != null )
                     {
-                        foreach (var property in propertyInstanceList.data)
+                        foreach (var property in propertyInstanceList.data.attributes)
                         {
-                            foreach (var detail in property.attributes.propertyInstance)
-                            {
-                                properties.Add(new Guid(detail.PropertyInstanceSourceId));
-                            }
+                            properties.Add(new Guid(property.propertyInstanceSourceId));
                         }
                     }
                     return properties;
@@ -598,7 +572,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             });
 
-            return companyPropertyInstanceResource;
+            return PropertyInstanceResource;
         }
         /// <summary>
         /// Used to get UPFM property instances for the given UPFM company id

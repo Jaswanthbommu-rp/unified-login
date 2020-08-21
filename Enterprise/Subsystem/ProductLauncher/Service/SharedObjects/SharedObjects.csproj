@@ -112,6 +112,7 @@
     <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
     <Compile Include="BlackBook\TranslateCompanyInstance.cs" />
     <Compile Include="BlackBook\TranslatePropertyInstance.cs" />
+    <Compile Include="BlackBook\UPFMProductPropertyInstanceMap.cs" />
     <Compile Include="BlackBook\UPFMProperty.cs" />
     <Compile Include="Constants\BlueBookProductConstants.cs" />
     <Compile Include="Constants\CommonMessageConstants.cs" />
