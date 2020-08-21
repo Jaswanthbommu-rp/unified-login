@@ -848,6 +848,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						CompanyName = persona.Organization.Name,
 						PersonaId = persona.PersonaId,
 						Title = persona.Name,
+                        HasMultiCompany = persona.hasMultiCompany,
 					};
 
                     var productList = _manageProduct.GetAllProductsByPersona(personaId.Value, ProductBatchStatusType.Success);
@@ -1379,7 +1380,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			/// The users current persona id
 			/// </summary>
 			public long PersonaId { get; set; }
-		}
+
+			/// <summary>
+			/// Does the user have multiple companies
+			/// </summary>
+            public bool HasMultiCompany { get; set; }
+
+        }
 
 		/// <summary>
 		/// Output result for newly created user
