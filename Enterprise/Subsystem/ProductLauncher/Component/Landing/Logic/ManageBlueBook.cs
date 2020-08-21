@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
             string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource.ToEnumDescription()}";
                       Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
-            WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+            WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
 
             var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -339,8 +339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
-            {
-                //var data = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+            {               
                 translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
                 logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
                 WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
