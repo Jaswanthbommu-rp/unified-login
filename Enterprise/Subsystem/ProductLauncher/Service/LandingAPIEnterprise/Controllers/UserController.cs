@@ -576,8 +576,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 								CustomFields = dictionaryCustomFields,
 								UserType = u.UserType,
 								IsExternalIdp = u.IsExternalIdp,
-								Product = DeserializeUserProduct(u.Product ?? ""),
-								EmployeeId = u.EmployeeId
+								Product = DeserializeUserProduct(u.Product ?? "")
 							}
 						);
 					});
@@ -1109,8 +1108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
 					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
 					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
-					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId
+					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields
 				},
 				ProductList = new List<ProductDetail>()
 			};
@@ -1742,8 +1740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 						UserEffectiveDate = DateTime.Now,
 						UserExpirationDate = DateTime.Now,
 						CustomFields = dictionaryCustomFields,
-						Product = UserProductSAMLDetaillist,
-						EmployeeId = "2020EmployeeId"
+						Product = UserProductSAMLDetaillist
 					}
 				};
 
