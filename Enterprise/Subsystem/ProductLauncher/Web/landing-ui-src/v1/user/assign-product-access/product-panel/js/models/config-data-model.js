@@ -21,7 +21,7 @@
                 filterType,
                 config = [];
             // logc("griddata--", gridData,gridData.Type);
-            if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid") {
+            if (gridData.type === "Multi Select Grid" || gridData.type === "Select Grid" || gridData.type === "Grid" ) {
                 filterType = undefined;
                 gridData.controls.forEach(function (item) {
                     if (item.attributes !== null) {
@@ -39,7 +39,7 @@
                         "idKey": "id",
                         "disabledKey": "disableSelection",
                         "filterType": filterType,
-                        "templateUrl": s.getTemplate(s.isControl(item.type), tabName)
+                        "templateUrl": s.getTemplate(s.isControl(item.type), tabName, item.displayName)
                     });
                 });
             }
@@ -67,7 +67,7 @@
             return cnfgs;
         };
 
-        p.getListAsideConfig = function (data, roleType) {
+        p.getListAsideConfig = function (data, roleType, linkType) {
             var s = this,
                 displayName = "",
                 filterType,
@@ -84,7 +84,7 @@
                     if (ctrl.type === "Icon" || ctrl.type === "Link") {
                         if (ctrl.attributes !== null) {
                             ctrl.attributes.forEach(function (item) {
-                                if ((item.key === "InfoIcon" || item.key === "AssignedProperties") && item.value === "Slide") {
+                                if ((item.key === "InfoIcon" || item.key === "AssignedProperties" || item.key === "AssignedGroups") && item.value === "Slide" && item.key.toLowerCase() === linkType){
                                     isSlideScreen = true;
                                 }
                             });
@@ -110,7 +110,8 @@
                                             "type": s.isType(gridCtrl.type),
                                             "text": columnName,
                                             "filterType": filterType,
-                                            "idKey": "id"
+                                            "idKey": "id",
+                                            "templateUrl": s.getTemplate(s.isControl(gridCtrl.type), gridCtrl.dataSource, gridCtrl.displayName)
                                         });
     
                                     });
@@ -119,6 +120,7 @@
                                 }
                             });
                         }
+                        isSlideScreen = false;
                     }
                 });
             }
@@ -172,7 +174,7 @@
                     });
                 }
                 else if (item.type === 'custom') {
-                    if(item.key === 'assignedProperties'){
+                    if(item.key === 'assignedProperties' || item.key === 'assignedGroups'){
                         hdr.push({
                             "key": item.key,
                             "text": item.text
@@ -251,7 +253,7 @@
                     });
                 }
 
-                if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon' && item.key !== 'assignedProperties')) {
+                if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon' && item.key !== 'assignedGroups' && item.key !== 'assignedProperties')) {
                     fltr.push({
                         "key": item.key,
                         "type": "menu",
@@ -272,7 +274,7 @@
                         ]
                     });
                 }
-                if (item.type === 'custom' && (item.key === 'InfoIcon' || item.key === 'assignedProperties')) {
+                if (item.type === 'custom' && (item.key === 'InfoIcon' || item.key === 'assignedProperties' || item.key === 'assignedGroups')) {
                     fltr.push({
                         "key": item.key,
                         "type": "",
@@ -314,7 +316,7 @@
             return main;
         };
 
-        p.getTemplate = function (type, tabName) {
+        p.getTemplate = function (type, tabName, displayName) {
             var html = '',
                 url = '';
             //logc("type", type, tabName);
@@ -323,6 +325,9 @@
             }
             else if (type === 'icon') {
                 url = "user/assign-product-access/product-panel/templates/product-panel-info-icon.html";
+            }
+            else if (type === 'link' && displayName === 'Assigned Groups') {
+                url = "user/assign-product-access/product-panel/templates/product-panel-label-group-link.html";
             }
             else if (type === 'link') {
                 url = "user/assign-product-access/product-panel/templates/product-panel-label-link.html";

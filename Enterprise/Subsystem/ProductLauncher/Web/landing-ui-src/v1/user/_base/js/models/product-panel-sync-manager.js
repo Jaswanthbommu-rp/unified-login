@@ -56,6 +56,7 @@
             s.presetRoleList = [];
             s.sidePanelDataList = [];
             s.asidePropertyList = [];
+            s.asideGroupList = [];
             s.canReceiveMonthlyReport = false;
             s.productAdditionalMap = [];
         };
@@ -284,6 +285,15 @@
             return asidePropertyList;
         };
 
+        p.getProductAsideGroupData = function (product) {
+            var s = this,
+                asideGroupList;
+            if (s.asidePropertyMap['product' + product] !== undefined) {
+                asideGroupList = s.asidePropertyMap['product' + product].asideGroups;
+            }
+            return asideGroupList;
+        };
+
         p.getProductPropertyGroupData = function (product) {
             var s = this,
                 productPropertyGroupList;
@@ -363,6 +373,13 @@
             var s = this;
             s.asidePropertyList = list;
             s.renderAsidePropertyMap(key);
+            return s;
+        };
+
+        p.setAsideGroupList = function (list, key) {
+            var s = this;
+            s.asideGroupList = list;
+            s.renderAsideGroupMap(key);
             return s;
         };
 
@@ -737,8 +754,13 @@
                         item.propertiesList.forEach(function (prop) {
                             prop.isAssigned = false;
                         });
-
+                        if(item.groupList !== undefined) {
+                            item.groupList.forEach(function (group) {
+                                group.isAssigned = false;
+                            }); 
+                        }
                         item.assignedProperties = assignedCount + " of " + item.propertiesList.length;
+                        item.assignedGroups = assignedCount + " of " + item.groupList.length;
                     }
                 }
             });
@@ -820,17 +842,27 @@
         p.updateAssignedProperties = function (productId) {
             var s = this,
                 propertyList,
-                assignedList;
+                assignedPropertiesList = [],
+                assignedGroupsList = [];
+
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
 
-            assignedList = propertyList.propertiesList.filter(function (data) {
+            assignedPropertiesList = propertyList.propertiesList.filter(function (data) {
                 return data.isAssigned === true;
             });
 
-            propertyList.isAssigned = assignedList.length > 0 ? true : false;
-            propertyList.assignedProperties = assignedList.length + " of " + propertyList.propertiesList.length;
+            if(propertyList.groupList !== undefined){
+                assignedGroupsList = propertyList.groupList.filter(function (data) {
+                    return data.isAssigned === true;
+                });
+                propertyList.assignedGroups = assignedGroupsList.length + " of " + propertyList.groupList.length;
+            }
+
+            propertyList.isAssigned = (assignedPropertiesList.length > 0 || assignedGroupsList.length > 0) ? true : false;
+            propertyList.assignedProperties = assignedPropertiesList.length + " of " + propertyList.propertiesList.length;
             return s;
         };
+
         p.setAllPropertyGroupSync = function (productId, bool) {
             var s = this,
                 propertyGroupList;
@@ -1045,6 +1077,15 @@
             }
         };
 
+        p.renderAsideGroupMap = function (key) {
+            var s = this;
+            if (!angular.equals({}, s.asideGroupList)) {
+                s.asidePropertyMap['product' + key] = {
+                    asideGroups: s.asideGroupList,
+                };
+            }
+        };
+        
         p.renderPropertyGroupMap = function (key) {
             var s = this;
             if (!angular.equals({}, s.propertyGroupList)) {

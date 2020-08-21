@@ -3,29 +3,40 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductInfoIconCtrl($scope, aside, syncMgr, listModel) {
+    function ProductInfoIconCtrl($scope, aside, innerAside, syncMgr, listModel) {
         var vm = this;
 
         vm.init = function () {
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
         };
 
-        vm.showAside = function (record) {
+        vm.showAside = function (record, tabname) {
             logc("console.info()",record);
             listModel.setName(record.name);
-            listModel.setTabName(record.radname);
+            if(record.tabname !== undefined){
+                tabname = record.tabname;
+            }
+            
+            listModel.setTabName(tabname);
             listModel.setListID(record.id);
             listModel.setProductID(record.productId);
             if(record.productId === 20) {
                  listModel.setRoleType(record.roletype);
              }
-            listModel.setSelectedPropertyRoleData(record);
-            aside.show();
+             if(tabname === 'EntityGroup'){
+                listModel.setSelectedPropertyRoleData(record);
+                innerAside.show();
+            } 
+            else{
+                listModel.setSelectedPropertyRoleData(record);
+                aside.show();
+            }
         };
 
         vm.destroy = function () {
             vm.destWatch();
             aside = undefined;
+            innerAside = undefined;
             listModel = undefined;
             vm = undefined;
             $scope = undefined;
@@ -39,6 +50,7 @@
         .controller("ProductInfoIconCtrl", [
             "$scope",
             "productPanelListAside",
+            "productPanelListInnerAside",
             "productDataSyncManager",
             "productPanelListAsideModel",
             ProductInfoIconCtrl
