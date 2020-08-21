@@ -191,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					foreach (string propertyId in assignedPropertyList)
 					{
-						if (userPropertyIdList.Any(p => p != Convert.ToInt32(propertyId)))						
+						if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))						
 						{
 							// new property to be added
 							assignedProperties.Add(propertyId);
@@ -201,11 +201,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					foreach (string propertyId in unAssignedPropertyList)
 					{
 
-						if (userPropertyIdList.Any(p => p == Convert.ToInt32(propertyId)))
-						{
-							// remove property
-							unassignedProperties.Add(propertyId);
-						}
+						// remove property
+						unassignedProperties.Add(propertyId);
+						//if (userPropertyIdList.All(p => p == Convert.ToInt32(propertyId)))
+						//{
+							
+						//}
 					}
 
 					if (unassignedProperties.Count > 0)
