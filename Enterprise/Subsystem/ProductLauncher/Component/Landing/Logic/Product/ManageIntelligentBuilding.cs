@@ -200,6 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					foreach (string propertyId in unAssignedPropertyList)
 					{
+
 						if (userPropertyIdList.Any(p => p == Convert.ToInt32(propertyId)))
 						{
 							// remove property
