@@ -554,7 +554,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							if (propertyData.Source == ProductEnum.IntelligentBuilding.ToEnumDescription())
 							{
 								 userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).ID = propertyData.PropertyInstanceSourceId;
-								userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).Alias = "";
+								 userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).Alias = null;
 							}
 						}
 					}
