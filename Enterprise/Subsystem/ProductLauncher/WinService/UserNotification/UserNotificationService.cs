@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification.Repository;
 using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.ServiceProcess;
@@ -219,7 +220,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                     $"CallApiToSendNotification - Exception while calling API for product hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId,
                     additionalInfo);
 
-                Log.Error(ex, ex.Message + ". CorrelationId = " + correlationId, additionalInfo);
+                Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToSendNotification - {ex.InnerException.Message}"
@@ -257,7 +258,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                 // Log the exception.
                 Log.Information($"CallApiToSetPendingToExpireUserStatus - Exception while calling API for product hashCode: {userList.GetHashCode()}" + ".CorrelationId = " + correlationId, additionalInfo);
 
-                Log.Error(ex, ex.Message + ". CorrelationId = " + correlationId, additionalInfo);
+                Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToSetPendingToExpireUserStatus - {ex.InnerException.Message}"
@@ -290,7 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                 // Log the exception.
                 Log.Information("CallApiToDisableUsers - Exception while calling API for product {}" + ".CorrelationId = " + correlationId, additionalInfo);
 
-                Log.Error(ex, ex.Message + ".CorrelationId = " + correlationId, additionalInfo);
+                Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToDisableUsers - {ex.InnerException.Message}"
