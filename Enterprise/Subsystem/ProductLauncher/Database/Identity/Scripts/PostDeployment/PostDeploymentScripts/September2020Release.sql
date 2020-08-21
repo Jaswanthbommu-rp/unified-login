@@ -179,6 +179,63 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 END
 
+GO
+select * from Enterprise.ProductSettingType 
+
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'NotificationsApiEndPoint' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsApiEndPoint', 'The api endpoint for Unified Notifications', 0 )
+end
+GO
+
+If not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'NotificationsEventsEndPoint' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsEventsEndPoint', 'The api endpoint for Unified Notification events', 0 )
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsApiEndPoint' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'https://notifications-api-dev.realpage.com', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'NotificationsApiEndPoint'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsApiEndPoint' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
+
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventsEndPoint' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, '/v1/events', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'NotificationsEventsEndPoint'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventsEndPoint' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+end
+GO
 
 
 
