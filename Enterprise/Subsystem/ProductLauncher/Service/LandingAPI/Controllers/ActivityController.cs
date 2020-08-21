@@ -107,15 +107,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 string message = $"User {_userClaims.LoginName} failed to signout.";
 
-                LogDetails logDetails = new LogDetails
-                {
-                    Message = message,
-                    ProductModule = this.GetType().ToString(),
-                    CorrelationId = _userClaims.CorrelationId.ToString(),
-                    Exception = ex
-                };
-
-                Log.Error(ex,  message, logDetails);
+                Log.Error(ex, message);
             }
         }
     }

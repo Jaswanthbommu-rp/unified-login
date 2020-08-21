@@ -18,20 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Logging
             string userId, userName, location, pmcId, pmcName;
             var webInfo = GetWebLoggingData(out userId, out userName, out location, out pmcId, out pmcName);
 
-            var errorInformation = new LogDetails()
-            {
-                ProductLocation = location,
-                UserId = userId,
-                UserName = userName,
-                ServerName = Environment.MachineName,
-                CorrelationId = HttpContext.Current.Session?.SessionID,
-                Exception = ex,
-                AdditionalInfo = webInfo,
-                PmcId = pmcId,
-                PmcName = pmcName
-            };
-
-            Log.Write(LogEventLevel.Error, ex, ex.Message, errorInformation);
+            Log.ForContext("AdditionalInfo", webInfo).Write(LogEventLevel.Error, ex, ex.Message);
         }
 
         public static void GetHttpStatus(Exception ex, out int httpStatus)

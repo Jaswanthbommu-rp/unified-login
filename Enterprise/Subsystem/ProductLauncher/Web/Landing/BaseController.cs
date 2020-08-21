@@ -76,19 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 
 		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			LogDetails logDetails = new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				UserId = _userClaims?.UserId.ToString(),
-				PmcId = _userClaims?.OrganizationPartyId.ToString(),
-				UserName = _userClaims?.LoginName,
-				Exception = exception,
-				CorrelationId = _userClaims?.CorrelationId.ToString(),
-			};
-
-			Log.Write(logType, exception, message, logDetails);
+			Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
 		}
 
 		#endregion
