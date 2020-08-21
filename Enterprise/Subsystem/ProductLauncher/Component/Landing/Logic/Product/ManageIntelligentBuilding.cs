@@ -210,6 +210,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 
+					if (unAssignedPropertyList?.Count == 0 && assignedProperties?.Count > 0)
+					{
+						if (userPropertyIdList.Any(p => p == -1))
+						{
+							unassignedProperties.Add("-1");
+						}
+					}
+
 					if (unassignedProperties.Count > 0)
 					{
 						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
