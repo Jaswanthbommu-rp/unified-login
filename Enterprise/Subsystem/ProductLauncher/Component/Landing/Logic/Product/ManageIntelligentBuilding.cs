@@ -189,19 +189,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					List<string> unassignedProperties = new List<string>();
 					List<string> assignedProperties = new List<string>();
 
-					foreach (string propertyId in assignedPropertyList)
+					if (assignedPropertyList != null)
 					{
-						if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+						foreach (string propertyId in assignedPropertyList)
 						{
-							// new property to be added
-							assignedProperties.Add(propertyId);
+							if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+							{
+								// new property to be added
+								assignedProperties.Add(propertyId);
+							}
 						}
 					}
 
-					foreach (string propertyId in unAssignedPropertyList)
+					if (unAssignedPropertyList != null)
 					{
-						// remove property
-						unassignedProperties.Add(propertyId);
+						foreach (string propertyId in unAssignedPropertyList)
+						{
+							// remove property
+							unassignedProperties.Add(propertyId);
+						}
 					}
 
 					if (unassignedProperties.Count > 0)
