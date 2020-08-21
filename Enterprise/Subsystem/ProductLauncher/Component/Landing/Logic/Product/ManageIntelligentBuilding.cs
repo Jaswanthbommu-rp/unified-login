@@ -181,7 +181,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					}
 
-					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+					var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+					//List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 					List<string> unAssignedPropertyList = userAssignProductPropertyRole.RemovedPropertyList;
 
@@ -190,18 +191,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					foreach (string propertyId in assignedPropertyList)
 					{
-						if (propertyList.All(p => p.ID != propertyId))
+						if (userPropertyIdList.Any(p => p != Convert.ToInt32(propertyId)))						
 						{
 							// new property to be added
 							assignedProperties.Add(propertyId);
 						}
 					}
 
-					foreach (ProductProperty prop in propertyList)
+					foreach (string propertyId in unAssignedPropertyList)
 					{
-						if (unAssignedPropertyList.All(p => p.Equals(prop.ID.ToString())))
+						if (userPropertyIdList.Any(p => p == Convert.ToInt32(propertyId)))
 						{
-							unassignedProperties.Add(prop.ID.ToString());
+							// remove property
+							unassignedProperties.Add(propertyId);
 						}
 					}
 
@@ -518,9 +520,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					customerPropertyList.ToList().FindAll(b => userPropertyIdList.Any(p => p == b.PropertyInstanceId)).ForEach(cp => { userPropertyList.Add(ConvertUPFMPropertyInstanceToProductProperty(cp, true)); });
 				}
 			}
+			
 
 			if (userPropertyIdList?.Count > 0)
 			{
+				// call translate with upfm properties to get ib properety id and merges propertyinstanceid with translated id
+				//note save upfmid into alias field before updating with translated id
 				bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] { ',' }).Length > 0);
 
 				if (bIncludeFields)
@@ -576,7 +581,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
+				//IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.IntelligentBuilding, domain: _editorPersona.Organization.OrganizationDomain.Name);
+
+				//WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Done getting info from BlueBook.GetCompanyMap");
+				//if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.Equals(BlueBookProductConstants.IntelligentBuilding, StringComparison.OrdinalIgnoreCase)))
+				//{
+				//	WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Getting PMC ID from BlueBook result");
+				//	var ibCompanyId = companyMap.First(a => a.Source.Equals(BlueBookProductConstants.IntelligentBuilding, StringComparison.OrdinalIgnoreCase)).CompanyInstanceSourceId;
+				//	WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Found PMC ID from BlueBook result: {marketingCenterCompanyId}");
+
+				//}
 				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				//var data = GetUPFMProperties(userPersonaId, null);
+				//var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString().ToUpper(), product);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
