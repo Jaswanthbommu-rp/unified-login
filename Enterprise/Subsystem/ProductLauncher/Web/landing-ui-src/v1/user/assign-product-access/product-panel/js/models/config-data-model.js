@@ -254,7 +254,7 @@
                     });
                 }
 
-                if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon' && item.key !== 'assignedProperties')) {
+                if (item.type === 'select' || (item.type === 'custom' && item.key !== 'InfoIcon' && item.key !== 'assignedGroups' && item.key !== 'assignedProperties')) {
                     fltr.push({
                         "key": item.key,
                         "type": "menu",
@@ -275,7 +275,7 @@
                         ]
                     });
                 }
-                if (item.type === 'custom' && (item.key === 'InfoIcon' || item.key === 'assignedProperties')) {
+                if (item.type === 'custom' && (item.key === 'InfoIcon' || item.key === 'assignedProperties' || item.key === 'assignedGroups')) {
                     fltr.push({
                         "key": item.key,
                         "type": "",
