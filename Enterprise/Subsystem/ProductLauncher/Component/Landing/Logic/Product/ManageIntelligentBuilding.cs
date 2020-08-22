@@ -17,6 +17,7 @@ using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produ
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -189,19 +190,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					List<string> unassignedProperties = new List<string>();
 					List<string> assignedProperties = new List<string>();
 
-					foreach (string propertyId in assignedPropertyList)
+					if (assignedPropertyList != null)
 					{
-						if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+						foreach (string propertyId in assignedPropertyList)
 						{
-							// new property to be added
-							assignedProperties.Add(propertyId);
+							if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+							{
+								// new property to be added
+								assignedProperties.Add(propertyId);
+							}
 						}
 					}
 
-					foreach (string propertyId in unAssignedPropertyList)
+					if (unAssignedPropertyList != null)
 					{
-						// remove property
-						unassignedProperties.Add(propertyId);
+						foreach (string propertyId in unAssignedPropertyList)
+						{
+							// remove property
+							unassignedProperties.Add(propertyId);
+						}
+					}
+
+					if (unAssignedPropertyList?.Count == 0 && assignedProperties?.Count > 0)
+					{
+						if (userPropertyIdList.Any(p => p == -1))
+						{
+							unassignedProperties.Add("-1");
+						}
 					}
 
 					if (unassignedProperties.Count > 0)
@@ -491,15 +506,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
 		{
-			ListResponse response = new ListResponse();
-
+			ListResponse response = new ListResponse();			
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
 			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
 
 			if (userPropertyIdList != null)
 			{
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());				
 				if (booksPropertyList != null)
 				{
 					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
@@ -523,6 +537,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				// call translate with upfm properties to get ib properety id and merges propertyinstanceid with translated id
 				//note save upfmid into alias field before updating with translated id
+				UPFMProperty upfmProperties = new UPFMProperty();
+				List<string> instanceids = new List<string>();
+				foreach (var property in userPropertyList)
+				{
+					instanceids.Add(property.InstanceId.ToLower());
+				}
+				upfmProperties.id= instanceids;
+
+				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, ProductEnum.IntelligentBuilding);
+				if (translatedData != null)
+				{
+					foreach (var attributs in translatedData.Data.Attributes){
+						foreach (var propertyData in attributs.TranslatedPropertyInstances)
+						{
+							if (propertyData.Source == ProductEnum.IntelligentBuilding.ToEnumDescription())
+							{
+								 userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).ID = propertyData.PropertyInstanceSourceId;
+								 userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).Alias = null;
+							}
+						}
+					}
+				}
+
 				bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] { ',' }).Length > 0);
 
 				if (bIncludeFields)
@@ -578,19 +615,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				//IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.IntelligentBuilding, domain: _editorPersona.Organization.OrganizationDomain.Name);
-
-				//WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Done getting info from BlueBook.GetCompanyMap");
-				//if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.Equals(BlueBookProductConstants.IntelligentBuilding, StringComparison.OrdinalIgnoreCase)))
-				//{
-				//	WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Getting PMC ID from BlueBook result");
-				//	var ibCompanyId = companyMap.First(a => a.Source.Equals(BlueBookProductConstants.IntelligentBuilding, StringComparison.OrdinalIgnoreCase)).CompanyInstanceSourceId;
-				//	WriteToDiagnosticLog("GetMarketingCenterPMCIDFromPersona - Found PMC ID from BlueBook result: {marketingCenterCompanyId}");
-
-				//}
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
-				//var data = GetUPFMProperties(userPersonaId, null);
-				//var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString().ToUpper(), product);
+				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+			
+				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString().ToUpper(), product);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
@@ -609,7 +636,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return result;
 		}
-
+				
+		
 		/// <summary>
 		/// Used to convert a UPFM property instance to a Product Property 
 		/// </summary>
@@ -627,7 +655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				State = upfmPropertyInstance.State,
 				Zip = upfmPropertyInstance.PostalCode,
 				IsAssigned = isAssigned,
-				InstanceId = upfmPropertyInstance.CustomerPropertyId,
+				InstanceId = upfmPropertyInstance.InstanceId.ToString().ToUpper(),
 				Latitude = upfmPropertyInstance.Latitude,
 				Longitude = upfmPropertyInstance.Longitude,
 				Alias = upfmPropertyInstance.PropertyInstanceId.ToString()

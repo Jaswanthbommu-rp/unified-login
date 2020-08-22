@@ -19,10 +19,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         public string Type { get; set; }
 
         [JsonProperty("attributes")]
-        public TranslatePropertyInstanceAttributes Attributes { get; set; }
+        public List<TranslatePropertyInstanceAttribute> Attributes { get; set; }
     }
 
-    public partial class TranslatePropertyInstanceAttributes
+    public partial class TranslatePropertyInstanceAttribute
     {
         [JsonProperty("propertyInstanceSourceId")]
         public string PropertyInstanceSourceId { get; set; }
@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         public string Source { get; set; }
 
         [JsonProperty("translatedPropertyInstances")]
-        public List<TranslatedCompanyInstanceData> TranslatedPropertyInstances { get; set; }
+        public List<TranslatedPropertyInstanceData> TranslatedPropertyInstances { get; set; }
     }
 
     public partial class TranslatedPropertyInstanceData
