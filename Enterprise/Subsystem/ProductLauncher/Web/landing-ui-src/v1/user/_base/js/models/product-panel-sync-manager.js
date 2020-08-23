@@ -285,15 +285,6 @@
             return asidePropertyList;
         };
 
-        p.getProductAsideGroupData = function (product) {
-            var s = this,
-                asideGroupList;
-            if (s.asidePropertyMap['product' + product] !== undefined) {
-                asideGroupList = s.asidePropertyMap['product' + product].asideGroups;
-            }
-            return asideGroupList;
-        };
-
         p.getProductPropertyGroupData = function (product) {
             var s = this,
                 productPropertyGroupList;
@@ -373,13 +364,6 @@
             var s = this;
             s.asidePropertyList = list;
             s.renderAsidePropertyMap(key);
-            return s;
-        };
-
-        p.setAsideGroupList = function (list, key) {
-            var s = this;
-            s.asideGroupList = list;
-            s.renderAsideGroupMap(key);
             return s;
         };
 
@@ -1077,15 +1061,6 @@
             }
         };
 
-        p.renderAsideGroupMap = function (key) {
-            var s = this;
-            if (!angular.equals({}, s.asideGroupList)) {
-                s.asidePropertyMap['product' + key] = {
-                    asideGroups: s.asideGroupList,
-                };
-            }
-        };
-        
         p.renderPropertyGroupMap = function (key) {
             var s = this;
             if (!angular.equals({}, s.propertyGroupList)) {

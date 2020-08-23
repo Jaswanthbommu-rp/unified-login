@@ -50,7 +50,6 @@
                 if(vm.productId == 44){
                     configTab = "Groups";
                     vm.title = "Assigned Groups";
-                    //vm.subtitle= persona.data.organization.name;
                 }
             }
             else if (vm.tabName.toLowerCase() === "entitygroup") {
