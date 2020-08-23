@@ -39,13 +39,13 @@ INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeI
 VALUES (@MaxControlId + 7, @MaxControlId + 6, 5, N'PortfolioManagementProductAccessEntityDetailsLabelUIId', N'Entity Group Details', NULL, 1, @UserId, @Now)
 
 INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-VALUES (@MaxControlId + 7, @MaxControlId + 6, 12, N'PortfolioManagementProductAccessGridUIId', NULL, NULL, 2, @UserId, @Now)
+VALUES (@MaxControlId + 8, @MaxControlId + 6, 12, N'PortfolioManagementProductAccessGridUIId', NULL, NULL, 2, @UserId, @Now)
 
 INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-VALUES (@MaxControlId + 8, @MaxControlId + 7, 5, N'PortfolioManagementProductAccessEntityLabelUIId', N'Entity', N'name', 1, @UserId, @Now)
+VALUES (@MaxControlId + 9, @MaxControlId + 8, 5, N'PortfolioManagementProductAccessEntityLabelUIId', N'Entity', N'name', 1, @UserId, @Now)
 
 INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-VALUES (@MaxControlId + 9, @MaxControlId + 7, 5, N'PortfolioManagementProductAccessEntityTypeLabelUIId', N'Type', N'propertyType', 2, @UserId, @Now)
+VALUES (@MaxControlId + 10, @MaxControlId + 8, 5, N'PortfolioManagementProductAccessEntityTypeLabelUIId', N'Type', N'propertyType', 2, @UserId, @Now)
 
 SET IDENTITY_INSERT [UserManagement].[Control] OFF 
 
