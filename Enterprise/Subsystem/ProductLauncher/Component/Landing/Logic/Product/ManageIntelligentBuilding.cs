@@ -17,6 +17,7 @@ using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produ
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -181,26 +182,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					}
 
-					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+					var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+					//List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
+					List<string> unAssignedPropertyList = userAssignProductPropertyRole.RemovedPropertyList;
 
 					List<string> unassignedProperties = new List<string>();
 					List<string> assignedProperties = new List<string>();
 
-					foreach (string propertyId in assignedPropertyList)
+					if (assignedPropertyList != null)
 					{
-						if (propertyList.All(p => p.ID != propertyId))
+						foreach (string propertyId in assignedPropertyList)
 						{
-							// new property to be added
-							assignedProperties.Add(propertyId);
+							if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+							{
+								// new property to be added
+								assignedProperties.Add(propertyId);
+							}
 						}
 					}
 
-					foreach (ProductProperty prop in propertyList)
+					if (unAssignedPropertyList != null)
 					{
-						if (assignedPropertyList.All(p => p != prop.ID.ToString()))
+						foreach (string propertyId in unAssignedPropertyList)
 						{
-							unassignedProperties.Add(prop.ID.ToString());
+							// remove property
+							unassignedProperties.Add(propertyId);
+						}
+					}
+
+					if (unAssignedPropertyList?.Count == 0 && assignedProperties?.Count > 0)
+					{
+						if (userPropertyIdList.Any(p => p == -1))
+						{
+							unassignedProperties.Add("-1");
 						}
 					}
 
@@ -254,6 +269,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					WriteToErrorLog($"ManageIntelligentBuildingUser-UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");
 					return result.ErrorMessage;
+				}
+
+				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+				List<string> unassignedProperties = new List<string>();
+
+				foreach (var property in propertyList)
+				{
+					unassignedProperties.Add(property.ID.ToString());
+				}
+
+				if (unassignedProperties.Count > 0)
+				{
+					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
 				}
 			}
 
@@ -479,7 +507,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
 		{
 			ListResponse response = new ListResponse();
-
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
 			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
@@ -505,8 +532,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
+
 			if (userPropertyIdList?.Count > 0)
 			{
+				// call translate with upfm properties to get ib properety id and merges propertyinstanceid with translated id
+				//note save upfmid into alias field before updating with translated id
+				UPFMProperty upfmProperties = new UPFMProperty();
+				List<string> instanceids = new List<string>();
+				foreach (var property in userPropertyList)
+				{
+					instanceids.Add(property.InstanceId.ToLower());
+				}
+				upfmProperties.id = instanceids;
+
+				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, ProductEnum.IntelligentBuilding);
+				if (translatedData != null)
+				{
+					foreach (var attributs in translatedData.Data.Attributes)
+					{
+						foreach (var propertyData in attributs.TranslatedPropertyInstances)
+						{
+							if (propertyData.Source == ProductEnum.IntelligentBuilding.ToEnumDescription())
+							{
+								userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).ID = propertyData.PropertyInstanceSourceId;
+								userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).Alias = null;
+							}
+						}
+					}
+				}
+
 				bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] { ',' }).Length > 0);
 
 				if (bIncludeFields)
@@ -562,14 +616,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+
+				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString().ToUpper(), product);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
 				WriteToDiagnosticLog($"GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
 				result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
 				WriteToDiagnosticLog($"GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
-				
+
 			}
 			catch (Exception ex)
 			{
@@ -581,6 +637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return result;
 		}
+
 
 		/// <summary>
 		/// Used to convert a UPFM property instance to a Product Property 
@@ -599,16 +656,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				State = upfmPropertyInstance.State,
 				Zip = upfmPropertyInstance.PostalCode,
 				IsAssigned = isAssigned,
-				InstanceId = upfmPropertyInstance.CustomerPropertyId,
+				InstanceId = upfmPropertyInstance.InstanceId.ToString().ToUpper(),
 				Latitude = upfmPropertyInstance.Latitude,
 				Longitude = upfmPropertyInstance.Longitude,
 				Alias = upfmPropertyInstance.PropertyInstanceId.ToString()
 			};
 			return pp;
 		}
-		
 
-		
+
+
 		/// <summary>
 		/// Used to unassign a property instance to the given user
 		/// </summary>

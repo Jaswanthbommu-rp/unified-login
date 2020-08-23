@@ -1249,6 +1249,12 @@
                     return persona.data.hasManageDepositAlternativeProductAccess;
                 case "48":
                     return persona.data.hasManageClickPayProductAccess;
+                case "50":
+                    return persona.data.hasManageSeniorLeadManagementProductAccess;
+                case "55":
+                    return persona.data.hasManageRenovationManagerProductAccess;
+                case "57":
+                    return persona.data.hasManageIntelligentBuildingProductAccess;
                 default:
                     return false;
             }
