@@ -1,4 +1,8 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using JsonApiSerializer;
+using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -6,7 +10,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Net.Http;
+using System.Text;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -18,6 +27,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Private Variables
         IPersonaRepository _personaRepository;
         IManageOrganization _manageOrganization;
+        readonly ITokenHelper _tokenHelper;
+        readonly IProductInternalSettingRepository _productRepository;
         private DefaultUserClaim _userClaim;
         #endregion
 
@@ -33,18 +44,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageOrganization = manageOrganization;
         }
 
-        /// <summary>
-        /// ManagePersona Constructor
-        /// </summary>
-        /// <param name="userClaim"></param>
-        /// <param name="personaRepository"></param>
-        /// <param name="manageOrganization"></param>
-        public ManagePersona(DefaultUserClaim userClaim, IPersonaRepository personaRepository, IManageOrganization manageOrganization)
-        {
-            _personaRepository = personaRepository;
-            _manageOrganization = manageOrganization;
-            _userClaim = userClaim;
-        }
+        ///// <summary>
+        ///// ManagePersona Constructor
+        ///// </summary>
+        ///// <param name="userClaim"></param>
+        ///// <param name="personaRepository"></param>
+        ///// <param name="manageOrganization"></param>
+        //public ManagePersona(DefaultUserClaim userClaim, IPersonaRepository personaRepository, IManageOrganization manageOrganization)
+        //{
+        //    _personaRepository = personaRepository;
+        //    _manageOrganization = manageOrganization;
+        //    _userClaim = userClaim;
+        //}
 
         /// <summary>
         /// Create a basic instance of the ManagePerson Controller class
@@ -53,6 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _personaRepository = new PersonaRepository();
             _manageOrganization = new ManageOrganization();
+            _tokenHelper = new TokenHelper();
+            _productRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -62,6 +75,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _personaRepository = new PersonaRepository(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim);
+            _productRepository = new ProductInternalSettingRepository(repository);
+            _tokenHelper = new TokenHelper(repository);
         }
 
         /// <summary>
@@ -71,6 +86,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             _personaRepository = new PersonaRepository();
             _manageOrganization = new ManageOrganization();
+            _productRepository = new ProductInternalSettingRepository();
+            _tokenHelper = new TokenHelper();
             _userClaim = userClaim;
         }
         #endregion
@@ -285,6 +302,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             return _personaRepository.UpdateActivePersona(realPageId, personaId);
         }
+
+        public Guid ChangeCompanyNotification(long personaId)
+        {
+            Guid responseGuid = Guid.Empty;
+            
+
+            var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
+            string notificationsEventChangeCompany = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventChangeCompany", StringComparison.OrdinalIgnoreCase)).Value;
+            string notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            string notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            
+            string ulclientToken = _tokenHelper.GetClientToken("notificationsapi");
+
+            NotificationEvent nEvent = new NotificationEvent()
+            {
+                Method = notificationsEventChangeCompany,
+                ProductCode = "UL",
+                Users = new List<string>() {personaId.ToString()},
+                Data = new NotificationEventData() {PersonaId = personaId}
+            };
+
+            //Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            //WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulclientToken);
+                httpClient.BaseAddress = new Uri(notificationsApiEndPoint);
+                var jsonToSave = JsonConvert.SerializeObject(nEvent);
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                    RequestUri = new Uri(httpClient.BaseAddress + notificationsEventsEndPoint),
+                };
+                var response = httpClient.SendAsync(request).Result;
+                if (response != null && response.IsSuccessStatusCode)
+                {
+                    var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                    return Guid.Empty;
+                }
+                //Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+                //WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+                return Guid.Empty;
+            }
+
+            return Guid.Empty;
+        }
+
+        
+
+        #endregion
+
+        #region Private
+        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+        {
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)product}";
+            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            {
+                // load from database
+                
+                return _productRepository.GetProductInternalSettings((int)product).ToList();
+            });
+
+            return productInternalSettingList;
+        }
+        
         #endregion
     }
 }

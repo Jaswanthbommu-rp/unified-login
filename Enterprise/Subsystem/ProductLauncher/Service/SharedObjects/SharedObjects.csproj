@@ -245,6 +245,7 @@
     <Compile Include="Landing\ISortTableType.cs" />
     <Compile Include="Landing\IStatusType.cs" />
     <Compile Include="Landing\IUserEmployeeId.cs" />
+    <Compile Include="Landing\NotificationEvent.cs" />
     <Compile Include="Landing\OrganizationCreateResult.cs" />
     <Compile Include="Landing\OrganizationDomain.cs" />
     <Compile Include="Landing\OrganizationRole.cs" />

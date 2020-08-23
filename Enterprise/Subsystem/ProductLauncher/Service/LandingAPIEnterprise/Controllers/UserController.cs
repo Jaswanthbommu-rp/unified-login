@@ -939,6 +939,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
+        [HttpGet]
+        [Route("user/persona/{personaId}/company")]
+        public void ChangeCompany(long personaId = 0)
+        {
+
+            Persona persona = _managePersona.GetPersona(personaId == 0 ? _userClaims.PersonaId : personaId);
+
+            IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+            _managePersona.ChangeCompanyNotification(personaId);
+
+            //persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
+            //persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
+            //return persona;
+        }
+
 		#region Private Methods
 
 

@@ -119,6 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var revertUser = context.SignInMessage.AcrValues.FirstOrDefault(x => x.Split(':')[0] == "Impersonated");
             var newPersonaIdString = "0";
             bool employeeChangedCompany = false;
+            bool fireChangeCompanyEvent = false;
 
             if (Encoding.UTF8.GetString(userContext).Split('|').Length == 3)
             {
@@ -250,6 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 {
                     LogEventActivity(claims, "User {0} {1} successfully logged-in.");
                 }
+                fireChangeCompanyEvent = true;
             }
 
             WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: Success ", new Guid(correlationId), new Dictionary<string, object>
@@ -259,6 +261,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 {"claims", claims}
             });
             
+            // call changecompany notification event
+            if (fireChangeCompanyEvent)
+            {
+
+            }
             context.AuthenticateResult = new AuthenticateResult(user.UserId.ToString(), user.LoginName, claims, idp);
 
             WriteToLog(LogType.Diagnostic, "PreAuthenticateAsync: AuthenticateResult ", new Guid(correlationId), new Dictionary<string, object>

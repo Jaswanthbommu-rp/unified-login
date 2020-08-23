@@ -180,21 +180,40 @@ BEGIN
 END
 
 GO
-select * from Enterprise.ProductSettingType 
 
-if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'NotificationsApiEndPoint' )
+if not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'NotificationsApiEndPoint' )
 begin
 	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsApiEndPoint', 'The api endpoint for Unified Notifications', 0 )
 end
 GO
 
-If not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'NotificationsEventsEndPoint' )
+If not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'NotificationsEventsEndPoint' )
 begin
 	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsEventsEndPoint', 'The api endpoint for Unified Notification events', 0 )
 end
 GO
 
-if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+If not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'NotificationsEventChangeCompany' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsEventChangeCompany', 'The event name used to trigger the Change Company event from Notifications', 0 )
+end
+GO
+
+If not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'UnifiedLoginServerClientName' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UnifiedLoginServerClientName', 'The client name for Unified Login server side client', 0 )
+end
+GO
+
+If not exists ( select TOP (1) 1 from Enterprise.ProductSettingType where name = 'UnifiedLoginServerClientSecret' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UnifiedLoginServerClientSecret', 'The client secret for Unified Login server side client', 1 )
+end
+GO
+
+
+
+if not exists(Select top (1) 1 from Enterprise.ProductSetting ps 
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
 				where pst.Name = 'NotificationsApiEndPoint' and ps.ProductId= 3)
@@ -211,18 +230,17 @@ Begin
 				where pst.Name = 'NotificationsApiEndPoint' and ps.ProductId= 3
 
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
-		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
 end
 GO
 
-
-if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+if not exists(Select top (1) 1 from Enterprise.ProductSetting ps 
 				inner join Enterprise.ProductSettingType pst
 				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
 				where pst.Name = 'NotificationsEventsEndPoint' and ps.ProductId= 3)
 Begin
 	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
-	Select 3, ProductSettingTypeId, '/v1/events', GETUTCDATE()
+	Select 3, ProductSettingTypeId, 'v1/events', GETUTCDATE()
 	from Enterprise.ProductSettingType
 	where Name = 'NotificationsEventsEndPoint'
 
@@ -233,9 +251,71 @@ Begin
 				where pst.Name = 'NotificationsEventsEndPoint' and ps.ProductId= 3
 
 	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
-		select top 1 ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is null
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientName' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'unifiedlogin-server', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'UnifiedLoginServerClientName'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientName' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
 end
 GO
 
 
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventChangeCompany' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'changeCompanyMessage', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'NotificationsEventChangeCompany'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventChangeCompany' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientSecret' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'QUVFNjNDNTQtREMzMS00MDZDLUJCODEtQzU1ODk4RkI5M0Ix', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'UnifiedLoginServerClientSecret'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientSecret' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+        select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
 
