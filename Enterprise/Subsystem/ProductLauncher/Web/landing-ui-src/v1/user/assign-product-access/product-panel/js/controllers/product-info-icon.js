@@ -16,6 +16,9 @@
             if(record.tabname !== undefined){
                 tabname = record.tabname;
             }
+            else if(tabname === undefined){
+                tabname = record.radname;
+            }
             
             listModel.setTabName(tabname);
             listModel.setListID(record.id);
