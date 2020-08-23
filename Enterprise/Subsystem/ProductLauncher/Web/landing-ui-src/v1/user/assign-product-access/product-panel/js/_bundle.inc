@@ -19,6 +19,7 @@
 {{{ include("models/product-panel-tabs-data-factory.js") }}}
 {{{ include("models/product-panel-list-aside-model.js") }}}
 {{{ include("models/product-panel-list-aside.js") }}}
+{{{ include("models/product-panel-list-inner-aside.js") }}}
 
 {{{ include("services/roles-data.js") }}}
 {{{ include("services/properties-data.js") }}}
