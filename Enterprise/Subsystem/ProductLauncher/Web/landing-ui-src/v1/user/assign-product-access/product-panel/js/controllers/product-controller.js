@@ -392,7 +392,7 @@
                                                     }
                                                 }
                                                 else{
-                                                    listAsideconfigs = configData.getListAsideConfig(tab, "");
+                                                    listAsideconfigs = configData.getListAsideConfig(tab, "", "");
                                                     if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
                                                         var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
                                                         logc("asideGridConfig", asideGridConfig);

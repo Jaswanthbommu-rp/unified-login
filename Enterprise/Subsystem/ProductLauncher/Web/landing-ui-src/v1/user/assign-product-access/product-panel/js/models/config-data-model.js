@@ -84,7 +84,7 @@
                     if (ctrl.type === "Icon" || ctrl.type === "Link") {
                         if (ctrl.attributes !== null) {
                             ctrl.attributes.forEach(function (item) {
-                                if ((item.key === "InfoIcon" || item.key === "AssignedProperties" || item.key === "AssignedGroups") && item.value === "Slide" && item.key.toLowerCase() === linkType){
+                                if ((item.key === "InfoIcon" || item.key === "AssignedProperties" || item.key === "AssignedGroups") && item.value === "Slide" && (item.key.toLowerCase() === linkType || linkType === "")){
                                     isSlideScreen = true;
                                 }
                             });
