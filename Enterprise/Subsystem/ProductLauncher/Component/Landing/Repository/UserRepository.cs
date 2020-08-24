@@ -5349,45 +5349,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
-                        #region Update UserEmployeeId
-                        if (updateUserProfileEntity.NewProfile.EmployeeId != updateUserProfileEntity.OldProfile.EmployeeId)
-                        {
-                            //If the old user has EmployeeId so update if not create the EmployeeId
-                            if (updateUserProfileEntity.OldProfile.UserEmployeeId > 0)
-                            {
-                                dynamic update = new
-                                {
-                                    updateUserProfileEntity.OldProfile.UserEmployeeId,
-                                    updateUserProfileEntity.NewProfile.EmployeeId
-                                };
-
-                                RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateEmployeeId, update);
-
-                                if (employeeResult.Id == 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
-                                    throw new Exception(employeeResult.ErrorMessage);
-                                }
-
-                            }
-                            else
-                            {
-                                dynamic create = new
-                                {
-                                    userLoginPersonaList[0].UserLoginPersonaId,
-                                    updateUserProfileEntity.NewProfile.EmployeeId,
-                                };
-
-                                RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, create);
-
-                                if (employeeResult.Id == 0)
-                                {
-                                    repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
-                                    throw new Exception(employeeResult.ErrorMessage);
-                                }
-                            }
-                        }
-                        #endregion
 
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
 
