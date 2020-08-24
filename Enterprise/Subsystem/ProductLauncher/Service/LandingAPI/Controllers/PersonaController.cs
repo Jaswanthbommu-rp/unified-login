@@ -13,6 +13,8 @@ using System.Net.Http;
 using System.Web.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
@@ -25,6 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #region Private variables
         IRepositoryResponse _repositoryResponse = new RepositoryResponse();
         IManagePersona _managePersona = new ManagePersona();
+        IProductInternalSettingRepository _productInternalSettingRepository = new ProductInternalSettingRepository();
         #endregion
 
         #region Constructor
@@ -156,8 +159,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage ChangeCompany(long personaId = 0)
         {
             // check for client token from UL
-            
-            Persona persona = _managePersona.GetPersona(personaId == 0 ? _userClaims.PersonaId : personaId);
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            string unifiedLoginClientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
+
+            if (!_clientCode.Equals(unifiedLoginClientId, StringComparison.OrdinalIgnoreCase))
+            {
+                if (_userClaims.PersonaId != 0 && personaId == 0)
+                {
+                    personaId = _userClaims.PersonaId;
+                }
+            }
+            else
+            {
+                _userClaims.PersonaId = personaId;
+            }
+            Persona persona = _managePersona.GetPersona(_userClaims.PersonaId);
 
             IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
             if (personaList.Any(p => p.PersonaId == personaId))
