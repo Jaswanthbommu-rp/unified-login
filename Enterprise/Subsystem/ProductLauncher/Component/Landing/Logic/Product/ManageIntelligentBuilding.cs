@@ -211,7 +211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 
-					if (unAssignedPropertyList?.Count == 0 && assignedProperties?.Count > 0)
+					if ((unAssignedPropertyList == null || unAssignedPropertyList?.Count == 0) && assignedProperties?.Count > 0)
 					{
 						if (userPropertyIdList.Any(p => p == -1))
 						{

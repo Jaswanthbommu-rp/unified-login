@@ -843,7 +843,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuilding:
                         product = new IntelligentBuildingProduct(_defaultUserClaim);
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(batchRecord.InputJson);
+                            GetProductPropertiesRoles<IBPropertyRole>(batchRecord.InputJson);
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     default:
