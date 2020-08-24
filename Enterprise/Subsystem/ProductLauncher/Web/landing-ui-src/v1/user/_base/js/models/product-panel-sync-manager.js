@@ -39,6 +39,7 @@
             s.notificationsMap={};
             s.originalPropertyListMap = {};
             s.asidePropertyMap = {};
+            s.asideGroupMap = {};
 
             s.productControlsList = {
                 products: []
@@ -374,6 +375,25 @@
             return s;
         };
 
+        p.getAsideGroupList = function (product) {
+            var s = this,
+                asideGroupList;
+
+            if (s.asideGroupMap['product' + product] !== undefined) {
+                asideGroupList = s.asideGroupMap['product' + product].asideGroups;
+            }
+            return asideGroupList;
+        };
+
+        p.setAsideGroupList = function (list, key) {
+            var s = this;
+            s.asideGroupList = list;
+            s.asideGroupMap['product' + key] = {
+                asideGroups: s.asideGroupList,
+            };
+            return s;
+        };
+        
         p.setOriginalPropertyList = function (list) {
             var s = this;
             s.originalPropertyList = angular.copy(list);
