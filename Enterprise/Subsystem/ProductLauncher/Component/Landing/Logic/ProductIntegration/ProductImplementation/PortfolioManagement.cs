@@ -269,6 +269,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								property.IsAssigned = true;
 							}
 						}
+						if (propRolesList.GroupList.Any(y => role.PropertyGroupList.Contains(y.GetGroupId)))
+						{
+							propRolesList.IsAssigned = true;
+							foreach (var group in propRolesList.GroupList.Where(z => role.PropertyGroupList.Contains(z.GetGroupId)))
+							{
+								group.IsAssigned = true;
+							}
+						}
 					}
 				}
 			}
