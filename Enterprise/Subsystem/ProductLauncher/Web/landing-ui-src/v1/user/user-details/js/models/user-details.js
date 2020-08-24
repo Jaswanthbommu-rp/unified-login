@@ -20,7 +20,6 @@
             s.data = {
                 firstName: "",
                 lastName: "",
-                employyeId: "",
                 middleName: "",
                 notificationEmail: "",
                 password: "",

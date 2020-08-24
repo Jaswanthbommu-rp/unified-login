@@ -52,11 +52,6 @@
             maxlength: 50
         });
 
-        model.employeeId = textConfig({
-            fieldName: "employeeid",
-            maxlength: 20
-        });
-
         model.userTypeId = menuConfig({
             nameKey: "name",
             valueKey: "partyRoleTypeId",
