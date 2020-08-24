@@ -20,13 +20,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
         /// </summary>
         /// <param name="scopes">The scope required for the token</param>
         /// <returns></returns>
-        string GetClientToken(string scopes);
+        string GetUnifiedLoginServerToken(string scopes);
 
     }
 
     public class TokenHelper : ITokenHelper
     {
-        readonly IProductInternalSettingRepository _productRepository;
+        private readonly IProductInternalSettingRepository _productRepository;
 
         public TokenHelper()
         {
@@ -43,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
         /// </summary>
         /// <param name="scopes">The scope required for the token</param>
         /// <returns></returns>
-        public string GetClientToken(string scopes)
+        public string GetUnifiedLoginServerToken(string scopes)
         {
             var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
             try
@@ -84,7 +84,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
             IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
             {
                 // load from database
-                
                 return _productRepository.GetProductInternalSettings((int)product).ToList();
             });
 

@@ -303,17 +303,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _personaRepository.UpdateActivePersona(realPageId, personaId);
         }
 
+        /// <summary>
+        /// Used to generate notification event that the user has changed company
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
         public Guid ChangeCompanyNotification(long personaId)
         {
-            Guid responseGuid = Guid.Empty;
-            
-
             var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
-            string notificationsEventChangeCompany = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventChangeCompany", StringComparison.OrdinalIgnoreCase)).Value;
-            string notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-            string notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var notificationsEventChangeCompany = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventChangeCompany", StringComparison.OrdinalIgnoreCase)).Value;
+            var notificationsApiEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+            var notificationsEventsEndPoint = productInternalSettingList.First(a => a.Name.Equals("NotificationsEventsEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             
-            string ulclientToken = _tokenHelper.GetClientToken("notificationsapi");
+            var ulClientToken = _tokenHelper.GetUnifiedLoginServerToken("notificationsapi");
 
             NotificationEvent nEvent = new NotificationEvent()
             {
@@ -323,11 +325,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 Data = new NotificationEventData() {PersonaId = personaId}
             };
 
-            //Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"notificationsApiEndPoint", notificationsApiEndPoint}, {"nEvent", nEvent}};
             //WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
             using (var httpClient = new HttpClient())
             {
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulclientToken);
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ulClientToken);
                 httpClient.BaseAddress = new Uri(notificationsApiEndPoint);
                 var jsonToSave = JsonConvert.SerializeObject(nEvent);
                 var request = new HttpRequestMessage
@@ -346,11 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
                 return Guid.Empty;
             }
-
-            return Guid.Empty;
         }
-
-        
 
         #endregion
 

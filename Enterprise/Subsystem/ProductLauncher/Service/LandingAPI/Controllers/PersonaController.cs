@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
@@ -142,6 +143,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
             persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
             return persona;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AuthorizeScope("userinfoapi")]
+        [Route("persona/{personaId}/company")]
+        public HttpResponseMessage ChangeCompany(long personaId = 0)
+        {
+            // check for client token from UL
+
+            Persona persona = _managePersona.GetPersona(personaId == 0 ? _userClaims.PersonaId : personaId);
+
+            IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+            if (personaList.Any(p => p.PersonaId == personaId))
+            {
+                var result = _managePersona.ChangeCompanyNotification(personaId);
+                return new HttpResponseMessage(result == Guid.Empty ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }
 
         /// <summary>
