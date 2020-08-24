@@ -937,14 +937,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
-
+        /// <summary>
+        /// Used to trigger the notification event that the user changed company
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("user/persona/{personaId}/company")]
         public HttpResponseMessage ChangeCompany(long personaId = 0)
         {
             // accept client token from UL?
 
-            Persona persona = _managePersona.GetPersona(personaId == 0 ? _userClaims.PersonaId : personaId);
+            Persona persona = _managePersona.GetPersona(_userClaims.PersonaId);
 
             IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
             if (personaList.Any(p => p.PersonaId == personaId))

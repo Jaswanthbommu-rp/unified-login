@@ -146,7 +146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Used to trigger the notification event that the user changed company
         /// </summary>
         /// <param name="personaId"></param>
         /// <returns></returns>
@@ -156,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage ChangeCompany(long personaId = 0)
         {
             // check for client token from UL
-
+            
             Persona persona = _managePersona.GetPersona(personaId == 0 ? _userClaims.PersonaId : personaId);
 
             IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);

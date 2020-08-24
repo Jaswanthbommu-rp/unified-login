@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
                 string apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
 
                 RPObjectCache rpCache = new RPObjectCache();
-                var cacheKey = $"GetToken_{clientId}";
+                var cacheKey = $"GetToken_{clientId}_{scopes}";
 
                 string accessToken = rpCache.GetFromCache<string>(cacheKey, 300, () =>
                 {

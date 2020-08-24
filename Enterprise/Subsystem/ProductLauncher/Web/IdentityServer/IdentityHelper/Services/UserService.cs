@@ -284,7 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             string clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
             string apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
             
-            var accessToken = GetToken(issueUri, clientId, apiSecret, "notificationsapi");
+            var accessToken = GetToken(issueUri, clientId, apiSecret, "userinfoapi notificationsapi");
             
             var apiPathAndQuery = $"{landingApiUri}api/persona/{userPersonaId}/company";
             PostApi(apiPathAndQuery, accessToken);
@@ -920,7 +920,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             try
             {
                 RPObjectCache rpCache = new RPObjectCache();
-                var cacheKey = $"GetToken_{clientId}";
+                var cacheKey = $"GetToken_{clientId}_{scopes}";
 
                 string accessToken = rpCache.GetFromCache<string>(cacheKey, 180, () =>
                 {
