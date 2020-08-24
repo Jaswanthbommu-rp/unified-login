@@ -185,7 +185,8 @@ DECLARE @UserId bigint,
 	@productSettingTypeId INT,
 	@productGroupSettingTypeId INT,
 	@ConfigurationId INT,
-	@ParentControlID INT ,
+	@ParentControlID INT,
+	@ControlID INT,
 	@MaxControlId INT,
 	@MaxControlAttributeId INT,
 	@Now datetime = GETDATE();
@@ -203,7 +204,7 @@ select @ParentControlID = ControlId from UserManagement.COntrol where UIID = 'Po
 SET IDENTITY_INSERT [UserManagement].[Control] ON 
 
 INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-VALUES (@MaxControlId + 1, @ParentControlID, 14, N'PortfolioManagementProductAccessAssignedGroupsLinkLabelUIId', N'Assigned Groups', N'assignedGroups', 4, @UserId, @Now)
+VALUES (@MaxControlId + 1, @ParentControlID, 14, N'PortfolioManagementProductAccessAssignedGroupsLinkLabelUIId', N'Assigned Groups', N'assignedGroups', 3, @UserId, @Now)
 
 INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
 VALUES (@MaxControlId + 2, @MaxControlId + 1, 5, N'PortfolioManagementProductAccessAssignedGroupsLabelUIId', N'Groups', NULL, 1, @UserId, @Now)
@@ -245,6 +246,12 @@ INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [
 VALUES (@MaxControlAttributeId + 2, @MaxControlId + 6, N'InfoIcon', N'Slide', @UserId, @Now)
 
 SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE UIID = 'PortfolioManagementProductAccessAssignedEntitiesLinkLabelUIId')
+BEGIN
+	SELECT @ControlID = ControlID from [UserManagement].[Control] where UIID = 'PortfolioManagementProductAccessAssignedEntitiesLinkLabelUIId'
+	UPDATE [UserManagement].[Control] SET [Sequence] = 4 WHERE ControlID = @ControlID
 END
 
 SELECT @productGroupSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where [Name] = 'GetPropertyGroupsEndpoint'
