@@ -2,6 +2,7 @@ DECLARE @UserId bigint,
 	@ProductId int = 44,
 	@productSettingTypeId INT,
 	@productGroupSettingTypeId INT,
+	@ParentControlID INT = 496,
 	@MaxControlId INT,
 	@MaxControlAttributeId INT,
 	@Now datetime = GETDATE();
@@ -18,7 +19,7 @@ SELECT @MaxControlId = max(ControlId) from UserManagement.Control
 SET IDENTITY_INSERT [UserManagement].[Control] ON 
 
 INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-VALUES (@MaxControlId + 1, 496, 14, N'PortfolioManagementProductAccessAssignedGroupsLinkLabelUIId', N'Assigned Groups', N'assignedGroups', 3, @UserId, @Now)
+VALUES (@MaxControlId + 1, @ParentControlID, 14, N'PortfolioManagementProductAccessAssignedGroupsLinkLabelUIId', N'Assigned Groups', N'assignedGroups', 3, @UserId, @Now)
 
 INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
 VALUES (@MaxControlId + 2, @MaxControlId + 1, 5, N'PortfolioManagementProductAccessAssignedGroupsLabelUIId', N'Groups', NULL, 1, @UserId, @Now)
