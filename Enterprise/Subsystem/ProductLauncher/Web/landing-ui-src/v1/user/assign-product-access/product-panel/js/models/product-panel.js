@@ -23,6 +23,7 @@
             };
             s.propertyRoleListData = {
                 "PropertyIds": [],
+                "PropertyGroupList": [],
                 "RoleType": "",
                 "RoleId": ""
             };
@@ -138,6 +139,7 @@
                 needsDepartments = false,
                 hasDepartments = false,
                 hasPropertyRoles = false,
+                needsPropertiesAndGroups = false,
                 needAreas = false,
                 needRegions = false,
                 roleWithoutPropTabs = false,
@@ -282,8 +284,16 @@
                                         s.propertyRoleListData.PropertyIds.push(prop.id);
                                     }
                                 });
-                                if (s.propertyRoleListData.PropertyIds.length > 0) {
+                                propRole.groupList.forEach(function (group) {
+                                    if (group.isAssigned) {
+                                        s.propertyRoleListData.PropertyGroupList.push(group.id);
+                                    }
+                                });
+                                if (s.propertyRoleListData.PropertyIds.length > 0 || s.propertyRoleListData.PropertyGroupList.length) {
                                     s.batchData.inputJson.RolePropertiesList.push(s.propertyRoleListData);
+                                }
+                                else{
+                                    needsPropertiesAndGroups = true;
                                 }
                             }
                         });
@@ -487,7 +497,7 @@
             }
 
             if (productId == "44") {
-                if (hasPropertyRoles) {
+                if (hasPropertyRoles && !needsPropertiesAndGroups) {
                     return s.batchData;
                 }
             }
