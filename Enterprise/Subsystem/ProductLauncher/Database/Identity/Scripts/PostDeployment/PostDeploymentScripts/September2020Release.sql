@@ -181,8 +181,10 @@ END
 GO
 DECLARE @UserId bigint,
 	@ProductId int = 44,
+	@productSettingId INT,
 	@productSettingTypeId INT,
 	@productGroupSettingTypeId INT,
+	@ConfigurationId INT,
 	@ParentControlID INT ,
 	@MaxControlId INT,
 	@MaxControlAttributeId INT,
@@ -192,7 +194,7 @@ SELECT	@UserId = UserId
 FROM	Ident.UserLogin
 WHERE	LoginName LIKE 'realpagead@%'
 
-IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE UIID = 'PortfolioManagementProductAccessAssignedGroupsLinkLabelUIId')
 BEGIN
 
 SELECT @MaxControlId = max(ControlId) from UserManagement.Control
@@ -245,12 +247,20 @@ VALUES (@MaxControlAttributeId + 2, @MaxControlId + 6, N'InfoIcon', N'Slide', @U
 SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 END
 
-select @productGroupSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where [Name] = 'GetPropertyGroupsEndpoint'
+SELECT @productGroupSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where [Name] = 'GetPropertyGroupsEndpoint'
+SELECT TOP 1 @ConfigurationId = ConfigurationId from Enterprise.ProductConfiguration where ProductSettingId in (select ProductSettingId from Enterprise.ProductSetting where ProductId = @ProductId)
 
 IF(@productGroupSettingTypeId IS NOT NULL)
 BEGIN
+
 	INSERT INTO Enterprise.ProductSetting(ProductId,ProductSettingTypeId,Value,FromDate,ThruDate)
 	VALUES(@ProductId, @productGroupSettingTypeId, '/api/{0}/UserPropertyGroups', @Now, NULL)
+	
+	SELECT @productSettingId = SCOPE_IDENTITY()
+	
+	INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate)
+	VALUES(@ConfigurationId, @productSettingId, @Now, NULL)
+
 END
 
 IF NOT EXISTS (select top 1 1 from Enterprise.ProductSettingType where [Name] = 'GetPropertyByGroupEndpoint')
@@ -265,6 +275,11 @@ IF(@productSettingTypeId IS NOT NULL)
 BEGIN
 	INSERT INTO Enterprise.ProductSetting(ProductId,ProductSettingTypeId,Value,FromDate,ThruDate)
 	VALUES(@ProductId, @productSettingTypeId, '/api/{0}/UserPropertyGroupsById?propertyGroupId={1}', @Now, NULL)
+
+	SELECT @productSettingId = SCOPE_IDENTITY()
+	
+	INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate)
+	VALUES(@ConfigurationId, @productSettingId, @Now, NULL)
 END
 
 
