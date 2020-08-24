@@ -30,6 +30,10 @@
             return model.propertyData;
         };
 
+        model.getSelectedGroupRoleData = function () {
+            return model.GroupData;
+        };
+
         model.setName = function (name) {
             model.Name = name;
         };
@@ -54,6 +58,10 @@
             model.propertyData = data;
         };
       
+        model.setSelectedGroupRoleData = function (data) {
+            model.GroupData = data;
+        };
+        
         model.FooterRequired = function (productId){
             var flag = false;
             productLists.forEach(function (id) {

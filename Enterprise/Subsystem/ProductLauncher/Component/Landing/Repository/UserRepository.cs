@@ -5411,6 +5411,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                     greenBookRole = defaultRole != null ? defaultRole.RoleId : enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId;
                                 }
+
+                                if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                                {
+                                    gbProdBatch = new ProductBatch()
+                                    {
+                                        InputJson = new RolePropertyList()
+                                        {
+                                            PropertyList = new List<string>()
+                                            { "-1"}
+                                        }
+                                    };
+                                }
                             }
                         }
 
@@ -5423,10 +5435,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            ProductBatch productBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId.Equals((int)ProductEnum.UnifiedPlatform));
-                            if ((gbProdBatch != null) && ((productBatch.InputJson?.PropertyList?.Count > 0) || (productBatch.InputJson?.RemovedPropertyList?.Count > 0)))
+                           
+                            //ProductBatch productBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId.Equals((int)ProductEnum.UnifiedPlatform));
+
+                            if ((gbProdBatch != null) && ((gbProdBatch.InputJson?.PropertyList?.Count > 0) || (gbProdBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
-                                string propertyJSON = JsonConvert.SerializeObject(productBatch);
+                                string propertyJSON = JsonConvert.SerializeObject(gbProdBatch);
                                 if (!usePropertyInstances)
                                 {
                                     repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, new { PersonaId = updateUserProfileEntity.OldProfile.Persona[0].PersonaId, ProductId = (int)ProductEnum.UnifiedPlatform, PropertyJSON = propertyJSON });
