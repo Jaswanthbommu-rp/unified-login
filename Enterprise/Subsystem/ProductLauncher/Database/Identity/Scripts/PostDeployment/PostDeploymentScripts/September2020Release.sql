@@ -250,9 +250,9 @@ END
 SELECT @productGroupSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where [Name] = 'GetPropertyGroupsEndpoint'
 SELECT TOP 1 @ConfigurationId = ConfigurationId from Enterprise.ProductConfiguration where ProductSettingId in (select ProductSettingId from Enterprise.ProductSetting where ProductId = @ProductId)
 
-IF(@productGroupSettingTypeId IS NOT NULL)
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.ProductSetting where ProductId = @ProductId and [Value] = '/api/{0}/UserPropertyGroups')
 BEGIN
-
+ 
 	INSERT INTO Enterprise.ProductSetting(ProductId,ProductSettingTypeId,Value,FromDate,ThruDate)
 	VALUES(@ProductId, @productGroupSettingTypeId, '/api/{0}/UserPropertyGroups', @Now, NULL)
 	
@@ -260,7 +260,6 @@ BEGIN
 	
 	INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate)
 	VALUES(@ConfigurationId, @productSettingId, @Now, NULL)
-
 END
 
 IF NOT EXISTS (select top 1 1 from Enterprise.ProductSettingType where [Name] = 'GetPropertyByGroupEndpoint')
@@ -271,7 +270,7 @@ END
 
 select @productSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where [Name] = 'GetPropertyByGroupEndpoint'
 
-IF(@productSettingTypeId IS NOT NULL)
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.ProductSetting where ProductId = @ProductId and [Value] = '/api/{0}/UserPropertyGroupsById?propertyGroupId={1}')
 BEGIN
 	INSERT INTO Enterprise.ProductSetting(ProductId,ProductSettingTypeId,Value,FromDate,ThruDate)
 	VALUES(@ProductId, @productSettingTypeId, '/api/{0}/UserPropertyGroupsById?propertyGroupId={1}', @Now, NULL)
@@ -281,6 +280,7 @@ BEGIN
 	INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate)
 	VALUES(@ConfigurationId, @productSettingId, @Now, NULL)
 END
+
 
 
 
