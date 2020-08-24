@@ -1,4 +1,4 @@
-﻿Create PROCEDURE [Enterprise].[CreatePropertyInstanceMapping](
+﻿CREATE PROCEDURE [Enterprise].[CreatePropertyInstanceMapping](
     @PersonaID  BIGINT,
     @ProductID  INT,
     @PropertyInstanceID BIGINT,
@@ -70,4 +70,4 @@ AS
                                AND Active = 1
                  END;
          END;
-     END;
+END;
