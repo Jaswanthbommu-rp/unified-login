@@ -97,8 +97,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-				//bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceIntelligentBuilding", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
-
+				var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+				
 				// super user
 				// TODO what to do here?
 				if (IsSuperUser(userPersonaId))
@@ -107,10 +107,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
 					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
 					string superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;
+					List<string> propertiesToRemove = new List<string>();
+					if (userPropertyIdList?.Count > 0)
+					{
+						foreach (var prop in userPropertyIdList)
+						{
+							if (prop != -1)
+							{
+								propertiesToRemove.Add(prop.ToString());
+							}
+						}
+					}
 
 					userAssignProductPropertyRole = new IBPropertyRole
 					{
 						PropertyList = new List<string> { "-1" },
+						RemovedPropertyList = propertiesToRemove,
 						RoleList = new List<string>() { superUserRoleId }
 					};
 				}
@@ -182,8 +194,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					}
 
-					var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
-					//List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 					List<string> unAssignedPropertyList = userAssignProductPropertyRole.RemovedPropertyList;
 
