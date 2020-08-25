@@ -223,6 +223,7 @@ VALUES
 ,('CLIENTID','','ulrenoapi', 0) -- For DEV Environment
 ,('TOKENENDPOINT','', @tokenEndPoint, 0) -- For DEV Environment
 ,('APISECRET','', @apisecret, 1)
+,('ClientScope', 'The client scope to get access token','renouserapi',0)
 
 ,('GetRoleEndpoint','Role End point for product API','/{0}/roles?isIncludeRights={1}', 0)
 ,('GetRightEndpoint','Right End point for product API','/roleRights/{0}', 0)
@@ -250,11 +251,11 @@ BEGIN
 END
 IF @ServerName IN ('RCQUSODBSQL001')
 BEGIN
-	SET @LoginURL = 'https://rl-valueadd-sat.herokuapp.com/auth-callback';
+	SET @LoginURL = 'https://rl-valueadd-sat.herokuapp.com/value-add';
 END
 IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
-	SET @LoginURL = 'https://reno.rentlytics.com/auth-callback';
+	SET @LoginURL = 'https://reno.rentlytics.com/value-add';
 END
 
 SET @LoginURI = @LoginURL;
@@ -814,7 +815,7 @@ GO
 --For Reno product internal settings
 DECLARE @UserId bigint,
 	@ProductId int =55,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -832,6 +833,8 @@ DECLARE @UserId bigint,
 				)
 		ORDER BY GlobalProductConfigurationId DESC;
 
+		Select @roleId = 34
+	
 		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
 		BEGIN
 			Select @roleId = 34
@@ -852,7 +855,7 @@ DECLARE @UserId bigint,
 			WHERE Name = 'SuperUserRoleId'
 		) IS NULL
 		BEGIN
-			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId', 'The role Id to create admin user in  product', @ProductSettingTypeId OUTPUT;
+			EXEC Enterprise.CreateProductSettingType 'SuperUserRoleId', 'The role Id to create admin user in  product',0, @ProductSettingTypeId OUTPUT;
 		END;
 
 		IF @ProductSettingTypeId IS NOT NULL AND 
@@ -880,48 +883,12 @@ DECLARE @UserId bigint,
 				@FromDate = @NOW, -- datetime
 				@ThruDate = NULL;   -- datetime
 			END;
-
-
-		IF
-		(
-			SELECT 1
-			FROM Enterprise.ProductSettingType
-			WHERE Name = 'ClientScope'
-		) IS NULL
-		BEGIN
-			EXEC Enterprise.CreateProductSettingType 'ClientScope', 'The client scope to get access token', @ProductSettingTypeId OUTPUT;
-		END;
-
-		IF @ProductSettingTypeId IS NOT NULL AND 
-			   NOT EXISTS
-			(
-				SELECT TOP 1 1
-				FROM Enterprise.ProductSetting
-				WHERE ProductID = @productId AND 
-					  ProductSettingTypeId = @ProductSettingTypeId AND 
-					  ThruDate IS NULL
-			)
-			BEGIN
-	
-				-- Create the Value and assign it to the Product and ProductSettingType
-				EXEC Enterprise.CreateProductSetting @ProductId = @ProductId, -- int
-				@ProductSettingTypeId = @ProductSettingTypeId, -- int
-				@Value = 'renouserapi', 
-				@FromDate = @NOW, -- datetime
-				@ThruDate = NULL, -- datetime
-				@ProductSettingId = @ProductSettingId OUTPUT; -- int
-
-				-- Link the Product Setting to an actual configuration
-				EXEC Enterprise.LinkProductSettingToConfiguration @ConfigurationId = @CurrentProductConfigurationID, -- int
-				@ProductSettingId = @ProductSettingId, -- int
-				@FromDate = @NOW, -- datetime
-				@ThruDate = NULL;   -- datetime
-			END;
+		
 GO
 
 DECLARE @UserId bigint,
 	@ProductId int =17,
-	@Now datetime = GETDATE();
+	@Now datetime = GETUTCDATE();
 
 SELECT	@UserId = UserId
 FROM	Ident.UserLogin
@@ -980,7 +947,7 @@ BEGIN
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
 
-	IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductPageId = 33)
+	IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductPageId = 33)
 	BEGIN
 		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
 		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
@@ -988,16 +955,11 @@ BEGIN
 		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
 	END
 	
-
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
 	INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
 	VALUES (43, 33, 537, @UserId, @Now)
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
-
-	SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
-	INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive]) 
-	VALUES (33, 50, N'Senior Lead Management Product Access', @UserId, @Now, 1)
-	SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+	
 	
 END
 
@@ -1168,7 +1130,7 @@ END
 GO
 DECLARE @UserId bigint,
 	@ProductId int =3,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -1812,7 +1774,7 @@ GO
 
 DECLARE @UserId bigint,
 	@ProductId int =55,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -1829,6 +1791,8 @@ DECLARE @UserId bigint,
 				)
 				)
 		ORDER BY GlobalProductConfigurationId DESC;
+
+		Select @roleId = 1
 
 		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
 		BEGIN
@@ -1921,7 +1885,7 @@ GO
 --For Reno product internal settings
 DECLARE @UserId bigint,
 	@ProductId int =55,
-	@Now datetime = GETDATE(),
+	@Now datetime = GETUTCDATE(),
 	@CurrentProductConfigurationID INT,
 	@ProductSettingTypeId INT,
 	@ProductSettingId INT,
@@ -1938,7 +1902,9 @@ DECLARE @UserId bigint,
 				)
 				)
 		ORDER BY GlobalProductConfigurationId DESC;
-
+			
+		Select @roleId = 34
+			
 		IF @ServerName IN ('RCTUSODBSQL001', 'RCDUSODBSQL001')
 		BEGIN
 			Select @roleId = 34
@@ -3385,11 +3351,288 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS(SELECT TOP 1 1 FROM [Enterprise].[ProductRight] where ProductId = 39 AND RightShortName = 'AccessIntegrationMarketplace')
+
+--Financial Suite Product Access panel
+DECLARE @UserId bigint,
+	@ProductId int = 8,
+	@Now datetime = GETDATE();
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
 BEGIN
-	INSERT INTO Enterprise.ProductRight(ProductId,RightShortName)
-	VALUES (39,'AccessIntegrationMarketplace');
+ IF NOT EXISTS (SELECT * FROM UserManagement.[Control] WHERE UIId like '%Financial%')
+	BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (516, NULL, 8, N'FinancialSuiteProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (517, 516, 5, N'FinancialSuiteProductAccessOptions:LabelUIId', N'Options:', N'', 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (518, 516, 1, N'FinancialSuiteProductAccessAccesstoSiteSpendManagementonlySwitchUIId', N'Access to Site Spend Management only', N'hasAccessToSiteSpendManagementOnly', 2, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (519, 516, 1, N'FinancialSuiteProductAccessAllowaccesstoallcurrentandfutureentitiesSwitchUIId', N'Allow access to all current and future entities', N'hasAccessToAllCurrentFutureProperties', 3, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (520, 516, 1, N'FinancialSuiteProductAccessAccountingAdminSwitchUIId', N'Accounting Admin', N'isAccountingAdmin', 4, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (521, 516, 9, N'FinancialSuiteProductAccessCompaniesTabUIId', N'Companies', NULL, 5, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (522, 521, 3, N'FinancialSuiteProductAccessCompaniesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (523, 522, 10, N'FinancialSuiteProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (524, 522, 5, N'FinancialSuiteProductAccessIDLabelUIId', N'ID', N'id', 2, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (525, 522, 5, N'FinancialSuiteProductAccessNameLabelUIId', N'Name', N'name', 3, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (526, 516, 9, N'FinancialSuiteProductAccessEntitiesTabUIId', N'Entities', NULL, 6, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (527, 526, 3, N'FinancialSuiteProductAccessEntitiesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (528, 527, 10, N'FinancialSuiteProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (529, 527, 5, N'FinancialSuiteProductAccessEntityIDLabelUIId', N'Entity ID', N'propertyId', 2, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (530, 527, 5, N'FinancialSuiteProductAccessEntityNameLabelUIId', N'Entity Name', N'propertyName', 3, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (531, 527, 5, N'FinancialSuiteProductAccessCompanyIDLabelUIId', N'Company ID', N'companyId', 4, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (532, 527, 5, N'FinancialSuiteProductAccessCompanyNameLabelUIId', N'Company Name', N'companyName', 5, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (533, 516, 9, N'FinancialSuiteProductAccessRolesTabUIId', N'Roles', NULL, 7, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (534, 533, 3, N'FinancialSuiteProductAccessRolesMultiSelectGridUIId', NULL, NULL, 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (535, 534, 10, N'FinancialSuiteProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+	
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (536, 534, 5, N'FinancialSuiteProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+	
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 	
+	
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (128, 518, N'Default', N'True', @UserId, @Now)
+	
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (129, 519, N'Default', N'True', @UserId, @Now)
+	
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (130, 520, N'Default', N'True', @UserId, @Now)
+	
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (131, 521, N'Default', N'True', @UserId, @Now)
+	
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (132, 522, N'ShowSelectAll', N'True', @UserId, @Now)
+	
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (133, 527, N'ShowSelectAll', N'True', @UserId, @Now)
+	
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (134, 534, N'ShowSelectAll', N'False', @UserId, @Now)
+	
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+		IF EXISTS(SELECT * FROM UserManagement.ProductPageControl WHERE ControlId in (3,4,5,6,59) and ProductPageId=2)
+		BEGIN
+		 DELETE FROM UserManagement.ProductPageControl WHERE ControlId in (3,4,5,6,59) and ProductPageId=2
+		END
+
+		IF NOT EXISTS(SELECT * FROM UserManagement.ProductPageControl WHERE ProductPageControlId=42)
+		BEGIN
+			SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+	
+			INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate]) 
+			VALUES (42, 2, 516, @UserId, @Now)
+	
+			SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+		END
+	END
+	
 END
+GO
+
+DECLARE @Now DATETIME = GETUTCDATE(),
+	@OrganizationPartyId bigint,
+	@ProductId int,
+	@TargetProductId int,
+	@ActionId int,
+	@RoleId int,
+	@OutputRightId int,
+	@UserActionId int,
+	@RightValueTypeValue nvarchar(200),
+	@DetaulRightName nvarchar(200),
+	@RightShortName nvarchar(50),
+	@RightCategory int,
+	@VisibilityStatusTypeId int,
+	@ConfigurationId int
+	--@RoleName nvarchar(200) = N'User Administrator'
+
+DECLARE @NewRightValueType TABLE (
+	Value nvarchar(200)
+)
+
+SELECT @RightCategory = TypeId
+FROM	Enterprise.RoleRightStatus
+WHERE	CategoryName = 'Right Type'
+AND			TypeName = 'System'
+
+SELECT	@VisibilityStatusTypeId = TypeId
+FROM	Enterprise.RoleRightStatus AS rrs
+WHERE	TypeName = 'ALL'
+AND			CategoryType = 'Security'
+
+INSERT INTO @NewRightValueType (
+	Value
+)
+VALUES (
+	'Manage help center administrator'
+),
+(
+	'Manage help center knowledge base'
+),
+(
+	'Manage help center videos'
+),
+(
+	'Manage help center online help'
+),
+(
+	'Manage help center product updates'
+)
+
+---For QA RealPage Employee
+SELECT	@OrganizationPartyId = PartyId
+FROM	Enterprise.Organization
+WHERE	Name = N'RealPage Employee'
+
+if(@OrganizationPartyId is NULL)
+begin
+print ('Cant find company, please validate the company name for that enviroment')
+return
+end
+
+SELECT	@ProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'Unified Platform'
+
+SELECT	@TargetProductId = ProductId
+FROM	Enterprise.Product
+WHERE	Name = N'Help Center'
+
+DECLARE curNewRightValueType CURSOR FOR
+SELECT Value
+FROM @NewRightValueType
+
+OPEN curNewRightValueType
+FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ACTION WHERE ObjectValue = @RightValueTypeValue AND ParentActionId IS NULL)
+	BEGIN
+		EXEC Enterprise.CreateAction
+			@ProductID = @ProductId, 
+			@Action = @RightValueTypeValue, 
+			@ActionTarget = N'Right', 
+			@ActionbValueTypeId = 1, 
+			@Description = '', 
+			@ActionID = @ActionId OUTPUT;
+	END;
+	FETCH NEXT FROM curNewRightValueType INTO @RightValueTypeValue
+END
+CLOSE curNewRightValueType
+DEALLOCATE curNewRightValueType
+
+DECLARE curOrganizationRight CURSOR FOR
+
+
+
+SELECT eo.PartyId,
+			x.Value
+FROM	Enterprise.Organization eo
+			CROSS JOIN (
+				SELECT Value
+				FROM @NewRightValueType
+			) x
+WHERE	Name = N'RealPage Employee'
+
+
+
+OPEN curOrganizationRight
+FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SET @ActionID = NULL
+
+	SELECT @DetaulRightName = 'Default_' + @RightValueTypeValue,
+		@RightShortName = REPLACE(REPLACE(@RightValueTypeValue, ' ', ''), '-', '')
+
+	EXEC Enterprise.CreateRight
+		@RoleId = -1,
+		@RightName = @DetaulRightName,
+		@ShortName = @RightShortName,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Description = '',
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	SELECT @ActionID = ActionId
+	FROM	Enterprise.Action
+	WHERE	ParentActionId IS NULL 
+	AND		ObjectValue = @RightValueTypeValue
+	AND		ObjectType = 'Right'
+
+	EXEC [Enterprise].[LinkActionToRights]
+		@ActionID = @ActionID,
+		@RightId = @OutputRightId,
+		@StatusId = @VisibilityStatusTypeId,
+		@UserActionId = @UserActionId OUTPUT;
+
+	EXEC Enterprise.CreateRight
+		@RoleId = -1,
+		@RightName = @RightValueTypeValue,
+		@RightCategoryId = @RightCategory,
+		@PartyId = @OrganizationPartyId,
+		@ProductId = @ProductId,
+		@Shortname = @RightShortName,
+		@Description = @RightValueTypeValue,
+		@TargetProductId = @TargetProductId,
+		@VisibilityStatusId = @VisibilityStatusTypeId,
+		@RightId = @OutputRightId OUTPUT;
+
+	FETCH NEXT FROM curOrganizationRight INTO @OrganizationPartyId, @RightValueTypeValue
+END
+CLOSE curOrganizationRight
+DEALLOCATE curOrganizationRight
+
 GO
 
 IF EXISTS (SELECT TOP 1 1 FROM UserManagement.[Control] WHERE ControlId = 519)

@@ -1429,7 +1429,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     public class CheckUserLogin : AuthenticationType
     {
         private string userLoginField;
-
         public string UserLogin
         {
             get
@@ -1442,6 +1441,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
             }
         }
     }
+
 
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2046.0")]

@@ -1925,6 +1925,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageSeniorLeadManagement:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
                         break;
+                    case (int)ProductRightEnum.ManageIntelligentBuildingProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingProductAccess.ToString());
+                        break;
                     default:
                         break;
                 }

@@ -231,6 +231,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
 					}
+					else if (product.ProductId == (int)ProductEnum.IntelligentBuilding)
+					{
+						ManageIntelligentBuilding ib = new ManageIntelligentBuilding(userClaim);
+						propertiesResponse = ib.GetUPFMProperties(createUserPersonaId, personaId, false, ProductEnum.IntelligentBuilding,null);
+						rolesResponse = ib.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+					}
 				}
 				catch (Exception ex)
 				{
@@ -493,7 +500,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (allProperties)
 			{
-				if (productID == (int)ProductEnum.ClientPortal)
+				if (productID == (int)ProductEnum.ClientPortal || productID == (int)ProductEnum.IntelligentBuilding)
 				{
 					PropertyList.Add("-1");
 				}
@@ -515,10 +522,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						{
 							PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
 						}
-					}
+					}					
 					else if (((ProductProperty)item).IsAssigned.Value)
 					{
-						PropertyList.Add(((ProductProperty)item).ID);
+						if (productID == (int)ProductEnum.IntelligentBuilding)
+						{
+							PropertyList.Add(((ProductProperty)item).Alias);
+						}
+						else
+						{
+							PropertyList.Add(((ProductProperty)item).ID);
+						}							
 					}
 				}
 

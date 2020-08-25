@@ -36,7 +36,7 @@
             "panelName.clickPay" : "Payments Product Access",
             "panelName.depositAlternative" : "Deposit Alternative Product Access",
             "panelName.renovationManager" : "Renovation Manager Product Access",
-            "panelName.intelligentBuilding" : "Intelligent Building Product Access",
+            "panelName.intelligentBuilding" : "Waste Management Solution Product Access",
             "panelName.comingSoon": "Coming Soon",
 
             "panelError.generic": "There was a problem getting information for the product"
