@@ -121,13 +121,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// get all properties
 			var allProperties = GetPortfolioProperties().ToList();
 
+			// get all property groups
+			var allPropertyGroups = GetPortfolioPropertyGroups().ToList();
+
 			// get all non-global roles
 			var allPropertiesRoles = GetPortfolioPropertySpecificRoles().ToList();
 
 			//build roles-entities object
 			foreach (var role in allPropertiesRoles)
 			{
-				propertiesList.Add(new PortfolioRoleProperty(role, allProperties));
+				propertiesList.Add(new PortfolioRoleProperty(role, allProperties, allPropertyGroups));
 			}
 
 			// if user already exists in product
@@ -140,6 +143,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				MergePropertyRoles(propertiesList, user.PropertyRoleList);
 			}
 
+			return new ListResponse
+			{
+				Records = propertiesList.Cast<object>().ToList(),
+				TotalRows = propertiesList.Count,
+				RowsPerPage = 9999,
+				ErrorReason = string.Empty,
+				TotalPages = 1
+			};
+		}
+
+		/// <summary>
+		/// Get Portfolio Properties by GroupId
+		/// </summary> 
+		public ListResponse GetProductPropertiesByGroup(string groupId, RequestParameter dataFilter, string apiQuery = null)
+		{
+			// get properties by GroupId
+			var propertiesList = GetPortfolioPropertiesByGroup(groupId).ToList();
 			return new ListResponse
 			{
 				Records = propertiesList.Cast<object>().ToList(),
@@ -195,6 +215,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
+		private IList<ProductProperties> GetPortfolioPropertiesByGroup(string propertyGroupId)
+		{
+			// Get end point for properties
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyByGroupEndpoint);
+			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, propertyGroupId);
+
+			// call API
+			return GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
+		}
+		private IList<ProductPropertyGroups> GetPortfolioPropertyGroups()
+		{
+			// Get end point for properties
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyGroupsEndpoint);
+			baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+			// call API
+			return GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
+		}
+
 		private IList<ProductRole> GetPortfolioPropertySpecificRoles()
 		{
 			// Get end point for property-role
@@ -231,6 +269,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								property.IsAssigned = true;
 							}
 						}
+						if (propRolesList.GroupList.Any(y => role.PropertyGroupList.Contains(y.GetGroupId)))
+						{
+							propRolesList.IsAssigned = true;
+							foreach (var group in propRolesList.GroupList.Where(z => role.PropertyGroupList.Contains(z.GetGroupId)))
+							{
+								group.IsAssigned = true;
+							}
+						}
 					}
 				}
 			}
@@ -241,18 +287,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 	public class PortfolioRoleProperty : ProductRole
 	{
-		public PortfolioRoleProperty(ProductRole role, List<ProductProperties> properties)
+		public PortfolioRoleProperty(ProductRole role, List<ProductProperties> properties, List<ProductPropertyGroups> Groups)
 		{
 			SetName = role.GetName;
 			SetRoleId = role.GetRoleId;
 			PropertiesList = new List<ProductProperties>();
+			GroupList = new List<ProductPropertyGroups>();
 			PropertiesList.AddRange(properties.Select(a => new ProductProperties
 			{
 				SetPropertyId = a.GetPropertyId,
 				SetName = a.GetName,
 				PropertyType = a.PropertyType
 			}));
+			GroupList.AddRange(Groups.Select(a => new ProductPropertyGroups
+			{
+				SetGroupId = a.GetGroupId,
+				SetGroupName = a.GetGroupName
+			}));
 		}
 		public List<ProductProperties> PropertiesList { get; set; }
+		public List<ProductPropertyGroups> GroupList { get; set; }
 	}
 }

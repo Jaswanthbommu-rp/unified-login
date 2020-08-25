@@ -178,7 +178,253 @@ BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 END
+GO
+DECLARE @UserId bigint,
+	@ProductId int = 44,
+	@productSettingId INT,
+	@productSettingTypeId INT,
+	@productGroupSettingTypeId INT,
+	@ConfigurationId INT,
+	@ParentControlID INT,
+	@ControlID INT,
+	@MaxControlId INT,
+	@MaxControlAttributeId INT,
+	@Now datetime = GETDATE();
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE UIID = 'PortfolioManagementProductAccessAssignedGroupsLinkLabelUIId')
+BEGIN
+
+SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+select @ParentControlID = ControlId from UserManagement.COntrol where UIID = 'PortfolioManagementProductAccessEntityRolesMultiSelectGridUIId'
+
+SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 1, @ParentControlID, 14, N'PortfolioManagementProductAccessAssignedGroupsLinkLabelUIId', N'Assigned Groups', N'assignedGroups', 3, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 2, @MaxControlId + 1, 5, N'PortfolioManagementProductAccessAssignedGroupsLabelUIId', N'Groups', NULL, 1, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 3, @MaxControlId + 1, 12, N'PortfolioManagementProductAccessAssignedGroupsMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 4, @MaxControlId + 3, 10, N'PortfolioManagementProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 5, @MaxControlId + 3, 5, N'PortfolioManagementProductAccessGroupLabelUIId', N'Group', N'name', 2, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 6, @MaxControlId + 3, 11, N'PortfolioManagementProductAccessIconUIId', NULL, N'InfoIcon', 3, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 7, @MaxControlId + 6, 5, N'PortfolioManagementProductAccessEntityDetailsLabelUIId', N'Entity Group Details', NULL, 1, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 8, @MaxControlId + 6, 12, N'PortfolioManagementProductAccessGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 9, @MaxControlId + 8, 5, N'PortfolioManagementProductAccessEntityLabelUIId', N'Entity', N'name', 1, @UserId, @Now)
+
+INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlId + 10, @MaxControlId + 8, 5, N'PortfolioManagementProductAccessEntityTypeLabelUIId', N'Type', N'propertyType', 2, @UserId, @Now)
+
+SET IDENTITY_INSERT [UserManagement].[Control] OFF 
+
+
+SELECT @MaxControlAttributeId = max(ControlAttributeId) from [UserManagement].[ControlAttribute]
+SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON
+
+INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlAttributeId + 1, @MaxControlId + 1, N'AssignedGroups', N'Slide', @UserId, @Now)
+
+INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+VALUES (@MaxControlAttributeId + 2, @MaxControlId + 6, N'InfoIcon', N'Slide', @UserId, @Now)
+
+SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM[UserManagement].[Control] WHERE UIID = 'PortfolioManagementProductAccessAssignedEntitiesLinkLabelUIId' AND [Sequence] = 3)
+BEGIN
+	SELECT @ControlID = ControlID from [UserManagement].[Control] where UIID = 'PortfolioManagementProductAccessAssignedEntitiesLinkLabelUIId'
+	UPDATE [UserManagement].[Control] SET [Sequence] = 4 WHERE ControlID = @ControlID
+END
+
+SELECT @productGroupSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where [Name] = 'GetPropertyGroupsEndpoint'
+SELECT TOP 1 @ConfigurationId = ConfigurationId from Enterprise.ProductConfiguration where ProductSettingId in (select ProductSettingId from Enterprise.ProductSetting where ProductId = @ProductId)
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.ProductSetting where ProductId = @ProductId and [Value] = '/api/{0}/UserPropertyGroups')
+BEGIN
+ 
+	INSERT INTO Enterprise.ProductSetting(ProductId,ProductSettingTypeId,Value,FromDate,ThruDate)
+	VALUES(@ProductId, @productGroupSettingTypeId, '/api/{0}/UserPropertyGroups', @Now, NULL)
+	
+	SELECT @productSettingId = SCOPE_IDENTITY()
+	
+	INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate)
+	VALUES(@ConfigurationId, @productSettingId, @Now, NULL)
+END
+
+IF NOT EXISTS (select top 1 1 from Enterprise.ProductSettingType where [Name] = 'GetPropertyByGroupEndpoint')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType([Name],[Description])
+	VALUES('GetPropertyByGroupEndpoint','GET Properties By Group Endpoint for product API') 
+END
+
+select @productSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where [Name] = 'GetPropertyByGroupEndpoint'
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.ProductSetting where ProductId = @ProductId and [Value] = '/api/{0}/UserPropertyGroupsById?propertyGroupId={1}')
+BEGIN
+	INSERT INTO Enterprise.ProductSetting(ProductId,ProductSettingTypeId,Value,FromDate,ThruDate)
+	VALUES(@ProductId, @productSettingTypeId, '/api/{0}/UserPropertyGroupsById?propertyGroupId={1}', @Now, NULL)
+
+	SELECT @productSettingId = SCOPE_IDENTITY()
+	
+	INSERT INTO Enterprise.ProductConfiguration(ConfigurationId, ProductSettingId, FromDate, ThruDate)
+	VALUES(@ConfigurationId, @productSettingId, @Now, NULL)
+END
+
+GO
+
+if not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'NotificationsApiEndPoint' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsApiEndPoint', 'The api endpoint for Unified Notifications', 0 )
+end
+GO
+
+If not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'NotificationsEventsEndPoint' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsEventsEndPoint', 'The api endpoint for Unified Notification events', 0 )
+end
+GO
+
+If not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'NotificationsEventChangeCompany' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'NotificationsEventChangeCompany', 'The event name used to trigger the Change Company event from Notifications', 0 )
+end
+GO
+
+If not exists ( select top (1) 1 from Enterprise.ProductSettingType where name = 'UnifiedLoginServerClientName' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UnifiedLoginServerClientName', 'The client name for Unified Login server side client', 0 )
+end
+GO
+
+If not exists ( select TOP (1) 1 from Enterprise.ProductSettingType where name = 'UnifiedLoginServerClientSecret' )
+begin
+	INSERT INTO Enterprise.ProductSettingType ( name, Description, SensitiveData ) values ( 'UnifiedLoginServerClientSecret', 'The client secret for Unified Login server side client', 1 )
+end
+GO
 
 
 
+if not exists(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsApiEndPoint' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'https://notifications-api-dev.realpage.com', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'NotificationsApiEndPoint'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsApiEndPoint' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
+
+if not exists(Select top (1) 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventsEndPoint' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'v1/events', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'NotificationsEventsEndPoint'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventsEndPoint' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+				select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientName' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'unifiedlogin-server', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'UnifiedLoginServerClientName'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientName' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
+
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventChangeCompany' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'changeCompanyMessage', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'NotificationsEventChangeCompany'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'NotificationsEventChangeCompany' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+		select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
+
+if not exists(Select top 1 1 from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientSecret' and ps.ProductId= 3)
+Begin
+	Insert into Enterprise.ProductSetting (ProductId, ProductSettingTypeId, Value, FromDate)
+	Select 3, ProductSettingTypeId, 'QUVFNjNDNTQtREMzMS00MDZDLUJCODEtQzU1ODk4RkI5M0Ix', GETUTCDATE()
+	from Enterprise.ProductSettingType
+	where Name = 'UnifiedLoginServerClientSecret'
+
+	declare @productsettingid int
+	select @productsettingid = productsettingid from Enterprise.ProductSetting ps 
+				inner join Enterprise.ProductSettingType pst
+				on ps.ProductSettingTypeId = pst.ProductSettingTypeId
+				where pst.Name = 'UnifiedLoginServerClientSecret' and ps.ProductId= 3
+
+	insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate )
+        select TOP (1) ConfigurationId, @productsettingid, GETUTCDATE() from enterprise.GlobalProductConfiguration where productid = 3 and thrudate is NULL ORDER BY GlobalProductConfigurationId DESC
+end
+GO
 
