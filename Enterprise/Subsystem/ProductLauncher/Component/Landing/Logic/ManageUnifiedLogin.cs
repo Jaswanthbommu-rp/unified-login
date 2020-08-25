@@ -198,6 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
+            List<ProductProperty> productPropertyList = new List<ProductProperty>();
             WriteToDiagnosticLog($"ManageUnifiedLogin.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
 
             try
@@ -223,11 +224,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else
                 {
+                    foreach (UPFMPropertyInstance upfmPropertyInstance in customerPropertyList)
+                    {
+                        var pp = ConvertUPFMPropertyInstanceToProductProperty(upfmPropertyInstance, false);
+                        productPropertyList.Add(pp);
+                    }
+
                     result = new ListResponse() // create new user
                     {
-                        Records = customerPropertyList.Cast<object>().ToList(),
-                        TotalRows = customerPropertyList.Count,
-                        RowsPerPage = customerPropertyList.Count,
+                        Records = productPropertyList.Cast<object>().ToList(),
+                        TotalRows = productPropertyList.Count,
+                        RowsPerPage = productPropertyList.Count,
                         TotalPages = 1,
                         ErrorReason = string.Empty
                     };

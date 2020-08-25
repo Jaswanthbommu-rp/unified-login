@@ -307,7 +307,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			updateObject.LastName = userProductDetails.UserProfileDetails.LastName.TrimWhiteSpace();
 			updateObject.Title = userProductDetails.UserProfileDetails.Title;
 			updateObject.Suffix = userProductDetails.UserProfileDetails.Suffix;
-			updateObject.EmployeeId = userProductDetails.UserProfileDetails.EmployeeId;
 
 			// add product batch
 			updateObject.productBatch = GetProductBatchData(userProductDetails.ProductList);
