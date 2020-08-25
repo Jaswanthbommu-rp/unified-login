@@ -34,7 +34,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper
         /// <summary>
         /// Get the environment of the system
         /// </summary>
-        public static string Environment => ConfigSection["Environment"];
+        public static string Environment { get; } = ConfigurationManager.AppSettings["logging:environment"];
 
         /// <summary>
         /// Get Client Id  

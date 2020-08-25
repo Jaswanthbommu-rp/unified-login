@@ -6,28 +6,30 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Runtime.Caching;
 using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using Serilog;
+using Serilog.Events;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	/// <summary>
-	/// Base for Products
-	/// </summary>
-	public class ManageProductBase : IDisposable
+    /// <summary>
+    /// Base for Products
+    /// </summary>
+    public class ManageProductBase : IDisposable
     {
         const int MAXRETRYCOUNT = 5;
 
@@ -133,10 +135,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected IPersonaRepository _personaRepository = new PersonaRepository();
 
-	    /// <summary>
-	    /// Product Repository
-	    /// </summary>
-	    protected IPropertyRepository _propertyRepository = new PropertyRepository();
+        /// <summary>
+        /// Product Repository
+        /// </summary>
+        protected IPropertyRepository _propertyRepository = new PropertyRepository();
 
         /// <summary>
         /// User login repository
@@ -153,11 +155,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected IUserRoleRightRepository _userRoleRightRepository = new UserRoleRightRepository();
 
-		// Services
-		/// <summary>
-		/// HttpClient
-		/// </summary>
-		protected HttpClient _client = new HttpClient();
+        // Services
+        /// <summary>
+        /// HttpClient
+        /// </summary>
+        protected HttpClient _client = new HttpClient();
 
         /// <summary>
         /// Http Message Handler
@@ -180,105 +182,105 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         private string _correlationId;
 
-		/// <summary>
-		/// User claim
-		/// </summary>
+        /// <summary>
+        /// User claim
+        /// </summary>
         private DefaultUserClaim _userClaim;
 
-		/// <summary>
-		/// Unified Login Repository
-		/// </summary>
-	    protected IUnifiedLoginRepository _unifiedLoginRepository = new UnifiedLoginRepository();
+        /// <summary>
+        /// Unified Login Repository
+        /// </summary>
+        protected IUnifiedLoginRepository _unifiedLoginRepository = new UnifiedLoginRepository();
 
-		/// <summary>
-		/// Contact Mechanism Manager
-		/// </summary>
-		protected IManageContactMechanism _manageContactMechanism = new ManageContactMechanism();
+        /// <summary>
+        /// Contact Mechanism Manager
+        /// </summary>
+        protected IManageContactMechanism _manageContactMechanism = new ManageContactMechanism();
 
 
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		/// <param name="productId"></param>
-		/// <param name="productInternalSettingRepository"></param>
-		public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository)
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository)
         {
             _productId = productId;
             _correlationId = Guid.NewGuid().ToString(); // used for logging
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
-			_productInternalSettingList = GetProductSetting(_productId);
-		}
+            _productInternalSettingList = GetProductSetting(_productId);
+        }
 
-		/// <summary>
-		/// Default constructor with correlationId
-		/// </summary>
-		/// <param name="productId"></param>
-		/// <param name="userClaim">The information about the user calling the service</param>
-		/// <param name="productInternalSettingRepository"></param>
-		public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository)
+        /// <summary>
+        /// Default constructor with correlationId
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="userClaim">The information about the user calling the service</param>
+        /// <param name="productInternalSettingRepository"></param>
+        public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository)
         {
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
-			_productInternalSettingList = GetProductSetting(_productId);
-		}
+            _productInternalSettingList = GetProductSetting(_productId);
+        }
 
-		/// <summary>
-		/// Get Product Setting
-		/// </summary>
-		/// <param name="productId">Product Id</param>
-		/// <returns>List of Product Internal Settings</returns>
-		public IList<IC.ProductInternalSetting> GetProductSetting(int productId)
-		{
-			IList<IC.ProductInternalSetting> listProductInternalSettings = new List<IC.ProductInternalSetting>();
+        /// <summary>
+        /// Get Product Setting
+        /// </summary>
+        /// <param name="productId">Product Id</param>
+        /// <returns>List of Product Internal Settings</returns>
+        public IList<IC.ProductInternalSetting> GetProductSetting(int productId)
+        {
+            IList<IC.ProductInternalSetting> listProductInternalSettings = new List<IC.ProductInternalSetting>();
 
-			RPObjectCache rpcache = new RPObjectCache();
-			var cacheKey = "productInternalSetting_" + productId.ToString();
-			listProductInternalSettings = rpcache.GetFromCache<IList<IC.ProductInternalSetting>>(cacheKey, 120, () =>
-			{
-				// load from database
-				return _productInternalSettingRepository.GetProductInternalSettings(productId);
-			});
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "productInternalSetting_" + productId.ToString();
+            listProductInternalSettings = rpcache.GetFromCache<IList<IC.ProductInternalSetting>>(cacheKey, 120, () =>
+            {
+                // load from database
+                return _productInternalSettingRepository.GetProductInternalSettings(productId);
+            });
 
-			return listProductInternalSettings;
-		}
+            return listProductInternalSettings;
+        }
 
-		/// <summary>
-		/// Get User deactivated Product batch data
-		/// </summary>
-		/// <param name="userPersonaId">User PersonaId</param>
-		/// <returns> User deactivated Product batch data</returns>
-		public RolePropertyList GetDeactivatedProductBatchData(long userPersonaId)
-		{
-			IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
-			RPObjectCache rpcache = new RPObjectCache();
-			var cacheKey = "deactivatedproductsettingsdata_" + userPersonaId.ToString();
+        /// <summary>
+        /// Get User deactivated Product batch data
+        /// </summary>
+        /// <param name="userPersonaId">User PersonaId</param>
+        /// <returns> User deactivated Product batch data</returns>
+        public RolePropertyList GetDeactivatedProductBatchData(long userPersonaId)
+        {
+            IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "deactivatedproductsettingsdata_" + userPersonaId.ToString();
 
-			RolePropertyList roleproperty = new RolePropertyList();
+            RolePropertyList roleproperty = new RolePropertyList();
 
-			_userProductSettings = rpcache.GetFromCache<IList<ProductSettingList>>(cacheKey, 600, () =>
-			{
-				// get the current user product settings from GreenBook
-				return _productRepository.GetProductSettingsByPersona(userPersonaId);
+            _userProductSettings = rpcache.GetFromCache<IList<ProductSettingList>>(cacheKey, 600, () =>
+            {
+                // get the current user product settings from GreenBook
+                return _productRepository.GetProductSettingsByPersona(userPersonaId);
 
-			});
+            });
 
-			bool isDeactivated = _userProductSettings.Any(s => s.ProductId == _productId && s.Value == Convert.ToString((int)UserUiStatusType.Deactivated));
-			if (isDeactivated)
-			{
-				roleproperty = _productRepository.GetUserProductDataFromProductBatch(userPersonaId, _productId);
-			}
+            bool isDeactivated = _userProductSettings.Any(s => s.ProductId == _productId && s.Value == Convert.ToString((int)UserUiStatusType.Deactivated));
+            if (isDeactivated)
+            {
+                roleproperty = _productRepository.GetUserProductDataFromProductBatch(userPersonaId, _productId);
+            }
 
-			return roleproperty;
-		}
-		/// <summary>
-		/// Used to get information about the calling user and user being modified
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <returns></returns>
-		protected ListResponse GetCompanyEditorAndUserDetails(long editorPersonaId, long userPersonaId)
+            return roleproperty;
+        }
+        /// <summary>
+        /// Used to get information about the calling user and user being modified
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
+        protected ListResponse GetCompanyEditorAndUserDetails(long editorPersonaId, long userPersonaId)
         {
             ListResponse response = new ListResponse();
             response = verifyPersona(editorPersonaId);
@@ -328,23 +330,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-		/// <summary>
-		/// Used to delete all SAML product information and status for a user
-		/// </summary>
-		/// <param name="personaId">The persona of the person to delete all of the product SAML information and status for</param>
-		/// <param name="productId">The product id to delete</param>
-		public void DeleteSamlUserProductInfoAndStatus(long personaId, int productId)
-	    {
-		    _samlRepository.DeleteSamlUserProductInfoAndStatus(personaId, productId);
-	    }
+        /// <summary>
+        /// Used to delete all SAML product information and status for a user
+        /// </summary>
+        /// <param name="personaId">The persona of the person to delete all of the product SAML information and status for</param>
+        /// <param name="productId">The product id to delete</param>
+        public void DeleteSamlUserProductInfoAndStatus(long personaId, int productId)
+        {
+            _samlRepository.DeleteSamlUserProductInfoAndStatus(personaId, productId);
+        }
 
-		/// <summary>
-		/// Used to create a new saml user attribute
-		/// </summary>
-		/// <param name="personaId"></param>
-		/// <param name="attributeType"></param>
-		/// <param name="newValue"></param>
-		private void CreateSamlUserAttribute(long personaId, SamlAttributeEnum attributeType, string newValue)
+        /// <summary>
+        /// Used to create a new saml user attribute
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="attributeType"></param>
+        /// <param name="newValue"></param>
+        private void CreateSamlUserAttribute(long personaId, SamlAttributeEnum attributeType, string newValue)
         {
             CreateSamlUserAttribute(personaId, attributeType, newValue, _productId);
         }
@@ -471,18 +473,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return new Tuple<UserLoginOnly, Persona>(_manageUserLogin.GetUserLoginOnly(persona.RealPageId), persona);
         }
 
-		/// <summary>
-		/// Used to get the list of properties for the given user
-		/// </summary>
-		/// <param name="userPersonaId">The persona id of the user to get the list of properties for</param>
-		/// <param name="productEnum">The product id</param>
-		/// <returns></returns>
-		protected List<ProductProperty> GetAssignedPropertyForPersona(long userPersonaId, ProductEnum productEnum)
-		{
-			List<ProductProperty> propertyList = _propertyRepository.ListPropertiesByPersona(userPersonaId, productEnum);
-		    return propertyList;
-	    }
-        
+        /// <summary>
+        /// Used to get the list of properties for the given user
+        /// </summary>
+        /// <param name="userPersonaId">The persona id of the user to get the list of properties for</param>
+        /// <param name="productEnum">The product id</param>
+        /// <returns></returns>
+        protected List<ProductProperty> GetAssignedPropertyForPersona(long userPersonaId, ProductEnum productEnum)
+        {
+            List<ProductProperty> propertyList = _propertyRepository.ListPropertiesByPersona(userPersonaId, productEnum);
+            return propertyList;
+        }
+
         /// <summary>
         /// Used to get the list of 
         /// </summary>
@@ -499,27 +501,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propertyInstanceIds);
         }
 
-		/// <summary>
-		/// Used to add the given property id to the given user
-		/// </summary>
-		/// <param name="userPersonaId">The persona id of the user where the property will be added</param>
-		/// <param name="productId">The product enum</param>
-		/// <param name="propertyId">The property id to add</param>
-		/// <returns></returns>
-		protected RepositoryResponse InsertAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
-		{
-			RepositoryResponse result = new RepositoryResponse();
-			WriteToDiagnosticLog($"InsertAssignedUserPropertyData START - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
-			result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId: userPersonaId, productId: productId, propertyId: propertyId, remove: 0);
-			if (result.Id < 0)
-			{
-				WriteToErrorLog($"InsertAssignedUserPropertyData - Unable to Insert record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
-				return result;
-			}
+        /// <summary>
+        /// Used to add the given property id to the given user
+        /// </summary>
+        /// <param name="userPersonaId">The persona id of the user where the property will be added</param>
+        /// <param name="productId">The product enum</param>
+        /// <param name="propertyId">The property id to add</param>
+        /// <returns></returns>
+        protected RepositoryResponse InsertAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
+        {
+            RepositoryResponse result = new RepositoryResponse();
+            WriteToDiagnosticLog($"InsertAssignedUserPropertyData START - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+            result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId: userPersonaId, productId: productId, propertyId: propertyId, remove: 0);
+            if (result.Id < 0)
+            {
+                WriteToErrorLog($"InsertAssignedUserPropertyData - Unable to Insert record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
+                return result;
+            }
 
-			WriteToDiagnosticLog($"InsertAssignedUserPropertyData END - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}, result - {result.Id}.");
-			return result;
-		}
+            WriteToDiagnosticLog($"InsertAssignedUserPropertyData END - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}, result - {result.Id}.");
+            return result;
+        }
 
         /// <summary>
         /// Used to add the given property instance id to the given user
@@ -542,28 +544,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog($"InsertAssignedUserPropertyInstanceData END - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}, result - {result.Id}.");
             return result;
         }
-        
-	    /// <summary>
-	    /// Used to remove the given property id from the given user
-	    /// </summary>
-	    /// <param name="userPersonaId">The persona id of the user where the property will be removed</param>
-	    /// <param name="productId">The product enum</param>
-	    /// <param name="propertyId">The property id to remove</param>
-		/// <returns></returns>
-		protected RepositoryResponse DeleteAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
-		{
-			RepositoryResponse result = new RepositoryResponse();
-			WriteToDiagnosticLog($"DeleteAssignedUserData START - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
 
-			result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId:userPersonaId, productId:productId, propertyId:propertyId, remove: 1);
-			if (result.Id < 0)
-			{
-				WriteToErrorLog($"DeleteAssignedUserData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
-				return result;
-			}
-			WriteToDiagnosticLog($"DeleteAssignedUserData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
-			return result;
-		}
+        /// <summary>
+        /// Used to remove the given property id from the given user
+        /// </summary>
+        /// <param name="userPersonaId">The persona id of the user where the property will be removed</param>
+        /// <param name="productId">The product enum</param>
+        /// <param name="propertyId">The property id to remove</param>
+        /// <returns></returns>
+        protected RepositoryResponse DeleteAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
+        {
+            RepositoryResponse result = new RepositoryResponse();
+            WriteToDiagnosticLog($"DeleteAssignedUserData START - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+
+            result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId: userPersonaId, productId: productId, propertyId: propertyId, remove: 1);
+            if (result.Id < 0)
+            {
+                WriteToErrorLog($"DeleteAssignedUserData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
+                return result;
+            }
+            WriteToDiagnosticLog($"DeleteAssignedUserData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+            return result;
+        }
 
         /// <summary>
         /// Used to remove the given property instance id from the given user
@@ -577,7 +579,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             RepositoryResponse result = new RepositoryResponse();
             WriteToDiagnosticLog($"DeleteAssignedUserPropertyInstanceData START - calling DB to delete Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.");
 
-            result = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(userPersonaId:userPersonaId, productId:productId, propertyInstanceId:propertyInstanceId, remove: 1);
+            result = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(userPersonaId: userPersonaId, productId: productId, propertyInstanceId: propertyInstanceId, remove: 1);
             if (result.Id < 0)
             {
                 WriteToErrorLog($"DeleteAssignedUserPropertyInstanceData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}");
@@ -592,30 +594,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>		
 		/// <param name="productRightEnum">The product right id</param>
 		/// <returns></returns>
-		protected bool CheckUserProductRight( ProductRightEnum productRightEnum)
+		protected bool CheckUserProductRight(ProductRightEnum productRightEnum)
         {
-            return _userClaim.Rights.Contains(productRightEnum.ToString());            
+            return _userClaim.Rights.Contains(productRightEnum.ToString());
         }
 
-		/// <summary>
-		/// Used to write to the log
-		/// </summary>
-		/// <param name="logType"></param>
-		/// <param name="message"></param>
-		/// <param name="logData"></param>
-		/// <param name="exception"></param>
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        /// <param name="logType"></param>
+        /// <param name="message"></param>
+        /// <param name="logData"></param>
+        /// <param name="exception"></param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            Log.Write(logType, new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                UserId = _editorRealPageId.ToString(),
-                PmcId = _editorPersona?.OrganizationPartyId.ToString(),
-                Exception = exception,
-                CorrelationId = _correlationId,
-            });
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
 
         /// <summary>
@@ -625,7 +618,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="logData"></param>
         protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Information, message, logData);
+            WriteToLog(LogEventLevel.Information, message, logData);
         }
 
         /// <summary>
@@ -636,7 +629,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="exception"></param>
         protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            WriteToLog(LogType.Error, message, logData, exception);
+            WriteToLog(LogEventLevel.Error, message, logData, exception);
         }
 
         /// <summary>
@@ -646,7 +639,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="logData"></param>
         public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Diagnostic, message, logData);
+            WriteToLog(LogEventLevel.Debug, message, logData);
         }
 
         /// <summary>
@@ -729,29 +722,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IList<ProductSettingType> productSettingTypes = _productRepository.ListProductSettingType();
             RepositoryResponse repositoryResponse = new RepositoryResponse();
 
-			Dictionary<string, object> logData = new Dictionary<string, object>();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
 
-			string statusValue = value.ToString();
-			logData.Add("Status Value", statusValue);
-			if (Int32.Parse(statusValue) == (int)ProductBatchStatusType.Deleted || Int32.Parse(statusValue) == (int)ProductBatchStatusType.Inactive)
-			{
-				var persona = _managePersona.GetPersona(userPersonaId);
-				var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+            string statusValue = value.ToString();
+            logData.Add("Status Value", statusValue);
+            if (Int32.Parse(statusValue) == (int)ProductBatchStatusType.Deleted || Int32.Parse(statusValue) == (int)ProductBatchStatusType.Inactive)
+            {
+                var persona = _managePersona.GetPersona(userPersonaId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
                 OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
-                
+
                 int deactivatedStatus = (int)UserUiStatusType.Deactivated;
-				logData.Add("User Current login", userLogin);
+                logData.Add("User Current login", userLogin);
                 logData.Add("orgStatus", orgStatus);
-				WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
+                WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
 
-				if (string.Equals(orgStatus.Status.ToString(), UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
-				{
-					statusValue = deactivatedStatus.ToString();
-				}
-			}
+                if (string.Equals(orgStatus.Status.ToString(), UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    statusValue = deactivatedStatus.ToString();
+                }
+            }
 
-			// get the id for ProductStatus type
-			if (productSettingTypes.Any(a => a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase)))
+            // get the id for ProductStatus type
+            if (productSettingTypes.Any(a => a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase)))
             {
                 int productStatusTypeId = (from a in productSettingTypes where a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase) select a.ProductSettingTypeId).FirstOrDefault();
                 repositoryResponse = _productRepository.CreateProductSetting(userPersonaId, _productId, productStatusTypeId, statusValue.ToString());
@@ -772,27 +765,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IList<ProductSettingType> productSettingTypes = _productRepository.ListProductSettingType();
             RepositoryResponse repositoryResponse = new RepositoryResponse();
 
-			Dictionary<string, object> logData = new Dictionary<string, object>();
+            Dictionary<string, object> logData = new Dictionary<string, object>();
 
-			string statusValue = value.ToString();
-			logData.Add("Status Value", statusValue);
-			if (Int32.Parse(statusValue) == (int)ProductBatchStatusType.Deleted || Int32.Parse(statusValue) == (int)ProductBatchStatusType.Inactive)
-			{
-				var persona = _managePersona.GetPersona(userPersonaId);
-				var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
+            string statusValue = value.ToString();
+            logData.Add("Status Value", statusValue);
+            if (Int32.Parse(statusValue) == (int)ProductBatchStatusType.Deleted || Int32.Parse(statusValue) == (int)ProductBatchStatusType.Inactive)
+            {
+                var persona = _managePersona.GetPersona(userPersonaId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
                 OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
 
                 int deactivatedStatus = (int)UserUiStatusType.Deactivated;
-				logData.Add("User Current login", userLogin);
-				WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
-				if (orgStatus.Status.ToString().ToUpper() == UserUiStatusType.Disabled.ToString().ToUpper())
-				{
-					statusValue = deactivatedStatus.ToString();
-				}
-			}
+                logData.Add("User Current login", userLogin);
+                WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
+                if (orgStatus.Status.ToString().ToUpper() == UserUiStatusType.Disabled.ToString().ToUpper())
+                {
+                    statusValue = deactivatedStatus.ToString();
+                }
+            }
 
-			// get the id for ProductStatus type
-			if (productSettingTypes.Any(a => a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase)))
+            // get the id for ProductStatus type
+            if (productSettingTypes.Any(a => a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase)))
             {
                 int productStatusTypeId = (from a in productSettingTypes where a.Name.Equals(settingType, StringComparison.OrdinalIgnoreCase) select a.ProductSettingTypeId).FirstOrDefault();
                 repositoryResponse = _productRepository.CreateProductSetting(userPersonaId, productId, productStatusTypeId, statusValue.ToString());
@@ -817,12 +810,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return company;
         }
 
-		/// <summary>
-		/// Used to validate or construct what looks like a valid email address to be used by products
-		/// </summary>
-		/// <param name="emailAddress"></param>
-		/// <returns></returns>
-		protected string ValidateAndReturnEmailAddress(string emailAddress)
+        /// <summary>
+        /// Used to validate or construct what looks like a valid email address to be used by products
+        /// </summary>
+        /// <param name="emailAddress"></param>
+        /// <returns></returns>
+        protected string ValidateAndReturnEmailAddress(string emailAddress)
         {
             if (!new EmailAddressAttribute().IsValid(emailAddress))
             {
@@ -851,26 +844,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return emailAddress;
         }
 
-	    /// <summary>
-	    /// Dumps API base URL and body
-	    /// </summary>
-	    protected void DumpApiCallInfoToDiagnosticLog(string baseUrlAndQuery, object apiPayLoad = null)
-	    {
-		    Dictionary<string, object> logData = new Dictionary<string, object>();
-		    logData.Add("baseUrlAndQuery", baseUrlAndQuery);
+        /// <summary>
+        /// Dumps API base URL and body
+        /// </summary>
+        protected void DumpApiCallInfoToDiagnosticLog(string baseUrlAndQuery, object apiPayLoad = null)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+            logData.Add("baseUrlAndQuery", baseUrlAndQuery);
 
-		    if (apiPayLoad != null)
-			    logData.Add("apiPayLoad", JsonConvert.SerializeObject(apiPayLoad));
+            if (apiPayLoad != null)
+                logData.Add("apiPayLoad", JsonConvert.SerializeObject(apiPayLoad));
 
-		    WriteToDiagnosticLog($"API Call for product {_productId} is getting called.", logData);
-	    }
+            WriteToDiagnosticLog($"API Call for product {_productId} is getting called.", logData);
+        }
 
-		#region Activity Logging
+        #region Activity Logging
 
-		/// <summary>
-		/// Write unassign activity log for user
-		/// </summary> 
-		protected void WriteUnassignActivityLog(long fromPersonaId, long toPersonaId)
+        /// <summary>
+        /// Write unassign activity log for user
+        /// </summary> 
+        protected void WriteUnassignActivityLog(long fromPersonaId, long toPersonaId)
         {
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
@@ -879,71 +872,71 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetails,
                booksProductDetail.BooksProductCode,
-				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
-		}
+                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+        }
 
-		/// <summary>
-		/// Write deactivated activity log for user
-		/// </summary> 
-		protected void WriteDeActivatedActivityLog(long fromPersonaId, long toPersonaId)
-		{
-			// log product user updated activity
-			var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
-			var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
-			var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+        /// <summary>
+        /// Write deactivated activity log for user
+        /// </summary> 
+        protected void WriteDeActivatedActivityLog(long fromPersonaId, long toPersonaId)
+        {
+            // log product user updated activity
+            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
-			WriteActivityLog(fromUserLogDetail, toUserLogDetails,
-			   booksProductDetail.BooksProductCode,
-				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
-		}
+            WriteActivityLog(fromUserLogDetail, toUserLogDetails,
+               booksProductDetail.BooksProductCode,
+                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+        }
 
-		/// <summary>
-		/// Write Reactivated activity log for user
-		/// </summary> 
-		protected void WriteReActivatedActivityLog(long fromPersonaId, long toPersonaId)
-		{
-			// log product user updated activity
-			var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
-			var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
-			var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+        /// <summary>
+        /// Write Reactivated activity log for user
+        /// </summary> 
+        protected void WriteReActivatedActivityLog(long fromPersonaId, long toPersonaId)
+        {
+            // log product user updated activity
+            var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
+            var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
-			WriteActivityLog(fromUserLogDetail, toUserLogDetails,
-			   booksProductDetail.BooksProductCode,
-				$"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is re-activated in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
-		}
+            WriteActivityLog(fromUserLogDetail, toUserLogDetails,
+               booksProductDetail.BooksProductCode,
+                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is re-activated in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+        }
 
-		/// <summary>
-		/// Write Create User activity log
-		/// </summary> 
-		protected void WriteCreateUserActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
+        /// <summary>
+        /// Write Create User activity log
+        /// </summary> 
+        protected void WriteCreateUserActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
         {
             WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
-				"{0} {1} created in product {2} by user {3} {4}.");
-		}
+                "{0} {1} created in product {2} by user {3} {4}.");
+        }
 
-		/// <summary>
-		/// Write Update User activity log
-		/// </summary> 
-		protected void WriteUpdateUserActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
+        /// <summary>
+        /// Write Update User activity log
+        /// </summary> 
+        protected void WriteUpdateUserActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
         {
             WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
-				 "{0} {1} updated in product {2} by user {3} {4}.");
-		}
+                 "{0} {1} updated in product {2} by user {3} {4}.");
+        }
 
-	    /// <summary>
-	    /// Write Update User-Type Activity Log
-	    /// </summary>
-	    protected void WriteUpdateUserTypeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, BatchProcessType batchProcessType)
-	    {
-		    string message = string.Empty;
-		    if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin)
-		    {
-			    message = "{0} {1} user type changed from regular user to admin in product {2} by user {3} {4}.";
-		    }
-		    else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
-		    {
-			    message = "{0} {1} user type changed from admin to regular user in product {2} by user {3} {4}.";
-		    }
+        /// <summary>
+        /// Write Update User-Type Activity Log
+        /// </summary>
+        protected void WriteUpdateUserTypeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, BatchProcessType batchProcessType)
+        {
+            string message = string.Empty;
+            if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin)
+            {
+                message = "{0} {1} user type changed from regular user to admin in product {2} by user {3} {4}.";
+            }
+            else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
+            {
+                message = "{0} {1} user type changed from admin to regular user in product {2} by user {3} {4}.";
+            }
             else if (batchProcessType == BatchProcessType.UserTypeAdminToExternal)
             {
                 message = "{0} {1} user type changed from admin to external user in product {2} by user {3} {4}.";
@@ -953,14 +946,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.ProfileUpdate)
-			{
-				message = "{0} {1} user profile updated in product {2} by user {3} {4}.";
-			}
+            {
+                message = "{0} {1} user profile updated in product {2} by user {3} {4}.";
+            }
 
-			WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
-	    }
+            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
+        }
 
-		protected void WriteUserActivityLogWithMessage(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
+        protected void WriteUserActivityLogWithMessage(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
         {
             WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin, message);
         }
@@ -999,9 +992,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
-		    var messageToLog = string.Format(message, toPerson.FirstName, toPerson.LastName,
-			    booksProductDetail.Name,
-			    fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+            var messageToLog = string.Format(message, toPerson.FirstName, toPerson.LastName,
+                booksProductDetail.Name,
+                fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail,
                  new UserActivityLogInfo
@@ -1015,7 +1008,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                  },
             booksProductDetail.BooksProductCode, messageToLog);
         }
-       
+
         /// <summary>
         /// Get User info for activity logging
         /// </summary>
@@ -1036,40 +1029,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             };
         }
 
-	    private void WriteActivityLog(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, string booksProductCode, string message)
-	    {
-		    // log product user updated activity
-		    try
-		    {
-			    LogActivity.WriteActivity(new ActivityDetails
-			    {
-				    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
-				    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
-				    CorrelationId = _correlationId,
-				    BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
-				    Message = message,
+        private void WriteActivityLog(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, string booksProductCode, string message)
+        {
+            // log product user updated activity
+            try
+            {
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.PRODUCT_ACCESS,
+                    LogCategoryName = LogActivityCategoryType.ProductAccess.ToString(),
+                    CorrelationId = _correlationId,
+                    BooksMasterOrganizationId = toUserLogInfo.BooksOrganizationMasterId,
+                    Message = message,
 
-				    FromUserLoginName = fromUserLogInfo.LoginName,
-				    FromUserLoginId = fromUserLogInfo.UserId,
-				    FromUserFirstName = fromUserLogInfo.FirstName,
-				    FromUserLastName = fromUserLogInfo.LastName,
-				    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
+                    FromUserLoginName = fromUserLogInfo.LoginName,
+                    FromUserLoginId = fromUserLogInfo.UserId,
+                    FromUserFirstName = fromUserLogInfo.FirstName,
+                    FromUserLastName = fromUserLogInfo.LastName,
+                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
 
-				    ToUserLoginId = toUserLogInfo.UserId,
-				    ToUserLoginName = toUserLogInfo.LoginName,
-				    ToUserFirstName = toUserLogInfo.FirstName,
-				    ToUserLastName = toUserLogInfo.LastName,
-				    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+                    ToUserLoginId = toUserLogInfo.UserId,
+                    ToUserLoginName = toUserLogInfo.LoginName,
+                    ToUserFirstName = toUserLogInfo.FirstName,
+                    ToUserLastName = toUserLogInfo.LastName,
+                    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
 
-				    BooksProductCode = booksProductCode
-			    });
-		    }
-		    catch (Exception ex)
-		    {
-		    }
-	    }
+                    BooksProductCode = booksProductCode
+                });
+            }
+            catch (Exception ex)
+            {
+            }
+        }
 
-	    #endregion
+        #endregion
 
         public void Dispose()
         {
@@ -1119,53 +1112,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return results;
         }
 
-		/// <summary>
-		/// Used to convert a BlueBook property into a GreenBook property
-		/// </summary>
-		/// <param name="properties">The list of roles to convert</param>
-		/// <returns></returns>
-		public static IList<ProductProperty> MapBlueBookToGBProperties(this CompanyPropertyRootObject companyProperties)
-		{
-			if (companyProperties == null ) return null;
-			IList<ProductProperty> results = new List<ProductProperty>();
-			foreach (var property in companyProperties.data.attributes.getCompanyPropertyInstances)
-			{
-				if (property.isActive)
-				{
-					results.Add(new ProductProperty
-					{
-						ID = property.propertyInstanceSourceId,
-						Name = property.propertyName,
-						State = property.state
-					});
-				}
-			}
-			return results;
-		}
+        /// <summary>
+        /// Used to convert a BlueBook property into a GreenBook property
+        /// </summary>
+        /// <param name="properties">The list of roles to convert</param>
+        /// <returns></returns>
+        public static IList<ProductProperty> MapBlueBookToGBProperties(this CompanyPropertyRootObject companyProperties)
+        {
+            if (companyProperties == null) return null;
+            IList<ProductProperty> results = new List<ProductProperty>();
+            foreach (var property in companyProperties.data.attributes.getCompanyPropertyInstances)
+            {
+                if (property.isActive)
+                {
+                    results.Add(new ProductProperty
+                    {
+                        ID = property.propertyInstanceSourceId,
+                        Name = property.propertyName,
+                        State = property.state
+                    });
+                }
+            }
+            return results;
+        }
 
-		/// <summary>
-		/// Used to convert a BlueBook master property into a GreenBook property
-		/// </summary>
-		/// <param name="properties"></param>
-		/// <returns></returns>
-		public static IList<ProductProperty> FromBlueBookMasterPropertyToGBProperties(this IList<CustomerCompanyPropertyMap> properties)
-	    {
-		    if (properties == null) return null;
-		    IList<ProductProperty> results = new List<ProductProperty>();
-		    foreach (CustomerCompanyPropertyMap property in properties)
-		    {
-			    if (property.IsActive)
-			    {
-				    results.Add(new ProductProperty
-				    {
-					    ID = property.CustomerPropertyId.ToString(),
-					    Name = property.PropertyName,
-						Street1 = property.PropertyAddress,
-					    State = property.PropertyState
-				    });
-			    }
-		    }
-		    return results;
-	    }
-	}
+        /// <summary>
+        /// Used to convert a BlueBook master property into a GreenBook property
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <returns></returns>
+        public static IList<ProductProperty> FromBlueBookMasterPropertyToGBProperties(this IList<CustomerCompanyPropertyMap> properties)
+        {
+            if (properties == null) return null;
+            IList<ProductProperty> results = new List<ProductProperty>();
+            foreach (CustomerCompanyPropertyMap property in properties)
+            {
+                if (property.IsActive)
+                {
+                    results.Add(new ProductProperty
+                    {
+                        ID = property.CustomerPropertyId.ToString(),
+                        Name = property.PropertyName,
+                        Street1 = property.PropertyAddress,
+                        State = property.PropertyState
+                    });
+                }
+            }
+            return results;
+        }
+    }
 }
