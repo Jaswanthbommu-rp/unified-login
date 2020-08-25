@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-				//bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceIntelligentBuilding", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+				var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 
 				// super user
 				// TODO what to do here?
@@ -107,10 +107,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
 					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
 					string superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;
+					List<string> propertiesToRemove = new List<string>();
+					if (userPropertyIdList?.Count > 0)
+					{
+						foreach (var prop in userPropertyIdList)
+						{
+							if (prop != -1)
+							{
+								propertiesToRemove.Add(prop.ToString());
+							}
+						}
+					}
 
 					userAssignProductPropertyRole = new IBPropertyRole
 					{
 						PropertyList = new List<string> { "-1" },
+						RemovedPropertyList = propertiesToRemove,
 						RoleList = new List<string>() { superUserRoleId }
 					};
 				}
@@ -182,8 +194,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					}
 
-					var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
-					//List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 					List<string> unAssignedPropertyList = userAssignProductPropertyRole.RemovedPropertyList;
 
@@ -509,6 +519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse response = new ListResponse();
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
+			List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
 			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
 
 			if (userPropertyIdList != null)
@@ -554,8 +565,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						{
 							if (propertyData.Source == ProductEnum.IntelligentBuilding.ToEnumDescription())
 							{
-								userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).ID = propertyData.PropertyInstanceSourceId;
-								userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).Alias = null;
+								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId);
+								if (translatedProductProperty != null)
+								{
+									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
+									translatedProductProperty.Alias = null;
+									translatedUserPropertyList.Add(translatedProductProperty);
+								}
 							}
 						}
 					}
@@ -567,25 +583,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
 					string productPropertySerializableProperties = JsonConvert.SerializeObject(
-						userPropertyList,
+						translatedUserPropertyList,
 						new JsonSerializerSettings()
 						{
 							ContractResolver = dynamicContractResolver
 						}
 					);
-					userPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+					translatedUserPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
 				}
 
-				userPropertyList.ForEach(p =>
+				translatedUserPropertyList.ForEach(p =>
 				{
 					p.IsAssigned = null;
 					p.disableSelection = null;
 				});
 
 				response.IsError = false;
-				response.Records = userPropertyList.Cast<object>().ToList();
-				response.TotalRows = userPropertyList.Count;
-				response.RowsPerPage = userPropertyList.Count;
+				response.Records = translatedUserPropertyList.Cast<object>().ToList();
+				response.TotalRows = translatedUserPropertyList.Count;
+				response.RowsPerPage = translatedUserPropertyList.Count;
 				response.TotalPages = 1;
 				response.ErrorReason = string.Empty;
 			}
