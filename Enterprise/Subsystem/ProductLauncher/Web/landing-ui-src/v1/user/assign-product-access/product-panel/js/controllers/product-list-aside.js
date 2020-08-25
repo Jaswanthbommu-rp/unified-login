@@ -29,6 +29,9 @@
                 if(vm.tabName === "EntityGroup"){
                     vm.isBtnFooterRequired = false;
                 }
+                if(vm.tabName === "group"){
+                    syncMgr.setAsideGroupList(vm.propertyRecords, vm.productId);
+                }
                 if(vm.propertyRecords !== undefined){
                     syncMgr.setAsidePropertyList(vm.propertyRecords, vm.productId);
                 }
@@ -182,6 +185,8 @@
         vm.cancel = function () {
             if(vm.tabName.toLowerCase() === 'entitygroup'){
                 innerAside.hide();
+                var groupRecords = syncMgr.getAsideGroupList(vm.productId);
+                syncMgr.setAsidePropertyList(groupRecords, vm.productId);
             }
             else
             {
