@@ -506,14 +506,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
 		{
-			ListResponse response = new ListResponse();			
+			ListResponse response = new ListResponse();
+			userPersonaId = 4227;
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
+			List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
 			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
 
 			if (userPropertyIdList != null)
 			{
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());				
+				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());	
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances("F5C090FA-78AB-452F-B504-98AAFEE09121");
 				if (booksPropertyList != null)
 				{
 					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
@@ -553,8 +556,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						{
 							if (propertyData.Source == ProductEnum.IntelligentBuilding.ToEnumDescription())
 							{
-								 userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).ID = propertyData.PropertyInstanceSourceId;
-								 userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId).Alias = null;
+								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId);
+								if (translatedProductProperty != null)
+								{
+									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
+									translatedProductProperty.Alias = null;
+									translatedUserPropertyList.Add(translatedProductProperty);
+								}								
 							}
 						}
 					}
@@ -566,25 +574,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
 					string productPropertySerializableProperties = JsonConvert.SerializeObject(
-						userPropertyList,
+						translatedUserPropertyList,
 						new JsonSerializerSettings()
 						{
 							ContractResolver = dynamicContractResolver
 						}
 					);
-					userPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+					translatedUserPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
 				}
 
-				userPropertyList.ForEach(p =>
+				translatedUserPropertyList.ForEach(p =>
 				{
 					p.IsAssigned = null;
 					p.disableSelection = null;
 				});
 
 				response.IsError = false;
-				response.Records = userPropertyList.Cast<object>().ToList();
-				response.TotalRows = userPropertyList.Count;
-				response.RowsPerPage = userPropertyList.Count;
+				response.Records = translatedUserPropertyList.Cast<object>().ToList();
+				response.TotalRows = translatedUserPropertyList.Count;
+				response.RowsPerPage = translatedUserPropertyList.Count;
 				response.TotalPages = 1;
 				response.ErrorReason = string.Empty;
 			}
