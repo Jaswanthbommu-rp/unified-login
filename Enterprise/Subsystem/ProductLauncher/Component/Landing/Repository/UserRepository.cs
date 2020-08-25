@@ -307,15 +307,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             roleList.Add(Convert.ToString(role.RoleId));
                         }
                         List<string> propertyList = new List<string>();
-                        foreach (var property in ulProperties)
+                        if (ulProperties != null)
                         {
-                            if (!usePropertyInstanceUnifiedLogin)
+                            foreach (var property in ulProperties)
                             {
-                                propertyList.Add(Convert.ToString(property.PropertyID));
-                            }
-                            else
-                            {
-                                propertyList.Add(Convert.ToString(property.PropertyInstanceID));
+                                if (!usePropertyInstanceUnifiedLogin)
+                                {
+                                    propertyList.Add(Convert.ToString(property.PropertyID));
+                                }
+                                else
+                                {
+                                    propertyList.Add(Convert.ToString(property.PropertyInstanceID));
+                                }
                             }
                         }
                         ProductBatch unifiedPlatformProductBatch = new ProductBatch()
@@ -5435,9 +5438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                           
                             //ProductBatch productBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId.Equals((int)ProductEnum.UnifiedPlatform));
-
                             if ((gbProdBatch != null) && ((gbProdBatch.InputJson?.PropertyList?.Count > 0) || (gbProdBatch.InputJson?.RemovedPropertyList?.Count > 0)))
                             {
                                 string propertyJSON = JsonConvert.SerializeObject(gbProdBatch);
