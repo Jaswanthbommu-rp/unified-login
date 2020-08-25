@@ -329,7 +329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
             string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource.ToEnumDescription()}";
                       Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
-            WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
+            WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
 
             var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -343,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {               
                 translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
                 logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
-                WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
                 return translatePropertyInstance;
             }
 
@@ -541,7 +541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // http://booksapi-qa.realpage.com/propertiesperproductcenter/UPFM/F5C090FA-78AB-452F-B504-98AAFEE09121/57
                 string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{(int)product}";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogType.Diagnostic, "GetPropertiesPerProductCenter - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetPropertiesPerProductCenter - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -560,7 +560,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogType.Diagnostic, "GetPropertiesPerProductCenter - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetPropertiesPerProductCenter - No info found.", logData);
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -592,7 +592,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //http://booksapi-qa.realpage.com/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]=F5C090FA-78AB-452F-B504-98AAFEE09121&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true
                 string uri = $"companypropertyinstancemap?include=propertyInstance&filter[source]={source}&filter[companyinstance.companyInstanceSourceId]={companyInstanceSourceId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogType.Diagnostic, "GetProductPropertyInstances - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetProductPropertyInstances - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -614,7 +614,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogType.Diagnostic, "GetUPFMPropertyInstances - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetUPFMPropertyInstances - No info found.", logData);
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found

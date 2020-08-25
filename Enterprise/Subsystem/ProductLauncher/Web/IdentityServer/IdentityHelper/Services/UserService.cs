@@ -541,7 +541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             {
                 // ignored
             }
-            WriteToLog(LogType.Diagnostic, $"AuthenticateExternalAsync: {errorReason}", Guid.NewGuid(), logData);
+            WriteToLog(LogEventLevel.Debug, $"AuthenticateExternalAsync: {errorReason}", Guid.NewGuid(), logData);
         }
 
         
