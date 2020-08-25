@@ -506,8 +506,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
 		{
-			ListResponse response = new ListResponse();
-			userPersonaId = 4227;
+			ListResponse response = new ListResponse();			
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
 			List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
@@ -515,8 +514,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());	
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances("F5C090FA-78AB-452F-B504-98AAFEE09121");
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());					
 				if (booksPropertyList != null)
 				{
 					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
