@@ -316,6 +316,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Get all instances related to the given UPFM instance source. Filters domain automatically
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="productSource"></param>
+        /// <returns></returns>
+        public TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, ProductEnum productSource)
+        {
+            //https://booksapi-stg.realpage.com/translate/v3/propertyinstance/UPFM/IB
+            //{"propertyInstanceSourceIds": ["5972c050-7072-4b3f-8b6a-e280b5e36eb0","5972c050-7072-4b3f-8b6a-e280b5e36eb0","ef1fad66-b1f6-4981-8bec-e2d12279aba2"]}
+            TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
+            string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource.ToEnumDescription()}";
+                      Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
+            WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {               
+                translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
+                logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
+                WriteToLog(LogType.Diagnostic, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
+                return translatePropertyInstance;
+            }
+
+            return translatePropertyInstance;            
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="companyRealPageId"></param>
@@ -491,6 +525,107 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             });
             
+            return companyPropertyInstanceResource;
+        }
+
+        public List<Guid> GetPropertiesPerProductCenter (string companyRealPageId, ProductEnum product)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"getPropertiesPerProductCenter_{companyRealPageId}_{product}";
+
+            var PropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
+            {
+                // http://booksapi-qa.realpage.com/propertiesperproductcenter/UPFM/F5C090FA-78AB-452F-B504-98AAFEE09121/57
+                string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{(int)product}";
+                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogType.Diagnostic, "GetPropertiesPerProductCenter - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    List<Guid> properties = new List<Guid>();
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var propertyInstanceList = JsonConvert.DeserializeObject(jsonContent, typeof(UPFMProductPropertyInstanceMap)) as UPFMProductPropertyInstanceMap;
+                    if (propertyInstanceList != null )
+                    {
+                        foreach (var property in propertyInstanceList.data.attributes)
+                        {
+                            properties.Add(new Guid(property.propertyInstanceSourceId));
+                        }
+                    }
+                    return properties;
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogType.Diagnostic, "GetPropertiesPerProductCenter - No info found.", logData);
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        // return an empty CompanyMapResource because it wasn't found
+                        return new List<Guid>();
+                    }
+
+                    response.EnsureSuccessStatusCode();
+                    return null;
+                }
+
+            });
+
+            return PropertyInstanceResource;
+        }
+        /// <summary>
+        /// Used to get UPFM property instances for the given UPFM company id
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        public List<Guid> GetProductPropertyInstances(int companyInstanceSourceId, string source)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"getProductPropertyInstances_{companyInstanceSourceId}_{source}";
+
+            var companyPropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
+            {
+                //http://booksapi-qa.realpage.com/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]=F5C090FA-78AB-452F-B504-98AAFEE09121&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true
+                string uri = $"companypropertyinstancemap?include=propertyInstance&filter[source]={source}&filter[companyinstance.companyInstanceSourceId]={companyInstanceSourceId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999";
+                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogType.Diagnostic, "GetProductPropertyInstances - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    List<Guid> properties = new List<Guid>();
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var propertyInstanceList = JsonConvert.DeserializeObject(jsonContent, typeof(UPFMPropertyInstanceRootObject)) as UPFMPropertyInstanceRootObject;
+                    if (propertyInstanceList != null && propertyInstanceList.data.Any())
+                    {
+                        foreach (var property in propertyInstanceList.data)
+                        {
+                            foreach (var detail in property.attributes.propertyInstance)
+                            {
+                                properties.Add(new Guid(detail.PropertyInstanceSourceId));
+                            }
+                        }
+                    }
+                    return properties;
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogType.Diagnostic, "GetUPFMPropertyInstances - No info found.", logData);
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        // return an empty CompanyMapResource because it wasn't found
+                        return new List<Guid>();
+                    }
+
+                    response.EnsureSuccessStatusCode();
+                    return null;
+                }
+
+            });
+
             return companyPropertyInstanceResource;
         }
 

@@ -17,6 +17,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	{
 		private IManagePersona _managePersona = new ManagePersona();
 		private const string PRODUCT_SETTINGTYPE_STATUS = "ProductStatus";
+
 		#region Ctor
 		//private readonly IList<ProductInternalSetting> _productIntegrationDetails;
 		public RenovationManager(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base(productType, editorPersonaId, subjectPersonaId, userClaims)
@@ -95,6 +96,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Override this in product implementation if any product requires to create additional saml settings
+		/// e.g. used in PAM
+		/// </summary>
+		protected override void CreateAdditionalSamlUserAttribute(long personaId, int productId, IntegrationProductUser productUser)
+		{
+			WriteToDiagnosticLog(
+				$"RenovationManager.CreateAdditionalSamlUserAttribute - Product {ProductType} userLoginName - {productUser.LoginName} ; PMC {productUser.CompanyId} . At beginning of the method.");
+
+			_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.PMCID, productUser.CompanyId);
+		}
+
+		/// <summary>
 		/// Create or update product user
 		/// Gets called from Product-Batch
 		/// </summary> 
@@ -137,7 +150,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			WriteToDiagnosticLog(
 				$"RenovationManager.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser().");
-
 			var productUserProfile = new IntegrationProductUser
 			{
 				UserId = SubjectUserDetails.ProductUserId,
@@ -152,44 +164,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				IsMigratedUser = false,
 				IsAdminUser = false
 			};
-
 			// Delete / deactivate uer in the product
 			var result = DeleteUser(productUserProfile);
-
 			if (result.IsSuccessStatusCode)
 			{
 				WriteToDiagnosticLog(
 					$"RenovationManager.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status.");
-
 				IManageUserLogin manageUserLogin = new ManageUserLogin();
 				IUserLoginRepository userLoginRepository = new UserLoginRepository();
-
 				var userLogin = manageUserLogin.GetUserLoginOnly(SubjectUserDetails.UserRealPageId);
 				Persona persona = _managePersona.GetPersona(SubjectUserDetails.PersonaId);
-
 				OrganizationStatus orgStatus = userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
 				//var organizationList = userLoginRepository.ListOrganizationWithoutStatusByUserId(userLogin.UserId);
 				//OrganizationStatus orgStatus = organizationList.FirstOrDefault(p => p.PartyId == persona.OrganizationPartyId);
-
 				int statusValue = (int)UserUiStatusType.AccountHidden;
-
 				//if user is disabled then set status to deactivated instead hidden
 				if (orgStatus.Status.ToString().Equals(UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
 				{
 					statusValue = (int)UserUiStatusType.Deactivated;
 				}
-
 				// Update product status in green book
 				_dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, statusValue);
-
 				// Activity Logging
 				ProductActivityLogger.WriteUnassignUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId);
-
 				return string.Empty;
 			}
-
 			WriteToErrorLog($"RenovationManager.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}");
-
 			return result.Content;
 		}
 
@@ -205,42 +205,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 					baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);
-
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
-
 				bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
 				if (isCompanyIdRequiredToQuery)
 					baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
-
 				var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
-
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}");
-
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
 					WriteToDiagnosticLog(
 						$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
 					var user = GetProductUser(null, false);
-
 					// map user roles
 					if (user != null)
 					{
 						WriteToDiagnosticLog(
 							$"ManageProductInvokerBase.GetProductRoles - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
-
 						var userRoles = user.Roles;
 						MergeUserRoles(roleList, userRoles);
 					}
 				}
-
 				if (roleList == null)
 					throw new Exception("Null Role List.");
-
 				return new ListResponse
 				{
 					Records = roleList.Cast<object>().ToList(),
@@ -260,7 +250,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 		}
-
 		/// <summary>
 		/// Returns Product Properties
 		/// </summary> 
@@ -270,34 +259,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 				{
 					baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
 					baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
 				}
-
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
-
 				var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
-
 				WriteToDiagnosticLog(
 					$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {propertyList?.Count}");
-
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
 					WriteToDiagnosticLog(
 						$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
-
 					var user = GetProductUser(null, false);
-
 					// map user properties
 					if (user != null && user.Properties != null)
 					{
 						WriteToDiagnosticLog(
 							$"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
-
 						if (user != null && user.Properties != null)
 						{
 							var userProperties = user.Properties.ConvertAll(p => p.ToUpper());
@@ -305,10 +286,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
-
 				if (propertyList == null)
 					throw new Exception("Null Property List.");
-
 				return new ListResponse
 				{
 					Records = propertyList.Cast<object>().ToList(),
@@ -329,17 +308,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-		/// <summary>
-		/// Override this in product implementation if any product requires to create additional saml settings
-		/// e.g. used in PAM
-		/// </summary>
-		protected override void CreateAdditionalSamlUserAttribute(long personaId, int productId, IntegrationProductUser productUser)
-		{
-			WriteToDiagnosticLog(
-				$"RenovationManager.CreateAdditionalSamlUserAttribute - Product {ProductType} userLoginName - {productUser.LoginName} ; PMC {productUser.CompanyId} . At beginning of the method.");
-
-			_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.PMCID, productUser.CompanyId);
-		}
 
 		/// <summary>
 		/// Delete User - patch with isActive = false
@@ -348,15 +316,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			WriteToDiagnosticLog(
 				$"RenovationManager.DeleteUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
-
 			// patch to se isActive flag to false
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
-
 			WriteToDiagnosticLog(
 				$"RenovationManager.DeleteUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
-
 			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, profile);
-
 			var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
 			return integration.PutEntity<string>(profile);
 		}
