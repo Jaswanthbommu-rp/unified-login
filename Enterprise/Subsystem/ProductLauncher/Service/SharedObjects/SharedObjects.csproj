@@ -293,6 +293,7 @@
     <Compile Include="Landing\ISortTableType.cs" />
     <Compile Include="Landing\IStatusType.cs" />
     <Compile Include="Landing\IUserEmployeeId.cs" />
+    <Compile Include="Landing\NotificationEvent.cs" />
     <Compile Include="Landing\OrganizationCreateResult.cs" />
     <Compile Include="Landing\OrganizationDomain.cs" />
     <Compile Include="Landing\OrganizationRole.cs" />
@@ -300,6 +301,8 @@
     <Compile Include="Landing\OrganizationType.cs" />
     <Compile Include="Landing\PagingSummary.cs" />
     <Compile Include="Landing\PasswordPolicyCommon.cs" />
+    <Compile Include="Landing\PersonaCompany.cs" />
+    <Compile Include="Landing\PersonaCompanyDetails.cs" />
     <Compile Include="Landing\PropertyRoleList.cs" />
     <Compile Include="Landing\IUserOrganizationExists.cs" />
     <Compile Include="Landing\IUserOrganization.cs" />

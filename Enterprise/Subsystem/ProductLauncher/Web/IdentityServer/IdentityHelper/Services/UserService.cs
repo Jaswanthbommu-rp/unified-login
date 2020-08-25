@@ -23,9 +23,12 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RPModel = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
@@ -119,8 +122,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var newUserRealPageId = Encoding.UTF8.GetString(userContext).Split('|')[0];
             var impersonatingRealPageId = Encoding.UTF8.GetString(userContext).Split('|')[1];
             var revertUser = context.SignInMessage.AcrValues.FirstOrDefault(x => x.Split(':')[0] == "Impersonated");
+            var originalPersona = Convert.ToInt64(_ctx.Authentication.User.Claims.FirstOrDefault(a => string.Equals(a.Type, "personaId", StringComparison.OrdinalIgnoreCase))?.Value);
             var newPersonaIdString = "0";
             bool employeeChangedCompany = false;
+            bool fireChangeCompanyEvent = false;
 
             if (Encoding.UTF8.GetString(userContext).Split('|').Length == 3)
             {
@@ -252,6 +257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 {
                     LogEventActivity(claims, "User {0} {1} successfully logged-in.");
                 }
+                fireChangeCompanyEvent = true;
             }
 
             WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: Success ", new Guid(correlationId), new Dictionary<string, object>
@@ -261,10 +267,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 {"claims", claims}
             });
             
+            // call changecompany notification event
+            if (fireChangeCompanyEvent)
+            {
+                DoChangeCompanyEvent(originalPersona);
+            }
             context.AuthenticateResult = new AuthenticateResult(user.UserId.ToString(), user.LoginName, claims, idp);
 
             WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: AuthenticateResult ", new Guid(correlationId), new Dictionary<string, object>
                 { { "AuthenticateResult", context.AuthenticateResult } });
+        }
+
+        private void DoChangeCompanyEvent(long userPersonaId)
+        {
+            var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
+            string issueUri = ConfigReader.GetIssuerUri;
+            string landingApiUri = ConfigReader.GetLandingAPIUri;
+            string clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
+            string apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
+            
+            var accessToken = GetToken(issueUri, clientId, apiSecret, "userinfoapi notificationsapi");
+            
+            var apiPathAndQuery = $"{landingApiUri}api/persona/{userPersonaId}/company";
+            PostApi(apiPathAndQuery, accessToken);
+        }
+
+        private void PostApi(string apiUrl, string accessToken)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Clear();
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                    var response = client.PostAsync(apiUrl, null).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         private bool UserIsAllowedToChangeContext(RPModel.UserLoginOnly impersonator, long impersonatorOrgId, string impersonatedBy)
@@ -867,29 +914,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         }
 
         /// <summary>
-        /// Used to get an NWP client token
+        /// Used to get a client token
         /// </summary>
         /// <param name="issueUri"></param>
         /// <param name="clientId"></param>
         /// <param name="apiSecret"></param>
+        /// <param name="scopes"></param>
         /// <returns></returns>
-        private string GetToken(string issueUri, string clientId, string apiSecret)
+        private string GetToken(string issueUri, string clientId, string apiSecret, string scopes)
         {
             try
             {
                 RPObjectCache rpCache = new RPObjectCache();
-                var cacheKey = $"nwpGetToken_{clientId}";
+                var cacheKey = $"GetToken_{clientId}_{scopes}";
 
-                string nwpScope = "greenbooknwpapi";
-                string accessToken = rpCache.GetFromCache<string>(cacheKey, 3595, () =>
+                string accessToken = rpCache.GetFromCache<string>(cacheKey, 180, () =>
                 {
                     TokenClient tokenClient = new TokenClient($"{issueUri}/connect/token", clientId, apiSecret);
 
-                    var tokenResponse = tokenClient.RequestClientCredentialsAsync(nwpScope).Result;
+                    var tokenResponse = tokenClient.RequestClientCredentialsAsync(scopes).Result;
 
                     if (tokenResponse.IsError)
                     {
-                        throw new Exception($"ManageProductRum.GetToken - Received null or empty token. {tokenResponse.Error}");
+                        throw new Exception($"UserService.GetToken - Received null or empty token. {tokenResponse.Error}");
                     }
 
                     return tokenResponse.AccessToken;
@@ -899,7 +946,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in ManageProductRum.GetToken- {ex.Message}");
+                throw new Exception($"Error in UserService.GetToken- {ex.Message}");
             }
         }
 
