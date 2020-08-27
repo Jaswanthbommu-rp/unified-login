@@ -429,6 +429,11 @@ end
 GO
 
 --Vendor Credential product panel changes
+IF NOT EXISTS(SELECT TOP 1 1 FROM UserManagement.ProductPage WHERE ProductId=16 AND IsActive = 1)
+BEGIN
+	UPDATE UserManagement.ProductPage SET IsActive = 1 WHERE ProductId=16;
+END
+
 IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] where UIId = 'VendorCredentialiProductAccessTypeTabUIId')
 BEGIN
 	DECLARE @UserId bigint, @MaxControlId INT;
