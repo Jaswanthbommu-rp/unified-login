@@ -428,3 +428,32 @@ Begin
 end
 GO
 
+--Vendor Credential product panel changes
+IF NOT EXISTS (SELECT TOP 1 1 FROM [UserManagement].[Control] where UIId = 'VendorCredentialiProductAccessTypeTabUIId')
+BEGIN
+	DECLARE @UserId bigint, @MaxControlId INT;
+	
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%';
+
+	SELECT @MaxControlId = ControlId + 1
+	FROM [UserManagement].[Control];
+
+	select @MaxControlId;
+
+	SET IDENTITY_INSERT [UserManagement].[Control] ON 
+	INSERT INTO UserManagement.[Control](ControlId,ParentControlId,ControlTypeId,UIId,DisplayName,DataSource,[Sequence],CreatedBy,CreatedDate)
+	VALUES(@MaxControlId,427,9,'VendorCredentialiProductAccessTypeTabUIId','Access Type',null,2,@UserId,GETUTCDATE())
+	SET IDENTITY_INSERT [UserManagement].[Control] OFF
+
+	--Updating the parent for the access type radio buttons
+	UPDATE UserManagement.[Control] SET ParentControlId = @MaxControlId WHERE ControlId in (429,430,431,432);
+
+	--Updating the sequence for the tabs as Access Type tab should 2(after roles tab)
+	UPDATE UserManagement.[Control] SET [Sequence] = 3 WHERE ControlId = 437;
+	UPDATE UserManagement.[Control] SET [Sequence] = 4 WHERE ControlId = 442;
+	UPDATE UserManagement.[Control] SET [Sequence] = 5 WHERE ControlId = 447;
+END
+
+GO
