@@ -1,12 +1,13 @@
 ﻿using Dapper;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -46,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 dynamic param = new { ProductId = ProductId };
                 return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
-            }            
+            }
         }
 
         /// <summary>
@@ -98,12 +99,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductSetting, param);
                     Dictionary<string, object> dataLog = new Dictionary<string, object>();
                     dataLog.Add("repositoryResponse", repositoryResponse);
-                    WriteToLog(LogType.Diagnostic, $"SP_CreateProductSetting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSetting.Value}", dataLog);
+                    WriteToLog(LogEventLevel.Debug, $"SP_CreateProductSetting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSetting.Value}", dataLog);
 
                     if (repositoryResponse.Id == 0)
                     {
                         repositoryResponse.ErrorMessage = "CreateProductSettingAndLinkToConfiguration.CreateProductSetting Error: CreateProductSetting failed.";
-                        WriteToLog(LogType.Error, repositoryResponse.ErrorMessage);
+                        WriteToLog(LogEventLevel.Error, repositoryResponse.ErrorMessage);
                     }
                     else
                     {
@@ -128,18 +129,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            Log.Write(logType, new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                UserId = "",
-                PmcId = "",
-                Exception = exception,
-                CorrelationId = Guid.Empty.ToString(),
-            });
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
     }
 }

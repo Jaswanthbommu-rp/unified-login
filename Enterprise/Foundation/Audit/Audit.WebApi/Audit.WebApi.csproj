@@ -65,9 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiExceptionLogger.cs" />
+    <Compile Include="ApiExceptionLoggerOld.cs" />
     <Compile Include="Filters\ApiPerformanceFilter.cs" />
-    <Compile Include="Handler\ApiExceptionHandler.cs" />
+    <Compile Include="Handler\ApiExceptionHandlerOld.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -76,12 +76,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Audit.Core\Audit.Core.csproj">
-      <Project>{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}</Project>
-      <Name>Audit.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

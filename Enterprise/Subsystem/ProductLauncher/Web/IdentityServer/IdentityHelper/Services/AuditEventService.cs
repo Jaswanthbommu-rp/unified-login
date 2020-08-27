@@ -1,7 +1,7 @@
 ﻿using IdentityServer3.Core.Events;
 using IdentityServer3.Core.Services;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -43,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                                 logDetails.Add("loginUserName", clientDetails?.Name);
 								logDetails.Add("clienttype", "ExternalLoginDetails");
 							}
-							WriteToLog(LogType.Diagnostic, "Client authenticated", evt.Context.ActivityId, logDetails);
+							WriteToLog(LogEventLevel.Debug, "Client authenticated", evt.Context.ActivityId, logDetails);
 							break;
 						}
 
@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 							var clientDetails = evt.Details as ClientAuthenticationDetails;
 							logDetails.Add("clientid", clientDetails?.ClientId);
 							logDetails.Add("clienttype", "ClientAuthentication");
-							WriteToLog(LogType.Diagnostic, "Client authenticated", evt.Context.ActivityId, logDetails);
+							WriteToLog(LogEventLevel.Debug, "Client authenticated", evt.Context.ActivityId, logDetails);
 							break;
 						}
 				}
@@ -63,17 +63,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 			return Task.FromResult(evt);
 		}
 
-		private void WriteToLog(LogType logType, string message, string correlationId, Dictionary<string, object> logData = null, Exception exception = null)
+		private void WriteToLog(LogEventLevel logType, string message, string correlationId, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				CorrelationId = correlationId,
-				Exception = exception,
-
-			});
+			Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
 		}
 	}
 }

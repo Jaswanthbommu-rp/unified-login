@@ -158,9 +158,9 @@
             var tabData = vm.getProductTabsData(data);
             var tabs = tabsModel.setTabs(tabData);
             if ($scope.productId == 8) {
-                vm.accountingSMSwitchModel = productModel.getProductSwitchConfig($scope.productId, "AccesstoSiteSpendManagementonly")[0];
-                vm.accountingAllPropertiesSwitchModel = productModel.getProductSwitchConfig($scope.productId, "Allowaccesstoallcurrentandfutureentities")[0];
-                vm.accountingAdminSwitchModel = productModel.getProductSwitchConfig($scope.productId, "AccountingAdmin")[0];
+                vm.accountingSMSwitchModel = productModel.getProductSwitchConfig($scope.productId, "hasAccessToSiteSpendManagementOnly")[0];
+                vm.accountingAllPropertiesSwitchModel = productModel.getProductSwitchConfig($scope.productId, "hasAccessToAllCurrentFutureProperties")[0];
+                vm.accountingAdminSwitchModel = productModel.getProductSwitchConfig($scope.productId, "isAccountingAdmin")[0];
             }
 
             vm.tabsList = tabs.tabsList;
@@ -336,7 +336,7 @@
                                             if(productId === 20){
                                                 if(vm.distinctRoleType.length > 0){
                                                     vm.distinctRoleType.forEach(function (roletype) {
-                                                            listAsideconfigs = configData.getListAsideConfig(tab, roletype);
+                                                        listAsideconfigs = configData.getListAsideConfig(tab, roletype, "");
                                                             if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
                                                                 var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
                                                                 logc("asideGridConfig", asideGridConfig);
@@ -346,11 +346,58 @@
                                                 }
                                             }
                                             else if(isAssignAsideConfig){
-                                                listAsideconfigs = configData.getListAsideConfig(tab, "");
-                                                if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
-                                                    var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
-                                                    logc("asideGridConfig", asideGridConfig);
-                                                    productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
+                                                if(productId === 44){
+                                                    if (tab.controls) {
+                                                        tab.controls.forEach(function (ctrl) {
+                                                            if(ctrl.type === "Link"){
+                                                                listAsideconfigs = configData.getListAsideConfig(tab, "",ctrl.dataSource.toLowerCase());
+                                                                if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
+
+                                                                    var cnfg = configData.getGridConfigTypes(ctrl, tabName);
+                                                                    var gridConfig = vm.getGridConfig(cnfg, asideShowSelectAll);
+
+                                                                    var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
+                                                                    tabName = ctrl.displayName === "Assigned Groups" ? "Groups" : "Properties"; 
+                                                                    logc("asideGridConfig", asideGridConfig);
+                                                                    productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
+                                                                }
+                                                                if(ctrl.controls){
+                                                                    ctrl.controls.forEach(function (asidectrl) {
+                                                                        if(asidectrl.controls){
+                                                                            asidectrl.controls.forEach(function (subctrl) {
+                                                                                if(subctrl.type === "Icon"){
+                                                                                    listAsideconfigs = configData.getListAsideConfig(asidectrl, "",subctrl.dataSource.toLowerCase());
+                                                                                    if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
+                                                                                        tabName = "EntityProperties"; 
+                                                                                        subctrl.controls.forEach(function (ctrl) {
+                                                                                            if(ctrl.type === "Grid"){
+                                                                                                var cnfg = configData.getGridConfigTypes(ctrl, tabName);
+                                                                                                var gridConfig = vm.getGridConfig(cnfg, asideShowSelectAll);
+                                                                                                //var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
+                                                                                                
+                                                                                                logc("asideGridConfig", asideGridConfig);
+                                                                                                productModel.renderProductAsideGridConfigMap(productId, tabName, gridConfig, listAsideconfigs.displayName);
+                                                                                            }
+                                                                                        
+                                                                                        });
+                                                                                    }
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }
+                                                            
+                                                        });
+                                                    }
+                                                }
+                                                else{
+                                                    listAsideconfigs = configData.getListAsideConfig(tab, "", "");
+                                                    if (listAsideconfigs !== undefined && listAsideconfigs.config.length > 0) {
+                                                        var asideGridConfig = vm.getGridConfig(listAsideconfigs.config, asideShowSelectAll);
+                                                        logc("asideGridConfig", asideGridConfig);
+                                                        productModel.renderProductAsideGridConfigMap(productId, tabName, asideGridConfig, listAsideconfigs.displayName);
+                                                    }
                                                 }
                                             }
                                         }
@@ -420,6 +467,7 @@
                             aSwitch = [];
                             var tabName = tabGrp.displayName.replace(/ /g, "");
                             if ($scope.productId == 8) {
+                                tabName = tabGrp.dataSource;
                                 if (tabGrp.type === 'Switch') {
                                     var c = {};
                                     if (tabGrp.dataSource == "hasAccessToSiteSpendManagementOnly") {

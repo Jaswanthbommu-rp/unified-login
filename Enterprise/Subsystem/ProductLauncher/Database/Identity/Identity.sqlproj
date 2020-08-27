@@ -808,6 +808,7 @@
     <Build Include="Enterprise\Tables\LogicalGroup_1.sql" />
     <Build Include="Enterprise\Tables\Comparator_1.sql" />
     <Build Include="Enterprise\Stored Procedures\GetAllSameSiteValues_1.sql" />
+    <Build Include="UserManagement\Tables\ProductPageType.sql" />
     <Build Include="UserManagement\Tables\ProductPage.sql" />
     <Build Include="UserManagement\Tables\ProductPageControl.sql" />
     <Build Include="UserManagement\Tables\ControlType.sql" />
@@ -976,6 +977,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetDefaultRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUser.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUserEnterpriseRoles.sql" />
     <Build Include="Enterprise\Tables\PropertyInstance.sql" />
     <Build Include="Enterprise\Tables\PropertyInstanceMapping.sql" />
     <Build Include="Enterprise\PropertyInstanceType.sql" />
@@ -1011,6 +1013,8 @@
     <Build Include="Enterprise\Stored Procedures\ListOrganizationByRealPageId_Ver03.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserEmployeeIdByUserLoginPersonaId.sql" />
     <Build Include="Ident\Stored Procedures\GetCurrentUserStatus.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\ListRolesAssociatedWithRights_Ver02.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUserEnterpriseRoles.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1105,6 +1109,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\September2019Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\September2020Release.sql" />
     <None Include="UPMCTesting.publish.xml" />
     <None Include="identity.uat.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

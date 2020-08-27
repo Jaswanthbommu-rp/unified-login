@@ -11,7 +11,7 @@ namespace RP.Enterprise.Foundation.Audit.WebApi.Component.Handler
     /// Implementation of custom global *handler* so that we can provide graceful error and tracing information when callers encounter exceptions when making API calls to us.
     /// Full details are shielded from the caller (but logged internally)
     /// </summary>
-    public class ApiExceptionHandler : IExceptionHandler
+    public class ApiExceptionHandlerOld : IExceptionHandler
     {
         public virtual Task HandleAsync(ExceptionHandlerContext context,
                                     CancellationToken cancellationToken)

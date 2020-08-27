@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
@@ -15,11 +13,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
+using Serilog;
+using Serilog.Events;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -233,19 +231,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
 					}
+					else if (product.ProductId == (int)ProductEnum.IntelligentBuilding)
+					{
+						ManageIntelligentBuilding ib = new ManageIntelligentBuilding(userClaim);
+						propertiesResponse = ib.GetUPFMProperties(createUserPersonaId, personaId, false, ProductEnum.IntelligentBuilding,null);
+						rolesResponse = ib.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
+						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+					}
 				}
 				catch (Exception ex)
 				{
-					Log.Write(LogType.Error, new LogDetails
-					{
-						Message = $"Exception during clone user for product - {product?.ProductName}",
-						ProductModule = this.GetType().ToString(),
-						UserId = userClaim?.UserId.ToString(),
-						PmcId = userClaim?.OrganizationPartyId.ToString(),
-						UserName = userClaim?.LoginName,
-						Exception = ex,
-						CorrelationId = userClaim?.CorrelationId.ToString(),
-					});
+					string message = $"Exception during clone user for product - {product?.ProductName}";
+
+					Log.Write(LogEventLevel.Error, ex, message);
 				}
 			}
 
@@ -502,7 +500,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (allProperties)
 			{
-				if (productID == (int)ProductEnum.ClientPortal)
+				if (productID == (int)ProductEnum.ClientPortal || productID == (int)ProductEnum.IntelligentBuilding)
 				{
 					PropertyList.Add("-1");
 				}
@@ -524,10 +522,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 						{
 							PropertyList.Add(((Component.SharedObjects.Product.Ops.AssetGroup)item).ID);
 						}
-					}
+					}					
 					else if (((ProductProperty)item).IsAssigned.Value)
 					{
-						PropertyList.Add(((ProductProperty)item).ID);
+						if (productID == (int)ProductEnum.IntelligentBuilding)
+						{
+							PropertyList.Add(((ProductProperty)item).Alias);
+						}
+						else
+						{
+							PropertyList.Add(((ProductProperty)item).ID);
+						}							
 					}
 				}
 

@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 var nwpclientId = productInternalSettingList.First(a => a.Name.Equals("CLIENTID", StringComparison.OrdinalIgnoreCase)).Value;
                 var nwpIssueUri = productInternalSettingList.First(a => a.Name.Equals("TOKENURL", StringComparison.OrdinalIgnoreCase)).Value;
 
-                var accessToken = GetToken(nwpIssueUri, nwpclientId, apiSecret);
+                var accessToken = GetToken(nwpIssueUri, nwpclientId, apiSecret, "greenbooknwpapi");
 
                 var apiPathAndQuery = "/user/getuser?userId=" + userClaim.Value;
                 claimsToReturn.AddRange(GetClaimsFromProductApiEndpoint(apiEndPoint + apiPathAndQuery, accessToken, userClaim.Value));

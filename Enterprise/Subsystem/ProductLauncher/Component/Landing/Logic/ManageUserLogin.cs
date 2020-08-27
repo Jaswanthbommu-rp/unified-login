@@ -1,16 +1,17 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,19 +21,19 @@ using System.Web;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	/// <summary>
-	/// Manage UserLogin repository calls
-	/// </summary>
-	public class ManageUserLogin : IManageUserLogin
+    /// <summary>
+    /// Manage UserLogin repository calls
+    /// </summary>
+    public class ManageUserLogin : IManageUserLogin
     {
         #region Private Variables
         IUserLoginRepository _userLoginRepository;
         ICredentialRepository _credentialRepository;
         IUserRepository _userRepository;
         IProductRepository _productRepository;
-		IOrganizationRepository _organizationRepository;
+        IOrganizationRepository _organizationRepository;
         private IRoleTypeRepository _roleTypeRepository;
-		private IPersonRepository _personRepository;
+        private IPersonRepository _personRepository;
         private DefaultUserClaim _defaultUserClaim;
         #endregion
 
@@ -48,8 +49,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository(repository);
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
-			_organizationRepository = new OrganizationRepository(repository);
-			_defaultUserClaim = userClaim;
+            _organizationRepository = new OrganizationRepository(repository);
+            _defaultUserClaim = userClaim;
         }
 
         /// <summary>
@@ -63,14 +64,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
-			_organizationRepository = new OrganizationRepository();
-		}
+            _organizationRepository = new OrganizationRepository();
+        }
 
-		/// <summary>
-		/// Create a basic instance of the ManageUser Controller class
-		/// </summary>
-		/// <param name="userClaim"></param>
-		public ManageUserLogin(DefaultUserClaim userClaim)
+        /// <summary>
+        /// Create a basic instance of the ManageUser Controller class
+        /// </summary>
+        /// <param name="userClaim"></param>
+        public ManageUserLogin(DefaultUserClaim userClaim)
         {
             _userLoginRepository = new UserLoginRepository();
             _credentialRepository = new CredentialRepository();
@@ -78,20 +79,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productRepository = new ProductRepository();
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
-			_organizationRepository = new OrganizationRepository();
-			_defaultUserClaim = userClaim;
+            _organizationRepository = new OrganizationRepository();
+            _defaultUserClaim = userClaim;
         }
 
-		#endregion
+        #endregion
 
-		#region Public ManageUserLogin methods
-		/// <summary>
-		/// Create a Person
-		/// </summary>
-		/// <param name="realPageId">User unique identifier</param>
-		/// <param name="userLogin">UserLogin object of the parameter values</param>
-		/// <returns>RepositoryResponse object</returns>
-		public RepositoryResponse CreateUserLogin(Guid realPageId, IUserLogin userLogin)
+        #region Public ManageUserLogin methods
+        /// <summary>
+        /// Create a Person
+        /// </summary>
+        /// <param name="realPageId">User unique identifier</param>
+        /// <param name="userLogin">UserLogin object of the parameter values</param>
+        /// <returns>RepositoryResponse object</returns>
+        public RepositoryResponse CreateUserLogin(Guid realPageId, IUserLogin userLogin)
         {
             if (userLogin == null)
             {
@@ -254,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        Log.Write(LogType.Error, new LogDetails { Message = $"No user type for UserId={userLogin.UserId}" });
+                        Log.Write(LogEventLevel.Error, $"No user type for UserId={userLogin.UserId}");
                     }
                 }
 
@@ -353,12 +354,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
 
-                    if(userLoginOnly.LastLogin == null && userLoginOnly.PasswordModifiedDate != null && !isUserExpired)
+                    if (userLoginOnly.LastLogin == null && userLoginOnly.PasswordModifiedDate != null && !isUserExpired)
                         newUserwithActiveStatus = true;
 
 
                     fromUtcDateTime = orgStatus.FromDate;
-                    orgStatus.ThruDate = new DateTime(9999,12,31);
+                    orgStatus.ThruDate = new DateTime(9999, 12, 31);
                     if (orgStatus.FromDate > DateTime.UtcNow)
                     {
                         DateTime fromDate = DateTime.UtcNow;
@@ -535,7 +536,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-                Log.Write(LogType.Error, new LogDetails { Exception = ex });
+                Log.Write(LogEventLevel.Error, ex, ex.Message);
                 return false;
             }
         }
@@ -665,11 +666,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 !userLogin.Is3rdPartyIDP)
                             {
                                 _userLoginRepository.UpdateUserStatusByCompany(userLogin.RealPageId, orgStatus.PartyId, (int)UserUiStatusType.Expired, orgStatus.FromDate, null);
-								AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
-							}
+                                AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
+                            }
 
-							//Feature user (with disabled state) and user never logged in
-							if (orgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && orgStatus.FromDate.Subtract(DateTime.UtcNow).TotalMinutes <= 15 && userLogin.LastLogin == null)
+                            //Feature user (with disabled state) and user never logged in
+                            if (orgStatus.StatusTypeId == (int)UserUiStatusType.Disabled && orgStatus.FromDate.Subtract(DateTime.UtcNow).TotalMinutes <= 15 && userLogin.LastLogin == null)
                             {
                                 int statusTypeId = (int)UserUiStatusType.Pending;
                                 string statusType = UserUiStatusType.Pending.ToString();
@@ -731,7 +732,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-                Log.Write(LogType.Error, new LogDetails { Exception = ex });
+                Log.Write(LogEventLevel.Error, ex, ex.Message);
                 return false;
             }
         }
@@ -1235,7 +1236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
-            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int) UserRoleType.UserNoEmail));
+            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.UserNoEmail));
 
             if (userPersonaOrganizationList.Count > 0)
             {
@@ -1286,7 +1287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ManageRoleType roleTypes = new ManageRoleType();
                 // use the organization id of the person creating the user
                 IList<RoleType> userRoles = _roleTypeRepository.GetRoleType("User Role", _defaultUserClaim.OrganizationPartyId);
-                if (userRoles.All(c => c.PartyRoleTypeId != (int) UserRoleType.ExternalUser))
+                if (userRoles.All(c => c.PartyRoleTypeId != (int)UserRoleType.ExternalUser))
                 {
                     userOrganizationExists.UserExistsNotAvailable = true;
                     return userOrganizationExists;

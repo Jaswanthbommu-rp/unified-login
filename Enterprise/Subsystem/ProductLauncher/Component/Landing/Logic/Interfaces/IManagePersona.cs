@@ -99,5 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="orgPartyId">Company party id</param>
         /// <returns>A Persona Object</returns>
         Persona GetFirstAvailablePersonaByCompany(Guid realPageId, long orgPartyId);
+
+        Guid ChangeCompanyNotification(long personaId);
     }
 }

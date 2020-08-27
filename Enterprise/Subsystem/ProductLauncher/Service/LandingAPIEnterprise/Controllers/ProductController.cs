@@ -1,16 +1,17 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
+using Serilog;
+using Serilog.Events;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -40,14 +41,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetProducts()
         {
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Started");
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetProducts - Started");
 
             var result = GetAllProducts();
 
             var logData = new Dictionary<string, object>();
             logData.Add("result", result);
 
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetProducts - Data returned", logData);
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetProducts - Data returned", logData);
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
@@ -65,7 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUsersByCompanyorProducts(string companyId = null, [FromUri] IList<int?> products = null)
         {
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
             var result = GetUsersByCompanyorProductsDetails(companyId, products);
 
@@ -76,7 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             var logData = new Dictionary<string, object>();
             logData.Add("result", result);
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
 
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
@@ -96,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             int productId = 0;
 
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Started");
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Started");
             MappedUnifiedLoginUserDetails mappedUnifiedLoginUserDetails = new MappedUnifiedLoginUserDetails
             {
                 CompanyId = productUserIDMappingRequest.CompanyId,
@@ -121,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                                                                                  productUserIDMappingRequest.ProductUserId);
             var logData = new Dictionary<string, object>();
             logData.Add("result", mappedUnifiedLoginUserDetails);
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Data returned", logData);
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Data returned", logData);
 
             return Request.CreateResponse(HttpStatusCode.OK, mappedUnifiedLoginUserDetails);
         }
@@ -140,12 +141,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
         public HttpResponseMessage GetUsersByCompanyorProductCodes(string companyid, [FromUri] List<string> productcode, int? rowsPerPage = 5000, int? pageNumber = 1,
-                                                                    [FromUri]List<string> roles = null, [FromUri]List<string> rights = null)
+                                                                    [FromUri] List<string> roles = null, [FromUri] List<string> rights = null)
         {
             //It will be implemented soon
             Guid? propertyId = null;
 
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
 
@@ -157,7 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             //Add validation to verify the propertyId
 
-            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, version, rowsPerPage, pageNumber , roles , rights , propertyId);
+            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, version, rowsPerPage, pageNumber, roles, rights, propertyId);
 
             if (result == null)
             {
@@ -174,7 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             response.Data = result.Cast<object>().ToList();
             response.Meta.CurrentPage = pageNumber.Value;
-            response.Meta.TotalRows =  result.Any() ? result[0].TotalRecords : 0;
+            response.Meta.TotalRows = result.Any() ? result[0].TotalRecords : 0;
             response.Meta.RowsPerPage = rowsPerPage.Value;
 
             var logData = new Dictionary<string, object>
@@ -182,7 +183,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 { "result", response }
             };
 
-            WriteToLog(LogType.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
+            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
 
             return Request.CreateResponse(HttpStatusCode.OK, response);
 
@@ -214,20 +215,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <param name="message">Message to log</param>
         /// <param name="logData">Data to log</param>
         /// <param name="exception">Exception details</param>
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             try
             {
-                Log.Write(logType, new LogDetails
-                {
-                    Message = message,
-                    AdditionalInfo = logData,
-                    ProductModule = this.GetType().ToString(),
-                    UserId = _userClaims.UserId.ToString(),
-                    PmcId = _userClaims?.OrganizationPartyId.ToString(),
-                    Exception = exception,
-                    CorrelationId = _userClaims.CorrelationId.ToString(),
-                });
+                Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
             }
             catch
             {
@@ -235,8 +227,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
         }
 
-        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId , IList<int?> products = null , ProductProcVersion version = ProductProcVersion.Version1, int? rowsPerPage = 0, int? pageNumber = 1,
-                                                                      IList<string> roles = null , IList<string> rights = null, Guid? propertyId = null)
+        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId, IList<int?> products = null, ProductProcVersion version = ProductProcVersion.Version1, int? rowsPerPage = 0, int? pageNumber = 1,
+                                                                      IList<string> roles = null, IList<string> rights = null, Guid? propertyId = null)
         {
             if (string.IsNullOrEmpty(companyId) && products == null)
             {
@@ -248,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return null;
             }
             IProductRepository productRepository = new ProductRepository();
-            return productRepository.GetUsersByCompanyorProducts(companyId, products , version, rowsPerPage.Value , pageNumber.Value, roles , rights, propertyId);
+            return productRepository.GetUsersByCompanyorProducts(companyId, products, version, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyId);
         }
         #endregion
 

@@ -50,7 +50,10 @@
         };
 
         vm.filter = function (filterBy) {
-            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+            vm.filteredRecords = $filter("filter")(vm.dataPropReq.records, filterBy);
+            pgGridPagination.setData(vm.filteredRecords).goToPage({
+                number: 0
+            });
         };
 
         vm.radioSelectionChange = function (record) {
@@ -80,7 +83,7 @@
         vm.selectionChange = function (record) {
             var productId = $scope.$parent.productId;
             var excludeProducts = [20, 47];
-            if (excludeProducts.indexOf(productId) === -1) {
+            if (excludeProducts.indexOf(productId) === -1 && record !== undefined) {
                 syncMgr.groupToPropertySync(productId, record);
             }
         };

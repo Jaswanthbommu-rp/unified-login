@@ -24,6 +24,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 	/// </summary>
 	public class ManageProduct : IManageProduct
     {
+        public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
+        
         IProductRepository _productRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
         IManagePersona _managePersona;
@@ -112,15 +114,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IList<Role> roleList = new List<Role>();
             Organization organization = new Organization();
             long? userPersonaId = null;
+            Guid companyRealPageId = Guid.Empty;
+            ;
 
             //Get the UL Organization details by the CompanyInstanceId from BlackBook
-            var orgList = _manageOrganization.GetUnifiedLoginCompanyList();
-            UnifiedLoginCompany ulc = orgList.FirstOrDefault(p => p.Domain.Equals("Primary") && p.BooksCustomerMasterId == blueBookCompanyInstanceId);
-            if (ulc == null)
+            if (blueBookCompanyInstanceId != -1)
             {
-                throw new Exception("No company could be found.");
+                var orgList = _manageOrganization.GetUnifiedLoginCompanyList();
+                UnifiedLoginCompany ulc = orgList.FirstOrDefault(p => p.Domain.Equals("Primary") && p.BooksCustomerMasterId == blueBookCompanyInstanceId);
+                if (ulc == null)
+                {
+                    throw new Exception("No company could be found.");
+                }
+                companyRealPageId = new Guid(ulc.CompanyRealPageId);
             }
-            Guid companyRealPageId = new Guid(ulc.CompanyRealPageId);
+            else
+            {
+                companyRealPageId = EmployeeCompanyRealPageId;
+            }
+
             organization = _manageOrganization.GetOrganization(realPageId: companyRealPageId);
             if (organization != null)
             {

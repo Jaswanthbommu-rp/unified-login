@@ -1,13 +1,15 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -411,11 +413,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
 			IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: profile.Persona[0].UserId, organizationPartyId: profile.Persona[0].Organization.PartyId);
 
-			var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, profile.Persona.First().OrganizationPartyId);
-
-			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
-			oldProfile.UserEmployeeId = (employeeId != null  && employeeId.UserEmployeeId > 0) ? employeeId.UserEmployeeId : 0;
-
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
 			if (repositoryResponse.Id > 0)
 			{
@@ -777,16 +774,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="message">Mesage to log</param>
 		/// <param name="logData">Log data (object)</param>
 		/// <param name="exception">Exception</param>
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				Exception = exception,
-
-			});
+			Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
 		}
 		#endregion
 	}

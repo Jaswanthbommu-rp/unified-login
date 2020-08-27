@@ -17,6 +17,7 @@ using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produ
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -96,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-				//bool usePropertyInstances = (productInternalSettingList?.FirstOrDefault(s => s.Name.Equals("UsePropertyInstanceIntelligentBuilding", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+				var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 
 				// super user
 				// TODO what to do here?
@@ -106,10 +107,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
 					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
 					string superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;
+					List<string> propertiesToRemove = new List<string>();
+					if (userPropertyIdList?.Count > 0)
+					{
+						foreach (var prop in userPropertyIdList)
+						{
+							if (prop != -1)
+							{
+								propertiesToRemove.Add(prop.ToString());
+							}
+						}
+					}
 
 					userAssignProductPropertyRole = new IBPropertyRole
 					{
 						PropertyList = new List<string> { "-1" },
+						RemovedPropertyList = propertiesToRemove,
 						RoleList = new List<string>() { superUserRoleId }
 					};
 				}
@@ -181,26 +194,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					}
 
-					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
+					List<string> unAssignedPropertyList = userAssignProductPropertyRole.RemovedPropertyList;
 
 					List<string> unassignedProperties = new List<string>();
 					List<string> assignedProperties = new List<string>();
 
-					foreach (string propertyId in assignedPropertyList)
+					if (assignedPropertyList != null)
 					{
-						if (propertyList.All(p => p.ID != propertyId))
+						foreach (string propertyId in assignedPropertyList)
 						{
-							// new property to be added
-							assignedProperties.Add(propertyId);
+							if (userPropertyIdList.All(p => p != Convert.ToInt32(propertyId)))
+							{
+								// new property to be added
+								assignedProperties.Add(propertyId);
+							}
 						}
 					}
 
-					foreach (ProductProperty prop in propertyList)
+					if (unAssignedPropertyList != null)
 					{
-						if (assignedPropertyList.All(p => p != prop.ID.ToString()))
+						foreach (string propertyId in unAssignedPropertyList)
 						{
-							unassignedProperties.Add(prop.ID.ToString());
+							// remove property
+							unassignedProperties.Add(propertyId);
+						}
+					}
+
+					if ((unAssignedPropertyList == null || unAssignedPropertyList?.Count == 0) && assignedProperties?.Count > 0)
+					{
+						if (userPropertyIdList.Any(p => p == -1))
+						{
+							unassignedProperties.Add("-1");
 						}
 					}
 
@@ -254,6 +279,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					WriteToErrorLog($"ManageIntelligentBuildingUser-UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");
 					return result.ErrorMessage;
+				}
+
+				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+				List<string> unassignedProperties = new List<string>();
+
+				foreach (var property in propertyList)
+				{
+					unassignedProperties.Add(property.ID.ToString());
+				}
+
+				if (unassignedProperties.Count > 0)
+				{
+					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
 				}
 			}
 
@@ -479,9 +517,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
 		{
 			ListResponse response = new ListResponse();
-
 			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
+			List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
 			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
 
 			if (userPropertyIdList != null)
@@ -505,33 +543,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
+
 			if (userPropertyIdList?.Count > 0)
 			{
+				// call translate with upfm properties to get ib properety id and merges propertyinstanceid with translated id
+				//note save upfmid into alias field before updating with translated id
+				UPFMProperty upfmProperties = new UPFMProperty();
+				List<string> instanceids = new List<string>();
+				foreach (var property in userPropertyList)
+				{
+					instanceids.Add(property.InstanceId.ToLower());
+				}
+				upfmProperties.id = instanceids;
+
+				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, ProductEnum.IntelligentBuilding);
+				if (translatedData != null)
+				{
+					foreach (var attributs in translatedData.Data.Attributes)
+					{
+						foreach (var propertyData in attributs.TranslatedPropertyInstances)
+						{
+							if (propertyData.Source == ProductEnum.IntelligentBuilding.ToEnumDescription())
+							{
+								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId);
+								if (translatedProductProperty != null)
+								{
+									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
+									translatedProductProperty.Alias = null;
+									translatedUserPropertyList.Add(translatedProductProperty);
+								}
+							}
+						}
+					}
+				}
+
 				bool bIncludeFields = (!string.IsNullOrWhiteSpace(include) && include.Split(new char[] { ',' }).Length > 0);
 
 				if (bIncludeFields)
 				{
 					DynamicContractResolver dynamicContractResolver = new DynamicContractResolver(include);
 					string productPropertySerializableProperties = JsonConvert.SerializeObject(
-						userPropertyList,
+						translatedUserPropertyList,
 						new JsonSerializerSettings()
 						{
 							ContractResolver = dynamicContractResolver
 						}
 					);
-					userPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
+					translatedUserPropertyList = JsonConvert.DeserializeObject<List<ProductProperty>>(productPropertySerializableProperties);
 				}
 
-				userPropertyList.ForEach(p =>
+				translatedUserPropertyList.ForEach(p =>
 				{
 					p.IsAssigned = null;
 					p.disableSelection = null;
 				});
 
 				response.IsError = false;
-				response.Records = userPropertyList.Cast<object>().ToList();
-				response.TotalRows = userPropertyList.Count;
-				response.RowsPerPage = userPropertyList.Count;
+				response.Records = translatedUserPropertyList.Cast<object>().ToList();
+				response.TotalRows = translatedUserPropertyList.Count;
+				response.RowsPerPage = translatedUserPropertyList.Count;
 				response.TotalPages = 1;
 				response.ErrorReason = string.Empty;
 			}
@@ -562,14 +632,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+
+				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString().ToUpper(), product);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
 				WriteToDiagnosticLog($"GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
 				result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
 				WriteToDiagnosticLog($"GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
-				
+
 			}
 			catch (Exception ex)
 			{
@@ -581,6 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return result;
 		}
+
 
 		/// <summary>
 		/// Used to convert a UPFM property instance to a Product Property 
@@ -599,16 +672,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				State = upfmPropertyInstance.State,
 				Zip = upfmPropertyInstance.PostalCode,
 				IsAssigned = isAssigned,
-				InstanceId = upfmPropertyInstance.CustomerPropertyId,
+				InstanceId = upfmPropertyInstance.InstanceId.ToString().ToUpper(),
 				Latitude = upfmPropertyInstance.Latitude,
 				Longitude = upfmPropertyInstance.Longitude,
 				Alias = upfmPropertyInstance.PropertyInstanceId.ToString()
 			};
 			return pp;
 		}
-		
 
-		
+
+
 		/// <summary>
 		/// Used to unassign a property instance to the given user
 		/// </summary>

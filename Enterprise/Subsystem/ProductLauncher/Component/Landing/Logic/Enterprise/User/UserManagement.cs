@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
@@ -8,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -16,6 +15,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// </summary>
 		public ObjectResponse CreateEnterpriseUnityUser(UserProductDetails userProductDetails)
 		{
-			WriteToLog(LogType.Diagnostic, $"Beginning CreateEnterpriseUnityUser for new user with json {JsonConvert.SerializeObject(userProductDetails)}");
+			WriteToLog(LogEventLevel.Debug, $"Beginning CreateEnterpriseUnityUser for new user with json {JsonConvert.SerializeObject(userProductDetails)}");
 
 			var response = new ObjectResponse();
 
@@ -94,10 +95,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				var pwd = userProductDetails.UserProfileDetails.Password.PasswordHash();
 				userProductDetails.UserProfileDetails.PasswordHash = pwd.PasswordHash;
 				userProductDetails.UserProfileDetails.PasswordSalt = pwd.PasswordSalt;
-				WriteToLog(LogType.Diagnostic, "Received password hash salt info for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+				WriteToLog(LogEventLevel.Debug, "Received password hash salt info for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 			}
 
-			WriteToLog(LogType.Diagnostic, $"Getting custom filed info for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogEventLevel.Debug, $"Getting custom filed info for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// custom fields
 			IList<CustomFieldValue> userCustomFields = null;
@@ -111,7 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				return response;
 			}
 
-			WriteToLog(LogType.Diagnostic, $"Calling CreateEnterpriseUser for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogEventLevel.Debug, $"Calling CreateEnterpriseUser for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// create user
 			var entUserRepository = new EntUserRepository(_userClaims);
@@ -120,12 +121,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			userProductDetails.UserProfileDetails.LastName = userProductDetails.UserProfileDetails.LastName.TrimWhiteSpace();
 			var userRelPageId = entUserRepository.CreateEnterpriseUser(userProductDetails);
 
-			WriteToLog(LogType.Diagnostic, $"Received new user id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogEventLevel.Debug, $"Received new user id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			//TODO: Test conditions for email - Idp, future date etc
 			//SendInvitationEmail();
 
-			WriteToLog(LogType.Diagnostic, $"Adding activity log for new user with RealPage id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogEventLevel.Debug, $"Adding activity log for new user with RealPage id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// Get User Details from persona id
 			var userRepository = new UserRepository(_userClaims);
@@ -145,7 +146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				}
 			}
 
-			WriteToLog(LogType.Diagnostic, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, "New User {0} {1} successfully created by user {2} {3} using enterprise API.", "CreateUser", newUserDetails);
 
@@ -159,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// </summary>
 		public ObjectResponse UpdateEnterpriseUnityUser(UserProductDetails userProductDetails)
 		{
-			WriteToLog(LogType.Diagnostic,
+			WriteToLog(LogEventLevel.Debug,
 				$"Beginning UpdateEnterpriseUnityUser for update user with json {JsonConvert.SerializeObject(userProductDetails)}");
 
 			var response = new ObjectResponse();
@@ -200,7 +201,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				var pwd = userProductDetails.UserProfileDetails.Password.PasswordHash();
 				userProductDetails.UserProfileDetails.PasswordHash = pwd.PasswordHash;
 				userProductDetails.UserProfileDetails.PasswordSalt = pwd.PasswordSalt;
-				WriteToLog(LogType.Diagnostic,
+				WriteToLog(LogEventLevel.Debug,
 					"Received password hash salt info for update user with login name {userProductDetails.UserProfileDetails.LoginName}");
 			}
 
@@ -215,7 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				CreateUserSourceType = CreateUserSourceType.RPX
 			};
 
-			WriteToLog(LogType.Diagnostic,
+			WriteToLog(LogEventLevel.Debug,
 				$"Getting custom filed info for update user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// custom fields
@@ -236,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				userCustomFieldValueJson = JsonConvert.SerializeObject(userCustomFields);
 			}
 
-			WriteToLog(LogType.Diagnostic,
+			WriteToLog(LogEventLevel.Debug,
 				$"Custom fields json - {userCustomFieldValueJson} for update user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// check from & thru date supplied
@@ -307,12 +308,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			updateObject.LastName = userProductDetails.UserProfileDetails.LastName.TrimWhiteSpace();
 			updateObject.Title = userProductDetails.UserProfileDetails.Title;
 			updateObject.Suffix = userProductDetails.UserProfileDetails.Suffix;
-			updateObject.EmployeeId = userProductDetails.UserProfileDetails.EmployeeId;
 
 			// add product batch
 			updateObject.productBatch = GetProductBatchData(userProductDetails.ProductList);
 
-			WriteToLog(LogType.Diagnostic,
+			WriteToLog(LogEventLevel.Debug,
 				$"Calling UpdateUser for user with editorRelPageId {userProductDetails.EditorRealPageId} and updateObject json {JsonConvert.SerializeObject(updateObject)}");
 
 			IManageUser mu = new ManageUser(_userClaims);
@@ -323,7 +323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				response.Data = result.RealPageId.ToString();
 			}
 
-			WriteToLog(LogType.Diagnostic,
+			WriteToLog(LogEventLevel.Debug,
 				$"Received user id {result.RealPageId.ToString()} for update user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			return response;
@@ -336,7 +336,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		{
 			var response = new ObjectResponse();
 
-			WriteToLog(LogType.Diagnostic,
+			WriteToLog(LogEventLevel.Debug,
 				$"Beginning ActivateDeactivateUser for update user with unityRealPageUserId {unityRealPageUserId} and status to change {statusTypeName}");
 
 			// check user exists
@@ -353,12 +353,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
 			bool isCreateUpdateUserStatusSucceed = userLoginLogic.CreateUpdateUserStatus(unityRealPageUserId, statusTypeName);
 
-			WriteToLog(LogType.Diagnostic,
+			WriteToLog(LogEventLevel.Debug,
 				$"CreateUpdateUserStatus returned {isCreateUpdateUserStatusSucceed} with unityRealPageUserId {unityRealPageUserId} and status to change {statusTypeName}");
 
 			if (isCreateUpdateUserStatusSucceed)
 			{
-				WriteToLog(LogType.Diagnostic,
+				WriteToLog(LogEventLevel.Debug,
 					$"CreateUpdateUserStatus - updating product statues with unityRealPageUserId {unityRealPageUserId} and status to change {statusTypeName}");
 
 				IList<UserLoginOnly> userLogins = new List<UserLoginOnly>();
@@ -599,7 +599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 			catch (Exception ex)
 			{
-				WriteToLog(LogType.Error,
+				WriteToLog(LogEventLevel.Error,
 					$"Error while adding activity message." +
 					$" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
 					$"author user login name {_userClaims.LoginName}", exception: ex);
@@ -609,21 +609,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// <summary>
 		/// Used to write to the log
 		/// </summary>
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null,
+		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null,
 			Exception exception = null)
 		{
 			try
 			{
-				Log.Write(logType, new LogDetails
-				{
-					Message = message,
-					AdditionalInfo = logData,
-					ProductModule = this.GetType().ToString(),
-					UserId = _userClaims.UserId.ToString(),
-					PmcId = _userClaims?.OrganizationPartyId.ToString(),
-					Exception = exception,
-					CorrelationId = _userClaims.CorrelationId.ToString(),
-				});
+				Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
 			}
 			catch
 			{
@@ -693,7 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			catch (Exception ex)
 			{
 				//elastic logging
-				WriteToLog(LogType.Error, $"Exception while ValidateAndAssignCustomFieldValues for user with login name {userProductDetails.UserProfileDetails.LoginName}", exception: ex);
+				WriteToLog(LogEventLevel.Error, $"Exception while ValidateAndAssignCustomFieldValues for user with login name {userProductDetails.UserProfileDetails.LoginName}", exception: ex);
 			}
 
 			// all ok

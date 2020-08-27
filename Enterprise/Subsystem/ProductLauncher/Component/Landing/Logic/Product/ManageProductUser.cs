@@ -1,18 +1,19 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProspectContactCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
@@ -23,12 +24,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedAmenities;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -843,7 +843,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuilding:
                         product = new IntelligentBuildingProduct(_defaultUserClaim);
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<UnifiedAmenitiesPropertyRole>(batchRecord.InputJson);
+                            GetProductPropertiesRoles<IBPropertyRole>(batchRecord.InputJson);
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     default:
@@ -1004,23 +1004,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        public void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        public void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            string correlationId = "";
-            if (_defaultUserClaim != null)
-            {
-                correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
-
-            }
-
-            Log.Write(logType, new LogDetails
-            {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                Exception = exception,
-                CorrelationId = correlationId
-            });
+            Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
         }
     }
 
@@ -1322,7 +1308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 //Do Nothing
             }
-            
+
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var os = new ManageProductOneSite(base.UserClaim);
             Dictionary<string, object> logData = new Dictionary<string, object>();
@@ -1336,7 +1322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 changeProductUserTypeResponse = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, false);
             }
-            
+
             var lead2leaseresult = "";
             if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
             {
@@ -1357,7 +1343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     changeProductUserTypeResponse += lead2leaseresult;
                 }
-                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Lead2Lease result:"+lead2leaseresult);
+                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Lead2Lease result:" + lead2leaseresult);
             }
 
             var slmresult = "";
@@ -1372,7 +1358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // assign user
                 // need to finish
             }
-            
+
             return changeProductUserTypeResponse;
         }
     }
@@ -3872,8 +3858,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Input JSON parsing issue; Null object.";
             }
 
-            var userClaims = new DefaultUserClaim {CorrelationId = Guid.NewGuid()};
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum) _productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }

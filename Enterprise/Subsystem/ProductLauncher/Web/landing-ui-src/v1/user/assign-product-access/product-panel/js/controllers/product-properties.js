@@ -62,6 +62,7 @@
             vm.propertySelect = "";
             if(bool){
                 vm.propertySelect = 'allProperties';
+                syncMgr.setAccessTypeValue($scope.productId,vm.propertySelect);
             }
         };
 
@@ -121,7 +122,7 @@
         };
 
         vm.hidePropertiesGrid = function () {
-            if($scope.$parent.productId === 16){
+            if($scope.$parent.productId === 16 ||(vm.propertySelect === undefined && $scope.$parent.productId === 8)){
                 var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
                 if(accesstype){
                     vm.propertySelect = accesstype;
@@ -267,11 +268,29 @@
                             }
                         }
                     }
-                    if (productId == "44" && item.propertiesList) {
-                        var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
-                            return prop.isAssigned === true;
-                        });
-                        item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
+                    if (productId == "44") {
+                        if(item.propertiesList){
+                            var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
+                                return prop.isAssigned === true;
+                            });
+                            item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
+                        }
+                        if(item.groupList){
+                            var assignedGroupsCount = item.groupList.filter(function (Group) {
+                                return Group.isAssigned === true;
+                            });
+                            
+                            item.assignedGroups = assignedGroupsCount.length + " of " + item.groupList.length;
+                            item.groupList.forEach(function (group) {
+                                angular.extend(group, {
+                                    disableSelection: vm.hasViewOnlyAccess(),
+                                    radname: "Group",
+                                    productId: productId,
+                                    tabname: "EntityGroup"
+                                });
+                            });
+                        }
+                        
                     }
                 });
 

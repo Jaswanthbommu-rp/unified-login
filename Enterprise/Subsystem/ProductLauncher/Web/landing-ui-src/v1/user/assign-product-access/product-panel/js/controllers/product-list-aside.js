@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductPanelListAsideCtrl($scope, $filter, aside, dataSvc, groupSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
+    function ProductPanelListAsideCtrl($scope, $filter, aside, innerAside, dataSvc, groupSvc, syncMgr, gridModel, gridTransformSvc, gridPaginationModel, listAsideModel, persona) {
         var vm = this,
             asideGrid = gridModel(),
             asidegridTransform = gridTransformSvc(),
@@ -18,21 +18,49 @@
             vm.asideGrid = asideGrid;
             vm.properteiesData = {};
             vm._properteiesData = {};
+            vm.groupsData = {};
+            vm._groupsData = {};
             vm.propertyRecords = listAsideModel.getSelectedPropertyRoleData();
+
             
             asidegridTransform.watch(asideGrid);
             vm.isBtnFooterRequired = listAsideModel.FooterRequired(vm.productId);
-            syncMgr.setAsidePropertyList(listAsideModel.getSelectedPropertyRoleData(), vm.productId);
+            if(vm.productId == 44){
+                if(vm.tabName === "EntityGroup"){
+                    vm.isBtnFooterRequired = false;
+                }
+                if(vm.tabName === "group"){
+                    syncMgr.setAsideGroupList(vm.propertyRecords, vm.productId);
+                }
+                if(vm.propertyRecords !== undefined){
+                    syncMgr.setAsidePropertyList(vm.propertyRecords, vm.productId);
+                }
+            }
+            else{
+                syncMgr.setAsidePropertyList(vm.propertyRecords, vm.productId);
+            }
             var configTab = "";
             if (vm.tabName.toLowerCase() === "property") {
                 if(vm.productId == 44){
                     configTab = "Properties";
                     vm.title = "Assigned Entities";
-                    vm.subtitle= persona.data.organization.name;
                 }else{
                     configTab = "Properties";
                     vm.title = "Property Details";
                 }              
+            }
+            else if (vm.tabName.toLowerCase() === "group") {
+                if(vm.productId == 44){
+                    configTab = "Groups";
+                    vm.title = "Assigned Groups";
+                }
+            }
+            else if (vm.tabName.toLowerCase() === "entitygroup") {
+                if(vm.productId == 44){
+                    configTab = "EntityProperties";
+                    vm.title = "Entity Group Details";
+                    vm.subtitle= vm.propertyRecords.name;
+                }
             }
             else if (vm.tabName.toLowerCase() === "propertygroup") {
                 configTab = "PropertyGroup";
@@ -80,7 +108,12 @@
         };
 
         vm.filter = function(filterBy){
-            vm.filteredRecords = $filter("filter")(vm.propertyRecords.propertiesList, filterBy);
+            if(vm.tabName.toLowerCase() === "group"){
+                vm.filteredRecords = $filter("filter")(vm.propertyRecords.groupList, filterBy);
+            }
+            else {
+                vm.filteredRecords = $filter("filter")(vm.propertyRecords.propertiesList, filterBy);
+            }
         };
 
         vm.loadData = function () {
@@ -108,9 +141,25 @@
 
                 vm.dataReq = groupSvc.get(params, vm.setData);
             }else if(productId == "20" || productId == "44"){
-                vm._properteiesData = angular.copy(vm.propertyRecords.propertiesList);
-                vm.properteiesData.records = vm.propertyRecords.propertiesList;
-                vm.setData(vm.properteiesData);
+                if(vm.tabName.toLowerCase() === "group"){
+                    vm._groupsData = angular.copy(vm.propertyRecords.groupList);
+                    vm.properteiesData.records = vm.propertyRecords.groupList;
+                    vm.setData(vm.properteiesData);
+                }
+                else if(vm.tabName.toLowerCase() === "entitygroup"){
+                    params = {
+                        editorPersonaId: persona.getId(),
+                        userPersonaId: "0",
+                        productId: productId,
+                        propertyGroupId: vm.propertyRecords.id
+                    };
+                    vm.dataReq = groupSvc.get(params, vm.setData);
+                }
+                else{
+                    vm._properteiesData = angular.copy(vm.propertyRecords.propertiesList);
+                    vm.properteiesData.records = vm.propertyRecords.propertiesList;
+                    vm.setData(vm.properteiesData);
+                }
             }
             else {
                 params = {
@@ -134,8 +183,21 @@
         };
 
         vm.cancel = function () {
-            vm.propertyRecords.propertiesList = vm._properteiesData;
-            aside.hide();
+            if(vm.tabName.toLowerCase() === 'entitygroup'){
+                innerAside.hide();
+                var groupRecords = syncMgr.getAsideGroupList(vm.productId);
+                syncMgr.setAsidePropertyList(groupRecords, vm.productId);
+            }
+            else
+            {
+                if(vm.tabName.toLowerCase() === "group"){
+                    vm.propertyRecords.groupList = vm._groupsData;
+                }
+                else{
+                    vm.propertyRecords.propertiesList = vm._properteiesData;
+                }
+                aside.hide();
+            } 
         };
         
         vm.update = function(){
@@ -148,7 +210,12 @@
                 syncMgr.updateAllFilterAsideProperties(vm.productId, vm.filteredRecords, val);
             }
             else{
-                syncMgr.updateAllFilterAsideProperties(vm.productId, vm.propertyRecords.propertiesList, val);
+                if(vm.tabName.toLowerCase() === "group"){
+                    syncMgr.updateAllFilterAsideProperties(vm.productId, vm.propertyRecords.groupList, val);
+                }
+                else {
+                    syncMgr.updateAllFilterAsideProperties(vm.productId, vm.propertyRecords.propertiesList, val);
+                }
             }
         };
 
@@ -183,6 +250,7 @@
             "$scope",
             "$filter",
             "productPanelListAside",
+            "productPanelListInnerAside",
             "productRoleRightsSvc",
             "productGroupPropertiesSvc",
             "productDataSyncManager",
