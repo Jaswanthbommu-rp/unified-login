@@ -5,7 +5,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER   PROCEDURE [Ident].[UpdateEnterpriseUserCredential_V2]
+CREATE   PROCEDURE [Ident].[UpdateEnterpriseUserCredential_V2]
 (
 	@EnterpriseUserName AS NVARCHAR(255),
 	@NewPasswordHash AS NVARCHAR(255),
