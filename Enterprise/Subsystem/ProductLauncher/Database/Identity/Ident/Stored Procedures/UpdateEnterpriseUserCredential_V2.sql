@@ -1,10 +1,3 @@
-USE [UPLocal]
-GO
-/****** Object:  StoredProcedure [Ident].[UpdateEnterpriseUserCredential_V2]    Script Date: 8/27/2020 11:44:19 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE   PROCEDURE [Ident].[UpdateEnterpriseUserCredential_V2]
 (
 	@EnterpriseUserName AS NVARCHAR(255),
