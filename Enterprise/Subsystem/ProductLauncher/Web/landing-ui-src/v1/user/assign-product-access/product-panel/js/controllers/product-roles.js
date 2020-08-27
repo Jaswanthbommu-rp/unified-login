@@ -52,7 +52,6 @@
             vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
 
-            pubsub.subscribe("ppanel.assign-accessType", vm.accessTypeChange);
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
@@ -66,17 +65,6 @@
 
         vm.isReady = function () {
             return productDataModel.isRoleGridActive(); //productDataModel.isActive();
-        };
-
-        vm.accessTypeChange = function (accessType) {
-            if (accessType === 'specificProperties') {
-                vm.propertySelect = 'property';
-            }
-            else {
-                vm.propertySelect = accessType;
-            }
-            vm.rpRoleSelected = vm.propertySelect;
-            vm.resetDataModel(vm.propertySelect);
         };
 
         vm.updateAllPropertiesSwitch = function(bool){
@@ -101,18 +89,6 @@
         };
 
         vm.resetDataModel = function (accessType) {
-            if (accessType === 'propertyGroup') {
-                syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
-            }
-            else if(accessType === 'property') {
-                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
-            }
-            else if(accessType === 'allProperties') {
-                syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, true);
-            }
             vm.propertySelect = accessType;
             if($scope.$parent.productId !== 8){
                 syncMgr.setAccessTypeValue($scope.$parent.productId, accessType);
@@ -121,7 +97,6 @@
             if (dependencyControlId > 0) {
                 vm.loadProductControlDependencyData(dependencyControlId);
             }
-            pubsub.publish("ppanel.access-type-change", accessType);
         };
 
         vm.isSelectTypeConfigLoaded = function () {
