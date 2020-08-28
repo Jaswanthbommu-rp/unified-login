@@ -1093,10 +1093,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             logData.AddRange(editorUserDictionary);
 
             var logger = Log.Logger;
-            foreach (var key in logData?.Keys)
+            if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
             }
+
             logger.Write(logType, exception, message );
         }
 

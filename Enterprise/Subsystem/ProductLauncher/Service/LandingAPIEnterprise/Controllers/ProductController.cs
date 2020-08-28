@@ -220,10 +220,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             try
             {
                 var logger = Log.Logger;
-                foreach (var key in logData?.Keys)
+                if (logData?.Keys != null)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                    foreach (var key in logData?.Keys)
+                    {
+                        logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                    }
                 }
+
                 logger.Write(logType, exception, message );
             }
             catch

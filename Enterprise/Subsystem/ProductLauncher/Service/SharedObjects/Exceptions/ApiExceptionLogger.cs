@@ -52,9 +52,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Except
             }
 
             var logger = Serilog.Log.Logger;
-            foreach (var key in AdditionalInfo?.Keys)
+            if (AdditionalInfo?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo-{key}", AdditionalInfo[key], true);
+                foreach (var key in AdditionalInfo?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", AdditionalInfo[key], true);
+                }
             }
 
             logger.Write(LogEventLevel.Error, context.Exception, context.Exception.Message);

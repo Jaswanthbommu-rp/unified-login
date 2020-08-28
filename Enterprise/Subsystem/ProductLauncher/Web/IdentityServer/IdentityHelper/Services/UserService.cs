@@ -1014,10 +1014,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
         private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
         {
             var logger = Log.Logger;
-            foreach (var key in logData?.Keys)
+            if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
             }
+
             logger.Write(logType, exception, message );
         }
 

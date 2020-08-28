@@ -20,10 +20,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Logging
 
             //Log.ForContext("AdditionalInfo", webInfo).Write(LogEventLevel.Error, ex, ex.Message);
             var logger = Log.Logger;
-            foreach (var key in webInfo?.Keys)
+            if (webInfo?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo-{key}", webInfo[key], true);
+                foreach (var key in webInfo?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", webInfo[key], true);
+                }
             }
+
             logger.Write(LogEventLevel.Error, ex, ex.Message );
         }
 

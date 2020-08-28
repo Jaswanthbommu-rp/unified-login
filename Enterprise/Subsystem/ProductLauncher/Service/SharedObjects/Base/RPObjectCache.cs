@@ -45,9 +45,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 };
 
                 var logger = Log.Logger;
-                foreach (var keyname in logData?.Keys)
+                if (logData?.Keys != null)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{keyname}", logData[keyname], true);
+                    foreach (var keyname in logData?.Keys)
+                    {
+                        logger = logger.ForContext($"AdditionalInfo-{keyname}", logData[keyname], true);
+                    }
                 }
 
                 logger.Write(LogEventLevel.Error, ex, ex.Message);
@@ -81,9 +84,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 };
 
                 var logger = Log.Logger;
-                foreach (var keyname in logData?.Keys)
+                if (logData?.Keys != null)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{keyname}", logData[keyname], true);
+                    foreach (var keyname in logData?.Keys)
+                    {
+                        logger = logger.ForContext($"AdditionalInfo-{keyname}", logData[keyname], true);
+                    }
                 }
 
                 logger.Write(LogEventLevel.Error, ex, ex.Message);

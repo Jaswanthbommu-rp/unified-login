@@ -155,10 +155,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
         protected void WriteToErrorLog(string message = null, Dictionary<string, object> logData = null, Exception exception = null)
         {
             var logger = Log.Logger;
-            foreach (var key in logData?.Keys)
+            if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
             }
+
             logger.Write(LogEventLevel.Error, exception, message );
         }
 
@@ -170,10 +174,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
         protected void WriteToDiagnosticLog(string message = null, Dictionary<string, object> logData = null)
         {
             var logger = Log.Logger;
-            foreach (var key in logData?.Keys)
+            if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
             }
+
             logger.Write(LogEventLevel.Debug, message );
         }
     }
