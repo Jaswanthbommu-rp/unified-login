@@ -1226,27 +1226,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			return userType;
 		}
 
-		/// <summary>
-		/// Used to write to the log
-		/// </summary>
-		/// <param name="logType">Log Type</param>
-		/// <param name="message">Message to log</param>
-		/// <param name="logData">Data to log</param>
-		/// <param name="exception">Exception details</param>
-		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null,
-			Exception exception = null)
-		{
-			try
-			{
-				Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
-			}
-			catch
-			{
-				/*ignored*/
-			}
-		}
+        /// <summary>
+        /// Used to write to the log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message to log</param>
+        /// <param name="logData">Data to log</param>
+        /// <param name="exception">Exception details</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        {
+            try
+            {
+                var logger = Log.Logger;
+                if (logData?.Keys != null)
+                {
+                    foreach (var key in logData?.Keys)
+                    {
+                        logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                    }
+                }
 
-		/// <summary>
+                logger.Write(logType, exception, message);
+            }
+            catch
+            {
+                /*ignored*/
+            }
+        }
+
+        /// <summary>
 		/// List of User Product and SAML attributes 
 		/// </summary>
 		/// <param name="userProductJSON">CustomFields JSON string</param>
