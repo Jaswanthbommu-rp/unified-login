@@ -388,7 +388,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             try
             {
-                Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
+                var logger = Log.Logger;
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
+                logger.Write(logType, exception, message );
             }
             catch
             {

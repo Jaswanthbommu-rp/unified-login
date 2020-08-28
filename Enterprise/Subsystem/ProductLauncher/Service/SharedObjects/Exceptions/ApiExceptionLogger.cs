@@ -51,8 +51,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Except
                 //if (userIdClaim != null) logDetails.UserId = userIdClaim.Value;
             }
 
-            Serilog.Log.ForContext("AdditionalInfo", AdditionalInfo).Write( LogEventLevel.Error, context.Exception, context.Exception.Message);
+            var logger = Serilog.Log.Logger;
+            foreach (var key in AdditionalInfo?.Keys)
+            {
+                logger = logger.ForContext($"AdditionalInfo-{key}", AdditionalInfo[key], true);
+            }
 
+            logger.Write(LogEventLevel.Error, context.Exception, context.Exception.Message);
             // CorrelationId used as a key to search exception in the database
             //context.Exception.Data.Add("CorrelationId", logDetails.CorrelationId);
         }

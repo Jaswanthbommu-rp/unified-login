@@ -776,7 +776,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="exception">Exception</param>
 		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.ForContext("AdditionalInfo", logData).Write(logType, exception, message);
+            var logger = Log.Logger;
+            foreach (var key in logData?.Keys)
+            {
+                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+            }
+            logger.Write(logType, exception, message );
 		}
 		#endregion
 	}

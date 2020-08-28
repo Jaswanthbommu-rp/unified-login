@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
@@ -255,7 +256,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     {"processEndpoint",processEndpoint }
                 };
 
-                Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
+                //Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
+                var logger = Log.Logger;
+                foreach (var key in additionalInfo?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                }
+                logger.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.");
 
                 var input = new BatchProcessorInput
                 {
@@ -278,7 +285,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             catch (Exception ex)
             {
                 // Log the exception. 
-                Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
+                //Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
+                var logger = Log.Logger;
+                foreach (var key in additionalInfo?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                }
+                logger.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.");
                 // update a batch records with error status
                 if (batch.BatchProcessorId > 0)
                 {

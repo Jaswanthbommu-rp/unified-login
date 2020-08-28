@@ -18,7 +18,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Logging
             string userId, userName, location, pmcId, pmcName;
             var webInfo = GetWebLoggingData(out userId, out userName, out location, out pmcId, out pmcName);
 
-            Log.ForContext("AdditionalInfo", webInfo).Write(LogEventLevel.Error, ex, ex.Message);
+            //Log.ForContext("AdditionalInfo", webInfo).Write(LogEventLevel.Error, ex, ex.Message);
+            var logger = Log.Logger;
+            foreach (var key in webInfo?.Keys)
+            {
+                logger = logger.ForContext($"AdditionalInfo-{key}", webInfo[key], true);
+            }
+            logger.Write(LogEventLevel.Error, ex, ex.Message );
         }
 
         public static void GetHttpStatus(Exception ex, out int httpStatus)

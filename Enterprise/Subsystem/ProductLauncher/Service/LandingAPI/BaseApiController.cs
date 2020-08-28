@@ -154,7 +154,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
         /// </summary>
         protected void WriteToErrorLog(string message = null, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            Log.ForContext("AdditionalInfo", logData).Write(LogEventLevel.Error, exception, message);
+            var logger = Log.Logger;
+            foreach (var key in logData?.Keys)
+            {
+                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+            }
+            logger.Write(LogEventLevel.Error, exception, message );
         }
 
         /// <summary>
@@ -164,8 +169,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
         /// <param name="logData"></param>
         protected void WriteToDiagnosticLog(string message = null, Dictionary<string, object> logData = null)
         {
-            Log.ForContext("AdditionalInfo", logData).Write(LogEventLevel.Debug, message);
+            var logger = Log.Logger;
+            foreach (var key in logData?.Keys)
+            {
+                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+            }
+            logger.Write(LogEventLevel.Debug, message );
         }
-
     }
 }

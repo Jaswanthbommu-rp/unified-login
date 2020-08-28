@@ -202,9 +202,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
             try
             {
-                Log.Information(
-                     $"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId,
-                     additionalInfo);
+                Log.Information($"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId, additionalInfo);
+                var logger = Log.Logger;
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
+                logger.Write(logType, exception, message );
 
                 var notificationApiCaller = new UserApiCaller();
                 var result = notificationApiCaller.ProcessUserLogins(userList);
