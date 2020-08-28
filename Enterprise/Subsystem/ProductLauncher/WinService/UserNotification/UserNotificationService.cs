@@ -202,13 +202,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
             try
             {
-                Log.Information($"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId, additionalInfo);
                 var logger = Log.Logger;
-                foreach (var key in logData?.Keys)
+                foreach (var key in additionalInfo?.Keys)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                    logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
                 }
-                logger.Write(logType, exception, message );
+                logger.Information($"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId);
 
                 var notificationApiCaller = new UserApiCaller();
                 var result = notificationApiCaller.ProcessUserLogins(userList);
@@ -225,6 +224,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                     additionalInfo);
 
                 Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
+                var logger = Log.Logger;
+                foreach (var key in additionalInfo?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                }
+                logger.Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToSendNotification - {ex.InnerException.Message}"
