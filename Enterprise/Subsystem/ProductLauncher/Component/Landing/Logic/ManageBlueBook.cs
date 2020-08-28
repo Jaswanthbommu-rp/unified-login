@@ -1146,6 +1146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
+            logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(logType, exception, message );
         }
 
