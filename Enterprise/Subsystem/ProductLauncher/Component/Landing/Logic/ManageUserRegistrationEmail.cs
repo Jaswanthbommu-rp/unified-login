@@ -175,7 +175,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         message = $"SendNewUserRegistrationEmail - email body generated - {userLoginOnly.RealPageId}";
                         
-                        Log.ForContext("AdditionalInfo", logData).Write(LogEventLevel.Information, message);
+                        var logger = Log.Logger;
+                        if (logData?.Keys != null)
+                        {
+                            foreach (var key in logData?.Keys)
+                            {
+                                logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                            }
+                        }
+
+                        logger.Write(LogEventLevel.Information, message );
                     }
 
                     DateTime utcStarted = DateTime.UtcNow;
