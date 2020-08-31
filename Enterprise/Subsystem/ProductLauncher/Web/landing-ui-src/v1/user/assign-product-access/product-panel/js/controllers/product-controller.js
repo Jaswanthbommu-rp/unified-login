@@ -227,7 +227,7 @@
                                     tabName = "properties";
                                 }
 
-                                if (tabName === "benchmarkingrole" || tabName === "areas") {
+                                if (tabName === "benchmarkingrole" || tabName === "areas" || tabName == 'accesstype') {
                                     tabName = "producttab6";
                                 }
 

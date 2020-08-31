@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,10 @@ using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	/// <summary>
-	/// Used to Get Company Custom Fields by calling RedBook API
-	/// </summary>
-	public class ManageRedBook : IDisposable, IManageRedBook
+    /// <summary>
+    /// Used to Get Company Custom Fields by calling RedBook API
+    /// </summary>
+    public class ManageRedBook : IDisposable, IManageRedBook
     {
         #region Constants and Variables
         const string MediaTypeName = "application/vnd.api+json";
@@ -28,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         const int MAXRETRYCOUNT = 5;
         private string _accessToken;
-       
+
         readonly HttpClient _httpClient;
         readonly IList<ProductInternalSetting> productInternalSettingList;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
@@ -155,15 +156,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            Log.Write(logType, new LogDetails
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
             {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                Exception = exception
-            });
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
+            }
+
+            logger.Write(logType, exception, message );
         }
     }
 }

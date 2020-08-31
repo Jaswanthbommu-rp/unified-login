@@ -11,7 +11,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
@@ -24,6 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #region Private variables
         IRepositoryResponse _repositoryResponse = new RepositoryResponse();
         IManagePersona _managePersona = new ManagePersona();
+        IProductInternalSettingRepository _productInternalSettingRepository = new ProductInternalSettingRepository();
         #endregion
 
         #region Constructor
@@ -142,6 +146,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
             persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
             return persona;
+        }
+
+        /// <summary>
+        /// Used to trigger the notification event that the user changed company
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AuthorizeScope("userinfoapi")]
+        [Route("persona/{personaId}/company")]
+        public HttpResponseMessage ChangeCompany(long personaId = 0)
+        {
+            // check for client token from UL
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            string unifiedLoginClientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
+
+            if (!_clientCode.Equals(unifiedLoginClientId, StringComparison.OrdinalIgnoreCase))
+            {
+                if (_userClaims.PersonaId != 0 && personaId == 0)
+                {
+                    personaId = _userClaims.PersonaId;
+                }
+            }
+            else
+            {
+                _userClaims.PersonaId = personaId;
+            }
+            Persona persona = _managePersona.GetPersona(_userClaims.PersonaId);
+
+            IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
+            if (personaList.Any(p => p.PersonaId == personaId))
+            {
+                var result = _managePersona.ChangeCompanyNotification(personaId);
+                return new HttpResponseMessage(result == Guid.Empty ? HttpStatusCode.BadRequest : HttpStatusCode.Accepted);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }
 
         /// <summary>
@@ -322,47 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, roleList);
 		}
         #endregion
-
-        /// <summary>
-        /// The company persona details
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public class PersonaCompany
-        {
-            /// <summary>
-            /// the company name
-            /// </summary>
-
-            public string CompanyName { get; set; }
-
-            /// <summary>
-            /// the company name
-            /// </summary>
-            public Guid CompanyRealPageId { get; set; }
-
-            /// <summary>
-            /// A list of personas for the company
-            /// </summary>
-            public List<PersonaCompanyDetails> Personas { get; set; }
-        }
-
-        /// <summary>
-        /// The details about the persona
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public class PersonaCompanyDetails
-        {
-            /// <summary>
-            /// The persona id
-            /// </summary>
-            public long PersonaId { get; set; }
-
-            /// <summary>
-            /// The persona name
-            /// </summary>
-
-            public string Name { get; set; }
-        }
+        
 
         #region Get Examples
         /// <summary>

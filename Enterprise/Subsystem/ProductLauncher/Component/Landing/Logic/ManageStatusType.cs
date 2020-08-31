@@ -1,9 +1,10 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				{ "Get StatusType", $"Category TypeName: {CategoryTypeName}, Category name: {CategoryTypeName}"}
 			};
-			WriteToLog(LogType.Diagnostic, "GetStatusType: Begin", correlationId, logData, null);
+			WriteToLog(LogEventLevel.Debug, "GetStatusType: Begin", correlationId, logData, null);
 
 			if (string.IsNullOrWhiteSpace(CategoryTypeName))
 			{
@@ -75,13 +76,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					{ "Get StatusType", "Exception" }
 				};
-				WriteToLog(LogType.Diagnostic, "GetStatusType: Exception", correlationId, logData, exception);
+				WriteToLog(LogEventLevel.Debug, "GetStatusType: Exception", correlationId, logData, exception);
 			}
 			logData = new Dictionary<string, object>
 			{
 				{ "Get StatusType", statusTypeList }
 			};
-			WriteToLog(LogType.Diagnostic, "GetStatusType: End", correlationId, logData, null);
+			WriteToLog(LogEventLevel.Debug, "GetStatusType: End", correlationId, logData, null);
 
             statusTypeList.ToList().Find(s => s.Name.Equals("Disabled", StringComparison.OrdinalIgnoreCase)).Name = "Deactivated";
 
@@ -98,17 +99,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="logData">logData</param>
 		/// <param name="exception">exception</param>
 		/// <param name="correlationId">correlationId</param>
-		private void WriteToLog(LogType logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
+		private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				CorrelationId = correlationId.ToString(),
-				Exception = exception
-			});
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                foreach (var key in logData?.Keys)
+                {
+                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                }
+            }
+
+            logger.Write(logType, exception, message );
 		}
+
 		#endregion
 	}
 }

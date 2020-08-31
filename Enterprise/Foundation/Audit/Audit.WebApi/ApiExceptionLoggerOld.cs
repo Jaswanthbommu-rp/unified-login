@@ -11,7 +11,7 @@ namespace RP.Enterprise.Foundation.Audit.WebApi.Component
     /// <summary>
     /// Implementation for a global exception *logger* that is injected to the API via the WebApiConfig.cs in App_Start
     /// </summary>
-    public class ApiExceptionLogger : ExceptionLogger
+    public class ApiExceptionLoggerOld : ExceptionLogger
     {
         public override void Log(ExceptionLoggerContext context)
         {

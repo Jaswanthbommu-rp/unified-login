@@ -3,7 +3,7 @@
 (function (angular, undefined) {
     "use strict";
 
-    function ProductTab6GridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, syncMgr, roleSvc, pgSvc) {
+    function ProductTab6GridCtrl($scope, $filter, gridModel, gridTransformSvc, gridPaginationModel, persona, pubsub, productDataModel, userDetailsModel, security, syncMgr, roleSvc, pgSvc, tabsModel) {
         var vm = this,
             tab6Grid = gridModel(),
             tab6GridTransform = gridTransformSvc(),
@@ -42,6 +42,16 @@
             vm.gridSelectionWatch = tab6Grid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
             vm.filterData = tab6Grid.subscribe("filterBy", vm.filter.bind(vm));
 
+            /*For Vendor Credential*/
+            var radioconfig = syncMgr.getProductPageLevelRadioConfig($scope.$parent.productId, "AccessType");
+            if (radioconfig !== undefined) {
+                vm.radioconfig = syncMgr.getProductPageLevelRadioConfig($scope.$parent.productId, "AccessType");
+            }
+            pubsub.subscribe("ppanel.assign-accessType", vm.accessTypeChange);
+        };
+
+        vm.isVendorCredentialProduct = function(){
+            return $scope.$parent.productId == 16;
         };
 
         vm.filter = function (filterBy) {
@@ -185,6 +195,63 @@
             }
         };
 
+        vm.resetVCDataModel = function (accessType, isEditUser) {
+            var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
+            syncMgr.setAccessTypeValue($scope.$parent.productId, accessType);
+            var removetab = (accessType == 'property' || accessType == 'allProperties') ? 'property group' : 'properties';
+            
+            var relevantTab = allTab.filter(function (data) {
+                if(!isEditUser && accessType != undefined){
+                    data.isActive = data.id == 'access type';
+                }
+                return data.id.toLowerCase() !== removetab;
+            });
+
+            vm.propertySelect = accessType;
+            vm.setProductTabs(relevantTab);
+
+            // if (vm.propertySelect == '' || vm.propertySelect === undefined) {
+            //     relevantTab = relevantTab.filter(function (data) {
+            //         return data.id.toLowerCase() !== 'properties';
+            //     });
+            // }
+
+            if (accessType === 'propertyGroup') {
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+            }
+            else if(accessType === 'property') {
+                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, false);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+            }
+            else if(accessType === 'allProperties') {
+                pubsub.publish("ppanel.access-type-change", accessType);
+                syncMgr.allPropertiesSync($scope.$parent.productId, false);
+                syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+            }
+        };
+
+        vm.setProductTabs = function (tabs) {
+            var activeTab = tabs.filter(function (data) {
+                return data.isActive;
+            });
+            
+            tabsModel.setTabs(tabs);
+            tabsModel.setTabMenuData(tabs);
+            tabsModel.activateTab(activeTab).initActiveTab();
+        };
+
+        vm.accessTypeChange = function (accessType) {
+            if (accessType === 'specificProperties') {
+                vm.propertySelect = 'property';
+            }
+            else {
+                vm.propertySelect = accessType;
+            }
+            //vm.rpRoleSelected = vm.propertySelect;
+            vm.resetVCDataModel(vm.propertySelect, true);
+        };
+
         vm.destroy = function () {
             logc("destroy called");
             vm.destWatch();
@@ -226,6 +293,7 @@
             "productDataSyncManager",
             "productRolesSvc",
             "productPropertyGroupSvc",
+            "productPanelTabsModel",
             ProductTab6GridCtrl
         ]);
 })(angular);
