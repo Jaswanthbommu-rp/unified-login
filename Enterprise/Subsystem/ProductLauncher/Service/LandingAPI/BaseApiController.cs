@@ -159,10 +159,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             {
                 foreach (var key in logData?.Keys)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
                 }
             }
-
+			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(LogEventLevel.Error, exception, message );
         }
 
@@ -178,7 +178,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             {
                 foreach (var key in logData?.Keys)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
                 }
             }
 
