@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			var userOrganizationExists = userLoginLogic.IsLoginNameExists(
 				userProductDetails.UserProfileDetails.LoginName,
 				userProductDetails.UserProfileDetails.OrganizationRealPageId,
-                Guid.Empty);
+                Guid.Empty, _userClaims.OrganizationPartyId);
 			if (userOrganizationExists.UserExists)
 			{
 				response.IsError = true;
@@ -123,7 +123,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			WriteToLog(LogType.Diagnostic, $"Received new user id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			//TODO: Test conditions for email - Idp, future date etc
-			//SendInvitationEmail();
+			if (userProductDetails.UserProfileDetails.SendInvitationEmail ?? false)
+			{
+				SendInvitationEmail(new Guid(userRelPageId));
+			}
 
 			WriteToLog(LogType.Diagnostic, $"Adding activity log for new user with RealPage id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
@@ -420,7 +423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// password for local
 			if (!userProductDetails.UserProfileDetails.IsExternalIdp)
 			{
-				if (userProductDetails.UserProfileDetails.Password == null || string.IsNullOrEmpty(userProductDetails.UserProfileDetails.Password.Trim()))
+				if (!(userProductDetails.UserProfileDetails.SendInvitationEmail ?? false) && (userProductDetails.UserProfileDetails.Password == null || string.IsNullOrEmpty(userProductDetails.UserProfileDetails.Password.Trim())))
 				{
 					return "Password is required.";
 				}
@@ -509,7 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 
 			// run password rules for organization
-			if (!userProductDetails.UserProfileDetails.IsExternalIdp)
+			if (!(userProductDetails.UserProfileDetails.SendInvitationEmail ?? false) && !userProductDetails.UserProfileDetails.IsExternalIdp)
 			{
 				var pwd = new ManageCredential(new DefaultUserClaim());
 				var validatePasswordResponse = pwd.ValidatePassword(new ValidatePassword
