@@ -49,10 +49,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 {
                     foreach (var keyname in logData?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{keyname}", logData[keyname], true);
+                        logger = logger.ForContext($"AdditionalInfo", logData[keyname], true);
                     }
                 }
-
+				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, ex, ex.Message);
 
                 cache.Remove(key);
@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 {
                     foreach (var keyname in logData?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{keyname}", logData[keyname], true);
+                        logger = logger.ForContext($"AdditionalInfo", logData[keyname], true);
                     }
                 }
 

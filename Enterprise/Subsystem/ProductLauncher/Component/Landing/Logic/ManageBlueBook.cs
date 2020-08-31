@@ -1142,12 +1142,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 foreach (var key in logData?.Keys)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
                 }
             }
 
             logger = logger.ForContext("ProductModule", this.GetType());
-            logger.Write(logType, exception, message );
+            logger.Write(logType, exception, message);
         }
 
         private bool GetBooleanProductSettings(string settingName)

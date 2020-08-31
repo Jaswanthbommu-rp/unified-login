@@ -1114,10 +1114,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var key in additionalInfo?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
                     }
                 }
-
+				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, "Activity Token is expired." );
 
                 return setPasswordResponse;
