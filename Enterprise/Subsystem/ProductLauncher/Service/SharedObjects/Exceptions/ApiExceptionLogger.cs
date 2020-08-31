@@ -56,10 +56,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Except
             {
                 foreach (var key in AdditionalInfo?.Keys)
                 {
-                    logger = logger.ForContext($"AdditionalInfo-{key}", AdditionalInfo[key], true);
+                    logger = logger.ForContext($"AdditionalInfo", AdditionalInfo[key], true);
                 }
             }
-
+			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(LogEventLevel.Error, context.Exception, context.Exception.Message);
             // CorrelationId used as a key to search exception in the database
             //context.Exception.Data.Add("CorrelationId", logDetails.CorrelationId);
