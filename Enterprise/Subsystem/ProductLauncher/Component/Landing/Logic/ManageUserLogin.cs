@@ -1234,7 +1234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
 
-            userOrganizationExists.OrgIsRealpageEmployee = (_organizationRepository.GetOrganization(realPageId: organizationRealPageId).Name.Replace(" ","") == UserRoleType.RealPageEmployee.ToString());
+            userOrganizationExists.OrgIsRealpageEmployee = (_organizationRepository.GetOrganization(realPageId: organizationRealPageId).Name.ToLower().Replace(" ","") == UserRoleType.RealPageEmployee.ToString().ToLower());
 
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
