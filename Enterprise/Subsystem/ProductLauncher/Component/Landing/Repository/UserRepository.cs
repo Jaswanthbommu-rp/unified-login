@@ -392,7 +392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     #endregion
 
-                    if ((newProfile.UserTypeId != (int)UserRoleType.ExternalUser) && (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.ExternalUser)))
+                    if ((newProfile.UserTypeId != (int)UserRoleType.ExternalUser) && (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.ExternalUser)) && newProfile.UserTypeId != (int)UserRoleType.RealPageEmployee && (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.RealPageEmployee)))
                     {
                         errorStatus.Success = false;
                         errorStatus.ErrorCode = "User.CreateUser.2";
@@ -1248,7 +1248,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
                     }
+                    if (!userPersonaOrganizationList.ToList().Any(x => ((x.PartyRoleTypeId.Equals((int)UserRoleType.RealPageEmployee)))) && newProfile.UserTypeId == (int)UserRoleType.RealPageEmployee) {
+                        foreach (var userPreviousOrg in userPersonaOrganizationList)
+                        {
+                            #region Update User Type if Realpage Employee
 
+                            processTracker = "Update User Type";
+                            //Get the Current User Type
+                            Guid realPageIdFrom = personRealPageId;
+                            Guid realPageIdTo = userPreviousOrg.OrganizationRealPageId;
+                            string roleTypeName = null;
+                            string relationshipTypeName = "User Type";
+
+                            dynamic paramRelType = new
+                            {
+                                realPageIdFrom,
+                                realPageIdTo,
+                                roleTypeName,
+                                relationshipTypeName
+                            };
+                            PartyRelationship relationshipType = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, paramRelType);
+
+                            int unlinkRoleTypeIdFrom = relationshipType.RoleTypeIdFrom;
+                            int linkRoleTypeIdFrom = (int)UserRoleType.ExternalUser;
+                            int roleTypeIdTo = relationshipType.RoleTypeIdTo;
+
+                            //Update the User Type  
+                            if (unlinkRoleTypeIdFrom != linkRoleTypeIdFrom && relationshipType.RoleTypeIdFrom != (int)UserRoleType.ExternalUser)
+                            {
+                                dynamic paramRole = new
+                                {
+                                    personRealPageId,
+                                    userPreviousOrg.OrganizationRealPageId,
+                                    unlinkRoleTypeIdFrom,
+                                    linkRoleTypeIdFrom,
+                                    roleTypeIdTo
+                                };
+
+                                RepositoryResponse RoleId = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePersonToOrganization, paramRole);
+                                if (RoleId.Id == 0)
+                                {
+                                    repository.UnitOfWork.Rollback();
+                                    errorStatus.Success = false;
+                                    errorStatus.ErrorCode = "User.CreateUser.29";
+                                    errorStatus.ErrorMsg = "Unable to set new user type.";
+                                    createUserResponse.Status = errorStatus;
+                                    createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                    return createUserResponse;
+                                }
+                            }
+
+                            #endregion
+                        }
+                    }
                     #region Create User custom fields
 
                     processTracker = "Create User custom fields";

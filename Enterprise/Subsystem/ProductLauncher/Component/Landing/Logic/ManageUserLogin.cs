@@ -1233,6 +1233,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
 
+            userOrganizationExists.OrgIsRealpageEmployee = (_organizationRepository.GetOrganization(realPageId: organizationRealPageId).Name.Replace(" ","") == UserRoleType.RealPageEmployee.ToString());
+
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
             userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int) UserRoleType.UserNoEmail));
@@ -1282,6 +1284,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
 
+                if (userOrganizationExists.OrgIsRealpageEmployee && !userOrganizationExists.UserExistsInThisOrganization)
+                {
+                    userOrganizationExists.Person = _personRepository.GetPerson(ulo.RealPageId);
+                }
                 // get the companies current roles and make sure External user type exists
                 ManageRoleType roleTypes = new ManageRoleType();
                 // use the organization id of the person creating the user

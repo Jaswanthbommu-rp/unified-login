@@ -46,6 +46,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public bool UserIsDisabledInPrimaryCompany { get; set; }
 
         /// <summary>
+        /// True is Organization with this RealPageId is Realpage Employee company
+        /// </summary>
+        [JsonProperty(PropertyName = "OrgIsRealpageEmployee")]
+        public bool OrgIsRealpageEmployee { get; set; }
+
+        /// <summary>
         /// The attributes about the person if it exists
         /// </summary>
         public IPerson Person { get; set; }
