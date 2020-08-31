@@ -1,4 +1,4 @@
-//  External User Modal
+//  Internal User Modal
 
 (function (angular, undefined) {
     "use strict";
