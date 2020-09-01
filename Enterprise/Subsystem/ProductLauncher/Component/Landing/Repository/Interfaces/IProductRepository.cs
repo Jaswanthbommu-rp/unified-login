@@ -200,10 +200,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="pageNumber"></param>
         /// <param name="roles"></param>
         /// <param name="rights"></param>
-        /// <param name="properties"></param>
+        /// <param name="propertyIds"></param>
         /// <returns>List of Users by product or company</returns>
         IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
-            IList<string> roles, IList<string> rights, Guid? propertyId);
+            IList<string> roles, IList<string> rights, List<string> propertyIds);
 
         /// <summary>
         /// Get Unified Login mapping PersonaId for Product UserId by company and product id
