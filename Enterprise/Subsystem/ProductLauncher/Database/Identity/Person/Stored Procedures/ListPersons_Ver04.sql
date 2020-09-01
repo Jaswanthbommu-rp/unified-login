@@ -205,7 +205,7 @@ BEGIN
 		SELECT  0 
 	END;
 
-	IF(@filterProductId = 37) -- 37 is productID for Property Photos
+	IF(@filterProductId = 37) -- 37 Property Photos product Id
 	BEGIN
 
 	SET @filterProductId = 9  -- Marketing Center product Id
@@ -226,7 +226,8 @@ BEGIN
 			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
 			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
 			INNER JOIN [security].PersonaRole sp on sp.PersonaId = p.PersonaId 
-			INNER JOIN [Security].RoleRight sr on sr.RoleId = sp.RoleId AND sr.RightId = 151 --- Access to Property Photos (requires Marketing Center access)
+			INNER JOIN [Security].RoleRight srr on srr.RoleId = sp.RoleId 
+			INNER JOIN [Security].[Right] sr on sr.RightId = srr.RightId AND sr.RightName = 'AccessPropertyPhotos' --- Access to Property Photos (requires Marketing Center access)
 		WHERE
 				ULP.OrganizationPartyId = @PartyId
 		AND		pec.ProductId = 9
@@ -245,8 +246,9 @@ BEGIN
 			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
 			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
 			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
-			INNER JOIN [Enterprise].[PersonaPrivilege] pp on pp.PersonaId = p.PersonaId  
-			INNER JOIN [Enterprise].[Right] r on r.roleid = pp.roleid and r.rightvaluetypeid = 151 --- Access to Property Photos (requires Marketing Center access)
+			INNER JOIN [Enterprise].[PersonaPrivilege] pp ON pp.PersonaId = p.PersonaId  
+			INNER JOIN [Enterprise].[Right] r ON r.roleid = pp.roleid 
+			INNER JOIN Enterprise.[RightValueType] rv ON RV.RightValueTypeId = rv.RightValueTypeId AND rv.ShortName = 'AccessPropertyPhotos' --- Access to Property Photos (requires Marketing Center access)
 		WHERE
 				ULP.OrganizationPartyId = @PartyId
 		AND		pec.ProductId = 9  
