@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
         }
         #endregion
 
-        [Fact]//(Skip = "Issues with route tests")
+        [Fact(Skip = "Issues with route tests")]
         public void GetUserProductsByPersonaId_ValidPersonaId_ReturnProductList()
         {
             //Arrange
