@@ -132,6 +132,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					{
 						//recreate clams
 						RecreateClaimsForClient(userProductDetailsDto.UserProfileDetails.AdminCreatorRealPageId ?? new Guid());
+						_managePersona = new ManagePersona(_userClaims);
+						_manageProduct = new ManageProduct(_userClaims);
 					}
 					else
 					{

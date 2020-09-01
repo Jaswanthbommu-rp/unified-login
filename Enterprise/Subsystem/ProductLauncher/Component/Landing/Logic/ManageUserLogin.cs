@@ -1214,9 +1214,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="loginName">User LoginName</param>
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
-        /// <param name="OrganizationPartyId">Company unique partyId</param>
         /// <returns>UserOrganizationExists object</returns>
-        public IUserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, long? OrganizationPartyId = null)
+        public IUserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId)
         {
             if (string.IsNullOrWhiteSpace(loginName))
             {
@@ -1286,7 +1285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get the companies current roles and make sure External user type exists
                 ManageRoleType roleTypes = new ManageRoleType();
                 // use the organization id of the person creating the user
-                IList<RoleType> userRoles = _roleTypeRepository.GetRoleType("User Role", _defaultUserClaim?.OrganizationPartyId ?? OrganizationPartyId);
+                IList<RoleType> userRoles = _roleTypeRepository.GetRoleType("User Role", _defaultUserClaim.OrganizationPartyId);
                 if (userRoles.All(c => c.PartyRoleTypeId != (int) UserRoleType.ExternalUser))
                 {
                     userOrganizationExists.UserExistsNotAvailable = true;

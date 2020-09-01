@@ -127,9 +127,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="loginName">User LoginName</param>
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
-        /// <param name="OrganizationPartyId">Company unique partyId</param>
         /// <returns>UserOrganizationExists object</returns>
-        IUserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, long? OrganizationPartyId = null);
+        IUserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId);
 
         /// <summary>
         /// Gets a list of organizations for the given login name
