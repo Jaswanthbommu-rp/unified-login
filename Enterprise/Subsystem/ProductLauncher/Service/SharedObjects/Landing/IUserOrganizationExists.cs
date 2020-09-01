@@ -39,6 +39,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         bool UserIsDisabledInPrimaryCompany { get; set; }
 
         /// <summary>
+        /// True is Organization with this RealPageId is Realpage Employee company
+        /// </summary>
+        bool OrgIsRealpageEmployee { get; set; }
+
+        /// <summary>
         /// The attributes about the person if it exists
         /// </summary>
         IPerson Person { get; set; }
