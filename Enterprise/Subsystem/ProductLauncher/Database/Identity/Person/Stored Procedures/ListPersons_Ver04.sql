@@ -11,6 +11,7 @@
 AS
 BEGIN
 	DECLARE @PartyId bigint,
+		@schemavalue varchar(30),
 		@NOW datetime= GETUTCDATE(),
 		@sortOrder nvarchar(128),
 		@sortDirection nvarchar(4),
@@ -61,6 +62,12 @@ BEGIN
 	BEGIN
 		SET @FilterBy = NULL
 	END
+	
+	SELECT	@schemavalue = Value
+	FROM Enterprise.ProductSetting PS
+		INNER Join Enterprise.ProductSettingType PST ON PST.ProductSettingTypeId = PS.ProductSettingTypeId
+	WHERE PST.Name = 'RolesRightsSchemaName'
+	AND ps.ProductId = 3
 
 	SELECT	@ProductSettingTypeId = ProductSettingTypeId
 	FROM		Enterprise.ProductSettingType
@@ -198,7 +205,61 @@ BEGIN
 		SELECT  0 
 	END;
 
-	INSERT INTO #PersonaProduct (
+	IF(@filterProductId = 37) -- 37 is productID for Property Photos
+	BEGIN
+
+	SET @filterProductId = 9  -- Marketing Center product Id
+	
+	IF(@schemavalue = 'Security')
+		BEGIN
+		INSERT INTO #PersonaProduct (
+		PersonaId,
+		ProductId
+	)
+	
+	SELECT	p.PersonaID,
+			pec.ProductId
+		FROM	
+			Person.Persona p
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
+			INNER JOIN [security].PersonaRole sp on sp.PersonaId = p.PersonaId 
+			INNER JOIN [Security].RoleRight sr on sr.RoleId = sp.RoleId AND sr.RightId = 151 --- Access to Property Photos (requires Marketing Center access)
+		WHERE
+				ULP.OrganizationPartyId = @PartyId
+		AND		pec.ProductId = 9
+		AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+		END
+		ELSE
+		BEGIN
+			SELECT	p.PersonaID,
+			pec.ProductId
+		FROM	
+			Person.Persona p
+			INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId
+			INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
+			INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
+			INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8' AND ps.ProductSettingTypeId = @ProductSettingTypeId
+			INNER JOIN [Enterprise].[PersonaPrivilege] pp on pp.PersonaId = p.PersonaId  
+			INNER JOIN [Enterprise].[Right] r on r.roleid = pp.roleid and r.rightvaluetypeid = 151 --- Access to Property Photos (requires Marketing Center access)
+		WHERE
+				ULP.OrganizationPartyId = @PartyId
+		AND		pec.ProductId = 9  
+		AND		((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))
+        AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
+        AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
+        AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+		END
+
+	END
+	ELSE
+	BEGIN
+		INSERT INTO #PersonaProduct (
 		PersonaId,
 		ProductId
 	)
@@ -217,6 +278,8 @@ BEGIN
         AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))
         AND     ((@NOW >= prc.FromDate AND prc.ThruDate IS NULL) OR (@NOW BETWEEN prc.FromDate AND prc.ThruDate))
         AND     ((@NOW >= ps.FromDate AND ps.ThruDate IS NULL) OR (@NOW BETWEEN ps.FromDate AND ps.ThruDate))
+
+	END
 	
 	CREATE INDEX [IX_Temp_PersonaProduct] ON #PersonaProduct([PersonaID]) ON [PRIMARY]
 	
