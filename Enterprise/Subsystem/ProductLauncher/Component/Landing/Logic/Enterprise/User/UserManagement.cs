@@ -66,7 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 
 			// Check if user exists
-			IManageUserLogin userLoginLogic = new ManageUserLogin();
+			IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
 			var userOrganizationExists = userLoginLogic.IsLoginNameExists(
 				userProductDetails.UserProfileDetails.LoginName,
 				userProductDetails.UserProfileDetails.OrganizationRealPageId,
@@ -118,18 +118,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			userProductDetails.UserProfileDetails.FirstName = userProductDetails.UserProfileDetails.FirstName.TrimWhiteSpace();
 			userProductDetails.UserProfileDetails.MiddleName = userProductDetails.UserProfileDetails.MiddleName != null ? userProductDetails.UserProfileDetails.MiddleName.TrimWhiteSpace() : "";
 			userProductDetails.UserProfileDetails.LastName = userProductDetails.UserProfileDetails.LastName.TrimWhiteSpace();
-			var userRelPageId = entUserRepository.CreateEnterpriseUser(userProductDetails);
+			var userRealPageId = entUserRepository.CreateEnterpriseUser(userProductDetails);
 
-			WriteToLog(LogType.Diagnostic, $"Received new user id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogType.Diagnostic, $"Received new user id {userRealPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			//TODO: Test conditions for email - Idp, future date etc
-			//SendInvitationEmail();
+			if (userProductDetails.UserProfileDetails.SendInvitationEmail ?? false)
+			{
+				SendInvitationEmail(new Guid(userRealPageId));
+			}
 
-			WriteToLog(LogType.Diagnostic, $"Adding activity log for new user with RealPage id {userRelPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
+			WriteToLog(LogType.Diagnostic, $"Adding activity log for new user with RealPage id {userRealPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			// Get User Details from persona id
 			var userRepository = new UserRepository(_userClaims);
-			var newUserDetails = userRepository.GetUserDetails(userRealPageId: userRelPageId);
+			var newUserDetails = userRepository.GetUserDetails(userRealPageId: userRealPageId);
 			IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
 			IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: newUserDetails.UserId, organizationPartyId: userProductDetails.UserProfileDetails.OrganizationPartyId);
 			
@@ -149,7 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
 			LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, "New User {0} {1} successfully created by user {2} {3} using enterprise API.", "CreateUser", newUserDetails);
 
-			response.Data = userRelPageId;
+			response.Data = userRealPageId;
 
 			return response;
 		}
@@ -420,7 +423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// password for local
 			if (!userProductDetails.UserProfileDetails.IsExternalIdp)
 			{
-				if (userProductDetails.UserProfileDetails.Password == null || string.IsNullOrEmpty(userProductDetails.UserProfileDetails.Password.Trim()))
+				if (!(userProductDetails.UserProfileDetails.SendInvitationEmail ?? false) && (userProductDetails.UserProfileDetails.Password == null || string.IsNullOrEmpty(userProductDetails.UserProfileDetails.Password.Trim())))
 				{
 					return "Password is required.";
 				}
@@ -509,7 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 
 			// run password rules for organization
-			if (!userProductDetails.UserProfileDetails.IsExternalIdp)
+			if (!(userProductDetails.UserProfileDetails.SendInvitationEmail ?? false) && !userProductDetails.UserProfileDetails.IsExternalIdp)
 			{
 				var pwd = new ManageCredential(new DefaultUserClaim());
 				var validatePasswordResponse = pwd.ValidatePassword(new ValidatePassword

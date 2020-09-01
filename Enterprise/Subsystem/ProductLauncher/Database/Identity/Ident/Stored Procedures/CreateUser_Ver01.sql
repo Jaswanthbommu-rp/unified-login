@@ -68,7 +68,7 @@ BEGIN
 		WHERE LoginName = @LoginName
 	)
 	BEGIN
-		IF(@UserType = 'RealPage System Administrator')
+		IF(@UserType = 'RealPage System Administrator') -- TODO:should be SuperUser
 		BEGIN
 			SELECT	@PersonaTypeId = PersonaTypeId
 			FROM		Person.PersonaType
@@ -153,7 +153,7 @@ BEGIN
 				@ContactMechanismID = @OrganizationIDPCMId;
 		END;
 
-		IF(@UserType IN('Regular User (No Email)', 'Regular User') AND @ThirdPartyIDP = '0')
+		IF(@UserType IN('User (No Email)', 'User') AND @ThirdPartyIDP = '0')
 		BEGIN
 			UPDATE	Ident.UserLogin
 			SET			PasswordHash = @Pwdhash,
