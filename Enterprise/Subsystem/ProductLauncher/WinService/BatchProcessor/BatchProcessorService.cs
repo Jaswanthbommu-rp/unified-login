@@ -262,10 +262,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 {
                     foreach (var key in additionalInfo?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
                     }
                 }
-
+				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.");
 
                 var input = new BatchProcessorInput
@@ -295,7 +295,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 {
                     foreach (var key in additionalInfo?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
                     }
                 }
 
