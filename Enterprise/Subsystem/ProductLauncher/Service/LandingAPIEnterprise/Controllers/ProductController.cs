@@ -227,10 +227,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     foreach (var key in logData?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{key}", logData[key], true);
+                        logger = logger.ForContext($"AdditionalInfo", logData[key], true);
                     }
                 }
-
+				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(logType, exception, message );
             }
             catch

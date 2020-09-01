@@ -207,9 +207,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                 {
                     foreach (var key in additionalInfo?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
                     }
                 }
+				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Information($"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId);
 
                 var notificationApiCaller = new UserApiCaller();
@@ -226,15 +227,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                     $"CallApiToSendNotification - Exception while calling API for product hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId,
                     additionalInfo);
 
-                Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
+                //Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
                 var logger = Log.Logger;
                 if(additionalInfo?.Keys != null)
                 {
                     foreach (var key in additionalInfo?.Keys)
                     {
-                        logger = logger.ForContext($"AdditionalInfo-{key}", additionalInfo[key], true);
+                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
                     }
                 }
+				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
