@@ -3188,6 +3188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 results.Add(new ACProperty
                 {
+					Id = loc.EntityID1,
                     PropertyId = loc.EntityID1,
                     PropertyName = loc.EntityName,
                     CompanyId = loc.CompanyID,
