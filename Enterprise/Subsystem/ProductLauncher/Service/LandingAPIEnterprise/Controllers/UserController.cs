@@ -1610,19 +1610,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
         }
 
-        /// <summary>
-        /// User Product Detail Document Login Example
-        /// </summary>
-        [ExcludeFromCodeCoverage]
-        public class UserProductDetailLoginExample
-        { 
-            public int ProductId { get; set; }
-
-            public string ProductCode { get; set; }
-
-            public IList<Dictionary<string, string>> Details { get; set; }
-        }
-
         #region GetExamples
 
         /// <summary>
@@ -2025,16 +2012,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 detailsProduct2.Add(detail5);
                 detailsProduct2.Add(detail6);
 
-                List<UserProductDetailLoginExample> response = new List<UserProductDetailLoginExample>
+                List<UserProductDetailLogin> response = new List<UserProductDetailLogin>
                 {
-                    new UserProductDetailLoginExample
+                    new UserProductDetailLogin
                     {
                         ProductCode = "ACCT",
                         ProductId = 8,
                         Details = detailsProduct1
                     },
 
-                    new UserProductDetailLoginExample
+                    new UserProductDetailLogin
                     {
                         ProductCode = "OMS",
                         ProductId = 14,
