@@ -258,10 +258,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                 //Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
                 var logger = Log.Logger;
-				if (logData?.Keys != null)
-				{
-					logger = logger.ForContext($"AdditionalInfo", logData, true);
-				}
+				logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.");
 
@@ -288,10 +285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 // Log the exception. 
                 //Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
                 var logger = Log.Logger;
-				if (logData?.Keys != null)
-				{
-					logger = logger.ForContext($"AdditionalInfo", logData, true);
-				}
+				logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.");
                 // update a batch records with error status
