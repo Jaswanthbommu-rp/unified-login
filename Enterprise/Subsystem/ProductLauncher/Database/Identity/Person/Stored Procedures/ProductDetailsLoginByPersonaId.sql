@@ -1,4 +1,4 @@
-CREATE PROCEDURE Person.ProductDetailsLoginByPersonaId(@PersonaId BIGINT) AS
+CREATE PROCEDURE [Person].[ListUsersProductDetailsLoginByPersonaId](@PersonaId BIGINT) AS
 BEGIN
 	;WITH UserAttributes
 	(
