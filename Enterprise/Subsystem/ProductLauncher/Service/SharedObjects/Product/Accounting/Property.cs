@@ -18,6 +18,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string CompanyName { get; set; }
 
         /// <summary>
+        /// Id
+        /// </summary>
+        public string Id { get; set; }
+        /// <summary>
         /// Property Id
         /// </summary>
         public string PropertyId { get; set; }
