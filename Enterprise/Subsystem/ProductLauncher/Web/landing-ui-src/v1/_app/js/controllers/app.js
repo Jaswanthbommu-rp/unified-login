@@ -115,7 +115,7 @@
 
             omnibar.addEventListener('omnibarChangeCompany', function(e) {
                 $window.location.href = rootPath + "home/access/" + sessionModel.getRealPageId() + "/" + e.detail;
-            })
+            });
 
             if (token && username) {
                 $window.location.href = "new-user/#/validate-token/" + token + "/" + username;
