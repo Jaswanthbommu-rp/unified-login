@@ -203,13 +203,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             try
             {
                 var logger = Log.Logger;
-                if(additionalInfo?.Keys != null)
-                {
-                    foreach (var key in additionalInfo?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
-                    }
-                }
+				if (additionalInfo?.Keys != null)
+				{
+					logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
+				}
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Information($"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId);
 
@@ -229,13 +226,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
                 //Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
                 var logger = Log.Logger;
-                if(additionalInfo?.Keys != null)
-                {
-                    foreach (var key in additionalInfo?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
-                    }
-                }
+				if (additionalInfo?.Keys != null)
+				{
+					logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
+				}
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
 

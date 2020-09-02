@@ -157,10 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
+                logger = logger.ForContext($"AdditionalInfo", logData, true);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(LogEventLevel.Error, exception, message );
@@ -176,12 +173,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
+                logger = logger.ForContext($"AdditionalInfo", logData, true);
             }
-
+			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(LogEventLevel.Debug, message );
         }
     }

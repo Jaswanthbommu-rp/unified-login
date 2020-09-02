@@ -45,13 +45,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 };
 
                 var logger = Log.Logger;
-                if (logData?.Keys != null)
-                {
-                    foreach (var keyname in logData?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", logData[keyname], true);
-                    }
-                }
+				if (logData?.Keys != null)
+				{
+					logger = logger.ForContext($"AdditionalInfo", logData, true);
+				}
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, ex, ex.Message);
 
@@ -84,14 +81,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 };
 
                 var logger = Log.Logger;
-                if (logData?.Keys != null)
-                {
-                    foreach (var keyname in logData?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", logData[keyname], true);
-                    }
-                }
-
+				if (logData?.Keys != null)
+				{
+					logger = logger.ForContext($"AdditionalInfo", logData, true);
+				}
+				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, ex, ex.Message);
                 cache.Remove(key);
                 return null;
