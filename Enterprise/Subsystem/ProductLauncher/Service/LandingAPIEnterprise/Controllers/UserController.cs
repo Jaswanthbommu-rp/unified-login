@@ -128,9 +128,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 if (userProductDetailsDto == null)
                 {
-                    var errorResponse = new ErrorResponse {Errors = new List<Error>()};
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                     errorResponse.Errors.Add(new Error
-                        {Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = ""});
+                    { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
 
                     // return errors with bad request
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -155,484 +155,484 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                 // loginName & email check
                 if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.LoginName))
-				{
-					if (userProductDetailsDto.UserProfileDetails.UserType == UserTypeDto.Regular)
-					{
-						// Check email & loginName are same for regular user
-						if (string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Email))
-						{
-							errorList.Add(new ValidationResult("Email is required for Regular user type."));
-						}
-						else if (!userProductDetailsDto.UserProfileDetails.Email.Equals(userProductDetailsDto.UserProfileDetails.LoginName, StringComparison.OrdinalIgnoreCase))
-						{
-							errorList.Add(new ValidationResult("Email and loginName should be same for Regular user type."));
-						}
-					}
-				}
+                {
+                    if (userProductDetailsDto.UserProfileDetails.UserType == UserTypeDto.Regular)
+                    {
+                        // Check email & loginName are same for regular user
+                        if (string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Email))
+                        {
+                            errorList.Add(new ValidationResult("Email is required for Regular user type."));
+                        }
+                        else if (!userProductDetailsDto.UserProfileDetails.Email.Equals(userProductDetailsDto.UserProfileDetails.LoginName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            errorList.Add(new ValidationResult("Email and loginName should be same for Regular user type."));
+                        }
+                    }
+                }
 
-				// send validation error back
-				if (errorList.Any())
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                // send validation error back
+                if (errorList.Any())
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
 
-					// iterate through all errors
-					foreach (var item in errorList)
-					{
-						errorResponse.Errors.Add(new Error
-						{ Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
-					}
+                    // iterate through all errors
+                    foreach (var item in errorList)
+                    {
+                        errorResponse.Errors.Add(new Error
+                        { Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
+                    }
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				// map dto to business object
-				var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
+                // map dto to business object
+                var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
 
-				// date validations
-				if (userProductDetails.UserProfileDetails.UserEffectiveDate.HasValue &&
-					userProductDetails.UserProfileDetails.UserExpirationDate.HasValue)
-				{
-					if (userProductDetails.UserProfileDetails.UserExpirationDate.Value <
-						userProductDetails.UserProfileDetails.UserEffectiveDate.Value)
-					{
-						var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-						errorResponse.Errors.Add(new Error
-						{ Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
+                // date validations
+                if (userProductDetails.UserProfileDetails.UserEffectiveDate.HasValue &&
+                    userProductDetails.UserProfileDetails.UserExpirationDate.HasValue)
+                {
+                    if (userProductDetails.UserProfileDetails.UserExpirationDate.Value <
+                        userProductDetails.UserProfileDetails.UserEffectiveDate.Value)
+                    {
+                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                        errorResponse.Errors.Add(new Error
+                        { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
 
-						// return errors with bad request
-						return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-					}
-				}
+                        // return errors with bad request
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    }
+                }
 
-				// assign default dates if not supplied
-				userProductDetails.UserProfileDetails.UserEffectiveDate =
-					userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
-				userProductDetails.UserProfileDetails.UserExpirationDate =
-					userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? Convert.ToDateTime("12/31/9999");
+                // assign default dates if not supplied
+                userProductDetails.UserProfileDetails.UserEffectiveDate =
+                    userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
+                userProductDetails.UserProfileDetails.UserExpirationDate =
+                    userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? Convert.ToDateTime("12/31/9999");
 
-				// Call Logic
-				var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-				var response = userManagement.CreateEnterpriseUnityUser(userProductDetails);
+                // Call Logic
+                var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                var response = userManagement.CreateEnterpriseUnityUser(userProductDetails);
 
-				// check response has error
-				if (response.IsError)
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-					errorResponse.Errors.Add(new Error
-					{ Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
+                // check response has error
+                if (response.IsError)
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				var objectResponse = new ObjectResponse { Data = response.Data };
+                var objectResponse = new ObjectResponse { Data = response.Data };
 
-				// everything good send newly created user real page id
-				return Request.CreateResponse(HttpStatusCode.Created, objectResponse);
-			}
-			catch (Exception ex)
-			{
-				var corrId = Guid.NewGuid();
-				if (_userClaims.CorrelationId == Guid.Empty)
-				{
-					_userClaims.CorrelationId = corrId;
-				}
+                // everything good send newly created user real page id
+                return Request.CreateResponse(HttpStatusCode.Created, objectResponse);
+            }
+            catch (Exception ex)
+            {
+                var corrId = Guid.NewGuid();
+                if (_userClaims.CorrelationId == Guid.Empty)
+                {
+                    _userClaims.CorrelationId = corrId;
+                }
 
-				// elastic logging
-				WriteToLog(LogEventLevel.Error,
-					"Error while creating new user." +
-					$" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
-					$"new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
+                // elastic logging
+                WriteToLog(LogEventLevel.Error,
+                    "Error while creating new user." +
+                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
+                    $"new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
 
-				// return 500
-				return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
-			}
-		}
+                // return 500
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
+            }
+        }
 
-		/// <summary>
-		/// Update the user in RealPage Unified platform and if product(s) are provided .
-		/// </summary>
-		/// <returns>If success then returns updated user else error object.</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description =
-			"Bad request when Request object have invalid entries.")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
-		[SwaggerResponse(HttpStatusCode.OK,
-			Description = "Update the user in RealPage Unified platform and of product(s) are provided.",
-			Type = typeof(UserProductDetailsDto))]
-		[Route("user")]
-		[HttpPut]
-		public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto)
-		{
-			try
-			{
-				if (userProductDetailsDto == null)
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-					errorResponse.Errors.Add(new Error
-					{ Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
+        /// <summary>
+        /// Update the user in RealPage Unified platform and if product(s) are provided .
+        /// </summary>
+        /// <returns>If success then returns updated user else error object.</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description =
+            "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
+        [SwaggerResponse(HttpStatusCode.OK,
+            Description = "Update the user in RealPage Unified platform and of product(s) are provided.",
+            Type = typeof(UserProductDetailsDto))]
+        [Route("user")]
+        [HttpPut]
+        public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto)
+        {
+            try
+            {
+                if (userProductDetailsDto == null)
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				// validate realpage guid supplied
-				if (userProductDetailsDto.UserProfileDetails.UnityRealPageUserId == Guid.Empty)
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-					errorResponse.Errors.Add(new Error
-					{ Title = "Error", Source = "/user", Detail = "UnityRealPageUserId not supplied.", StatusCode = "" });
+                // validate realpage guid supplied
+                if (userProductDetailsDto.UserProfileDetails.UnityRealPageUserId == Guid.Empty)
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = "UnityRealPageUserId not supplied.", StatusCode = "" });
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				// request object validation
-				var errorList = DtoValidator.ValidateObject(userProductDetailsDto.UserProfileDetails).ToList();
+                // request object validation
+                var errorList = DtoValidator.ValidateObject(userProductDetailsDto.UserProfileDetails).ToList();
 
-				// check product-code for each product
-				if (userProductDetailsDto.ProductList != null)
-				{
-					foreach (var productDetailDto in userProductDetailsDto.ProductList)
-					{
-						errorList.AddRange(DtoValidator.ValidateObject(productDetailDto).ToList());
-					}
-				}
+                // check product-code for each product
+                if (userProductDetailsDto.ProductList != null)
+                {
+                    foreach (var productDetailDto in userProductDetailsDto.ProductList)
+                    {
+                        errorList.AddRange(DtoValidator.ValidateObject(productDetailDto).ToList());
+                    }
+                }
 
-				// loginName & email check
-				if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.LoginName))
-				{
-					if (userProductDetailsDto.UserProfileDetails.UserType == UserTypeDto.Regular)
-					{
-						// Check email & loginName are same for regular user
-						if (string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Email))
-						{
-							errorList.Add(new ValidationResult("Email is required for Regular user type."));
-						}
-						else if (!userProductDetailsDto.UserProfileDetails.Email.Equals(userProductDetailsDto.UserProfileDetails.LoginName, StringComparison.OrdinalIgnoreCase))
-						{
-							errorList.Add(new ValidationResult("Email and loginName should be same for Regular user type."));
-						}
-					}
-				}
+                // loginName & email check
+                if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.LoginName))
+                {
+                    if (userProductDetailsDto.UserProfileDetails.UserType == UserTypeDto.Regular)
+                    {
+                        // Check email & loginName are same for regular user
+                        if (string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Email))
+                        {
+                            errorList.Add(new ValidationResult("Email is required for Regular user type."));
+                        }
+                        else if (!userProductDetailsDto.UserProfileDetails.Email.Equals(userProductDetailsDto.UserProfileDetails.LoginName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            errorList.Add(new ValidationResult("Email and loginName should be same for Regular user type."));
+                        }
+                    }
+                }
 
-				// send validation error back
-				if (errorList.Any())
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                // send validation error back
+                if (errorList.Any())
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
 
-					// iterate through all errors
-					foreach (var item in errorList)
-					{
-						errorResponse.Errors.Add(new Error
-						{ Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
-					}
+                    // iterate through all errors
+                    foreach (var item in errorList)
+                    {
+                        errorResponse.Errors.Add(new Error
+                        { Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
+                    }
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				// date validations
-				if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue &&
-					userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
-				{
-					if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value <
-						userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
-					{
-						var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-						errorResponse.Errors.Add(new Error
-						{ Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
+                // date validations
+                if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue &&
+                    userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
+                {
+                    if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value <
+                        userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
+                    {
+                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                        errorResponse.Errors.Add(new Error
+                        { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
 
-						// return errors with bad request
-						return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-					}
-				}
+                        // return errors with bad request
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    }
+                }
 
-				// map dto to business object
-				var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
+                // map dto to business object
+                var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
 
-				// Call Logic
-				var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-				var response = userManagement.UpdateEnterpriseUnityUser(userProductDetails);
+                // Call Logic
+                var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                var response = userManagement.UpdateEnterpriseUnityUser(userProductDetails);
 
-				// check response has error
-				if (!string.IsNullOrEmpty(response.ErrorReason))
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-					errorResponse.Errors.Add(new Error
-					{ Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
+                // check response has error
+                if (!string.IsNullOrEmpty(response.ErrorReason))
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				var objectResponse = new ObjectResponse { Data = response.Data };
+                var objectResponse = new ObjectResponse { Data = response.Data };
 
-				// everything good send newly created user real page id
-				return Request.CreateResponse(HttpStatusCode.OK, objectResponse);
-			}
-			catch (Exception ex)
-			{
-				var corrId = Guid.NewGuid();
-				if (_userClaims.CorrelationId == Guid.Empty)
-				{
-					_userClaims.CorrelationId = corrId;
-				}
+                // everything good send newly created user real page id
+                return Request.CreateResponse(HttpStatusCode.OK, objectResponse);
+            }
+            catch (Exception ex)
+            {
+                var corrId = Guid.NewGuid();
+                if (_userClaims.CorrelationId == Guid.Empty)
+                {
+                    _userClaims.CorrelationId = corrId;
+                }
 
-				// elastic logging
-				WriteToLog(LogEventLevel.Error,
-					"Error while updating user." +
-					$" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
-					$"update user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
+                // elastic logging
+                WriteToLog(LogEventLevel.Error,
+                    "Error while updating user." +
+                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
+                    $"update user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
 
-				// return 500
-				return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
-			}
-		}
+                // return 500
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
+            }
+        }
 
-		/// <summary>
-		/// Activate or deactivate a user.
-		/// </summary>
-		/// <param name="unityRealPageUserId">User unique identifier</param>
-		/// <param name="userStatusToChange">User status to change - Activate or Deactivate.</param>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Activate or deactivate user status.")]
-		[Route("user/status/{unityRealPageUserId}")]
-		[HttpPost]
-		public HttpResponseMessage CreateUpdateUserStatus(Guid unityRealPageUserId, EntApiUserStatus userStatusToChange)
-		{
-			try
-			{
-				UserUiStatusType statusTypeName;
+        /// <summary>
+        /// Activate or deactivate a user.
+        /// </summary>
+        /// <param name="unityRealPageUserId">User unique identifier</param>
+        /// <param name="userStatusToChange">User status to change - Activate or Deactivate.</param>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Activate or deactivate user status.")]
+        [Route("user/status/{unityRealPageUserId}")]
+        [HttpPost]
+        public HttpResponseMessage CreateUpdateUserStatus(Guid unityRealPageUserId, EntApiUserStatus userStatusToChange)
+        {
+            try
+            {
+                UserUiStatusType statusTypeName;
 
-				switch (userStatusToChange)
-				{
-					case EntApiUserStatus.Activate:
-						statusTypeName = UserUiStatusType.Active;
-						break;
-					case EntApiUserStatus.Deactivate:
-						statusTypeName = UserUiStatusType.Disabled;
-						break;
-					default:
-						{
-							var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-							errorResponse.Errors.Add(new Error
-							{ Title = "Error", Source = "/user", Detail = "Invalid parameter: Incorrect userStatusToChange supplied.", StatusCode = "" });
+                switch (userStatusToChange)
+                {
+                    case EntApiUserStatus.Activate:
+                        statusTypeName = UserUiStatusType.Active;
+                        break;
+                    case EntApiUserStatus.Deactivate:
+                        statusTypeName = UserUiStatusType.Disabled;
+                        break;
+                    default:
+                        {
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error
+                            { Title = "Error", Source = "/user", Detail = "Invalid parameter: Incorrect userStatusToChange supplied.", StatusCode = "" });
 
-							// return errors with bad request
-							return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-						}
-				}
+                            // return errors with bad request
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        }
+                }
 
-				if (unityRealPageUserId == _realpageUserId)
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-					errorResponse.Errors.Add(new Error
-					{ Title = "Error", Source = "/user", Detail = "Invalid parameter: Cannot update API logged-in user's status.", StatusCode = "" });
+                if (unityRealPageUserId == _realpageUserId)
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = "Invalid parameter: Cannot update API logged-in user's status.", StatusCode = "" });
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				if (unityRealPageUserId == Guid.Empty)
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-					errorResponse.Errors.Add(new Error
-					{ Title = "Error", Source = "/user", Detail = "Invalid parameter: unityRealPageUserId.", StatusCode = "" });
+                if (unityRealPageUserId == Guid.Empty)
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = "Invalid parameter: unityRealPageUserId.", StatusCode = "" });
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				// Call Logic
-				var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-				var response = userManagement.ActivateDeactivateUser(unityRealPageUserId, statusTypeName);
+                // Call Logic
+                var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                var response = userManagement.ActivateDeactivateUser(unityRealPageUserId, statusTypeName);
 
-				// check response has error
-				if (!string.IsNullOrEmpty(response.ErrorReason))
-				{
-					var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-					errorResponse.Errors.Add(new Error
-					{ Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
+                // check response has error
+                if (!string.IsNullOrEmpty(response.ErrorReason))
+                {
+                    var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = response.ErrorReason, StatusCode = "" });
 
-					// return errors with bad request
-					return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-				}
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
 
-				var objectResponse = new ObjectResponse { Data = response.Data };
+                var objectResponse = new ObjectResponse { Data = response.Data };
 
-				// everything good send newly created user real page id
-				return Request.CreateResponse(HttpStatusCode.OK, objectResponse);
-			}
-			catch (Exception ex)
-			{
-				var corrId = Guid.NewGuid();
-				if (_userClaims.CorrelationId == Guid.Empty)
-				{
-					_userClaims.CorrelationId = corrId;
-				}
+                // everything good send newly created user real page id
+                return Request.CreateResponse(HttpStatusCode.OK, objectResponse);
+            }
+            catch (Exception ex)
+            {
+                var corrId = Guid.NewGuid();
+                if (_userClaims.CorrelationId == Guid.Empty)
+                {
+                    _userClaims.CorrelationId = corrId;
+                }
 
-				// elastic logging
-				WriteToLog(LogEventLevel.Error,
-					"Error while changing user status." +
-					$" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
-					$"update user RealPage id {unityRealPageUserId}", exception: ex);
+                // elastic logging
+                WriteToLog(LogEventLevel.Error,
+                    "Error while changing user status." +
+                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
+                    $"update user RealPage id {unityRealPageUserId}", exception: ex);
 
-				// return 500
-				return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
-			}
-		}
+                // return 500
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
+            }
+        }
 
-		/// <summary>
-		/// Get a list of users
-		/// </summary>
-		/// <param name="unityRealPageUserId">Optional User EnterpriseId</param>
-		/// <param name="name">Optional filter by FirstName, LastName, or UserName</param>
-		/// <param name="rowsPerPage">Optional Rows Per page to return</param>
-		/// <param name="pageNumber">Optional PageNumber</param>
-		/// <returns>A list of User(s)</returns>
-		/// <remarks>User Status: 
-		/// <para>Active, </para>
-		/// <para>Disabled, </para>
-		/// <para>Expired, </para>
-		/// <para>and Pending.</para>
-		/// </remarks>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s)", Type = typeof(UsersDataDto))]
-		[SwaggerResponseExamples(typeof(UsersDataDto), typeof(EnterpriseGetUserExample))]
-		[Route("user")]
-		[Component.Landing.Attributes.AuthorizeScope("enterpriseapi")]
-		[HttpGet]
-		public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1)
-		{
-			IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>();
-			List<string> unityRoles = new List<string>();
+        /// <summary>
+        /// Get a list of users
+        /// </summary>
+        /// <param name="unityRealPageUserId">Optional User EnterpriseId</param>
+        /// <param name="name">Optional filter by FirstName, LastName, or UserName</param>
+        /// <param name="rowsPerPage">Optional Rows Per page to return</param>
+        /// <param name="pageNumber">Optional PageNumber</param>
+        /// <returns>A list of User(s)</returns>
+        /// <remarks>User Status: 
+        /// <para>Active, </para>
+        /// <para>Disabled, </para>
+        /// <para>Expired, </para>
+        /// <para>and Pending.</para>
+        /// </remarks>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s)", Type = typeof(UsersDataDto))]
+        [SwaggerResponseExamples(typeof(UsersDataDto), typeof(EnterpriseGetUserExample))]
+        [Route("user")]
+        [Component.Landing.Attributes.AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUser(Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1)
+        {
+            IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>();
+            List<string> unityRoles = new List<string>();
 
-			PagedResponse response = new PagedResponse() { Meta = new Meta() };
-			ErrorResponse error = new ErrorResponse()
-			{
-				Errors = new List<Error>()
-			};
+            PagedResponse response = new PagedResponse() { Meta = new Meta() };
+            ErrorResponse error = new ErrorResponse()
+            {
+                Errors = new List<Error>()
+            };
 
-			if (rowsPerPage <= 0)
-			{
-				response.Data = usersDataDtoList.Cast<object>().ToList();
-				response.Meta.CurrentPage = pageNumber;
-				response.Meta.TotalRows = 0;
-				response.Meta.RowsPerPage = rowsPerPage;
-				response.IsError = true;
-				response.ErrorReason = "rowsPerPage must be 1 or greater.";
-				return Request.CreateResponse(HttpStatusCode.BadRequest, response);
-			}
+            if (rowsPerPage <= 0)
+            {
+                response.Data = usersDataDtoList.Cast<object>().ToList();
+                response.Meta.CurrentPage = pageNumber;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = rowsPerPage;
+                response.IsError = true;
+                response.ErrorReason = "rowsPerPage must be 1 or greater.";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
 
-			if (pageNumber <= 0)
-			{
-				response.Data = usersDataDtoList.Cast<object>().ToList();
-				response.Meta.CurrentPage = pageNumber;
-				response.Meta.TotalRows = 0;
-				response.Meta.RowsPerPage = rowsPerPage;
-				response.IsError = true;
-				response.ErrorReason = "pageNumber must be 1 or greater.";
-				return Request.CreateResponse(HttpStatusCode.BadRequest, response);
-			}
+            if (pageNumber <= 0)
+            {
+                response.Data = usersDataDtoList.Cast<object>().ToList();
+                response.Meta.CurrentPage = pageNumber;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = rowsPerPage;
+                response.IsError = true;
+                response.ErrorReason = "pageNumber must be 1 or greater.";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
 
-			try
-			{
-				UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-				IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
+            try
+            {
+                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
-				if (usersDataList != null && usersDataList.Any())
-				{
-					usersDataList.ToList().ForEach(u =>
-					{
-						Dictionary<String, String> dictionaryCustomFields = new Dictionary<String, String>();
-						if (!string.IsNullOrWhiteSpace(u.CustomFields))
-						{
-							IList<CustomFieldValue> CustomFieldValueList = JsonConvert.DeserializeObject<IList<CustomFieldValue>>(u.CustomFields);
+                if (usersDataList != null && usersDataList.Any())
+                {
+                    usersDataList.ToList().ForEach(u =>
+                    {
+                        Dictionary<String, String> dictionaryCustomFields = new Dictionary<String, String>();
+                        if (!string.IsNullOrWhiteSpace(u.CustomFields))
+                        {
+                            IList<CustomFieldValue> CustomFieldValueList = JsonConvert.DeserializeObject<IList<CustomFieldValue>>(u.CustomFields);
 
-							CustomFieldValueList.ToList().ForEach(c =>
-							{
-								dictionaryCustomFields.Add(c.Name, c.Value);
-							});
-						}
+                            CustomFieldValueList.ToList().ForEach(c =>
+                            {
+                                dictionaryCustomFields.Add(c.Name, c.Value);
+                            });
+                        }
 
-						usersDataDtoList.Add(
-							new UsersDataDto()
-							{
-								FirstName = u.FirstName,
-								MiddleName = u.MiddleName,
-								LastName = u.LastName,
-								UnityRealPageUserId = u.UserRealPageId,
-								LoginName = u.LoginName,
-								UserEffectiveDate = u.UserEffectiveDate,
-								UserExpirationDate = u.UserExpirationDate,
-								UserStatus = u.Status,
-								Email = u.Email,
-								CustomFields = dictionaryCustomFields,
-								UserType = u.UserType,
-								IsExternalIdp = u.IsExternalIdp,
-								Product = DeserializeUserProduct(u.Product ?? "")
-							}
-						);
-					});
-				}
+                        usersDataDtoList.Add(
+                            new UsersDataDto()
+                            {
+                                FirstName = u.FirstName,
+                                MiddleName = u.MiddleName,
+                                LastName = u.LastName,
+                                UnityRealPageUserId = u.UserRealPageId,
+                                LoginName = u.LoginName,
+                                UserEffectiveDate = u.UserEffectiveDate,
+                                UserExpirationDate = u.UserExpirationDate,
+                                UserStatus = u.Status,
+                                Email = u.Email,
+                                CustomFields = dictionaryCustomFields,
+                                UserType = u.UserType,
+                                IsExternalIdp = u.IsExternalIdp,
+                                Product = DeserializeUserProduct(u.Product ?? "")
+                            }
+                        );
+                    });
+                }
 
-				response.Data = usersDataDtoList.Cast<object>().ToList();
-				response.Meta.CurrentPage = pageNumber;
-				response.Meta.TotalRows = ((usersDataList != null) && (usersDataList.Count > 0)) ? usersDataList[0].TotalRecords : 0;
-				response.Meta.RowsPerPage = rowsPerPage;
-				return Request.CreateResponse(HttpStatusCode.OK, response);
-			}
-			catch (Exception exception)
-			{
-				// elastic logging
-				WriteToLog(LogEventLevel.Error,
-					"Error while Get/List user(s)." +
-					$" BooksMasterOrganizationId{_userClaims.OrganizationName}," +
-					$" Get/List user(s) ", exception: exception);
+                response.Data = usersDataDtoList.Cast<object>().ToList();
+                response.Meta.CurrentPage = pageNumber;
+                response.Meta.TotalRows = ((usersDataList != null) && (usersDataList.Count > 0)) ? usersDataList[0].TotalRecords : 0;
+                response.Meta.RowsPerPage = rowsPerPage;
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception exception)
+            {
+                // elastic logging
+                WriteToLog(LogEventLevel.Error,
+                    "Error while Get/List user(s)." +
+                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}," +
+                    $" Get/List user(s) ", exception: exception);
 
-				return Request.CreateResponse(HttpStatusCode.InternalServerError);
-			}
-		}
+                return Request.CreateResponse(HttpStatusCode.InternalServerError);
+            }
+        }
 
-		/// <summary>
-		/// Get User role and asset details
-		/// </summary>
-		/// <param name="realPageId">The guid for the user being requested</param>
-		/// <param name="productCode">The code for the product being requested. Supported products OPS-Ops</param>
-		/// <returns>User role and asset details</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s)", Type = typeof(UserRoleAssetDto))]
-		[SwaggerResponseExamples(typeof(UserRoleAssetDto), typeof(EnterpriseGetUserRoleAssetExample))]
-		[Route("user/{realPageId}/product/{productCode}")]
-		[Component.Landing.Attributes.AuthorizeScope("enterpriseapi")]
-		[HttpGet]
-		public HttpResponseMessage GetUserRoleAsset(Guid realPageId, string productCode)
-		{
-			UserRoleAssetDto userRoleAssetDto = new UserRoleAssetDto();
-			IList<UserRoleAssetDto> userRoleAssetDtoList = new List<UserRoleAssetDto>();
-			PagedResponse response = new PagedResponse() { Meta = new Meta() };
-			ErrorResponse error = new ErrorResponse()
-			{
-				Errors = new List<Error>()
-			};
+        /// <summary>
+        /// Get User role and asset details
+        /// </summary>
+        /// <param name="realPageId">The guid for the user being requested</param>
+        /// <param name="productCode">The code for the product being requested. Supported products OPS-Ops</param>
+        /// <returns>User role and asset details</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s)", Type = typeof(UserRoleAssetDto))]
+        [SwaggerResponseExamples(typeof(UserRoleAssetDto), typeof(EnterpriseGetUserRoleAssetExample))]
+        [Route("user/{realPageId}/product/{productCode}")]
+        [Component.Landing.Attributes.AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUserRoleAsset(Guid realPageId, string productCode)
+        {
+            UserRoleAssetDto userRoleAssetDto = new UserRoleAssetDto();
+            IList<UserRoleAssetDto> userRoleAssetDtoList = new List<UserRoleAssetDto>();
+            PagedResponse response = new PagedResponse() { Meta = new Meta() };
+            ErrorResponse error = new ErrorResponse()
+            {
+                Errors = new List<Error>()
+            };
 
-			Persona persona = new Persona();
-			IManagePerson personLogic = new ManagePerson();
-			IPerson person = personLogic.GetPerson(realPageId);
+            Persona persona = new Persona();
+            IManagePerson personLogic = new ManagePerson();
+            IPerson person = personLogic.GetPerson(realPageId);
 
-			if (person != null)
-			{
-				IManagePersona managePersona = new ManagePersona(_userClaims);
+            if (person != null)
+            {
+                IManagePersona managePersona = new ManagePersona(_userClaims);
                 //Active Persona is linked to one organization
                 //persona = managePersona.GetActivePersona(realPageId);
                 persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
@@ -656,8 +656,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 case ProductEnum.OpsBuyer:
                     var samlRepository = new SamlRepository();
-                    IList<PersonaProductUserDetails> productList = samlRepository.ListActiveProductsByPersonaId(persona.PersonaId, (int) ProductEnum.OpsBuyer, null);
-                    if (productList.Any(p => p.ProductStatus == (int) ProductBatchStatusType.Success))
+                    IList<PersonaProductUserDetails> productList = samlRepository.ListActiveProductsByPersonaId(persona.PersonaId, (int)ProductEnum.OpsBuyer, null);
+                    if (productList.Any(p => p.ProductStatus == (int)ProductBatchStatusType.Success))
                     {
                         IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
                         listResponse = manageProductOps.GetRoles(_userClaims.PersonaId, persona.PersonaId, "", null);
@@ -672,7 +672,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     break;
 
                 default:
-                    error.Errors.Add(new Error() {Title = "Bad request", Detail = "No valid product code could be found", Source = "/user", StatusCode = ""});
+                    error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/user", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, error);
             }
 
@@ -686,7 +686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
             else
             {
-                error.Errors.Add(new Error() {Title = "Error", Detail = listResponse.ErrorReason, Source = "/user", StatusCode = ""});
+                error.Errors.Add(new Error() { Title = "Error", Detail = listResponse.ErrorReason, Source = "/user", StatusCode = "" });
                 return Request.CreateResponse(HttpStatusCode.BadRequest, error);
             }
         }
@@ -709,7 +709,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         public HttpResponseMessage GetProductUsersWithRoleAsset(string productCode, int rowsPerPage = 1, int pageNumber = 1)
         {
             IList<OpsUserDataDto> opsUserListDto = new List<OpsUserDataDto>();
-            PagedResponse response = new PagedResponse() {Meta = new Meta()};
+            PagedResponse response = new PagedResponse() { Meta = new Meta() };
             ErrorResponse error = new ErrorResponse()
             {
                 Errors = new List<Error>()
@@ -737,7 +737,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return Request.CreateResponse(HttpStatusCode.BadRequest, response);
             }
 
-            RequestParameter requestParameter = new RequestParameter() {Pages = new PageRequest() {ResultsPerPage = rowsPerPage, StartRow = pageNumber}};
+            RequestParameter requestParameter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = rowsPerPage, StartRow = pageNumber } };
             switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
             {
                 case ProductEnum.OpsBuyer:
@@ -756,8 +756,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                                     Id = u.ID,
                                     LoginName = u.Loginname,
                                     Status = u.Status,
-                                    UserType = new OpsUserType() {Id = u.UserType.Id, Name = u.UserType.Name},
-                                    Asset = new OpsAssetGroupDto() {ID = u.AssetGroup.ID, Name = u.AssetGroup.Name, Code = u.AssetGroup.Code, Status = u.AssetGroup.Status}
+                                    UserType = new OpsUserType() { Id = u.UserType.Id, Name = u.UserType.Name },
+                                    Asset = new OpsAssetGroupDto() { ID = u.AssetGroup.ID, Name = u.AssetGroup.Name, Code = u.AssetGroup.Code, Status = u.AssetGroup.Status }
                                 }
                             );
                         });
@@ -770,7 +770,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     return Request.CreateResponse(HttpStatusCode.OK, response);
 
                 default:
-                    error.Errors.Add(new Error() {Title = "Bad request", Detail = "No valid product code could be found", Source = "/user", StatusCode = ""});
+                    error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/user", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, error);
             }
 
@@ -809,7 +809,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUserProductsByPersonaId(long? personaId = 0)
         {
-            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 {Products = new Dictionary<string, List<UserProducts>>()};
+            UserProductOutputResultv2 productResult = new UserProductOutputResultv2 { Products = new Dictionary<string, List<UserProducts>>() };
 
             if (!personaId.HasValue || personaId == 0)
             {
@@ -922,7 +922,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     if (pcl.All(p => p.CompanyRealPageId != persona.Organization.RealPageId))
                     {
-                        pcl.Add(new PersonaCompany() {CompanyName = persona.Organization.Name, CompanyRealPageId = persona.Organization.RealPageId, Personas = new List<PersonaCompanyDetails>()});
+                        pcl.Add(new PersonaCompany() { CompanyName = persona.Organization.Name, CompanyRealPageId = persona.Organization.RealPageId, Personas = new List<PersonaCompanyDetails>() });
                     }
 
                     IList<PersonaCompanyDetails> currentCompanyPersonaList = pcl.Find(p => p.CompanyRealPageId == persona.Organization.RealPageId).Personas;
@@ -961,6 +961,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+        }
+
+        /// <summary>
+        /// Get Users Product Detail Login By PersonaId
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns>A list of User(s) with the product details.</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s) with the product details.")]
+        //[SwaggerResponseExamples(typeof(UserProductDetailLoginExample), typeof(EnterpriseGetUsersProductsDetailsLoginExample))]
+        [Route("user/products/details/login")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUserProductsDetailsLoginByPersonaId(long personaId)
+        {
+            if (personaId <= 0)
+            {
+                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                errorResponse.Errors.Add(new Error
+                { Title = "Error", Source = "/users/products/details/login", Detail = "PersonaId should be bigger than 0", StatusCode = "" });
+
+                // return errors with bad request
+                return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+            }
+
+            try
+            {
+                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByPersonaId(personaId));
+            }
+            catch (Exception ex)
+            {
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
         }
 
         #region Private Methods
@@ -1135,96 +1174,96 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                 resources = resources.Where(p => p.ShowInAppSwitcher).ToList();
                 List<UserProducts> userProducts = ConvertDashboardProductsToRAULv2(products);
-				productResult.Products = new Dictionary<string, List<UserProducts>>();
+                productResult.Products = new Dictionary<string, List<UserProducts>>();
 
-				productResult.Products.Add("Favorites", userProducts.Where(p => p.IsFavorite).ToList());
-				foreach (UserProducts up in userProducts)
-				{
-					if (!productResult.Products.ContainsKey(up.FamilyName))
-					{
-						productResult.Products.Add(up.FamilyName, userProducts.Where(p => !p.IsFavorite && p.FamilyName.Equals(up.FamilyName, StringComparison.OrdinalIgnoreCase)).ToList());
-					}
-				}
+                productResult.Products.Add("Favorites", userProducts.Where(p => p.IsFavorite).ToList());
+                foreach (UserProducts up in userProducts)
+                {
+                    if (!productResult.Products.ContainsKey(up.FamilyName))
+                    {
+                        productResult.Products.Add(up.FamilyName, userProducts.Where(p => !p.IsFavorite && p.FamilyName.Equals(up.FamilyName, StringComparison.OrdinalIgnoreCase)).ToList());
+                    }
+                }
 
 
-				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
-				return Request.CreateResponse(HttpStatusCode.OK, productResult);
-			}
+                productResult.Resources = ConvertDashboardProductsToRAUL(resources);
+                return Request.CreateResponse(HttpStatusCode.OK, productResult);
+            }
 
-			errorStatus.Success = false;
-			errorStatus.ErrorCode = "User.GetUserProducts.2";
-			errorStatus.ErrorMsg = "Get User Products: No data.";
-			output.Status = errorStatus;
-			return Request.CreateResponse(HttpStatusCode.OK, output);
-		}
+            errorStatus.Success = false;
+            errorStatus.ErrorCode = "User.GetUserProducts.2";
+            errorStatus.ErrorMsg = "Get User Products: No data.";
+            output.Status = errorStatus;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
 
-		private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
-		{
-			var userProductDetails = new UserProductDetails
-			{
-				EditorRealPageId = _userClaims.UserRealPageGuid,
-				UserProfileDetails = new UserData
-				{
-					UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
-					AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
-					MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
-					Password = userProductDetailsDto.UserProfileDetails.Password,
-					LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
-					Title = userProductDetailsDto.UserProfileDetails.Title,
-					Email = userProductDetailsDto.UserProfileDetails.Email,
-					FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
-					UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
-					IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
-					LastName = userProductDetailsDto.UserProfileDetails.LastName,
-					OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
-					OrganizationPartyId = _userClaims.OrganizationPartyId,
-					Phone = userProductDetailsDto.UserProfileDetails.Phone,
-					UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
-					UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
-					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
-					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields
-				},
-				ProductList = new List<ProductDetail>()
-			};
-			if (userProductDetailsDto.ProductList != null)
-			{
-				foreach (var product in userProductDetailsDto.ProductList)
-				{
-					userProductDetails.ProductList.Add(new ProductDetail
-					{
-						ProductCode = product.ProductCode,
-						AdditionalFields = product.AdditionalFields,
-						PropertiesAssigned = product.PropertiesAssigned,
-						RegionsAssigned = product.RegionsAssigned,
-						RolesAssigned = product.RolesAssigned,
-						IsAssigned = product.IsAssigned
-					});
-				}
-			}
+        private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
+        {
+            var userProductDetails = new UserProductDetails
+            {
+                EditorRealPageId = _userClaims.UserRealPageGuid,
+                UserProfileDetails = new UserData
+                {
+                    UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
+                    AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
+                    MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
+                    Password = userProductDetailsDto.UserProfileDetails.Password,
+                    LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
+                    Title = userProductDetailsDto.UserProfileDetails.Title,
+                    Email = userProductDetailsDto.UserProfileDetails.Email,
+                    FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
+                    UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
+                    IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
+                    LastName = userProductDetailsDto.UserProfileDetails.LastName,
+                    OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
+                    OrganizationPartyId = _userClaims.OrganizationPartyId,
+                    Phone = userProductDetailsDto.UserProfileDetails.Phone,
+                    UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
+                    UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
+                    CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
+                    Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
+                    CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields
+                },
+                ProductList = new List<ProductDetail>()
+            };
+            if (userProductDetailsDto.ProductList != null)
+            {
+                foreach (var product in userProductDetailsDto.ProductList)
+                {
+                    userProductDetails.ProductList.Add(new ProductDetail
+                    {
+                        ProductCode = product.ProductCode,
+                        AdditionalFields = product.AdditionalFields,
+                        PropertiesAssigned = product.PropertiesAssigned,
+                        RegionsAssigned = product.RegionsAssigned,
+                        RolesAssigned = product.RolesAssigned,
+                        IsAssigned = product.IsAssigned
+                    });
+                }
+            }
 
-			return userProductDetails;
-		}
+            return userProductDetails;
+        }
 
-		private int GetGbUserType(UserTypeDto userTypeDto)
-		{
-			int userType;
+        private int GetGbUserType(UserTypeDto userTypeDto)
+        {
+            int userType;
 
-			switch (userTypeDto)
-			{
-				case UserTypeDto.Regular
-				:
-					userType = (int)UserRoleType.User;
-					break;
-				case UserTypeDto.NoEmail:
-					userType = (int)UserRoleType.UserNoEmail; //"Regular User (No Email)";
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
-			}
+            switch (userTypeDto)
+            {
+                case UserTypeDto.Regular
+                :
+                    userType = (int)UserRoleType.User;
+                    break;
+                case UserTypeDto.NoEmail:
+                    userType = (int)UserRoleType.UserNoEmail; //"Regular User (No Email)";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(userTypeDto), userTypeDto, null);
+            }
 
-			return userType;
-		}
+            return userType;
+        }
 
         /// <summary>
         /// Used to write to the log
@@ -1245,7 +1284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         logger = logger.ForContext($"AdditionalInfo", logData[key], true);
                     }
                 }
-				logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(logType, exception, message);
             }
             catch
@@ -1260,51 +1299,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		/// <param name="userProductJSON">CustomFields JSON string</param>
 		/// <returns>List of User Product and SAML attributes objects</returns>
 		private IList<UserProductSAMLDetail> DeserializeUserProduct(string userProductJSON)
-		{
-			IList<UserProductSAMLDetail> productlist = new List<UserProductSAMLDetail>();
+        {
+            IList<UserProductSAMLDetail> productlist = new List<UserProductSAMLDetail>();
 
-			if (userProductJSON == string.Empty)
-			{
-				return productlist;
-			}
+            if (userProductJSON == string.Empty)
+            {
+                return productlist;
+            }
 
-			productlist = JsonConvert.DeserializeObject<IList<UserProductSAMLDetail>>(userProductJSON);
-			return productlist;
-		}
+            productlist = JsonConvert.DeserializeObject<IList<UserProductSAMLDetail>>(userProductJSON);
+            return productlist;
+        }
 
-		/// <summary>
-		/// Used to return the product list of the user to the RAUL UI component
-		/// </summary>
-		/// <param name="products"></param>
-		/// <returns></returns>
-		private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
-		{
-			List<UserProducts> productList = new List<UserProducts>();
-			foreach (PersonaProductUserDetails prodDetail in products)
-			{
-				if (!string.IsNullOrEmpty(prodDetail.ProductUrl))
-				{
-					UserProducts up = new UserProducts()
-					{
-						Id = prodDetail.ProductId,
-						Name = prodDetail.ProductName,
-						Description = prodDetail.ProductDescription,
-						Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + prodDetail.ProductUrl,
-						Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
-						FamilyId = prodDetail?.FamilyId,
-						FamilyName = prodDetail.Family,
-						IsFavorite = prodDetail.IsFavorite,
-						IsNewTab = prodDetail.IsNewTab,
-						IsResource = prodDetail.IsResource,
-						Status = prodDetail.ProductStatus,
-						ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
-					};
-					productList.Add(up);
-				}
-			}
+        /// <summary>
+        /// Used to return the product list of the user to the RAUL UI component
+        /// </summary>
+        /// <param name="products"></param>
+        /// <returns></returns>
+        private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
+        {
+            List<UserProducts> productList = new List<UserProducts>();
+            foreach (PersonaProductUserDetails prodDetail in products)
+            {
+                if (!string.IsNullOrEmpty(prodDetail.ProductUrl))
+                {
+                    UserProducts up = new UserProducts()
+                    {
+                        Id = prodDetail.ProductId,
+                        Name = prodDetail.ProductName,
+                        Description = prodDetail.ProductDescription,
+                        Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + prodDetail.ProductUrl,
+                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
+                        FamilyId = prodDetail?.FamilyId,
+                        FamilyName = prodDetail.Family,
+                        IsFavorite = prodDetail.IsFavorite,
+                        IsNewTab = prodDetail.IsNewTab,
+                        IsResource = prodDetail.IsResource,
+                        Status = prodDetail.ProductStatus,
+                        ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
+                    };
+                    productList.Add(up);
+                }
+            }
 
-			return productList.OrderBy(p => p.FamilyName).ThenBy(p => p.Name).ToList();
-		}
+            return productList.OrderBy(p => p.FamilyName).ThenBy(p => p.Name).ToList();
+        }
 
         private List<UserProducts> ConvertPersonaProductsToRAUL(IList<PersonaProduct> products, long personaId)
         {
@@ -1320,7 +1359,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.Name,
                         Description = prodDetail.Description,
                         Url = prodDetail.Url != null && prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum) prodDetail.ProductId),
+                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.FamilyName,
                         IsFavorite = prodDetail.isFavorite,
@@ -1355,14 +1394,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         Name = prodDetail.ProductName,
                         Description = prodDetail.ProductDescription,
                         Url = prodDetail.ProductUrl.ToUpper().Contains("HTTP") ? prodDetail.ProductUrl : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={prodDetail.PersonaId}",
-                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum) prodDetail.ProductId),
+                        Label = ProductEnumHelper.GetProductRaulLabel((ProductEnum)prodDetail.ProductId),
                         FamilyId = prodDetail?.FamilyId,
                         FamilyName = prodDetail.Family,
                         IsFavorite = prodDetail.IsFavorite,
                         IsNewTab = prodDetail.IsNewTab,
                         IsResource = prodDetail.IsResource,
                         Status = prodDetail.ProductStatus,
-                        ProductCode = ((ProductEnum) prodDetail.ProductId).ToEnumDescription()
+                        ProductCode = ((ProductEnum)prodDetail.ProductId).ToEnumDescription()
                     };
                     productList.Add(up);
                 }
@@ -1571,6 +1610,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
         }
 
+        /// <summary>
+        /// User Product Detail Document Login Example
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class UserProductDetailLoginExample
+        { 
+            public int ProductId { get; set; }
+
+            public string ProductCode { get; set; }
+
+            public IList<Dictionary<string, string>> Details { get; set; }
+        }
+
         #region GetExamples
 
         /// <summary>
@@ -1619,7 +1671,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     },
                 };
 
-                productResult.User = new User() {FullName = "Full name", Title = "User title", CompanyName = "User Company", RealPageId = new Guid()};
+                productResult.User = new User() { FullName = "Full name", Title = "User title", CompanyName = "User Company", RealPageId = new Guid() };
 
                 productResult.Products = userProducts;
                 //productResult.Resources = userResources;
@@ -1715,182 +1767,182 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     },
                 };
 
-                productResult.User = new User() {FullName = "Full name", Title = "User title", CompanyName = "User Company", RealPageId = new Guid()};
+                productResult.User = new User() { FullName = "Full name", Title = "User title", CompanyName = "User Company", RealPageId = new Guid() };
 
                 productResult.Products = userProducts;
                 productResult.Resources = userResources;
 
-				return productResult;
+                return productResult;
 
-			}
-		}
+            }
+        }
 
-		/// <summary>
-		/// Used to document examples of the webapi result
-		/// </summary>
-		[ExcludeFromCodeCoverage]
-		public class EnterpriseGetUserExample : IProvideExamples
-		{
-			/// <summary>
-			/// Example object data used by Swagger to document the output of the webapi method
-			/// </summary>
-			/// <returns>EnterpriseRole example</returns>
-			public object GetExamples()
-			{
-				IList<CustomFieldValue> customFieldsList = new List<CustomFieldValue>()
-				{
-					new CustomFieldValue()
-					{
-						FieldId = 1,
-						OrganizationId = 350,
-						Enabled = true,
-						Name = "Employee ID",
-						Description = "Employee ID",
-						FieldTypeId = 1,
-						FieldTypeName = "alphanumeric",
-						Required = true,
-						ReadOnly = false,
-						DefaultValue = "",
-						SyncField = "",
-						Sequence = 1,
-						HelpText = "Employee ID",
-						MinCharLength = 1,
-						MaxCharLength = 10,
-						UserLoginPersonaId = 600,
-						FieldValueId = 1,
-						Value = "12345"
-					},
-					new CustomFieldValue()
-					{
-						FieldId = 2,
-						OrganizationId = 350,
-						Enabled = true,
-						Name = "Status",
-						Description = "Status",
-						FieldTypeId = 1,
-						FieldTypeName = "alphanumeric",
-						Required = true,
-						ReadOnly = false,
-						DefaultValue = "",
-						SyncField = "",
-						Sequence = 1,
-						HelpText = "Status",
-						MinCharLength = 1,
-						MaxCharLength = 10,
-						UserLoginPersonaId = 600,
-						FieldValueId = 1,
-						Value = "Active"
-					}
-				};
+        /// <summary>
+        /// Used to document examples of the webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class EnterpriseGetUserExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>EnterpriseRole example</returns>
+            public object GetExamples()
+            {
+                IList<CustomFieldValue> customFieldsList = new List<CustomFieldValue>()
+                {
+                    new CustomFieldValue()
+                    {
+                        FieldId = 1,
+                        OrganizationId = 350,
+                        Enabled = true,
+                        Name = "Employee ID",
+                        Description = "Employee ID",
+                        FieldTypeId = 1,
+                        FieldTypeName = "alphanumeric",
+                        Required = true,
+                        ReadOnly = false,
+                        DefaultValue = "",
+                        SyncField = "",
+                        Sequence = 1,
+                        HelpText = "Employee ID",
+                        MinCharLength = 1,
+                        MaxCharLength = 10,
+                        UserLoginPersonaId = 600,
+                        FieldValueId = 1,
+                        Value = "12345"
+                    },
+                    new CustomFieldValue()
+                    {
+                        FieldId = 2,
+                        OrganizationId = 350,
+                        Enabled = true,
+                        Name = "Status",
+                        Description = "Status",
+                        FieldTypeId = 1,
+                        FieldTypeName = "alphanumeric",
+                        Required = true,
+                        ReadOnly = false,
+                        DefaultValue = "",
+                        SyncField = "",
+                        Sequence = 1,
+                        HelpText = "Status",
+                        MinCharLength = 1,
+                        MaxCharLength = 10,
+                        UserLoginPersonaId = 600,
+                        FieldValueId = 1,
+                        Value = "Active"
+                    }
+                };
 
-				IList<UserProductSAMLDetail> UserProductSAMLDetaillist = new List<UserProductSAMLDetail>()
-				{
-					new UserProductSAMLDetail()
-					{
-						Id = "1192422|jreames1",
-						UserName = "jreames1",
-						ProductCode = "OS"
-					},
-					new UserProductSAMLDetail()
-					{
-						Id = "80172",
-						UserName = "lanecoadmin",
-						ProductCode = "OPS"
-					}
-				};
+                IList<UserProductSAMLDetail> UserProductSAMLDetaillist = new List<UserProductSAMLDetail>()
+                {
+                    new UserProductSAMLDetail()
+                    {
+                        Id = "1192422|jreames1",
+                        UserName = "jreames1",
+                        ProductCode = "OS"
+                    },
+                    new UserProductSAMLDetail()
+                    {
+                        Id = "80172",
+                        UserName = "lanecoadmin",
+                        ProductCode = "OPS"
+                    }
+                };
 
-				Dictionary<String, String> dictionaryCustomFields = new Dictionary<String, String>();
+                Dictionary<String, String> dictionaryCustomFields = new Dictionary<String, String>();
 
-				customFieldsList.ToList().ForEach(c =>
-				{
-					dictionaryCustomFields.Add(c.Name, c.Value);
-				});
+                customFieldsList.ToList().ForEach(c =>
+                {
+                    dictionaryCustomFields.Add(c.Name, c.Value);
+                });
 
-				IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
-				{
-					new UsersDataDto()
-					{
-						UserStatus = "active",
-						UserType = "RealPage System Administrator",
-						UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
-						FirstName = "James",
-						MiddleName = "X",
-						LastName = "Jackson",
-						IsExternalIdp = false,
-						LoginName = "james.jackson@example.com",
-						Email = "james.jackson@example.com",
-						UserEffectiveDate = DateTime.Now,
-						UserExpirationDate = DateTime.Now,
-						CustomFields = dictionaryCustomFields,
-						Product = UserProductSAMLDetaillist
-					}
-				};
+                IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
+                {
+                    new UsersDataDto()
+                    {
+                        UserStatus = "active",
+                        UserType = "RealPage System Administrator",
+                        UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
+                        FirstName = "James",
+                        MiddleName = "X",
+                        LastName = "Jackson",
+                        IsExternalIdp = false,
+                        LoginName = "james.jackson@example.com",
+                        Email = "james.jackson@example.com",
+                        UserEffectiveDate = DateTime.Now,
+                        UserExpirationDate = DateTime.Now,
+                        CustomFields = dictionaryCustomFields,
+                        Product = UserProductSAMLDetaillist
+                    }
+                };
 
-				PagedResponse response = new PagedResponse()
-				{
-					Meta = new Meta() { TotalRows = usersDataDtoList.Count, CurrentPage = 1, RowsPerPage = usersDataDtoList.Count },
-					Data = usersDataDtoList.Cast<object>().ToList(),
+                PagedResponse response = new PagedResponse()
+                {
+                    Meta = new Meta() { TotalRows = usersDataDtoList.Count, CurrentPage = 1, RowsPerPage = usersDataDtoList.Count },
+                    Data = usersDataDtoList.Cast<object>().ToList(),
 
-				};
+                };
 
-				return response;
-			}
-		}
+                return response;
+            }
+        }
 
-		/// <summary>
-		/// Used to document examples of the webapi result
-		/// </summary>
-		[ExcludeFromCodeCoverage]
-		public class EnterpriseGetUserRoleAssetExample : IProvideExamples
-		{
-			/// <summary>
-			/// Example object data used by Swagger to document the output of the webapi method
-			/// </summary>
-			/// <returns>EnterpriseRole example</returns>
-			public object GetExamples()
-			{
-				IList<UserRoleAssetDto> userRoleAssetDtoList = new List<UserRoleAssetDto>()
-				{
-					new UserRoleAssetDto()
-					{
-						ProductRole = new List<ProductRole>()
-						{
-							new ProductRole()
-							{
-								ID = "15088",
-								Name = "Marketplace Administrator",
-								IsAssigned = true,
-								isEditorHasRight = false,
-								Roletype = "1"
-							}
-						},
-						AssetGroups = new List<AssetGroup>()
-						{
-							new AssetGroup()
-							{
-								ID = "1125",
-								Name = "[G] CF Real Estate Services",
-								Code = null,
-								Description = "",
-								Status = "active",
-								GroupType = "company",
-								AssetID = "204955",
-								IsAssigned = true
-							}
-						}
-					}
-				};
+        /// <summary>
+        /// Used to document examples of the webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class EnterpriseGetUserRoleAssetExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>EnterpriseRole example</returns>
+            public object GetExamples()
+            {
+                IList<UserRoleAssetDto> userRoleAssetDtoList = new List<UserRoleAssetDto>()
+                {
+                    new UserRoleAssetDto()
+                    {
+                        ProductRole = new List<ProductRole>()
+                        {
+                            new ProductRole()
+                            {
+                                ID = "15088",
+                                Name = "Marketplace Administrator",
+                                IsAssigned = true,
+                                isEditorHasRight = false,
+                                Roletype = "1"
+                            }
+                        },
+                        AssetGroups = new List<AssetGroup>()
+                        {
+                            new AssetGroup()
+                            {
+                                ID = "1125",
+                                Name = "[G] CF Real Estate Services",
+                                Code = null,
+                                Description = "",
+                                Status = "active",
+                                GroupType = "company",
+                                AssetID = "204955",
+                                IsAssigned = true
+                            }
+                        }
+                    }
+                };
 
-				PagedResponse response = new PagedResponse()
-				{
-					Meta = new Meta() { TotalRows = userRoleAssetDtoList.Count, CurrentPage = 1, RowsPerPage = userRoleAssetDtoList.Count },
-					Data = userRoleAssetDtoList.Cast<object>().ToList(),
+                PagedResponse response = new PagedResponse()
+                {
+                    Meta = new Meta() { TotalRows = userRoleAssetDtoList.Count, CurrentPage = 1, RowsPerPage = userRoleAssetDtoList.Count },
+                    Data = userRoleAssetDtoList.Cast<object>().ToList(),
 
-				};
+                };
 
-				return response;
-			}
-		}
+                return response;
+            }
+        }
 
         /// <summary>
         /// Used to document examples of the PersonaCompany webapi result
@@ -1905,13 +1957,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             public object GetExamples()
             {
                 List<PersonaCompany> pclList = new List<PersonaCompany>();
-                pclList.Add(new PersonaCompany() {CompanyName = "Company A", CompanyRealPageId = Guid.NewGuid(), Personas = new List<PersonaCompanyDetails>() {new PersonaCompanyDetails() {PersonaId = 1111, Name = "Persona"}}});
-                pclList.Add(new PersonaCompany() {CompanyName = "Company B", CompanyRealPageId = Guid.NewGuid(), Personas = new List<PersonaCompanyDetails>() {new PersonaCompanyDetails() {PersonaId = 2222, Name = "Other Persona"}}});
-                ObjectOutput<List<PersonaCompany>, IErrorData> output = new ObjectOutput<List<PersonaCompany>, IErrorData>() {obj = pclList};
+                pclList.Add(new PersonaCompany() { CompanyName = "Company A", CompanyRealPageId = Guid.NewGuid(), Personas = new List<PersonaCompanyDetails>() { new PersonaCompanyDetails() { PersonaId = 1111, Name = "Persona" } } });
+                pclList.Add(new PersonaCompany() { CompanyName = "Company B", CompanyRealPageId = Guid.NewGuid(), Personas = new List<PersonaCompanyDetails>() { new PersonaCompanyDetails() { PersonaId = 2222, Name = "Other Persona" } } });
+                ObjectOutput<List<PersonaCompany>, IErrorData> output = new ObjectOutput<List<PersonaCompany>, IErrorData>() { obj = pclList };
 
                 return output;
             }
         }
-		#endregion
-	}
+
+        /// <summary>
+		/// Used to document examples of the webapi result
+		/// </summary>
+		[ExcludeFromCodeCoverage]
+        public class EnterpriseGetUsersProductsDetailsLoginExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Enterprise User Product Details Login example</returns>
+            public object GetExamples()
+            {
+                List<UserProductDetailLoginExample> response = new List<UserProductDetailLoginExample>
+                {
+                    new UserProductDetailLoginExample
+                    {
+                        ProductCode = "ACCT",
+                        ProductId = 8,
+                        Details = new List<Dictionary<string,string>>()
+                    }
+                };
+
+                return response;
+            }
+        }
+        #endregion
+    }
 }
