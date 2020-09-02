@@ -305,14 +305,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         {
                                             var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: (ProductEnum) productId, configurationId: null, fromDate: null, thruDate: null);
                                             // post back to books?
-                                            _manageBlueBook.AddBooksGreenBookPropertyInstance(property);
                                         }
                                     }
                                 }
                             }
                             
                             // add any new properties
-                            string propertyResult = AddPropertiesFromBooks(propertyInstanceList);
+                            string propertyResult = AddPropertiesFromBooks(customerCompanyId, propertyInstanceList);
                             break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
@@ -329,20 +328,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return response;
         }
 
-        private string AddPropertiesFromBooks(List<UPFMPropertyInstance> propertyInstanceList)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="customerCompanyId"></param>
+        /// <param name="propertyInstanceList"></param>
+        /// <returns></returns>
+        private string AddPropertiesFromBooks(long customerCompanyId, List<UPFMPropertyInstance> propertyInstanceList)
         {
             string result = "";
             foreach (var property in propertyInstanceList)
             {
                 if (property.InstanceId == Guid.Empty)
                 {
+                    
+                    
                     // add instance to db
                     var response = _propertyRepository.InsertUPFMPropertyInstance(property);
                     if (response.ErrorMessage.Length == 0)
                     {
                         // insert to books
                         property.InstanceId = response.RealPageId;
+                        PropertyInstance pi = new PropertyInstance()
+                        {
+                            PropertyName = property.Name,
+                            PropertyInstanceSourceId = property.InstanceId.ToString(),
+                            Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                            Address = new InstanceAddress()
+                            {
+                                Address = property.Address,
+                                City = property.City,
+                                State = property.State,
+                                PostalCode = property.PostalCode,
+                                County = property.County,
+                                Country = property.Country,
 
+                            }
+                        };
+                        var resultBooks = _manageBlueBook.AddBooksGreenBookPropertyInstance(pi);
                     }
 
                     
