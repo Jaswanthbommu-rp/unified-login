@@ -409,6 +409,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		}
 		#endregion
 
+		public IList<UserProductDetailLogin> ListUserProductDetailsLoginByPersonaId(long PersonaId)
+		{
+			try
+			{
+				IList<UserProductDetailLogin> userProductDetailLogins = new List<UserProductDetailLogin>();
+
+				EntUserRepository entUserRepository = new EntUserRepository(_userClaims);
+				IList<UserProductDetailAttribute> userProuctDetailAttributes = entUserRepository.ListUserProductDetailsLoginByPersonaId(PersonaId);
+
+				userProuctDetailAttributes.ToList().ForEach(u =>
+				userProductDetailLogins.Add(new UserProductDetailLogin 
+				{ 
+					ProductId = u.ProductId,
+					ProductCode = u.ProductCode,
+					Details = JsonConvert.DeserializeObject<IList<Dictionary<string,string>>>(u.UserAttribute)
+				})) ; 
+
+
+				return userProductDetailLogins;
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		#region Private Methods
 		/// <summary>
 		/// Used for both Create & Update user
