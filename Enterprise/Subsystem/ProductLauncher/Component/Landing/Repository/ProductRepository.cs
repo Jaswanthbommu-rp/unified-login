@@ -1764,15 +1764,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="pageNumber"></param>
         /// <param name="roles"></param>
         /// <param name="rights"></param>
-        /// <param name="propertyId"></param>
+        /// <param name="propertyIds"></param>
         /// <returns>List of Users by product or company</returns>
         public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
-                                                                IList<string> roles, IList<string> rights, Guid? propertyId = null)
+                                                                IList<string> roles, IList<string> rights, List<string> propertyIds = null)
         {
             //Ignoring filter and Sort
             IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
 
-            dynamic param = CompanyProductParam(companyId, products, version, rowsPerPage, pageNumber, roles, rights, propertyId);
+            dynamic param = CompanyProductParam(companyId, products, version, rowsPerPage, pageNumber, roles, rights, propertyIds);
 
             using (var repository = GetRepository())
             {
@@ -1958,7 +1958,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         private dynamic CompanyProductParam(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
-                                            IList<string> roles, IList<string> rights, Guid? propertyId)
+                                            IList<string> roles, IList<string> rights, List<string> propertyIds)
         {
             switch ((int)version)
             {
@@ -1971,7 +1971,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PageNumber = pageNumber,
                         Roles = roles.Count > 0 ? string.Join(",", roles) : null,
                         Rights = rights.Count > 0 ? string.Join(",", rights) : null,
-                        PropertyId = propertyId.HasValue ? propertyId.Value.ToString() : null
+                        Properties = propertyIds.Count> 0 ? string.Join("," , propertyIds) : null
                     };
 
                 default:

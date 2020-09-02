@@ -213,8 +213,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
 			IList<int> organizationActiveProductIdList = _productRepository.GetProductIdsByCompany(_userClaim.OrganizationRealPageGuid);
-
-			profileDetailList = _profileRepository.ListPersons(
+            if (organizationActiveProductIdList.Contains((int)ProductEnum.AssetOptimizer))
+            {
+                var allProducts = _productRepository.GetAllProducts();
+                organizationActiveProductIdList.Remove((int)ProductEnum.AssetOptimizer);
+                foreach (var product in allProducts)
+                {
+                    if (ProductEnumHelper.CheckAoProductSupportedByGreenBook(product.BooksProductCode))
+                    {
+                        if (!organizationActiveProductIdList.Contains(product.ProductId))
+                        {
+                            organizationActiveProductIdList.Add(product.ProductId);
+                        }
+                    }
+                }
+            }
+            profileDetailList = _profileRepository.ListPersons(
 				organizationActiveProductIdList: organizationActiveProductIdList,
 				realPageId: organizationRealPageId,
 				parentPartyRoleTypeId: _parentPartyRoleTypeId,

@@ -6,7 +6,7 @@ CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3]
  @PageNumber  INT           = 1,
  @Roles		  NVARCHAR(1000) = NULL,
  @Rights	  NVARCHAR(1000) = NULL,
- @PropertyId  NVARCHAR(100) = NULL
+ @Properties  NVARCHAR(MAX) = NULL
 )AS
 BEGIN
 	
@@ -80,141 +80,243 @@ BEGIN
                         ELSE @RowsPerPage
     END;
 
-	IF EXISTS (SELECT TOP 1 ProductId
-				FROM @ProductIds)
+	IF EXISTS (SELECT TOP 1 ProductId FROM @ProductIds)
     BEGIN
 		
+		CREATE TABLE #NoPersona
+		(
+			PersonaId BIGINT
+		)
+
+		INSERT INTO #NoPersona(PersonaId)
+		(
+			SELECT DISTINCT
+				pe.PersonaId  
+			FROM Enterprise.MasterConfigurationType mct  
+				INNER JOIN Enterprise.MasterSettingType MST ON mst.MasterConfigurationTypeId = mct.MasterCOnfigurationTypeId  
+				INNER JOIN Enterprise.MasterSetting ms ON ms.MasterSettingTypeId = mst.MasterSettingTYpeId  
+				INNER JOIN Enterprise.Party p ON CONVERT(NVARCHAR(40), p.RealPageId) = ms.Value  
+				INNER JOIN ident.UserLogin ul ON UL.PersonPartyId = p.PartyId  
+				INNER JOIN Ident.UserLoginPersona ulp ON ul.UserId = ulp.UserLoginId  
+				INNER JOIN Person.Persona pe ON pe.UserLoginPersonaId = ulp.UserLoginPersonaId  
+			WHERE  
+				mct.Name = 'Organization'  
+				AND mst.Name = 'RealPageEmployeeAccessID'
+		)
+
 		SELECT
 			@OrganizationPartyId = dim.PartyId
 		FROM Enterprise.DataImportMapping AS dim
 		WHERE
 			dim.SourceId = @companyid;
+
 		INSERT INTO @ProductsList2
 			EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
-		;WITH Users
-		AS 
+		
+		IF EXISTS(SELECT TOP 1 1 FROM STRING_SPLIT(@Properties,','))
+		BEGIN
+			DECLARE @IDS TABLE(propertyId NVARCHAR(255)) 
+			DECLARE @TableInstance TABLE(value varchar(2) , productId int);
+
+			INSERT INTO @TableInstance(value , productId)
 			(
-			
-			(SELECT ul.UserId, 
-				ul.LoginName, 
-				p2.FirstName, 
-				p2.LastName, 
-				p.PersonaId
-                        
-			FROM @ProductsList2 AS cp
-				INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
-				INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId
-				INNER JOIN [Security].[Role] AS r ON pr.RoleId = r.RoleId AND cp.ProductId = r.ProductId
-				INNER JOIN [Security].[RoleRight] AS rr ON r.RoleId = rr.RoleId
-				INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId
-				INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
-				INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId
-				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
-				INNER JOIN Enterprise.PersonaConfiguration AS pc ON p.PersonaId = pc.PersonaId 
-			
-			WHERE 
-				ulp.StatusTypeId = 1
-				AND ulp.OrganizationPartyId = @OrganizationPartyId
-				AND (@RoleCount IS NULL OR r.ShortName IN (SELECT RoleShortName FROM @RoleList))
-				AND (@RightCount IS NULL OR r2.RightName IN (SELECT RightName FROM @RightList))
+				SELECT	
+					CASE WHEN ps.Value IS NULL THEN '0' ELSE ps.Value END AS value,
+					pd.ProductId
+				FROM	Enterprise.GlobalProductConfiguration gpc
+						JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+						JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+						JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+						JOIN @ProductIds AS pd ON gpc.ProductId = pd.ProductId
+				WHERE  
+				gpc.ProductId IN (SELECT ProductId FROM @ProductIds) 
+				AND (gpc.ThruDate IS NULL)
+				AND ( pc.ThruDate IS NULL)
+				AND ( ps.ThruDate IS NULL)
+				And PST.Name = 'UsePropertyInstanceUnifiedLogin'
+			);
 
-				AND P.PersonaId NOT IN
+			IF EXISTS(SELECT TOP 1 1 FROM @TableInstance WHERE value = '1')
+			BEGIN
+				DECLARE @GUIDS TABLE(propertyGuid UNIQUEIDENTIFIER) 
+
+				INSERT INTO @GUIDS(propertyGuid)
 				(
-					SELECT pe.PersonaId
-					FROM Enterprise.MasterConfigurationType mct
-						INNER JOIN Enterprise.MasterSettingType MST ON mst.MasterConfigurationTypeId = mct.MasterCOnfigurationTypeId
-						INNER JOIN Enterprise.MasterSetting ms ON ms.MasterSettingTypeId = mst.MasterSettingTYpeId
-						INNER JOIN Enterprise.Party p ON CONVERT(NVARCHAR(40), p.RealPageId) = ms.Value
-						INNER JOIN ident.UserLogin ul ON UL.PersonPartyId = p.PartyId
-						INNER JOIN Ident.UserLoginPersona ulp ON ul.UserId = ulp.UserLoginId
-						INNER JOIN Person.Persona pe ON pe.UserLoginPersonaId = ulp.UserLoginPersonaId
-					WHERE
-						mct.Name = 'Organization'
-						AND mst.Name = 'RealPageEmployeeAccessID')
+					SELECT *  
+					FROM STRING_SPLIT(@Properties, ',')  
+					WHERE value LIKE'%-%'
+				)
 
-			UNION
-			SELECT ul.UserId, 
-				ul.LoginName, 
-				p2.FirstName, 
-				p2.LastName, 
-				p.PersonaId
-                        
-			FROM @ProductsList2 AS cp
-				INNER JOIN Person.Persona AS p ON CP.PersonaId = p.PersonaId
-				INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId
-				INNER JOIN [Security].[Role] AS r ON pr.RoleId = r.RoleId
-				INNER JOIN [Security].[RoleRight] AS rr ON r.RoleId = rr.RoleId
-				INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId 
-				
-				INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
-				INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId
-				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
-				INNER JOIN Enterprise.productright AS pc ON r2.TargetProductId = pc.ProductId 
-			
-			WHERE
-				r2.TargetProductId IN (SELECT TargetProductId FROM @ProductsList2 )
-				AND r2.TargetProductId <> r2.ProductId 
-				AND ulp.OrganizationPartyId = @OrganizationPartyId
-				AND ulp.StatusTypeId = 1
-				AND (@RoleCount IS NULL OR r.ShortName IN (SELECT * FROM @RoleList))
-				AND (@RightCount IS NULL OR r2.RightName IN (SELECT RightName FROM @RightList))
-				AND P.PersonaId NOT IN
+				INSERT INTO  #UserList
 				(
-					SELECT pe.PersonaId
-					FROM Enterprise.MasterConfigurationType mct
-						INNER JOIN Enterprise.MasterSettingType MST ON mst.MasterConfigurationTypeId = mct.MasterCOnfigurationTypeId
-						INNER JOIN Enterprise.MasterSetting ms ON ms.MasterSettingTypeId = mst.MasterSettingTYpeId
-						INNER JOIN Enterprise.Party p ON CONVERT(NVARCHAR(40), p.RealPageId) = ms.Value
-						INNER JOIN ident.UserLogin ul ON UL.PersonPartyId = p.PartyId
-						INNER JOIN Ident.UserLoginPersona ulp ON ul.UserId = ulp.UserLoginId
-						INNER JOIN Person.Persona pe ON pe.UserLoginPersonaId = ulp.UserLoginPersonaId
-					WHERE
-						mct.Name = 'Organization'
-						AND mst.Name = 'RealPageEmployeeAccessID')
+					UserId,   
+					LoginName,   
+					FirstName,   
+					LastName,  
+					PersonaId
+				)
+				SELECT DISTINCT
+					ul.UserId, 
+					ul.LoginName,   
+					p2.FirstName,   
+					p2.LastName,   
+					p.PersonaId
+				FROM Enterprise.PropertyInstanceMapping AS pim
+					INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId
+					INNER JOIN @TableInstance AS ti ON pim.ProductId = ti.productId
+					INNER JOIN #ProductsList2 AS cp ON pim.PersonaId = cp.PersonaId
+					INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
+					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
+					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
+					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
+				WHERE
+					pim.ProductId IN (SELECT ti.ProductId FROM @TableInstance ti WHERE ti.value = '1')
+					AND pi1.InstanceId IN( SELECT propertyGuid FROM @GUIDS)
+					AND ulp.StatusTypeId = 1  
+					AND ulp.OrganizationPartyId = @OrganizationPartyId
+					AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)
+			
+			END
+			
+			INSERT INTO @IDS(propertyId)
+			(
+				SELECT * 
+				FROM STRING_SPLIT(@Properties, ',')  
+				WHERE value NOT LIKE'%-%'
+			)
 
-				
-			))
+			IF EXISTS (SELECT TOP 1 1 FROM @IDS)
+			BEGIN
+				INSERT INTO  #UserList
+				(
+					UserId,   
+					LoginName,   
+					FirstName,   
+					LastName,  
+					PersonaId
+				)
+				SELECT DISTINCT
+					ul.UserId, 
+					ul.LoginName,   
+					p2.FirstName,   
+					p2.LastName,   
+					p.PersonaId
+				FROM Enterprise.propertymapping AS pm
+					INNER JOIN #ProductsList2 AS cp ON pm.PersonaId = cp.PersonaId
+					INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
+					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
+					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
+					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
+				WHERE
+					pm.ProductId IN (SELECT pd.productId
+									FROM @ProductIds pd 
+									WHERE pd.productId NOT IN
+										(
+											SELECT ti.ProductId 
+											FROM @TableInstance ti 
+											WHERE ti.value = '1'))
 
-		INSERT INTO #UserList
-		(UserId, 
-		LoginName, 
-		FirstName, 
-		LastName,
-		PersonaId)
-			SELECT
-				UserId, 
-				LoginName, 
-				FirstName, 
-				LastName,
-				PersonaId
-			FROM Users AS u;
+					AND pm.PropertyId IN( SELECT CONVERT(BIGINT, propertyId) FROM @IDS)
+					AND ulp.StatusTypeId = 1  
+					AND ulp.OrganizationPartyId = @OrganizationPartyId
+					AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)
 
-	END
+				SELECT * FROM #UserList
+				RETURN;
+			END
+		END
 
-	;with totalusers 
-		(UserId, 
-        LoginName, 
-        FirstName, 
-        LastName,
-		PersonaId) AS 
-		( SELECT DISTINCT		   
-			UserId, 
-			LoginName, 
-			FirstName, 
-			LastName,
+		CREATE TABLE #result (Userid BIGINT, LoginName VARCHAR(200),firstname VARCHAR(200),Lastname VARCHAR(200),personaid INT, TargetProductId INT, ProductId INT)
+
+		INSERT INTO #result
+		SELECT distinct
+			ul.UserId, 
+			ul.LoginName,   
+			p2.FirstName,   
+			p2.LastName,   
+			p.PersonaId ,
+			r2.TargetProductId,
+			r2.ProductId
+		FROM #ProductsList2 AS cp  
+			INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId  
+			INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId  
+			INNER JOIN [Security].[Role] AS r ON pr.RoleId = r.RoleId AND cp.ProductId = r.ProductId  
+			INNER JOIN [Security].[RoleRight] AS rr ON r.RoleId = rr.RoleId  
+			INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId  
+			INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
+			INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
+			INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId  
+		WHERE   
+			ulp.StatusTypeId = 1  
+			AND ulp.OrganizationPartyId = @OrganizationPartyId  
+			AND (@RoleCount IS NULL OR r.ShortName IN (SELECT RoleShortName FROM @RoleList))  
+			AND (@RightCount IS NULL OR r2.RightName IN (SELECT RightName FROM @RightList))  
+  
+			AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)  
+  
+		;WITH Users  
+		AS   
+		((  
+			SELECT DISTINCT
+				r2.UserId,   
+				r2.LoginName,   
+				r2.FirstName,   
+				r2.LastName,   
+				r2.PersonaId  
+			FROM #result r2  
+				INNER JOIN Enterprise.PersonaConfiguration AS pc ON pc.PersonaId = r2.PersonaId   
+			UNION  
+			SELECT DISTINCT
+				r2.UserId,   
+				r2.LoginName,   
+				r2.FirstName,   
+				r2.LastName,   
+				r2.PersonaId  
+			FROM #result r2
+				INNER JOIN Enterprise.productright AS pc ON r2.TargetProductId = pc.ProductId   
+			WHERE  
+				r2.TargetProductId IN (SELECT TargetProductId FROM #ProductsList2 )  
+				AND (r2.TargetProductId <> r2.ProductId)
+		))  
+  
+		INSERT INTO #UserList  
+		(
+			UserId,   
+			LoginName,   
+			FirstName,   
+			LastName,  
 			PersonaId
-		FROM #UserList ul)
+		)  
+		SELECT  DISTINCT
+			UserId,   
+			LoginName,   
+			FirstName,   
+			LastName,  
+			PersonaId  
+		FROM Users AS u;  
+	END  
+	
+	CREATE TABLE #totalusers (UserId int,LoginName varchar(200),FirstName varchar(200), LastName varchar(200),  
+	PersonaId  int)
+ 
+	INSERT INTO #totalusers
+	SELECT DISTINCT       
+		UserId,   
+		LoginName,   
+		FirstName,   
+		LastName,  
+		PersonaId  
+	FROM #UserList  
 
-		SELECT
-			UserId, 
-            LoginName, 
-            FirstName, 
-            LastName,
-			PersonaId,
-			COUNT(1) OVER() AS TotalRecords
-		FROM totalusers		   
-        
-        ORDER BY UserId
-        OFFSET((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT(@RowsPerPage) ROWS ONLY;
+	SELECT  
+		UserId,   
+		LoginName,   
+		FirstName,   
+		LastName,  
+		PersonaId,  
+		COUNT(1) OVER() AS TotalRecords  
+	FROM #totalusers       
+		ORDER BY UserId  
+		OFFSET((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT(@RowsPerPage) ROWS ONLY;  
 
 END;
