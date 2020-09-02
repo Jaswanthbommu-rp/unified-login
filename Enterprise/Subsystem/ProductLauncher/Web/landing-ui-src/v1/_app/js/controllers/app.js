@@ -114,7 +114,7 @@
             });
 
             omnibar.addEventListener('omnibarChangeCompany', function(e) {
-                $window.location.href = rootPath + "home/access/" + sessionModel.getRealPageId() + "/" + e.detail;
+                $window.location.href = rootPath + "home/access/" + sessionModel.getRealPageId() + "|" + e.detail;
             });
 
             if (token && username) {
