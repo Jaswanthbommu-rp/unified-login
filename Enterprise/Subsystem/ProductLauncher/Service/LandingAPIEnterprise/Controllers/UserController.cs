@@ -972,8 +972,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s) with the product details.")]
-        //[SwaggerResponseExamples(typeof(UserProductDetailLoginExample), typeof(EnterpriseGetUsersProductsDetailsLoginExample))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of User(s) with the product details.", Type = typeof(UserProductDetailLogin))]
+        [SwaggerResponseExamples(typeof(UserProductDetailLogin), typeof(GetUserProductsDetailsLoginExample))]
         [Route("user/products/details/login")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
@@ -1969,7 +1969,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		/// Used to document examples of the webapi result
 		/// </summary>
 		[ExcludeFromCodeCoverage]
-        public class EnterpriseGetUsersProductsDetailsLoginExample : IProvideExamples
+        public class GetUserProductsDetailsLoginExample : IProvideExamples
         {
             /// <summary>
             /// Example object data used by Swagger to document the output of the webapi method
@@ -1977,13 +1977,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             /// <returns>Enterprise User Product Details Login example</returns>
             public object GetExamples()
             {
+                List<Dictionary<string, string>> detailsProduct1 = new List<Dictionary<string, string>>();
+                List<Dictionary<string, string>> detailsProduct2 = new List<Dictionary<string, string>>();
+
+
+                Dictionary<string, string> detail1 = new Dictionary<string, string>
+                {
+                    {"name","productUsername" },
+                    { "value","unity"}
+                };
+
+                Dictionary<string, string> detail2 = new Dictionary<string, string>
+                {
+                    {"name","UserId" },
+                    { "value","rpi-vidya|unity"}
+                };
+
+                detailsProduct1.Add(detail1);
+                detailsProduct1.Add(detail2);
+
+                Dictionary<string, string> detail3 = new Dictionary<string, string>
+                {
+                    {"name","productUsername" },
+                    { "value","cfadmin@test.com"}
+                };
+
+                Dictionary<string, string> detail4 = new Dictionary<string, string>
+                {
+                    {"name","UserId" },
+                    { "value","00529000001F1nnAAC"}
+                };
+
+                Dictionary<string, string> detail5 = new Dictionary<string, string>
+                {
+                    {"name","portal_id" },
+                    { "value","060000000005YDy"}
+                };
+
+                Dictionary<string, string> detail6 = new Dictionary<string, string>
+                {
+                    {"name","organization_id" },
+                    { "value","00D290000000XyT"}
+                };
+
+                detailsProduct2.Add(detail3);
+                detailsProduct2.Add(detail4);
+                detailsProduct2.Add(detail5);
+                detailsProduct2.Add(detail6);
+
                 List<UserProductDetailLoginExample> response = new List<UserProductDetailLoginExample>
                 {
                     new UserProductDetailLoginExample
                     {
                         ProductCode = "ACCT",
                         ProductId = 8,
-                        Details = new List<Dictionary<string,string>>()
+                        Details = detailsProduct1
+                    },
+
+                    new UserProductDetailLoginExample
+                    {
+                        ProductCode = "OMS",
+                        ProductId = 14,
+                        Details = detailsProduct2
                     }
                 };
 
