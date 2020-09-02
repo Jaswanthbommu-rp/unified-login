@@ -1,11 +1,19 @@
 ﻿using Newtonsoft.Json.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
+using Serilog;
+using Serilog.Events;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -14,14 +22,6 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using Serilog;
-using Serilog.Events;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -32,6 +32,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private ProductInternalSettingRepository _productInternalSettingRepository;
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
+        private IManageOrganizationProduct _manageOrganizationProduct;
+        private IOrganizationProductRepository _organizationProductRepository;
 
         public WebHookController()
         {
@@ -45,6 +47,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageOrganization = new ManageOrganization(repository, userClaim);
             _manageBlueBook = new ManageBlueBook(userClaim, _productInternalSettingRepository, messageHandler);
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
             _userClaims = userClaim;
         }
 
@@ -59,6 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageOrganization = new ManageOrganization();
+            _organizationProductRepository = new OrganizationProductRepository();
+            _manageOrganizationProduct = new ManageOrganizationProduct(_organizationProductRepository);
             _manageBlueBook = new ManageBlueBook(_userClaims);
         }
 
@@ -199,7 +205,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var customerCompanyId = Convert.ToInt64(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
                             var customerDomain = thinEvent.Payload?["customerEnvironment"].ToString();
                             var propertyList = thinEvent.Payload["properties"];
+                            string existingUnifiedLoginInstanceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
+                            
                             List<int> productIdList = new List<int>();
+                            List<UPFMPropertyInstance> propertyInstanceList = new List<UPFMPropertyInstance>();
                             try
                             {
                                 foreach (var property in propertyList)
@@ -213,12 +222,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                             productIdList.Add(productId);
                                         }
                                     }
+
+                                    string existingUPFMPropertyInstanceId = property["propertyInstanceSourceId"] == null || property["propertyInstanceSourceId"].Type == JTokenType.Null ? null : property["propertyInstanceSourceId"].ToString();
+                                    var newProperty = 
+                                    new UPFMPropertyInstance()
+                                    {
+                                        Name = property["propertyName"].ToString(),
+                                        City = property["city"] == null || property["city"].Type == JTokenType.Null ? null : property["city"].ToString(),
+                                        State = property["state"] == null || property["state"].Type == JTokenType.Null ? null : property["state"].ToString(),
+                                        County = property["county"] == null || property["county"].Type == JTokenType.Null ? null : property["county"].ToString(),
+                                        Address = property["address"] == null || property["address"].Type == JTokenType.Null ? null : property["address"].ToString(),
+                                        Country = property["country"] == null || property["country"].Type == JTokenType.Null ? null : property["country"].ToString(),
+                                        PostalCode = property["postalCode"] == null || property["postalCode"].Type == JTokenType.Null ? null : property["postalCode"].ToString(),
+                                        Longitude = Convert.ToDecimal(property?["longitude"] == null || property["longitude"].Type == JTokenType.Null ? 0 : property["longitude"]),
+                                        Latitude = Convert.ToDecimal(property?["latitude"] == null || property["latitude"].Type == JTokenType.Null ? 0 : property["latitude"]),
+                                        CustomerPropertyId = property["customerPropertyId"] == null || property["customerPropertyId"].Type == JTokenType.Null ? null : property["customerPropertyId"].ToString(),
+                                        InstanceId = existingUPFMPropertyInstanceId == null ? Guid.Empty : new Guid(existingUPFMPropertyInstanceId),
+                                        Domain = customerDomain // not sure how this can be correct
+                                    };
+
+                                    // 
+                                    if (newProperty.Longitude == 0 || newProperty.Latitude == 0)
+                                    {
+                                        try
+                                        {
+                                            var propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(newProperty.CustomerPropertyId);
+                                            if (!string.IsNullOrEmpty(propertyDetails?.attributes?.address?.longitude) && !string.IsNullOrEmpty(propertyDetails?.attributes?.address?.latitude))
+                                            {
+                                                newProperty.Longitude = Convert.ToDecimal(propertyDetails.attributes.address.longitude);
+                                                newProperty.Latitude = Convert.ToDecimal(propertyDetails.attributes.address.latitude);
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                        }
+                                    }
+                                    propertyInstanceList.Add(newProperty);
+
                                 }
                             }
                             catch (Exception ex)
                             {
                                 logData = new Dictionary<string, object> { { "error", ex.Message } };
-                                WriteToLog(LogEventLevel.Error, "Error parsing product list", logData);
+                                WriteToLog(LogEventLevel.Error, "Error parsing property list", logData);
                             }
 
                             if (string.IsNullOrEmpty(customerDomain))
@@ -228,8 +274,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 return response;
                             }
 
-                            if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
+                            if (existingUnifiedLoginInstanceId == null)
+                            //if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
                             {
+                                return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
                                 string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
                                 if (!string.IsNullOrEmpty(createResult))
                                 {
@@ -242,7 +290,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     }
                                 }
                             }
-
+                            else
+                            {
+                                var org = _manageOrganization.GetOrganization(new Guid(existingUnifiedLoginInstanceId));
+                                if (org != null)
+                                {
+                                    var cacheKey = $"getProductsByCompany_{org.RealPageId}";
+                                    RPObjectCache.RemoveFromCache(cacheKey);
+                                    
+                                    var existingProductList = _organizationRepository.GetProductsByCompany(org.RealPageId);
+                                    foreach (var productId in productIdList)
+                                    {
+                                        if (existingProductList.All(p => p.ProductId != productId))
+                                        {
+                                            var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: (ProductEnum) productId, configurationId: null, fromDate: null, thruDate: null);
+                                            // post back to books?
+                                            _manageBlueBook.AddBooksGreenBookPropertyInstance(property);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // add any new properties
+                            string propertyResult = AddPropertiesFromBooks(propertyInstanceList);
                             break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
@@ -257,6 +327,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             logData.Add("response.StatusCode", response.StatusCode);
             WriteToLog(LogEventLevel.Debug, "PostBooks : Complete", logData);
             return response;
+        }
+
+        private string AddPropertiesFromBooks(List<UPFMPropertyInstance> propertyInstanceList)
+        {
+            string result = "";
+            foreach (var property in propertyInstanceList)
+            {
+                if (property.InstanceId == Guid.Empty)
+                {
+                    // add instance to db
+                    var response = _propertyRepository.InsertUPFMPropertyInstance(property);
+                    if (response.ErrorMessage.Length == 0)
+                    {
+                        // insert to books
+                        property.InstanceId = response.RealPageId;
+
+                    }
+
+                    
+                }
+
+            }
+
+            return result;
         }
 
         private IList<ProductInternalSetting> GetUnifiedPlatformSettings()

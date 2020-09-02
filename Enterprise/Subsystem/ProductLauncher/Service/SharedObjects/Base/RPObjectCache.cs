@@ -99,6 +99,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
         }
 
         /// <summary>
+        /// Removes the key from the cache
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        public static void RemoveFromCache(string cacheKey)
+        {
+            MemoryCache.Default.Remove(cacheKey);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         public void BustCache()

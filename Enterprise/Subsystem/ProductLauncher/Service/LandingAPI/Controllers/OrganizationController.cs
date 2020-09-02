@@ -207,6 +207,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             //return Request.CreateResponse(HttpStatusCode.OK, result.obj);
 
+            if (companyMapResource == null)
+            {
+                // add the new company data back to books
+                _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+            }
+
+            /*
+             // we may need this later, keeping for now
             if (companyMapResource != null)
             {
                 // remove any existing instance and add a new one
@@ -227,9 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                 }
             }
-
-            // add the new company data back to books
-            _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+            */
 
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
         }
@@ -491,13 +497,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 foundInstance = true;
                             }
                         });
-                        if (deleteInstance)
-                        {
-                            if (commit)
-                            {
-                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
-                            }
-                        }
+                        // stop deleting instances for now
+                        //if (deleteInstance)
+                        //{
+                        //    if (commit)
+                        //    {
+                        //        _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
+                        //    }
+                        //}
                     }
                 }
 
