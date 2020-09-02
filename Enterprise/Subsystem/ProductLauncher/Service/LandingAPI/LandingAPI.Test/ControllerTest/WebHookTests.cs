@@ -447,6 +447,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_null_customercompanyid);
 
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);

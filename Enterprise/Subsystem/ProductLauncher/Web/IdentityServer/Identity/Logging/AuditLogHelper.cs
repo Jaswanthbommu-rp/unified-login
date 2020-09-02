@@ -20,13 +20,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Identity.Logging
 
             //Log.ForContext("AdditionalInfo", webInfo).Write( LogEventLevel.Error, ex, ex.Message);
             var logger = Log.Logger;
-            if (webInfo?.Keys != null)
-            {
-                foreach (var key in webInfo?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", webInfo[key], true);
-                }
-            }
+			if (logData?.Keys != null)
+			{
+				logger = logger.ForContext($"AdditionalInfo", logData, true);
+			}
 			//logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(LogEventLevel.Error, ex, ex.Message );
         }
