@@ -888,3 +888,127 @@ BEGIN
 
 	SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
 END
+GO
+DECLARE @UserId bigint,
+    @Now datetime = GETDATE();
+
+SELECT	@UserId = UserId
+FROM	Ident.UserLogin
+WHERE	LoginName LIKE 'realpagead@%' 
+	
+--Onesite
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 109 and ParentControlId = 102 and [Sequence] = 2)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 109
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 103
+END
+IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 103 and ControlAttributeId = 6)
+BEGIN
+  UPDATE UserManagement.ControlAttribute SET ControlId = 109 WHERE ControlId = 103 and ControlAttributeId = 6
+END
+
+--Financial Suite 
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 533 and ParentControlId = 516 and [Sequence] = 7)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 5  where ControlID = 533
+	UPDATE UserManagement.Control  SET [Sequence] = 6  where ControlID = 521
+	UPDATE UserManagement.Control  SET [Sequence] = 7  where ControlID = 526
+END
+IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 521 and ControlAttributeId = 131)
+BEGIN
+  UPDATE UserManagement.ControlAttribute SET ControlId = 534 WHERE ControlId = 521 and ControlAttributeId = 131
+END
+
+--Unified Amenities
+
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 196 and ParentControlId = 190 and [Sequence] = 2)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 196
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 191
+END
+
+-- Resident Portal
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 405 and ParentControlId = 399 and [Sequence] = 2)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 405
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 400
+END
+
+-- On-ste
+
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 176 and ParentControlId = 164 and [Sequence] = 3)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 176
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 165
+	UPDATE UserManagement.Control  SET [Sequence] = 3  where ControlID = 169
+END
+
+IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 169 and ControlAttributeId = 28)
+BEGIN
+  UPDATE UserManagement.ControlAttribute SET ControlId = 176 WHERE ControlId = 169 and ControlAttributeId = 28
+END
+
+--Marketing Center
+
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 130 and ParentControlId = 119 and [Sequence] = 3)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 130
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 124
+END
+
+IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 124 and ControlAttributeId = 8)
+BEGIN
+  UPDATE UserManagement.ControlAttribute SET ControlId = 130 WHERE ControlId = 124 and ControlAttributeId = 8
+END
+
+--ILM-Lead Management
+
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 225 and ParentControlId = 219 and [Sequence] = 2)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 225
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 220
+END
+
+IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 220 and ControlAttributeId = 40)
+BEGIN
+	UPDATE UserManagement.ControlAttribute SET ControlId = 225 WHERE ControlId = 220 and ControlAttributeId = 40
+END
+
+IF NOT EXISTS(select TOP 1 1 from UserManagement.ControlAttribute where ControlId in (220,225))
+BEGIN
+	INSERT [UserManagement].[ControlAttribute] ([ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (225, N'Default', N'True', @UserId, @Now)
+END
+
+--ILM-Leasing Analytics
+
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 215 and ParentControlId = 205 and [Sequence] = 3)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 215
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 206
+	UPDATE UserManagement.Control  SET [Sequence] = 3  where ControlID = 210
+END
+
+IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 206 and ControlAttributeId = 38)
+BEGIN
+	UPDATE UserManagement.ControlAttribute SET ControlId = 215  where ControlId = 206 and ControlAttributeId = 38
+END
+
+IF NOT EXISTS(select TOP 1 1 from UserManagement.ControlAttribute where ControlId in (206,215))
+BEGIN
+	INSERT [UserManagement].[ControlAttribute] ([ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+	VALUES (215, N'Default', N'True', @UserId, @Now)
+END
+
+--Client Portal
+
+IF EXISTS (select TOP 1 1 from UserManagement.Control where ControlId = 68 and ParentControlId = 66 and [Sequence] = 2)
+BEGIN
+	UPDATE UserManagement.Control  SET [Sequence] = 1  where ControlID = 68
+	UPDATE UserManagement.Control  SET [Sequence] = 2  where ControlID = 67
+END
+
+IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 67 and ControlAttributeId = 2)
+BEGIN
+	UPDATE UserManagement.ControlAttribute SET ControlId = 68 WHERE ControlId = 67 and ControlAttributeId = 2
+END
