@@ -19,7 +19,7 @@ BEGIN
 	DECLARE @OrganizationPartyId BIGINT
 	DECLARE @ProductIds Enterprise.ProductIdType
 
-	DECLARE @ProductsList2 TABLE
+	CREATE TABLE #ProductsList2
 	(
 		PersonaId			BIGINT,
 		ProductId			INT,
@@ -110,7 +110,7 @@ BEGIN
 		WHERE
 			dim.SourceId = @companyid;
 
-		INSERT INTO @ProductsList2
+		INSERT INTO #ProductsList2
 			EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
 		
 		IF EXISTS(SELECT TOP 1 1 FROM STRING_SPLIT(@Properties,','))
