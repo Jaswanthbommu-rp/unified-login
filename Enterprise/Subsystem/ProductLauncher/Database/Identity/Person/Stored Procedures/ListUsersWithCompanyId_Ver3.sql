@@ -19,7 +19,7 @@ BEGIN
 	DECLARE @OrganizationPartyId BIGINT
 	DECLARE @ProductIds Enterprise.ProductIdType
 
-	CREATE TABLE #ProductsList2
+	create table #ProductsList2
 	(
 		PersonaId			BIGINT,
 		ProductId			INT,
