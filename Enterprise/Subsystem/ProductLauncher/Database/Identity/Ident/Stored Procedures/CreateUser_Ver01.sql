@@ -155,11 +155,14 @@ BEGIN
 
 		IF(@UserType IN('User (No Email)', 'User') AND @ThirdPartyIDP = '0')
 		BEGIN
-			UPDATE	Ident.UserLogin
-			SET			PasswordHash = @Pwdhash,
-							PasswordSalt = @PwdSalt,
-							PasswordModifiedDate = DATEADD(YEAR, 50, GETDATE())
-			WHERE UserId = @UserId;
+			IF(@Pwdhash <> '')
+			BEGIN
+				UPDATE	Ident.UserLogin
+				SET			PasswordHash = @Pwdhash,
+								PasswordSalt = @PwdSalt,
+								PasswordModifiedDate = DATEADD(YEAR, 50, GETDATE())
+				WHERE UserId = @UserId;
+			END
 
 			UPDATE	Ident.UserLoginPersona
 			SET			StatusThruDate = DATEADD(day, 3, FromDate)

@@ -88,7 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 
 			// get password hash for local IDP
-			if (!userProductDetails.UserProfileDetails.IsExternalIdp)
+			if (!userProductDetails.UserProfileDetails.IsExternalIdp && !(userProductDetails.UserProfileDetails.SendInvitationEmail ?? false))
 			{
 				// Get password hash & salt
 				var pwd = userProductDetails.UserProfileDetails.Password.PasswordHash();
@@ -123,9 +123,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			WriteToLog(LogType.Diagnostic, $"Received new user id {userRealPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			//TODO: Test conditions for email - Idp, future date etc
+			bool isMailNotified = false;
 			if (userProductDetails.UserProfileDetails.SendInvitationEmail ?? false)
 			{
-				SendInvitationEmail(new Guid(userRealPageId));
+				isMailNotified = SendInvitationEmail(new Guid(userRealPageId));
 			}
 
 			WriteToLog(LogType.Diagnostic, $"Adding activity log for new user with RealPage id {userRealPageId} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
@@ -151,7 +152,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			WriteToLog(LogType.Diagnostic, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
 
 			LogAuditActivity(LogActivityTypeConstants.CREATE_USER, LogActivityCategoryType.User, "New User {0} {1} successfully created by user {2} {3} using enterprise API.", "CreateUser", newUserDetails);
-
+			if (userProductDetails.UserProfileDetails.SendInvitationEmail ?? false)
+			{
+				if (isMailNotified)
+				{
+					//Log Activity
+					LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, "Welcome Email sent to user {0} {1} by user {2} {3}.", "CreateUser", newUserDetails);
+				}
+			}
 			response.Data = userRealPageId;
 
 			return response;
@@ -563,14 +571,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			return productBatch;
 		}
 
-		private void SendInvitationEmail(Guid userRealPageId)
+		private bool SendInvitationEmail(Guid userRealPageId)
 		{
 			var profileLogic = new ManageProfile(_userClaims);
 			IProfileDetail profileDetail = new ProfileDetail();
             profileDetail = profileLogic.GetProfileDetail(userRealPageId, _userClaims.OrganizationPartyId);
 
 			IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_userClaims);
-			bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(profileDetail);
+			return manageUserRegistrationEmail.SendNewUserRegistrationEmail(profileDetail);
 		}
 
 		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,

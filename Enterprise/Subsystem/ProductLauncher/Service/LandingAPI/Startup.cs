@@ -62,7 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             //app.UseCors(Microsoft.Owin.Cors.CorsOptions.AllowAll);
             app.UseWebApi(config);
 
-            if (!(ConfigReader.Environment == "PROD" || ConfigReader.Environment == "SAT"))
+            if (!(ConfigReader.Environment == "PROD" ))
             {
                 SwaggerConfig.Register(config);
             }
