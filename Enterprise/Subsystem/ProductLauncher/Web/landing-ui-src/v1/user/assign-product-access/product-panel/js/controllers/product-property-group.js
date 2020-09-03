@@ -126,8 +126,7 @@
                     var initialTab = [];
                     var filteredAllTabs = allTabs.filter(function (tb) {
                         if (tb.text != "Companies") {
-                            if (tb.text == "Entities") {
-                                tb.isActive = true;
+                            if (tb.isActive === true) {
                                 initialTab.push(tb);
                             }
                             return tb;
