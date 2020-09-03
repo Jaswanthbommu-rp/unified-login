@@ -161,7 +161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo", logData, true);
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(logType, exception, message );
