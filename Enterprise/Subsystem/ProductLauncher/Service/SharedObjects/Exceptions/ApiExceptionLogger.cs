@@ -52,13 +52,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Except
             }
 
             var logger = Serilog.Log.Logger;
-            if (AdditionalInfo?.Keys != null)
-            {
-                foreach (var key in AdditionalInfo?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", AdditionalInfo[key], true);
-                }
-            }
+			if (AdditionalInfo?.Keys != null)
+			{
+				logger = logger.ForContext($"AdditionalInfo", AdditionalInfo, true);
+			}
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(LogEventLevel.Error, context.Exception, context.Exception.Message);
             // CorrelationId used as a key to search exception in the database

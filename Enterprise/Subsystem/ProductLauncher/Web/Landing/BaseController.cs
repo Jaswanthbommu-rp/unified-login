@@ -78,13 +78,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
             var logger = Log.Logger;
-            if (logData?.Keys != null)
-            {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
-            }
+			if (logData?.Keys != null)
+			{
+				logger = logger.ForContext($"AdditionalInfo", logData, true);
+			}
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(logType, exception, message );
 		}
