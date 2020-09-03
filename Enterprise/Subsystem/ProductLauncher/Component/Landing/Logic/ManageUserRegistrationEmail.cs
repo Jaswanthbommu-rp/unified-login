@@ -176,13 +176,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         message = $"SendNewUserRegistrationEmail - email body generated - {userLoginOnly.RealPageId}";
                         
                         var logger = Log.Logger;
-                        if (logData?.Keys != null)
-                        {
-                            foreach (var key in logData?.Keys)
-                            {
-                                logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                            }
-                        }
+						if (logData?.Keys != null)
+						{
+							logger = logger.ForContext($"AdditionalInfo", logData, true);
+						}
 						logger = logger.ForContext("ProductModule", this.GetType());
                         logger.Write(LogEventLevel.Information, message );
                     }
