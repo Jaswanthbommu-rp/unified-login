@@ -264,7 +264,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             {
                 {"userid", user.UserId.ToString()},
                 {"user.LoginName", user.LoginName},
-                {"claims", claims}
             });
             
             // call changecompany notification event
@@ -273,9 +272,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
                 DoChangeCompanyEvent(originalPersona);
             }
             context.AuthenticateResult = new AuthenticateResult(user.UserId.ToString(), user.LoginName, claims, idp);
-
-            WriteToLog(LogEventLevel.Debug, "PreAuthenticateAsync: AuthenticateResult ", new Guid(correlationId), new Dictionary<string, object>
-                { { "AuthenticateResult", context.AuthenticateResult } });
         }
 
         private void DoChangeCompanyEvent(long userPersonaId)
@@ -1016,9 +1012,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
             var logger = Log.Logger;
 			if (logData?.Keys != null)
 			{
-				logger = logger.ForContext($"AdditionalInfo", logData, true);
+				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 			}
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
         }
 

@@ -1,7 +1,7 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
@@ -11,10 +11,10 @@ using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	/// <summary>
-	/// Manage StatusType repository calls
-	/// </summary>
-	public class ManageStatusType : IManageStatusType
+    /// <summary>
+    /// Manage StatusType repository calls
+    /// </summary>
+    public class ManageStatusType : IManageStatusType
 	{
 		#region Private Variables
 		IStatusTypeRepository _statusTypeRepository;
@@ -104,9 +104,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo", logData, true);
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId.ToString());
             logger.Write(logType, exception, message );
 		}
 

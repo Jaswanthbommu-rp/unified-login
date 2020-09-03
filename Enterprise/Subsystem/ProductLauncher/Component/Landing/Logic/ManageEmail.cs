@@ -2,7 +2,6 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -362,12 +361,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="exception">Exception</param>
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
+            string correlationId = "";
+            if (_defaultUserClaim != null)
+            {
+                correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
+            }
+
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo", logData, true);
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Newtonsoft.Json.Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
         }
 
