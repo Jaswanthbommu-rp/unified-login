@@ -19,7 +19,7 @@ BEGIN
 	DECLARE @OrganizationPartyId BIGINT
 	DECLARE @ProductIds Enterprise.ProductIdType
 
-	create table #ProductsList2
+	CREATE TABLE #ProductsList2
 	(
 		PersonaId			BIGINT,
 		ProductId			INT,
@@ -42,13 +42,6 @@ BEGIN
 		FROM STRING_SPLIT(@ProductId, ',')
 		WHERE value IN ('45','39','26','56','3')
 	);
-
-	IF (EXISTS (SELECT 1 FROM @ProductIds WHERE ProductId IN ('45','56')) AND NOT EXISTS (SELECT 1 FROM @ProductIds WHERE ProductId = '3'))
-	BEGIN
-		delete from @ProductIds WHERE ProductId IN ('45','56')
-		INSERT INTO @ProductIds(ProductId)
-		SELECT '3'
-	END
 
 	INSERT INTO @RoleList(RoleShortName)
     (
@@ -121,19 +114,23 @@ BEGIN
 		BEGIN
 			DECLARE @IDS TABLE(propertyId NVARCHAR(255)) 
 			DECLARE @TableInstance TABLE(value varchar(2) , productId int);
+			DECLARE @ProductIdsAux TABLE(ProductId INT);
+
+			INSERT INTO @ProductIdsAux (ProductId)
+				SELECT CASE WHEN ProductId = 45 OR ProductId = 56 THEN 3 ELSE ProductId END FROM @ProductIds; 
 
 			INSERT INTO @TableInstance(value , productId)
 			(
 				SELECT	
 					CASE WHEN ps.Value IS NULL THEN '0' ELSE ps.Value END AS value,
-					pd.ProductId
+					pdx.ProductId
 				FROM	Enterprise.GlobalProductConfiguration gpc
 						JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
 						JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
 						JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-						JOIN @ProductIds AS pd ON gpc.ProductId = pd.ProductId
+						JOIN @ProductIdsAux AS pdx ON gpc.ProductId = pdx.ProductId
 				WHERE  
-				gpc.ProductId IN (SELECT CASE WHEN ProductId = 45 OR ProductId = 56 THEN 3 ELSE ProductId END FROM @ProductIds) 
+				gpc.ProductId IN (SELECT ProductId FROM @ProductIdsAux) 
 				AND (gpc.ThruDate IS NULL)
 				AND ( pc.ThruDate IS NULL)
 				AND ( ps.ThruDate IS NULL)
@@ -210,9 +207,9 @@ BEGIN
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
 				WHERE
-					pm.ProductId IN (SELECT  CASE WHEN pd.productId = 45 OR pd.productId = 56 THEN 3 ELSE pd.productId END
-									FROM @ProductIds pd 
-									WHERE pd.productId NOT IN
+					pm.ProductId IN (SELECT ProductId
+									FROM @ProductIdsAux pdx 
+									WHERE pdx.productId NOT IN
 										(
 											SELECT ti.ProductId 
 											FROM @TableInstance ti 
