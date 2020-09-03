@@ -19,7 +19,7 @@ BEGIN
 	DECLARE @OrganizationPartyId BIGINT
 	DECLARE @ProductIds Enterprise.ProductIdType
 
-	create table #ProductsList2
+	CREATE TABLE #ProductsList2
 	(
 		PersonaId			BIGINT,
 		ProductId			INT,
@@ -42,6 +42,13 @@ BEGIN
 		FROM STRING_SPLIT(@ProductId, ',')
 		WHERE value IN ('45','39','26','56','3')
 	);
+
+	IF (EXISTS (SELECT 1 FROM @ProductIds WHERE ProductId IN ('45','56')) AND NOT EXISTS (SELECT 1 FROM @ProductIds WHERE ProductId = '3'))
+	BEGIN
+		delete from @ProductIds WHERE ProductId IN ('45','56')
+		INSERT INTO @ProductIds(ProductId)
+		SELECT '3'
+	END
 
 	INSERT INTO @RoleList(RoleShortName)
     (
@@ -109,9 +116,6 @@ BEGIN
 		FROM Enterprise.DataImportMapping AS dim
 		WHERE
 			dim.SourceId = @companyid;
-
-		INSERT INTO #ProductsList2
-			EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
 		
 		IF EXISTS(SELECT TOP 1 1 FROM STRING_SPLIT(@Properties,','))
 		BEGIN
@@ -129,7 +133,7 @@ BEGIN
 						JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
 						JOIN @ProductIds AS pd ON gpc.ProductId = pd.ProductId
 				WHERE  
-				gpc.ProductId IN (SELECT ProductId FROM @ProductIds) 
+				gpc.ProductId IN (SELECT CASE WHEN ProductId = 45 OR ProductId = 56 THEN 3 ELSE ProductId END FROM @ProductIds) 
 				AND (gpc.ThruDate IS NULL)
 				AND ( pc.ThruDate IS NULL)
 				AND ( ps.ThruDate IS NULL)
@@ -164,8 +168,7 @@ BEGIN
 				FROM Enterprise.PropertyInstanceMapping AS pim
 					INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId
 					INNER JOIN @TableInstance AS ti ON pim.ProductId = ti.productId
-					INNER JOIN #ProductsList2 AS cp ON pim.PersonaId = cp.PersonaId
-					INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
+					INNER JOIN Person.Persona AS p ON pim.PersonaId = p.PersonaId
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
@@ -202,13 +205,12 @@ BEGIN
 					p2.LastName,   
 					p.PersonaId
 				FROM Enterprise.propertymapping AS pm
-					INNER JOIN #ProductsList2 AS cp ON pm.PersonaId = cp.PersonaId
-					INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
+					INNER JOIN Person.Persona AS p ON pm.PersonaId = p.PersonaId
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
 				WHERE
-					pm.ProductId IN (SELECT pd.productId
+					pm.ProductId IN (SELECT  CASE WHEN pd.productId = 45 OR pd.productId = 56 THEN 3 ELSE pd.productId END
 									FROM @ProductIds pd 
 									WHERE pd.productId NOT IN
 										(
@@ -220,14 +222,15 @@ BEGIN
 					AND ulp.StatusTypeId = 1  
 					AND ulp.OrganizationPartyId = @OrganizationPartyId
 					AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)
-
-				SELECT * FROM #UserList
-				RETURN;
 			END
 		END
 
 		IF (@RoleCount IS NOT NULL OR @RightCount IS NOT NULL)
 		BEGIN
+
+			INSERT INTO #ProductsList2
+				EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
+
 			CREATE TABLE #result (Userid BIGINT, LoginName VARCHAR(200),firstname VARCHAR(200),Lastname VARCHAR(200),personaid INT, TargetProductId INT, ProductId INT)
 
 			INSERT INTO #result
