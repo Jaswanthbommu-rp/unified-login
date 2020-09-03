@@ -916,7 +916,7 @@ BEGIN
 END
 IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 521 and ControlAttributeId = 131)
 BEGIN
-  UPDATE UserManagement.ControlAttribute SET ControlId = 534 WHERE ControlId = 521 and ControlAttributeId = 131
+  UPDATE UserManagement.ControlAttribute SET ControlId = 533 WHERE ControlId = 521 and ControlAttributeId = 131
 END
 
 --Unified Amenities
