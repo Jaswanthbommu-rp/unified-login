@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
 {
@@ -45,10 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 };
 
                 var logger = Log.Logger;
-				if (logData?.Keys != null)
-				{
-					logger = logger.ForContext($"AdditionalInfo", logData, true);
-				}
+				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, ex, ex.Message);
 
@@ -81,10 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 };
 
                 var logger = Log.Logger;
-				if (logData?.Keys != null)
-				{
-					logger = logger.ForContext($"AdditionalInfo", logData, true);
-				}
+				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger.Write(LogEventLevel.Error, ex, ex.Message);
                 cache.Remove(key);

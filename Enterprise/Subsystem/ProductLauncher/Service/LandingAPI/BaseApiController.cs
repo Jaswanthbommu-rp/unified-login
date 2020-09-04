@@ -2,7 +2,6 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -15,6 +14,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
 {
@@ -157,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo", logData, true);
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger.Write(LogEventLevel.Error, exception, message );
@@ -173,9 +173,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                logger = logger.ForContext($"AdditionalInfo", logData, true);
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", _correlationId.ToString());
             logger.Write(LogEventLevel.Debug, message );
         }
     }
