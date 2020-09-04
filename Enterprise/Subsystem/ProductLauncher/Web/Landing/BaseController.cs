@@ -1,5 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
@@ -12,7 +12,7 @@ using System.Web.Routing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
-	public abstract class BaseController : Controller
+    public abstract class BaseController : Controller
 	{
 		/// <summary>
 		/// Holds default user claim related information
@@ -77,12 +77,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 
 		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
+            string correlationId = "";
+            if (_userClaims != null)
+            {
+                correlationId = (_userClaims.CorrelationId != Guid.Empty) ? _userClaims.CorrelationId.ToString() : "";
+            }
             var logger = Log.Logger;
 			if (logData?.Keys != null)
 			{
-				logger = logger.ForContext($"AdditionalInfo", logData, true);
+				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 			}
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
 		}
 

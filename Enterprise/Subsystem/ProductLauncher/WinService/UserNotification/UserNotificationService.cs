@@ -203,17 +203,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             try
             {
                 var logger = Log.Logger;
-				if (additionalInfo?.Keys != null)
-				{
-					logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
-				}
+				logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
 				logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", correlationId);
                 logger.Information($"CallApiToSendNotification - Working to send notification to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId);
 
                 var notificationApiCaller = new UserApiCaller();
                 var result = notificationApiCaller.ProcessUserLogins(userList);
 
-                Log.Information($"CallApiToSendNotification - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}. CorrelationId = " + correlationId);
+                logger.Information($"CallApiToSendNotification - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}. CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut($"CallApiToSendNotification - Calling API Completed for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.");
             }
@@ -231,6 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 					logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
 				}
 				logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", correlationId);
                 logger.Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
 
                 Logger.ConsoleOut(ex.InnerException != null
@@ -242,6 +241,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
         private void CallApiToSetPendingToExpireUserStatus(List<ProcessUserLogin> userList)
         {
             string correlationId = Guid.NewGuid().ToString();
+            var logger = Log.Logger;
+
             var additionalInfo = new Dictionary<string, object>
             {
                 {"userList", userList},
@@ -250,7 +251,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
             try
             {
-                Log.Information($"CallApiToSetPendingToExpireUserStatus - Working to set status to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId, additionalInfo);
+                logger = logger.ForContext("AdditionalInfo", additionalInfo);
+                logger.Information($"CallApiToSetPendingToExpireUserStatus - Working to set status to {userList.Count} users hashCode: {userList.GetHashCode()}" + ". CorrelationId = " + correlationId, additionalInfo);
 
                 var apiCaller = new UserApiCaller();
                 var result = apiCaller.ProcessUserLogins(userList);
@@ -260,17 +262,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
                     throw new Exception("CallApiToSetPendingToExpireUserStatus - Null response posting to API");
                 }
 
-                Log.Information($"CallApiToSetPendingToExpireUserStatus - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}" + ".CorrelationId = " + correlationId, additionalInfo);
+                logger.Information($"CallApiToSetPendingToExpireUserStatus - Result received for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}" + ".CorrelationId = " + correlationId, additionalInfo);
 
                 Logger.ConsoleOut($"CallApiToSetPendingToExpireUserStatus - Calling API Completed for {userList.Count} users hashCode: {userList.GetHashCode()} - {result.Result}.");
             }
             catch (Exception ex)
             {
                 // Log the exception.
-                Log.Information($"CallApiToSetPendingToExpireUserStatus - Exception while calling API for product hashCode: {userList.GetHashCode()}" + ".CorrelationId = " + correlationId, additionalInfo);
-
-                Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, ex, ex.Message + ".CorrelationId = " + correlationId);
-
+                
+                logger = logger.ForContext("CorrelationId", correlationId);
+                logger.Write(LogEventLevel.Error, ex, ex.Message);
+                
+                logger.Information($"CallApiToSetPendingToExpireUserStatus - Exception while calling API for product hashCode: {userList.GetHashCode()}" + ".CorrelationId = " + correlationId);
                 Logger.ConsoleOut(ex.InnerException != null
                     ? $"CallApiToSetPendingToExpireUserStatus - {ex.InnerException.Message}"
                     : $"CallApiToSetPendingToExpireUserStatus - {ex.Message}");

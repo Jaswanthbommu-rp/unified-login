@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
@@ -1110,12 +1111,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 //Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, "Activity Token is expired.");
                 var logger = Log.Logger;
-				if (additionalInfo?.Keys != null)
-				{
-					logger = logger.ForContext($"AdditionalInfo", additionalInfo, true);
-				}
+				logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
 				logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Write(LogEventLevel.Error, "Activity Token is expired." );
+
+                logger.Write(LogEventLevel.Error, $"Activity Token is expired. setPassword.EnterpriseUserName {setPassword.EnterpriseUserName}" );
 
                 return setPasswordResponse;
             }
