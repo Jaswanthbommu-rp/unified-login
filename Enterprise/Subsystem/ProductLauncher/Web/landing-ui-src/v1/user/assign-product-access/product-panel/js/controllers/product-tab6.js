@@ -195,28 +195,30 @@
             }
         };
 
-        vm.resetVCDataModel = function (accessType, isEditUser) {
+        vm.resetVCDataModel = function (accessType) {
             var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
             syncMgr.setAccessTypeValue($scope.$parent.productId, accessType);
-            var removetab = (accessType == 'property' || accessType == 'allProperties') ? 'property group' : 'properties';
+            accessType = accessType.replace(/ /g, "").toLowerCase();
+            var removetab = [];
             
+            if(accessType === undefined){
+                removetab.push("properties");
+                removetab.push("propertygroup");
+            }
+            else if(accessType === "property" || accessType === "allproperties"){
+                removetab.push("propertygroup");
+            }
+            if(accessType === 'propertygroup'){
+                removetab.push("properties");
+            }
             var relevantTab = allTab.filter(function (data) {
-                if(!isEditUser && accessType != undefined){
-                    data.isActive = data.id == 'access type';
-                }
-                return data.id.toLowerCase() !== removetab;
+                return !removetab.includes(data.id.replace(/ /g, "").toLowerCase());
             });
 
             vm.propertySelect = accessType;
             vm.setProductTabs(relevantTab);
 
-            // if (vm.propertySelect == '' || vm.propertySelect === undefined) {
-            //     relevantTab = relevantTab.filter(function (data) {
-            //         return data.id.toLowerCase() !== 'properties';
-            //     });
-            // }
-
-            if (accessType === 'propertyGroup') {
+            if (accessType === 'propertygroup') {
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
@@ -224,7 +226,7 @@
                 syncMgr.setAllPropertyGroupSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, false);
             }
-            else if(accessType === 'allProperties') {
+            else if(accessType === 'allproperties') {
                 pubsub.publish("ppanel.access-type-change", accessType);
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
@@ -242,14 +244,8 @@
         };
 
         vm.accessTypeChange = function (accessType) {
-            if (accessType === 'specificProperties') {
-                vm.propertySelect = 'property';
-            }
-            else {
-                vm.propertySelect = accessType;
-            }
-            //vm.rpRoleSelected = vm.propertySelect;
-            vm.resetVCDataModel(vm.propertySelect, true);
+            vm.propertySelect = (accessType === 'specificProperties') ? 'property' : accessType;
+            vm.resetVCDataModel(vm.propertySelect);
         };
 
         vm.destroy = function () {

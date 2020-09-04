@@ -445,10 +445,12 @@
         };
 
         vm.setProductTabs = function (tabs) {
-            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
-            tabsModel.setTabs(tabs);
-            tabsModel.setTabMenuData(tabs);
-            tabsModel.activateTab(activeTab).initActiveTab();
+            if($scope.$parent.productId != "16"){
+                var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+                tabsModel.setTabs(tabs);
+                tabsModel.setTabMenuData(tabs);
+                tabsModel.activateTab(activeTab).initActiveTab();
+            }
         };
 
         vm.updateRoleRecords = function (record) {
