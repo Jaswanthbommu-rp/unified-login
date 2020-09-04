@@ -736,7 +736,7 @@ BEGIN
 	VALUES (@ControlAttributeId+3, @ControlId+7, N'Menu', N'ActionMenu', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+4, @ControlId+11, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+4, @ControlId+10, N'ShowSelectAll', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
 	VALUES (@ControlAttributeId+5, @ControlId+19, N'Link', N'Slide', @UserId, @Now)
@@ -745,7 +745,7 @@ BEGIN
 	VALUES (@ControlAttributeId+6, @ControlId+20, N'Menu', N'ActionMenu', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+7, @ControlId+23, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+7, @ControlId+22, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -851,7 +851,7 @@ BEGIN
 	VALUES (@ControlId+23, @ControlId+21, 5, N'SpendManagementassignRolesAndRightsRightLabelUIId', N'Description', N'description', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+24, @ControlId+10, 10, N'SpendManagementassignRolesAndRightsRightLabelUIId', N'Warn', N'isWarnAssigned', 3, @UserId, @Now)
+	VALUES (@ControlId+24, @ControlId+10, 10, N'SpendManagementassignRolesAndRightsRightLabelUIId', N'Warn?', N'isWarnAssigned', 3, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
