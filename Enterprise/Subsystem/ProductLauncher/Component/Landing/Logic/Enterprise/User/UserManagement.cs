@@ -639,15 +639,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		{
 			try
 			{
-                var logger = Log.Logger;
-                if (logData?.Keys != null)
+                string correlationId = "";
+                if (_userClaims != null)
                 {
-                    foreach (var key in logData?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                    }
+                    correlationId = (_userClaims.CorrelationId != Guid.Empty) ? _userClaims.CorrelationId.ToString() : "";
+
                 }
+                var logger = Log.Logger;
+				if (logData?.Keys != null)
+				{
+					logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+				}
 				logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", correlationId);
                 logger.Write(logType, exception, message );
 			}
 			catch

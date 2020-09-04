@@ -1,18 +1,18 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using Serilog;
-using Serilog.Events;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -103,6 +103,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var firstName = userPerson.FirstName;
 
             var emailAddress = userLoginOnly.LoginName;
+            string correlationId = "";
+            if (_userClaim != null)
+            {
+                correlationId = (_userClaim.CorrelationId != Guid.Empty) ? _userClaim.CorrelationId.ToString() : "";
+
+            }
 
             if (userTypeId != UserTypeConstants.RegularUserNoEmail // not UserNoEmailRole
                 && !userLoginOnly.Is3rdPartyIDP // Not a user using 3rd party IDP
@@ -160,8 +166,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     emailTemplate = _emailLogic.GetEmailTemplate(audienceTypeId, purposeTypeId);
 
                     string message = $"SendNewUserRegistrationEmail - email template generated - {userLoginOnly.RealPageId}";
-
-                    Log.Write(LogEventLevel.Information, message);
+                    var logger = Log.Logger;
+                    logger = logger.ForContext("CorrelationId", correlationId);
+                    logger.Write(LogEventLevel.Information, message);
 
                     IList<CommonAddress> contactMechanismList = _contactMechanismRepository.ListContactMechanismForPerson(orgRealPageId, "Email Notification");
                     IList<CommonAddress> contactMechanismToList = _contactMechanismRepository.ListContactMechanismForPerson(userLoginOnly.RealPageId, "Email Notification");
@@ -175,15 +182,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         message = $"SendNewUserRegistrationEmail - email body generated - {userLoginOnly.RealPageId}";
                         
-                        var logger = Log.Logger;
-                        if (logData?.Keys != null)
-                        {
-                            foreach (var key in logData?.Keys)
-                            {
-                                logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                            }
-                        }
+						if (logData?.Keys != null)
+						{
+							logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+						}
 						logger = logger.ForContext("ProductModule", this.GetType());
+                        logger = logger.ForContext("CorrelationId", correlationId);
                         logger.Write(LogEventLevel.Information, message );
                     }
 
@@ -244,7 +248,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
                     }
 
-                    Log.Write(LogEventLevel.Information, message);
+                    logger = logger.ForContext("CorrelationId", correlationId);
+                    logger.Write(LogEventLevel.Information, message);
 
                     long communicationEventId = communicationEventResponse.Id;
                     if (communicationEventResponse.Id != 0)
@@ -262,8 +267,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 catch (Exception ex)
                 {
                     string message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
-
-                    Log.Write(LogEventLevel.Error, ex, message);
+                    var logger = Log.Logger;
+                    logger = logger.ForContext("CorrelationId", correlationId);
+                    logger.Write(LogEventLevel.Error, ex, message);
 
                     return false;
                 }

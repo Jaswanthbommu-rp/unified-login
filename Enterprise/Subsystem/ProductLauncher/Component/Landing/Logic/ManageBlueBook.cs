@@ -5,12 +5,16 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -20,11 +24,6 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using Serilog;
-using Serilog.Events;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -772,7 +771,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var splitCompanyList = SplitList<UnifiedLoginCompany>(booksCompanyMasterList, splitSize);
                 ConcurrentBag<Company> result = new ConcurrentBag<Company>();
-                Parallel.ForEach(splitCompanyList, new ParallelOptions {MaxDegreeOfParallelism = 5}, companyList => { GetBooksCompanyDetails(companyList).ForEach(x => result.Add(x)); });
+                Parallel.ForEach(splitCompanyList, new ParallelOptions {MaxDegreeOfParallelism = 5}, companyList => { GetBooksCompanyDetails(_defaultUserClaim, companyList).ForEach(x => result.Add(x)); });
 
                 companyInstance = result.ToList();
                 if (companyInstance.Count > 0)
@@ -789,9 +788,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Used to get company details for the given company list
         /// </summary>
+        /// <param name="userClaim"></param>
         /// <param name="companyList"></param>
         /// <returns></returns>
-        private List<Company> GetBooksCompanyDetails(List<UnifiedLoginCompany> companyList)
+        private List<Company> GetBooksCompanyDetails(DefaultUserClaim userClaim, List<UnifiedLoginCompany> companyList)
         {
             string booksCompanyMasterIds = GetCompanyIds(companyList);
 
@@ -799,18 +799,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"customercompany?filter[customerCompanyId]=in:{booksCompanyMasterIds}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999";
 
             var logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Getting info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData);
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Getting info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 companyInstance = JsonConvert.DeserializeObject<List<Company>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() {{"CompanyInstance", companyInstance}};
-                WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Got info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData);
+                WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Got info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
                 return companyInstance;
             }
 
             logData = new Dictionary<string, object>() {{"response", response}};
-            WriteToLog(LogEventLevel.Debug, "GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData);
+            WriteToLog(LogEventLevel.Debug, "GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
 
             return companyInstance;
         }
@@ -1135,18 +1135,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="correlationId"></param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, string correlationId = "" )
         {
+            if (_defaultUserClaim != null)
+            {
+                correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
+            }
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
-
             logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message);
         }
 

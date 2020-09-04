@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data.SqlClient;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
-using System.ServiceProcess;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Repository;
 using Serilog;
-using Serilog.Events;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
+using System.Linq;
+using System.ServiceProcess;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 {
@@ -239,7 +238,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
             try
             {
-                var processEndpoint = GetBatchConfigurationByType(batch.BatchProcessTypeId, ConfigurationType.ProcessApiEndpoint.ToString());
+                var processEndpoint = GetBatchConfigurationByType(batch.CorrelationId, batch.BatchProcessTypeId, ConfigurationType.ProcessApiEndpoint.ToString());
 
                 additionalInfo = new Dictionary<string, object>
                 {
@@ -258,14 +257,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                 //Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
                 var logger = Log.Logger;
-                if (additionalInfo?.Keys != null)
-                {
-                    foreach (var key in additionalInfo?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
-                    }
-                }
+				logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
 				logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", batch.CorrelationId);
                 logger.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.");
 
                 var input = new BatchProcessorInput
@@ -284,21 +278,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 var landingApiCaller = new ProductApiCaller();
                 var result = landingApiCaller.ProcessBatchRecord(input);
 
-                Log.Information($"CallApiToAssignProducts-Result received for Product {input.ProductName} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductName} to user {batch.SubjectUserPersonaId }.");
+                logger.Information($"CallApiToAssignProducts-Result received for Product {input.ProductName} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductName} to user {batch.SubjectUserPersonaId }.");
             }
             catch (Exception ex)
             {
                 // Log the exception. 
                 //Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
                 var logger = Log.Logger;
-                if (additionalInfo?.Keys != null)
-                {
-                    foreach (var key in additionalInfo?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", additionalInfo[key], true);
-                    }
-                }
-
+				logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+				logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", batch.CorrelationId);
                 logger.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.");
                 // update a batch records with error status
                 if (batch.BatchProcessorId > 0)
@@ -312,9 +301,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             }
         }
 
-        private string GetBatchConfigurationByType(int batchBatchProcessTypeId, string configurationTypeName)
+        private string GetBatchConfigurationByType(Guid correlationId, int batchBatchProcessTypeId, string configurationTypeName)
         {
-            Log.Debug($"GetBatchConfigurationByType - Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}");
+            var logger = Log.Logger;
+            logger = logger.ForContext("CorrelationId", correlationId.ToString());
+            logger.Debug($"GetBatchConfigurationByType - Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}");
 
             var batchConfigList = new BatchRepository().GetBatchConfigurations();
 
@@ -330,7 +321,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 throw new Exception($"GetBatchConfigurationByType - No endpoint received for batchBatchProcessTypeId {batchBatchProcessTypeId}");
             }
 
-            Log.Debug($"GetBatchConfigurationByType - Endpoint received for {batchBatchProcessTypeId} - {endpoint}");
+            logger.Debug($"GetBatchConfigurationByType - Endpoint received for {batchBatchProcessTypeId} - {endpoint}");
 
             return endpoint;
         }

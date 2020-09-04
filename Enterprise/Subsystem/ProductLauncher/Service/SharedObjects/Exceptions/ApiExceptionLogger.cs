@@ -1,9 +1,9 @@
 ﻿using Serilog.Events;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Web.Http.ExceptionHandling;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions
 {
@@ -16,17 +16,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Except
         {
 
             Dictionary<string, object> AdditionalInfo = new Dictionary<string, object>
-                {
-                    {"RequestURI", context.Request.RequestUri},
-                    {"CatchBlockName", context.CatchBlock.Name},
-                    {"Principal Name", context.RequestContext.Principal.Identity.Name}
-                };
+            {
+                {"RequestURI", context.Request.RequestUri}, 
+                {"CatchBlockName", context.CatchBlock.Name}, 
+                {"Principal Name", context.RequestContext.Principal.Identity.Name}, 
+                {"AuthenticationType", context.RequestContext.Principal.Identity.AuthenticationType}
+            };
 
             //TODO: Get Organization & other info
-            var dict = new Dictionary<string, object>
-                {
-                    {"AuthenticationType", context.RequestContext.Principal.Identity.AuthenticationType}
-                };
+
+            string correlationId = "";
 
             var user = context.RequestContext.Principal as ClaimsPrincipal;
             if (user != null)
@@ -45,21 +44,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Except
                 //if (orgNameClaim != null) logDetails.PmcName = orgNameClaim.Value;
 
                 var realPageClaim = user.Claims.FirstOrDefault(a => a.Type == "realPageId");
-                if (realPageClaim != null && !dict.ContainsKey("realPageId")) dict.Add("realPageId", realPageClaim.Value);
+                //if (realPageClaim != null && !dict.ContainsKey("realPageId")) dict.Add("realPageId", realPageClaim.Value);
+                
+                var correlationIdClaim = user.Claims.FirstOrDefault(a => a.Type == "correlationId");
+                if (correlationIdClaim != null)
+                {
+                    correlationId = correlationIdClaim.ToString();
+                }
 
                 var userIdClaim = user.Claims.FirstOrDefault(a => a.Type == "sub");
                 //if (userIdClaim != null) logDetails.UserId = userIdClaim.Value;
             }
 
             var logger = Serilog.Log.Logger;
-            if (AdditionalInfo?.Keys != null)
-            {
-                foreach (var key in AdditionalInfo?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", AdditionalInfo[key], true);
-                }
-            }
+			logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(AdditionalInfo, Formatting.Indented), true);
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(LogEventLevel.Error, context.Exception, context.Exception.Message);
             // CorrelationId used as a key to search exception in the database
             //context.Exception.Data.Add("CorrelationId", logDetails.CorrelationId);

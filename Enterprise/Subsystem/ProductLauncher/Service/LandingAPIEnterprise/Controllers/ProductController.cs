@@ -1,10 +1,9 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
@@ -223,14 +222,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             try
             {
                 var logger = Log.Logger;
-                if (logData?.Keys != null)
-                {
-                    foreach (var key in logData?.Keys)
-                    {
-                        logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                    }
-                }
+				if (logData?.Keys != null)
+				{
+					logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+				}
 				logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", _userClaims.CorrelationId.ToString());
                 logger.Write(logType, exception, message );
             }
             catch
