@@ -126,6 +126,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             try
             {
+                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                if (currentClaimPrincipal.HasClaim("scope", "usermanagement"))
+                {
+                    if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.AdminCreatorRealPageId.ToString()))
+                    {
+                        //recreate clams
+                        RecreateClaimsForClient(userProductDetailsDto.UserProfileDetails.AdminCreatorRealPageId ?? new Guid());
+                        _managePersona = new ManagePersona(_userClaims);
+                        _manageProduct = new ManageProduct(_userClaims);
+                    }
+                    else
+                    {
+                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                        errorResponse.Errors.Add(new Error
+                        { Title = "Error", Source = "/user", Detail = "AdminCreatorRealPageId Canot be Null.", StatusCode = "" });
+
+                        // return errors with bad request
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    }
+                }
                 if (userProductDetailsDto == null)
                 {
                     var errorResponse = new ErrorResponse { Errors = new List<Error>() };
@@ -1212,7 +1232,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
                     CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
                     Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-                    CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields
+                    CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
+                    AdminCreatorRealPageId = userProductDetailsDto.UserProfileDetails.AdminCreatorRealPageId,
+                    SendInvitationEmail = userProductDetailsDto.UserProfileDetails.SendInvitationEmail
                 },
                 ProductList = new List<ProductDetail>()
             };
@@ -1397,6 +1419,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             return productList.OrderBy(p => p.FamilyName).ThenBy(p => p.Name).ToList();
         }
+
+        /// <summary>
+        /// Used to recreate claims for client
+        /// </summary>
+        /// <param name="_realpageUserId">RealPage UserId</param>
+        private void RecreateClaimsForClient(Guid _realpageUserId)
+        {
+            if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
+            {
+                IManagePerson personLogic = new ManagePerson();
+                Person person = personLogic.GetPerson(_realpageUserId);
+                if (person == null)
+                {
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
+                }
+                IManageUserLogin userLoginLogic = new ManageUserLogin();
+                IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
+                var userLogin = userLoginLogic.GetUserLoginOnly(_realpageUserId);
+
+                IManagePersona managePersona = new ManagePersona();
+                //Active Persona is linked to one organization
+                Persona persona = managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
+
+                _userClaims = new DefaultUserClaim
+                {
+                    UserId = (int)userLogin.UserId,
+                    OrganizationPartyId = persona.Organization.PartyId,
+                    LoginName = userLogin.LoginName,
+                    OrganizationMasterId = (long)persona.Organization.BooksMasterId,
+                    CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                    OrganizationName = persona.Organization.Name.ToString(),
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    PersonaId = persona.PersonaId,
+                    OrganizationRealPageGuid = persona.Organization.RealPageId,
+                    UserRealPageGuid = _realpageUserId,
+                    CorrelationId = Guid.NewGuid(),
+                    RealPageEmployee = persona.Organization.Name.ToUpper() == "REALPAGE EMPLOYEE"
+                };
+            }
+        }
+
 
         #endregion
 
