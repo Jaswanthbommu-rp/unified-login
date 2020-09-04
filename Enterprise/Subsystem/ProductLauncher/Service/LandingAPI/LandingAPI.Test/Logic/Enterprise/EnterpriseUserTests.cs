@@ -40,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
         {
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
+            _defaultUserClaim.OrganizationPartyId = 1234;
 
         }
         #endregion
@@ -65,8 +66,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
             {
                 PersonaId = _PersonaId,
                 RealPageId = _RealPageId,
-                Organization = new Organization() { Name = "Test Company" },
-                Name = "Title"
+                Organization = new Organization() { Name = "Test Company", PartyId = 1234 },
+                Name = "Title",
+                OrganizationPartyId = 1234
             };
 
             Person person = new Person()
