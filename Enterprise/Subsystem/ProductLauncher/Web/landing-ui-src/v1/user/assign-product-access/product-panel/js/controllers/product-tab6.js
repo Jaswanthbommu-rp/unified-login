@@ -198,7 +198,9 @@
         vm.resetVCDataModel = function (accessType) {
             var allTab = syncMgr.getProductAllTabs($scope.$parent.productId);
             syncMgr.setAccessTypeValue($scope.$parent.productId, accessType);
-            accessType = accessType.replace(/ /g, "").toLowerCase();
+            if(accessType != undefined){
+                accessType = accessType.replace(/ /g, "").toLowerCase();
+            }
             var removetab = [];
             
             if(accessType === undefined){
@@ -215,7 +217,7 @@
                 return !removetab.includes(data.id.replace(/ /g, "").toLowerCase());
             });
 
-            vm.propertySelect = accessType;
+            //vm.propertySelect = accessType;
             vm.setProductTabs(relevantTab);
 
             if (accessType === 'propertygroup') {
