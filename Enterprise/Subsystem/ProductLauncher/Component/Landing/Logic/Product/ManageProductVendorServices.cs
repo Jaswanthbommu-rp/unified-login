@@ -1001,7 +1001,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             try
             {
-                WriteToDiagnosticLog("ManageProductVendorServices.GetToken - Begining of the method.");
+                WriteToDiagnosticLog("ManageProductVendorServices.GetToken - Beginning of the method.");
 
                 ObjectCache tokenCache = MemoryCache.Default;
 
