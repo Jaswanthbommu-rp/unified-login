@@ -977,22 +977,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user/products/details/login")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
-        public HttpResponseMessage GetUserProductsDetailsLoginByPersonaId(long personaId)
+        public HttpResponseMessage GetUserProductsDetailsLoginByPersonaId()
         {
-            if (personaId <= 0)
-            {
-                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                errorResponse.Errors.Add(new Error
-                { Title = "Error", Source = "/users/products/details/login", Detail = "PersonaId should be bigger than 0", StatusCode = "" });
-
-                // return errors with bad request
-                return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
-            }
-
             try
             {
                 UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
-                return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByPersonaId(personaId));
+                return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByPersonaId(_userClaims.PersonaId));
             }
             catch (Exception ex)
             {
