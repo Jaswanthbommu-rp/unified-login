@@ -200,15 +200,16 @@
             if (resp.records && resp.records.length > 0) {
                 var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
                 if(accesstype === "allProperties" && $scope.$parent.productId === 16){
-                    syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
-                    syncMgr.setProductAllProperties($scope.$parent.productId, true);
                     resp.records.forEach(function (item) {
                         item.isAssigned = false;
                     });
-                }
+                    syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                    }
                 else{
                     var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
                 }
+                
                 if($scope.$parent.productId === 44){
                     vm.configEntityTypeFilters(resp.records[0].propertiesList);
                 }
