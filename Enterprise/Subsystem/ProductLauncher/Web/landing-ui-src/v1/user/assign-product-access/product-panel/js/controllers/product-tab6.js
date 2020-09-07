@@ -222,16 +222,16 @@
 
             if (accessType === 'propertygroup') {
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+                syncMgr.setProductAllProperties($scope.$parent.productId, false);
             }
             else if(accessType === 'property') {
                 syncMgr.setAllPropertyGroupSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
+                syncMgr.setProductAllProperties($scope.$parent.productId, false);
             }
             else if(accessType === 'allproperties') {
                 pubsub.publish("ppanel.access-type-change", accessType);
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                syncMgr.setProductAllProperties($scope.$parent.productId, true);
             }
             pubsub.publish("vc.accesstype-roles-radio", accessType);
         };

@@ -484,6 +484,13 @@
             }
         };
 
+        p.setProductAllProperties = function (product, value) {
+            var s = this;
+            s.propertyMap['product' + product] = {
+                allProperties: value
+            };
+        };
+
         p.updateProductNewPropertyByDefault = function (product, value) {
             var s = this,
                 productPropertiesList;
