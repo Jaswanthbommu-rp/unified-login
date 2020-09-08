@@ -433,7 +433,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IList<Organization> orgList = _manageOrganization.GetOrganizationList();
             ConcurrentDictionary<string, CompanyInstanceAdd> result = new ConcurrentDictionary<string, CompanyInstanceAdd>();
-            Parallel.ForEach(orgList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { SyncBooksCompany(commit, companyList).ForEach(x => result.TryAdd(x.Key, x.Value)); });
+            //Parallel.ForEach(orgList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { SyncBooksCompany(commit, companyList).ForEach(x => result.TryAdd(x.Key, x.Value)); });
 
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
