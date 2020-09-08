@@ -37,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userLoginName"></param>		
 		/// <param name="accessType"></param>
 		/// <returns>String.empty if success else error</returns>
-		ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, AccessType accessType, bool assignedOnly = false, string userLoginName = "");
+		ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, AccessType? accessType, bool assignedOnly = false, string userLoginName = "");
 		/// <summary>
 		///Get Product Rights For Role
 		/// </summary> 
