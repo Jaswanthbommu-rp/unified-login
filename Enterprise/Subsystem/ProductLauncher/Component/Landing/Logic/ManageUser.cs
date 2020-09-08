@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -16,10 +17,10 @@ using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	/// <summary>
-	/// Manage User repository calls
-	/// </summary>
-	public class ManageUser : IManageUser
+    /// <summary>
+    /// Manage User repository calls
+    /// </summary>
+    public class ManageUser : IManageUser
 	{
 		IUserRepository _userRepository;
 		ICredentialRepository _credentialRepository;
@@ -776,15 +777,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="exception">Exception</param>
 		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
+            string correlationId = "";
+            if (_userClaim != null)
+            {
+                correlationId = (_userClaim.CorrelationId != Guid.Empty) ? _userClaim.CorrelationId.ToString() : "";
+            }
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
 		}
 		#endregion

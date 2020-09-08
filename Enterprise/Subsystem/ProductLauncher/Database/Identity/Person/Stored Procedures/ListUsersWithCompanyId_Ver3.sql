@@ -109,27 +109,28 @@ BEGIN
 		FROM Enterprise.DataImportMapping AS dim
 		WHERE
 			dim.SourceId = @companyid;
-
-		INSERT INTO #ProductsList2
-			EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
 		
 		IF EXISTS(SELECT TOP 1 1 FROM STRING_SPLIT(@Properties,','))
 		BEGIN
 			DECLARE @IDS TABLE(propertyId NVARCHAR(255)) 
 			DECLARE @TableInstance TABLE(value varchar(2) , productId int);
+			DECLARE @ProductIdsAux TABLE(ProductId INT);
+
+			INSERT INTO @ProductIdsAux (ProductId)
+				SELECT CASE WHEN ProductId = 45 OR ProductId = 56 THEN 3 ELSE ProductId END FROM @ProductIds; 
 
 			INSERT INTO @TableInstance(value , productId)
 			(
 				SELECT	
 					CASE WHEN ps.Value IS NULL THEN '0' ELSE ps.Value END AS value,
-					pd.ProductId
+					pdx.ProductId
 				FROM	Enterprise.GlobalProductConfiguration gpc
 						JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
 						JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
 						JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-						JOIN @ProductIds AS pd ON gpc.ProductId = pd.ProductId
+						JOIN @ProductIdsAux AS pdx ON gpc.ProductId = pdx.ProductId
 				WHERE  
-				gpc.ProductId IN (SELECT ProductId FROM @ProductIds) 
+				gpc.ProductId IN (SELECT ProductId FROM @ProductIdsAux) 
 				AND (gpc.ThruDate IS NULL)
 				AND ( pc.ThruDate IS NULL)
 				AND ( ps.ThruDate IS NULL)
@@ -164,8 +165,7 @@ BEGIN
 				FROM Enterprise.PropertyInstanceMapping AS pim
 					INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId
 					INNER JOIN @TableInstance AS ti ON pim.ProductId = ti.productId
-					INNER JOIN #ProductsList2 AS cp ON pim.PersonaId = cp.PersonaId
-					INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
+					INNER JOIN Person.Persona AS p ON pim.PersonaId = p.PersonaId
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
@@ -202,15 +202,14 @@ BEGIN
 					p2.LastName,   
 					p.PersonaId
 				FROM Enterprise.propertymapping AS pm
-					INNER JOIN #ProductsList2 AS cp ON pm.PersonaId = cp.PersonaId
-					INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId
+					INNER JOIN Person.Persona AS p ON pm.PersonaId = p.PersonaId
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
 				WHERE
-					pm.ProductId IN (SELECT pd.productId
-									FROM @ProductIds pd 
-									WHERE pd.productId NOT IN
+					pm.ProductId IN (SELECT ProductId
+									FROM @ProductIdsAux pdx 
+									WHERE pdx.productId NOT IN
 										(
 											SELECT ti.ProductId 
 											FROM @TableInstance ti 
@@ -220,80 +219,84 @@ BEGIN
 					AND ulp.StatusTypeId = 1  
 					AND ulp.OrganizationPartyId = @OrganizationPartyId
 					AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)
-
-				SELECT * FROM #UserList
-				RETURN;
 			END
 		END
 
-		CREATE TABLE #result (Userid BIGINT, LoginName VARCHAR(200),firstname VARCHAR(200),Lastname VARCHAR(200),personaid INT, TargetProductId INT, ProductId INT)
+		IF (@RoleCount IS NOT NULL OR @RightCount IS NOT NULL)
+		BEGIN
 
-		INSERT INTO #result
-		SELECT distinct
-			ul.UserId, 
-			ul.LoginName,   
-			p2.FirstName,   
-			p2.LastName,   
-			p.PersonaId ,
-			r2.TargetProductId,
-			r2.ProductId
-		FROM #ProductsList2 AS cp  
-			INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId  
-			INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId  
-			INNER JOIN [Security].[Role] AS r ON pr.RoleId = r.RoleId AND cp.ProductId = r.ProductId  
-			INNER JOIN [Security].[RoleRight] AS rr ON r.RoleId = rr.RoleId  
-			INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId  
-			INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
-			INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
-			INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId  
-		WHERE   
-			ulp.StatusTypeId = 1  
-			AND ulp.OrganizationPartyId = @OrganizationPartyId  
-			AND (@RoleCount IS NULL OR r.ShortName IN (SELECT RoleShortName FROM @RoleList))  
-			AND (@RightCount IS NULL OR r2.RightName IN (SELECT RightName FROM @RightList))  
+			INSERT INTO #ProductsList2
+				EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
+
+			CREATE TABLE #result (Userid BIGINT, LoginName VARCHAR(200),firstname VARCHAR(200),Lastname VARCHAR(200),personaid INT, TargetProductId INT, ProductId INT)
+
+			INSERT INTO #result
+			SELECT distinct
+				ul.UserId, 
+				ul.LoginName,   
+				p2.FirstName,   
+				p2.LastName,   
+				p.PersonaId ,
+				r2.TargetProductId,
+				r2.ProductId
+			FROM #ProductsList2 AS cp  
+				INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId  
+				INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId  
+				INNER JOIN [Security].[Role] AS r ON pr.RoleId = r.RoleId AND cp.ProductId = r.ProductId  
+				INNER JOIN [Security].[RoleRight] AS rr ON r.RoleId = rr.RoleId  
+				INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId  
+				INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
+				INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
+				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId  
+			WHERE   
+				ulp.StatusTypeId = 1  
+				AND ulp.OrganizationPartyId = @OrganizationPartyId  
+				AND (@RoleCount IS NULL OR r.ShortName IN (SELECT RoleShortName FROM @RoleList))  
+				AND (@RightCount IS NULL OR r2.RightName IN (SELECT RightName FROM @RightList))  
   
-			AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)  
+				AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)  
   
-		;WITH Users  
-		AS   
-		((  
-			SELECT DISTINCT
-				r2.UserId,   
-				r2.LoginName,   
-				r2.FirstName,   
-				r2.LastName,   
-				r2.PersonaId  
-			FROM #result r2  
-				INNER JOIN Enterprise.PersonaConfiguration AS pc ON pc.PersonaId = r2.PersonaId   
-			UNION  
-			SELECT DISTINCT
-				r2.UserId,   
-				r2.LoginName,   
-				r2.FirstName,   
-				r2.LastName,   
-				r2.PersonaId  
-			FROM #result r2
-				INNER JOIN Enterprise.productright AS pc ON r2.TargetProductId = pc.ProductId   
-			WHERE  
-				r2.TargetProductId IN (SELECT TargetProductId FROM #ProductsList2 )  
-				AND (r2.TargetProductId <> r2.ProductId)
-		))  
+			;WITH Users  
+			AS   
+			((  
+				SELECT DISTINCT
+					r2.UserId,   
+					r2.LoginName,   
+					r2.FirstName,   
+					r2.LastName,   
+					r2.PersonaId  
+				FROM #result r2  
+					INNER JOIN Enterprise.PersonaConfiguration AS pc ON pc.PersonaId = r2.PersonaId   
+				UNION  
+				SELECT DISTINCT
+					r2.UserId,   
+					r2.LoginName,   
+					r2.FirstName,   
+					r2.LastName,   
+					r2.PersonaId  
+				FROM #result r2
+					INNER JOIN Enterprise.productright AS pc ON r2.TargetProductId = pc.ProductId   
+				WHERE  
+					r2.TargetProductId IN (SELECT TargetProductId FROM #ProductsList2 )  
+					AND (r2.TargetProductId <> r2.ProductId)
+			))  
   
-		INSERT INTO #UserList  
-		(
-			UserId,   
-			LoginName,   
-			FirstName,   
-			LastName,  
-			PersonaId
-		)  
-		SELECT  DISTINCT
-			UserId,   
-			LoginName,   
-			FirstName,   
-			LastName,  
-			PersonaId  
-		FROM Users AS u;  
+			INSERT INTO #UserList  
+			(
+				UserId,   
+				LoginName,   
+				FirstName,   
+				LastName,  
+				PersonaId
+			)  
+			SELECT  DISTINCT
+				UserId,   
+				LoginName,   
+				FirstName,   
+				LastName,  
+				PersonaId  
+			FROM Users AS u;
+		END
 	END  
 	
 	CREATE TABLE #totalusers (UserId int,LoginName varchar(200),FirstName varchar(200), LastName varchar(200),  

@@ -22,15 +22,12 @@
     </div>
     <div ng-if="cpr.isVendorCredentialProduct()">
         <div class="product-panel-roles-access-type" ng-if="cpr.radioconfig">
-            <div class="vendor-compliance-access-type-label">
-                Access Type
-            </div>
             <div>
                 <div>
                     <rp-form-input-radio class="inline marg-r" 
                                          ng-repeat="rad in cpr.radioconfig" 
                                          rp-value="rad.key" 
-                                         rp-on-change="cpr.resetVCDataModel(rad.key, false)" 
+                                         rp-on-change="cpr.resetVCDataModel(rad.key)" 
                                          rp-model="cpr.propertySelect"
                                          disabled="cpr.hasViewOnlyAccess()"
                                          rp-label-text="rad.text">

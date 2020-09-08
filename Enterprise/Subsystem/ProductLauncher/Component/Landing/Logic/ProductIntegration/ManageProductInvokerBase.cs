@@ -1095,12 +1095,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", CorrelationId.ToString());
             logger.Write(logType, exception, message );
         }
 

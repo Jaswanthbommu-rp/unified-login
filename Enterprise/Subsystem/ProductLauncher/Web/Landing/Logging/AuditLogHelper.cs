@@ -1,8 +1,9 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+﻿using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Web;
 
@@ -19,15 +20,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Logging
             var webInfo = GetWebLoggingData(out userId, out userName, out location, out pmcId, out pmcName);
 
             //Log.ForContext("AdditionalInfo", webInfo).Write(LogEventLevel.Error, ex, ex.Message);
-            var logger = Log.Logger;
-            if (webInfo?.Keys != null)
+            var user = ClaimsPrincipal.Current;
+            string correlationId = "";
+            if (user != null)
             {
-                foreach (var key in webInfo?.Keys)
+                var correlationIdClaim = user.Claims.FirstOrDefault(a => a.Type == "correlationId");
+                if (correlationIdClaim != null)
                 {
-                    logger = logger.ForContext($"AdditionalInfo", webInfo[key], true);
+                    correlationId = correlationIdClaim.ToString();
                 }
             }
-			//logger = logger.ForContext("ProductModule", this.GetType());
+
+            var logger = Log.Logger;
+            if (webInfo?.Keys != null)
+			{
+				logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(webInfo, Formatting.Indented), true);
+			}
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(LogEventLevel.Error, ex, ex.Message );
         }
 

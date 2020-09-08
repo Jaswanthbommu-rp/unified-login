@@ -736,7 +736,7 @@ BEGIN
 	VALUES (@ControlAttributeId+3, @ControlId+7, N'Menu', N'ActionMenu', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+4, @ControlId+11, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+4, @ControlId+10, N'ShowSelectAll', N'True', @UserId, @Now)
 	
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
 	VALUES (@ControlAttributeId+5, @ControlId+19, N'Link', N'Slide', @UserId, @Now)
@@ -745,7 +745,7 @@ BEGIN
 	VALUES (@ControlAttributeId+6, @ControlId+20, N'Menu', N'ActionMenu', @UserId, @Now)
 
 	INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate])
-	VALUES (@ControlAttributeId+7, @ControlId+23, N'ShowSelectAll', N'True', @UserId, @Now)
+	VALUES (@ControlAttributeId+7, @ControlId+22, N'ShowSelectAll', N'True', @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
 
@@ -851,7 +851,7 @@ BEGIN
 	VALUES (@ControlId+23, @ControlId+21, 5, N'SpendManagementassignRolesAndRightsRightLabelUIId', N'Description', N'description', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate])
-	VALUES (@ControlId+24, @ControlId+10, 10, N'SpendManagementassignRolesAndRightsRightLabelUIId', N'Warn', N'isWarnAssigned', 3, @UserId, @Now)
+	VALUES (@ControlId+24, @ControlId+10, 10, N'SpendManagementassignRolesAndRightsRightLabelUIId', N'Warn?', N'isWarnAssigned', 3, @UserId, @Now)
 
 	SET IDENTITY_INSERT [UserManagement].[Control] OFF
 
@@ -916,7 +916,7 @@ BEGIN
 END
 IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 521 and ControlAttributeId = 131)
 BEGIN
-  UPDATE UserManagement.ControlAttribute SET ControlId = 534 WHERE ControlId = 521 and ControlAttributeId = 131
+  UPDATE UserManagement.ControlAttribute SET ControlId = 533 WHERE ControlId = 521 and ControlAttributeId = 131
 END
 
 --Unified Amenities
@@ -1011,4 +1011,17 @@ END
 IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId = 67 and ControlAttributeId = 2)
 BEGIN
 	UPDATE UserManagement.ControlAttribute SET ControlId = 68 WHERE ControlId = 67 and ControlAttributeId = 2
+END
+IF EXISTS (SELECT TOP 1 1 FROM Enterprise.[RightValueType] WHERE ShortName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL' AND [Description] = 'Ability to answer company-level questionnaires in CIMPL')
+BEGIN
+	UPDATE Enterprise.[RightValueType] 
+		SET    [Value] = 'Access to Company-level questionnaires and Summary Views in CIMPL'
+		WHERE  ShortName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL' 
+			   AND [Description] = 'Ability to answer company-level questionnaires in CIMPL' 
+END
+IF EXISTS (SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL')
+BEGIN
+	UPDATE [Security].[Right] 
+		SET   [Value] = 'Access to Company-level questionnaires and Summary Views in CIMPL'
+		WHERE  RightName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL' 
 END

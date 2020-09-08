@@ -611,13 +611,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
+                //var json = JsonConvert.SerializeObject(logData, Formatting.Indented);
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
             logger = logger.ForContext("ProductModule", this.GetType());
-            logger.Write(logType, exception, message );
+            logger = logger.ForContext("CorrelationId", _correlationId);
+            logger.Write(logType, exception, message);
         }
 
         /// <summary>

@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         public ProductRepository(IRepository repository) : base(repository)
         {
-            _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            _userClaim = new DefaultUserClaim { CorrelationId = Guid.Empty };
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
 
@@ -1820,15 +1820,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #region Private Methods
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
+            string correlationId = "";
+            if (_userClaim != null)
+            {
+                correlationId = (_userClaim.CorrelationId != Guid.Empty) ? _userClaim.CorrelationId.ToString() : "";
+            }
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
         }
 

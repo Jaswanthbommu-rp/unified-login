@@ -5,6 +5,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 {
@@ -66,14 +67,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.IdentityHelper.Services
 		private void WriteToLog(LogEventLevel logType, string message, string correlationId, Dictionary<string, object> logData = null, Exception exception = null)
 		{
             var logger = Log.Logger;
-            if (logData?.Keys != null)
-            {
-                foreach (var key in logData?.Keys)
-                {
-                    logger = logger.ForContext($"AdditionalInfo", logData[key], true);
-                }
-            }
+			if (logData?.Keys != null)
+			{
+				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+			}
 			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
 		}
 	}
