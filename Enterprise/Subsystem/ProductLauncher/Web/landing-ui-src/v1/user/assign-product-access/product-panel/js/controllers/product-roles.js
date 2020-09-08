@@ -53,8 +53,11 @@
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
 
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
+            pubsub.subscribe("vc.accesstype-roles-radio", vm.getVCRoles);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
+
+            syncMgr.renderProductGridMap($scope.$parent.productId, "Roles", rolesGrid);
 
             vm.updateGridWatch = pubsub.subscribe("rp.updateAllPropertiesSwitchSet",vm.updateAllPropertiesSwitch);
         };
@@ -107,18 +110,37 @@
             return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
         };
 
-        vm.loadData = function () {
+        vm.getVCRoles = function(accessType){
+            var vcAccessType = '';
+            if (accessType == "allproperties") {
+                vcAccessType = "Client";
+            }
+            else if (accessType == "propertygroup" || accessType == "property" || accessType == true || accessType == undefined) {
+                vcAccessType = "Property";
+            }
+            rolesGrid = syncMgr.getProductGrid($scope.$parent.productId,"Roles");
+            vm.loadData(vcAccessType);
+        };
+
+        vm.loadData = function (accessType) {
             var productId = $scope.$parent.productId;
+            accessType = (accessType == true) ? 'Property' : accessType;
+            var params = {};
             rolesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
-                var roleData = syncMgr.getProductRolesData(productId);
+                var roleData;
+                if(productId != 16){
+                    roleData = syncMgr.getProductRolesData(productId);
+                }
+                
                 if (roleData === undefined) {
-                    var params = {
+                    params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
                         partyId: persona.data.organization.partyId,
                         productId: productId,
-                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName(),
+                        accessType: accessType
                     };
 
                     vm.dataRoleReq = roleSvc.get(params, vm.setRolesData);
@@ -126,7 +148,7 @@
                 else {
                     //syncMgr.setPropertyGridActive(true);
                     vm.loadGridData(productId);
-                }
+                }              
             }
         };
 
@@ -445,10 +467,12 @@
         };
 
         vm.setProductTabs = function (tabs) {
-            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
-            tabsModel.setTabs(tabs);
-            tabsModel.setTabMenuData(tabs);
-            tabsModel.activateTab(activeTab).initActiveTab();
+            if($scope.$parent.productId != "16"){
+                var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+                tabsModel.setTabs(tabs);
+                tabsModel.setTabMenuData(tabs);
+                tabsModel.activateTab(activeTab).initActiveTab();
+            }
         };
 
         vm.updateRoleRecords = function (record) {

@@ -64,6 +64,9 @@
                         vm.datareq = dataSvc.get(params, vm.setNotificationsData);
                     }
                 }
+                else{
+                    vm.setNotificationsData(notificationsData);
+                }
 
                 if (productId === 47) {
                     vm.setSwitchStatus();
