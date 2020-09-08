@@ -232,7 +232,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
-        public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, AccessType accessType, bool assignedOnly = false, string userLoginName = "")
+        public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, AccessType? accessType, bool assignedOnly = false, string userLoginName = "")
         {
             ListResponse result = new ListResponse();
             try
@@ -266,7 +266,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                     case (int)ProductEnum.VendorServices:
                         IManageProductVendorServices manageProductVendorServices = new ManageProductVendorServices(_userClaims);
-                        result = manageProductVendorServices.GetRoles(editorPersonaId, userPersonaId, accessType, datafilter);
+                        result = manageProductVendorServices.GetRoles(editorPersonaId, userPersonaId, (accessType ?? AccessType.Property), datafilter);
                         break;
                     case (int)ProductEnum.ClientPortal:
                         IManageProductClientPortal _manageProductClientPortal = new ManageProductClientPortal(_userClaims);
