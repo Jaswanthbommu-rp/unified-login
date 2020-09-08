@@ -233,6 +233,7 @@
                 syncMgr.allPropertiesSync($scope.$parent.productId, false);
                 syncMgr.updateProductAllProperties($scope.$parent.productId, true);
             }
+            pubsub.publish("vc.accesstype-roles-radio", accessType);
         };
 
         vm.setProductTabs = function (tabs) {
