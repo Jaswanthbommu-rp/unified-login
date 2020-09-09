@@ -203,7 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                         case "provisioning.upfmorder.create":
                             // get the company info
-                            var customerCompanyId = Convert.ToInt64(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
+                            var customerCompanyId = Convert.ToInt32(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
                             var customerDomain = thinEvent.Payload?["customerEnvironment"].ToString();
                             var propertyList = thinEvent.Payload["properties"];
                             string existingUnifiedLoginInstanceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
@@ -312,7 +312,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
                             
                             // add any new properties
-                            string propertyResult = AddPropertiesFromBooks(customerCompanyId, propertyInstanceList);
+                            string propertyResult = AddPropertiesFromBooks(customerCompanyId, customerDomain, propertyInstanceList);
                             break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
@@ -333,9 +333,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// 
         /// </summary>
         /// <param name="customerCompanyId"></param>
+        /// <param name="customerCompanyDomain"></param>
         /// <param name="propertyInstanceList"></param>
         /// <returns></returns>
-        private string AddPropertiesFromBooks(long customerCompanyId, List<UPFMPropertyInstance> propertyInstanceList)
+        private string AddPropertiesFromBooks(int customerCompanyId, string customerCompanyDomain, List<UPFMPropertyInstance> propertyInstanceList)
         {
             string result = "";
             foreach (var property in propertyInstanceList)
@@ -354,7 +355,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         {
                             PropertyName = property.Name,
                             PropertyInstanceSourceId = property.InstanceId.ToString(),
+                            CustomerPropertyId = Convert.ToInt32(!string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0"),
+                            CustomerEnvironment = customerCompanyDomain,
                             Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                            IsActive = true,
                             Address = new InstanceAddress()
                             {
                                 Address = property.Address,
@@ -363,10 +367,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 PostalCode = property.PostalCode,
                                 County = property.County,
                                 Country = property.Country,
-
                             }
                         };
-                        var resultBooks = _manageBlueBook.AddBooksGreenBookPropertyInstance(pi);
+                        var resultBooks = _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
                     }
 
                     

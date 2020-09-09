@@ -713,7 +713,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="propertyInstance"></param>
         /// <returns></returns>
-        public bool AddBooksGreenBookPropertyInstance(PropertyInstance propertyInstance)
+        public bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance)
         {
             string uri = $"propertyinstance";
             

@@ -123,6 +123,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="propertyInstance"></param>
         /// <returns></returns>
-        bool AddBooksGreenBookPropertyInstance(PropertyInstance propertyInstance);
+        bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance);
     }
 }
