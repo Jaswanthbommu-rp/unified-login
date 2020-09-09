@@ -1137,5 +1137,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\January2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\June2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2020Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2020Release.sql" />
   </ItemGroup>
 </Project>
