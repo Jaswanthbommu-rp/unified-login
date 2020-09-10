@@ -60,6 +60,7 @@
             syncMgr.renderProductGridMap($scope.$parent.productId, "Roles", rolesGrid);
             syncMgr.renderProductGridPaginationMap($scope.$parent.productId, "RolesPagination", roleGridPagination);
             vm.filterData = rolesGrid.subscribe("filterBy", vm.filter.bind(vm));
+
             vm.updateGridWatch = pubsub.subscribe("rp.updateAllPropertiesSwitchSet",vm.updateAllPropertiesSwitch);
         };
 
@@ -143,7 +144,7 @@
                 }
                 
                 if (roleData === undefined) {
-                    var params = {
+                var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
                         partyId: persona.data.organization.partyId,
@@ -429,8 +430,23 @@
                                 return tb.text == "Roles";
                             });
                             rpTabs = [filterTabs];
+                            
                         }
-
+                        if(productId == 17){
+                            var residentRelevantTabs = [];
+                            rpTabs.forEach(function (tab){
+                                if(tab.text == "Roles"){
+                                    residentRelevantTabs.push(tab);    
+                                }
+                            });
+                            rpTabs.forEach(function (tab){
+                                if(tab.text !== "Roles"){
+                                    residentRelevantTabs.push(tab);    
+                                }
+                            });
+                            rpTabs = residentRelevantTabs;
+                        }
+                        
                         vm.setProductTabs(rpTabs);
                         matchFound = true;
                     }
