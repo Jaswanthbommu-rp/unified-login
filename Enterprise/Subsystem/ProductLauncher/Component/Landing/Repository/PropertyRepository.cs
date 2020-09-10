@@ -219,5 +219,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return result;
             }
         }
+
+        /// <summary>
+        /// Used to insert new UPFM property instances into the database
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        public RepositoryResponse InsertUPFMPropertyInstance(UPFMPropertyInstance propertyInstance)
+        {
+            RepositoryResponse result = new RepositoryResponse() {Id = 0, ErrorMessage = ""};
+            
+            dynamic param = new
+            {
+                @Name			= propertyInstance.Name
+                ,@Address		= propertyInstance.Address
+                ,@City			= propertyInstance.City
+                ,@State			= propertyInstance.State
+                ,@PostalCode	= propertyInstance.PostalCode
+                ,@Country		= propertyInstance.Country
+                ,@County		= propertyInstance.County
+                ,@Latitude		= propertyInstance.Latitude
+                ,@Longitude		= propertyInstance.Longitude
+                ,@CustomerPropertyId = propertyInstance.CustomerPropertyId
+            };
+
+            using (var repository = GetRepository())
+            {
+                repository.UnitOfWork.BeginTransaction();
+                try
+                {
+                    result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, param);
+                }
+                catch (Exception exception)
+                {
+                    result.ErrorMessage = exception.Message;
+                }
+                finally
+                {
+                    if (result.ErrorMessage.Length == 0)
+                    {
+                        repository.UnitOfWork.Commit();
+                    }
+                    else
+                    {
+                        repository.UnitOfWork.Rollback();
+                    }
+                }
+                return result;
+            }
+        }
 	}
 }

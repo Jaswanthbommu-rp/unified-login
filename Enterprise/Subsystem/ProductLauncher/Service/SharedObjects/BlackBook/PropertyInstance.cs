@@ -15,6 +15,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// Property instance id
         /// </summary>
         public int PropertyInstanceId { get; set; }
+
+        /// <summary>
+        /// used in provisioning
+        /// </summary>
+        public string CustomerEnvironment { get; set; }
+
+        /// <summary>
+        /// used in provisioning
+        /// </summary>
+        public int CustomerPropertyId { get; set; }
+
         /// <summary>
         /// Property instance source id
         /// </summary>
@@ -85,6 +96,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
         /// Used to get Property to Company relationships
         /// </summary>
         public List<CompanyPropertyInstanceMap> CompanyPropertyInstanceMap { get; set; }
+
     }
 
 }
