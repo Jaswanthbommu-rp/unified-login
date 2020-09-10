@@ -1026,7 +1026,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (response.IsSuccessStatusCode)
                 {
                     customerProperty = JsonConvert.DeserializeObject<CustomerProperty>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
- logData = new Dictionary<string, object>() {{"CustomerProperty", customerProperty}};
+                     logData = new Dictionary<string, object>() {{"CustomerProperty", customerProperty}};
                     WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - Got info.", logData);
                 }
                 else
