@@ -715,13 +715,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance)
         {
-            string uri = $"propertyinstance";
+            string uri = $"propertyinstance/{propertyInstance.PropertyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
             
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"propertyInstance", propertyInstance}};
+            //var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("propertyInstanceadd", "propertyInstance");
+            var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("\"propertyInstanceId\":0,", "");
+            logData.Add("jsonToSave", jsonToSave);
             WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookPropertyInstance - Adding info.", logData);
-
-            var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("propertyInstanceadd", "propertyInstance");
-            /*
+            
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Put,
@@ -731,11 +732,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
+                WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookPropertyInstance - Added info successfully.");
                 //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
                 return true;
             }
-            */
-            return true;
+
+            logData = new Dictionary<string, object>() {{"response", response}};
+            WriteToLog(LogEventLevel.Error, "AddBooksGreenBookPropertyInstance - Failed to add info.", logData);
+            
+            return false;
         }
 
         /// <summary>

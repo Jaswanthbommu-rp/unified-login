@@ -276,20 +276,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
 
                             if (existingUnifiedLoginInstanceId == null)
-                            //if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
                             {
                                 //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
-                                string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
-                                if (!string.IsNullOrEmpty(createResult))
+                                var createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
+                                if (!string.IsNullOrEmpty(createResult.Result))
                                 {
                                     propertyInstanceList = new List<UPFMPropertyInstance>();
                                     logData = new Dictionary<string, object> { { "error", createResult } };
 
                                     WriteToLog(LogEventLevel.Error, "Error", logData);
-                                    if (!createResult.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
+                                    if (!createResult.Result.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
                                     {
                                         return Request.CreateResponse(HttpStatusCode.BadRequest, createResult);
                                     }
+                                }
+
+                                if (!createResult.RealPageId.Equals(Guid.Empty.ToString()))
+                                {
+                                    existingUnifiedLoginInstanceId = createResult.RealPageId;
                                 }
                             }
                             else
@@ -313,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
                             
                             // add any new properties
-                            string propertyResult = AddPropertiesFromBooks(customerCompanyId, customerDomain, propertyInstanceList);
+                            string propertyResult = AddPropertiesFromBooks(existingUnifiedLoginInstanceId, customerDomain, propertyInstanceList);
                             break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
@@ -331,21 +335,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Used to add a new property instance to UPFM and then send the new instance id to books
         /// </summary>
-        /// <param name="customerCompanyId"></param>
+        /// <param name="unifiedLoginInstanceId"></param>
         /// <param name="customerCompanyDomain"></param>
         /// <param name="propertyInstanceList"></param>
         /// <returns></returns>
-        private string AddPropertiesFromBooks(int customerCompanyId, string customerCompanyDomain, List<UPFMPropertyInstance> propertyInstanceList)
+        private string AddPropertiesFromBooks(string unifiedLoginInstanceId, string customerCompanyDomain, List<UPFMPropertyInstance> propertyInstanceList)
         {
             string result = "";
             foreach (var property in propertyInstanceList)
             {
-                if (property.InstanceId == Guid.Empty)
+                if (!unifiedLoginInstanceId.Equals(Guid.Empty.ToString()) && property.InstanceId == Guid.Empty)
                 {
-                    
-                    
                     // add instance to db
                     var response = _propertyRepository.InsertUPFMPropertyInstance(property);
                     if (response.ErrorMessage.Length == 0)
@@ -355,6 +357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         PropertyInstance pi = new PropertyInstance()
                         {
                             PropertyName = property.Name,
+                            CompanyInstanceSourceId = unifiedLoginInstanceId,
                             PropertyInstanceSourceId = property.InstanceId.ToString(),
                             CustomerPropertyId = Convert.ToInt32(!string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0"),
                             CustomerEnvironment = customerCompanyDomain,
@@ -368,14 +371,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 PostalCode = property.PostalCode,
                                 County = property.County,
                                 Country = property.Country,
-                            }
+                            },
+                            ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
                         };
                         var resultBooks = _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
                     }
-
-                    
                 }
-
             }
 
             return result;
@@ -403,24 +404,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return signingSecret ?? "";
         }
 
-        private string CreateCompanyFromBooks(long booksCustomerMasterId, string domain, List<int> productIdList)
+        private CreateCompanyResult CreateCompanyFromBooks(long booksCustomerMasterId, string domain, List<int> productIdList)
         {
             bool processBlueBookMessage = false;
+            CreateCompanyResult createCompanyResult = new CreateCompanyResult() {RealPageId = Guid.Empty.ToString()};
 
             // check to see if the company already exists
             var organizationList = _manageOrganization.GetOrganizationList();
             if (organizationList.Any(o => o.BooksCustomerMasterId == booksCustomerMasterId && o.OrganizationDomain.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)))
             {
-                return "";
+                return createCompanyResult;
             }
             string ignoreEnvironment = GetUnifiedPlatformSettings()?.ToList().FirstOrDefault(s => s.Name.Equals("UPFMOrderIgnoreEnvironment", StringComparison.OrdinalIgnoreCase))?.Value;
             if (!string.IsNullOrEmpty(ignoreEnvironment))
             {
-                return "";
+                return createCompanyResult;
             }
 
             var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: booksCustomerMasterId);
-            if (customerCompany == null) { return "Company not found in books environment"; }
+            if (customerCompany == null)
+            {
+                createCompanyResult.Result = "Company not found in books environment";
+                return createCompanyResult;
+            }
 
             OrganizationCreate organization = new OrganizationCreate()
             {
@@ -466,8 +472,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
             {
-                return result.Status.ErrorMsg;
+                createCompanyResult.Result = result.Status.ErrorMsg;
+                return createCompanyResult;
             }
+
+            createCompanyResult.RealPageId = result.obj.Org.RealPageIdUpperCaseForBooks;
             var companyInstance = new CompanyInstanceAdd()
             {
                 CustomerCompanyId = booksCustomerMasterId,
@@ -482,7 +491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the new company data back to books
             var booksResult = _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
 
-            return "";
+            return createCompanyResult;
         }
 
 
@@ -529,5 +538,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 /*ignored*/
             }
         }
+    }
+
+    public class CreateCompanyResult
+    {
+        public string Result { get; set; }
+
+        public string RealPageId { get; set; }
     }
 }

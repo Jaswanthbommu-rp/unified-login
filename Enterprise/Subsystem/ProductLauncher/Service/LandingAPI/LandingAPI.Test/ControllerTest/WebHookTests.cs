@@ -684,6 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
 
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
@@ -791,6 +792,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
 
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
