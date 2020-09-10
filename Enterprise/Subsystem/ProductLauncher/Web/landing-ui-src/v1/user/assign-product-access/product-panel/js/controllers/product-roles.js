@@ -58,8 +58,7 @@
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
 
             syncMgr.renderProductGridMap($scope.$parent.productId, "Roles", rolesGrid);
-            syncMgr.renderProductGridPaginationMap($scope.$parent.productId, "RolesPagination", roleGridPagination);
-            vm.filterData = rolesGrid.subscribe("filterBy", vm.filter.bind(vm));
+
             vm.updateGridWatch = pubsub.subscribe("rp.updateAllPropertiesSwitchSet",vm.updateAllPropertiesSwitch);
         };
 
@@ -92,14 +91,6 @@
             }
         };
 
-        vm.filter = function (filterBy) {
-            var rolesData = syncMgr.getProductRolesData($scope.$parent.productId);
-            vm.filteredRecords = $filter("filter")(rolesData, filterBy);
-            roleGridPagination.setData(vm.filteredRecords).goToPage({
-                number: 0
-            });
-        };
-
         vm.resetDataModel = function (accessType) {
             vm.propertySelect = accessType;
             if($scope.$parent.productId !== 8){
@@ -128,13 +119,13 @@
                 vcAccessType = "Property";
             }
             rolesGrid = syncMgr.getProductGrid($scope.$parent.productId,"Roles");
-            roleGridPagination = syncMgr.getProductGridPagination($scope.$parent.productId,"RolesPagination");
             vm.loadData(vcAccessType);
         };
 
         vm.loadData = function (accessType) {
             var productId = $scope.$parent.productId;
             accessType = (accessType == true) ? 'Property' : accessType;
+            var params = {};
             rolesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
                 var roleData;
@@ -143,7 +134,7 @@
                 }
                 
                 if (roleData === undefined) {
-                    var params = {
+                    params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
                         partyId: persona.data.organization.partyId,
@@ -429,8 +420,23 @@
                                 return tb.text == "Roles";
                             });
                             rpTabs = [filterTabs];
+                            
                         }
-
+                        if(productId == 17){
+                            var residentRelevantTabs = [];
+                            rpTabs.forEach(function (tab){
+                                if(tab.text == "Roles"){
+                                    residentRelevantTabs.push(tab);    
+                                }
+                            });
+                            rpTabs.forEach(function (tab){
+                                if(tab.text !== "Roles"){
+                                    residentRelevantTabs.push(tab);    
+                                }
+                            });
+                            rpTabs = residentRelevantTabs;
+                        }
+                        
                         vm.setProductTabs(rpTabs);
                         matchFound = true;
                     }
