@@ -278,7 +278,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             if (existingUnifiedLoginInstanceId == null)
                             //if (customerCompanyId != 0 && !string.IsNullOrEmpty(customerDomain))
                             {
-                                return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
+                                //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
                                 string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
                                 if (!string.IsNullOrEmpty(createResult))
                                 {
