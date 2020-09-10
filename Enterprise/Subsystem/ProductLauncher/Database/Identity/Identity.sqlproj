@@ -1016,7 +1016,6 @@
     <Build Include="RoleRightsManagement\Stored Procedures\ListRolesAssociatedWithRights_Ver02.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUserEnterpriseRoles.sql" />
     <Build Include="Enterprise\Stored Procedures\CreatePropertyInstance.sql" />
-    <Build Include="Person\Stored Procedures\ProductDetailsLoginByPersonaId.sql" />
     <Build Include="Person\Stored Procedures\ListUsersProductDetailsLoginByPersonaId.sql" />
   </ItemGroup>
   <ItemGroup>
