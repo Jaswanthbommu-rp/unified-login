@@ -25,5 +25,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         public string CustomerPropertyId { get; set; }
 
+        public string Domain { get; set; }
     }
 }
