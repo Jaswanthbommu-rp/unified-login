@@ -1,0 +1,61 @@
+CREATE PROCEDURE [Enterprise].[CreatePropertyInstance]
+
+(
+	 @Name			NVARCHAR(250)
+	,@Address		NVARCHAR(200)	= NULL
+	,@City			NVARCHAR(60)	= NULL
+	,@State			NVARCHAR(20)	= NULL
+	,@PostalCode	NVARCHAR(25)	= NULL
+	,@Country		NVARCHAR(25)	= NULL
+	,@County		NVARCHAR(60)	= NULL
+	,@Latitude		DECIMAL(9,6)	= 0
+	,@Longitude		DECIMAL(9,6)	= 0
+	,@CustomerPropertyId	BIGINT  = 0
+	,@Domain		NVARCHAR(50) = 'UNKNOWN'
+)
+AS
+BEGIN
+	SET NOCOUNT ON
+	DECLARE @PropertyInstanceId BIGINT
+	
+
+	INSERT INTO [Enterprise].[PropertyInstance]
+		([Name]
+		,[Address]
+		,[City]
+		,[State]
+		,[PostalCode]
+		,[Country]
+		,[County]
+		,[Latitude]
+		,[Longitude]
+		,[CustomerPropertyId]
+		,[Domain])
+    VALUES
+	(
+		@Name
+		,@Address
+		,@City
+		,@State
+		,@PostalCode
+		,@Country
+		,@County
+		,@Latitude
+		,@Longitude
+		,@CustomerPropertyId
+		,@Domain
+	)
+
+	SET @PropertyInstanceId = SCOPE_IDENTITY();
+
+	SELECT 
+		@PropertyInstanceId AS Id,
+		InstanceId AS RealPageId,
+		'' AS ErrorMessage
+	FROM Enterprise.PropertyInstance
+	WHERE
+		PropertyInstanceId = @PropertyInstanceId
+
+END
+
+GO

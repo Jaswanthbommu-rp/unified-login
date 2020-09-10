@@ -115,5 +115,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
         TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, ProductEnum productSource);
         List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, ProductEnum product);
+
+        CustomerProperty GetCustomerPropertyDetails(string propertyInstanceId);
+
+        /// <summary>
+        /// Add the new UPFM property instance to books
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance);
     }
 }
