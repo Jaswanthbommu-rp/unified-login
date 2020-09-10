@@ -5,7 +5,8 @@ GO
 		 @RightDescription nvarchar(200),
 		 @RightValue nvarchar(200),
 		 @StatusTypeId int,
-		 @VisibilityStatusId INT = NULL,
+		 @OrgVisibilityStatusId INT = NULL,
+		 @RightVisibilityStatusId INT =NULL,
 		 @ProductId INT,
 		 @TargetProductId int,
 		 @UserId bigint,
@@ -30,7 +31,8 @@ BEGIN
 	SET @RightDescription = 'Allows the user to create a Product Support request';
 	SET @RightValue = 'Help Center Contact Support';
 	SET @StatusTypeId = 13;
-	SET @VisibilityStatusId = 9;
+	SET @OrgVisibilityStatusId = 9;
+	SET @RightVisibilityStatusId = 10;
 	SET @ProductId =3;
 	SET @TargetProductId = 3;
 	SET @RouteName='RolesAndRights';
@@ -84,7 +86,7 @@ BEGIN
 						@RightDescription,
 						@RightValue,
 						@StatusTypeId, 
-						@VisibilityStatusId,
+						@RightVisibilityStatusId,
 						@ProductId,
 						@TargetProductId,
 						@UserId,
@@ -189,7 +191,7 @@ BEGIN
 						VALUES ( 
 								@RightId,
 								@OrgPartyId,
-								@VisibilityStatusId,
+								@OrgVisibilityStatusId,
 								@UserId,
 								@Now
 							   )
