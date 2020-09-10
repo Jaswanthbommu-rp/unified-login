@@ -282,6 +282,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 string createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
                                 if (!string.IsNullOrEmpty(createResult))
                                 {
+                                    propertyInstanceList = new List<UPFMPropertyInstance>();
                                     logData = new Dictionary<string, object> { { "error", createResult } };
 
                                     WriteToLog(LogEventLevel.Error, "Error", logData);

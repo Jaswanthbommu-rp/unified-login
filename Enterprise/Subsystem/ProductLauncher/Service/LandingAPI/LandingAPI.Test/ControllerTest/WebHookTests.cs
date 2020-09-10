@@ -634,7 +634,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             HttpResponseMessage responsePropertyDetail= new HttpResponseMessage(HttpStatusCode.OK);
             jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
-            
             responsePropertyDetail.Content = new StringContent(jsonToSave);
 
             mockRepository
@@ -744,10 +743,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
+            HttpResponseMessage responsePropertyDetail= new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
+            responsePropertyDetail.Content = new StringContent(jsonToSave);
+
+
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
            
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
+
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
             {
