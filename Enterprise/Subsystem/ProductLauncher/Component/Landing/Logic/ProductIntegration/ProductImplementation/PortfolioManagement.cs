@@ -183,6 +183,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Override this in product implementation to update additional saml settings
+		/// e.g. used in PAM
+		/// </summary>
+		protected override void UpdateSamlUserAttribute(long personaId, int productId,
+			string productUserId, string productUserLoginName, string productUserEmail)
+		{
+			WriteToDiagnosticLog(
+				$"PortfolioManagement.UpdateSamlUserAttribute - Product {ProductType} productUserLoginName - {productUserLoginName}. At beginning of the method.");
+
+			// if userName not matches with email then update user login with email
+			if (!productUserLoginName.Equals(productUserEmail, StringComparison.OrdinalIgnoreCase))
+			{
+				_dataCollector.UpdateSamlUserAttribute(personaId, productId, SamlAttributeEnum.productUsername, productUserEmail);
+			}
+		}
+
+		/// <summary>
 		/// Returns true if user exists in the product
 		/// </summary> 
 		protected override bool CheckUserExistInProduct(string newUserLoginName, string baseUrlAndQuery = null)
