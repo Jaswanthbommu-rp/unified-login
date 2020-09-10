@@ -718,7 +718,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"propertyinstance/{propertyInstance.PropertyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
             
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"propertyInstance", propertyInstance}};
-            //var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("propertyInstanceadd", "propertyInstance");
             var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("\"propertyInstanceId\":0,", "");
             logData.Add("jsonToSave", jsonToSave);
             WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookPropertyInstance - Adding info.", logData);
@@ -1027,17 +1026,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (response.IsSuccessStatusCode)
                 {
                     customerProperty = JsonConvert.DeserializeObject<CustomerProperty>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
-                    //productPropertyList = customerPropertyList.Select(p => new ProductProperty
-                    //{
-                    //    ID = p.attributes != null ? p.attributes.customerPropertyId : null,
-                    //    Name = p.attributes.propertyName,
-                    //    Street1 = p.attributes.address != null ? p.attributes.address.address : null,
-                    //    City = p.attributes.address != null ? p.attributes.address.city : null,
-                    //    State = p.attributes.address != null ? p.attributes.address.state : null,
-                    //    Zip = p.attributes.address != null ? p.attributes.address.postalCode : null
-                    //}).OrderBy(p => p.Name).ToList();
-
-                    logData = new Dictionary<string, object>() {{"CustomerProperty", customerProperty}};
+ logData = new Dictionary<string, object>() {{"CustomerProperty", customerProperty}};
                     WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - Got info.", logData);
                 }
                 else
