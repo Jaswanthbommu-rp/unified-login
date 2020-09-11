@@ -1025,3 +1025,17 @@ BEGIN
 		SET   [Value] = 'Access to Company-level questionnaires and Summary Views in CIMPL'
 		WHERE  RightName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL' 
 END
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE rightname = 'ManageIntelligentBuildingProductAccess')
+BEGIN
+	UPDATE [Security].[Right] SET [Value] = 'Manage Waste Management Solution Product Access', 
+								  [Description] = 'Manage Waste Management Solution Product Access' 
+							  WHERE rightname = 'ManageIntelligentBuildingProductAccess';
+END
+
+IF EXISTS (SELECT TOP 1 1 FROM Enterprise.[RightValueType] WHERE ShortName = 'ManageIntelligentBuilding' AND [Description] = 'Manage Intelligent Building Product Access')
+BEGIN
+	UPDATE Enterprise.[RightValueType] SET    [Value] = 'Manage Waste Management Solution Product Access'
+									   WHERE  ShortName = 'ManageIntelligentBuilding' 
+									   AND [Description] = 'Manage Intelligent Building Product Access' 
+END
