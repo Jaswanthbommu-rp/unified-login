@@ -30,6 +30,7 @@
             vm.allProperties = false;
             vm.showAllPropertiesSwitch = false;
             vm.propertySelect =  '';
+            vm.defaultpresetRoleId = "";
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -49,8 +50,8 @@
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
+            vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
 
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
             pubsub.subscribe("vc.accesstype-roles-radio", vm.getVCRoles);
@@ -229,9 +230,32 @@
                         vm.presetRoles.push(option);
                     });
 
-                    vm.selectconfigs.forEach(function (item) {
+                     vm.selectconfigs.forEach(function (item) {
                         item.configData.setOptions(vm.presetRoles);
                     });
+
+                    vm.presetRoles.forEach(function (item) {
+                        vm.isMatched = false;
+                            var assignedRoles = roleData.filter(function (role) {
+                                return role.isAssigned === true;
+                            });
+                            if(assignedRoles && assignedRoles.length === item.roleIds.length){
+                                assignedRoles.forEach(function (role) {
+                                    if(item.roleIds.indexOf(parseInt(role.id)) !== -1){
+                                        vm.isMatched = true;
+                                    }
+                                    else{
+                                        vm.isMatched = false;
+                                    }
+                                });
+
+                            }
+                            if(vm.isMatched){
+                                vm.defaultpresetRoleId = item.id;
+                            }
+                    });
+
+                    vm.roleSelected = vm.defaultpresetRoleId;
 
                 }
 
