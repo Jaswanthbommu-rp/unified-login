@@ -1319,6 +1319,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(
+                    It.IsAny<int>()
+                ))
+                .Returns(_productInternalSettingsOneSite);
+
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);

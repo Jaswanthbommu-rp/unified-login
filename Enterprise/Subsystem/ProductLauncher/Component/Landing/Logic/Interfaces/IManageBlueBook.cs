@@ -124,5 +124,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="propertyInstance"></param>
         /// <returns></returns>
         bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance);
+
+        /// <summary>
+        /// Used to acknowledge provisioning events
+        /// </summary>
+        /// <param name="productCenterEnablement"></param>
+        /// <returns></returns>
+        bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement);
     }
 }
