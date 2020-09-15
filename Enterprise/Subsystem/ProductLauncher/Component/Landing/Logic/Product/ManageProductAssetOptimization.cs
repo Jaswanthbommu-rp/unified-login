@@ -664,7 +664,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				string returnResult = "";
 				bool loginNameChanged = false;
-				string productUserName = "";
 				List<string> userAOProducts = new List<string>();
 				var persona = _managePersona.GetPersona(productUserPersonaId);
 				var realPageId = persona.RealPageId;
