@@ -84,11 +84,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 		public long OrganizationPartyId { get; set; }
 
 		/// <summary>
-		/// AdminCreaterRealPageId
-		/// </summary>
-		public Guid? AdminCreatorRealPageId { get; set; }
-
-		/// <summary>
 		/// SendInvitationEmail
 		/// </summary>
 		public bool? SendInvitationEmail { get; set; }
