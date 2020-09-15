@@ -663,6 +663,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				string returnResult = "";
+				bool loginNameChanged = false;
+				string productUserName = "";
 				List<string> userAOProducts = new List<string>();
 				var persona = _managePersona.GetPersona(productUserPersonaId);
 				var realPageId = persona.RealPageId;
@@ -800,8 +802,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//Create/Update single/multi company AO Products
 				if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
-				{					
-					if (userAOProducts?.Count == 0)
+				{
+					if ((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser)
+					{
+						long primaryCompanyPersonaId = personaList.Where(x => x.OrganizationPartyId != persona.OrganizationPartyId).Select(y => y.PersonaId).FirstOrDefault();
+						productUserName = GetSamlProductUserName(primaryCompanyPersonaId);
+					}
+					else
+					{
+						productUserName = _productUsername;
+					}
+					//If the User's LoginName changed with Property or Roles in the PrimaryOrganization then update it in the Product
+					if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
+					{
+						aoUser.UserId = productUserGbLogin.LoginName.ToLower();
+						aoUser.OldUserId = _productUserId.ToLower();
+						aoUser.Login = productUserGbLogin.LoginName.ToLower();
+						loginNameChanged = true;
+					}
+
+					if (userAOProducts?.Count == 0 && !loginNameChanged)
 					{
 						aoUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
 						aoUser.Divisions = new List<Divisions>();
@@ -824,7 +844,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					// Update User logic
 					// Get Copy of User from AO
-					var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId);
+					var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, productUserPersonaId, productUserName);
 					// store existing assigned products
 					var existingAoProducts = copiedAoUserCompanyPropertyRoleDetails;
 
@@ -833,6 +853,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);
 					aoUser.Divisions = new List<Divisions>();
 					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
+
+					if (!loginNameChanged)
+					{
+						aoUser.UserId = _productUserId.ToLower();
+						//aoUser.Login = _productUsername.ToLower();
+						aoUser.OldUserId = _productUserId.ToLower();
+						aoUser.Email = _productUsername.ToLower();
+					}
 
 					aoUser.UserId = _productUserId.ToLower();
 					//aoUser.Login = _productUsername.ToLower();
@@ -843,7 +871,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					if (string.IsNullOrEmpty(returnResult))
 					{
-						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
+						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails, loginNameChanged);
 					}
 					else
 					{
