@@ -208,19 +208,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var propertyList = thinEvent.Payload["properties"];
                             string existingUnifiedLoginInstanceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
                             
-                            List<int> productIdList = new List<int>();
+                            List<int> uniqueProductIdList = new List<int>();
+                            List<int> companyProductList = new List<int>();
+
                             List<UPFMPropertyInstance> propertyInstanceList = new List<UPFMPropertyInstance>();
+                            ProductCenterEnablement centerEnablement = new ProductCenterEnablement() { Details = new List<ProductCenterEnablementSettings>()};
+                            centerEnablement.EnabledBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation";
+                            
+                            var companyProductCenters = thinEvent.Payload?["company"]["productCenters"];
+                            try
+                            {
+                                foreach (var product in companyProductCenters)
+                                {
+                                    int productId = Convert.ToInt32(product["productCenterSourceId"]);
+                                    if (!uniqueProductIdList.Contains(productId))
+                                    {
+                                        uniqueProductIdList.Add(productId);
+                                    }
+                                    companyProductList.Add(productId);
+                                }
+                            }
+                            catch(Exception ex){}
+
                             try
                             {
                                 foreach (var property in propertyList)
                                 {
+                                    var currentProductList = new List<int>();
                                     var productList = property["productCenters"];
                                     foreach (var product in productList)
                                     {
                                         int productId = Convert.ToInt32(product["productCenterSourceId"]);
-                                        if (!productIdList.Contains(productId))
+                                        currentProductList.Add(productId);
+                                        if (!uniqueProductIdList.Contains(productId))
                                         {
-                                            productIdList.Add(productId);
+                                            uniqueProductIdList.Add(productId);
                                         }
                                     }
 
@@ -239,7 +261,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         Latitude = Convert.ToDecimal(property?["latitude"] == null || property["latitude"].Type == JTokenType.Null ? 0 : property["latitude"]),
                                         CustomerPropertyId = property["customerPropertyId"] == null || property["customerPropertyId"].Type == JTokenType.Null ? null : property["customerPropertyId"].ToString(),
                                         InstanceId = existingUPFMPropertyInstanceId == null ? Guid.Empty : new Guid(existingUPFMPropertyInstanceId),
-                                        Domain = customerDomain // not sure how this can be correct
+                                        Domain = customerDomain, // not sure how this can be correct
+                                        ProductList = currentProductList,
                                     };
 
                                     // 
@@ -259,7 +282,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         }
                                     }
                                     propertyInstanceList.Add(newProperty);
-
                                 }
                             }
                             catch (Exception ex)
@@ -278,10 +300,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             if (existingUnifiedLoginInstanceId == null)
                             {
                                 //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
-                                var createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, productIdList);
+                                var createResult = CreateCompanyFromBooks(customerCompanyId, customerDomain, uniqueProductIdList);
                                 if (!string.IsNullOrEmpty(createResult.Result))
                                 {
                                     propertyInstanceList = new List<UPFMPropertyInstance>();
+                                    centerEnablement.Details = new List<ProductCenterEnablementSettings>();
                                     logData = new Dictionary<string, object> { { "error", createResult } };
 
                                     WriteToLog(LogEventLevel.Error, "Error", logData);
@@ -305,19 +328,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     RPObjectCache.RemoveFromCache(cacheKey);
                                     
                                     var existingProductList = _organizationRepository.GetProductsByCompany(org.RealPageId);
-                                    foreach (var productId in productIdList)
+                                    foreach (var productId in uniqueProductIdList)
                                     {
                                         if (existingProductList.All(p => p.ProductId != productId))
                                         {
                                             var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: org.PartyId, product: (ProductEnum) productId, configurationId: null, fromDate: null, thruDate: null);
-                                            // post back to books?
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    WriteToLog(LogEventLevel.Error, $"Company {existingUnifiedLoginInstanceId} not found");
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {existingUnifiedLoginInstanceId} not found");
+                                }
                             }
                             
+                            // add ack for new products for the company
+                            foreach (var productId in companyProductList)
+                            {
+                                centerEnablement.Details.Add(new ProductCenterEnablementSettings()
+                                {
+                                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                                    CustomerEnvironment = customerDomain,
+                                    CustomerCompanyId = customerCompanyId,
+                                    CompanyInstanceSourceId = existingUnifiedLoginInstanceId,
+                                    ProductCenterSourceId = productId.ToString(),
+                                    PropertyInstanceSourceId = null,
+                                    CustomerPropertyId = null
+                                });
+                            }
+
                             // add any new properties
-                            string propertyResult = AddPropertiesFromBooks(existingUnifiedLoginInstanceId, customerDomain, propertyInstanceList);
+                            string propertyResult = AddPropertiesFromBooks(customerCompanyId, existingUnifiedLoginInstanceId, customerDomain, propertyInstanceList, ref centerEnablement);
+                            
+                            // enable the products
+                            if (centerEnablement.Details.Count > 0)
+                            {
+                                _manageBlueBook.AcknowledgeProvisioningEvent(centerEnablement);
+                            }
+
                             break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
@@ -337,11 +386,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Used to add a new property instance to UPFM and then send the new instance id to books
         /// </summary>
+        /// <param name="customerCompanyId"></param>
         /// <param name="unifiedLoginInstanceId"></param>
         /// <param name="customerCompanyDomain"></param>
         /// <param name="propertyInstanceList"></param>
+        /// <param name="centerEnablement"></param>
         /// <returns></returns>
-        private string AddPropertiesFromBooks(string unifiedLoginInstanceId, string customerCompanyDomain, List<UPFMPropertyInstance> propertyInstanceList)
+        private string AddPropertiesFromBooks(int customerCompanyId, string unifiedLoginInstanceId, string customerCompanyDomain, List<UPFMPropertyInstance> propertyInstanceList, ref ProductCenterEnablement centerEnablement)
         {
             string result = "";
             foreach (var property in propertyInstanceList)
@@ -375,6 +426,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation"
                         };
                         var resultBooks = _manageBlueBook.AddBooksGreenBookPropertyInstanceFromProvisioning(pi);
+                        foreach (var productId in property.ProductList)
+                        {
+                            centerEnablement.Details.Add(new ProductCenterEnablementSettings()
+                            {
+                                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                                CustomerEnvironment = customerCompanyDomain,
+                                CustomerCompanyId = customerCompanyId,
+                                CompanyInstanceSourceId = unifiedLoginInstanceId,
+                                ProductCenterSourceId = productId.ToString(),
+                                PropertyInstanceSourceId = property.InstanceId.ToString(),
+                                CustomerPropertyId = pi.CustomerPropertyId.ToString()
+                            });
+                        }
                     }
                 }
             }
