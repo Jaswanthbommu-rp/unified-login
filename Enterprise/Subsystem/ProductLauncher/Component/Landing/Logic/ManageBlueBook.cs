@@ -743,6 +743,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Used to acknowledge provisioning events
+        /// </summary>
+        /// <param name="productCenterEnablement"></param>
+        /// <returns></returns>
+        public bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement)
+        {
+            string uri = $"productcenterenablement/enable";
+            
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"productCenterEnablement", productCenterEnablement}};
+            var jsonToSave = JsonConvert.SerializeObject(productCenterEnablement, new JsonApiSerializerSettings()).Replace("\"details\"", "\"productCenterEnablement\"");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "AcknowledgeProvisioningEvent - Adding info.", logData);
+            
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "AcknowledgeProvisioningEvent - Added info successfully.");
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+            
+            logData = new Dictionary<string, object>() {{"response", response}};
+            WriteToLog(LogEventLevel.Error, "AcknowledgeProvisioningEvent - Failed to add info.", logData);
+
+            return true;
+        }
+
+
+        /// <summary>
         /// Used to get a list of company id's for the given company list
         /// </summary>
         /// <param name="companies"></param>
