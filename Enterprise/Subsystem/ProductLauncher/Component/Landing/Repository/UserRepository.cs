@@ -5412,6 +5412,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), updateUserProfileEntity.AoProductsAvailableForUser);
                         }
 
+                        //Excluding ProfileUpdate batch If user updating  email with property or roles for AO
+                        if (updateUserProfileEntity.ProductBatchData.ToList().Any(i => i.ProductId == (int)ProductEnum.AssetOptimizer) && loginNamechanged)
+                        {
+                            loginNamechanged = false;
+                        }
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
                         {
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
