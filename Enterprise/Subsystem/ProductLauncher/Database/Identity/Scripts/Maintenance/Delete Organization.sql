@@ -6,10 +6,11 @@ To delete and Organization: Modify the PartyId and Name in the JSON below.
 To delete multiple: duplicate the node separate by commas.
 */
 
+--SELECT * FROM enterprise.Organization
 
 DECLARE @ProductionEnterpriseOrganizationJSON varchar(max) = '
 [
-	{"PartyId":####,"Name":"AMERICAN LANDMARK MANAGEMENT LLC"}
+	{"PartyId":####,"Name":"Camden Development, Inc. DO NOT USE"}
 ]
 '
 
@@ -149,6 +150,21 @@ SELECT	ero.RoleID,
 FROM		Enterprise.Role ero
 				INNER JOIN @Right ri ON (ero.PartyID = ri.PartyId AND ero.RoleID = ri.RoleID)
 				INNER JOIN Enterprise.[Right] eri ON (eri.RoleID = ri.RoleID AND eri.PartyId = ri.PartyId)
+
+DELETE RR
+		FROM Security.RoleRight RR 
+		INNER JOIN Security.[Role] R ON R.RoleId = RR.RoleId
+		INNER JOIN @Organization o ON (o.PartyId = R.OrgPartyID)
+
+DELETE ODR
+		FROM Security.OrganizationDefaultRole ODR
+		INNER JOIN @Organization o ON (o.PartyId = ODR.OrgPartyId)
+		INNER JOIN Security.[Role] R ON R.RoleId = ODR.RoleId
+
+DELETE R 
+		FROM Security.[Role] R 
+		INNER JOIN @Organization o ON (o.PartyId = R.OrgPartyID)
+
 
 DELETE	ero
 FROM		Enterprise.Role ero
