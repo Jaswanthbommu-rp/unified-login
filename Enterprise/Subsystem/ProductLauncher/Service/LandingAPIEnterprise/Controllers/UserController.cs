@@ -122,25 +122,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             Type = typeof(UserProductDetailsDto))]
         [Route("user")]
         [HttpPost]
-        public HttpResponseMessage CreateUser(UserProductDetailsDto userProductDetailsDto)
+        public HttpResponseMessage CreateUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
         {
             try
             {
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 if (currentClaimPrincipal.HasClaim("scope", "usermanagement"))
                 {
-                    if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.AdminCreatorRealPageId.ToString()))
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
+                        IManageOrganization manageOrganization = new ManageOrganization();
+                        Guid AdminCreatorRealPageId = manageOrganization.GetOrganizationAdminUserRealPageId(upfmId??default(Guid));
                         //recreate clams
-                        RecreateClaimsForClient(userProductDetailsDto.UserProfileDetails.AdminCreatorRealPageId ?? new Guid());
+                        if (AdminCreatorRealPageId == Guid.Empty)
+                        {
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error
+                            { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
+
+                            // return errors with bad request
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        }
+                        RecreateClaimsForClient(AdminCreatorRealPageId);
                         _managePersona = new ManagePersona(_userClaims);
                         _manageProduct = new ManageProduct(_userClaims);
+                                              
                     }
                     else
                     {
                         var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                         errorResponse.Errors.Add(new Error
-                        { Title = "Error", Source = "/user", Detail = "AdminCreatorRealPageId Canot be Null.", StatusCode = "" });
+                        { Title = "Error", Source = "/user", Detail = "Invalid UPFMId.", StatusCode = "" });
 
                         // return errors with bad request
                         return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
@@ -1233,7 +1245,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
                     Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
                     CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
-                    AdminCreatorRealPageId = userProductDetailsDto.UserProfileDetails.AdminCreatorRealPageId,
                     SendInvitationEmail = userProductDetailsDto.UserProfileDetails.SendInvitationEmail
                 },
                 ProductList = new List<ProductDetail>()
