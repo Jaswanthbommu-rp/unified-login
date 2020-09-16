@@ -134,6 +134,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// Create User
 				result = CreateUser(newProductUser);
 			}
+			//Create Multi company with put
+			else if(string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser != null)
+			{
+				result = CreateMultiCompanyUser(newProductUser);
+			}
 			else
 			{
 				WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
@@ -320,7 +325,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
-
 		/// <summary>
 		/// Delete User - patch with isActive = false
 		/// </summary> 
@@ -373,6 +377,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// Get product setting value
 			var settingValue = ProductInternalSettingList.Where(a => settingName.Contains(a.Name)).Select(b => b.Value).ToList(); 
 			return settingValue;
+		}
+
+		/// <summary>
+		/// Create a user in the product
+		/// </summary>
+		protected string CreateMultiCompanyUser(IntegrationProductUser productUser)
+		{
+			WriteToDiagnosticLog(
+				$"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+
+			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PostUserEndpoint);
+
+			WriteToDiagnosticLog(
+				$"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+
+			// dump api info
+			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
+
+			var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
+			var result = integration.PutEntity<IntegrationProductUser>(productUser);
+
+			if (result.IsSuccessStatusCode)
+			{
+				WriteToDiagnosticLog(
+					$"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping.");
+
+				// map product user in green book
+				_dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
+
+				// OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
+				CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
+
+				// activity logging
+				ProductActivityLogger.WriteCreateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
+					CorrelationId);
+
+				return string.Empty;
+			}
+
+			WriteToErrorLog(
+				$"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. result received - {result}.");
+
+			return result.Content;
 		}
 		#endregion
 		#region private
