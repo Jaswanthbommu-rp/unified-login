@@ -37,7 +37,7 @@ BEGIN
 	SET @TargetProductId = 3;
 	SET @RouteName='RolesAndRights';
 	INSERT INTO @TargetRoleName VALUES('Basic End User'),('Read Only for Unified Platform'),('User Administrator');
-	INSERT INTO @TargetOrganization VALUES(350),(6967),(510720),(3),(7193);   
+	INSERT INTO @TargetOrganization VALUES(350),(10728),(6967),(3),(7193),(51072),(12980),(21184);   
 
 	--UserId
 	SELECT	@UserId = UserId
