@@ -125,7 +125,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				newProductUser.LoginName = newProductUser.Email;
 			}
 
-			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+			var productUser = getBaseUserDataFromProduct(newProductUser.LoginName);
+			//For Multi company user creation first check user data from product,if user data exists then do put else post
+
+			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser == null)
 			{
 				WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
 				// Create User
@@ -135,8 +138,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				WriteToDiagnosticLog($"RenovationManager.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
 				// Update user with Id/Login from product
-				newProductUser.UserId = SubjectUserDetails.ProductUserId;
-				newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+				if (productUser != null)
+				{
+					newProductUser.UserId = productUser.UserId;
+					newProductUser.LoginName = productUser.LoginName;
+				}
+				else 
+				{
+					newProductUser.UserId = SubjectUserDetails.ProductUserId;
+					newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+				}
+				
 				result = UpdateUser(newProductUser, batchProcessType);
 			}
 			return result;
@@ -361,6 +373,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// Get product setting value
 			var settingValue = ProductInternalSettingList.Where(a => settingName.Contains(a.Name)).Select(b => b.Value).ToList(); 
 			return settingValue;
+		}
+		#endregion
+		#region private
+		private IntegrationProductUser getBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+		{
+			if (string.IsNullOrEmpty(baseUrlAndQuery))
+				baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserExistEndpoint);
+
+			baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);			
+
+			WriteToDiagnosticLog(
+				$"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+
+			var productUser = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, false);
+
+			WriteToDiagnosticLog(
+				$"ManageProductInvokerBase.GetProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+
+			return productUser;
 		}
 		#endregion
 	}
