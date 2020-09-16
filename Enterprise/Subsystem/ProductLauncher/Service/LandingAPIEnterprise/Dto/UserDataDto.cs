@@ -59,12 +59,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		public Dictionary<string, string> AdditionalFields = new Dictionary<string, string>();
 
 		/// <summary>
-		/// AdminCreaterRealPageId
-		/// </summary>
-		[JsonProperty("AdminCreaterRealPageId", NullValueHandling = NullValueHandling.Ignore)]
-		public Guid? AdminCreatorRealPageId { get; set; }
-
-		/// <summary>
 		/// SendInvitationEmail
 		/// </summary>
 		[JsonProperty("SendInvitationEmail", NullValueHandling = NullValueHandling.Ignore)]

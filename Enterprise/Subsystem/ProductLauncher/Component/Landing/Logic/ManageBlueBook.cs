@@ -709,6 +709,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Add the new UPFM property instance to books
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        public bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance)
+        {
+            string uri = $"propertyinstance/{propertyInstance.PropertyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
+            
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"propertyInstance", propertyInstance}};
+            var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("\"propertyInstanceId\":0,", "");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookPropertyInstance - Adding info.", logData);
+            
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Put,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookPropertyInstance - Added info successfully.");
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() {{"response", response}};
+            WriteToLog(LogEventLevel.Error, "AddBooksGreenBookPropertyInstance - Failed to add info.", logData);
+            
+            return false;
+        }
+
+        /// <summary>
+        /// Used to acknowledge provisioning events
+        /// </summary>
+        /// <param name="productCenterEnablement"></param>
+        /// <returns></returns>
+        public bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement)
+        {
+            string uri = $"productcenterenablement/enable";
+            
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"productCenterEnablement", productCenterEnablement}};
+            var jsonToSave = JsonConvert.SerializeObject(productCenterEnablement, new JsonApiSerializerSettings()).Replace("\"details\"", "\"productCenterEnablement\"");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "AcknowledgeProvisioningEvent - Adding info.", logData);
+            
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "AcknowledgeProvisioningEvent - Added info successfully.");
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+            
+            logData = new Dictionary<string, object>() {{"response", response}};
+            WriteToLog(LogEventLevel.Error, "AcknowledgeProvisioningEvent - Failed to add info.", logData);
+
+            return true;
+        }
+
+
+        /// <summary>
         /// Used to get a list of company id's for the given company list
         /// </summary>
         /// <param name="companies"></param>
@@ -964,6 +1033,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return productPropertyList;
             });
             return productPropertyList;
+        }
+
+        /// <summary>
+        /// Used to get property instance details
+        /// </summary>
+        /// <param name="propertyInstanceId"></param>
+        /// <returns></returns>
+        public CustomerProperty GetCustomerPropertyDetails(string propertyInstanceId)
+        {
+            if (String.IsNullOrEmpty(propertyInstanceId))
+            {
+                throw new Exception("Invalid parameter propertyInstanceId.");
+            }
+            CustomerProperty customerProperty = new CustomerProperty();
+            //List<ProductProperty> productPropertyList = new List<ProductProperty>();
+
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"getCustomerPropertyDetails_{propertyInstanceId}";
+
+            customerProperty = rpcache.GetFromCache<CustomerProperty>(cacheKey, CacheTimeSeconds, () =>
+            {
+                string uri = $"customerproperty/{propertyInstanceId}";
+                Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
+                WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    customerProperty = JsonConvert.DeserializeObject<CustomerProperty>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                     logData = new Dictionary<string, object>() {{"CustomerProperty", customerProperty}};
+                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - Got info.", logData);
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() {{"response", response}};
+                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - No info found.", logData);
+                    return null;
+                }
+
+                return customerProperty;
+            });
+            return customerProperty;
         }
 
         #region Privates

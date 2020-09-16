@@ -489,13 +489,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 foundInstance = true;
                             }
                         });
-                        if (deleteInstance)
-                        {
-                            if (commit)
-                            {
-                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
-                            }
-                        }
+                        // stop deleting instances for now
+                        //if (deleteInstance)
+                        //{
+                        //    if (commit)
+                        //    {
+                        //        _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
+                        //    }
+                        //}
                     }
                 }
 
