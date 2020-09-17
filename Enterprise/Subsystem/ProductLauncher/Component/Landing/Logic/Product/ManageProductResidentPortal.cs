@@ -657,13 +657,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                         //Title (Manager custom title): MANAGER, LEASING_AGENT, BOARD, FRONTDESK, ASSISTANT_MANAGER, NIGHT_SHIFT, MAINTENANCE, CORPORATE, OTHER
                         //Updated from the Edit Profile
+
                         PartyRole partRole = new PartyRole();
                         partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
-                        residentPortalUser.Title = "Property Staff";
-                        if (partRole != null)
-                        {
-                            residentPortalUser.Title = partRole.Name;
-                        }
+
+                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title : partRole != null && !string.IsNullOrEmpty(partRole.Name) ? partRole.Name : "Property Staff";
 
                         //If All Cuurent and Future properties toggle switch
                         if ((residentPortal.PropertyList != null) && (residentPortal.PropertyList.Count == 1) && (residentPortal.PropertyList[0].ToUpper() == "ALL"))
