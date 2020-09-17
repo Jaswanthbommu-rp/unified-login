@@ -40,7 +40,8 @@
             s.originalPropertyListMap = {};
             s.asidePropertyMap = {};
             s.asideGroupMap = {};
-
+            s.productGridMap = {};
+            s.productGridPaginationMap = {};
             s.productControlsList = {
                 products: []
             };
@@ -982,6 +983,38 @@
             };
         };
 
+        p.getProductGrid = function (productId, tabName) {
+            var s = this,
+                gridConfig;
+            if (s.productGridMap['product' + productId + tabName] !== undefined) {
+                gridConfig = s.productGridMap['product' + productId + tabName].gridConfig;
+            }
+            return gridConfig;
+        };
+
+        p.renderProductGridMap = function (productId, tabName, config) {
+            var s = this;
+            s.productGridMap['product' + productId + tabName] = {
+                gridConfig: config
+            };
+        };
+
+        p.getProductGridPagination = function (productId, tabName) {
+            var s = this,
+                gridPageConfig;
+            if (s.productGridPaginationMap['product' + productId + tabName] !== undefined) {
+                gridPageConfig = s.productGridPaginationMap['product' + productId + tabName].gridPageConfig;
+            }
+            return gridPageConfig;
+        };
+
+        p.renderProductGridPaginationMap = function (productId, tabName, config) {
+            var s = this;
+            s.productGridPaginationMap['product' + productId + tabName] = {
+                gridPageConfig: config
+            };
+        };
+
         p.renderProductAsideGridConfigMap = function (productId, tabName, config, name) {
             var s = this;
             s.productAsideGridConfigMap['product' + productId + tabName] = {
@@ -1317,6 +1350,8 @@
             s.productPresetRolesMap = {};
             s.notificationsMap = {};
             s.productAdditionalMap = [];
+            s.productGridMap = {};
+            s.productGridPaginationMap = {};
         };
 
         return new ProductDataSyncManager();

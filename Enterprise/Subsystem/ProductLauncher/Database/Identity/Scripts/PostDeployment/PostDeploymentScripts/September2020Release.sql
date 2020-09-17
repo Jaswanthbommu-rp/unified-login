@@ -1012,3 +1012,16 @@ IF EXISTS (select TOP 1 1 from UserManagement.ControlAttribute where ControlId =
 BEGIN
 	UPDATE UserManagement.ControlAttribute SET ControlId = 68 WHERE ControlId = 67 and ControlAttributeId = 2
 END
+IF EXISTS (SELECT TOP 1 1 FROM Enterprise.[RightValueType] WHERE ShortName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL' AND [Description] = 'Ability to answer company-level questionnaires in CIMPL')
+BEGIN
+	UPDATE Enterprise.[RightValueType] 
+		SET    [Value] = 'Access to Company-level questionnaires and Summary Views in CIMPL'
+		WHERE  ShortName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL' 
+			   AND [Description] = 'Ability to answer company-level questionnaires in CIMPL' 
+END
+IF EXISTS (SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL')
+BEGIN
+	UPDATE [Security].[Right] 
+		SET   [Value] = 'Access to Company-level questionnaires and Summary Views in CIMPL'
+		WHERE  RightName = 'AbilitytoanswercompanylevelquestionnairesinCIMPL' 
+END

@@ -206,30 +206,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             };
 
             //return Request.CreateResponse(HttpStatusCode.OK, result.obj);
+            bool addInstance = true;
 
             if (companyMapResource != null)
             {
                 // remove any existing instance and add a new one
                 foreach (var customerCompanyMap in companyMapResource)
                 {
-                    bool deleteInstance = false;
                     customerCompanyMap.CompanyInstance?.ForEach(i =>
                     {
-                        if (i.CustomerEnvironment == null || i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
+                        if (i.CustomerEnvironment.Equals(companyInstance.CustomerEnvironment, StringComparison.OrdinalIgnoreCase))
                         {
-                            deleteInstance = true;
+                            addInstance = false;
                         }
                     });
-
-                    if (deleteInstance)
-                    {
-                        _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
-                    }
                 }
             }
 
-            // add the new company data back to books
-            _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+            // add the new company data to books
+            if (addInstance)
+            {
+                _manageBlueBook.AddBooksGreenBookCompanyInstance(companyInstance);
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, result.obj);
         }
@@ -433,7 +431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IList<Organization> orgList = _manageOrganization.GetOrganizationList();
             ConcurrentDictionary<string, CompanyInstanceAdd> result = new ConcurrentDictionary<string, CompanyInstanceAdd>();
-            Parallel.ForEach(orgList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { SyncBooksCompany(commit, companyList).ForEach(x => result.TryAdd(x.Key, x.Value)); });
+            //Parallel.ForEach(orgList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, companyList => { SyncBooksCompany(commit, companyList).ForEach(x => result.TryAdd(x.Key, x.Value)); });
 
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
@@ -491,13 +489,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 foundInstance = true;
                             }
                         });
-                        if (deleteInstance)
-                        {
-                            if (commit)
-                            {
-                                _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
-                            }
-                        }
+                        // stop deleting instances for now
+                        //if (deleteInstance)
+                        //{
+                        //    if (commit)
+                        //    {
+                        //        _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceId = customerCompanyMap.CompanyInstanceId, ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation" });
+                        //    }
+                        //}
                     }
                 }
 

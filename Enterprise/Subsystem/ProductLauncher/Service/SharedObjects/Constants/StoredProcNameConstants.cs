@@ -275,6 +275,7 @@
         public const string SP_UpdatePropertyMappingReMap = "Enterprise.UpdatePropertyMappingReMap";
         public const string SP_AddUpdatePropertyMapping = "Enterprise.AddUpdatePropertyMapping";
 
+        public const string SP_CreatePropertyInstance = "Enterprise.CreatePropertyInstance";
         public const string SP_CreatePropertyInstanceMapping = "Enterprise.CreatePropertyInstanceMapping";
         public const string SP_AddUpdatePropertyInstanceMapping = "Enterprise.AddUpdatePropertyInstanceMapping";
         
