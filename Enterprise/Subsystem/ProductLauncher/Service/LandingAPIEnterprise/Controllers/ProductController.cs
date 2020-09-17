@@ -67,12 +67,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
 
-            var result = GetUsersByCompanyorProductsDetails(companyId, products);
-
-            if (result == null)
+            if (!ValidateCompanyProductsDetailsData(companyId, products))
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, new List<ProductUsers>());
+                return Request.CreateResponse(HttpStatusCode.BadRequest);
             }
+
+            IProductRepository productRepository = new ProductRepository();
+            var result = productRepository.GetUsersByCompanyorProducts(companyId, products);
 
             var logData = new Dictionary<string, object>();
             logData.Add("result", result);
@@ -146,21 +147,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
 
+            if (string.IsNullOrEmpty(companyid) || !productcode.Any())
+            {
+                IList<ProductUsers> productUsers = new List<ProductUsers>();
+
+                response.Data = productUsers.Cast<object>().ToList();
+                response.Meta.CurrentPage = pageNumber.Value;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = rowsPerPage.Value;
+                response.IsError = true;
+                response.ErrorReason = "BadRequest";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
+
             if (propertyIds.Any())
             {
                 propertyIds = propertyIds.Distinct().ToList();
                 propertyIds = propertyIds.Where(x => !string.IsNullOrEmpty(x)).ToList();
             }
 
-            IList<int?> productIds = new List<int?>();
+            IList<int> products = new List<int>();
 
-            productcode.ForEach(x => productIds.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
+            productcode.ForEach(x => products.Add((int)ProductEnumHelper.GetProductEnumByProductCode(x)));
 
-            ProductProcVersion version = (roles.Any() || rights.Any() || propertyIds.Any()) ? ProductProcVersion.Version3 : ProductProcVersion.Version2;
-
-            //Add validation to verify the propertyId
-
-            var result = GetUsersByCompanyorProductsDetails(companyid, productIds, version, rowsPerPage, pageNumber, roles, rights, propertyIds);
+            IProductRepository productRepository = new ProductRepository();
+            var result = productRepository.GetUsersByCompanyorProducts(companyid, products, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds);
 
             if (result == null)
             {
@@ -236,21 +247,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
         }
 
-        private IList<ProductUsers> GetUsersByCompanyorProductsDetails(string companyId, IList<int?> products = null, ProductProcVersion version = ProductProcVersion.Version1, int? rowsPerPage = 0, int? pageNumber = 1,
-                                                                      IList<string> roles = null, IList<string> rights = null, List<string> propertyIds = null)
+        private bool ValidateCompanyProductsDetailsData(string companyId, IList<int?> products)
         {
             if (string.IsNullOrEmpty(companyId) && products == null)
             {
-                return null;
+                return false;
             }
-            int compId;
-            if (!int.TryParse(companyId, out compId) && products == null)
+
+            if (!int.TryParse(companyId, out int compId) && products == null)
             {
-                return null;
+                return false;
             }
-            IProductRepository productRepository = new ProductRepository();
-            return productRepository.GetUsersByCompanyorProducts(companyId, products, version, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds);
+
+            return true;
         }
+
         #endregion
 
         #region Examples
