@@ -59,7 +59,8 @@ BEGIN
 						COALESCE(DIM.CompanyMasterId, 0) AS BooksCustomerMasterId,
 						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
-						RT.Name UserRoleType
+						RT.Name UserRoleType,
+						CASE WHEN ULP.StatusTypeId <> 1 THEN 'false' ELSE 'true' END AS IsActive
 		FROM	Enterprise.Party P
 					INNER JOIN Person.Person PER ON PER.PartyId = P.PartyId
 					INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = P.PartyId
@@ -128,7 +129,8 @@ BEGIN
 						COALESCE(DIM.CompanyMasterId, 0) AS BooksCustomerMasterId,
 						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
-						RT.Name UserRoleType
+						RT.Name UserRoleType,
+						CASE WHEN ULP.StatusTypeId <> 1 THEN 'false' ELSE 'true' END AS IsActive
 		FROM	Enterprise.Party P
 					INNER JOIN Person.Person PER ON PER.PartyId = P.PartyId
 					INNER JOIN Ident.UserLogin UL ON UL.PersonPartyId = P.PartyId
