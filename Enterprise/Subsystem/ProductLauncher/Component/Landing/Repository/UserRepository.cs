@@ -3665,13 +3665,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
-                            if (!productBatchData.ToList().Any(i => i.ProductId == (int)ProductEnum.AssetOptimizer))
-                            {
-                                // special treatment for bundled AO products
-                                SaveProductBatch(repository, product, createUserResponse,
+                            // special treatment for bundled AO products
+                            SaveProductBatch(repository, product, createUserResponse,
                                 saveProductBatchError, createUserPersonaId, assignUserPersonaId,
                                 realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
-                            }
                         }
                         else
                         {
