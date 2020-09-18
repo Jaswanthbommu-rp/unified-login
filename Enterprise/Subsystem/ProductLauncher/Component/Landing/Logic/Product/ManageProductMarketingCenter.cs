@@ -600,13 +600,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				if (RoleList.Count == 0)
 				{
-					WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.There is are no roles active in this company.  Please contact the implementation team for this product.");
+					WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.There are no roles active in this company. Please contact the implementation team for this product.");
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Stop);
 				}
 
 				if (PropertyList.Count == 0)
 				{
-					WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.There is are no properties active in this company.  Please contact the implementation team for this product.");
+					WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "An error occurred when {3} {4} attempted to provision {2} for {0} {1}.There are no properties active in this company. Please contact the implementation team for this product.");
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Stop);
 				}
 
