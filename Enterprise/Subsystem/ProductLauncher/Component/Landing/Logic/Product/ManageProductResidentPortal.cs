@@ -276,7 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //Used to convert a BlueBook property into a GreenBook property (ID, Name, State)
-                IList<ProductProperty> residentPortalPropertyList = propertyProductList.ToGBProperties();
+                IList<ProductProperty> residentPortalPropertyList = propertyProductList.ToGBProperties()?.OrderBy(x => x.Name).ToList();
                 if (residentPortalPropertyList == null)
                 {
                     residentPortalPropertyList = new List<ProductProperty>();
@@ -1321,7 +1321,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                List<ILevel> listLevels = ListLevels(editorPersonaId, userPersonaId);
+                List<ILevel> listLevels = ListLevels(editorPersonaId, userPersonaId)?.OrderBy(x => x.Name).ToList();
                 listResponse = new ListResponse()
                 {
                     Records = listLevels.Cast<object>().ToList(),
@@ -1414,7 +1414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
-            return messageGroupeList;
+            return messageGroupeList?.OrderBy(x => x.Name).ToList();
         }
 
         /// <summary>
