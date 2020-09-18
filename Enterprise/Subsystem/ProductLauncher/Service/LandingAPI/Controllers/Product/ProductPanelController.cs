@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/roles")]
 		[HttpGet]
-		public HttpResponseMessage GetRoles(long editorPersonaId, long userPersonaId, long partyId,int productId, [FromUri]RequestParameter datafilter, AccessType? accessType)
+		public HttpResponseMessage GetRoles(long editorPersonaId, long userPersonaId, long partyId,int productId, [FromUri]RequestParameter datafilter, AccessType? accessType = null)
 		{
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
