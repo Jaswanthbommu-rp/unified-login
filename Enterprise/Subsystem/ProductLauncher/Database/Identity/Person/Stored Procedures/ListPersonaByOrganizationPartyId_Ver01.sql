@@ -27,5 +27,5 @@ BEGIN
  WHERE ULP.OrganizationPartyId = @OrganizationPartyId  
  AND  ((@IsDefault IS NULL) OR (pe.IsDefault = @IsDefault))  
  AND  ((@NOW BETWEEN pe.FromDate AND pe.ThruDate) OR (@NOW >= pe.FromDate AND pe.ThruDate IS NULL))  
- AND  ((@UserRoleType IS NULL) OR ((pr.RoleTypeIdFrom = @UserRoleType) AND (((@NOW BETWEEN pr.FromDate AND pr.ThruDate) OR (@NOW >= pr.FromDate AND pr.ThruDate IS NULL)))))  
+ AND  ((@UserRoleType IS NULL) OR ((pr.RoleTypeIdFrom = @UserRoleType) AND (PR.PartyIdTo = @OrganizationPartyId) AND (((@NOW BETWEEN pr.FromDate AND pr.ThruDate) OR (@NOW >= pr.FromDate AND pr.ThruDate IS NULL)))))  
 END
