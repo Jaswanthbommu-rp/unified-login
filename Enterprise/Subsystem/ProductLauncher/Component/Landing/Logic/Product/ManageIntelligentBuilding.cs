@@ -524,7 +524,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (userPropertyIdList != null)
 			{
-				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
 				if (booksPropertyList != null)
 				{
 					customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
@@ -632,9 +632,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+				//var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
 
-				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString().ToUpper(), product);
+				var booksPropertyList = _blueBook.GetPropertiesPerProductCenter(_userClaims.OrganizationRealPageGuid.ToString(), product);
 				var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
 				WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
@@ -672,7 +672,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				State = upfmPropertyInstance.State,
 				Zip = upfmPropertyInstance.PostalCode,
 				IsAssigned = isAssigned,
-				InstanceId = upfmPropertyInstance.InstanceId.ToString().ToUpper(),
+				InstanceId = upfmPropertyInstance.InstanceId.ToString(),
 				Latitude = upfmPropertyInstance.Latitude,
 				Longitude = upfmPropertyInstance.Longitude,
 				Alias = upfmPropertyInstance.PropertyInstanceId.ToString()

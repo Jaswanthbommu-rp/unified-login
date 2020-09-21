@@ -161,11 +161,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 if (!useTranslatev2)
                 {
-                    companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString().ToUpper(), source, domain);
+                    companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString(), source, domain);
                 }
                 else
                 {
-                    companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString().ToUpper(), source);
+                    companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
                 }
 
                 if (companyMap != null)
@@ -176,8 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (useUPFMId && companyRealPageId != Guid.Empty)
             {
-                // need to send guid in uppercase because books is case sensitive.
-                var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
+                var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString(), domain);
                 booksCompanyMasterId = (newCompanyMasterId != 0) ? newCompanyMasterId : booksCompanyMasterId;
             }
             
@@ -896,8 +895,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             CustomerCompany companyInstance = new CustomerCompany();
             if (useUPFMId && companyRealPageId != Guid.Empty)
             {
-                // need to send guid in uppercase because books is case sensitive.
-                var currentCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
+                var currentCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString(), domain);
                 booksCompanyMasterId = (currentCompanyMasterId != 0) ? currentCompanyMasterId : booksCompanyMasterId;
             }
 
