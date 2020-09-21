@@ -124,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new CustomerCompanyMap()
                 {
                     CompanyInstanceId = 54321,
-                    CompanyInstanceSourceId = _RealPageId.ToString().ToUpper(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    CompanyInstanceSourceId = _RealPageId.ToString(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                     CompanyInstance = new List<CompanyInstance>()
                     {
                         new CompanyInstance() {CustomerEnvironment = "Primary", IsActive = true}
