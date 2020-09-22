@@ -582,10 +582,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         residentPortalUser.Title = string.IsNullOrWhiteSpace(_residentPortalUser.Title) ? "Property Staff" : _residentPortalUser.Title;
                         PartyRole partRole = new PartyRole();
                         partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
-                        if ((partRole != null) && (!partRole.Name.Equals(residentPortalUser.Title, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            residentPortalUser.Title = partRole.Name;
-                        }
+
+                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title 
+                                                   : partRole != null && !partRole.Name.Equals(residentPortalUser.Title, StringComparison.OrdinalIgnoreCase) ? partRole.Name : residentPortalUser.Title;
 
                         foreach (Community community in _residentPortalUser.Communities)
                         {
