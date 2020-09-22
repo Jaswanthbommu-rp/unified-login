@@ -7,7 +7,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -24,7 +23,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.Caching;
-using System.Web.Services.Description;
 using EnterpriseProductUser = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise.ProductUsers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -1766,25 +1764,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="rights"></param>
         /// <param name="propertyIds"></param>
         /// <returns>List of Users by product or company</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int> products, int rowsPerPage, int pageNumber,
                                                                 IList<string> roles, IList<string> rights, List<string> propertyIds = null)
         {
-            //Ignoring filter and Sort
-            IList<EnterpriseProductUser> productUsers = new List<EnterpriseProductUser>();
 
-            dynamic param = CompanyProductParam(companyId, products, version, rowsPerPage, pageNumber, roles, rights, propertyIds);
+            dynamic param = new  
+            {
+                CompanyId = companyId,
+                ProductId = products.Any() ? string.Join(",", products) : null,
+                RowsPerPage = rowsPerPage,
+                PageNumber = pageNumber,
+                Roles = roles.Any() ? string.Join(",", roles) : null,
+                Rights = rights.Any() ? string.Join(",", rights) : null,
+                Properties = propertyIds.Any() ? string.Join(",", propertyIds) : null
+            };
 
             using (var repository = GetRepository())
             {
-                switch ((int)version)
-                {
-                    case 2:
-                        return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver2, param);
-                    case 3:
-                        return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3, param);
-                    default:
-                        return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
-                }
+                return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3, param);
             }
         }
 
@@ -1814,6 +1811,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return mappingUserList;
         }
 
+        /// <summary>
+        /// Search by company and product ids and returns userlist
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="products"></param>
+        /// <returns>List of Users</returns>
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products)
+        {
+            dynamic param = new
+            {
+                CompanyId = companyId,
+                ProductId = products.Any() ? string.Join(",", products) : null
+            };
+
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId, param);
+            }
+        }
 
         #endregion
 
