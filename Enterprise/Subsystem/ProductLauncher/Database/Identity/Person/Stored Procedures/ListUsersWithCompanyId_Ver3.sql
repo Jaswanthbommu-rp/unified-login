@@ -53,7 +53,6 @@ BEGIN
     (
 		SELECT *
 		FROM STRING_SPLIT(@ProductId, ',')
-		WHERE value IN ('45','39','26','56','3')
 	);
 
 	INSERT INTO @RoleList(RoleShortName)
