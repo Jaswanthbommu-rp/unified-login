@@ -540,11 +540,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return createCompanyResult;
             }
 
-            createCompanyResult.RealPageId = result.obj.Org.RealPageIdUpperCaseForBooks;
+            createCompanyResult.RealPageId = result.obj.Org.RealPageId.ToString();
             var companyInstance = new CompanyInstanceAdd()
             {
                 CustomerCompanyId = booksCustomerMasterId,
-                CompanyInstanceSourceId = result.obj.Org.RealPageIdUpperCaseForBooks,
+                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,

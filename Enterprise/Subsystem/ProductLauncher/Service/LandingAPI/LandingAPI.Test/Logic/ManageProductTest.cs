@@ -497,7 +497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 OrganizationDomain = new OrganizationDomain() {OrganizationDomainId = 1, Name = "Primary"}
             };
 
-            UnifiedLoginCompany ulc = new UnifiedLoginCompany(){ CompanyRealPageId = organization.RealPageIdUpperCaseForBooks, CompanyName = organization.Name, BooksCustomerMasterId = blueBookCompanyInstanceId, Domain = organization.OrganizationDomain.Name};
+            UnifiedLoginCompany ulc = new UnifiedLoginCompany(){ CompanyRealPageId = organization.RealPageId.ToString(), CompanyName = organization.Name, BooksCustomerMasterId = blueBookCompanyInstanceId, Domain = organization.OrganizationDomain.Name};
 
             List<UnifiedLoginCompany> unifiedLoginCompanyList = new List<UnifiedLoginCompany>() {ulc};
 

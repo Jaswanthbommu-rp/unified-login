@@ -197,7 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 Id = organization.BooksCustomerMasterId,
                 CustomerCompanyId = organization.BooksCustomerMasterId,
-                CompanyInstanceSourceId = result.obj.Org.RealPageIdUpperCaseForBooks,
+                CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString(),
                 CompanyName = result.obj.Org.Name,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,
@@ -339,9 +339,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
                 catch (Exception ex) { }
 
-                if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageIdUpperCaseForBooks))
+                if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageId.ToString()))
                 {
-                    var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageIdUpperCaseForBooks);
+                    var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageId.ToString());
                     CompanyInstance updateCompanyInstance = new CompanyInstanceAdd()
                     {
                         CompanyInstanceId = null,
@@ -458,7 +458,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     Id = organization.BooksCustomerMasterId,
                     CustomerCompanyId = organization.BooksCustomerMasterId,
-                    CompanyInstanceSourceId = organization.RealPageIdUpperCaseForBooks,
+                    CompanyInstanceSourceId = organization.RealPageId.ToString(),
                     CompanyName = organization.Name,
                     Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                     IsActive = true,
