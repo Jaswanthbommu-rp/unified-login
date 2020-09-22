@@ -190,20 +190,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         IList<GbProductMap> GetAllProducts();
 
         /// <summary>
-        /// Search by company and product ids and returns userlist
+        /// Search by company, product ids, roles, rights propertyId and returns userlist
         /// </summary>
-        /// <param name="datafilter"></param>
         /// <param name="companyId"></param>
         /// <param name="products"></param>
-        /// <param name="version"></param>
         /// <param name="rowsPerPage"></param>
         /// <param name="pageNumber"></param>
         /// <param name="roles"></param>
         /// <param name="rights"></param>
         /// <param name="propertyIds"></param>
         /// <returns>List of Users by product or company</returns>
-        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
-            IList<string> roles, IList<string> rights, List<string> propertyIds);
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int> products, int rowsPerPage, int pageNumber,
+                                                                 IList<string> roles, IList<string> rights, List<string> propertyIds);
 
         /// <summary>
         /// Get Unified Login mapping PersonaId for Product UserId by company and product id
@@ -221,5 +219,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="statusType"></param>
         /// <returns></returns>
         IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType);
+
+        /// <summary>
+        /// Search by company and product ids and returns userlist
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="products"></param>
+        /// <returns>List of Users</returns>
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products);
     }
 }

@@ -19,6 +19,19 @@ BEGIN
 	DECLARE @OrganizationPartyId BIGINT
 	DECLARE @ProductIds Enterprise.ProductIdType
 
+	 SELECT 
+		@RowsPerPage = CASE
+						WHEN @RowsPerPage <= 0
+                        THEN 2147483647
+                        ELSE @RowsPerPage
+    END;
+
+	IF (@Roles IS NULL AND @Rights IS NULL AND @Properties IS NULL)
+	BEGIN
+		EXEC [Person].[ListUsersWithCompanyId_Ver2] @CompanyId = @CompanyId , @ProductId = @ProductId, @RowsPerPage = @RowsPerPage , @PageNumber = @PageNumber;
+		RETURN;
+	END
+
 	CREATE TABLE #ProductsList2
 	(
 		PersonaId			BIGINT,
@@ -40,7 +53,6 @@ BEGIN
     (
 		SELECT *
 		FROM STRING_SPLIT(@ProductId, ',')
-		WHERE value IN ('45','39','26','56','3')
 	);
 
 	INSERT INTO @RoleList(RoleShortName)
@@ -71,13 +83,6 @@ BEGIN
         FROM @RightList) = 0
     BEGIN
 		SET @RightCount = NULL;
-    END;
-
-    SELECT 
-		@RowsPerPage = CASE
-						WHEN @RowsPerPage <= 0
-                        THEN 2147483647
-                        ELSE @RowsPerPage
     END;
 
 	IF EXISTS (SELECT TOP 1 ProductId FROM @ProductIds)
