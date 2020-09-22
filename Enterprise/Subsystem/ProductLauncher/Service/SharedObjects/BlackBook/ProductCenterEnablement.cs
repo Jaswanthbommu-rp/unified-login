@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
 {
@@ -15,11 +16,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
     {
 
         public int CustomerCompanyId { get; set; }
+        
         public string CompanyInstanceSourceId { get; set; }
+        
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public string CustomerPropertyId { get; set; }
+        
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public string PropertyInstanceSourceId { get; set; }
+        
         public string ProductCenterSourceId { get; set; }
+        
         public string Source { get; set; }
+        
         public string CustomerEnvironment { get; set; }
     }
 }
