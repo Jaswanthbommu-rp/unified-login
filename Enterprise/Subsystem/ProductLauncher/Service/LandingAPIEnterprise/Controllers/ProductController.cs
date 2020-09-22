@@ -178,9 +178,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 IList<ProductUsers> productUsers = new List<ProductUsers>();
 
                 response.Data = productUsers.Cast<object>().ToList();
-                response.Meta.CurrentPage = pageNumber.Value;
+                response.Meta.CurrentPage = 1;
                 response.Meta.TotalRows = 0;
-                response.Meta.RowsPerPage = rowsPerPage.Value;
+                response.Meta.RowsPerPage = 0;
                 response.IsError = true;
                 response.ErrorReason = "BadRequest";
                 return Request.CreateResponse(HttpStatusCode.BadRequest, response);
