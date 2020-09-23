@@ -10,8 +10,8 @@ GO
 -- procedure  : [Enterprise].[AddUpdateContactMechanismPreference]
 --
 -- purpose    : Used to Add/Update contact preference
--- parameters : @ContactMechanismId			-- Holds ContactMechanismId
--- parameters : @PreviousePreferenceId      -- Holds Previous ContactMechanismId
+-- parameters : @CurrentContactMechanismId			-- Holds ContactMechanismId
+-- parameters : @PreviousPreferenceId				-- Holds Previous ContactMechanismId
 
 --	Date		Name					Comment
 -----------------------------------------------------------------------------
@@ -23,19 +23,18 @@ GO
 --              RealPage Inc.
 -----------------------------------------------------------------------------
 CREATE PROCEDURE [Enterprise].[AddUpdateContactMechanismPreference] (
-	@CurrrentContactMechanismId INT,
-	@PreviousePreferenceId INT
+	@CurrentContactMechanismId INT,
+	@PreviousPreferenceId  INT
 )
 AS
 BEGIN
     BEGIN TRY
-        BEGIN TRANSACTION; 
-		IF (@PreviousePreferenceId <> 0 and @PreviousePreferenceId <> @CurrrentContactMechanismId)
+		IF (@PreviousPreferenceId <> 0 and @PreviousPreferenceId <> @CurrentContactMechanismId)
 		BEGIN
 			UPDATE  t
-			SET    t.ContactMechanismID = @CurrrentContactMechanismId
+			SET    t.ContactMechanismID = @CurrentContactMechanismId
 			FROM    Enterprise.contactmechanismPreference t
-			WHERE   ContactMechanismID = @PreviousePreferenceId
+			WHERE   ContactMechanismID = @PreviousPreferenceId
 		END
 		ELSE
 		BEGIN
@@ -43,16 +42,13 @@ BEGIN
 				ContactMechanismID
 				)
 			VALUES(
-				@CurrrentContactMechanismId
+				@CurrentContactMechanismId
 			)
 		END
-		SELECT	@CurrrentContactMechanismId AS Id,
-                '' AS ErrorMessage
-        COMMIT;
+		SELECT	@CurrentContactMechanismId AS Id,
+                '' AS ErrorMessage       
     END TRY
     BEGIN CATCH
-        ROLLBACK;
-
         DECLARE @ErrorLogID INT;
         EXEC dbo.LogError @ErrorLogID = @ErrorLogID OUTPUT;
 

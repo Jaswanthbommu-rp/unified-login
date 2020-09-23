@@ -761,18 +761,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <returns>Success/Fail</returns>
 		private bool UpdateContactPreference(IRepository repository, Guid realPageId, List<TelecommunicationNumber> telecommunicationNumbers)
 		{
-			var prefferedContact = telecommunicationNumbers
+			var preferredContact = telecommunicationNumbers
 						.Where(tc => tc.IsDeleted == false && tc.IsPreferred == true).FirstOrDefault();
 			IList<TelecommunicationNumber> telecommunications = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { realPageId }).ToList();
 			var currentContactMechanismId = telecommunications?.Where(tc => tc.IsPreferred == true).FirstOrDefault()?.ContactMechanismId;
-			if ((currentContactMechanismId == null && prefferedContact != null) || 
-				(prefferedContact != null && currentContactMechanismId != null
-					&& (currentContactMechanismId != prefferedContact.ContactMechanismId)))
+			if ((currentContactMechanismId == null && preferredContact != null) || 
+				(preferredContact != null && currentContactMechanismId != null
+					&& (currentContactMechanismId != preferredContact.ContactMechanismId)))
 			{
 				dynamic param = new
 				{
-					CurrrentContactMechanismId = prefferedContact.ContactMechanismId,
-					PreviousePreferenceId = currentContactMechanismId ?? 0
+					CurrentContactMechanismId = preferredContact.ContactMechanismId,
+					PreviousPreferenceId = currentContactMechanismId ?? 0
 				};
 				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateContactMechanismPreference, param);
 				if (repositoryResponse.Id == 0)
@@ -780,7 +780,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					return false;
 				}
 			}
-			else if (prefferedContact == null && currentContactMechanismId != null)
+			else if (preferredContact == null && currentContactMechanismId != null)
 			{
 				dynamic param = new
 				{
