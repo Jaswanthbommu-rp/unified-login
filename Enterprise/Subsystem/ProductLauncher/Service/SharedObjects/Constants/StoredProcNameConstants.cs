@@ -218,6 +218,10 @@
         //Contact Mechanism UsageType
         public const string SP_ListContactMechanismUsageType = "Enterprise.ListContactMechanismUsageType";
 
+        //Contact Preference
+        public const string SP_AddUpdateContactMechanismPreference = "Enterprise.AddUpdateContactMechanismPreference";
+        public const string SP_DeleteContactMechanismPreference = "Enterprise.DeleteContactMechanismPreference";
+
         //Electronic Address Contact Mechanism
         public const string SP_CreateElectronicAddress = "Person.CreateElectronicAddress";
         public const string SP_ListEmailsForPerson = "Person.ListEmailsForPerson";
