@@ -658,6 +658,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				string returnResult = "";
+				bool loginNameChanged = false;
 				List<string> userAOProducts = new List<string>();
 				var persona = _managePersona.GetPersona(productUserPersonaId);
 				var realPageId = persona.RealPageId;
@@ -771,8 +772,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//Create/Update single/multi company AO Products
 				if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
-				{					
-					if (userAOProducts?.Count == 0)
+				{
+					//If the User's LoginName changed with Property or Roles in the PrimaryOrganization then update it in the Product
+					if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
+					{
+						aoUser.UserId = productUserGbLogin.LoginName.ToLower();
+						aoUser.OldUserId = _productUserId.ToLower();
+						aoUser.Login = productUserGbLogin.LoginName.ToLower();
+						loginNameChanged = true;
+					}
+
+					if (userAOProducts?.Count == 0 && !loginNameChanged)
 					{
 						aoUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
 						aoUser.Divisions = new List<Divisions>();
@@ -805,16 +815,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.Divisions = new List<Divisions>();
 					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
 
-					aoUser.UserId = _productUserId.ToLower();
-					//aoUser.Login = _productUsername.ToLower();
-					aoUser.OldUserId = _productUserId.ToLower();
-					aoUser.Email = _productUsername.ToLower();
+					if (!loginNameChanged)
+					{
+						aoUser.UserId = _productUserId.ToLower();
+						//aoUser.Login = _productUsername.ToLower();
+						aoUser.OldUserId = _productUserId.ToLower();
+						aoUser.Email = _productUsername.ToLower();
+					}
 
 					returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
 					if (string.IsNullOrEmpty(returnResult))
 					{
-						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
+						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails, loginNameChanged);
 					}
 					else
 					{
