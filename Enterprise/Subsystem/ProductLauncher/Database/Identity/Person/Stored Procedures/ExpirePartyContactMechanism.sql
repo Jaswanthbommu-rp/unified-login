@@ -11,14 +11,6 @@ AS
                '' AS ErrorMessage
         WHERE  PartyContactMechanismId = @PartyContactMechanismId;
 
-		--Delete preference if it is selected as preferred contact
-		Declare @ContactMechanismId int
-		select @ContactMechanismId = ContactMechanismId
-		FROM Enterprise.PartyContactMechanism
-		WHERE  PartyContactMechanismId = @PartyContactMechanismId;
-
-		exec [Enterprise].[DeleteContactMechanismPreference] @ContactMechanismId
-
         COMMIT;
     END TRY
     BEGIN CATCH
