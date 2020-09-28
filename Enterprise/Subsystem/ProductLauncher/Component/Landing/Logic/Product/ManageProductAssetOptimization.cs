@@ -131,11 +131,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					productUserId = userLoginName;
 				}
 
-				if (productName == "BI")
-				{
-					productUserId = GetSamlProductUserName(userPersonaId, "BI");
-				}
-
 				if (!string.IsNullOrEmpty(productUserId))
 				{
 					productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
@@ -663,6 +658,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				string returnResult = "";
+				bool loginNameChanged = false;
 				List<string> userAOProducts = new List<string>();
 				var persona = _managePersona.GetPersona(productUserPersonaId);
 				var realPageId = persona.RealPageId;
@@ -774,34 +770,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 				}
 
-				//Multi Company BI Product create/update logic
-				if (aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").Count() > 0 &&
-					((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser))
-				{
-					var biProductData = aoGbUserCompanyPropertyRoleDetails.Where(x => x.ProductName == "BI").ToList();
-					if (biProductData.Any())
-					{
-						//Seperate BI product from all other products
-						foreach (var biProduct in biProductData)
-						{
-							aoGbUserCompanyPropertyRoleDetails.Remove(biProduct);
-						}
-
-						returnResult = CreateUpdateAOBIProduct(userEmailAddress, editorPersonaId, productUserPersonaId, biProductData, persona, person, productUserGbLogin);
-
-                        if (string.IsNullOrEmpty(returnResult) && aoGbUserCompanyPropertyRoleDetails.Count == 0)
-                        {
-                            _samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productUserGbLogin.LoginName.ToLower());
-                            _samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productUserGbLogin.LoginName.ToLower());
-                            UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
-                        }
-                    }
-				}
-
 				//Create/Update single/multi company AO Products
 				if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
-				{					
-					if (userAOProducts?.Count == 0)
+				{
+					//If the User's LoginName changed with Property or Roles in the PrimaryOrganization then update it in the Product
+					if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
+					{
+						aoUser.UserId = productUserGbLogin.LoginName.ToLower();
+						aoUser.OldUserId = _productUserId.ToLower();
+						aoUser.Login = productUserGbLogin.LoginName.ToLower();
+						loginNameChanged = true;
+					}
+
+					if (userAOProducts?.Count == 0 && !loginNameChanged)
 					{
 						aoUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
 						aoUser.Divisions = new List<Divisions>();
@@ -834,16 +815,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.Divisions = new List<Divisions>();
 					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
 
-					aoUser.UserId = _productUserId.ToLower();
-					//aoUser.Login = _productUsername.ToLower();
-					aoUser.OldUserId = _productUserId.ToLower();
-					aoUser.Email = _productUsername.ToLower();
+					if (!loginNameChanged)
+					{
+						aoUser.UserId = _productUserId.ToLower();
+						//aoUser.Login = _productUsername.ToLower();
+						aoUser.OldUserId = _productUserId.ToLower();
+						aoUser.Email = _productUsername.ToLower();
+					}
 
 					returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
 					if (string.IsNullOrEmpty(returnResult))
 					{
-						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
+						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails, loginNameChanged);
 					}
 					else
 					{
@@ -1113,56 +1097,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				var updateResult = "";
 				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, productUserName);
-
-				//Multi Company BI Product create/update logic
-				if ((hasMultiCompany && !persona.Organization.PrimaryOrganization) || isExternalUser)
-				{
-					string biProductUserName = GetSamlProductUserName(userPersonaId, "BI");
-					if (!string.IsNullOrEmpty(biProductUserName))
-					{
-						var biAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, biProductUserName);
-
-						string biLoginName = "";
-						// get a login name that isn't in use for the new user
-						bool foundUserName = false;
-						int incrementor = 1;
-						string newproductUsername = $"{person.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{person.LastName.TrimWhiteSpace()}".ToLower();
-						biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
-
-						while (!foundUserName)
-						{
-							if (CheckUniqueAOUserName(biLoginName))
-							{
-								incrementor++;
-								biLoginName = $"{newproductUsername}{incrementor.ToString()}@noreply.com";
-							}
-							else
-							{
-								foundUserName = true;
-							}
-
-							if (incrementor == 10)
-							{
-								// after 10 tries something might be wrong, so bail out.
-								WriteToErrorLog($"ManageProductAssetOptimization - Error checking for username in use {newproductUsername}");
-								return "An error occurred. Unable to get username.";
-							}
-						}
-
-						aoUser.Login = biLoginName.ToLower();
-						aoUser.UserId = biLoginName.ToLower();
-						aoUser.OldUserId = biProductUserName.ToLower();
-						aoUser.GroupsModel = GetBundledGroups(biAoUserCompanyPropertyRoleDetails);
-						aoUser.Divisions = new List<Divisions>();
-						aoUser.Model = GetModel(biAoUserCompanyPropertyRoleDetails);
-
-						updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
-						if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
-						{
-							UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, biLoginName.ToLower(), biAoUserCompanyPropertyRoleDetails, biAoUserCompanyPropertyRoleDetails, loginNameChanged);
-						}
-					}
-				}
+				
 				if (!isExternalUser)
 				{
 					aoUser.GroupsModel = GetBundledGroups(copiedAoUserCompanyPropertyRoleDetails);

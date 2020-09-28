@@ -351,6 +351,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 									}
 								}
 							}
+							if (profile.TelecommunicationNumber.Count > 0)
+							{
+								bool response = UpdateContactPreference(repository, profile.RealPageId, profile.TelecommunicationNumber.ToList());
+								if (!response)
+								{
+									repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism Preference failed.";
+								}
+							}
 
 							IManageElectronicAddress electronicAddressLogic = new ManageElectronicAddress();
 							IElectronicAddress electronicAddress = new ElectronicAddress();
@@ -742,6 +750,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				string errorMessage = ex.Message;
 			}
+		}
+
+		/// <summary>
+		/// Update Contact Preference
+		/// </summary>
+		/// <param name="repository">Dapper Repository</param>
+		/// <param name="realPageId">The enterprise User Id</param>
+		/// <param name="telecommunicationNumbers">telecommunicationNumbers list</param>
+		/// <returns>Success/Fail</returns>
+		private bool UpdateContactPreference(IRepository repository, Guid realPageId, List<TelecommunicationNumber> telecommunicationNumbers)
+		{
+			var preferredContact = telecommunicationNumbers
+						.Where(tc => tc.IsDeleted == false && tc.IsPreferred == true).FirstOrDefault();
+			IList<TelecommunicationNumber> telecommunications = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { realPageId }).ToList();
+			var currentContactMechanismId = telecommunications?.Where(tc => tc.IsPreferred == true).FirstOrDefault()?.ContactMechanismId;
+			if ((currentContactMechanismId == null && preferredContact != null) || 
+				(preferredContact != null && currentContactMechanismId != null
+					&& (currentContactMechanismId != preferredContact.ContactMechanismId)))
+			{
+				dynamic param = new
+				{
+					CurrentContactMechanismId = preferredContact.ContactMechanismId,
+					PreviousPreferenceId = currentContactMechanismId ?? 0
+				};
+				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdateContactMechanismPreference, param);
+				if (repositoryResponse.Id == 0)
+				{
+					return false;
+				}
+			}
+			else if (preferredContact == null && currentContactMechanismId != null)
+			{
+				dynamic param = new
+				{
+					ContactMechanismId = currentContactMechanismId
+				};
+				RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DeleteContactMechanismPreference, param);
+				if (repositoryResponse.Id == 0)
+				{
+					return false;
+				}
+			}
+			return true;
 		}
 		#endregion
 	}

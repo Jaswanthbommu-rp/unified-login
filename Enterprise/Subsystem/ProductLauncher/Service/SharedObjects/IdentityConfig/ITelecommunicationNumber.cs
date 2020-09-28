@@ -35,10 +35,15 @@
         /// </summary>        
         bool IsDeleted { get; set; }
 
-        /// <summary>
-        /// Contact Mechanism usage type Id
-        /// </summary>
-        int ContactMechanismUsageTypeId { get; set; }
+		/// <summary>
+		/// IsPreferred
+		/// </summary>
+		bool IsPreferred { get; set; }
+
+		/// <summary>
+		/// Contact Mechanism usage type Id
+		/// </summary>
+		int ContactMechanismUsageTypeId { get; set; }
 
 		/// <summary>
 		/// Contact Mechanism usage type detail
