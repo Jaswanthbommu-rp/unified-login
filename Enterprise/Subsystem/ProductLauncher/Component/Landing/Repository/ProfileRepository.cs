@@ -88,6 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
 			RepositoryResponse repositoryResponse = new RepositoryResponse();
 			IPersonaRepository personaRepository = new PersonaRepository();
+			bool customJobTitleChanged = false;
 
 			//get Organization Enterprise guid from Persona
 			Guid organizationRealPageId = Guid.Empty;
@@ -120,6 +121,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				repository.UnitOfWork.BeginTransaction();
 				try
 				{
+					var oldPerson = repository.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, new { realPageId });
+					customJobTitleChanged = oldPerson.Title != profile.Title ? true : false;
+
 					//Setup the parameter values to update the person's info
 					dynamic param = new
 					{
@@ -453,7 +457,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 							}
 						}
 					}
-					if ((!IsSuperUser) && (industryStandardJobChanged) && (residentPortalAssignedToUser))
+
+					if ((!IsSuperUser) && (industryStandardJobChanged || customJobTitleChanged) && (residentPortalAssignedToUser))
 					{
 						string saveProductBatchError = "Save Product User Profile/Type Error: ";
 						//Industry Standard Job tiltle got Set/Updated and the Regular user (Staff Role) has access to Resident Portal
