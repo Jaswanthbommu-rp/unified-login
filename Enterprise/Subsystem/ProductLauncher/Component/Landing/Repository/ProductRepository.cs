@@ -1864,6 +1864,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAccountingProductAccess.ToString());
                         break;
                     case (int)ProductRightEnum.ManageAssetOptimizationProductAccess:
+                    case (int)ProductRightEnum.AoAIRevenueManagement:
+                    case (int)ProductRightEnum.AoAmenityOptimization:
+                    case (int)ProductRightEnum.AoLeaseRentOption:
+                    case (int)ProductRightEnum.AoRentControl:
+                    case (int)ProductRightEnum.AoBusinessIntelligence:
+                    case (int)ProductRightEnum.AoPerformanceAnalytics:
+                    case (int)ProductRightEnum.AoInvestmentAnalytics:
+                    case (int)ProductRightEnum.AoRevenueManagement:
+                    case (int)ProductRightEnum.AoAxiometrics:
+                    case (int)ProductRightEnum.AoBenchmarking:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
                         break;
                     case (int)ProductRightEnum.ManageClientPortalProductAccess:
@@ -1910,25 +1920,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         break;
                     case (int)ProductRightEnum.ManageVendorComplianceProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageVendorComplianceProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AoBusinessIntelligence:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AoPerformanceAnalytics:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AoInvestmentAnalytics:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AoRevenueManagement:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AoAxiometrics:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-                        break;
-                    case (int)ProductRightEnum.AoBenchmarking:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-                        break;
+                        break;                  
                     case (int)ProductRightEnum.ManagePortfolioManagementProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManagePortfolioManagementProductAccess.ToString());
                         break;
