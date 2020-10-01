@@ -523,6 +523,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageAccountingProductAccess.ToString());
 					break;
 				case (int)ProductRightEnum.ManageAssetOptimizationProductAccess:
+				case (int)ProductRightEnum.AoAIRevenueManagement:
+				case (int)ProductRightEnum.AoAmenityOptimization:
+				case (int)ProductRightEnum.AoLeaseRentOption:
+				case (int)ProductRightEnum.AoRentControl:
+				case (int)ProductRightEnum.AoBusinessIntelligence:				
+				case (int)ProductRightEnum.AoPerformanceAnalytics:				
+				case (int)ProductRightEnum.AoInvestmentAnalytics:				
+				case (int)ProductRightEnum.AoRevenueManagement:					
+				case (int)ProductRightEnum.AoAxiometrics:				
+				case (int)ProductRightEnum.AoBenchmarking:				
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
 					break;
 				case (int)ProductRightEnum.ManageClientPortalProductAccess:
@@ -570,24 +580,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				case (int)ProductRightEnum.ManageVendorComplianceProductAccess:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageVendorComplianceProductAccess.ToString());
 					break;
-				case (int)ProductRightEnum.AoBusinessIntelligence:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoPerformanceAnalytics:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoInvestmentAnalytics:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoRevenueManagement:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoAxiometrics:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoBenchmarking:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
+				
 				case (int)ProductRightEnum.ManagePortfolioManagementProductAccess:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManagePortfolioManagementProductAccess.ToString());
 					break;
@@ -611,8 +604,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					break;				
                 case (int)ProductRightEnum.ManageSeniorLeadManagement:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
-                    break;
-                default:
+                    break;				
+				default:
 					hasAccess = true; // Some products will have default acess - ex UnifiedLogin
 					break;
 			}

@@ -3313,7 +3313,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)prod.ProductId) && (ProductEnum)prod.ProductId != ProductEnum.AssetOptimizer)
                         {
                             // remove products which are completely unassigned
-                            if (productBatchData.All(p => p.ProductId != prod.ProductId))
+                            if (productBatchData.All(p => p.ProductId != prod.ProductId) || (productBatchData.Any(p => p.ProductId == prod.ProductId && !p.InputJson.IsAssigned)))
                             {
                                 ProductBatch pb = new ProductBatch()
                                 {
@@ -3329,8 +3329,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 };
 
                                 productListToRemove.Add(pb);
-                            }
-                            else if (productBatchData.Any(p => p.ProductId == prod.ProductId))
+                            }                           
+                            else if (productBatchData.Any(p => p.ProductId == prod.ProductId && p.InputJson.IsAssigned))
                             {
                                 var batchRecord =
                                     productBatchData.FirstOrDefault(p => p.ProductId == prod.ProductId);
@@ -3431,7 +3431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 dynamic expandoAo = new ExpandoObject();
 
-                                if (productBatchData.Any(p => p.ProductId == aoProduct.ProductId))
+                                if (productBatchData.Any(p => p.ProductId == aoProduct.ProductId && p.InputJson.IsAssigned))
                                 {
                                     // user has added specific product
                                     // Get product details from one added in batch
@@ -3480,8 +3480,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
                             sb.ToString(), (int)BatchProcessType.CreateUpdateProductUser);
                         }
-
-
                     }
 
                     if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
