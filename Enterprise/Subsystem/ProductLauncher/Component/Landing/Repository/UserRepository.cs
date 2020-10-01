@@ -3396,30 +3396,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         expandoList.IsAssigned = true;
                         expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
 
-                        // unassign all AO products
-                        foreach (var aoProduct in aoUserProductList)
-                        {
-                            dynamic expandoAo = new ExpandoObject();
-                            // user has removed specific product
-                            expandoAo.SelectedRoleValues = null;
-                            expandoAo.SelectedPortfolioValues = null;
-                            expandoAo.CompanyId = 0;
-                            expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
-                            expandoAo.DivisionName =
-                            ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
-                            expandoAo.PropertyGroups = null;
-                            expandoAo.IsAssigned = false;
-                            expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
-                        }
-                        // add record to remove AO products
-                        sb.Append(JsonConvert.SerializeObject(expandoList));
+                        //// unassign all AO products
+                        //foreach (var aoProduct in aoUserProductList)
+                        //{
+                        //    dynamic expandoAo = new ExpandoObject();
+                        //    // user has removed specific product
+                        //    expandoAo.SelectedRoleValues = null;
+                        //    expandoAo.SelectedPortfolioValues = null;
+                        //    expandoAo.CompanyId = 0;
+                        //    expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
+                        //    expandoAo.DivisionName =
+                        //    ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
+                        //    expandoAo.PropertyGroups = null;
+                        //    expandoAo.IsAssigned = false;
+                        //    expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
+                        //}
+                        //// add record to remove AO products
+                        //sb.Append(JsonConvert.SerializeObject(expandoList));
 
-                        // save AO specific records in batch
-                        SaveProductBatch(repository, aoProductsBatch, createUserResponse,
-                            saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
-                            sb.ToString(), (int)BatchProcessType.CreateUpdateProductUser);
+                        //// save AO specific records in batch
+                        //SaveProductBatch(repository, aoProductsBatch, createUserResponse,
+                        //    saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
+                        //    sb.ToString(), (int)BatchProcessType.CreateUpdateProductUser);
 
-                        // Collect ALL Json(s) for AO products based on assigned
+                        // Collect ALL Json(s) for AO products based on assigned or removed
 
                         if (aoUserProductList.Any(aoProduct => productBatchData.Any(p => (p.ProductId == aoProduct.ProductId))))
                         {
