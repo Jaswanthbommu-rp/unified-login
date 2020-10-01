@@ -507,7 +507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #region Preferred Contact Method and Tele-Communication
 
-                        if ((newProfile.TelecommunicationNumber.Count > 0) && (newProfile.PreferredContactMethodId > 0))
+                        if ((newProfile.TelecommunicationNumber.Count > 0))
                         {
                             var response = UpdateProfile(repository, newProfile.RealPageId, newProfile);
 
