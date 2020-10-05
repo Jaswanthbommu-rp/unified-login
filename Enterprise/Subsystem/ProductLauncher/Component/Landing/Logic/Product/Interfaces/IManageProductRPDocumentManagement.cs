@@ -47,5 +47,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="personaId"></param>
 		/// <returns>The domain of the company</returns>
 		ListResponse GetDomain(long personaId);
+
+		/// <summary>
+		/// Used to update the user profile
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		string UpdateRPDMUserProfile(long editorPersonaId, long userPersonaId);
 	}
 }
