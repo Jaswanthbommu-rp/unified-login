@@ -774,15 +774,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (aoGbUserCompanyPropertyRoleDetails.Count > 0)
 				{
 					//If the User's LoginName changed with Property or Roles in the PrimaryOrganization then update it in the Product
-					if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
-					{
-						aoUser.UserId = productUserGbLogin.LoginName.ToLower();
-						aoUser.OldUserId = _productUserId.ToLower();
-						aoUser.Login = productUserGbLogin.LoginName.ToLower();
-						loginNameChanged = true;
-					}
+					//if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
+					//{
+					//	aoUser.UserId = productUserGbLogin.LoginName.ToLower();
+					//	aoUser.OldUserId = _productUserId.ToLower();
+					//	aoUser.Login = productUserGbLogin.LoginName.ToLower();
+					//	loginNameChanged = true;
+					//}
 
-					if (userAOProducts?.Count == 0 && !loginNameChanged)
+					if (userAOProducts?.Count == 0)
 					{
 						aoUser.GroupsModel = GetBundledGroups(aoGbUserCompanyPropertyRoleDetails);
 						aoUser.Divisions = new List<Divisions>();
@@ -796,7 +796,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							var productList = (from x in aoUser.Model select x.Product).Distinct().ToList();
 
 							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
-						}
+
+                            if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
+                            {
+								loginNameChanged = true;
+								// Get Copy of User from AO
+								var existingAssignedProducts = CopyRegularUser(editorPersonaId, productUserPersonaId);
+                                UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAssignedProducts, aoGbUserCompanyPropertyRoleDetails, loginNameChanged);
+                            }
+                        }
 
 						WriteToDiagnosticLog(
 							$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
@@ -815,19 +823,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.Divisions = new List<Divisions>();
 					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
 
-					if (!loginNameChanged)
-					{
+					
 						aoUser.UserId = _productUserId.ToLower();
 						//aoUser.Login = _productUsername.ToLower();
 						aoUser.OldUserId = _productUserId.ToLower();
 						aoUser.Email = _productUsername.ToLower();
-					}
+					
 
 					returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
 					if (string.IsNullOrEmpty(returnResult))
 					{
-						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails, loginNameChanged);
+						UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
 					}
 					else
 					{
@@ -2274,13 +2281,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (productUnAssigned.Any())
 				{
+					var samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnum.AssetOptimizer);
+					if (loginNameChanged)
+					{
+						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
+						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
+						// add activity log
+						WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "User {0} {1} account is updated for product {2} by user {3} {4}.");
+					}
 					//if product is un-assigned then remove product from GB
 					foreach (var product in productUnAssigned)
 					{
 						WriteToDiagnosticLog(
 							$"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking if product {product} exists in GB for AO user - {productLoginName}");
 
-						var samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
+						 samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
 
 						if (samlUserDetails.Any())
 						{
