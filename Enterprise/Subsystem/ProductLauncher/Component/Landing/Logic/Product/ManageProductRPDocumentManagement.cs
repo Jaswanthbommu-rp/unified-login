@@ -488,6 +488,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return "";
 		}
+
+		public string UpdateRPDMUserProfile(long editorPersonaId, long userPersonaId)
+		{
+			return string.Empty;
+		}
 		#endregion
 
 		#region Privates
