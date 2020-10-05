@@ -263,8 +263,20 @@
 		/// </summary>
 		public const string UnifiedSettings = "SET";
 		/// <summary>
-		/// IntelligentBuilding
+		/// IntelligentBuilding Trash
 		/// </summary>
-		public const string IntelligentBuilding = "IB";
+		public const string IntelligentBuildingTrah = "IBT";
+		/// <summary>
+		/// IntelligentBuilding energy
+		/// </summary>
+		public const string IntelligentBuildingEnergy = "IBE";
+		/// <summary>
+		/// IntelligentBuilding water
+		/// </summary>
+		public const string IntelligentBuildingWater = "IBW";
+		/// <summary>
+		/// Hospitality as a Service
+		/// </summary>
+		public const string HospitalityService = "HAAS";
 	}
 }

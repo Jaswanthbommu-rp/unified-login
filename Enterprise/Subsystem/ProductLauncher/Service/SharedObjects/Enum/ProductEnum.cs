@@ -89,7 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
 				case ProductEnum.AoRentControl: return "rent-control";
 				case ProductEnum.RenovationManager: return "renovation-manager";
-				case ProductEnum.IntelligentBuilding: return "intelligent-building-trash";
+				case ProductEnum.IntelligentBuildingTrash: return "intelligent-building-trash";
 			}
 			return null;
 		}
@@ -578,10 +578,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("SET")]
 		UnifiedSettings = 56,
 		/// <summary>
-		/// UnifiedSettings
+		/// IB Trash
 		/// </summary>
-		[Description("IB")]
-		IntelligentBuilding = 57
+		[Description("IBT")]
+		IntelligentBuildingTrash = 57,
+		/// <summary>
+		/// IB energy
+		/// </summary>
+		[Description("IBE")]
+		IntelligentBuildingEnergy = 58,
+		/// <summary>
+		/// IB water
+		/// </summary>
+		[Description("IBW")]
+		IntelligentBuildingWater = 59,
+		/// <summary>
+		/// Hospitality as a Service
+		/// </summary>
+		[Description("HAAS")]
+		HospitalityService = 60
 	}
 
 	/// <summary>
@@ -805,12 +820,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("SLM")]
         ManageSeniorLeadManagement = 50,
-			
+
 		/// <summary>
-		/// Senior Lead Management
+		/// Intelligent Building Trash
 		/// </summary>
-		[Description("IB")]
-		ManageIntelligentBuildingProductAccess = 57
+		[Description("IBT")]
+		ManageIntelligentBuildingTrashProductAccess = 57,
+		/// <summary>
+		/// Intelligent Building energy
+		/// </summary>
+		[Description("IBE")]
+		ManageIntelligentBuildingEnergyProductAccess = 58,
+		/// <summary>
+		/// Intelligent Building water
+		/// </summary>
+		[Description("IBW")]
+		ManageIntelligentBuildingWaterProductAccess = 59,
+		/// <summary>
+		/// Hospitality As A Service
+		/// </summary>
+		[Description("HAAS")]
+		ManageHospitalityServiceProductAccess = 60
 	}
 	public enum ProductProcVersion
 	{
