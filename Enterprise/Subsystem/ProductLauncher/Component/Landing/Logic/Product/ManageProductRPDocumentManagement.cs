@@ -189,13 +189,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			// get the email address
 			var userEmailAddress = GetEmailAddress(contactMechansimList , userLogin);
-
-			string domain = GetDomain();
-			if (domain.Contains("There was a problem creating the user"))
-			{
-				return domain;
-			}
-
+			
 			bool isSuperUser = IsSuperUser(userPersona.PersonaId);
 
 			// get the user phone
@@ -263,17 +257,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return "There was a problem creating the user. Missing role details";
 			}
 
-			RPDMUser manageUser = new RPDMUser()
+			RPDMUser manageUser = NewRPDMUser(userEmailAddress , person);
+
+			//Validate Domain
+			if (manageUser.Domain.Contains("There was a problem creating the user"))
 			{
-				Domain = domain,
-				FirstName = person.FirstName,
-				LastName = person.LastName,
-				Name = _productUsername,
-				Email = userEmailAddress,
-				TimeZone = "US/Central",
-				Locale = "en",
-				Enabled = true,
-			};
+				return manageUser.Domain;
+			}
 
 			if (!isSuperUser)
 			{
@@ -356,7 +346,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				try
 				{
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Running);
-					var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + "/users/newuser";
+					var url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + "/users/newuser";
 					logData = new Dictionary<string, object>() {{"url", url}, {"manageUser", JsonConvert.SerializeObject(manageUser)}};
 					WriteToDiagnosticLog("ManageRPDMUser - Create user", logData);
 
@@ -429,7 +419,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (currentUser.Enabled == false)
 					{
 						// reactivate the user
-						url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}/users/{_productUserId}/enable";
+						url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}/users/{_productUserId}/enable";
 						logData = new Dictionary<string, object>() { { "url", url } };
 						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user", logData);
 						var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
@@ -447,7 +437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 
-					url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + $"/users/{_productUserId}";
+					url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + $"/users/{_productUserId}";
 					logData = new Dictionary<string, object>() {{"url", url}, {"manageUser", JsonConvert.SerializeObject(manageUser)}};
 					WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
 
@@ -1060,7 +1050,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Get the user email address
 		/// </summary>
 		/// <param name="contactMechansimList"></param>
-		/// <param name="userLogi"></param>
+		/// <param name="userLogin"></param>
 		/// <returns></returns>
 		private string GetEmailAddress(IList<CommonAddress> contactMechansimList, UserLoginOnly userLogin)
 		{
@@ -1080,7 +1070,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return userEmailAddress;
 		}
-		
+
+		/// <summary>
+		/// New RPDMUser
+		/// </summary>
+		/// <param name="userEmailAddress"></param>
+		/// <param name="person"></param>
+		/// <returns></returns>
+		private RPDMUser NewRPDMUser(string userEmailAddress , Person person)
+		{
+			return new RPDMUser()
+			{
+				Domain = GetDomain(),
+				FirstName = person.FirstName,
+				LastName = person.LastName,
+				Name = _productUsername,
+				Email = userEmailAddress,
+				TimeZone = "US/Central",
+				Locale = "en",
+				Enabled = true,
+			};
+		}
 		#endregion
 	}
 
