@@ -1,4 +1,7 @@
-CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3] 
+--EXEC [Person].[ListUsersWithCompanyId_Ver3]  9895,'BlueBook',NULL,0,1,NULL,NULL,NULL
+--EXEC [Person].[ListUsersWithCompanyId_Ver3]  9895,'BlueBook','26',0,1,'analyst',NULL,NULL
+--EXEC [Person].[ListUsersWithCompanyId_Ver3]  9895,'BlueBook','26',0,1,NULL,NULL,NULL
+CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3]
 (@CompanyId   INT, 
  @Source      NVARCHAR(50)  = 'BlueBook', 
  @ProductId   NVARCHAR(200) = NULL, 
@@ -46,7 +49,8 @@ BEGIN
 		FirstName     NVARCHAR(50), 
 		LastName      NVARCHAR(50), 
 		AddressString NVARCHAR(255),
-		PersonaId     BIGINT
+		PersonaId     BIGINT,
+		PreferredPhoneNumber varchar(15)
 	);
 
 	INSERT INTO @ProductIds(ProductId)
@@ -84,6 +88,17 @@ BEGIN
     BEGIN
 		SET @RightCount = NULL;
     END;
+
+	--Preferred mobile number logic
+	DECLARE @ContactPreference TABLE( PersonaId INT
+									, PreferredPhoneNumber VARCHAR(15))
+	INSERT INTO @ContactPreference
+	SELECT AP.PersonaId AS PersonaId, ISNULL(TM.CountryCode,'') + TM.AreaCode + TM.PhoneNumber FROM 
+						Enterprise.TelecommunicationsNumber tm 
+						INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID
+						INNER JOIN Person.ActivePersona AP ON AP.PartyId = PCM.PartyId
+						INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
+						ON CMP.ContactMechanismID = PCM.ContactMechanismId AND PCM.ThruDate > GETDATE();
 
 	IF EXISTS (SELECT TOP 1 ProductId FROM @ProductIds)
     BEGIN
@@ -159,14 +174,16 @@ BEGIN
 					LoginName,   
 					FirstName,   
 					LastName,  
-					PersonaId
+					PersonaId,
+					PreferredPhoneNumber
 				)
 				SELECT DISTINCT
 					ul.UserId, 
 					ul.LoginName,   
 					p2.FirstName,   
 					p2.LastName,   
-					p.PersonaId
+					p.PersonaId,
+					CP.PreferredPhoneNumber
 				FROM Enterprise.PropertyInstanceMapping AS pim
 					INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId
 					INNER JOIN @TableInstance AS ti ON pim.ProductId = ti.productId
@@ -174,6 +191,7 @@ BEGIN
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
+					LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId
 				WHERE
 					pim.ProductId IN (SELECT ti.ProductId FROM @TableInstance ti WHERE ti.value = '1')
 					AND pi1.InstanceId IN( SELECT propertyGuid FROM @GUIDS)
@@ -198,19 +216,22 @@ BEGIN
 					LoginName,   
 					FirstName,   
 					LastName,  
-					PersonaId
+					PersonaId,
+					CP.PreferredPhoneNumber
 				)
 				SELECT DISTINCT
 					ul.UserId, 
 					ul.LoginName,   
 					p2.FirstName,   
 					p2.LastName,   
-					p.PersonaId
+					p.PersonaId,
+					cp.PreferredPhoneNumber
 				FROM Enterprise.propertymapping AS pm
 					INNER JOIN Person.Persona AS p ON pm.PersonaId = p.PersonaId
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
+					LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId
 				WHERE
 					pm.ProductId IN (SELECT ProductId
 									FROM @ProductIdsAux pdx 
@@ -233,7 +254,15 @@ BEGIN
 			INSERT INTO #ProductsList2
 				EXEC [Security].[GetPersonaProductsByOrganizationPartyId] @ProductIds = @ProductIds, @OrganizationPartyId = @OrganizationPartyId;
 
-			CREATE TABLE #result (Userid BIGINT, LoginName VARCHAR(200),firstname VARCHAR(200),Lastname VARCHAR(200),personaid INT, TargetProductId INT, ProductId INT)
+			CREATE TABLE #result (Userid BIGINT
+								, LoginName VARCHAR(200)
+								, firstname VARCHAR(200)
+								, Lastname VARCHAR(200)
+								, personaid INT
+								, TargetProductId INT
+								, ProductId INT
+								, PreferredPhoneNumber VARCHAR(15)
+								)
 
 			INSERT INTO #result
 			SELECT distinct
@@ -243,7 +272,8 @@ BEGIN
 				p2.LastName,   
 				p.PersonaId ,
 				r2.TargetProductId,
-				r2.ProductId
+				r2.ProductId,
+				CPR.PreferredPhoneNumber
 			FROM #ProductsList2 AS cp  
 				INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId  
 				INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId  
@@ -252,7 +282,8 @@ BEGIN
 				INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId  
 				INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 				INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
-				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId  
+				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
+				LEFT OUTER JOIN @ContactPreference CPR ON CPR.PersonaId = P.PersonaId
 			WHERE   
 				ulp.StatusTypeId = 1  
 				AND ulp.OrganizationPartyId = @OrganizationPartyId  
@@ -269,7 +300,9 @@ BEGIN
 					r2.LoginName,   
 					r2.FirstName,   
 					r2.LastName,   
-					r2.PersonaId  
+					r2.PersonaId,
+					r2.PreferredPhoneNumber
+					
 				FROM #result r2  
 					INNER JOIN Enterprise.PersonaConfiguration AS pc ON pc.PersonaId = r2.PersonaId   
 				UNION  
@@ -278,7 +311,8 @@ BEGIN
 					r2.LoginName,   
 					r2.FirstName,   
 					r2.LastName,   
-					r2.PersonaId  
+					r2.PersonaId,
+					r2.PreferredPhoneNumber
 				FROM #result r2
 					INNER JOIN Enterprise.productright AS pc ON r2.TargetProductId = pc.ProductId   
 				WHERE  
@@ -292,20 +326,26 @@ BEGIN
 				LoginName,   
 				FirstName,   
 				LastName,  
-				PersonaId
+				PersonaId,
+				PreferredPhoneNumber
 			)  
 			SELECT  DISTINCT
 				UserId,   
 				LoginName,   
 				FirstName,   
 				LastName,  
-				PersonaId  
+				PersonaId,
+				PreferredPhoneNumber
 			FROM Users AS u;
 		END
 	END  
 	
-	CREATE TABLE #totalusers (UserId int,LoginName varchar(200),FirstName varchar(200), LastName varchar(200),  
-	PersonaId  int)
+	CREATE TABLE #totalusers (UserId int
+							 , LoginName varchar(200)
+							 , FirstName varchar(200)
+							 , LastName varchar(200)
+							 , PersonaId  int
+							 , PreferredPhoneNumber VARCHAR(15))
  
 	INSERT INTO #totalusers
 	SELECT DISTINCT       
@@ -313,7 +353,8 @@ BEGIN
 		LoginName,   
 		FirstName,   
 		LastName,  
-		PersonaId  
+		PersonaId,
+		PreferredPhoneNumber
 	FROM #UserList  
 
 	SELECT  
@@ -321,7 +362,8 @@ BEGIN
 		LoginName,   
 		FirstName,   
 		LastName,  
-		PersonaId,  
+		PersonaId,
+		PreferredPhoneNumber,
 		COUNT(1) OVER() AS TotalRecords  
 	FROM #totalusers       
 		ORDER BY UserId  

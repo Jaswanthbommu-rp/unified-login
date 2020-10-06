@@ -1,3 +1,4 @@
+--EXEC [Person].[ListUsersWithCompanyId_VER2]
 CREATE PROCEDURE [Person].[ListUsersWithCompanyId_VER2] 
 (@CompanyId   NVARCHAR(100) = NULL, 
  @Source      NVARCHAR(50)  = 'BlueBook', 
@@ -15,14 +16,14 @@ AS
         DECLARE @ProductCount INT= 1;
         DECLARE @CompanyIdCount INT= 1;
         CREATE TABLE #UserList
-        (
-		
+        (		
 		UserId        BIGINT, 
-         LoginName     NVARCHAR(255), 
-         FirstName     NVARCHAR(50), 
-         LastName      NVARCHAR(50), 
-         AddressString NVARCHAR(255),
-		 PersonaId     BIGINT
+		LoginName     NVARCHAR(255), 
+		FirstName     NVARCHAR(50), 
+		LastName      NVARCHAR(50), 
+		AddressString NVARCHAR(255),
+		PersonaId     BIGINT,
+		PreferredPhoneNumber varchar(15)
         );
         INSERT INTO @ProductIdList(ProductId)
                SELECT *
@@ -54,6 +55,14 @@ AS
                                   THEN 2147483647
                                   ELSE @RowsPerPage
                               END;
+		--Preferred mobile number logic
+		DECLARE @ContactPreference TABLE(PartyId INT, PreferredPhoneNumber VARCHAR(15))
+		INSERT INTO @ContactPreference
+		SELECT PCM.PartyId AS PartyId, ISNULL(TM.CountryCode,'') + TM.AreaCode + TM.PhoneNumber FROM 
+						   Enterprise.TelecommunicationsNumber tm 
+						   INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID
+						   INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
+							ON CMP.ContactMechanismID = PCM.ContactMechanismId AND PCM.ThruDate > GETDATE();
         WITH Products
              AS (SELECT 
                         p.PersonaID, 
@@ -89,9 +98,8 @@ AS
                         ul.LoginName, 
                         p.FirstName, 
                         p.LastName, 
-						p2.PersonaId
-                       					
-
+						p2.PersonaId, 
+                        CTPREF.PreferredPhoneNumber
                  FROM ident.UserLogin AS ul
                       INNER JOIN ident.UserLoginPersona AS ulp ON ul.UserId = ulp.UserLoginId
                       INNER JOIN person.Persona AS p2 ON ulp.UserLoginPersonaId = p2.UserLoginPersonaId
@@ -102,6 +110,7 @@ AS
                                                                   AND sua.ProductId = cp.ProductId
                                                                   AND sua.SamlAttributeId = 1
                       INNER JOIN Enterprise.DataImportMapping AS dim ON ULP.OrganizationPartyId = dim.PartyId
+                      LEFT OUTER JOIN  @ContactPreference AS CTPREF ON CTPREF.PartyId = PA.PartyId  
                       
                  WHERE ulp.StatusTypeId = 1
                        AND ((@CompanyIdCount IS NULL)
@@ -110,19 +119,21 @@ AS
                      SELECT *
                      FROM @CompanyIdList AS cil
                  )))
-             INSERT INTO #UserList
-             (UserId, 
-              LoginName, 
-              FirstName, 
-              LastName,
-			  PersonaId
-             )
-                    SELECT UserId, 
-                           LoginName, 
-                           FirstName, 
-                           LastName,
-						   PersonaId
-                    FROM Users AS u;
+			INSERT INTO #UserList
+			(UserId, 
+			LoginName, 
+			FirstName, 
+			LastName,
+			PersonaId,
+			PreferredPhoneNumber
+			)
+			SELECT UserId, 
+					LoginName, 
+					FirstName, 
+					LastName,
+					PersonaId,
+					PreferredPhoneNumber
+			FROM Users AS u;
 
 		INSERT INTO @ProductIdRightList(ProductId)
 		SELECT ProductId
@@ -185,13 +196,16 @@ AS
                LoginName, 
                FirstName, 
                LastName,
-			   PersonaId)  as (
+			   PersonaId,
+			   PreferredPhoneNumber
+			   )  as (
         SELECT	distinct		   
                UserId, 
                LoginName, 
                FirstName, 
                LastName,
-			   PersonaId
+			   PersonaId,
+			   PreferredPhoneNumber
 			   FROM #UserList ul
 			)
 		select UserId, 
@@ -199,6 +213,7 @@ AS
                FirstName, 
                LastName,
 			   PersonaId,
+			   PreferredPhoneNumber,
 			   COUNT(1) OVER() AS TotalRecords
 			   FROM totalusers		   
         
