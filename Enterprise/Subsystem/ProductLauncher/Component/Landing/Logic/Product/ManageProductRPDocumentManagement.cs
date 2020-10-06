@@ -405,64 +405,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			else
 			{
 				// update user
-				try
-				{
-					RPDMUser currentUser = GetUserDetails(_productUserId);
-
-					manageUser.Id = _productUserId;
-					manageUser.TimeZone = currentUser.TimeZone;
-					manageUser.Locale = currentUser.Locale;
-					manageUser.Photo = currentUser.Photo;
-					manageUser.Groups = currentUser.Groups;
-					var url = "";
-
-					if (currentUser.Enabled == false)
-					{
-						// reactivate the user
-						url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}/users/{_productUserId}/enable";
-						logData = new Dictionary<string, object>() { { "url", url } };
-						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user", logData);
-						var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
-						if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
-						{
-							WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
-							WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-						}
-						else
-						{
-							logData = new Dictionary<string, object>() { { "postEnableResponse.Content", postEnableResponse.Content.ReadAsStringAsync().Result } };
-							WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId} errored.", logData);
-							// write an error
-							return "There was a problem updating the user. " + postEnableResponse.Content.ReadAsStringAsync().Result;
-						}
-					}
-
-					url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + $"/users/{_productUserId}";
-					logData = new Dictionary<string, object>() {{"url", url}, {"manageUser", JsonConvert.SerializeObject(manageUser)}};
-					WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
-
-					var postUpdateResponse = _client.PostAsJsonAsync(url, manageUser).Result;
-					if (postUpdateResponse.IsSuccessStatusCode || postUpdateResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
-					{
-						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Success);
-						logData = new Dictionary<string, object>() {{"postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result}};
-						WriteToDiagnosticLog("ManageRPDMUser - Update user success. Set product status to Success", logData);
-						WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-					}
-					else
-					{
-						logData = new Dictionary<string, object>() {{"postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result}};
-						WriteToDiagnosticLog("ManageRPDMUser - Update user errored.", logData);
-						// write an error
-						return "There was a problem updating the user. " + postUpdateResponse.Content.ReadAsStringAsync().Result;
-					}
-				}
-				catch (Exception ex)
-				{
-					//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-					WriteToDiagnosticLog("ManageOpsUser - Create user errored. " + ex.Message);
-					return "There was a problem updating the user";
-				}
+				return UpdateRPDMUser(manageUser, person, userLogin, editorPersonaId, userPersonaId);
 			}
 
 			return "";
@@ -1090,6 +1033,83 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Locale = "en",
 				Enabled = true,
 			};
+		}
+
+		/// <summary>
+		/// Update RPDMUser 
+		/// </summary>
+		/// <param name="manageUser"></param>
+		/// <param name="person"></param>
+		/// <param name="userLogin"></param>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="isUserProfile"></param>
+		/// <returns></returns>
+		private string UpdateRPDMUser(RPDMUser manageUser, Person person, UserLoginOnly userLogin , long editorPersonaId, long userPersonaId , bool isUserProfile = false)
+		{
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+
+			try
+			{
+				RPDMUser currentUser = GetUserDetails(_productUserId);
+
+				manageUser.Id = _productUserId;
+				manageUser.TimeZone = currentUser.TimeZone;
+				manageUser.Locale = currentUser.Locale;
+				manageUser.Photo = currentUser.Photo;
+				manageUser.Groups = currentUser.Groups;
+				var url = "";
+
+				if (currentUser.Enabled == false && !isUserProfile)
+				{
+					// reactivate the user
+					url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}/users/{_productUserId}/enable";
+					logData = new Dictionary<string, object>() { { "url", url } };
+					WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user", logData);
+					var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
+					if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
+					{
+						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
+						WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
+					}
+					else
+					{
+						logData = new Dictionary<string, object>() { { "postEnableResponse.Content", postEnableResponse.Content.ReadAsStringAsync().Result } };
+						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId} errored.", logData);
+						// write an error
+						return "There was a problem updating the user. " + postEnableResponse.Content.ReadAsStringAsync().Result;
+					}
+				}
+
+				url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + $"/users/{_productUserId}";
+				logData = new Dictionary<string, object>() { { "url", url }, { "manageUser", JsonConvert.SerializeObject(manageUser) } };
+				WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
+
+				var postUpdateResponse = _client.PostAsJsonAsync(url, manageUser).Result;
+				if (postUpdateResponse.IsSuccessStatusCode || postUpdateResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
+				{
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
+					WriteToDiagnosticLog("ManageRPDMUser - Update user success. Set product status to Success", logData);
+					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
+					return string.Empty;
+
+				}
+				else
+				{
+					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
+					WriteToDiagnosticLog("ManageRPDMUser - Update user errored.", logData);
+					// write an error
+					return "There was a problem updating the user. " + postUpdateResponse.Content.ReadAsStringAsync().Result;
+				}
+			}
+			catch (Exception ex)
+			{
+				//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+				WriteToDiagnosticLog("ManageOpsUser - Create user errored. " + ex.Message);
+				return "There was a problem updating the user";
+			}
+
 		}
 		#endregion
 	}
