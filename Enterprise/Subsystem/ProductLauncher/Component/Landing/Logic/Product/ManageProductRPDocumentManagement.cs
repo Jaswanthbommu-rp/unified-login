@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -187,19 +188,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			IList<CommonAddress> contactMechansimList = _manageContactMechanism.ListContactMechanismForPerson(realPageId, null);
 
 			// get the email address
-			string userEmailAddress = "";
-			if (contactMechansimList.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "PRIMARY"))
-			{
-				userEmailAddress = (from a in contactMechansimList where a.AddressType.ToUpper() == "EMAIL" && a.contactMechanismUsageType.Name.ToUpper() == "PRIMARY" select a.AddressString).FirstOrDefault();
-			}
-			else
-			{
-				// this should probably look like a real email, need to test if it isn't
-				userEmailAddress = userLogin.LoginName;
-			}
+			var userEmailAddress = GetEmailAddress(contactMechansimList , userLogin);
 
-			// verify email address looks valid, will fail if not
-			userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
+			string domain = GetDomain();
+			if (domain.Contains("There was a problem creating the user"))
+			{
+				return domain;
+			}
 
 			bool isSuperUser = IsSuperUser(userPersona.PersonaId);
 
@@ -266,12 +261,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				WriteToErrorLog("ManageRPDMUser - Error getting roles. rpdmResult == null");
 				return "There was a problem creating the user. Missing role details";
-			}
-
-			string domain = GetDomain();
-			if (domain.Contains("There was a problem creating the user"))
-			{
-				return domain;
 			}
 
 			RPDMUser manageUser = new RPDMUser()
@@ -489,6 +478,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return "";
 		}
 
+		/// <summary>
+		/// Used to update the user profile
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
 		public string UpdateRPDMUserProfile(long editorPersonaId, long userPersonaId)
 		{
 			return string.Empty;
@@ -1060,6 +1055,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return results;
 		}
+
+		/// <summary>
+		/// Get the user email address
+		/// </summary>
+		/// <param name="contactMechansimList"></param>
+		/// <param name="userLogi"></param>
+		/// <returns></returns>
+		private string GetEmailAddress(IList<CommonAddress> contactMechansimList, UserLoginOnly userLogin)
+		{
+			string userEmailAddress = "";
+			if (contactMechansimList.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "PRIMARY"))
+			{
+				userEmailAddress = (from a in contactMechansimList where a.AddressType.ToUpper() == "EMAIL" && a.contactMechanismUsageType.Name.ToUpper() == "PRIMARY" select a.AddressString).FirstOrDefault();
+			}
+			else
+			{
+				// this should probably look like a real email, need to test if it isn't
+				userEmailAddress = userLogin.LoginName;
+			}
+
+			// verify email address looks valid, will fail if not
+			userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
+
+			return userEmailAddress;
+		}
+		
 		#endregion
 	}
 
