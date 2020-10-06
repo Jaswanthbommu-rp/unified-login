@@ -25,13 +25,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
         /// <summary>
         /// LastName
         /// </summary>
-        public string LastName { get; set; }
+        public string LastName { get; set; }      
 
         /// <summary>
         /// PersonaId
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public int? PersonaId { get; set; }
+
+        /// <summary>
+        /// PreferredPhoneNumber
+        /// </summary>
+        public string PreferredPhoneNumber { get; set; }
 
         [JsonIgnore]
         public int TotalRecords { get; set; }
