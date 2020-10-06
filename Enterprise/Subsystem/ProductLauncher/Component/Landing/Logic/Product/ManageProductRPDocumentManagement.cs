@@ -419,7 +419,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public string UpdateRPDMUserProfile(long editorPersonaId, long userPersonaId)
 		{
-			return string.Empty;
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+
+			try
+			{
+				var response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (response.IsError)
+				{
+					return response.ErrorReason;
+				}
+
+				Persona userPersona = _managePersona.GetPersona(userPersonaId);
+				Guid realPageId = userPersona.RealPageId;
+				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+				Person person = _managePerson.GetPerson(realPageId);
+
+				IList<CommonAddress> contactMechansimList = _manageContactMechanism.ListContactMechanismForPerson(realPageId, null);
+
+				// get the email address
+				var userEmailAddress = GetEmailAddress(contactMechansimList, userLogin);
+
+				RPDMUser manageUser = NewRPDMUser(userEmailAddress, person);
+
+				return UpdateRPDMUser(manageUser, person, userLogin, editorPersonaId, userPersonaId, true);
+			}
+			catch (Exception ex)
+			{
+
+				WriteToErrorLog("ManageRPDMUser - Update user profile. " + ex.Message, null, ex);
+				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+				WriteToDiagnosticLog("ManageRPDMUser - Update user profile errored. Set product status to Error");
+				// write an error
+				return "There was a problem updating the user profile. " + ex.Message;
+			}
+
 		}
 		#endregion
 
@@ -1058,6 +1091,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				manageUser.Locale = currentUser.Locale;
 				manageUser.Photo = currentUser.Photo;
 				manageUser.Groups = currentUser.Groups;
+
+				if (isUserProfile)
+				{
+					manageUser.Roles = currentUser.Roles;
+				}
+
 				var url = "";
 
 				if (currentUser.Enabled == false && !isUserProfile)
