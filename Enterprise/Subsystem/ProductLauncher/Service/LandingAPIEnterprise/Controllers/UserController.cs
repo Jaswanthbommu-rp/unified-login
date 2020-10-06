@@ -906,6 +906,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             productResult.Resources.Add(up);
                         }
                     }
+
+                    // Support Tool User should not have access to Client Portal
+                    if (_userClaims.ImpersonatedBy != Guid.Empty)
+                    {
+                        if (productResult.Resources.Any(a => a.Id == (int)ProductEnum.ClientPortal))
+                        {
+                            productResult.Resources.Remove(productResult.Resources.First(a => a.Id == (int)ProductEnum.ClientPortal));
+                        }
+                    }
                 }
             }
 
