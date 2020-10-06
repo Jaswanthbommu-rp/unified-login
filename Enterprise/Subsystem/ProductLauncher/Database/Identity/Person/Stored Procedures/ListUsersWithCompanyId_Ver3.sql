@@ -50,7 +50,7 @@ BEGIN
 		LastName      NVARCHAR(50), 
 		AddressString NVARCHAR(255),
 		PersonaId     BIGINT,
-		PreferredPhoneNumber varchar(15)
+		PreferredPhoneNumber varchar(30)
 	);
 
 	INSERT INTO @ProductIds(ProductId)
@@ -91,14 +91,14 @@ BEGIN
 
 	--Preferred mobile number logic
 	DECLARE @ContactPreference TABLE( PersonaId INT
-									, PreferredPhoneNumber VARCHAR(15))
-	INSERT INTO @ContactPreference
+									, PreferredPhoneNumber VARCHAR(30))
+	INSERT INTO @ContactPreference(PersonaId,PreferredPhoneNumber)
 	SELECT AP.PersonaId AS PersonaId, ISNULL(TM.CountryCode,'') + TM.AreaCode + TM.PhoneNumber FROM 
 						Enterprise.TelecommunicationsNumber tm 
 						INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID
 						INNER JOIN Person.ActivePersona AP ON AP.PartyId = PCM.PartyId
 						INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
-						ON CMP.ContactMechanismID = PCM.ContactMechanismId AND PCM.ThruDate > GETDATE();
+						ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE());
 
 	IF EXISTS (SELECT TOP 1 ProductId FROM @ProductIds)
     BEGIN
@@ -261,7 +261,7 @@ BEGIN
 								, personaid INT
 								, TargetProductId INT
 								, ProductId INT
-								, PreferredPhoneNumber VARCHAR(15)
+								, PreferredPhoneNumber VARCHAR(30)
 								)
 
 			INSERT INTO #result
@@ -345,7 +345,7 @@ BEGIN
 							 , FirstName varchar(200)
 							 , LastName varchar(200)
 							 , PersonaId  int
-							 , PreferredPhoneNumber VARCHAR(15))
+							 , PreferredPhoneNumber VARCHAR(30))
  
 	INSERT INTO #totalusers
 	SELECT DISTINCT       

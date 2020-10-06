@@ -23,7 +23,7 @@ AS
 		LastName      NVARCHAR(50), 
 		AddressString NVARCHAR(255),
 		PersonaId     BIGINT,
-		PreferredPhoneNumber varchar(15)
+		PreferredPhoneNumber varchar(30)
         );
         INSERT INTO @ProductIdList(ProductId)
                SELECT *
@@ -56,13 +56,13 @@ AS
                                   ELSE @RowsPerPage
                               END;
 		--Preferred mobile number logic
-		DECLARE @ContactPreference TABLE(PartyId INT, PreferredPhoneNumber VARCHAR(15))
-		INSERT INTO @ContactPreference
+		DECLARE @ContactPreference TABLE(PartyId INT, PreferredPhoneNumber VARCHAR(30))
+		INSERT INTO @ContactPreference(PartyId,PreferredPhoneNumber)
 		SELECT PCM.PartyId AS PartyId, ISNULL(TM.CountryCode,'') + TM.AreaCode + TM.PhoneNumber FROM 
 						   Enterprise.TelecommunicationsNumber tm 
 						   INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID
 						   INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
-							ON CMP.ContactMechanismID = PCM.ContactMechanismId AND PCM.ThruDate > GETDATE();
+							ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE());
         WITH Products
              AS (SELECT 
                         p.PersonaID, 
