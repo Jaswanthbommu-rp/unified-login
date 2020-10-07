@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -19,29 +20,29 @@ using System.Text;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-    /// <summary>
-    /// Used to for RPDM user management
-    /// </summary>
-    public class ManageProductRPDocumentManagement : ManageProductBase, IManageProductRPDocumentManagement
+	/// <summary>
+	/// Used to for RPDM user management
+	/// </summary>
+	public class ManageProductRPDocumentManagement : ManageProductBase, IManageProductRPDocumentManagement
 	{
 		private DefaultUserClaim _userClaims;
-        private IList<ProductInternalSetting> _unifiedLoginSettings;
+		private IList<ProductInternalSetting> _unifiedLoginSettings;
 		#region Ctor
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims">user claim related information</param>
-		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims) : base((int) ProductEnum.RPDocumentManagement, userClaims, null)
+		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims) : base((int)ProductEnum.RPDocumentManagement, userClaims, null)
 		{
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new ManageBlueBook(userClaims);
 			_productUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _unifiedLoginSettings = GetProductSetting((int) ProductEnum.UnifiedPlatform);
-            string _apiUser = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));
+			_unifiedLoginSettings = GetProductSetting((int)ProductEnum.UnifiedPlatform);
+			string _apiUser = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));
 			string _apiPassword = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value));
-			
+
 			_client.SetBasicAuthentication(_apiUser, _apiPassword);
 		}
 
@@ -62,7 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userLoginRepository"></param>
 		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
 			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManageContactMechanism manageContactMechanism, IManagePartyRelationship managePartyRelationship, IProductRepository productRepository, IUserLoginRepository userLoginRepository)
-			: base((int) ProductEnum.RPDocumentManagement, userClaims, productInternalSettingRepository)
+			: base((int)ProductEnum.RPDocumentManagement, userClaims, productInternalSettingRepository)
 		{
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;
@@ -77,9 +78,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_managePartyRelationship = managePartyRelationship;
 			_productRepository = productRepository;
 			_productUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _userLoginRepository = userLoginRepository;
+			_userLoginRepository = userLoginRepository;
 
-        }
+		}
 
 		#endregion
 
@@ -99,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			string domain = GetDomain();
 
-			response = new ListResponse(){ Additional = domain };
+			response = new ListResponse() { Additional = domain };
 			return response;
 		}
 
@@ -136,7 +137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return response;
 			}
 			Persona editorPersona = response.Records[0] as Persona;
-			
+
 			return GetPropertyRoles(editorPersonaId, userPersonaId, editorPersona.Organization.PartyId);
 		}
 
@@ -176,7 +177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return response.ErrorReason;
 			}
 
-            Persona userPersona = _managePersona.GetPersona(userPersonaId);
+			Persona userPersona = _managePersona.GetPersona(userPersonaId);
 			Guid realPageId = userPersona.RealPageId;
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 
@@ -187,19 +188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			IList<CommonAddress> contactMechansimList = _manageContactMechanism.ListContactMechanismForPerson(realPageId, null);
 
 			// get the email address
-			string userEmailAddress = "";
-			if (contactMechansimList.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "PRIMARY"))
-			{
-				userEmailAddress = (from a in contactMechansimList where a.AddressType.ToUpper() == "EMAIL" && a.contactMechanismUsageType.Name.ToUpper() == "PRIMARY" select a.AddressString).FirstOrDefault();
-			}
-			else
-			{
-				// this should probably look like a real email, need to test if it isn't
-				userEmailAddress = userLogin.LoginName;
-			}
-
-			// verify email address looks valid, will fail if not
-			userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
+			var userEmailAddress = GetEmailAddress(contactMechansimList, userLogin);
 
 			bool isSuperUser = IsSuperUser(userPersona.PersonaId);
 
@@ -232,17 +221,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			// setting roles and properties values if it is not a dynamic panel
-			if (rolePropertyEntityList.RolePropertiesList== null && (rolePropertyEntityList?.RoleList?.Count > 0 || rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
+			if (rolePropertyEntityList.RolePropertiesList == null && (rolePropertyEntityList?.RoleList?.Count > 0 || rolePropertyEntityList?.PropertyList?.Count > 0 || rolePropertyEntityList?.DepartmentList?.Count > 0))
 			{
 				if (rolePropertyEntityList.DepartmentList?.Count > 0 && rolePropertyEntityList.PropertyList?.Count > 0)
 				{
 					rolePropertyEntityList.PropertyList.AddRange(rolePropertyEntityList.DepartmentList);
 				}
-				else if(rolePropertyEntityList.DepartmentList?.Count > 0)
+				else if (rolePropertyEntityList.DepartmentList?.Count > 0)
 				{
 					rolePropertyEntityList.PropertyList = rolePropertyEntityList.DepartmentList;
 				}
-				
+
 				foreach (string roleId in rolePropertyEntityList.RoleList)
 				{
 					PAMRolePropertyList objRole = new PAMRolePropertyList();
@@ -268,23 +257,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return "There was a problem creating the user. Missing role details";
 			}
 
-			string domain = GetDomain();
-			if (domain.Contains("There was a problem creating the user"))
-			{
-				return domain;
-			}
+			RPDMUser manageUser = NewRPDMUser(userEmailAddress, person);
 
-			RPDMUser manageUser = new RPDMUser()
+			//Validate Domain
+			if (manageUser.Domain.Contains("There was a problem creating the user"))
 			{
-				Domain = domain,
-				FirstName = person.FirstName,
-				LastName = person.LastName,
-				Name = _productUsername,
-				Email = userEmailAddress,
-				TimeZone = "US/Central",
-				Locale = "en",
-				Enabled = true,
-			};
+				return manageUser.Domain;
+			}
 
 			if (!isSuperUser)
 			{
@@ -322,7 +301,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								{
 									RPDMUserRoles ur = new RPDMUserRoles
 									{
-										Role = new RPDMScope() {HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name}
+										Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
 									};
 									manageUser.Roles.Add(ur);
 								}
@@ -331,7 +310,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							{
 								RPDMUserRoles ur = new RPDMUserRoles
 								{
-									Role = new RPDMScope() {HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name}
+									Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
 								};
 								manageUser.Roles.Add(ur);
 							}
@@ -341,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				catch (Exception ex)
 				{
 					WriteToErrorLog("ManageRPDMUser - Create user errored. " + ex.Message, null, ex);
-					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Error);
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
 					WriteToDiagnosticLog("ManageRPDMUser - Create user errored. Set product status to Error");
 					// write an error
 					return "There was a problem creating the user. " + ex.Message;
@@ -366,9 +345,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// create user
 				try
 				{
-					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Running);
-					var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + "/users/newuser";
-					logData = new Dictionary<string, object>() {{"url", url}, {"manageUser", JsonConvert.SerializeObject(manageUser)}};
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Running);
+					var url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + "/users/newuser";
+					logData = new Dictionary<string, object>() { { "url", url }, { "manageUser", JsonConvert.SerializeObject(manageUser) } };
 					WriteToDiagnosticLog("ManageRPDMUser - Create user", logData);
 
 					var postResponse = _client.PostAsJsonAsync(url, manageUser).Result;
@@ -406,9 +385,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					else
 					{
-						logData = new Dictionary<string, object>() {{"postResponse.Content", postResponse.Content.ReadAsStringAsync().Result}};
+						logData = new Dictionary<string, object>() { { "postResponse.Content", postResponse.Content.ReadAsStringAsync().Result } };
 						WriteToDiagnosticLog("ManageRPDMUser - Create user errored.", logData);
-						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Error);
+						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
 						WriteToDiagnosticLog("ManageRPDMUser - Create user errored. Set product status to Error");
 						// write an error
 						return "There was a problem creating the user. " + postResponse.Content.ReadAsStringAsync().Result;
@@ -417,7 +396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				catch (Exception ex)
 				{
 					WriteToErrorLog("ManageRPDMUser - Create user errored. " + ex.Message, null, ex);
-					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Error);
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
 					WriteToDiagnosticLog("ManageRPDMUser - Create user errored. Set product status to Error");
 					// write an error
 					return "There was a problem creating the user. " + ex.Message;
@@ -426,67 +405,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			else
 			{
 				// update user
-				try
-				{
-					RPDMUser currentUser = GetUserDetails(_productUserId);
-
-					manageUser.Id = _productUserId;
-					manageUser.TimeZone = currentUser.TimeZone;
-					manageUser.Locale = currentUser.Locale;
-					manageUser.Photo = currentUser.Photo;
-					manageUser.Groups = currentUser.Groups;
-					var url = "";
-
-					if (currentUser.Enabled == false)
-					{
-						// reactivate the user
-						url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}/users/{_productUserId}/enable";
-						logData = new Dictionary<string, object>() { { "url", url } };
-						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user", logData);
-						var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
-						if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
-						{
-							WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
-							WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-						}
-						else
-						{
-							logData = new Dictionary<string, object>() { { "postEnableResponse.Content", postEnableResponse.Content.ReadAsStringAsync().Result } };
-							WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId} errored.", logData);
-							// write an error
-							return "There was a problem updating the user. " + postEnableResponse.Content.ReadAsStringAsync().Result;
-						}
-					}
-
-					url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + $"/users/{_productUserId}";
-					logData = new Dictionary<string, object>() {{"url", url}, {"manageUser", JsonConvert.SerializeObject(manageUser)}};
-					WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
-
-					var postUpdateResponse = _client.PostAsJsonAsync(url, manageUser).Result;
-					if (postUpdateResponse.IsSuccessStatusCode || postUpdateResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
-					{
-						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Success);
-						logData = new Dictionary<string, object>() {{"postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result}};
-						WriteToDiagnosticLog("ManageRPDMUser - Update user success. Set product status to Success", logData);
-						WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
-					}
-					else
-					{
-						logData = new Dictionary<string, object>() {{"postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result}};
-						WriteToDiagnosticLog("ManageRPDMUser - Update user errored.", logData);
-						// write an error
-						return "There was a problem updating the user. " + postUpdateResponse.Content.ReadAsStringAsync().Result;
-					}
-				}
-				catch (Exception ex)
-				{
-					//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-					WriteToDiagnosticLog("ManageOpsUser - Create user errored. " + ex.Message);
-					return "There was a problem updating the user";
-				}
+				return UpdateRPDMUser(manageUser, person, userLogin, editorPersonaId, userPersonaId);
 			}
 
 			return "";
+		}
+
+		/// <summary>
+		/// Used to update the user profile
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <returns></returns>
+		public string UpdateRPDMUserProfile(long editorPersonaId, long userPersonaId)
+		{
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+
+			try
+			{
+				var response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (response.IsError)
+				{
+					return response.ErrorReason;
+				}
+
+				Persona userPersona = _managePersona.GetPersona(userPersonaId);
+				Guid realPageId = userPersona.RealPageId;
+				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+				Person person = _managePerson.GetPerson(realPageId);
+
+				IList<CommonAddress> contactMechansimList = _manageContactMechanism.ListContactMechanismForPerson(realPageId, null);
+
+				// get the email address
+				var userEmailAddress = GetEmailAddress(contactMechansimList, userLogin);
+
+				RPDMUser manageUser = NewRPDMUser(userEmailAddress, person);
+
+				return UpdateRPDMUser(manageUser, person, userLogin, editorPersonaId, userPersonaId, true);
+			}
+			catch (Exception ex)
+			{
+
+				WriteToErrorLog("ManageRPDMUser - Update user profile. " + ex.Message, null, ex);
+				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+				WriteToDiagnosticLog("ManageRPDMUser - Update user profile errored. Set product status to Error");
+				// write an error
+				return "There was a problem updating the user profile. " + ex.Message;
+			}
+
 		}
 		#endregion
 
@@ -513,7 +479,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					RPDMDataset dataset = (from a in rpdmDataSetResults.Page where a.Id == id select a).FirstOrDefault();
 					RPDMUserRoles ur = new RPDMUserRoles
 					{
-						Role = new RPDMScope() {HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name}
+						Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
 					};
 					ur.Entity = new RPDMScope()
 					{
@@ -536,22 +502,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string domain = "";
 			try
 			{
-                CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
-                var useUPFMInstance = _unifiedLoginSettings?.FirstOrDefault(a => a.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase))?.Value == "1";
-                if (!useUPFMInstance)
-                {
-                    IList<InstanceAttribute> listInstanceAttribute = companyMap.CompanyInstance[0].Attributes;
-                    if (listInstanceAttribute.ToList().Any(a => a.AttributeName.ToUpper() == "DOMAIN ID"))
-                    {
-                        InstanceAttribute instanceAttribute = listInstanceAttribute.ToList().Find(a => a.AttributeName.ToUpper() == "DOMAIN ID");
-                        domain = instanceAttribute.AttributeValue;
-                    }
-                }
-                else
-                {
-                    domain = companyMap.CompanyInstanceSourceId;
-                }
-            }
+				CustomerCompanyMap companyMap = GetRPDocumentManagementCompanyInstanceId();
+				var useUPFMInstance = _unifiedLoginSettings?.FirstOrDefault(a => a.Name.Equals("BooksUseUPFMId", StringComparison.OrdinalIgnoreCase))?.Value == "1";
+				if (!useUPFMInstance)
+				{
+					IList<InstanceAttribute> listInstanceAttribute = companyMap.CompanyInstance[0].Attributes;
+					if (listInstanceAttribute.ToList().Any(a => a.AttributeName.ToUpper() == "DOMAIN ID"))
+					{
+						InstanceAttribute instanceAttribute = listInstanceAttribute.ToList().Find(a => a.AttributeName.ToUpper() == "DOMAIN ID");
+						domain = instanceAttribute.AttributeValue;
+					}
+				}
+				else
+				{
+					domain = companyMap.CompanyInstanceSourceId;
+				}
+			}
 			catch (Exception ex)
 			{
 				WriteToErrorLog("ManageRPDMUser - There was a problem getting the DocManagement attribute in BlueBook", exception: ex);
@@ -593,12 +559,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError) { return listResponse.ErrorReason; }
-                       
-            
-            string domain = GetDomain();
+
+
+			string domain = GetDomain();
 
 			var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}/users/{_productUserId}/disable";
-			Dictionary<string, object> logData = new Dictionary<string, object>() {{"url", url}};
+			Dictionary<string, object> logData = new Dictionary<string, object>() { { "url", url } };
 			WriteToDiagnosticLog("ManageRPDMUser - UnassignUser - Disable user", logData);
 
 			var postResponse = _client.PostAsJsonAsync(url, "").Result;
@@ -609,10 +575,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog("ManageRPDMUser - UnassignUser user errored. Set product status to Error");
 				return "Error";
 			}
-			
+
 			// Activity Logging
 			WriteUnassignActivityLog(editorPersonaId, userPersonaId);
-			
+
 			WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
@@ -708,57 +674,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse propertyResponse = new ListResponse();
 			try
 			{
-					response = GetRoles(editorPersonaId, userPersonaId);
-					if (response.TotalRows > 0)
+				response = GetRoles(editorPersonaId, userPersonaId);
+				if (response.TotalRows > 0)
+				{
+					list = response.Records.Cast<ProductRole>().ToArray();
+					ProductRole pRole = new ProductRole();
+					ListResponse propertyListResponse = new ListResponse();
+					foreach (ProductRole item in list)
 					{
-						list = response.Records.Cast<ProductRole>().ToArray();
-						ProductRole pRole = new ProductRole();
-						ListResponse propertyListResponse = new ListResponse();
-						foreach (ProductRole item in list)
+						pRole = item;
+						if (!string.IsNullOrEmpty(item.Roletype))
 						{
-							pRole = item;
-							if (!string.IsNullOrEmpty(item.Roletype))
+							if (item.Name.Contains("(" + item.Roletype + ")"))
 							{
-								if (item.Name.Contains("(" + item.Roletype + ")"))
-								{
-									pRole.Name = item.Name.Replace("(" + item.Roletype + ")", "").Trim();
-								}
-								if (item.Roletype.ToLower().Contains("site"))
-								{
-									pRole.Roletype = "Property";
-								}
-
-								propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID, organizationPartyId);
-								if (propertyResponse.Records.Count > 0)
-								{
-									pRole.propertiesList = propertyResponse.Records as List<object>;
-								}
+								pRole.Name = item.Name.Replace("(" + item.Roletype + ")", "").Trim();
 							}
-							rpdmRolelist.Add(pRole);
+							if (item.Roletype.ToLower().Contains("site"))
+							{
+								pRole.Roletype = "Property";
+							}
+
+							propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID, organizationPartyId);
+							if (propertyResponse.Records.Count > 0)
+							{
+								pRole.propertiesList = propertyResponse.Records as List<object>;
+							}
 						}
+						rpdmRolelist.Add(pRole);
 					}
+				}
 
-					if (rpdmRolelist != null)
-					{
-						rpdmRolelist = rpdmRolelist.OrderBy(p => p.Name).ToList();
+				if (rpdmRolelist != null)
+				{
+					rpdmRolelist = rpdmRolelist.OrderBy(p => p.Name).ToList();
 
-						response = new ListResponse()
-						{
-							Records = rpdmRolelist.Cast<object>().ToList(),
-							TotalRows = rpdmRolelist.Count,
-							RowsPerPage = rpdmRolelist.Count,
-							TotalPages = 1,
-							ErrorReason = ""
-						};
-						
-					}
-					else
+					response = new ListResponse()
 					{
-						WriteToErrorLog("GetRoles - Error. list == null");
-						response.IsError = true;
-						response.ErrorReason = "There was a problem getting the role details";
-					}
-					return response;
+						Records = rpdmRolelist.Cast<object>().ToList(),
+						TotalRows = rpdmRolelist.Count,
+						RowsPerPage = rpdmRolelist.Count,
+						TotalPages = 1,
+						ErrorReason = ""
+					};
+
+				}
+				else
+				{
+					WriteToErrorLog("GetRoles - Error. list == null");
+					response.IsError = true;
+					response.ErrorReason = "There was a problem getting the role details";
+				}
+				return response;
 			}
 			catch (Exception ex)
 			{
@@ -856,7 +822,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse response = new ListResponse();
 			RPObjectCache rpCache = new RPObjectCache();
 			string cacheKey = $"DocumentDirector_Roles_{organizationPartyId}_{roleId}";
-			
+
 			try
 			{
 				IList<ProductProperty> list = rpCache.GetFromCache(cacheKey, 300, () =>
@@ -881,7 +847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return null;
 				});
 
-				if (list !=null)
+				if (list != null)
 				{
 					// flag any values that are assigned to the given user
 					if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId))
@@ -914,7 +880,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					if (list != null)
 					{
-						
+
 						list = list.OrderBy(p => p.Name).ToList();
 						response = new ListResponse()
 						{
@@ -1033,7 +999,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + additionalQuery + sortByAdditional;
-			Dictionary<string, object> logData = new Dictionary<string, object>() {{"url", url}};
+			Dictionary<string, object> logData = new Dictionary<string, object>() { { "url", url } };
 			WriteToDiagnosticLog("GetResultFromApi - Posting to url. ", logData);
 			try
 			{
@@ -1054,6 +1020,135 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			return results;
+		}
+
+		/// <summary>
+		/// Get the user email address
+		/// </summary>
+		/// <param name="contactMechansimList"></param>
+		/// <param name="userLogin"></param>
+		/// <returns></returns>
+		private string GetEmailAddress(IList<CommonAddress> contactMechansimList, UserLoginOnly userLogin)
+		{
+			string userEmailAddress = "";
+			if (contactMechansimList.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "PRIMARY"))
+			{
+				userEmailAddress = (from a in contactMechansimList where a.AddressType.ToUpper() == "EMAIL" && a.contactMechanismUsageType.Name.ToUpper() == "PRIMARY" select a.AddressString).FirstOrDefault();
+			}
+			else
+			{
+				// this should probably look like a real email, need to test if it isn't
+				userEmailAddress = userLogin.LoginName;
+			}
+
+			// verify email address looks valid, will fail if not
+			userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
+
+			return userEmailAddress;
+		}
+
+		/// <summary>
+		/// New RPDMUser
+		/// </summary>
+		/// <param name="userEmailAddress"></param>
+		/// <param name="person"></param>
+		/// <returns></returns>
+		private RPDMUser NewRPDMUser(string userEmailAddress, Person person)
+		{
+			return new RPDMUser()
+			{
+				Domain = GetDomain(),
+				FirstName = person.FirstName,
+				LastName = person.LastName,
+				Name = _productUsername,
+				Email = userEmailAddress,
+				TimeZone = "US/Central",
+				Locale = "en",
+				Enabled = true,
+			};
+		}
+
+		/// <summary>
+		/// Update RPDMUser 
+		/// </summary>
+		/// <param name="manageUser"></param>
+		/// <param name="person"></param>
+		/// <param name="userLogin"></param>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="isUserProfile"></param>
+		/// <returns></returns>
+		private string UpdateRPDMUser(RPDMUser manageUser, Person person, UserLoginOnly userLogin, long editorPersonaId, long userPersonaId, bool isUserProfile = false)
+		{
+			Dictionary<string, object> logData = new Dictionary<string, object>();
+
+			try
+			{
+				RPDMUser currentUser = GetUserDetails(_productUserId);
+
+				manageUser.Id = _productUserId;
+				manageUser.TimeZone = currentUser.TimeZone;
+				manageUser.Locale = currentUser.Locale;
+				manageUser.Photo = currentUser.Photo;
+				manageUser.Groups = currentUser.Groups;
+
+				if (isUserProfile)
+				{
+					manageUser.Roles = currentUser.Roles;
+				}
+
+				var url = "";
+
+				if (currentUser.Enabled == false && !isUserProfile)
+				{
+					// reactivate the user
+					url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}/users/{_productUserId}/enable";
+					logData = new Dictionary<string, object>() { { "url", url } };
+					WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user", logData);
+					var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
+					if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
+					{
+						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
+						WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
+					}
+					else
+					{
+						logData = new Dictionary<string, object>() { { "postEnableResponse.Content", postEnableResponse.Content.ReadAsStringAsync().Result } };
+						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId} errored.", logData);
+						// write an error
+						return "There was a problem updating the user. " + postEnableResponse.Content.ReadAsStringAsync().Result;
+					}
+				}
+
+				url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + $"/users/{_productUserId}";
+				logData = new Dictionary<string, object>() { { "url", url }, { "manageUser", JsonConvert.SerializeObject(manageUser) } };
+				WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
+
+				var postUpdateResponse = _client.PostAsJsonAsync(url, manageUser).Result;
+				if (postUpdateResponse.IsSuccessStatusCode || postUpdateResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
+				{
+					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
+					WriteToDiagnosticLog("ManageRPDMUser - Update user success. Set product status to Success", logData);
+					WriteUpdateUserActivityLog(editorPersonaId, person, userLogin);
+					return string.Empty;
+
+				}
+				else
+				{
+					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
+					WriteToDiagnosticLog("ManageRPDMUser - Update user errored.", logData);
+					// write an error
+					return "There was a problem updating the user. " + postUpdateResponse.Content.ReadAsStringAsync().Result;
+				}
+			}
+			catch (Exception ex)
+			{
+				//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+				WriteToDiagnosticLog("ManageOpsUser - Create user errored. " + ex.Message);
+				return "There was a problem updating the user";
+			}
+
 		}
 		#endregion
 	}
