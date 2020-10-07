@@ -204,6 +204,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			throw new Exception($"AO product with Id - {productCode} is not supported in green book.");
 		}
 
+		public static ProductEnum GetUPFMProductEnum(int productID)
+		{
+			switch (productID)
+			{
+				case 57 : return ProductEnum.IntelligentBuildingTrash;
+				case 58 : return ProductEnum.IntelligentBuildingEnergy;
+				case 59 : return ProductEnum.IntelligentBuildingWater;
+				case 60 : return ProductEnum.HospitalityService;
+
+			}
+
+			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
+		}
 		/// <summary>
 		/// GetProductEnumByProductCode
 		/// </summary>
