@@ -147,10 +147,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					newProductUser.UserId = productUser.UserId;
 					newProductUser.LoginName = productUser.LoginName;
-					if (SubjectUserDetails.UserRoleTypeId != (int)UserRoleType.UserNoEmail)
-					{
-						newProductUser.Email = productUser.LoginName;
-					}
 				}
 				else 
 				{
