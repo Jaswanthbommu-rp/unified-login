@@ -3260,10 +3260,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            var _userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var productLogic = ManageProductFactory.GetProductLogic((ProductEnum)_productId, createUserPersonaId, assignUserPersonaId, _userClaims);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productRPDM = new ManageProductRPDocumentManagement(base.UserClaim);
 
-            return productLogic.UpdateProductUserProfile();
+            return productRPDM.UpdateRPDMUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 
         /// <summary>
