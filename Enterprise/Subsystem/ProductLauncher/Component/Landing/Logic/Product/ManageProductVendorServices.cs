@@ -427,10 +427,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
             // get the email address
-            string userEmailAddress = string.Empty;
             var manageElectronicAddress = new ManageElectronicAddress();
             var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
 
+            string userEmailAddress = addresses?.FirstOrDefault()?.AddressString;
 
             if (string.IsNullOrEmpty(userEmailAddress))
             {
