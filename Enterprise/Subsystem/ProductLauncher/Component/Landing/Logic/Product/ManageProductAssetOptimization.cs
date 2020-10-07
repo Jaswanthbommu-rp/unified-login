@@ -795,16 +795,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							// Create GB Product association - for new user insert record
 							var productList = (from x in aoUser.Model select x.Product).Distinct().ToList();
 
-							CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
-
-                            if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
-                            {
+							if (!string.IsNullOrEmpty(_productUsername) && !_productUsername.Equals(productUserGbLogin.LoginName, StringComparison.OrdinalIgnoreCase))
+							{
 								loginNameChanged = true;
 								// Get Copy of User from AO
 								var existingAssignedProducts = CopyRegularUser(editorPersonaId, productUserPersonaId);
-                                UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAssignedProducts, aoGbUserCompanyPropertyRoleDetails, loginNameChanged);
+								UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAssignedProducts, aoGbUserCompanyPropertyRoleDetails, loginNameChanged);
                             }
-                        }
+                            else
+                            {
+								CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
+							}
+						}
 
 						WriteToDiagnosticLog(
 							$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
@@ -823,12 +825,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					aoUser.Divisions = new List<Divisions>();
 					aoUser.Model = GetModel(copiedAoUserCompanyPropertyRoleDetails);
 
-					
+					//if (!loginNameChanged)
+					//{
 						aoUser.UserId = _productUserId.ToLower();
 						//aoUser.Login = _productUsername.ToLower();
 						aoUser.OldUserId = _productUserId.ToLower();
 						aoUser.Email = _productUsername.ToLower();
-					
+					//}
 
 					returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
