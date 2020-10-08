@@ -2284,7 +2284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var userDetails = GetUserDetails(oldProfile.Persona[0].PersonaId);
 
             //If user is activated from deactivate status ,get all products data which are previously assigned to user
-            if (newProfile.userLogin.Status == UserUiStatusType.Active && oldProfile.userLogin.Status == UserUiStatusType.Deactivated)
+            if (newProfile.userLogin.Status == UserUiStatusType.Disabled)
             {
                 productBatchData = GetActivatedUserProductBatchData(oldProfile.Persona[0].PersonaId, newProfile.productBatch);
             }
