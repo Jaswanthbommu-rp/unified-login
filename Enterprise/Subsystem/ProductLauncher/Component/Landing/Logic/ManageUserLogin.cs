@@ -375,6 +375,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
                         bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLogin.UserRoleType, orgStatus.PartyId);
+                        string message = string.Empty;
+                        var userRepository = new UserRepository(_defaultUserClaim);
+                        var userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                        IProfileDetail profile = new ProfileDetail();
+                        profile.FirstName = userDetailsInfo.FirstName;
+                        profile.LastName = userDetailsInfo.LastName;
+                        profile.userLogin.LoginName = userDetailsInfo.LoginName;
+                        profile.userLogin.UserId = userDetailsInfo.UserId;
+                        profile.userLogin.RealPageId = userDetailsInfo.UserRealPageId;
+
+                        if (isNotified)
+                        {
+                            //Log Activity
+                            message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+                            LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                        }
+                        else
+                        {
+                            //Log Activity
+                            message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+                            LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                        }
+
                         statusTypeId = (int)UserUiStatusType.Pending;
                     }
                     else
@@ -1332,6 +1355,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _userLoginRepository.GetUserOrganizationWithStatus(userId, lastLogin, orgPartyId, getPrimaryOrg);
         }
 
+        #endregion
+
+        #region Private Methods
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
+            string message, string stepName, IProfileDetail profile)
+        {
+            LogActivity.WriteActivity(new ActivityDetails
+            {
+                LogActivityTypeName = logActivityType,
+                LogCategoryName = logActivityCategoryType.ToString(),
+                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                Message = string.Format(message, profile.FirstName, profile.LastName, _defaultUserClaim.FirstName, _defaultUserClaim.LastName, profile.CreateUserSourceType.ToString()),
+
+                FromUserLoginName = _defaultUserClaim.LoginName,
+                FromUserLoginId = _defaultUserClaim.UserId,
+                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName = _defaultUserClaim.FirstName,
+                FromUserLastName = _defaultUserClaim.LastName,
+
+                ToUserLoginName = profile.userLogin.LoginName,
+                ToUserLoginId = profile.userLogin.UserId,
+                ToUserFirstName = profile.FirstName,
+                ToUserLastName = profile.LastName,
+                ToUserRealpageId = profile.userLogin.RealPageId.ToString()
+            });
+        }
         #endregion
     }
 }
