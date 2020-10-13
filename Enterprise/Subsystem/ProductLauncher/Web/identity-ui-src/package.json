@@ -39,7 +39,7 @@
     "load-grunt-tasks": "~4.0.0",
     "lodash": "~4.17.11",
     "moment": "~2.24.0",
-    "node-sass": "~4.11.0",
+    "node-sass": "^4.14.1",
     "phantomjs-prebuilt": "~2.1.16",
     "time-grunt": "~2.0.0",
     "underscore": "~1.9.1"
