@@ -90,6 +90,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.AoRentControl: return "rent-control";
 				case ProductEnum.RenovationManager: return "renovation-manager";
 				case ProductEnum.IntelligentBuildingTrash: return "intelligent-building-trash";
+				case ProductEnum.IntelligentBuildingEnergy: return "intelligent-building-energy";
+				case ProductEnum.IntelligentBuildingWater: return "intelligent-building-water";
+				case ProductEnum.HospitalityService: return "hospitality-service";
 			}
 			return null;
 		}

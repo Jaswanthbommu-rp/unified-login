@@ -8,6 +8,6 @@
     [ProductTypeId] INT NULL, 
     [BooksProductCode] NVARCHAR(20) NULL, 
     [AssignToAllUsers] BIT NOT NULL DEFAULT 0, 
-    [ProductTranslationCode] NVARCHAR(10) NULL, 
+    [BooksProductSourceCode] NVARCHAR(10) NULL, 
     CONSTRAINT [FK_Product_ProductType] FOREIGN KEY ([ProductTypeId]) REFERENCES [Enterprise].[ProductType]([ProductTypeId])
 )

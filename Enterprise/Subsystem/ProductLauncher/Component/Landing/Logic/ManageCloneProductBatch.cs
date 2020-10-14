@@ -231,11 +231,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 						productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
 					}
-					else if (product.ProductId == (int)ProductEnum.IntelligentBuilding)
+					//else if (product.ProductId == (int)ProductEnum.IntelligentBuilding)
+					//{
+					//	ManageIntelligentBuilding ib = new ManageIntelligentBuilding(userClaim);
+					//	propertiesResponse = ib.GetUPFMProperties(createUserPersonaId, personaId, false, ProductEnum.IntelligentBuilding,null);
+					//	rolesResponse = ib.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
+					//	productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
+					//}
+					else if (product.ProductId == (int)ProductEnum.IntelligentBuildingTrash ||
+							 product.ProductId == (int)ProductEnum.IntelligentBuildingEnergy ||
+							 product.ProductId == (int)ProductEnum.IntelligentBuildingWater ||
+							 product.ProductId == (int)ProductEnum.HospitalityService)
 					{
-						ManageIntelligentBuilding ib = new ManageIntelligentBuilding(userClaim);
-						propertiesResponse = ib.GetUPFMProperties(createUserPersonaId, personaId, false, ProductEnum.IntelligentBuilding,null);
-						rolesResponse = ib.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId);
+						ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(product.ProductId, userClaim);
+						var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(product.ProductId);
+						propertiesResponse = upfmProductIntegration.GetUPFMProperties(createUserPersonaId, personaId, false, upfmProduct, null);
+						rolesResponse = upfmProductIntegration.GetRoles(createUserPersonaId, personaId, userClaim.OrganizationPartyId, upfmProduct);
 						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
 					}
 				}
@@ -500,7 +511,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (allProperties)
 			{
-				if (productID == (int)ProductEnum.ClientPortal || productID == (int)ProductEnum.IntelligentBuilding)
+			
+				if (productID == (int)ProductEnum.ClientPortal ||
+					productID == (int)ProductEnum.IntelligentBuildingTrash ||
+					productID == (int)ProductEnum.IntelligentBuildingEnergy ||
+					productID == (int)ProductEnum.IntelligentBuildingWater ||
+					productID == (int)ProductEnum.HospitalityService)
 				{
 					PropertyList.Add("-1");
 				}
@@ -525,7 +541,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}					
 					else if (((ProductProperty)item).IsAssigned.Value)
 					{
-						if (productID == (int)ProductEnum.IntelligentBuilding)
+						if (productID == (int)ProductEnum.IntelligentBuildingTrash ||
+							productID == (int)ProductEnum.IntelligentBuildingEnergy ||
+							productID == (int)ProductEnum.IntelligentBuildingWater ||
+							productID == (int)ProductEnum.HospitalityService)
 						{
 							PropertyList.Add(((ProductProperty)item).Alias);
 						}

@@ -14,7 +14,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userPersonaId"></param>
 		/// <param name="userAssignProductPropertyRole"></param>
 		/// <returns></returns>
-		string ManageUPFMProductsIntegration(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, ProductEnum product);
+		string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, ProductEnum product);
 
 		/// <summary>
 		/// Used to unassign a user from IntelligentBuilding

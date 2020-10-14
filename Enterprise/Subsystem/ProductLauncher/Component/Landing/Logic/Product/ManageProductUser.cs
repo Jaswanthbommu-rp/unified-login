@@ -13,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ac
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ClientPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntegrationMarketplace;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProspectContactCenter;
@@ -303,12 +304,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
-                    case ProductEnum.IntelligentBuilding:
-                        product = new IntelligentBuildingProduct(_defaultUserClaim);
+                    //case ProductEnum.IntelligentBuilding:
+                    //    product = new IntelligentBuildingProduct(_defaultUserClaim);
+                    //    productPropertiesRoles =
+                    //        GetProductPropertiesRoles<IBPropertyRole>(productUser.InputJson);
+                    //    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                    //        productUser.AssignUserPersonaId, productPropertiesRoles);
+                    //    break;
+                    case ProductEnum.IntelligentBuildingEnergy:
+                    case ProductEnum.IntelligentBuildingTrash:
+                    case ProductEnum.IntelligentBuildingWater:
+                    case ProductEnum.HospitalityService:
+                       IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<IBPropertyRole>(productUser.InputJson);
-                        result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
-                            productUser.AssignUserPersonaId, productPropertiesRoles);
+                            GetProductPropertiesRoles<UPFMProductPropertyRole>(productUser.InputJson);
+                        result = upfmProduct.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                           productUser.AssignUserPersonaId, productPropertiesRoles, productUser.ProductName);
                         break;
                     default:
                         result = "Product code does not exist.";
@@ -475,9 +486,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new RenovationManagerProduct(ProductEnum.RenovationManager);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
-                case ProductEnum.IntelligentBuilding:
-                    product = new IntelligentBuildingProduct(_defaultUserClaim, _productInternalSettingRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails);
+                //case ProductEnum.IntelligentBuilding:
+                //    product = new IntelligentBuildingProduct(_defaultUserClaim, _productInternalSettingRepository);
+                //    result = product.UpdateUserDetails(productUserAccountDetails);
+                //    break;
+                case ProductEnum.IntelligentBuildingEnergy:
+                case ProductEnum.IntelligentBuildingTrash:
+                case ProductEnum.IntelligentBuildingWater:
+                case ProductEnum.HospitalityService:
+                    result = "User details Change not implemented for this Product.";
                     break;
                 default:
                     result = "Product code does not exist.";
@@ -604,9 +621,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         product = new RenovationManagerProduct(productUser.ProductName);
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
-                    case ProductEnum.IntelligentBuilding:
-                        product = new IntelligentBuildingProduct(_defaultUserClaim);
-                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                    //case ProductEnum.IntelligentBuilding:
+                    //    product = new IntelligentBuildingProduct(_defaultUserClaim);
+                    //    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                    //    break;
+                    case ProductEnum.IntelligentBuildingEnergy:
+                    case ProductEnum.IntelligentBuildingTrash:
+                    case ProductEnum.IntelligentBuildingWater:
+                    case ProductEnum.HospitalityService:
+                        result = "User Profile Change not implemented for this Product.";
                         break;
                     default:
                         result = "Product code does not exist.";
@@ -840,11 +863,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.CreateUser(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
                             batchRecord.AssignUserPersonaId, productPropertiesRoles);
                         break;
-                    case ProductEnum.IntelligentBuilding:
-                        product = new IntelligentBuildingProduct(_defaultUserClaim);
+                    //case ProductEnum.IntelligentBuilding:
+                    //    product = new IntelligentBuildingProduct(_defaultUserClaim);
+                    //    productPropertiesRoles =
+                    //        GetProductPropertiesRoles<IBPropertyRole>(batchRecord.InputJson);
+                    //    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                    //    break;
+                    case ProductEnum.IntelligentBuildingEnergy:
+                    case ProductEnum.IntelligentBuildingTrash:
+                    case ProductEnum.IntelligentBuildingWater:
+                    case ProductEnum.HospitalityService:
+                        IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
                         productPropertiesRoles =
-                            GetProductPropertiesRoles<IBPropertyRole>(batchRecord.InputJson);
-                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                            GetProductPropertiesRoles<UPFMProductPropertyRole>(batchRecord.InputJson);
+                        result = upfmProduct.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
+                           batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles, batchRecord.ProductName);
                         break;
                     default:
                         result = "Product code does not exist.";
@@ -1030,7 +1063,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     interface IProduct
     {
-        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);       
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
 
         /// <summary>
@@ -1044,6 +1077,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <returns>String.empty if success else error</returns>
         string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList);
+    }
+
+    /// <summary>
+    /// The 'Product' abstract class
+    /// </summary>
+    interface IUPFMProduct
+    {
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList, ProductEnum product);
+      
+        string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails);
+
+        /// <summary>
+        /// Update product user profile
+        /// </summary>
+        /// <returns>String.empty if success else error</returns>
+        string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId);
+
+        /// <summary>
+        /// Change Product User Type from admin to regular or vice versa
+        /// </summary>
+        /// <returns>String.empty if success else error</returns>
+        //string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList, ProductEnum productName);
+        string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object productPropertiesRoles, ProductEnum productName);
     }
     #endregion
 
@@ -3981,6 +4037,112 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var ib = new ManageIntelligentBuilding(base.UserClaim);
 
             changeProductUserTypeResponse = ib.ManageIntelligentBuildingUser(createUserPersonaId, assignUserPersonaId, rpList);
+            return changeProductUserTypeResponse;
+        }
+    }
+    #endregion
+    #region UPFM Product Integration
+    /// <summary>
+    /// A 'Concrete Product Intelligent Building' class
+    /// </summary>
+    public class UPFMProductIntegration : ProductBase, IUPFMProduct
+    {
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        /// <param name="userClaim">Use to hold user claim related information</param>
+        public UPFMProductIntegration(int productId, DefaultUserClaim userClaim) : base(productId, userClaim, null)
+        {
+        }
+
+        /// <summary>
+        /// Test constructor
+        /// </summary>
+        /// <param name="userClaim">User claim related information</param>
+        /// <param name="productInternalSettingRepository">Internal settings for a product</param>
+        public UPFMProductIntegration(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base(productId, userClaim, productInternalSettingRepository)
+        {
+        }
+
+        /// <summary>
+        /// Create UnifiedAmenities user
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">Unified Amenities Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, ProductEnum product)
+        {
+            var rpList = rolePropList as UPFMProductPropertyRole;
+
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+
+            var ib = new ManageUPFMProductsIntegration((int)product, base.UserClaim);
+
+            // assign user
+            if (rpList.IsAssigned)
+            {
+                return ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList, product);
+            }
+
+            // Unassign User
+            return ib.UnassignUser(createUserPersonaId, assignUserPersonaId, rpList, product);
+        }
+
+        /// <summary>
+        /// Update Product User Profile
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">Unified Amenities Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Change Product User Type from Admin to Regular or Regular to Admin
+        /// </summary>
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="batchProcessType">Batch Process Type</param>
+        /// <param name="rolePropList">>Unified Amenities Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList, ProductEnum product)
+        {
+            string changeProductUserTypeResponse = string.Empty;
+
+            var rpList = rolePropList as UPFMProductPropertyRole;
+
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+            else if ((batchProcessType == BatchProcessType.UserTypeAdminToRegular) && (rpList.PropertyList.Count == 0))
+            {
+                return "At least one Property is required in the Input JSON when changing a Unified Amenities user type from Admin to Regular.";
+            }
+            else if ((batchProcessType == BatchProcessType.UserTypeAdminToRegular) && (rpList.RoleList.Count == 0))
+            {
+                return "At least one Role is required in the Input JSON when changing a Unified Amenities user type from Admin to Regular.";
+            }
+            else if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+            {
+                //Do Nothing
+            }
+
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var ib = new ManageUPFMProductsIntegration((int)product, base.UserClaim);
+
+            changeProductUserTypeResponse = ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList, product);
             return changeProductUserTypeResponse;
         }
     }

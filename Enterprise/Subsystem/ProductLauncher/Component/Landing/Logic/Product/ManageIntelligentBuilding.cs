@@ -29,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuilding, userClaims, null)
+		public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuildingTrash, userClaims, null)
 		{
 			WriteToDiagnosticLog("Ctor - Getting Product settings.");
 			_userClaims = userClaims;
