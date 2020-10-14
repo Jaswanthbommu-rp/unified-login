@@ -1058,29 +1058,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             string message = string.Empty;
             string activity = string.Empty;
-            string logActivityTypeName = string.Empty;
+            List<string> logActivityTypeName = new List<string>();
 
             switch (activityTypeName.ToLower())
             {
                 case "active":
                     activity = "Activated";
-                    logActivityTypeName = LogActivityTypeConstants.LOGIN_ENABLED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.LOGIN_ENABLED);
+                    logActivityTypeName.Add(LogActivityTypeConstants.EMAIL_SENT);
                     break;
                 case "disabled":
                     activity = "Deactivated";
-                    logActivityTypeName = LogActivityTypeConstants.LOGIN_DISABLED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.LOGIN_DISABLED);
                     break;
                 case "locked":
                     activity = "Locked";
-                    logActivityTypeName = LogActivityTypeConstants.USER_LOCKED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.USER_LOCKED);
                     break;
                 case "unlocked":
                     activity = "Unlocked";
-                    logActivityTypeName = LogActivityTypeConstants.USER_UNLOCKED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.USER_UNLOCKED);
                     break;
                 case "expired":
                     activity = "Expired";
-                    logActivityTypeName = LogActivityTypeConstants.USER_EXPIRED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.USER_EXPIRED);
                     break;
                 default:
                     break;
@@ -1091,28 +1092,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 try
                 {
-                    LogActivity.WriteActivity(new ActivityDetails
+                    foreach (string logType in logActivityTypeName)
                     {
-                        LogActivityTypeName = logActivityTypeName,
-                        LogCategoryName = LogActivityCategoryType.User.ToString(),
-                        CorrelationId = defaultUserClaim.CorrelationId.ToString(),
-                        BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
-                        Message = message,
 
-                        FromUserLoginName = defaultUserClaim.LoginName,
-                        FromUserLoginId = defaultUserClaim.UserId,
-                        FromUserFirstName = defaultUserClaim.FirstName,
-                        FromUserLastName = defaultUserClaim.LastName,
-                        FromUserRealpageId = defaultUserClaim.UserRealPageGuid.ToString(),
+                        if(logType == LogActivityTypeConstants.EMAIL_SENT)
+                        {
+                            message = string.Format("Welcome Email sent to user {0} {1} by user {2} {3}.", person.FirstName, person.LastName, defaultUserClaim.FirstName, defaultUserClaim.LastName);
+                        }
 
-                        ToUserLoginId = userLoginTo.UserId,
-                        ToUserLoginName = userLoginTo.LoginName,
-                        ToUserFirstName = person.FirstName,
-                        ToUserLastName = person.LastName,
-                        ToUserRealpageId = userLoginTo.RealPageId.ToString(),
+                        LogActivity.WriteActivity(new ActivityDetails
+                        {
+                            LogActivityTypeName = logType,
+                            LogCategoryName = LogActivityCategoryType.User.ToString(),
+                            CorrelationId = defaultUserClaim.CorrelationId.ToString(),
+                            BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
+                            Message = message,
 
-                        BooksProductCode = booksProductCode
-                    });
+                            FromUserLoginName = defaultUserClaim.LoginName,
+                            FromUserLoginId = defaultUserClaim.UserId,
+                            FromUserFirstName = defaultUserClaim.FirstName,
+                            FromUserLastName = defaultUserClaim.LastName,
+                            FromUserRealpageId = defaultUserClaim.UserRealPageGuid.ToString(),
+
+                            ToUserLoginId = userLoginTo.UserId,
+                            ToUserLoginName = userLoginTo.LoginName,
+                            ToUserFirstName = person.FirstName,
+                            ToUserLastName = person.LastName,
+                            ToUserRealpageId = userLoginTo.RealPageId.ToString(),
+
+                            BooksProductCode = booksProductCode
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
