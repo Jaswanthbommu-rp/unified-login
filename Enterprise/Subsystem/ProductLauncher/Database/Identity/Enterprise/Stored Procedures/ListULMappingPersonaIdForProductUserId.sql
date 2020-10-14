@@ -27,7 +27,8 @@ BEGIN
 			INNER JOIN Person.ActivePersona AP ON AP.PartyId = PCM.PartyId
 			INNER JOIN Person.Persona p on p.PersonaId = AP.PersonaId
 			INNER JOIN Ident.UserLoginPersona ulp on p.UserLoginPersonaId = ulp.UserLoginPersonaId
-			INNER JOIN Enterprise.DataImportMapping dim on dim.PartyId = ulp.OrganizationPartyId and dim.SourceId = @CompanyId
+			INNER JOIN Enterprise.DataImportMapping dim on dim.PartyId = ulp.OrganizationPartyId 
+							AND dim.SourceId = @CompanyId AND dim.DataImportApplicationId = 2
 			INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
 			ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE())
 
