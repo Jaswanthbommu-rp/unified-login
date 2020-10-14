@@ -1094,16 +1094,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (string logType in logActivityTypeName)
                     {
-
+                        string category = LogActivityCategoryType.User.ToString();
                         if(logType == LogActivityTypeConstants.EMAIL_SENT)
                         {
                             message = string.Format("Welcome Email sent to user {0} {1} by user {2} {3}.", person.FirstName, person.LastName, defaultUserClaim.FirstName, defaultUserClaim.LastName);
+                            category = LogActivityCategoryType.Email.ToString();
                         }
 
                         LogActivity.WriteActivity(new ActivityDetails
                         {
                             LogActivityTypeName = logType,
-                            LogCategoryName = LogActivityCategoryType.User.ToString(),
+                            LogCategoryName = category,
                             CorrelationId = defaultUserClaim.CorrelationId.ToString(),
                             BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
                             Message = message,
