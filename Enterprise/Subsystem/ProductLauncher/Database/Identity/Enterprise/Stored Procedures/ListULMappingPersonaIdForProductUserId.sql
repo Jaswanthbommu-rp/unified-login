@@ -21,12 +21,15 @@ BEGIN
 	DECLARE @ContactPreference TABLE( PersonaId INT
 									, PreferredPhoneNumber VARCHAR(30))
 	INSERT INTO @ContactPreference(PersonaId,PreferredPhoneNumber)
-	SELECT AP.PersonaId AS PersonaId, ISNULL(TM.CountryCode,'') + TM.AreaCode + TM.PhoneNumber FROM 
-						Enterprise.TelecommunicationsNumber tm 
-						INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID
-						INNER JOIN Person.ActivePersona AP ON AP.PartyId = PCM.PartyId
-						INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
-						ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE());
+	SELECT AP.PersonaId AS PersonaId, ISNULL(TM.CountryCode,'') + TM.AreaCode + TM.PhoneNumber FROM	
+			Enterprise.TelecommunicationsNumber tm 
+			INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID
+			INNER JOIN Person.ActivePersona AP ON AP.PartyId = PCM.PartyId
+			INNER JOIN Person.Persona p on p.PersonaId = AP.PersonaId
+			INNER JOIN Ident.UserLoginPersona ulp on p.UserLoginPersonaId = ulp.UserLoginPersonaId
+			INNER JOIN Enterprise.DataImportMapping dim on dim.PartyId = ulp.OrganizationPartyId and dim.SourceId = @CompanyId
+			INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
+			ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE())
 
 	SELECT @SamlAttributeId = SamlAttributeId FROM Ident.SamlAttribute
 	WHERE Name = 'UserId'
