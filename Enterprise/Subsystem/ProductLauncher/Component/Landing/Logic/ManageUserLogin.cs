@@ -296,6 +296,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             DateTime fromUtcDateTime = DateTime.UtcNow;
             DateTime? thruUtcDateTime = null; // default for AccountCreationSuccessful; Unlocked; Active
             int statusTypeId = (int)MapUiStatusToDb(uiStatusTypeName);
+            bool? isNotified = null;
+            bool newUserWithFeatureDate = false;
+            bool isUserExpired = false;
+            bool newUserwithActiveStatus = false;
+            UserLoginOnly userLoginOnly = null;
+            OrganizationStatus orgStatus = new OrganizationStatus();
 
             // get NewUserRegistration activity exp time
             var newUserRegistrationActivity = GetActivities(_defaultUserClaim.OrganizationPartyId);
@@ -327,17 +333,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
-                var userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
+                userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
-
-                bool newUserWithFeatureDate = false;
-                bool isUserExpired = false;
-                bool newUserwithActiveStatus = false;
 
                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
                 {
-                    OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
+                    orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
 
                     if (orgStatus.ThruDate != null)
                     {
@@ -374,30 +376,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
                     {
                         IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
-                        bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLogin.UserRoleType, orgStatus.PartyId);
-                        string message = string.Empty;
-                        var userRepository = new UserRepository(_defaultUserClaim);
-                        var userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
-                        IProfileDetail profile = new ProfileDetail();
-                        profile.FirstName = userDetailsInfo.FirstName;
-                        profile.LastName = userDetailsInfo.LastName;
-                        profile.userLogin.LoginName = userDetailsInfo.LoginName;
-                        profile.userLogin.UserId = userDetailsInfo.UserId;
-                        profile.userLogin.RealPageId = userDetailsInfo.UserRealPageId;
-
-                        if (isNotified)
-                        {
-                            //Log Activity
-                            message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
-                            LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
-                        }
-                        else
-                        {
-                            //Log Activity
-                            message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
-                            LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
-                        }
-
+                        isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLogin.UserRoleType, orgStatus.PartyId);
                         statusTypeId = (int)UserUiStatusType.Pending;
                     }
                     else
@@ -427,6 +406,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
                 AddActivityLog(userLogin, uiStatusTypeName.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
+
+                if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly != null && (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP) && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
+                {
+                    string message = string.Empty;
+                    var userRepository = new UserRepository(_defaultUserClaim);
+                    var userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                    IProfileDetail profile = new ProfileDetail();
+                    profile.FirstName = userDetailsInfo.FirstName;
+                    profile.LastName = userDetailsInfo.LastName;
+                    profile.userLogin.LoginName = userDetailsInfo.LoginName;
+                    profile.userLogin.UserId = userDetailsInfo.UserId;
+                    profile.userLogin.RealPageId = userDetailsInfo.UserRealPageId;
+                    if (isNotified == true)
+                    {
+                        message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+                        LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                    }
+                    else if (isNotified == false)
+                    {
+                        message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+                        LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                    }
+                }
             }
 
             return true;
