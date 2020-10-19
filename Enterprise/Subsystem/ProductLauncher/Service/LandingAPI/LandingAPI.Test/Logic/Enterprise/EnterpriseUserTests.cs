@@ -40,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
         {
             _defaultUserClaim.CorrelationId = new Guid();
             _defaultUserClaim.CustomerMasterId = _BooksCompanyMasterId;
+            _defaultUserClaim.OrganizationPartyId = 1234;
 
         }
         #endregion
@@ -53,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
                 new CustomerCompanyMap()
                 {
                     CompanyInstanceId = 54321,
-                    CompanyInstanceSourceId = _RealPageId.ToString().ToUpper(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                    CompanyInstanceSourceId = _RealPageId.ToString(), Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                     CompanyInstance = new List<CompanyInstance>()
                     {
                         new CompanyInstance() {CustomerEnvironment = "Primary", IsActive = true}
@@ -65,8 +66,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
             {
                 PersonaId = _PersonaId,
                 RealPageId = _RealPageId,
-                Organization = new Organization() { Name = "Test Company" },
-                Name = "Title"
+                Organization = new Organization() { Name = "Test Company", PartyId = 1234 },
+                Name = "Title",
+                OrganizationPartyId = 1234
             };
 
             Person person = new Person()

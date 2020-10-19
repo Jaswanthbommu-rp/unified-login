@@ -16,7 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Real Page Admistrator(Super User)
 		/// </summary>
-		[Description("RealPage System Admistrator")]
+		[Description("RealPage System Administrator")]
 		SuperUser = 402,
 
 		/// <summary>

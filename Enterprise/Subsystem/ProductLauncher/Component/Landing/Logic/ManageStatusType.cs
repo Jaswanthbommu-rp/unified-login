@@ -1,19 +1,20 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	/// <summary>
-	/// Manage StatusType repository calls
-	/// </summary>
-	public class ManageStatusType : IManageStatusType
+    /// <summary>
+    /// Manage StatusType repository calls
+    /// </summary>
+    public class ManageStatusType : IManageStatusType
 	{
 		#region Private Variables
 		IStatusTypeRepository _statusTypeRepository;
@@ -53,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				{ "Get StatusType", $"Category TypeName: {CategoryTypeName}, Category name: {CategoryTypeName}"}
 			};
-			WriteToLog(LogType.Diagnostic, "GetStatusType: Begin", correlationId, logData, null);
+			WriteToLog(LogEventLevel.Debug, "GetStatusType: Begin", correlationId, logData, null);
 
 			if (string.IsNullOrWhiteSpace(CategoryTypeName))
 			{
@@ -75,13 +76,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					{ "Get StatusType", "Exception" }
 				};
-				WriteToLog(LogType.Diagnostic, "GetStatusType: Exception", correlationId, logData, exception);
+				WriteToLog(LogEventLevel.Debug, "GetStatusType: Exception", correlationId, logData, exception);
 			}
 			logData = new Dictionary<string, object>
 			{
 				{ "Get StatusType", statusTypeList }
 			};
-			WriteToLog(LogType.Diagnostic, "GetStatusType: End", correlationId, logData, null);
+			WriteToLog(LogEventLevel.Debug, "GetStatusType: End", correlationId, logData, null);
 
             statusTypeList.ToList().Find(s => s.Name.Equals("Disabled", StringComparison.OrdinalIgnoreCase)).Name = "Deactivated";
 
@@ -98,17 +99,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="logData">logData</param>
 		/// <param name="exception">exception</param>
 		/// <param name="correlationId">correlationId</param>
-		private void WriteToLog(LogType logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
+		private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				CorrelationId = correlationId.ToString(),
-				Exception = exception
-			});
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId.ToString());
+            logger.Write(logType, exception, message );
 		}
+
 		#endregion
 	}
 }

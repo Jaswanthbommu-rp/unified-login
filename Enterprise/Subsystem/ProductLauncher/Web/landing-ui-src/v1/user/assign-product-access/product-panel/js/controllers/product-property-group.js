@@ -71,7 +71,7 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
-            var excludeProducts = [18, 20, 47, 8];
+            var excludeProducts = [18, 20, 47, 8, 17];
             var productId = $scope.$parent.productId;
             if (excludeProducts.indexOf(productId) === -1) {
                 syncMgr.allPropertiesSync($scope.$parent.productId, val);
@@ -126,8 +126,7 @@
                     var initialTab = [];
                     var filteredAllTabs = allTabs.filter(function (tb) {
                         if (tb.text != "Companies") {
-                            if (tb.text == "Entities") {
-                                tb.isActive = true;
+                            if (tb.isActive === true) {
                                 initialTab.push(tb);
                             }
                             return tb;

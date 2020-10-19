@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -63,13 +64,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <param name="partyId">Author user persona id who is creating or editing user</param>
 		/// <param name="productId">Author user persona id who is creating or editing user</param>
 		/// <param name="datafilter">A datafilter used to filter the roles.</param>
+		/// <param name="accessType">Variable used for Vendor Credential product</param>
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
 		[Route("product/roles")]
 		[HttpGet]
-		public HttpResponseMessage GetRoles(long editorPersonaId, long userPersonaId, long partyId,int productId, [FromUri]RequestParameter datafilter)
+		public HttpResponseMessage GetRoles(long editorPersonaId, long userPersonaId, long partyId,int productId, [FromUri]RequestParameter datafilter, AccessType? accessType = null)
 		{
 			if (editorPersonaId == 0)
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
@@ -78,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 			ListResponse result = new ListResponse();
 
-			result = _manageProductPanel.GetProductRoles(editorPersonaId, userPersonaId, partyId, productId, datafilter);		
+			result = _manageProductPanel.GetProductRoles(editorPersonaId, userPersonaId, partyId, productId, datafilter, accessType);		
 
 
 			if (result.IsError)

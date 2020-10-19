@@ -1,23 +1,26 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-	/// <summary>
-	/// Manage User repository calls
-	/// </summary>
-	public class ManageUser : IManageUser
+    /// <summary>
+    /// Manage User repository calls
+    /// </summary>
+    public class ManageUser : IManageUser
 	{
 		IUserRepository _userRepository;
 		ICredentialRepository _credentialRepository;
@@ -411,11 +414,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
 			IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: profile.Persona[0].UserId, organizationPartyId: profile.Persona[0].Organization.PartyId);
 
-			var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, profile.Persona.First().OrganizationPartyId);
-
-			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
-			oldProfile.UserEmployeeId = (employeeId != null  && employeeId.UserEmployeeId > 0) ? employeeId.UserEmployeeId : 0;
-
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
 			if (repositoryResponse.Id > 0)
 			{
@@ -525,6 +523,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageAccountingProductAccess.ToString());
 					break;
 				case (int)ProductRightEnum.ManageAssetOptimizationProductAccess:
+				case (int)ProductRightEnum.AoAIRevenueManagement:
+				case (int)ProductRightEnum.AoAmenityOptimization:
+				case (int)ProductRightEnum.AoLeaseRentOption:
+				case (int)ProductRightEnum.AoRentControl:
+				case (int)ProductRightEnum.AoBusinessIntelligence:				
+				case (int)ProductRightEnum.AoPerformanceAnalytics:				
+				case (int)ProductRightEnum.AoInvestmentAnalytics:				
+				case (int)ProductRightEnum.AoRevenueManagement:					
+				case (int)ProductRightEnum.AoAxiometrics:				
+				case (int)ProductRightEnum.AoBenchmarking:				
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
 					break;
 				case (int)ProductRightEnum.ManageClientPortalProductAccess:
@@ -572,24 +580,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				case (int)ProductRightEnum.ManageVendorComplianceProductAccess:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManageVendorComplianceProductAccess.ToString());
 					break;
-				case (int)ProductRightEnum.AoBusinessIntelligence:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoPerformanceAnalytics:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoInvestmentAnalytics:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoRevenueManagement:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoAxiometrics:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
-				case (int)ProductRightEnum.AoBenchmarking:
-					hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
-					break;
+				
 				case (int)ProductRightEnum.ManagePortfolioManagementProductAccess:
 					hasAccess = editorRights.Contains(ProductRightEnum.ManagePortfolioManagementProductAccess.ToString());
 					break;
@@ -613,8 +604,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					break;				
                 case (int)ProductRightEnum.ManageSeniorLeadManagement:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
-                    break;
-                default:
+                    break;				
+				default:
 					hasAccess = true; // Some products will have default acess - ex UnifiedLogin
 					break;
 			}
@@ -777,16 +768,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="message">Mesage to log</param>
 		/// <param name="logData">Log data (object)</param>
 		/// <param name="exception">Exception</param>
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, new LogDetails
-			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				Exception = exception,
-
-			});
+            string correlationId = "";
+            if (_userClaim != null)
+            {
+                correlationId = (_userClaim.CorrelationId != Guid.Empty) ? _userClaim.CorrelationId.ToString() : "";
+            }
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
+            logger.Write(logType, exception, message );
 		}
 		#endregion
 	}

@@ -78,19 +78,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 				if (userProductDetails.ProductList.Any()) //TODO: remove UL product from list?
 					SaveProductBatch(repository, _userClaim.PersonaId, newUserPersonaId, _userClaim.UserRealPageGuid, userProductDetails.ProductList);
 
-				//Add EmployeeId
-				if (!string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId) || !string.IsNullOrEmpty(userProductDetails.UserProfileDetails.EmployeeId))
-				{
-					dynamic paramULP = new
-					{
-						UserLoginId = userId,
-						userProductDetails.UserProfileDetails.OrganizationPartyId
-					};
-
-					var userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona , paramULP);
-
-					var sEmployeeResult = repository.GetOne<dynamic>(StoredProcNameConstants.SP_CreateEmployeeId, new { userLoginPersonaList[0].UserLoginPersonaId , userProductDetails.UserProfileDetails.EmployeeId });
-				}
 				repository.UnitOfWork.Commit();
 
 				return newUserRealPageId;
@@ -133,6 +120,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 			}
 
 			return usersDataList;
+		}
+
+		/// <summary>
+		/// Get/List Users Product Details Login
+		/// </summary>
+		/// <param name="PersonaId"></param>
+		/// <returns>List of UserProductDetailAttribute</returns>
+		public IList<UserProductDetailAttribute> ListUserProductDetailsLoginByPersonaId(long PersonaId)
+		{
+			try
+			{
+				dynamic param = new
+				{
+					PersonaId,
+				};
+
+				using (var repository = GetRepository())
+				{
+					return repository.GetMany<UserProductDetailAttribute>(EnterpriseStoredProcNameConstants.SP_ListUsersProductsDetailsLoginByPersonaId, param);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
 		}
 
 		private void SaveProductBatch(IRepository repository, long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,

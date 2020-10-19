@@ -25,7 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
         /// <summary>
         /// Get the enviroment of the system
         /// </summary>
-        public static string Environment { get; } = ConfigurationManager.AppSettings["Environment"];
+        public static string Environment { get; } = ConfigurationManager.AppSettings["logging:environment"];
         
         /// <summary>
         /// Get API Secret
@@ -166,6 +166,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 		/// Used to store the RealPage company master company id
 		/// </summary>
 	    public static string OrgMasterId => ConfigSection["OrgMasterId"];
+
+        /// <summary>
+        /// Used to store the MQ Name
+        /// </summary>
+        public static string GetActivityMQName { get; } = ConfigurationManager.AppSettings["ActivityMQName"];
 
         #endregion
     }

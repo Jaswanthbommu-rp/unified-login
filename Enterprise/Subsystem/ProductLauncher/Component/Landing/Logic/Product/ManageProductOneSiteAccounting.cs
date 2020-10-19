@@ -1605,11 +1605,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"Updated profile successfully userPersonaId:{userPersonaId}");
 
                     // Activity Logging
-                    WriteActivityLogWithMessage(editorPersonaId, userPersonaId,"Updated User profile in Accounting");
+                    WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "Updated User profile in Financial Suite.");
                 }
                 else
                 {
-                    WriteToDiagnosticLog($"Updated User profile in Accounting failed userPersonaId:{userPersonaId}");
+                    WriteToDiagnosticLog($"Updated User profile in Financial Suite failed userPersonaId:{userPersonaId}");
                     return "Update Profile failed. " + result;
                 }                
             }
@@ -3188,6 +3188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 results.Add(new ACProperty
                 {
+					Id = loc.EntityID1,
                     PropertyId = loc.EntityID1,
                     PropertyName = loc.EntityName,
                     CompanyId = loc.CompanyID,

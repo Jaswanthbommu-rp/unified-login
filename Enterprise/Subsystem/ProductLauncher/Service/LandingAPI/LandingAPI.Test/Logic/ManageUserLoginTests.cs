@@ -43,6 +43,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private IList<UserOrganization> _userOrganizationList;
 
+        private List<OrganizationDomain> organizationDomainList;
+        private List<OrganizationType> organizationTypeList;
+
         private UserLoginOnly _userLoginOnly;
         private UserLogin _userLogin;
         
@@ -80,6 +83,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 StatusTypeId = (int)UserUiStatusType.Active,
                 Status = UserUiStatusType.Active,
                 FromDate = new DateTime(2019,1,1)
+            };
+            organizationDomainList = new List<OrganizationDomain>()
+            {
+                new OrganizationDomain()
+                {
+                    OrganizationDomainId = 1,
+                    Name = "Primary",
+                    CreateDate = new DateTime()
+                }
+            };
+            organizationTypeList = new List<OrganizationType>()
+            {
+                new OrganizationType()
+                {
+                    OrganizationTypeId = 6,
+                    Name = "Multifamily",
+                    CreateDate = new DateTime()
+                },
+                new OrganizationType()
+                {
+                    OrganizationTypeId = 14,
+                    Name = "Vendor",
+                    CreateDate = new DateTime()
+                },
+                new OrganizationType()
+                {
+                    OrganizationTypeId = 7,
+                    Name = "Other",
+                    CreateDate = new DateTime()
+                }
             };
 
             _orgStatusList = new EditableList<OrganizationStatus>() {organizationStatus};
@@ -428,6 +461,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new RoleType() {PartyRoleTypeId = 405, Name = "External User", ParentPartyRoleTypeId = 400}
             };
 
+            Organization organizationList = new Organization()
+            {
+                RealPageId = _organizationRealPageId,
+                CreateDate = DateTime.MaxValue.ToUniversalTime(),
+                Name = "RealPage Employee",
+                PartyId = 54321,
+                BooksMasterId = 2116,
+                BooksCustomerMasterId = 379,
+                OrganizationTypeId = 6,
+                OrganizationDomainId = 1,
+                organizationType = new OrganizationType()
+                {
+                    OrganizationTypeId = 6
+                }
+            };
+
             Person p = new Person() {FirstName = "First", LastName = "Last", PartyId = 1234, RealPageId = _userRealPageId};
 
             //Arrange
@@ -436,7 +485,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockRepository.Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.IsAny<object>()))
                 .Returns(roleTypes);
-            
+
+            _mockRepository
+               .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
+               .Returns(organizationTypeList);
+            _mockRepository
+               .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+               .Returns(organizationDomainList);
+            _mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+                .Returns(organizationList);
+
             //Act
             IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
             IUserOrganizationExists userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
@@ -449,6 +508,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 && userOrganizationExists.UserExistsNotAvailable == false
                 && userOrganizationExists.UserIsDisabledInPrimaryCompany == false
                 && userOrganizationExists.UserIsExternalEverywhere == false
+                && userOrganizationExists.OrgIsRealpageEmployee == true
             );
 
             RPObjectCache rpCache = new RPObjectCache();
@@ -473,6 +533,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 && userOrganizationExists.UserExistsNotAvailable == true
                 && userOrganizationExists.UserIsDisabledInPrimaryCompany == false
                 && userOrganizationExists.UserIsExternalEverywhere == false
+                 && userOrganizationExists.OrgIsRealpageEmployee == true
             );
         }
 
