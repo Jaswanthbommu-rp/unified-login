@@ -218,6 +218,10 @@
         //Contact Mechanism UsageType
         public const string SP_ListContactMechanismUsageType = "Enterprise.ListContactMechanismUsageType";
 
+        //Contact Preference
+        public const string SP_AddUpdateContactMechanismPreference = "Enterprise.AddUpdateContactMechanismPreference";
+        public const string SP_DeleteContactMechanismPreference = "Enterprise.DeleteContactMechanismPreference";
+
         //Electronic Address Contact Mechanism
         public const string SP_CreateElectronicAddress = "Person.CreateElectronicAddress";
         public const string SP_ListEmailsForPerson = "Person.ListEmailsForPerson";
@@ -275,6 +279,7 @@
         public const string SP_UpdatePropertyMappingReMap = "Enterprise.UpdatePropertyMappingReMap";
         public const string SP_AddUpdatePropertyMapping = "Enterprise.AddUpdatePropertyMapping";
 
+        public const string SP_CreatePropertyInstance = "Enterprise.CreatePropertyInstance";
         public const string SP_CreatePropertyInstanceMapping = "Enterprise.CreatePropertyInstanceMapping";
         public const string SP_AddUpdatePropertyInstanceMapping = "Enterprise.AddUpdatePropertyInstanceMapping";
         
@@ -392,6 +397,6 @@
         public const string SP_ListUsersWithCompanyId_Ver2 = "Person.ListUsersWithCompanyId_Ver2";
         public const string SP_ListUsersWithCompanyId_Ver3 = "Person.ListUsersWithCompanyId_Ver3";
         public const string SP_ListULMappingPersonaIdForProductUserId = "Enterprise.ListULMappingPersonaIdForProductUserId";
-
+        public const string SP_ListUsersProductsDetailsLoginByPersonaId = "Person.ListUsersProductDetailsLoginByPersonaId";
     }
 }

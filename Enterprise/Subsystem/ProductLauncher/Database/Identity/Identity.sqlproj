@@ -977,6 +977,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetDefaultRole.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUser.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUserEnterpriseRoles.sql" />
     <Build Include="Enterprise\Tables\PropertyInstance.sql" />
     <Build Include="Enterprise\Tables\PropertyInstanceMapping.sql" />
     <Build Include="Enterprise\PropertyInstanceType.sql" />
@@ -1014,6 +1015,12 @@
     <Build Include="Ident\Stored Procedures\GetCurrentUserStatus.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\ListRolesAssociatedWithRights_Ver02.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUserEnterpriseRoles.sql" />
+    <Build Include="Enterprise\Stored Procedures\CreatePropertyInstance.sql" />
+    <Build Include="Person\Stored Procedures\ListUsersProductDetailsLoginByPersonaId.sql" />
+    <Build Include="Enterprise\Stored Procedures\AddUpdateContactMechanismPreference.sql" />
+    <Build Include="Enterprise\Stored Procedures\DeleteContactMechanismPreference.sql" />
+    <Build Include="Enterprise\Tables\ContactMechanismPreference.sql" />
+    <Build Include="Enterprise\Tables\UnifiedLoginCache.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1135,5 +1142,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\January2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\June2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2020Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2020Release.sql" />
   </ItemGroup>
 </Project>

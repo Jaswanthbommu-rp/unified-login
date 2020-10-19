@@ -20,13 +20,6 @@
         <rp-form-input-text config="userDetails.formConfig.lastName" rp-model="userDetails.model.data.lastName">
         </rp-form-input-text>
     </div>
-    <div class="user-details-field user-details-employee-Id" ng-if="!userDetails.isExternalUser()">
-        <label for="{{::userDetails.formConfig.employeeId.id}}" class="user-details-form-label">
-            {{::"label.employeeId" | userDetailsText}}
-        </label>
-        <rp-form-input-text config="userDetails.formConfig.employeeId" rp-model="userDetails.model.data.employeeId">
-        </rp-form-input-text>
-    </div>
     <div class="user-details-field user-details-user-type">
         <label for="{{::userDetails.formConfig.userTypeId.id}}" class="user-details-form-label">
             {{::"label.userTypeId" | userDetailsText}}

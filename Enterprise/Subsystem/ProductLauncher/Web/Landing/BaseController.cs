@@ -1,7 +1,8 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ using System.Web.Routing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
-	public abstract class BaseController : Controller
+    public abstract class BaseController : Controller
 	{
 		/// <summary>
 		/// Holds default user claim related information
@@ -54,7 +55,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 		/// </summary>
 		protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
 		{
-			WriteToLog(LogType.Information, message, logData);
+			WriteToLog(LogEventLevel.Information, message, logData);
+
 		}
 
 		/// <summary>
@@ -62,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 		/// </summary>
 		protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			WriteToLog(LogType.Error, message, logData, exception);
+			WriteToLog(LogEventLevel.Error, message, logData, exception);
 		}
 
 		/// <summary>
@@ -70,22 +72,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 		/// </summary>
 		protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
 		{
-			WriteToLog(LogType.Diagnostic, message, logData);
+			WriteToLog(LogEventLevel.Debug, message, logData);
 		}
 
-		private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
 		{
-			Log.Write(logType, new LogDetails
+            string correlationId = "";
+            if (_userClaims != null)
+            {
+                correlationId = (_userClaims.CorrelationId != Guid.Empty) ? _userClaims.CorrelationId.ToString() : "";
+            }
+            var logger = Log.Logger;
+			if (logData?.Keys != null)
 			{
-				Message = message,
-				AdditionalInfo = logData,
-				ProductModule = this.GetType().ToString(),
-				UserId = _userClaims?.UserId.ToString(),
-				PmcId = _userClaims?.OrganizationPartyId.ToString(),
-				UserName = _userClaims?.LoginName,
-				Exception = exception,
-				CorrelationId = _userClaims?.CorrelationId.ToString(),
-			});
+				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+			}
+			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
+            logger.Write(logType, exception, message );
 		}
 
 		#endregion

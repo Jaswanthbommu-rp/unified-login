@@ -82,5 +82,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 		/// Organization Party Id
 		/// </summary>
 		public long OrganizationPartyId { get; set; }
+
+		/// <summary>
+		/// SendInvitationEmail
+		/// </summary>
+		public bool? SendInvitationEmail { get; set; }
 	}
 }

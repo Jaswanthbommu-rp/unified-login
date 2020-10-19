@@ -198,6 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
+            List<ProductProperty> productPropertyList = new List<ProductProperty>();
             WriteToDiagnosticLog($"ManageUnifiedLogin.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId}");
 
             try
@@ -209,7 +210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     return result;
                 }
 
-                var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+                var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
                 var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
                 WriteToDiagnosticLog($"ManageUnifiedLogin.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
@@ -223,11 +224,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else
                 {
+                    foreach (UPFMPropertyInstance upfmPropertyInstance in customerPropertyList)
+                    {
+                        var pp = ConvertUPFMPropertyInstanceToProductProperty(upfmPropertyInstance, false);
+                        productPropertyList.Add(pp);
+                    }
+
                     result = new ListResponse() // create new user
                     {
-                        Records = customerPropertyList.Cast<object>().ToList(),
-                        TotalRows = customerPropertyList.Count,
-                        RowsPerPage = customerPropertyList.Count,
+                        Records = productPropertyList.Cast<object>().ToList(),
+                        TotalRows = productPropertyList.Count,
+                        RowsPerPage = productPropertyList.Count,
                         TotalPages = 1,
                         ErrorReason = string.Empty
                     };
@@ -260,7 +267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (userPropertyIdList != null)
             {
-                var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString().ToUpper());
+                var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
                 if (booksPropertyList != null)
                 {
                     customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
@@ -764,7 +771,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
 
-                gbAllRights = GetRightsWithoutDefault(gbAllRights);
+               // gbAllRights = GetRightsWithoutDefault(gbAllRights);
 
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
@@ -884,7 +891,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
                 var gbAllRights = umr.ListRightsByRole(partyId, productIdList, productId, roleId);
 
-                gbAllRights = GetRightsWithoutDefault(gbAllRights);
+               // gbAllRights = GetRightsWithoutDefault(gbAllRights);
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
                 WriteToDiagnosticLog(
@@ -1230,19 +1237,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
 
-                foreach (var role in gbAllRoles)
-                {
-                    var itemsToRemove = role.UserRights.Where(r => (r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN" ||
-                                                                    r.Right.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS" ||
-                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS" ||
-                                                                    r.Right.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN")).ToList();
-
-                    foreach (var item in itemsToRemove)
-                    {
-                        role.UserRights.Remove(item);
-                    }
-                }
-
                 WriteToDiagnosticLog(
                     $"UserManagement - ManageUnifiedLogin.GetUserRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
 
@@ -1568,18 +1562,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (allRolesandRights != null &&
                 allRolesandRights.Count > 0)
             {
-                ////allRoles.RemoveAll(p => p.RoleName.ToUpper().Trim() == "BASIC END USER"); // Should not show up in the list as per DBA
-                ////allRoles.RemoveAll(p => p.RoleName.ToUpper().Trim() == "USER ADMINISTRATOR"); // Should not show up in the list as per DBA                
-
-                //IEnumerable<int> roleIds = allRolesandRights.Select(x => x.RoleId).Distinct();
-
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var roles = umr.ListRolesForProductsByPartyId(partyId, ulProductId, productIdList);
-
-                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
-                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
-                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
-                allRolesandRights.RemoveAll(p => p.RightName?.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
 
                 foreach (var role in roles)
                 {
@@ -1651,11 +1635,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (allRights != null &&
                 allRights.Count > 0)
             {
-
-                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
-                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
-                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
-                allRights.RemoveAll(p => p.RightName.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
 
                 IEnumerable<int> rightValueTypeIds = allRights.Select(x => x.RightValueTypeId).Distinct();
                 foreach (var rightId in rightValueTypeIds)
@@ -1820,20 +1799,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse MergeRightsWithAllRights(List<ProductRight> allRights, long roleId, long partyId)
         {
 
-            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
-            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
-            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
-            allRights.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
-
             // get assigned rights to role from DB for UnifiedLogin product
             WriteToDiagnosticLog(
                 $"UnifiedLogin - Getting assigned user roles from GB DB - GetAssignedRightsForRole with role id - {roleId}");
             List<ProductRight> rightList = GetAssignedRightsForRole(partyId, roleId);
-
-            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_ADMIN");
-            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_DASHBOARD_USERS");
-            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_USERS");
-            rightList.RemoveAll(p => p.Description.ToUpper().Trim() == "DEFAULT_SIDEMENU_ADMIN");
 
             // if a user record exists
 

@@ -62,6 +62,7 @@
             vm.propertySelect = "";
             if(bool){
                 vm.propertySelect = 'allProperties';
+                syncMgr.setAccessTypeValue($scope.productId,vm.propertySelect);
             }
         };
 
@@ -121,7 +122,7 @@
         };
 
         vm.hidePropertiesGrid = function () {
-            if($scope.$parent.productId === 16){
+            if($scope.$parent.productId === 16 ||(vm.propertySelect === undefined && $scope.$parent.productId === 8)){
                 var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
                 if(accesstype){
                     vm.propertySelect = accesstype;
@@ -199,13 +200,16 @@
             if (resp.records && resp.records.length > 0) {
                 var accesstype = syncMgr.getAccessTypeValue($scope.$parent.productId);
                 if(accesstype === "allProperties" && $scope.$parent.productId === 16){
-                    syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
                     resp.records.forEach(function (item) {
                         item.isAssigned = false;
                     });
+                    syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
+                    syncMgr.updateProductAllProperties($scope.$parent.productId, true);
+                    }
+                else{
+                    var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
                 }
-                var pdata = syncMgr.setPropertyList(resp.records, $scope.$parent.productId);
+                
                 if($scope.$parent.productId === 44){
                     vm.configEntityTypeFilters(resp.records[0].propertiesList);
                 }
@@ -267,11 +271,29 @@
                             }
                         }
                     }
-                    if (productId == "44" && item.propertiesList) {
-                        var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
-                            return prop.isAssigned === true;
-                        });
-                        item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
+                    if (productId == "44") {
+                        if(item.propertiesList){
+                            var assignedPropertiesCount = item.propertiesList.filter(function (prop) {
+                                return prop.isAssigned === true;
+                            });
+                            item.assignedProperties = assignedPropertiesCount.length + " of " + item.propertiesList.length;
+                        }
+                        if(item.groupList){
+                            var assignedGroupsCount = item.groupList.filter(function (Group) {
+                                return Group.isAssigned === true;
+                            });
+                            
+                            item.assignedGroups = assignedGroupsCount.length + " of " + item.groupList.length;
+                            item.groupList.forEach(function (group) {
+                                angular.extend(group, {
+                                    disableSelection: vm.hasViewOnlyAccess(),
+                                    radname: "Group",
+                                    productId: productId,
+                                    tabname: "EntityGroup"
+                                });
+                            });
+                        }
+                        
                     }
                 });
 

@@ -289,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string domain = "Primary";
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/v2/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}", responseMapResource);
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={organizationList[0].RealPageIdUpperCaseForBooks}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999", responsePropertyInstance);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={organizationList[0].RealPageId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999", responsePropertyInstance);
 
             _mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
@@ -307,7 +307,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.Equal(ProductEnum.OneSite.ToEnumDescription(), result[0].Source);
             Assert.Equal("1051412", result[0].CompanyInstanceSourceId);
 
-            var propertyListResult = _manageBlueBook.GetUPFMPropertyInstances(organizationList[0].RealPageIdUpperCaseForBooks);
+            var propertyListResult = _manageBlueBook.GetUPFMPropertyInstances(organizationList[0].RealPageId.ToString());
 
             Assert.True(propertyListResult.Count == 4);
 

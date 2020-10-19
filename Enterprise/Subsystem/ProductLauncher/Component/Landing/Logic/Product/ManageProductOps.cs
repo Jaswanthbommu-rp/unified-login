@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -621,12 +622,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-            IList<UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
-          
-            var employeeId = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
-            person.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
-
-
             IManageContactMechanism contactMechanismLogic = new ManageContactMechanism();
             IList<CommonAddress> contactMechansimList = contactMechanismLogic.ListContactMechanismForPerson(realPageId, null);
 
@@ -787,7 +782,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = person.FirstName,
                 MiddleName = person.MiddleName,
                 LastName = person.LastName,
-                EmployeeId = person.EmployeeId,
                 Loginname = _productUsername,
                 Password = Membership.GeneratePassword(15, 5),
                 RoleName = roleName,
@@ -926,11 +920,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var realPageId = persona.RealPageId;
                 var person = _managePerson.GetPerson(realPageId);
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-
-                IList<UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: persona.UserId, organizationPartyId: persona.Organization.PartyId);
-                var employeeId = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, persona.OrganizationPartyId);
-                person.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
-
                 IManageContactMechanism contactMechanismLogic = new ManageContactMechanism();
                 IList<CommonAddress> contactMechansimList = contactMechanismLogic.ListContactMechanismForPerson(realPageId, null);
                 // get the email address
@@ -947,15 +936,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // verify email address looks valid, will fail if not
                 userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
 
+                var userRepository = new UserRepository(_userClaims);
+                var userDetails = userRepository.GetUserDetails(personaId: persona.PersonaId);
+
                 OpsUserPatch manageUser = new OpsUserPatch()
                 {
                     FirstName = person.FirstName,
                     MiddleName = person.MiddleName,
                     LastName = person.LastName,
-                    EmployeeId = person.EmployeeId,
                     Loginname = _productUsername,
                     Email = userEmailAddress,
-                    Status = "active"
+                    Status = (userDetails.IsActive == true) ? "active" : "inactive"
                 };
 
                 //manageUser.ID = _productUserId;

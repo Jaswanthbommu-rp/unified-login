@@ -6,8 +6,10 @@ AS
     BEGIN
 
         DECLARE @NOW DATETIME= GETUTCDATE(), @UserRealPageId UNIQUEIDENTIFIER, @OrganizationRealPageId UNIQUEIDENTIFIER, @OrganizationIDPCMId INT, @UserStatus INT, @UserId BIGINT, @RoleId INT, @ContactMechanismId BIGINT, @PartyContactMechanismId BIGINT, @ContactMechanismUsageId BIGINT, @TargetProductId INT, @UserLoginPersonaId BIGINT, @RoleTypeIdTo INT, @RoleTypeIdFrom INT;
-       --User/RolesRights Declaration Block
+        
+        --User/RolesRights Declaration Block
         DECLARE @OrgRowNum INT, @PerRowNum INT, @PerPriv INT, @RoleName VARCHAR(200), @RightID INT, @ActionID INT, @Status INT, @UserActionID INT, @PersonRoleID INT, @Status_Role INT, @Status_Right INT, @VisibilityStatusId INT;
+        
         ----------------------------
         /*Create USER ROLE for all the existing organizations*/
         /*Create Basic End User for all the existing organizations*/

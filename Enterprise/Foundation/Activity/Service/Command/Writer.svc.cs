@@ -14,7 +14,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
 
             try
             {
-                Log.Information($"Starting Activity Insertion");
+                //Log.Information($"Starting Activity Insertion");
 
                 activity = (ActivityDetailMessage)mqMessage.Body;
 

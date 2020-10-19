@@ -26,6 +26,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
             app.UseIdentityServerBearerTokenAuthentication(new IdentityServerBearerTokenAuthenticationOptions
             {
                 Authority = ConfigReader.GetIssuerUri,
+                DelayLoadMetadata = true,
                 RequiredScopes = new[] { ConfigReader.GetRequiredScope },
             });
 

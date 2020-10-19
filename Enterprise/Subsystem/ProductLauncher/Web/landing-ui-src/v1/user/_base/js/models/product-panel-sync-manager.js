@@ -39,7 +39,9 @@
             s.notificationsMap={};
             s.originalPropertyListMap = {};
             s.asidePropertyMap = {};
-
+            s.asideGroupMap = {};
+            s.productGridMap = {};
+            s.productGridPaginationMap = {};
             s.productControlsList = {
                 products: []
             };
@@ -56,6 +58,7 @@
             s.presetRoleList = [];
             s.sidePanelDataList = [];
             s.asidePropertyList = [];
+            s.asideGroupList = [];
             s.canReceiveMonthlyReport = false;
             s.productAdditionalMap = [];
         };
@@ -373,6 +376,25 @@
             return s;
         };
 
+        p.getAsideGroupList = function (product) {
+            var s = this,
+                asideGroupList;
+
+            if (s.asideGroupMap['product' + product] !== undefined) {
+                asideGroupList = s.asideGroupMap['product' + product].asideGroups;
+            }
+            return asideGroupList;
+        };
+
+        p.setAsideGroupList = function (list, key) {
+            var s = this;
+            s.asideGroupList = list;
+            s.asideGroupMap['product' + key] = {
+                asideGroups: s.asideGroupList,
+            };
+            return s;
+        };
+        
         p.setOriginalPropertyList = function (list) {
             var s = this;
             s.originalPropertyList = angular.copy(list);
@@ -737,8 +759,13 @@
                         item.propertiesList.forEach(function (prop) {
                             prop.isAssigned = false;
                         });
-
+                        if(item.groupList !== undefined) {
+                            item.groupList.forEach(function (group) {
+                                group.isAssigned = false;
+                            }); 
+                        }
                         item.assignedProperties = assignedCount + " of " + item.propertiesList.length;
+                        item.assignedGroups = assignedCount + " of " + item.groupList.length;
                     }
                 }
             });
@@ -820,17 +847,27 @@
         p.updateAssignedProperties = function (productId) {
             var s = this,
                 propertyList,
-                assignedList;
+                assignedPropertiesList = [],
+                assignedGroupsList = [];
+
             propertyList = s.asidePropertyMap['product' + productId].asideProperties;
 
-            assignedList = propertyList.propertiesList.filter(function (data) {
+            assignedPropertiesList = propertyList.propertiesList.filter(function (data) {
                 return data.isAssigned === true;
             });
 
-            propertyList.isAssigned = assignedList.length > 0 ? true : false;
-            propertyList.assignedProperties = assignedList.length + " of " + propertyList.propertiesList.length;
+            if(propertyList.groupList !== undefined){
+                assignedGroupsList = propertyList.groupList.filter(function (data) {
+                    return data.isAssigned === true;
+                });
+                propertyList.assignedGroups = assignedGroupsList.length + " of " + propertyList.groupList.length;
+            }
+
+            propertyList.isAssigned = (assignedPropertiesList.length > 0 || assignedGroupsList.length > 0) ? true : false;
+            propertyList.assignedProperties = assignedPropertiesList.length + " of " + propertyList.propertiesList.length;
             return s;
         };
+
         p.setAllPropertyGroupSync = function (productId, bool) {
             var s = this,
                 propertyGroupList;
@@ -943,6 +980,38 @@
             var s = this;
             s.productGridConfigMap['product' + productId + tabName] = {
                 gridConfig: config
+            };
+        };
+
+        p.getProductGrid = function (productId, tabName) {
+            var s = this,
+                gridConfig;
+            if (s.productGridMap['product' + productId + tabName] !== undefined) {
+                gridConfig = s.productGridMap['product' + productId + tabName].gridConfig;
+            }
+            return gridConfig;
+        };
+
+        p.renderProductGridMap = function (productId, tabName, config) {
+            var s = this;
+            s.productGridMap['product' + productId + tabName] = {
+                gridConfig: config
+            };
+        };
+
+        p.getProductGridPagination = function (productId, tabName) {
+            var s = this,
+                gridPageConfig;
+            if (s.productGridPaginationMap['product' + productId + tabName] !== undefined) {
+                gridPageConfig = s.productGridPaginationMap['product' + productId + tabName].gridPageConfig;
+            }
+            return gridPageConfig;
+        };
+
+        p.renderProductGridPaginationMap = function (productId, tabName, config) {
+            var s = this;
+            s.productGridPaginationMap['product' + productId + tabName] = {
+                gridPageConfig: config
             };
         };
 
@@ -1249,6 +1318,12 @@
                     return persona.data.hasManageDepositAlternativeProductAccess;
                 case "48":
                     return persona.data.hasManageClickPayProductAccess;
+                case "50":
+                    return persona.data.hasManageSeniorLeadManagementProductAccess;
+                case "55":
+                    return persona.data.hasManageRenovationManagerProductAccess;
+                case "57":
+                    return persona.data.hasManageIntelligentBuildingProductAccess;
                 default:
                     return false;
             }
@@ -1275,6 +1350,8 @@
             s.productPresetRolesMap = {};
             s.notificationsMap = {};
             s.productAdditionalMap = [];
+            s.productGridMap = {};
+            s.productGridPaginationMap = {};
         };
 
         return new ProductDataSyncManager();

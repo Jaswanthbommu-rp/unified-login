@@ -302,7 +302,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     $"ManageProductVendorServices.GetRoles at beginning of method MapProductAccessGroupsToGB() for user with editorPersona id - {editorPersonaId}");
 
                 // Map Product roles to GB Roles
-                var gbRoles = MapProductAccessGroupsToGB(allUserAccessGroups);
+                var gbRoles = MapProductAccessGroupsToGB(allUserAccessGroups)?.OrderBy(x => x.Name).ToList();
 
                 WriteToDiagnosticLog(
                     $"ManageProductVendorServices.GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
@@ -427,10 +427,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
             // get the email address
-            string userEmailAddress = string.Empty;
             var manageElectronicAddress = new ManageElectronicAddress();
             var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
 
+            string userEmailAddress = addresses?.FirstOrDefault()?.AddressString;
 
             if (string.IsNullOrEmpty(userEmailAddress))
             {
@@ -1001,7 +1001,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             try
             {
-                WriteToDiagnosticLog("ManageProductVendorServices.GetToken - Begining of the method.");
+                WriteToDiagnosticLog("ManageProductVendorServices.GetToken - Beginning of the method.");
 
                 ObjectCache tokenCache = MemoryCache.Default;
 

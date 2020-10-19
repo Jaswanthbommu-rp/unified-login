@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RealPage.Logging.Serilog;
+using System;
 using System.Web.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
@@ -8,6 +9,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 
         protected void Application_Start(object sender, EventArgs e)
         {
+            SerilogHelpers.ConfigureSerilog("Unified Login");
+
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }
 

@@ -16,5 +16,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
     {
         public string ProductUserId { get; set; }
         public long UnifiedLoginPersonaId { get; set; }
+        public string PreferredPhoneNumber { get; set; }
     }
 }
