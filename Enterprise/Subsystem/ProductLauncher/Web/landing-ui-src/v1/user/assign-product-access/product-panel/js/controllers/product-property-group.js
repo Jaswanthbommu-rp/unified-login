@@ -50,7 +50,10 @@
         };
 
         vm.filter = function (filterBy) {
-            vm.filteredRecords = $filter("filter")(vm.dataReq.records, filterBy);
+            vm.filteredRecords = $filter("filter")(vm.dataPropReq.records, filterBy);
+            pgGridPagination.setData(vm.filteredRecords).goToPage({
+                number: 0
+            });
         };
 
         vm.radioSelectionChange = function (record) {
@@ -68,7 +71,7 @@
 
         vm.selectAllPropertyGroup = function (val) {
             logc("group recordselectall", val);
-            var excludeProducts = [18, 20, 47, 8];
+            var excludeProducts = [18, 20, 47, 8, 17];
             var productId = $scope.$parent.productId;
             if (excludeProducts.indexOf(productId) === -1) {
                 syncMgr.allPropertiesSync($scope.$parent.productId, val);
@@ -80,7 +83,7 @@
         vm.selectionChange = function (record) {
             var productId = $scope.$parent.productId;
             var excludeProducts = [20, 47];
-            if (excludeProducts.indexOf(productId) === -1) {
+            if (excludeProducts.indexOf(productId) === -1 && record !== undefined) {
                 syncMgr.groupToPropertySync(productId, record);
             }
         };
@@ -123,8 +126,7 @@
                     var initialTab = [];
                     var filteredAllTabs = allTabs.filter(function (tb) {
                         if (tb.text != "Companies") {
-                            if (tb.text == "Entities") {
-                                tb.isActive = true;
+                            if (tb.isActive === true) {
                                 initialTab.push(tb);
                             }
                             return tb;

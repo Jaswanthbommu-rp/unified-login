@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -208,7 +209,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (response.IsError) { return response; }
+            if (response.IsError) 
+            {
+                response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
+                return response; 
+            }
 
             response = GetCompanyAssetDetails(editorPersonaId, userPersonaId, includeDisabled, updateAssetNames: true);
 
@@ -228,7 +233,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse response = new ListResponse();
 
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (response.IsError) { return response; }
+            if (response.IsError) 
+            {
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                return response; 
+            }
 
             response = GetRoles(editorPersonaId, userPersonaId, assetCode);
 
@@ -927,6 +936,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // verify email address looks valid, will fail if not
                 userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
 
+                var userRepository = new UserRepository(_userClaims);
+                var userDetails = userRepository.GetUserDetails(personaId: persona.PersonaId);
+
                 OpsUserPatch manageUser = new OpsUserPatch()
                 {
                     FirstName = person.FirstName,
@@ -934,7 +946,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     LastName = person.LastName,
                     Loginname = _productUsername,
                     Email = userEmailAddress,
-                    Status = "active"
+                    Status = (userDetails.IsActive == true) ? "active" : "inactive"
                 };
 
                 //manageUser.ID = _productUserId;

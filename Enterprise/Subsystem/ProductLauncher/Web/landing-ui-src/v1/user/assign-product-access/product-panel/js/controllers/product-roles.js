@@ -30,6 +30,7 @@
             vm.allProperties = false;
             vm.showAllPropertiesSwitch = false;
             vm.propertySelect =  '';
+            vm.defaultpresetRoleId = "";
 
             genericDataErrorReason = $filter("productPanelText")("panelError.generic");
             rolesGridTransform.watch(rolesGrid);
@@ -49,14 +50,17 @@
 
             vm.personaWatch = angular.noop;
             vm.destWatch = $scope.$on("$destroy", vm.destroy);
-            vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
             vm.productSelectTypeWatch = $scope.$watch(vm.isSelectTypeConfigLoaded, vm.setSelectTypeConfig);
+            vm.activeWatch = $scope.$watch(vm.isReady, vm.loadData);
 
-            pubsub.subscribe("ppanel.assign-accessType", vm.accessTypeChange);
             pubsub.subscribe("ppanel.role-radio", vm.updateRoleRecords);
+            pubsub.subscribe("vc.accesstype-roles-radio", vm.getVCRoles);
             vm.gridAllWatch = rolesGrid.subscribe("selectAll", vm.selectionAll);
             vm.gridSelectionWatch = rolesGrid.subscribe("selectChange", vm.updateMultiSelectRoleRecords);
 
+            syncMgr.renderProductGridMap($scope.$parent.productId, "Roles", rolesGrid);
+            syncMgr.renderProductGridPaginationMap($scope.$parent.productId, "RolesPagination", roleGridPagination);
+            vm.filterData = rolesGrid.subscribe("filterBy", vm.filter.bind(vm));
             vm.updateGridWatch = pubsub.subscribe("rp.updateAllPropertiesSwitchSet",vm.updateAllPropertiesSwitch);
         };
 
@@ -66,17 +70,6 @@
 
         vm.isReady = function () {
             return productDataModel.isRoleGridActive(); //productDataModel.isActive();
-        };
-
-        vm.accessTypeChange = function (accessType) {
-            if (accessType === 'specificProperties') {
-                vm.propertySelect = 'property';
-            }
-            else {
-                vm.propertySelect = accessType;
-            }
-            vm.rpRoleSelected = vm.propertySelect;
-            vm.resetDataModel(vm.propertySelect);
         };
 
         vm.updateAllPropertiesSwitch = function(bool){
@@ -100,26 +93,23 @@
             }
         };
 
+        vm.filter = function (filterBy) {
+            var rolesData = syncMgr.getProductRolesData($scope.$parent.productId);
+            vm.filteredRecords = $filter("filter")(rolesData, filterBy);
+            roleGridPagination.setData(vm.filteredRecords).goToPage({
+                number: 0
+            });
+        };
+
         vm.resetDataModel = function (accessType) {
-            if (accessType === 'propertyGroup') {
-                syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
-            }
-            else if(accessType === 'property') {
-                syncMgr.setAllPropertyGroupSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, false);
-            }
-            else if(accessType === 'allProperties') {
-                syncMgr.allPropertiesSync($scope.$parent.productId, false);
-                syncMgr.updateProductAllProperties($scope.$parent.productId, true);
-            }
             vm.propertySelect = accessType;
-            syncMgr.setAccessTypeValue($scope.$parent.productId, accessType);
+            if($scope.$parent.productId !== 8){
+                syncMgr.setAccessTypeValue($scope.$parent.productId, accessType);
+            }
             var dependencyControlId = syncMgr.getProductDependencyControlId($scope.$parent.productId, accessType);
             if (dependencyControlId > 0) {
                 vm.loadProductControlDependencyData(dependencyControlId);
             }
-            pubsub.publish("ppanel.access-type-change", accessType);
         };
 
         vm.isSelectTypeConfigLoaded = function () {
@@ -130,18 +120,37 @@
             return security.isAllowed("viewUser") || syncMgr.isUserHasManageProductAccess($scope.$parent.productId);
         };
 
-        vm.loadData = function () {
+        vm.getVCRoles = function(accessType){
+            var vcAccessType = '';
+            if (accessType == "allproperties") {
+                vcAccessType = "Client";
+            }
+            else if (accessType == "propertygroup" || accessType == "property" || accessType == true || accessType == undefined) {
+                vcAccessType = "Property";
+            }
+            rolesGrid = syncMgr.getProductGrid($scope.$parent.productId,"Roles");
+            roleGridPagination = syncMgr.getProductGridPagination($scope.$parent.productId,"RolesPagination");
+            vm.loadData(vcAccessType);
+        };
+
+        vm.loadData = function (accessType) {
             var productId = $scope.$parent.productId;
+            accessType = (accessType == true) ? 'Property' : accessType;
             rolesGrid.busy(true);
             if (persona.isReady() && vm.isActive()) {
-                var roleData = syncMgr.getProductRolesData(productId);
+                var roleData;
+                if(productId != 16){
+                    roleData = syncMgr.getProductRolesData(productId);
+                }
+                
                 if (roleData === undefined) {
                     var params = {
                         userPersonaId: userDetailsModel.getPersonaId(),
                         editorPersonaId: persona.getId(),
                         partyId: persona.data.organization.partyId,
                         productId: productId,
-                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName()
+                        userLoginName: userDetailsModel.getLoginName() === undefined ? userLoginName : userDetailsModel.getLoginName(),
+                        accessType: accessType
                     };
 
                     vm.dataRoleReq = roleSvc.get(params, vm.setRolesData);
@@ -149,7 +158,7 @@
                 else {
                     //syncMgr.setPropertyGridActive(true);
                     vm.loadGridData(productId);
-                }
+                }              
             }
         };
 
@@ -223,6 +232,29 @@
                     vm.selectconfigs.forEach(function (item) {
                         item.configData.setOptions(vm.presetRoles);
                     });
+
+                    vm.presetRoles.forEach(function (item) {
+                        vm.isMatched = false;
+                            var assignedRoles = roleData.filter(function (role) {
+                                return role.isAssigned === true;
+                            });
+                            if(assignedRoles && assignedRoles.length === item.roleIds.length){
+                                assignedRoles.forEach(function (role) {
+                                    if(item.roleIds.indexOf(parseInt(role.id)) !== -1){
+                                        vm.isMatched = true;
+                                    }
+                                    else{
+                                        vm.isMatched = false;
+                                    }
+                                });
+
+                            }
+                            if(vm.isMatched){
+                                vm.defaultpresetRoleId = item.id;
+                            }
+                    });
+
+                    vm.roleSelected = vm.defaultpresetRoleId;
 
                 }
 
@@ -468,10 +500,12 @@
         };
 
         vm.setProductTabs = function (tabs) {
-            var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
-            tabsModel.setTabs(tabs);
-            tabsModel.setTabMenuData(tabs);
-            tabsModel.activateTab(activeTab).initActiveTab();
+            if($scope.$parent.productId != "16"){
+                var activeTab = syncMgr.getProductActiveTab($scope.$parent.productId);
+                tabsModel.setTabs(tabs);
+                tabsModel.setTabMenuData(tabs);
+                tabsModel.activateTab(activeTab).initActiveTab();
+            }
         };
 
         vm.updateRoleRecords = function (record) {

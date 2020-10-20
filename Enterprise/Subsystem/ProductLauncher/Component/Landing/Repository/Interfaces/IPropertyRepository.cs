@@ -72,5 +72,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, ProductEnum productId, long propertyInstanceId, int remove = 0);
 
+        /// <summary>
+        /// Used to insert new UPFM property instances into the database
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        RepositoryResponse InsertUPFMPropertyInstance(UPFMPropertyInstance propertyInstance);
+
     }
 }

@@ -10,7 +10,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		public string country { get; set; }
 		public string county { get; set; }
 		public string postalCode { get; set; }
-	}
+		public string latitude { get; set; }
+        public string longitude { get; set; }
+    }
 
 	public class PropertyAttributes
 	{

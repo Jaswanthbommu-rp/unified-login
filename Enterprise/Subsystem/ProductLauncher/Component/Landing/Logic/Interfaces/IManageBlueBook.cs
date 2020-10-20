@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 
@@ -112,5 +113,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="companyInstance"></param>
         /// <returns></returns>
         string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance);
+        TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, ProductEnum productSource);
+        List<Guid> GetPropertiesPerProductCenter(string companyRealPageId, ProductEnum product);
+
+        CustomerProperty GetCustomerPropertyDetails(string propertyInstanceId);
+
+        /// <summary>
+        /// Add the new UPFM property instance to books
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance);
+
+        /// <summary>
+        /// Used to acknowledge provisioning events
+        /// </summary>
+        /// <param name="productCenterEnablement"></param>
+        /// <returns></returns>
+        bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement);
     }
 }

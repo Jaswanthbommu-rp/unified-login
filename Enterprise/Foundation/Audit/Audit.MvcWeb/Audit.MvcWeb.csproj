@@ -89,10 +89,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Audit.Core\Audit.Core.csproj">
-      <Project>{6F35C5E7-05CE-48D8-8ED5-FA191F57AE46}</Project>
-      <Name>Audit.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Audit.WebApi\Audit.WebApi.csproj">
       <Project>{FFAD1EF8-C442-499B-9959-8F8D43A84515}</Project>
       <Name>Audit.WebApi</Name>

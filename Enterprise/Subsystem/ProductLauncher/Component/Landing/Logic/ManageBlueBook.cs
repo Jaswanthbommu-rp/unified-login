@@ -1,18 +1,20 @@
 ﻿using JsonApiSerializer;
 using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,8 +24,6 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -161,11 +161,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 if (!useTranslatev2)
                 {
-                    companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString().ToUpper(), source, domain);
+                    companyMap = GetTranslateFromUPFMToProduct(companyRealPageId.ToString(), source, domain);
                 }
                 else
                 {
-                    companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString().ToUpper(), source);
+                    companyMap = GetTranslateFromUPFMToProductv2(companyRealPageId.ToString(), source);
                 }
 
                 if (companyMap != null)
@@ -176,8 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (useUPFMId && companyRealPageId != Guid.Empty)
             {
-                // need to send guid in uppercase because books is case sensitive.
-                var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
+                var newCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString(), domain);
                 booksCompanyMasterId = (newCompanyMasterId != 0) ? newCompanyMasterId : booksCompanyMasterId;
             }
             
@@ -212,13 +211,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 var logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-                WriteToLog(LogType.Diagnostic, "GetCompanyMap - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetCompanyMap - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     companyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() {{"companyMap", companyMap}};
-                    WriteToLog(LogType.Diagnostic, "GetCompanyMap - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyMap - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                     _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}_{domain}", companyMap, policy);
@@ -226,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() {{"response", response}};
-                    WriteToLog(LogType.Diagnostic, "GetCompanyMap - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyMap - No info found.", logData);
 
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -252,7 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //translate/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
             string uri = $"translate/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[customerEnvironment]={domain}";
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", uri}};
-            WriteToLog(LogType.Diagnostic, $"GetTranslateFromUPFMToProduct - Getting info. {productSource}/{domain}", logData);
+            WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProduct - Getting info. {productSource}/{domain}", logData);
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"GetTranslateFromUPFMToProduct_{companyRealPageId}_{productSource}_{domain}";
@@ -264,7 +263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
                     logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}, {"uri", uri}, {"productSource", productSource}, {"domain", domain}};
-                    WriteToLog(LogType.Diagnostic, $"GetTranslateFromUPFMToProduct - Got info. {productSource}/{domain}", logData);
+                    WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProduct - Got info. {productSource}/{domain}", logData);
                     CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
                     map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
                     map.Source = productSource;
@@ -289,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //translate/v2/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
             string uri = $"translate/v2/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}";
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", uri}};
-            WriteToLog(LogType.Diagnostic, $"GetTranslateFromUPFMToProductv2 - Getting info. {productSource}", logData);
+            WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProductv2 - Getting info. {productSource}", logData);
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"GetTranslateFromUPFMToProductv2_{companyRealPageId}_{productSource}";
@@ -301,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
                     logData = new Dictionary<string, object>() {{"response", translateCompanyInstance}};
-                    WriteToLog(LogType.Diagnostic, "GetTranslateFromUPFMToProductv2 - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetTranslateFromUPFMToProductv2 - Got info.", logData);
                     CustomerCompanyMap map = new CustomerCompanyMap(){ CompanyInstance = new List<CompanyInstance>()};
                     map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
                     map.Source = productSource;
@@ -313,6 +312,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             });
 
             return booksCustomerMaster;
+        }
+
+        /// <summary>
+        /// Get all instances related to the given UPFM instance source. Filters domain automatically
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <param name="productSource"></param>
+        /// <returns></returns>
+        public TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, ProductEnum productSource)
+        {
+            //https://booksapi-stg.realpage.com/translate/v3/propertyinstance/UPFM/IB
+            //{"propertyInstanceSourceIds": ["5972c050-7072-4b3f-8b6a-e280b5e36eb0","5972c050-7072-4b3f-8b6a-e280b5e36eb0","ef1fad66-b1f6-4981-8bec-e2d12279aba2"]}
+            TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
+            string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource.ToEnumDescription()}";
+                      Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
+            WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
+
+            var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {               
+                translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
+                logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
+                WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
+                return translatePropertyInstance;
+            }
+
+            return translatePropertyInstance;            
         }
 
         /// <summary>
@@ -334,7 +367,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var companyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     Dictionary<string, object> logData = new Dictionary<string, object>() {{"companyMap", companyMap}};
-                    WriteToLog(LogType.Diagnostic, "GetCompanyMasterIdForRPDMID - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyMasterIdForRPDMID - Got info.", logData);
                     return companyMap[0];
                 }
 
@@ -359,14 +392,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId.ToString()}";
                 //string uri = $"propertyinstance?filter[greenBookCares]=true&filter[companyPropertyInstanceMap.companyInstanceId]={companyInstanceId.ToString()}&sort=PropertyName&page[size]=3000";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogType.Diagnostic, "GetPropertyInstance - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetPropertyInstance - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //propertyInstance = response.Content.ReadAsJsonApiManyAsync<PropertyInstanceResource>(_contractResolver, _cache).Result;
                     propertyInstance = JsonConvert.DeserializeObject<List<PropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "propertyInstanceResource", propertyInstance } };
-                    WriteToLog(LogType.Diagnostic, "GetPropertyInstance - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetPropertyInstance - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                     _manageBlueBookCache.Set($"getPropertyInstance_{companyInstanceId.ToString()}", propertyInstance, policy);
@@ -374,7 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogType.Diagnostic, "GetPropertyInstance - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetPropertyInstance - No info found.", logData);
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -406,7 +439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId}";
                 logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-                WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstance - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetCompanyPropertyInstance - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -414,7 +447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     companyPropertyInstanceResource = JsonConvert.DeserializeObject(jsonContent, typeof(CompanyPropertyRootObject)) as CompanyPropertyRootObject;
                     companyPropertyInstanceResource.data.attributes.getCompanyPropertyInstances = companyPropertyInstanceResource.data.attributes.getCompanyPropertyInstances.OrderBy(r => r.propertyName).ToList();
                     logData = new Dictionary<string, object>() {{"companyPropertyInstanceResource", companyPropertyInstanceResource}};
-                    WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstance - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyPropertyInstance - Got info.", logData);
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                     _manageBlueBookCache.Set($"getCompanyPropertyInstance_{companyInstanceId}", companyPropertyInstanceResource, policy);
@@ -422,7 +455,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() {{"response", response}};
-                    WriteToLog(LogType.Diagnostic, "GetCompanyPropertyInstance - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyPropertyInstance - No info found.", logData);
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -454,9 +487,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var companyPropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
             {
                 //http://booksapi-qa.realpage.com/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]=F5C090FA-78AB-452F-B504-98AAFEE09121&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true
-                string uri = $"companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={companyRealPageId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true";
+                string uri = $"companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={companyRealPageId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999";
                 logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-                WriteToLog(LogType.Diagnostic, "GetUPFMPropertyInstances - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetUPFMPropertyInstances - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -478,7 +511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() {{"response", response}};
-                    WriteToLog(LogType.Diagnostic, "GetUPFMPropertyInstances - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetUPFMPropertyInstances - No info found.", logData);
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -494,6 +527,107 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return companyPropertyInstanceResource;
         }
 
+        public List<Guid> GetPropertiesPerProductCenter (string companyRealPageId, ProductEnum product)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"getPropertiesPerProductCenter_{companyRealPageId}_{product}";
+
+            var PropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
+            {
+                // http://booksapi-qa.realpage.com/propertiesperproductcenter/UPFM/F5C090FA-78AB-452F-B504-98AAFEE09121/57
+                string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{(int)product}";
+                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogEventLevel.Debug, "GetPropertiesPerProductCenter - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    List<Guid> properties = new List<Guid>();
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var propertyInstanceList = JsonConvert.DeserializeObject(jsonContent, typeof(UPFMProductPropertyInstanceMap)) as UPFMProductPropertyInstanceMap;
+                    if (propertyInstanceList != null )
+                    {
+                        foreach (var property in propertyInstanceList.data.attributes)
+                        {
+                            properties.Add(new Guid(property.propertyInstanceSourceId));
+                        }
+                    }
+                    return properties;
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogEventLevel.Debug, "GetPropertiesPerProductCenter - No info found.", logData);
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        // return an empty CompanyMapResource because it wasn't found
+                        return new List<Guid>();
+                    }
+
+                    response.EnsureSuccessStatusCode();
+                    return null;
+                }
+
+            });
+
+            return PropertyInstanceResource;
+        }
+        /// <summary>
+        /// Used to get UPFM property instances for the given UPFM company id
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        public List<Guid> GetProductPropertyInstances(int companyInstanceSourceId, string source)
+        {
+            Dictionary<string, object> logData = new Dictionary<string, object>();
+
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"getProductPropertyInstances_{companyInstanceSourceId}_{source}";
+
+            var companyPropertyInstanceResource = rpcache.GetFromCache<List<Guid>>(cacheKey, 60, () =>
+            {
+                //http://booksapi-qa.realpage.com/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]=F5C090FA-78AB-452F-B504-98AAFEE09121&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true
+                string uri = $"companypropertyinstancemap?include=propertyInstance&filter[source]={source}&filter[companyinstance.companyInstanceSourceId]={companyInstanceSourceId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999";
+                logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogEventLevel.Debug, "GetProductPropertyInstances - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    List<Guid> properties = new List<Guid>();
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var propertyInstanceList = JsonConvert.DeserializeObject(jsonContent, typeof(UPFMPropertyInstanceRootObject)) as UPFMPropertyInstanceRootObject;
+                    if (propertyInstanceList != null && propertyInstanceList.data.Any())
+                    {
+                        foreach (var property in propertyInstanceList.data)
+                        {
+                            foreach (var detail in property.attributes.propertyInstance)
+                            {
+                                properties.Add(new Guid(detail.PropertyInstanceSourceId));
+                            }
+                        }
+                    }
+                    return properties;
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogEventLevel.Debug, "GetUPFMPropertyInstances - No info found.", logData);
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        // return an empty CompanyMapResource because it wasn't found
+                        return new List<Guid>();
+                    }
+
+                    response.EnsureSuccessStatusCode();
+                    return null;
+                }
+
+            });
+
+            return companyPropertyInstanceResource;
+        }
+
         /// <summary>
         /// Used to add a new company instance
         /// </summary>
@@ -504,7 +638,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogType.Diagnostic, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
+            WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookCompanyInstance - Adding info.", logData);
 
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -533,10 +667,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance/{companyInstance.CompanyInstanceId}?modifiedBy={WebUtility.UrlEncode(companyInstance.ModifiedBy)}";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogType.Diagnostic, $"DeleteBooksGreenBookCompanyInstance - deleting instance {companyInstance.CompanyInstanceId}.", logData);
+            WriteToLog(LogEventLevel.Debug, $"DeleteBooksGreenBookCompanyInstance - deleting instance {companyInstance.CompanyInstanceId}.", logData);
             var response = _httpClient.DeleteAsync(uri).Result;
             logData = new Dictionary<string, object>() {{"StatusCode", response.StatusCode}};
-            WriteToLog(LogType.Diagnostic, $"DeleteBooksGreenBookCompanyInstance - deleted instance {companyInstance.CompanyInstanceId}.", logData);
+            WriteToLog(LogEventLevel.Debug, $"DeleteBooksGreenBookCompanyInstance - deleted instance {companyInstance.CompanyInstanceId}.", logData);
             return response.IsSuccessStatusCode;
         }
 
@@ -550,7 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"companyInstance", companyInstance}};
-            WriteToLog(LogType.Diagnostic, "UpdateBooksGreenBookCompanyInstance - Updating info.", logData);
+            WriteToLog(LogEventLevel.Debug, "UpdateBooksGreenBookCompanyInstance - Updating info.", logData);
 
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -572,6 +706,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             return "";
         }
+
+        /// <summary>
+        /// Add the new UPFM property instance to books
+        /// </summary>
+        /// <param name="propertyInstance"></param>
+        /// <returns></returns>
+        public bool AddBooksGreenBookPropertyInstanceFromProvisioning(PropertyInstance propertyInstance)
+        {
+            string uri = $"propertyinstance/{propertyInstance.PropertyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
+            
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"propertyInstance", propertyInstance}};
+            var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("\"propertyInstanceId\":0,", "");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookPropertyInstance - Adding info.", logData);
+            
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Put,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "AddBooksGreenBookPropertyInstance - Added info successfully.");
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() {{"response", response}};
+            WriteToLog(LogEventLevel.Error, "AddBooksGreenBookPropertyInstance - Failed to add info.", logData);
+            
+            return false;
+        }
+
+        /// <summary>
+        /// Used to acknowledge provisioning events
+        /// </summary>
+        /// <param name="productCenterEnablement"></param>
+        /// <returns></returns>
+        public bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement)
+        {
+            string uri = $"productcenterenablement/enable";
+            
+            Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}, {"productCenterEnablement", productCenterEnablement}};
+            var jsonToSave = JsonConvert.SerializeObject(productCenterEnablement, new JsonApiSerializerSettings()).Replace("\"details\"", "\"productCenterEnablement\"");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "AcknowledgeProvisioningEvent - Adding info.", logData);
+            
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "AcknowledgeProvisioningEvent - Added info successfully.");
+                //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                return true;
+            }
+            
+            logData = new Dictionary<string, object>() {{"response", response}};
+            WriteToLog(LogEventLevel.Error, "AcknowledgeProvisioningEvent - Failed to add info.", logData);
+
+            return true;
+        }
+
 
         /// <summary>
         /// Used to get a list of company id's for the given company list
@@ -628,7 +831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             companyInstance = _manageBlueBookCache[$"getCompanysByCompIds_{booksCompanyMasterHash}"] as List<Company>;
             if (companyInstance == null)
             {
-                int splitSize = (int) (booksCompanyMasterList.Count * .2);
+                int splitSize = (int) (booksCompanyMasterList.Count * .08);
                 if (splitSize == 0)
                 {
                     splitSize = 10;
@@ -636,7 +839,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var splitCompanyList = SplitList<UnifiedLoginCompany>(booksCompanyMasterList, splitSize);
                 ConcurrentBag<Company> result = new ConcurrentBag<Company>();
-                Parallel.ForEach(splitCompanyList, new ParallelOptions {MaxDegreeOfParallelism = 5}, companyList => { GetBooksCompanyDetails(companyList).ForEach(x => result.Add(x)); });
+                Parallel.ForEach(splitCompanyList, new ParallelOptions {MaxDegreeOfParallelism = 5}, companyList => { GetBooksCompanyDetails(_defaultUserClaim, companyList).ForEach(x => result.Add(x)); });
 
                 companyInstance = result.ToList();
                 if (companyInstance.Count > 0)
@@ -653,9 +856,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Used to get company details for the given company list
         /// </summary>
+        /// <param name="userClaim"></param>
         /// <param name="companyList"></param>
         /// <returns></returns>
-        private List<Company> GetBooksCompanyDetails(List<UnifiedLoginCompany> companyList)
+        private List<Company> GetBooksCompanyDetails(DefaultUserClaim userClaim, List<UnifiedLoginCompany> companyList)
         {
             string booksCompanyMasterIds = GetCompanyIds(companyList);
 
@@ -663,18 +867,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"customercompany?filter[customerCompanyId]=in:{booksCompanyMasterIds}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999";
 
             var logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-            WriteToLog(LogType.Diagnostic, $"GetCompanyListByCompIds - Getting info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData);
+            WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Getting info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 companyInstance = JsonConvert.DeserializeObject<List<Company>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() {{"CompanyInstance", companyInstance}};
-                WriteToLog(LogType.Diagnostic, $"GetCompanyListByCompIds - Got info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData);
+                WriteToLog(LogEventLevel.Debug, $"GetCompanyListByCompIds - Got info - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
                 return companyInstance;
             }
 
             logData = new Dictionary<string, object>() {{"response", response}};
-            WriteToLog(LogType.Diagnostic, "GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData);
+            WriteToLog(LogEventLevel.Debug, "GetCompanyListByCompIds - No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}", logData, correlationId: userClaim.CorrelationId.ToString());
 
             return companyInstance;
         }
@@ -691,8 +895,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             CustomerCompany companyInstance = new CustomerCompany();
             if (useUPFMId && companyRealPageId != Guid.Empty)
             {
-                // need to send guid in uppercase because books is case sensitive.
-                var currentCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString().ToUpper(), domain);
+                var currentCompanyMasterId = GetCompanyMasterIdForRPDMID(companyRealPageId.ToString(), domain);
                 booksCompanyMasterId = (currentCompanyMasterId != 0) ? currentCompanyMasterId : booksCompanyMasterId;
             }
 
@@ -706,19 +909,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string uri = $"customercompany/{booksCompanyMasterId}";
 
                 Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-                WriteToLog(LogType.Diagnostic, "GetCompanyCustomerInfo - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetCompanyCustomerInfo - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                     companyInstance = JsonConvert.DeserializeObject<CustomerCompany>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() {{"CompanyInstance", companyInstance}};
-                    WriteToLog(LogType.Diagnostic, "GetCompanyCustomerInfo - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyCustomerInfo - Got info.", logData);
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() {{"response", response}};
-                    WriteToLog(LogType.Diagnostic, "GetCompanyCustomerInfo - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetCompanyCustomerInfo - No info found.", logData);
                     return null;
                 }
 
@@ -746,18 +949,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // load from api
                 string uri = $"customercompanyproperty?filter[customerCompanyId]={booksCompanyMasterId.ToString()}&filter[migrationStatus]=in:%27staged%27,%27migrated%27&sort=PropertyName&page[number]=1&page[size]=9999";
                 Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-                WriteToLog(LogType.Diagnostic, "GetVCompanyPropertyMap - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "GetVCompanyPropertyMap - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     vCompanyPropertyMap = JsonConvert.DeserializeObject<List<CustomerCompanyPropertyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() {{"vCompanyPropertyMapResource", vCompanyPropertyMap}};
-                    WriteToLog(LogType.Diagnostic, "GetVCompanyPropertyMap - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetVCompanyPropertyMap - Got info.", logData);
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() {{"response", response}};
-                    WriteToLog(LogType.Diagnostic, "GetVCompanyPropertyMap - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "GetVCompanyPropertyMap - No info found.", logData);
                     return null;
                 }
 
@@ -800,7 +1003,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 string uri = $"customerproperty?{includeFields}filter[customerCompanyId]={booksCompanyMasterId.ToString()}{filter}";
                 Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
-                WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - Getting info.", logData);
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -816,18 +1019,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }).OrderBy(p => p.Name).ToList();
 
                     logData = new Dictionary<string, object>() {{"ManageBlueBook.GetCustomerProperty", customerPropertyList}};
-                    WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - Got info.", logData);
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() {{"response", response}};
-                    WriteToLog(LogType.Diagnostic, "ManageBlueBook.GetCustomerProperty - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerProperty - No info found.", logData);
                     return null;
                 }
 
                 return productPropertyList;
             });
             return productPropertyList;
+        }
+
+        /// <summary>
+        /// Used to get property instance details
+        /// </summary>
+        /// <param name="propertyInstanceId"></param>
+        /// <returns></returns>
+        public CustomerProperty GetCustomerPropertyDetails(string propertyInstanceId)
+        {
+            if (String.IsNullOrEmpty(propertyInstanceId))
+            {
+                throw new Exception("Invalid parameter propertyInstanceId.");
+            }
+            CustomerProperty customerProperty = new CustomerProperty();
+            //List<ProductProperty> productPropertyList = new List<ProductProperty>();
+
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"getCustomerPropertyDetails_{propertyInstanceId}";
+
+            customerProperty = rpcache.GetFromCache<CustomerProperty>(cacheKey, CacheTimeSeconds, () =>
+            {
+                string uri = $"customerproperty/{propertyInstanceId}";
+                Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", _httpClient.BaseAddress + uri}};
+                WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    customerProperty = JsonConvert.DeserializeObject<CustomerProperty>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                     logData = new Dictionary<string, object>() {{"CustomerProperty", customerProperty}};
+                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - Got info.", logData);
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() {{"response", response}};
+                    WriteToLog(LogEventLevel.Debug, "ManageBlueBook.GetCustomerPropertyDetails - No info found.", logData);
+                    return null;
+                }
+
+                return customerProperty;
+            });
+            return customerProperty;
         }
 
         #region Privates
@@ -999,23 +1243,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="correlationId"></param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, string correlationId = "" )
         {
-            string correlationId = "";
             if (_defaultUserClaim != null)
             {
                 correlationId = (_defaultUserClaim.CorrelationId != Guid.Empty) ? _defaultUserClaim.CorrelationId.ToString() : "";
-
             }
-
-            Log.Write(logType, new LogDetails
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
             {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                Exception = exception,
-                CorrelationId = correlationId
-            });
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+            logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
+            logger.Write(logType, exception, message);
         }
 
         private bool GetBooleanProductSettings(string settingName)

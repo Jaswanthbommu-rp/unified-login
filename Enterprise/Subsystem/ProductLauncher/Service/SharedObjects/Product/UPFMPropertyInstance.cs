@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product
 {
@@ -25,5 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         public string CustomerPropertyId { get; set; }
 
+        public string Domain { get; set; }
+        public List<int> ProductList { get; set; }
     }
 }

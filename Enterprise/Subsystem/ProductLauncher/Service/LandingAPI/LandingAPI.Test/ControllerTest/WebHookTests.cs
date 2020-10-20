@@ -6,6 +6,7 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.WebHook;
@@ -18,8 +19,6 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
@@ -69,6 +68,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         private readonly string _mockJson_books_provisioning_upfmorder_create = "{\"id\":\"7ac983c3-bb3f-f5a6-baf1-e41b139d690b\",\"topic\":\"provisioning.upfmorder.create\",\"createdAt\":\"2020-05-19T12:59:54-05:00\",\"payload\":{\"source\":\"UPFM\",\"company\":{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"1 BUSH ST STE 900\",\"country\":\"UNITED STATES\",\"postalCode\":\"94104-4425\",\"companyName\":\"VERITAS INVESTMENTS\",\"productCenters\":[],\"customerCompanyId\":1948,\"companyInstanceSourceId\":null},\"properties\":[{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"units\":35,\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"100 BRODERICK ST\",\"country\":\"UNITED STATES\",\"postalCode\":\"94117-3158\",\"propertyName\":\"100 BRODERICK\",\"productCenters\":[{\"productCenterSourceId\":\"17\"},{\"productCenterSourceId\":\"4\"}],\"customerPropertyId\":391411,\"propertyInstanceSourceId\":null}],\"customerEnvironment\":\"Primary\"}}";
         private readonly string _mockJson_books_provisioning_upfmorder_create_Signature = "13b82334dbf47345b48737af5eb59912870b4722aa1b33da9a02cfd418876acb";
+
+        private readonly string _mockJson_books_provisioning_upfmorder_create_update = "{\"id\":\"7ac983c3-bb3f-f5a6-baf1-e41b139d690b\",\"topic\":\"provisioning.upfmorder.create\",\"createdAt\":\"2020-05-19T12:59:54-05:00\",\"payload\":{\"source\":\"UPFM\",\"company\":{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"1 BUSH ST STE 900\",\"country\":\"UNITED STATES\",\"postalCode\":\"94104-4425\",\"companyName\":\"VERITAS INVESTMENTS\",\"productCenters\":[],\"customerCompanyId\":1948,\"companyInstanceSourceId\":\""+_RealPageId+"\"},\"properties\":[{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"units\":35,\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"100 BRODERICK ST\",\"country\":\"UNITED STATES\",\"postalCode\":\"94117-3158\",\"propertyName\":\"100 BRODERICK\",\"productCenters\":[{\"productCenterSourceId\":\"17\"},{\"productCenterSourceId\":\"4\"}],\"customerPropertyId\":391411,\"propertyInstanceSourceId\":null}],\"customerEnvironment\":\"Primary\"}}";
+        private readonly string _mockJson_books_provisioning_upfmorder_create_update_Signature = "ab5d3ed246ec6a2ed01a33afc7f699e44b3e18ec7bb5b0a4fcd3dd4787370fed";
 
         private readonly string _mockJson_books_provisioning_upfmorder_create_nulldomain = "{\"id\":\"7ac983c3-bb3f-f5a6-baf1-e41b139d690b\",\"topic\":\"provisioning.upfmorder.create\",\"createdAt\":\"2020-05-19T12:59:54-05:00\",\"payload\":{\"source\":\"UPFM\",\"company\":{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"1 BUSH ST STE 900\",\"country\":\"UNITED STATES\",\"postalCode\":\"94104-4425\",\"companyName\":\"VERITAS INVESTMENTS\",\"productCenters\":[],\"customerCompanyId\":1948,\"companyInstanceSourceId\":null},\"properties\":[{\"city\":\"SAN FRANCISCO\",\"state\":\"CA\",\"units\":35,\"county\":\"SAN FRANCISCO COUNTY\",\"address\":\"100 BRODERICK ST\",\"country\":\"UNITED STATES\",\"postalCode\":\"94117-3158\",\"propertyName\":\"100 BRODERICK\",\"productCenters\":[{\"productCenterSourceId\":\"17\"},{\"productCenterSourceId\":\"4\"}],\"customerPropertyId\":391411,\"propertyInstanceSourceId\":null}],\"customerEnvironment\":null}}";
         private readonly string _mockJson_books_provisioning_upfmorder_create_nulldomain_Signature = "5bf97d010439a93a40251271779f511f2514d15cfaf809dcebdb2b377577f510";
@@ -447,6 +449,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_customercompany_deleted_null_customercompanyid);
 
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
             //Act
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
@@ -618,13 +623,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 PasswordHash = ""
             };
             UserLoginOnly userLoginOnlyNull = null;
+            
+            Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
 
             HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
             var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
             responseCustomerCompany.Content = new StringContent(jsonToSave);
+
             HttpResponseMessage responseMapResource  = new HttpResponseMessage(HttpStatusCode.OK);
             jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
             responseMapResource.Content = new StringContent(jsonToSave);
+
+            HttpResponseMessage responsePropertyDetail= new HttpResponseMessage(HttpStatusCode.OK);
+            jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
+            responsePropertyDetail.Content = new StringContent(jsonToSave);
 
             mockRepository
                 .Setup(m => m.UnitOfWork)
@@ -663,10 +675,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
                 .Returns(new RepositoryResponse {Id = 1, ErrorMessage = ""});
 
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 12345, RealPageId = propertyGuid, ErrorMessage = ""});
+
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
             //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenterenablement/enable", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
 
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
@@ -683,6 +702,116 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage response = webHookController.PostBooks(thinEvent);
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
+
+                [Fact]
+        public void Post_Books_Provisioning_UPFMOrder_Create_Update_Success()
+        {
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            Mock<IRepository> mockRepository = new Mock<IRepository>();
+            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
+            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company",  MigrationStatus = "migrated", CompanyType = _organizationTypeName };//Category = "rpup"
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() {new CustomerCompanyMap() {CompanyInstanceSourceId = "1234567", Source = "OS"}};
+
+            Guid companyRealPageId = new Guid();
+            UserLoginOnly userLoginOnly = new UserLoginOnly()
+            {
+                UserId = 3,
+                PartyId = 1,
+                LoginName = $"{customercompany.CustomerCompanyId}admin@realpage.com",
+                PasswordHash = ""
+            };
+            UserLoginOnly userLoginOnlyNull = null;
+
+            Organization organization = new Organization()
+            {
+                Name = customercompany.CompanyName,
+                RealPageId = new Guid("5C04F18A-FC9B-1234-AAAF-E26DA83CE516")
+            };
+
+            
+            Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
+
+            HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
+            responseCustomerCompany.Content = new StringContent(jsonToSave);
+
+            HttpResponseMessage responseMapResource  = new HttpResponseMessage(HttpStatusCode.OK);
+            jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
+            responseMapResource.Content = new StringContent(jsonToSave);
+
+            HttpResponseMessage responsePropertyDetail= new HttpResponseMessage(HttpStatusCode.OK);
+            jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
+            responsePropertyDetail.Content = new StringContent(jsonToSave);
+
+            mockRepository
+                .Setup(m => m.UnitOfWork)
+                .Returns(mockUnitOfWork.Object);
+
+            mockRepository
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
+                .Returns(organization);
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 0, ErrorMessage = "", RealPageId = _RealPageId});
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
+                .Returns(_organizationTypeList);
+
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
+                .Returns(_organizationDomains);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 1, ErrorMessage = ""});
+
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(_productInternalSettings);
+
+            mockRepository
+                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
+                .Returns(userLoginOnlyNull)
+                .Returns(userLoginOnly);
+
+            mockRepository
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 1, ErrorMessage = ""});
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, It.IsAny<object>()))
+                .Returns(new RepositoryResponse {Id = 12345, RealPageId = propertyGuid, ErrorMessage = ""});
+
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
+            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenterenablement/enable", new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("{ \"result\" : \"success\"}")});
+            
+            //Arrange
+            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
+            {
+                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"), Configuration = new HttpConfiguration()
+            };
+
+            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create_update);
+            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_update_Signature);
+
+            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create_update);
+
+            //Act
+            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
+            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
+        }
+
 
         [Fact]
         public void Post_Books_Provisioning_UPFMOrder_Create_NullDomain()
@@ -728,10 +857,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
+            HttpResponseMessage responsePropertyDetail= new HttpResponseMessage(HttpStatusCode.OK);
+            var jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
+            responsePropertyDetail.Content = new StringContent(jsonToSave);
+
+
             mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(_productInternalSettings);
            
+            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
+
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
             {

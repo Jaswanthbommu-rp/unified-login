@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
@@ -13,6 +11,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -402,7 +402,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Returns Product Property Groups / Regions
         /// </summary>
-        public virtual ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null)
+        public virtual ListResponse GetProductPropertyGroups(RequestParameter dataFilter, string baseUrlAndQuery = null , string tabName = null)
         {
             try
             {
@@ -1069,20 +1069,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Information, message, logData);
+            WriteToLog(LogEventLevel.Information, message, logData);
         }
 
         protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
-            WriteToLog(LogType.Error, message, logData, exception);
+            WriteToLog(LogEventLevel.Error, message, logData, exception);
         }
 
         protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
         {
-            WriteToLog(LogType.Diagnostic, message, logData);
+            WriteToLog(LogEventLevel.Debug, message, logData);
         }
 
-        private void WriteToLog(LogType logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
         {
             if (logData == null)
             {
@@ -1092,17 +1092,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var editorUserDictionary = EditorUserDetails?.ToDictionary();
             logData.AddRange(editorUserDictionary);
 
-            Log.Write(logType, new LogDetails
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
             {
-                Message = message,
-                AdditionalInfo = logData,
-                ProductModule = this.GetType().ToString(),
-                UserId = EditorUserDetails?.UserId.ToString(),
-                PmcId = EditorUserDetails?.OrganizationPartyId.ToString(),
-                UserName = EditorUserDetails?.LoginName,
-                Exception = exception,
-                CorrelationId = CorrelationId.ToString(),
-            });
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+            }
+			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", CorrelationId.ToString());
+            logger.Write(logType, exception, message );
         }
 
         #endregion

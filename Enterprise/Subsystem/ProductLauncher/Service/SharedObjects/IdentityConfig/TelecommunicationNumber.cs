@@ -43,10 +43,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
         [JsonProperty(PropertyName = "IsDeleted")]
         public bool IsDeleted { get; set; } = false;
 
-        /// <summary>
-        /// Contact Mechanism usage type Id
-        /// </summary>
-        [JsonIgnore]
+		/// <summary>
+		/// IsPreferred
+		/// </summary>
+		[JsonProperty(PropertyName = "IsPreferred")]
+		public bool IsPreferred { get; set; } = false;
+
+		/// <summary>
+		/// Contact Mechanism usage type Id
+		/// </summary>
+		[JsonIgnore]
 		public int ContactMechanismUsageTypeId { get; set; }
 
 		/// <summary>

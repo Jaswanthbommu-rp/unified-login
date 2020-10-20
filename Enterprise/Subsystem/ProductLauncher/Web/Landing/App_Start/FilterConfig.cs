@@ -1,7 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Web.Mvc;
-using RP.Enterprise.Foundation.Audit.MvcWeb.Component;
+﻿using System.Web.Mvc;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
@@ -11,8 +8,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
         {
             filters.Add(new HandleErrorAttribute());
 
-            if (Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogPerformance"]))
-                filters.Add(new TrackPerformanceAttribute()); // used for MVC API controller 
+            //if (Convert.ToBoolean(ConfigurationManager.AppSettings["ShouldLogPerformance"]))
+            //    filters.Add(new TrackPerformanceAttribute()); // used for MVC API controller 
         }
     }
 }

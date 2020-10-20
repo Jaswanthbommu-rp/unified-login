@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto
@@ -55,5 +57,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		/// AdditionalFields
 		/// </summary>
 		public Dictionary<string, string> AdditionalFields = new Dictionary<string, string>();
+
+		/// <summary>
+		/// SendInvitationEmail
+		/// </summary>
+		[JsonProperty("SendInvitationEmail", NullValueHandling = NullValueHandling.Ignore)]
+		public bool? SendInvitationEmail { get; set; }
 	}
 }

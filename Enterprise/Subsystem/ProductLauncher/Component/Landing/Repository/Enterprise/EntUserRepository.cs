@@ -135,6 +135,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 			return usersDataList;
 		}
 
+		/// <summary>
+		/// Get/List Users Product Details Login
+		/// </summary>
+		/// <param name="PersonaId"></param>
+		/// <returns>List of UserProductDetailAttribute</returns>
+		public IList<UserProductDetailAttribute> ListUserProductDetailsLoginByPersonaId(long PersonaId)
+		{
+			try
+			{
+				dynamic param = new
+				{
+					PersonaId,
+				};
+
+				using (var repository = GetRepository())
+				{
+					return repository.GetMany<UserProductDetailAttribute>(EnterpriseStoredProcNameConstants.SP_ListUsersProductsDetailsLoginByPersonaId, param);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		private void SaveProductBatch(IRepository repository, long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
 			IList<ProductDetail> userProductList)
 		{

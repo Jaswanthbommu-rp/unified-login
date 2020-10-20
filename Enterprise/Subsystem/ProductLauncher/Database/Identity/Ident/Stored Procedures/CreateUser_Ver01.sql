@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Ident].[CreateUser_Ver01] (
+﻿Create PROCEDURE [Ident].[CreateUser_Ver01] (
 	@OrganizationId int,
 	@FirstName nvarchar(200),
 	@MiddleName nvarchar(100),
@@ -38,7 +38,8 @@ BEGIN
 		@UserType nvarchar(50),
 		@UserLoginPersonaId bigint,
 		@RoleTypeIdTo int,
-		@ContactMechanismUsageTypeId int;
+		@ContactMechanismUsageTypeId int,
+		@SchemaName varchar(25);;
 
 	SELECT	@UserType = Name
 	FROM		Enterprise.RoleType
@@ -49,6 +50,17 @@ BEGIN
 					INNER JOIN Enterprise.Party P ON P.PartyId = O.PartyId
 	WHERE	P.PartyId = @OrganizationId;
 
+	SELECT	@SchemaName = ps.Value				
+	FROM	Enterprise.GlobalProductConfiguration gpc
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+	WHERE  gpc.ProductId = 3
+	AND (gpc.ThruDate IS NULL)
+	AND ( pc.ThruDate IS NULL)
+	AND ( ps.ThruDate IS NULL)
+	And PST.Name = 'RolesRightsSchemaName'
+
 	IF NOT EXISTS
 	(
 		SELECT 1
@@ -56,7 +68,7 @@ BEGIN
 		WHERE LoginName = @LoginName
 	)
 	BEGIN
-		IF(@UserType = 'RealPage System Administrator')
+		IF(@UserType = 'RealPage System Administrator') -- TODO:should be SuperUser
 		BEGIN
 			SELECT	@PersonaTypeId = PersonaTypeId
 			FROM		Person.PersonaType
@@ -141,13 +153,16 @@ BEGIN
 				@ContactMechanismID = @OrganizationIDPCMId;
 		END;
 
-		IF(@UserType IN('Regular User (No Email)', 'Regular User') AND @ThirdPartyIDP = '0')
+		IF(@UserType IN('User (No Email)', 'User') AND @ThirdPartyIDP = '0')
 		BEGIN
-			UPDATE	Ident.UserLogin
-			SET			PasswordHash = @Pwdhash,
-							PasswordSalt = @PwdSalt,
-							PasswordModifiedDate = DATEADD(YEAR, 50, GETDATE())
-			WHERE UserId = @UserId;
+			IF(@Pwdhash <> '')
+			BEGIN
+				UPDATE	Ident.UserLogin
+				SET			PasswordHash = @Pwdhash,
+								PasswordSalt = @PwdSalt,
+								PasswordModifiedDate = DATEADD(YEAR, 50, GETDATE())
+				WHERE UserId = @UserId;
+			END
 
 			UPDATE	Ident.UserLoginPersona
 			SET			StatusThruDate = DATEADD(day, 3, FromDate)
@@ -255,18 +270,48 @@ BEGIN
 			AND			R.PartyID = @OrganizationId;
 		END;
 
-		IF NOT EXISTS
-		(
-			SELECT	1
-			FROM		Enterprise.PersonaPrivilege
-			WHERE	PersonaId = @PersonaId
-			AND		RoleID = @RoleId
-		)
+		Declare @CreatedUserId INT
+		SELECT	TOP 1 @CreatedUserId = UserId
+		FROM	Ident.UserLogin u
+		join Ident.UserLoginPersona up on
+			u.UserId = up.UserLoginId
+		WHERE	LoginName LIKE '%admin@realpage.com'
+		and up.OrganizationPartyId = @OrganizationId
+
+		IF (@SchemaName = 'Enterprise')
 		BEGIN
-			EXEC Enterprise.LinkPersonaToRole
+			IF NOT EXISTS
+			(
+				SELECT	1
+				FROM		Enterprise.PersonaPrivilege
+				WHERE	PersonaId = @PersonaId
+				AND		RoleID = @RoleId
+			)
+			BEGIN
+				EXEC Enterprise.LinkPersonaToRole
 				@PersonaID = @PersonaId,
 				@RoleID = @RoleId,
+				@CreatedBy = @CreatedUserId,
+				@PersonaPrivilgeID = @PerPriv OUTPUT;			
+			END;			
+		END
+		ELSE
+		BEGIN
+			IF NOT EXISTS
+			(
+				SELECT	1
+				FROM		Security.PersonaRole
+				WHERE	PersonaId = @PersonaId
+				AND		RoleID = @RoleId
+			)
+			BEGIN
+				EXEC Security.LinkPersonaToRole
+				@PersonaID = @PersonaId,
+				@RoleID = @RoleId,
+				@CreatedBy = @CreatedUserId,
 				@PersonaPrivilgeID = @PerPriv OUTPUT;
-		END;
+			END
+		END
+		
 	END;
 END;

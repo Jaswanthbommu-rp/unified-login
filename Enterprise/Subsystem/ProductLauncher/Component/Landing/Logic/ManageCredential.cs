@@ -1,6 +1,4 @@
-﻿using RP.Enterprise.Foundation.Audit.Core.Component;
-using RP.Enterprise.Foundation.Audit.Core.Component.Enums;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -11,8 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using Serilog;
+using Serilog.Events;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {  /// <summary>
@@ -1107,13 +1109,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var additionalInfo = new Dictionary<string, object> {{"ActivityToken", setPassword.ActivityToken}};
 
-                Log.Write(LogType.Error, new LogDetails
-                {
-                    Message = "Activity Token is expired.",
-                    ProductModule = this.GetType().ToString(),
-                    UserName = setPassword.EnterpriseUserName,
-                    AdditionalInfo = additionalInfo
-                });
+                //Log.ForContext("AdditionalInfo", additionalInfo).Write(LogEventLevel.Error, "Activity Token is expired.");
+                var logger = Log.Logger;
+				logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+				logger = logger.ForContext("ProductModule", this.GetType());
+
+                logger.Write(LogEventLevel.Error, $"Activity Token is expired. setPassword.EnterpriseUserName {setPassword.EnterpriseUserName}" );
+
                 return setPasswordResponse;
             }
 
