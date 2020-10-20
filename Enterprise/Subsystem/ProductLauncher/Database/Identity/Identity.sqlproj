@@ -1015,6 +1015,7 @@
     <Build Include="Ident\Stored Procedures\GetCurrentUserStatus.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\ListRolesAssociatedWithRights_Ver02.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SetupSuperUserEnterpriseRoles.sql" />
+    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\October2020Release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
