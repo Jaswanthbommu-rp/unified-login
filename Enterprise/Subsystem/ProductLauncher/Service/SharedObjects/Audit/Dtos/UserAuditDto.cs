@@ -60,7 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         /// <summary>
         /// User Enable Access
         /// </summary>
-        [AuditLog("Active Access", LogActivityTypeConstants.UPDATE_USER, "", "{'True':'{2} {3} activated access for user {0} {1}.','False':'{2} {3} deactivated access for user {0} {1}.'}")]
+        [AuditLog("Active Access", LogActivityTypeConstants.UPDATE_USER, "", "{'True':'{2} {3} Activated user {0} {1}.','False':'{2} {3} Deactivated user {0} {1}.'}")]
         public bool? IsActive { get; set; }
     }
 }
