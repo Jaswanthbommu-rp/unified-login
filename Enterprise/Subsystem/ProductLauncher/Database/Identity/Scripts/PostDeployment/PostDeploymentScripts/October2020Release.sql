@@ -215,7 +215,7 @@ DECLARE @CreatedById bigint,
 
 SELECT @CreatedById = UserId
 FROM Ident.UserLogin
-WHERE LoginName LIKE 'RealPageAd@test.com'
+WHERE LoginName = 'RealPageAd@test.com'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup')
 BEGIN
@@ -240,7 +240,7 @@ END
 --RoleRight
 SELECT @RoleId = RoleId 
 FROM [Security].[Role]
-WHERE RoleName like 'User Administrator'
+WHERE RoleName = 'User Administrator'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId = @RightId)
 BEGIN
