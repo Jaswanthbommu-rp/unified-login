@@ -76,6 +76,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		///// </summary>
 		//public List<string> UnityRoles { get; set; }
 
+		/// <summary>
+		/// EmployeeId
+		/// </summary>
+		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
+		public string EmployeeId { get; set; }
 	}
 
 	/// <summary>
