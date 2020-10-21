@@ -5232,6 +5232,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         //update email contact mechanisim if user login name changed
+                        bool isUserContactMechanismUpdated = false;
                         if (userContactMechanismId != 0)
                         {
                             // the user already had the contact mechanism so update id
@@ -5249,6 +5250,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     repositoryResponse.ErrorMessage = "An error was encountered when updating an user login email address.";
                                     throw new Exception(repositoryResponse.ErrorMessage);
                                 }
+
+                                isUserContactMechanismUpdated = true;
                             }
                         }
                         else if (updateUserProfileEntity.NewProfile.UserTypeId != (int)UserRoleType.UserNoEmail)
@@ -5288,7 +5291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Save the notification email if it exists
-                        if (updateUserProfileEntity.NewProfile.NotificationEmail != null && (isFeatureUser || (priorNotificationEmail.ToLower() != updateUserProfileEntity.NewProfile.NotificationEmail.ToLower())) && !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.NotificationEmail))
+                        if (!isUserContactMechanismUpdated && updateUserProfileEntity.NewProfile.NotificationEmail != null && (isFeatureUser || (priorNotificationEmail.ToLower() != updateUserProfileEntity.NewProfile.NotificationEmail.ToLower())) && !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.NotificationEmail))
                         {
                             if (EmailFormatValidation.IsValidEmail(updateUserProfileEntity.NewProfile.NotificationEmail))
                             {
