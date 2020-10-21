@@ -240,7 +240,7 @@ END
 --RoleRight
 SELECT @RoleId = RoleId 
 FROM [Security].[Role]
-WHERE RoleName = 'User Administrator'
+WHERE RoleName = 'User Administrator' AND ShortName = 'SuperUser'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId = @RightId)
 BEGIN
