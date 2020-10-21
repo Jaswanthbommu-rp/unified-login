@@ -159,12 +159,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// <summary>
 		/// EmployeeId
 		/// </summary>
-		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
-		public string EmployeeId { get; set; }
-
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
 		[JsonProperty("UserEmployee", NullValueHandling = NullValueHandling.Ignore)]
 		public int UserEmployeeId { get; set; }
 	}
