@@ -414,6 +414,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
 			IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: profile.Persona[0].UserId, organizationPartyId: profile.Persona[0].Organization.PartyId);
 
+			var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, profile.Persona.First().OrganizationPartyId);
+
+			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+			oldProfile.UserEmployeeId = (employeeId != null  && employeeId.UserEmployeeId > 0) ? employeeId.UserEmployeeId : 0;
+
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
 			if (repositoryResponse.Id > 0)
 			{

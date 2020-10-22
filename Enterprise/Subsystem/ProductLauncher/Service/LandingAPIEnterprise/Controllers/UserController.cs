@@ -594,26 +594,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             });
                         }
 
-                        usersDataDtoList.Add(
-                            new UsersDataDto()
-                            {
-                                FirstName = u.FirstName,
-                                MiddleName = u.MiddleName,
-                                LastName = u.LastName,
-                                UnityRealPageUserId = u.UserRealPageId,
-                                LoginName = u.LoginName,
-                                UserEffectiveDate = u.UserEffectiveDate,
-                                UserExpirationDate = u.UserExpirationDate,
-                                UserStatus = u.Status,
-                                Email = u.Email,
-                                CustomFields = dictionaryCustomFields,
-                                UserType = u.UserType,
-                                IsExternalIdp = u.IsExternalIdp,
-                                Product = DeserializeUserProduct(u.Product ?? "")
-                            }
-                        );
-                    });
-                }
+						usersDataDtoList.Add(
+							new UsersDataDto()
+							{
+								FirstName = u.FirstName,
+								MiddleName = u.MiddleName,
+								LastName = u.LastName,
+								UnityRealPageUserId = u.UserRealPageId,
+								LoginName = u.LoginName,
+								UserEffectiveDate = u.UserEffectiveDate,
+								UserExpirationDate = u.UserExpirationDate,
+								UserStatus = u.Status,
+								Email = u.Email,
+								CustomFields = dictionaryCustomFields,
+								UserType = u.UserType,
+								IsExternalIdp = u.IsExternalIdp,
+								Product = DeserializeUserProduct(u.Product ?? ""),
+								EmployeeId = u.EmployeeId
+							}
+						);
+					});
+				}
 
                 response.Data = usersDataDtoList.Cast<object>().ToList();
                 response.Meta.CurrentPage = pageNumber;
@@ -1228,51 +1229,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
-        private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
-        {
-            var userProductDetails = new UserProductDetails
-            {
-                EditorRealPageId = _userClaims.UserRealPageGuid,
-                UserProfileDetails = new UserData
-                {
-                    UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
-                    AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
-                    MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
-                    Password = userProductDetailsDto.UserProfileDetails.Password,
-                    LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
-                    Title = userProductDetailsDto.UserProfileDetails.Title,
-                    Email = userProductDetailsDto.UserProfileDetails.Email,
-                    FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
-                    UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
-                    IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
-                    LastName = userProductDetailsDto.UserProfileDetails.LastName,
-                    OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
-                    OrganizationPartyId = _userClaims.OrganizationPartyId,
-                    Phone = userProductDetailsDto.UserProfileDetails.Phone,
-                    UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
-                    UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
-                    CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
-                    Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-                    CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
-                    SendInvitationEmail = userProductDetailsDto.UserProfileDetails.SendInvitationEmail
-                },
-                ProductList = new List<ProductDetail>()
-            };
-            if (userProductDetailsDto.ProductList != null)
-            {
-                foreach (var product in userProductDetailsDto.ProductList)
-                {
-                    userProductDetails.ProductList.Add(new ProductDetail
-                    {
-                        ProductCode = product.ProductCode,
-                        AdditionalFields = product.AdditionalFields,
-                        PropertiesAssigned = product.PropertiesAssigned,
-                        RegionsAssigned = product.RegionsAssigned,
-                        RolesAssigned = product.RolesAssigned,
-                        IsAssigned = product.IsAssigned
-                    });
-                }
-            }
+		private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
+		{
+			var userProductDetails = new UserProductDetails
+			{
+				EditorRealPageId = _userClaims.UserRealPageGuid,
+				UserProfileDetails = new UserData
+				{
+					UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
+					AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
+					MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
+					Password = userProductDetailsDto.UserProfileDetails.Password,
+					LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
+					Title = userProductDetailsDto.UserProfileDetails.Title,
+					Email = userProductDetailsDto.UserProfileDetails.Email,
+					FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
+					UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
+					IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
+					LastName = userProductDetailsDto.UserProfileDetails.LastName,
+					OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
+					OrganizationPartyId = _userClaims.OrganizationPartyId,
+					Phone = userProductDetailsDto.UserProfileDetails.Phone,
+					UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
+					UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
+					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
+					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
+					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
+					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId
+				},
+				ProductList = new List<ProductDetail>()
+			};
+			if (userProductDetailsDto.ProductList != null)
+			{
+				foreach (var product in userProductDetailsDto.ProductList)
+				{
+					userProductDetails.ProductList.Add(new ProductDetail
+					{
+						ProductCode = product.ProductCode,
+						AdditionalFields = product.AdditionalFields,
+						PropertiesAssigned = product.PropertiesAssigned,
+						RegionsAssigned = product.RegionsAssigned,
+						RolesAssigned = product.RolesAssigned,
+						IsAssigned = product.IsAssigned
+					});
+				}
+			}
 
             return userProductDetails;
         }
@@ -1917,25 +1918,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     dictionaryCustomFields.Add(c.Name, c.Value);
                 });
 
-                IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
-                {
-                    new UsersDataDto()
-                    {
-                        UserStatus = "active",
-                        UserType = "RealPage System Administrator",
-                        UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
-                        FirstName = "James",
-                        MiddleName = "X",
-                        LastName = "Jackson",
-                        IsExternalIdp = false,
-                        LoginName = "james.jackson@example.com",
-                        Email = "james.jackson@example.com",
-                        UserEffectiveDate = DateTime.Now,
-                        UserExpirationDate = DateTime.Now,
-                        CustomFields = dictionaryCustomFields,
-                        Product = UserProductSAMLDetaillist
-                    }
-                };
+				IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
+				{
+					new UsersDataDto()
+					{
+						UserStatus = "active",
+						UserType = "RealPage System Administrator",
+						UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
+						FirstName = "James",
+						MiddleName = "X",
+						LastName = "Jackson",
+						IsExternalIdp = false,
+						LoginName = "james.jackson@example.com",
+						Email = "james.jackson@example.com",
+						UserEffectiveDate = DateTime.Now,
+						UserExpirationDate = DateTime.Now,
+						CustomFields = dictionaryCustomFields,
+						Product = UserProductSAMLDetaillist,
+						EmployeeId = "2020EmployeeId"
+					}
+				};
 
                 PagedResponse response = new PagedResponse()
                 {
