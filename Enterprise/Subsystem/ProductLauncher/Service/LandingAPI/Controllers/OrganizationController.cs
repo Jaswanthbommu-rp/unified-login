@@ -905,10 +905,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null , int? blueId = null, [FromUri] RequestParameter datafilter = null)
         {
-            if( string.IsNullOrEmpty(organizationName) && domain == null && blueId == null)
-			{
+            if (string.IsNullOrEmpty(organizationName) && domain == null && blueId == null)
+            {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationName/Domain/BlueId not supplied ");
-            } 
+            }
             IDictionary<object, object> globals = new Dictionary<object, object>();
             ObjectListOutput<CompanySetup, IErrorData> output = new ObjectListOutput<CompanySetup, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
