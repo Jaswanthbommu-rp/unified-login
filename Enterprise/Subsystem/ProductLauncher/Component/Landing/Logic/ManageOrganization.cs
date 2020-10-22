@@ -612,7 +612,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		#endregion
 
 		#region OrganizationList
-        public List<CompanySetup> GetCompanyList( string organizationName, string domain, int? blueId, IDictionary<object, object> globals)
+        public List<CompanySetup> GetCompanyList( string organizationName, int domain, int? blueId, IDictionary<object, object> globals)
 		{            
             RequestParameter dataFilter = new RequestParameter();
             if (globals.ContainsKey(BaseType.RequestParameter))

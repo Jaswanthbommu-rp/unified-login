@@ -472,7 +472,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		#endregion
 
 		#region GetCompanyList
-        public List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, string domain, int? blueId, RequestParameter dataFilterSort = null)
+        public List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, RequestParameter dataFilterSort = null)
 		{
             string sortBy = string.Empty;
             string sortDirection = string.Empty;

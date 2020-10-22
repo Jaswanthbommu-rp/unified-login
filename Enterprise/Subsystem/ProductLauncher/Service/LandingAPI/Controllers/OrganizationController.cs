@@ -903,12 +903,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetCompanyList(string organizationName = null, string domain = null , int? blueId = null, [FromUri] RequestParameter datafilter = null)
+        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null , int? blueId = null, [FromUri] RequestParameter datafilter = null)
         {
-            if( string.IsNullOrEmpty(organizationName) && string.IsNullOrEmpty(domain) && blueId <= 0)
+            if( string.IsNullOrEmpty(organizationName) && domain == null && blueId == null)
 			{
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationName/Domain/BlueId not supplied ");
-            }
+            } 
             IDictionary<object, object> globals = new Dictionary<object, object>();
             ObjectListOutput<CompanySetup, IErrorData> output = new ObjectListOutput<CompanySetup, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -920,7 +920,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain, blueId, globals);
+            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, globals);
 
             int totalRecords = companyList.Count > 0 ? companyList[0].TotalRecords : 0;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;

@@ -125,7 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="blueId">blueId</param>
         /// <param name="dataFilterSort">dataFilterSort</param>
         /// <returns></returns>
-        List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, string domain, int? blueId, RequestParameter dataFilterSort = null);
+        List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, RequestParameter dataFilterSort = null);
 
         #endregion
     }

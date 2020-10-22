@@ -1,4 +1,4 @@
--- EXEC  [Enterprise].[GetCompanyList] 'real','pri',3,@RowsPerPage=3
+-- EXEC  [Enterprise].[GetCompanyList] 'All',0,null,@RowsPerPage=3
 -- Procedure	: Enterprise.GetCompanyList
 -- Purpose		: Select Company list
 -- Date			  Author				Comment
@@ -10,7 +10,7 @@
 CREATE PROCEDURE [Enterprise].[GetCompanyList] 
 (	
 	@OrganizationName		VARCHAR(300) = NULL,
-	@Domain					varchar(20) = NULL,
+	@Domain					INT = 0,
 	@BooksCustomerMasterId	VARCHAR(20) = NULL,
 	@SortColumn				VARCHAR(256) = 'OrganizationName',
 	@SortDirection			VARCHAR(4) = 'Asc',
@@ -61,7 +61,7 @@ BEGIN
 		INNER JOIN Enterprise.OrganizationType OT ON OT.OrganizationTypeId = O.OrganizationTypeId 
 		INNER JOIN Enterprise.VW_DataImportMapping D ON(O.PartyId = D.PartyId) and d.CompanyMasterId > 1
     WHERE	(@OrganizationName IS NULL OR O.Name LIKE '%' + @OrganizationName + '%')
-		AND	(@Domain IS NULL OR OD.Name LIKE '%' + @Domain + '%')
+		AND	(@Domain = 0 OR O.OrganizationDomainId = @Domain)
 		AND	(@BooksCustomerMasterId IS NULL OR D.CompanyMasterId LIKE '%' + @BooksCustomerMasterId + '%')
 
 	SELECT @sortValue =
