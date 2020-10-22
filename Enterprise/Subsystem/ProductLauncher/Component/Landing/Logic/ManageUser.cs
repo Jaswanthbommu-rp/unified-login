@@ -709,6 +709,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				IList<CustomFieldValue> customFieldValueList = manageCustomFields.GetCustomFieldsValues(organizationPartyId: _userClaim.OrganizationPartyId, userLoginPersonaId: userLoginPersonaList[0].UserLoginPersonaId, enabled: true);
 				profileDetail.CustomFields = customFieldValueList;
 
+				var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, orgPartyId);
+				profileDetail.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+
 				IManagePartyRelationship managePartyRelationship = new ManagePartyRelationship();
 				PartyRelationship partyRelationship = managePartyRelationship.GetPartyRelationship(realPageId, _userClaim.OrganizationRealPageGuid, "", "", "User Type");
 				if (partyRelationship != null)
