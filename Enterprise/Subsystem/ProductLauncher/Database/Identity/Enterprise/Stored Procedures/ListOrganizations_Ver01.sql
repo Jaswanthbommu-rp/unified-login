@@ -31,7 +31,7 @@ AS
 				) UL ON CONVERT(VARCHAR(40), UL.RealPageId) = MS.Value
          WHERE MCT.Name = 'Organization'
                AND MST.Name = 'RealPageEmployeeAccessID'
-               AND o.Name like '%'+@Filter+'%'
+               AND (o.Name like '%'+@Filter+'%' OR @Filter IS NULL)
 			   AND (P.RealPageId = @RealPageId OR @RealPageID IS NULL)
 		order by O.Name
      END;
