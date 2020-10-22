@@ -469,11 +469,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return result;
         }
 
-		#endregion
+        #endregion
 
-		#region GetCompanyList
+        #region GetCompanyList
         public List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, RequestParameter dataFilterSort = null)
-		{
+        {
             string sortBy = string.Empty;
             string sortDirection = string.Empty;
             List<CompanySetup> companylst = new List<CompanySetup>();
@@ -496,7 +496,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 SortColumn = sortBy,
                 SortDirection = sortDirection,
                 RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage,
-				PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
+                PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
             };
             using (var repository = GetRepository())
             {

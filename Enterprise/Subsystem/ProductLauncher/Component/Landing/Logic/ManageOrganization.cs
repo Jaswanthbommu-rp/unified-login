@@ -609,11 +609,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             return _organizationRepository.CreateOrganizationDomain(organizationDomain);
         }
-		#endregion
+        #endregion
 
-		#region OrganizationList
-        public List<CompanySetup> GetCompanyList( string organizationName, int domain, int? blueId, IDictionary<object, object> globals)
-		{            
+        #region OrganizationList
+        public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, IDictionary<object, object> globals)
+        {
             RequestParameter dataFilter = new RequestParameter();
             if (globals.ContainsKey(BaseType.RequestParameter))
             {

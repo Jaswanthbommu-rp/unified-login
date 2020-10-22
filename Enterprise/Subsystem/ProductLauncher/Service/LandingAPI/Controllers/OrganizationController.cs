@@ -903,7 +903,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null , int? blueId = null, [FromUri] RequestParameter datafilter = null)
+        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null, int? blueId = null, [FromUri] RequestParameter datafilter = null)
         {
             if (string.IsNullOrEmpty(organizationName) && domain == null && blueId == null)
             {
