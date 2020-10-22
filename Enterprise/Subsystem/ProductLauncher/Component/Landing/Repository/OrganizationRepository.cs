@@ -524,11 +524,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         private List<CompanySetup> GetCompanyAdressFromBooks(DefaultUserClaim _userClaim, List<CompanySetup> companyDetails)
-		{
+        {
             List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
             ManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
             foreach (var item in companyDetails)
-			{
+            {
                 compList.Add(new UnifiedLoginCompany
                 {
                     CompanyId = long.Parse(item.BooksMasterId.ToString()),
@@ -536,17 +536,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 });
             }
             IList<Company> booksCompanyDetails = _blueBook.GetCompanyListByCompIds(compList);
-            foreach(var items in companyDetails)
-			{
+            foreach (var items in companyDetails)
+            {
                 var address = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CustomerCompanyLocation;
-                if(address != null && address.Length > 0)
-				{
+                if (address != null && address.Length > 0)
+                {
                     items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
-                    items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode ;
+                    items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
                 }
-			}
+            }
             return companyDetails;
-		}
+        }
         #endregion
     }
 }
