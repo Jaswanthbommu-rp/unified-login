@@ -100,7 +100,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_userPersona = new Persona() { PersonaId = _userPersonaId, RealPageId = _userRealPageId, OrganizationPartyId = _userOrganizationPartyId, UserId = _userUserId };
 
-			_userPersona = new Persona() { PersonaId = _userPersonaId, RealPageId = _userRealPageId, OrganizationPartyId = _userOrganizationPartyId};
 			_userPersona.Organization = new Organization() { PartyId = _userOrganizationPartyId, RealPageId = _userOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
 
 			_newUserPersona = new Persona() { PersonaId = _newUserPersonaId, RealPageId = _newUserRealPageId, OrganizationPartyId = _newUserOrganizationPartyId };
