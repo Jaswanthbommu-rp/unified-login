@@ -9,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -466,6 +469,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return result;
         }
 
+		#endregion
+
+		#region GetCompanyList
+        public List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, RequestParameter dataFilterSort = null)
+		{
+            string sortBy = string.Empty;
+            string sortDirection = string.Empty;
+            List<CompanySetup> companylst = new List<CompanySetup>();
+            if (dataFilterSort != null)
+            {
+                if (dataFilterSort.SortBy != null)
+                {
+                    foreach (string SortKey in dataFilterSort.SortBy.Keys)
+                    {
+                        sortBy = SortKey;
+                        sortDirection = dataFilterSort.SortBy[SortKey];
+                    }
+                }
+            }
+            dynamic param = new
+            {
+                OrganizationName = organizationName,
+                Domain = domain,
+                BooksCustomerMasterId = blueId.ToString(),
+                SortColumn = sortBy,
+                SortDirection = sortDirection,
+                RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage,
+				PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
+            };
+            using (var repository = GetRepository())
+            {
+                companylst = repository.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup, param);
+                companylst = GetCompanyAdressFromBooks(_userClaim, companylst);
+                return companylst;
+            }
+        }
         #endregion
 
         #region private methods
@@ -483,6 +522,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return schemaName;
 
         }
+
+        private List<CompanySetup> GetCompanyAdressFromBooks(DefaultUserClaim _userClaim, List<CompanySetup> companyDetails)
+		{
+            List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
+            ManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
+            foreach (var item in companyDetails)
+			{
+                compList.Add(new UnifiedLoginCompany
+                {
+                    CompanyId = long.Parse(item.BooksMasterId.ToString()),
+                    BooksCustomerMasterId = long.Parse(item.BooksCustomerMasterId.ToString() == string.Empty ? "0" : item.BooksCustomerMasterId.ToString())
+                });
+            }
+            IList<Company> booksCompanyDetails = _blueBook.GetCompanyListByCompIds(compList);
+            foreach(var items in companyDetails)
+			{
+                var address = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CustomerCompanyLocation;
+                if(address != null && address.Length > 0)
+				{
+                    items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
+                    items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode ;
+                }
+			}
+            return companyDetails;
+		}
         #endregion
     }
 }
