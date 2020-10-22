@@ -121,11 +121,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// <summary>
 		/// EmployeeId
 		/// </summary>
-		string EmployeeId { get; set; }
-
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
 		int UserEmployeeId { get; set; }
 	}
 }
