@@ -1,4 +1,6 @@
-﻿CREATE PROCEDURE [Enterprise].[ListOrganizations_Ver01] @RealPageId UNIQUEIDENTIFIER = NULL
+﻿CREATE PROCEDURE [Enterprise].[ListOrganizations_Ver01] 
+    @RealPageId UNIQUEIDENTIFIER = NULL,
+    @Filter VARCHAR(100) = NULL
 AS
      BEGIN
          SELECT O.PartyId,
@@ -29,6 +31,7 @@ AS
 				) UL ON CONVERT(VARCHAR(40), UL.RealPageId) = MS.Value
          WHERE MCT.Name = 'Organization'
                AND MST.Name = 'RealPageEmployeeAccessID'
+               AND (o.Name like '%'+@Filter+'%' OR @Filter IS NULL)
 			   AND (P.RealPageId = @RealPageId OR @RealPageID IS NULL)
 		order by O.Name
      END;
