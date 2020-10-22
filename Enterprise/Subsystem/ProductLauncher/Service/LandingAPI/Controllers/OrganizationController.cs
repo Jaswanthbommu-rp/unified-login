@@ -889,7 +889,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #region Get Organizations
         /// <summary>
-        /// List of Organizations
+        /// Get List of Organizations
         /// </summary>
         /// <param name="organizationName">OrganizationName</param>
         /// <param name="domain">Domain</param>
