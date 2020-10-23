@@ -87,9 +87,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGENOTIFICATIONS");
 
-					AddRightFromImpersonator(identity, impersonateUserRights, userRights, "CIMPLManagePII");
-					AddRightFromImpersonator(identity, impersonateUserRights, userRights, "CIMPLManageSensitiveFinancialData");
+					// check rights when login from supporttool
 
+					if (impersonateUserRights.Any(pii => pii.Equals("CIMPLManagePII", StringComparison.OrdinalIgnoreCase)) && !userRights.Any(userpii => userpii.Equals("CIMPLManagePII", StringComparison.OrdinalIgnoreCase)))
+						AddRightFromImpersonator(identity, impersonateUserRights, userRights, "CIMPLManagePII");
+					else
+						userRights.Remove("CIMPLManagePII");
+
+					if (impersonateUserRights.Any(sf => sf.Equals("CIMPLManageSensitiveFinancialData", StringComparison.OrdinalIgnoreCase)) && !userRights.Any(usersf => usersf.Equals("CIMPLManageSensitiveFinancialData", StringComparison.OrdinalIgnoreCase)))
+						AddRightFromImpersonator(identity, impersonateUserRights, userRights, "CIMPLManageSensitiveFinancialData");
+					else
+						userRights.Remove("CIMPLManageSensitiveFinancialData");
 				}
             }
 
