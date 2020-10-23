@@ -380,6 +380,7 @@ BEGIN
 		FirstName,
 		MiddleName,
 		LastName,
+		EmployeeId,
 		Title,
 		Suffix,
 		CustomField,
@@ -409,6 +410,7 @@ BEGIN
 					p.FirstName,
 					p.MiddleName,
 					p.LastName,
+					UE.Employee as EmployeeId,
 					p.Title,
 					p.Suffix,
 					CASE
@@ -455,11 +457,13 @@ BEGIN
 					INNER JOIN Ident.IdentityProviderType ipt ON ulp.IdentityProviderTypeId = ipt.IdentityProviderTypeId
 					LEFT OUTER JOIN cteProductCount pct ON pct.PersonaId = ulp.PersonaId
 					LEFT OUTER JOIN cteCustomFields cf ON (cf.UserLoginPersonaId = ulp.UserLoginPersonaId)
+					LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId
 		WHERE		(
 								(@filterName IS NULL)
 								OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)
 								OR (CHARINDEX(@filterName, ulp.LoginName, 1) > 0)
 								OR (CHARINDEX(@filterName, cf.FieldValue, 1) > 0)
+								OR (CHARINDEX(@filterName, UE.Employee, 1) > 0)
 							)
 		AND		((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))
 		AND		((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))
@@ -472,6 +476,7 @@ BEGIN
 				FirstName,
 				MiddleName,
 				LastName,
+				EmployeeId,
 				Title,
 				Suffix,
 				CustomField,
