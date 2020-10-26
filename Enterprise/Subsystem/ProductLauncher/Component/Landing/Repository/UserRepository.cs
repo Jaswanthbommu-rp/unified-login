@@ -196,15 +196,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             Guid personRealPageId = Guid.Empty;
             long userEmailContactMechanismId = 0;
             bool profileChanged = false;
-
+            long booksCustomerMasterId = 0;
+           
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (userLoginOnly != null)
             {
                 //Get User Details before save
                 UserDetails userDetails = GetUserDetails(personaId: null, userRealPageId: userLoginOnly.RealPageId.ToString());
+                booksCustomerMasterId = userDetails.BooksCustomerMasterId;
                 //Check if ONLY user profile changed without any product changes
                 profileChanged = IsUserProfileChanged(newProfile, userDetails);
+
+              
 
                 userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(newProfile.userLogin.LoginName);
                 if (userPersonaOrganizationList.ToList().Any(i => i.OrganizationPartyId.Equals(newProfile.organization[0].PartyId)))
@@ -346,6 +350,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 aoProductsAvailableForUser = GetEditorUserAoProduct(userClaim.UserRealPageGuid, userClaim.PersonaId, organizationRealPageId);
             }
 
+            IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IRoleTypeRepository roleTypeRepository = new RoleTypeRepository();
             IList<RoleType> roleTypes = roleTypeRepository.GetRoleType(roleTypeName: "User Role", partyId: null);
             var SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
@@ -353,6 +358,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var UserNoEmailRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User (No Email)", StringComparison.OrdinalIgnoreCase));
             var rpEmployee = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("realpage employee", StringComparison.OrdinalIgnoreCase));
             var rpExternalUser = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("external user", StringComparison.OrdinalIgnoreCase));
+
+            userOrganizationExists = IsLoginNameExistsAsAdminInOtherDomain(newProfile.userLogin.LoginName, newProfile.organization[0].RealPageId, booksCustomerMasterId);
+            bool primaryOrganization = true;
+            //if org has mutil domain and user already exists in other domain and not in in this org
+            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain) && !userOrganizationExists.UserExistsInThisOrganization)
+            {
+                primaryOrganization = false;
+            }
 
             using (var repository = GetRepository())
             {
@@ -395,7 +408,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     #endregion
 
-                    if ((newProfile.UserTypeId != (int)UserRoleType.ExternalUser) && (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.ExternalUser)) && newProfile.UserTypeId != (int)UserRoleType.RealPageEmployee && (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.RealPageEmployee)))
+                    if ((newProfile.UserTypeId != (int)UserRoleType.ExternalUser) && 
+                        (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.ExternalUser)) && 
+                        (newProfile.UserTypeId != (int)UserRoleType.RealPageEmployee) && 
+                        (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.RealPageEmployee)) &&
+                        ((!userOrganizationExists.UserExistsAsAdminInOtherDomain || !userOrganizationExists.UserExistsAsRegularUserInOtherDomain) && userOrganizationExists.UserExistsInThisOrganization))
                     {
                         errorStatus.Success = false;
                         errorStatus.ErrorCode = "User.CreateUser.2";
@@ -651,14 +668,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
-                        //add to this Organization as Primary (regardless of user type)
+                        //add to this Organization as Primary (regardless of user type)                       
                         orgnanizationList = new List<OrganizationPrimary>()
                         {
                             new OrganizationPrimary()
                             {
                                 OrganizationRealPageId = organizationRealPageId,
                                 OrganizationPartyId = organizationPartyId,
-                                PrimaryOrganization = true,
+                                PrimaryOrganization = primaryOrganization,
                                 OrganizationFromDate = fromDate.Value,
                                 OrganizationThruDate = (thruDate ?? null)
                             }
@@ -750,7 +767,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     OrganizationRealPageId = organizationRealPageId,
                                     OrganizationPartyId = organizationPartyId,
-                                    PrimaryOrganization = true,
+                                    PrimaryOrganization = primaryOrganization,
                                     OrganizationFromDate = fromDate.Value,
                                     OrganizationThruDate = (thruDate ?? null)
                                 }
@@ -5681,6 +5698,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return usePropertyInstanceUnifiedAmenities == "1";
+        }
+        #endregion
+
+        #region Multi Domain User Check
+        private IUserOrganizationExists IsLoginNameExistsAsAdminInOtherDomain(string loginName, Guid organizationRealPageId, long booksMasterId)
+        {
+            IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+            //Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
+            IList<UserOrganization> userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(loginName);
+            bool isAdminUser = false;
+            bool isRegularUser = false;
+            userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
+           // userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.Name.ToLower().Replace(" ", "") == UserRoleType.RealPageEmployee.ToString().ToLower());
+
+            userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
+            userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
+            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.UserNoEmail));
+
+            isAdminUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.SuperUser));
+            isRegularUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.User));
+
+            if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
+            {
+                var orgDomains = _organizationRepository.GetOrganizationListByBooksCustomerMasterId(booksMasterId);
+                // if (orgDomains.Count > 1 && orgDomains.Any(od => od.RealPageId == organizationRealPageId))
+                if (orgDomains.Count > 1 && (isAdminUser || isRegularUser))
+                {
+                    userOrganizationExists.UserExists = false;
+                    userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
+                    userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
+                }
+            }
+
+            return userOrganizationExists;
         }
         #endregion
     }

@@ -1257,7 +1257,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Invalid parameter loginName.");
             }
-
+            bool isAdminUser = false;
+            bool isRegularUser = false;
             //Remove all leading and Trailing white-space characters
             loginName = loginName.Trim();
 
@@ -1266,14 +1267,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(organizationRealPageId), "Null realPageId.");
             }
 
+            Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
             IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
 
-            userOrganizationExists.OrgIsRealpageEmployee = (_organizationRepository.GetOrganization(realPageId: organizationRealPageId).Name.ToLower().Replace(" ","") == UserRoleType.RealPageEmployee.ToString().ToLower());
+            userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
+            userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.Name.ToLower().Replace(" ","") == UserRoleType.RealPageEmployee.ToString().ToLower());
 
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
             userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.UserNoEmail));
+
+            isAdminUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.SuperUser));
+            isRegularUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.User));
 
             if (userPersonaOrganizationList.Count > 0)
             {
@@ -1338,6 +1344,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (p != null)
                 {
                     userOrganizationExists.Person = p;
+                }
+            }
+
+            if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
+            {
+                var orgDomains = _organizationRepository.GetOrganizationListByBooksCustomerMasterId(orgDetails.BooksCustomerMasterId);
+               
+                if (orgDomains.Count > 1 && (isAdminUser || isRegularUser))
+                {
+                    userOrganizationExists.UserExists = false;
+                    userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
+                    userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
                 }
             }
 
