@@ -7,7 +7,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	/// <summary>
 	/// User Exists? User Exists in this Organization?
 	/// </summary>
-	public class UserOrganizationExists : IUserOrganizationExists
+	public class UserOrganizationExists 
 	{
 		/// <summary>
 		/// User with this LoginName Exists?

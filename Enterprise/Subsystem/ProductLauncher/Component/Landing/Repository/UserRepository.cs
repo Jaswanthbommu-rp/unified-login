@@ -350,7 +350,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 aoProductsAvailableForUser = GetEditorUserAoProduct(userClaim.UserRealPageGuid, userClaim.PersonaId, organizationRealPageId);
             }
 
-            IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+            UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IRoleTypeRepository roleTypeRepository = new RoleTypeRepository();
             IList<RoleType> roleTypes = roleTypeRepository.GetRoleType(roleTypeName: "User Role", partyId: null);
             var SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
@@ -5702,9 +5702,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #endregion
 
         #region Multi Domain User Check
-        private IUserOrganizationExists IsLoginNameExistsAsAdminInOtherDomain(string loginName, Guid organizationRealPageId, long booksMasterId)
+        private UserOrganizationExists IsLoginNameExistsAsAdminInOtherDomain(string loginName, Guid organizationRealPageId, long booksMasterId)
         {
-            IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+            UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             //Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
             IList<UserOrganization> userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(loginName);
             bool isAdminUser = false;
