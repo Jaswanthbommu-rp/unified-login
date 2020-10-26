@@ -22,7 +22,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// User with this LoginName exists in the Organization with this RealPageId
         /// </summary>
         bool UserExistsInThisOrganization { get; set; }
-
+        /// <summary>
+        /// User with this LoginName exists as RealPage System Administrator in diffrent domain 
+        /// </summary>
+        bool UserExistsAsAdminInOtherDomain { get; set; }
+        /// <summary>
+        /// User with this LoginName exists as Regular user in diffrent domain 
+        /// </summary>
+        bool UserExistsAsRegularUserInOtherDomain { get; set; }
         /// <summary>
         /// Used to indicate if the user login already used is a user type of Regular User (No Email)
         /// </summary>
