@@ -1101,6 +1101,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string CreateClientPortalContact(ClientPortalContact clientPortalContact)
         {
+            WriteToDiagnosticLog(
+                      $"ManageProductClientPortal.CreateClientPortalContact - Payload {JsonConvert.SerializeObject(clientPortalContact)}");
+
             var result = PostApi($"{_apiRoute}sobjects/Contact", clientPortalContact);
 
             if (string.IsNullOrEmpty(result))
@@ -1130,6 +1133,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string CreateClientPortalUser(long userPersonaId, ClientPortalUser clientPortalUser)
         {
+
+            WriteToDiagnosticLog(
+                      $"ManageProductClientPortal.CreateClientPortalUser - Payload {JsonConvert.SerializeObject(clientPortalUser)}");
+
             var result = PostApi($"{_apiRoute}sobjects/User", clientPortalUser);
             if (string.IsNullOrEmpty(result))
             {
@@ -1153,6 +1160,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string UpdateClientPortalUser(ClientPortalUser clientPortalUser, string productUserId, long userPersonaId)
         {
+            WriteToDiagnosticLog(
+                     $"ManageProductClientPortal.UpdateClientPortalUser - Payload {JsonConvert.SerializeObject(clientPortalUser)}");
+
             var result = PostApi($"{_apiRoute}sobjects/User/{productUserId}?_HttpMethod=PATCH", clientPortalUser);
             if (!string.IsNullOrEmpty(result))
             {
