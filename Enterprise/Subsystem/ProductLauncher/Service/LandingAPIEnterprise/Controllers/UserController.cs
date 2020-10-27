@@ -1034,6 +1034,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         }
 
+        /// <summary>
+        /// Get the user (Regular and External) with the product login details and company by LoginName
+        /// </summary>
+        /// <returns>User with SAML attributes for all companies</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get the user (Regular and External) with the product login details and company.", Type = typeof(UserProductDetailLogin))]
+        //[SwaggerResponseExamples(typeof(UserProductDetailLogin), typeof(GetUserProductsDetailsLoginExample))]
+        [Route("user/products/saml/details/login")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUserProductsDetailsLoginByLoginName()
+        {
+            try
+            {
+                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByLoginName(_userClaims.LoginName));
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
         #region Private Methods
 
 

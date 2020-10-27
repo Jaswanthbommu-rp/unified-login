@@ -446,6 +446,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 		}
 
+		public IList<UserProductDetailLogin> ListUserProductDetailsLoginByLoginName(string loginName)
+		{
+			try
+			{
+				WriteToLog(LogEventLevel.Information,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Beginning ListUserProductsSamlDetailByLoginName to the user with LoginName {loginName}");
+
+				IList<UserProductDetailLogin> userProductDetailLogins = new List<UserProductDetailLogin>();
+
+				WriteToLog(LogEventLevel.Information,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Getting the Product SAML Attributes to the user with LoginName {loginName}");
+
+				EntUserRepository entUserRepository = new EntUserRepository(_userClaims);
+				IList<UserProductDetailAttribute> userProuctDetailAttributes = entUserRepository.ListUserProductDetailsLoginByLoginName(loginName);
+
+				WriteToLog(LogEventLevel.Information,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Information received for the user with LoginName {loginName}");
+
+				userProuctDetailAttributes.ToList().ForEach(u =>
+				userProductDetailLogins.Add(new UserProductDetailLogin
+				{
+					ProductId = u.ProductId,
+					ProductCode = u.ProductCode,
+					Company = u.Company,
+					Details = JsonConvert.DeserializeObject<IList<Dictionary<string, string>>>(u.UserAttribute)
+				}));
+
+
+				return userProductDetailLogins;
+			}
+			catch (Exception ex)
+			{
+				WriteToLog(LogEventLevel.Error,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Error  {ex.Message}");
+				throw ex;
+			}
+		}
 		#region Private Methods
 		/// <summary>
 		/// Used for both Create & Update user
