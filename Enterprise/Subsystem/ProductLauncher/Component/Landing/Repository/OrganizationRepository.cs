@@ -500,11 +500,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         #endregion
 
         #region GetCompanyList
-        public List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, RequestParameter dataFilterSort = null)
-        {
-            string sortBy = string.Empty;
-            string sortDirection = string.Empty;
+        public List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null)
+        {            
+            string sortBy = "OrganizationName";
+            string sortDirection = "Asc";
+            string filterByProduct = null;
+            string filterByDomain = null;
+            string filterByType = null;
+
             List<CompanySetup> companylst = new List<CompanySetup>();
+            if (dataFilterSort != null)
+            {
+                if (dataFilterSort.FilterBy != null)
+                {
+                    foreach (string FilterKey in dataFilterSort.FilterBy.Keys)
+                    {
+                        switch (FilterKey.ToLower())
+                        {
+                            case "product":
+                                filterByProduct = dataFilterSort.FilterBy[FilterKey];
+                                break;
+                            case "domain":
+                                filterByDomain = dataFilterSort.FilterBy[FilterKey];
+                                break;
+                            case "type":
+                                filterByType = dataFilterSort.FilterBy[FilterKey];
+                                break;
+                        }
+                    }
+                }
+            }
             if (dataFilterSort != null)
             {
                 if (dataFilterSort.SortBy != null)
@@ -519,8 +544,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             dynamic param = new
             {
                 OrganizationName = organizationName,
+                OrganizationId = organizationId,
                 Domain = domain,
-                BooksCustomerMasterId = blueId.ToString(),
+                BooksCustomerMasterId = blueId,
+                FilterByProduct = filterByProduct,
+                FilterByDomain = filterByDomain,
+                FilterByType = filterByType,
                 SortColumn = sortBy,
                 SortDirection = sortDirection,
                 RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage,
@@ -570,7 +599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (address != null && address.Length > 0)
                 {
                     items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
-                    items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
+                    items.CompanyLocation = address[0];
                 }
             }
             return companyDetails;

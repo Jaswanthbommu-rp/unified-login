@@ -121,9 +121,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="organizationName">organizationName</param>
 		/// <param name="domain">domain</param>
 		/// <param name="blueId">blueId</param>
+		/// <param name="organizationId">organizationId</param>
 		/// <param name="globals">globals</param>
 		/// <returns>Company list</returns>
-		List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, IDictionary<object, object> globals);
+		List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals);
 
 	}
 }
