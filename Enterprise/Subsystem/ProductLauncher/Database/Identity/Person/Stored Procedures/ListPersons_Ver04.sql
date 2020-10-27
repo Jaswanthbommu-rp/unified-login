@@ -94,6 +94,7 @@ BEGIN
 				WHEN N'LastLogin' THEN 102
 				WHEN N'LoginName' THEN 103
 				WHEN N'Status' THEN 104
+				WHEN N'EmployeeId' THEN 105
 				ELSE 100
 			END * CASE SortDirection WHEN N'ASC' THEN 1 ELSE -1 END 
 	FROM	OPENJSON (JSON_QUERY(@SortBy, '$.sortBy'))
@@ -442,11 +443,13 @@ BEGIN
 						WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin ASC, p.FirstName + ' ' + p.LastName ASC)
 						WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName ASC, p.FirstName + ' ' + p.LastName ASC)
 						WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)
+						WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY UE.Employee ASC, p.FirstName + ' ' + p.LastName ASC)
 						WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)
 						WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY pct.ProductCount DESC, p.FirstName + ' ' + p.LastName DESC)
 						WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)
 						WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)
 						WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)
+						WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY UE.Employee DESC, p.FirstName + ' ' + p.LastName DESC)
 					END AS RowNumber
 		FROM	cteUserLogin ulp
 					INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId
