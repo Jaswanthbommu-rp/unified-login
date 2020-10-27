@@ -612,14 +612,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region OrganizationList
-        public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, IDictionary<object, object> globals)
+        public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals)
         {
             RequestParameter dataFilter = new RequestParameter();
             if (globals.ContainsKey(BaseType.RequestParameter))
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            return _organizationRepository.GetCompanyList(_defaultUserClaim, organizationName, domain, blueId, dataFilter);
+            return _organizationRepository.GetCompanyList(_defaultUserClaim, organizationName, domain, blueId, organizationId, dataFilter);
         }
         #endregion
     }
