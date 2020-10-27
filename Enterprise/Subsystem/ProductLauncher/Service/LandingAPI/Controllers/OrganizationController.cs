@@ -894,6 +894,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="organizationName">OrganizationName</param>
         /// <param name="domain">Domain</param>
         /// <param name="blueId">BlueId</param>
+        /// <param name="organizationId">organizationId</param>
         /// <param name="datafilter">datafilter</param>
         /// <returns>List of Organizations</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -903,9 +904,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null, int? blueId = null, [FromUri] RequestParameter datafilter = null)
+        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null, int? blueId = null,int? organizationId = null, [FromUri] RequestParameter datafilter = null)
         {
-            if (string.IsNullOrEmpty(organizationName) && domain == null && blueId == null)
+            if (string.IsNullOrEmpty(organizationName) && domain == null && blueId == null && organizationId == null)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationName/Domain/BlueId not supplied ");
             }
@@ -920,7 +921,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, globals);
+            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId??0, globals);
 
             int totalRecords = companyList.Count > 0 ? companyList[0].TotalRecords : 0;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
@@ -1178,8 +1179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     OrganizationType = "Multifamily",                    
                     OrganizationDomainId = 1,
                     Domain = "Primary",
-                    Products = 3,
-                    Properties = 3
+                    Products = 3
                 };
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
                 ObjectOutput<CompanySetup, IErrorData> output = new ObjectOutput<CompanySetup, IErrorData>()

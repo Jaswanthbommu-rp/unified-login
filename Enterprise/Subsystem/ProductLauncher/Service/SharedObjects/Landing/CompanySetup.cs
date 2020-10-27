@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
@@ -74,17 +75,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         [JsonProperty(PropertyName = "Products")]
         public int Products { get; set; }
 
-        /// <summary>
-        /// Products
-        /// </summary>
-        [JsonProperty(PropertyName = "Properties")]
-        public int Properties { get; set; } = 30; //TODO: Remove Hardcoded value after implementing properties count
 
-        /// <summary>
-        /// Address
+
+
+
+        /// <summary>  
+        /// CompanyLocation
         /// </summary>
-        [JsonProperty(PropertyName = "Address")]
-        public string Address { get; set; }
+        [JsonProperty(PropertyName = "CompanyLocation")]
+        public CompanyLocation CompanyLocation { get; set; }
 
         /// <summary>
 		/// Total number of records count (without any paging if the response is limited by paging)
