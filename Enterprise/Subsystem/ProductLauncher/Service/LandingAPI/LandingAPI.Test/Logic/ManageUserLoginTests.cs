@@ -463,7 +463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             Organization organizationList = new Organization()
             {
-                RealPageId = _organizationRealPageId,
+                RealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99"),
                 CreateDate = DateTime.MaxValue.ToUniversalTime(),
                 Name = "RealPage Employee",
                 PartyId = 54321,
@@ -498,7 +498,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Act
             IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
-            IUserOrganizationExists userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
+            UserOrganizationExists userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
 
 			//Assert
 			Assert.True(
