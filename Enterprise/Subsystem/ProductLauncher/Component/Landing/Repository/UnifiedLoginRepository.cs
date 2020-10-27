@@ -269,12 +269,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// List of Companies
         /// </summary>       
         /// <returns>List of Companies </returns>
-        public List<UnifiedLoginCompany> ListCompanies()
+        public List<UnifiedLoginCompany> ListCompanies(string filter = "")
         {
             using (var repository = GetRepository())
             {
                 dynamic param = new
-                {                    
+                {  
+                    Filter = filter
                 };
 
                 List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
