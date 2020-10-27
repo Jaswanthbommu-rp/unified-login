@@ -2204,6 +2204,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         ProductCode = "LS",
                         ProductId = 9,
                         Company = "JVM REALTY CORPORATION",
+                        RealPageId = new Guid("7e52666c-9737-4406-b144-ad1530ba18f0"),
+                        UserType = "ExternalUser",
                         Details = detailsProduct1
                     },
 
@@ -2212,6 +2214,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         ProductCode = "L2L",
                         ProductId = 6,
                         Company = "RP Northstar Management Demo",
+                        RealPageId = new Guid("e087788f-0765-4d00-9b8b-47663370f701"),
+                        UserType = "User",
                         Details = detailsProduct2
                     },
 
@@ -2220,6 +2224,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         ProductCode = "AB",
                         ProductId = 17,
                         Company = "RP Northstar Management Demo",
+                        RealPageId = new Guid("e087788f-0765-4d00-9b8b-47663370f701"),
+                        UserType = "User",
                         Details = detailsProduct3
                     }
                 };
