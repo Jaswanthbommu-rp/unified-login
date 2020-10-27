@@ -123,9 +123,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationName">organizationName</param>
         /// <param name="domain">domain</param>
         /// <param name="blueId">blueId</param>
+        /// <param name="organizationId">organizationId</param>
         /// <param name="dataFilterSort">dataFilterSort</param>
         /// <returns></returns>
-        List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, RequestParameter dataFilterSort = null);
+        List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null);
 
         #endregion
     }
