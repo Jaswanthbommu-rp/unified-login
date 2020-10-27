@@ -44,6 +44,7 @@ BEGIN
 			FROM UserAttributes
 			WHERE
 				UserAttributes.ProductId = p.ProductId
+				AND UserAttributes.UserLoginPersonaId = ulp.UserLoginPersonaId
 			FOR JSON AUTO, INCLUDE_NULL_VALUES
 		) AS UserAttribute
 
