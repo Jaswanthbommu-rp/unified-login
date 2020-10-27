@@ -5716,19 +5716,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
             userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.UserNoEmail));
 
-            isAdminUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.SuperUser));
-            isRegularUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.User));
-
             if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
             {
-                var orgDomains = _organizationRepository.GetOrganizationListByBooksCustomerMasterId(booksMasterId);
-                // if (orgDomains.Count > 1 && orgDomains.Any(od => od.RealPageId == organizationRealPageId))
-                if (orgDomains.Count > 1 && (isAdminUser || isRegularUser))
+                UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+                isAdminUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.SuperUser;
+                isRegularUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.User;
+
+                if (userOrganization != null && (isAdminUser || isRegularUser) && userOrganization.BooksCustomerMasterId == booksMasterId)
                 {
-                    userOrganizationExists.UserExists = false;
-                    userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
-                    userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
-                }
+                    var orgDomains = _organizationRepository.GetOrganizationListByBooksCustomerMasterId(booksMasterId);
+                   
+                    if (orgDomains.Count > 1)
+                    {
+                        userOrganizationExists.UserExists = false;
+                        userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
+                        userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
+                    }
+                }                
             }
 
             return userOrganizationExists;
