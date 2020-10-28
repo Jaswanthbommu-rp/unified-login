@@ -52,12 +52,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         IList<Organization> GetOrganizationList();
 
         /// <summary>
-        /// Used to get the Organization list by Books Customer master id
-        /// </summary>
-        /// <returns></returns>
-        IList<Organization> GetOrganizationListByBooksCustomerMasterId(long blueBookId);
-
-        /// <summary>
         /// Used to get the RealPageId of the admin user of the organization
         /// </summary>
         /// <param name="organizationRealPageId"></param>
