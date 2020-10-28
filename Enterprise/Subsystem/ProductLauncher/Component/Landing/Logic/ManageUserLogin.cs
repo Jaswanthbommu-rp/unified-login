@@ -35,7 +35,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IRoleTypeRepository _roleTypeRepository;
         private IPersonRepository _personRepository;
         private DefaultUserClaim _defaultUserClaim;
-        private static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
         #endregion
 
         #region Constructors
@@ -1252,16 +1251,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
         /// <returns>UserOrganizationExists object</returns>
-        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId)
+        public IUserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId)
         {
             if (string.IsNullOrWhiteSpace(loginName))
             {
                 throw new Exception("Invalid parameter loginName.");
             }
 
-            
-            bool isAdminUser = false;
-            bool isRegularUser = false;
             //Remove all leading and Trailing white-space characters
             loginName = loginName.Trim();
 
@@ -1270,19 +1266,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(organizationRealPageId), "Null realPageId.");
             }
 
-            Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
-            UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+            IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
 
-            userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
-            userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
+            userOrganizationExists.OrgIsRealpageEmployee = (_organizationRepository.GetOrganization(realPageId: organizationRealPageId).Name.ToLower().Replace(" ","") == UserRoleType.RealPageEmployee.ToString().ToLower());
 
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
             userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.UserNoEmail));
-
-            isAdminUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.SuperUser));
-            isRegularUser = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.User));
 
             if (userPersonaOrganizationList.Count > 0)
             {
@@ -1347,18 +1338,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (p != null)
                 {
                     userOrganizationExists.Person = p;
-                }
-            }
-
-            if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
-            {
-                var orgDomains = _organizationRepository.GetOrganizationListByBooksCustomerMasterId(orgDetails.BooksCustomerMasterId);
-               
-                if (orgDomains.Count > 1 && (isAdminUser || isRegularUser))
-                {
-                    userOrganizationExists.UserExists = false;
-                    userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
-                    userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
                 }
             }
 
