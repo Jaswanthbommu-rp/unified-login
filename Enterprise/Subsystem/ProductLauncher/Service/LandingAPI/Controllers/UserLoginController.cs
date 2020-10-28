@@ -533,9 +533,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null)
 		{
-			ObjectOutput<UserOrganizationExists, IErrorData> output = new ObjectOutput<UserOrganizationExists, IErrorData>();
+			ObjectOutput<IUserOrganizationExists, IErrorData> output = new ObjectOutput<IUserOrganizationExists, IErrorData>();
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+			IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
 
             if (!userRealPageId.HasValue)
             {

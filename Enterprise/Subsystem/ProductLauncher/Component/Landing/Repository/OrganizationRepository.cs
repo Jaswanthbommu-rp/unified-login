@@ -174,34 +174,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Used to get the list of all Organizations
-        /// </summary>
-        /// <returns>Organization object</returns>
-        public IList<Organization> GetOrganizationListByBooksCustomerMasterId(long blueBookId)
-        {
-            dynamic param = new
-            {
-                BlueBookId = blueBookId
-            };
-
-            using (var repository = GetRepository())
-            {
-                IList<Organization> organizationList = repository.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, param);
-
-                organizationList.ToList().ForEach(o =>
-                {
-                    var orgType = ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId);
-                    o.organizationType = orgType != null ? new OrganizationType { Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate } : new OrganizationType();
-                    var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
-                    o.OrganizationDomain = orgDomain != null ? new OrganizationDomain { OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate } : new OrganizationDomain();
-                }
-                );
-
-                return organizationList;
-            }
-        }
-
-        /// <summary>
         /// List of Unified Login companies
         /// </summary>       
         /// <returns>List of Unified Login companies including admin user info</returns>
