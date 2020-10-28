@@ -87,8 +87,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGENOTIFICATIONS");
 
-					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLMANAGEPII");
-					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLMANAGESENSITIVEFINANCIALDATA");
+					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManagePII");
+					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManageSensitiveFinancialData");
 				}
             }
 
@@ -144,7 +144,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 			{
 				if (identity.Claims.Any(q => q.Type.Equals("Right", StringComparison.OrdinalIgnoreCase) && q.Value.Equals(rightName, StringComparison.OrdinalIgnoreCase)))
 				{
-					identity.RemoveClaim(new Claim("Right", rightName));
+					var claim = (from c in identity.Claims where c.Value.ToUpper() == rightName.ToUpper() select c).Single();
+					identity.RemoveClaim(claim);
 					userRights.Remove(rightName);
 				}
 			}
