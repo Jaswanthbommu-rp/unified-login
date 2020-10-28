@@ -10,7 +10,7 @@ BEGIN
    FROM Enterprise.ProductSettingType WHERE [Name] = 'LearnMore'
 
 	UPDATE Enterprise.Product
-	SET [Description]='Renovation Manager is a tool that assists users in reducing vacancy loss, ensuring the asset is executing the plan as expected and allows for comprehensive analysis of capital performance with executed rent, expense and ROI comparisons against budget, prior lease and un-renovated market rent'
+	SET [Description]='Renovation Manager is a tool that assists users in reducing vacancy loss, ensuring the asset is executing the plan as expected and allows for comprehensive analysis of capital performance with executed rent, expense and ROI comparisons against budget, prior lease and un-renovated market rent.'
     WHERE ProductId=@ProductId
 
 	--Removing LearnMore for Renovation Manger
