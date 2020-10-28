@@ -1,4 +1,4 @@
-CREATE PROCEDURE Person.ListUsersProductDetailsLoginByLoginName(@loginName VARCHAR(100))
+CREATE PROCEDURE Person.ListUsersProductDetailsLoginByLoginName(@loginName VARCHAR(255))
 AS
 BEGIN
 	;WITH UserAttributes
@@ -6,7 +6,8 @@ BEGIN
 		ProductId,
 		UserLoginPersonaId,
 		Value,
-		Name
+		Name,
+		UserType
 	)
 	AS
 	(
@@ -14,7 +15,8 @@ BEGIN
 				sua.ProductId,
 				ulp.UserLoginPersonaId,
 				sua.Value,
-				Sa.Name
+				Sa.Name,
+				PR.RoleTypeIdFrom
 		FROM	Person.Persona p
 				INNER JOIN Ident.SamlUserAttribute sua ON (p.PersonaId = sua.PersonaId)
 				INNER JOIN Ident.SamlAttribute sa ON (sua.SamlAttributeId = sa.SamlAttributeId)
@@ -30,13 +32,15 @@ BEGIN
 			ul.LoginName = @loginName AND
 			pc.StatusTypeId = 8 AND
 			sua.ThruDate IS NULL AND
-			PR.RoleTypeIdFrom IN (401,405) --ONLY REGULAR AND EXTERNAL USERS
+			PR.RoleTypeIdFrom IN (401,405,402) --ONLY ADMIN, REGULAR AND EXTERNAL USERS
 	)
 
 	SELECT DISTINCT
 		p.ProductId,
 		p.BooksProductCode AS ProductCode,
 		o.Name AS Company,
+		ua.UserType,
+		py.RealPageId,
 		(
 			SELECT
 				Name,
@@ -44,6 +48,7 @@ BEGIN
 			FROM UserAttributes
 			WHERE
 				UserAttributes.ProductId = p.ProductId
+				AND UserAttributes.UserLoginPersonaId = ulp.UserLoginPersonaId
 			FOR JSON AUTO, INCLUDE_NULL_VALUES
 		) AS UserAttribute
 
@@ -51,7 +56,7 @@ BEGIN
 		INNER JOIN UserAttributes AS ua ON p.ProductId = ua.ProductId
 		INNER JOIN Ident.UserLoginPersona ulp ON ulp.UserLoginPersonaId = ua.UserLoginPersonaId
 		INNER JOIN Enterprise.Organization o ON ulp.OrganizationPartyId = o.PartyId
-		
+		INNER JOIN Enterprise.Party py ON o.PartyId = py.PartyId
 	ORDER BY o.Name ASC
 
-END
+END;
