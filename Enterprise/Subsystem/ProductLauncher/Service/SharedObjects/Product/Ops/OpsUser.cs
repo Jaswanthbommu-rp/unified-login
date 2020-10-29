@@ -55,10 +55,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         [JsonProperty("user_type_id", NullValueHandling = NullValueHandling.Ignore)]
         public string UserTypeId { get; set; }
 
-	    /// <summary>
-	    /// The user type information for the user
-	    /// </summary>
-	    [JsonProperty("user_type", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// EmployeeId for the user
+        /// </summary>
+        [JsonProperty("employee_id", NullValueHandling = NullValueHandling.Ignore)]
+        public string EmployeeId { get; set; }
+
+        /// <summary>
+        /// The user type information for the user
+        /// </summary>
+        [JsonProperty("user_type", NullValueHandling = NullValueHandling.Ignore)]
 	    public OpsUserType UserType { get; set; }
 		
 		/// <summary>
@@ -147,10 +153,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		[JsonProperty("last_name", NullValueHandling = NullValueHandling.Ignore)]
 		public string LastName { get; set; }
 
-		/// <summary>
-		/// The login name of the user
-		/// </summary>
-		[JsonProperty("login_name", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// EmployeeId for the user
+        /// </summary>
+        [JsonProperty("employee_id", NullValueHandling = NullValueHandling.Ignore)]
+        public string EmployeeId { get; set; }
+
+        /// <summary>
+        /// The login name of the user
+        /// </summary>
+        [JsonProperty("login_name", NullValueHandling = NullValueHandling.Ignore)]
 		public string Loginname { get; set; }
 
 		/// <summary>

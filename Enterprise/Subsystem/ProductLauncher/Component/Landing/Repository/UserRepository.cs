@@ -1154,6 +1154,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
+                        #region Create UserEmployeeId
+
+                        if (newProfile.UserTypeId != (int)UserRoleType.ExternalUser && userLoginPersonaId > 0)
+                        {
+                            param = new
+                            {
+                                UserLoginPersonaId = userLoginPersonaId,
+                                EmployeeId = newProfile.EmployeeId
+                            };
+
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, param);
+
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repository.UnitOfWork.Rollback();
+                                errorStatus.Success = false;
+                                errorStatus.ErrorCode = "User.CreateUser.28";
+                                errorStatus.ErrorMsg = "Error creating EmployeeId to the user login perosna: {userLoginPersonaId}";
+                                createUserResponse.Status = errorStatus;
+                                createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                return createUserResponse;
+                            }
+                        }
+
+                        #endregion
+
                         #region Set Default Employment Role
 
                         processTracker = "Set Default Employment Role";
@@ -4193,6 +4219,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// isEmployeeIdChanged
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="oldProfile"></param>
+        /// <returns></returns>
+        private bool isEmployeeIdChanged(IProfileDetail profile, IProfileDetail oldProfile)
+        {
+            return !profile.EmployeeId.Equals(oldProfile.EmployeeId);
+        }
+
+        /// <summary>
         /// isNotificationEmailChanged
         /// </summary>
         /// <param name="priorNotificationEmail"></param>
@@ -4954,6 +4991,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
+                bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
@@ -5405,8 +5443,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
+                        #region Update UserEmployeeId
+                        if (updateUserProfileEntity.NewProfile.EmployeeId != updateUserProfileEntity.OldProfile.EmployeeId)
+                        {
+                            //If the old user has EmployeeId so update if not create the EmployeeId
+                            if (updateUserProfileEntity.OldProfile.UserEmployeeId > 0)
+                            {
+                                dynamic update = new
+                                {
+                                    updateUserProfileEntity.OldProfile.UserEmployeeId,
+                                    updateUserProfileEntity.NewProfile.EmployeeId
+                                };
+
+                                RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateEmployeeId, update);
+
+                                if (employeeResult.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
+                                    throw new Exception(employeeResult.ErrorMessage);
+                                }
+
+                            }
+                            else
+                            {
+                                dynamic create = new
+                                {
+                                    userLoginPersonaList[0].UserLoginPersonaId,
+                                    updateUserProfileEntity.NewProfile.EmployeeId,
+                                };
+
+                                RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, create);
+
+                                if (employeeResult.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
+                                    throw new Exception(employeeResult.ErrorMessage);
+                                }
+                            }
+                        }
+                        #endregion
 
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
+
+                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
+                        {
+                            updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
+                            {
+                                SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, updateUserProfileEntity.ProductBatchData, null, p.AssignedUserTypeId);
+                            });
+                        }
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
@@ -5416,15 +5501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
                         {
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
-                        }
-
-                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged))
-                        {
-                            updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
-                            {
-                                SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, updateUserProfileEntity.ProductBatchData, null, p.AssignedUserTypeId);
-                            });
-                        }
+                        }  
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && userBatchEntity.UserTypeChanged)
                         {

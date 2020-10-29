@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise
 {
@@ -15,5 +16,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
         /// </summary>
         [JsonProperty(PropertyName = "ProductCode")]
         public string ProductCode { get; set; }
+
+        /// <summary>
+        /// Company
+        /// </summary>
+        [JsonProperty("Company", NullValueHandling = NullValueHandling.Ignore)]
+        public string Company { get; set; }
+
+        /// <summary>
+        /// RealPageId
+        /// </summary>
+        [JsonProperty("RealPageId", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid? RealPageId { get; set; }
+
+        /// <summary>
+        /// RealPageId
+        /// </summary>
+        [JsonProperty("UserType", NullValueHandling = NullValueHandling.Ignore)]
+        public string UserType { get; set; }
     }
 }

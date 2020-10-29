@@ -155,9 +155,10 @@
         public const string SP_ListOrganizationDomain = "Enterprise.ListOrganizationDomain";
         public const string SP_CreateOrganizationDomain = "Enterprise.CreateOrganizationDomain";
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
+        public const string SP_ListCompanySetup = "Enterprise.GetCompanyList";
 
-		//PartyRelationship
-		public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
+        //PartyRelationship
+        public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
 
         //PartyRole
         public const string SP_GetPartyRoleByRealPageId = "Enterprise.GetPartyRoleByRealPageId";
@@ -398,5 +399,6 @@
         public const string SP_ListUsersWithCompanyId_Ver3 = "Person.ListUsersWithCompanyId_Ver3";
         public const string SP_ListULMappingPersonaIdForProductUserId = "Enterprise.ListULMappingPersonaIdForProductUserId";
         public const string SP_ListUsersProductsDetailsLoginByPersonaId = "Person.ListUsersProductDetailsLoginByPersonaId";
+        public const string SP_ListUsersProductsDetailsLoginByLoginName = "Person.ListUsersProductDetailsLoginByLoginName";
     }
 }

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -607,6 +608,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public RepositoryResponse CreateOrganizationDomain(OrganizationDomain organizationDomain)
         {
             return _organizationRepository.CreateOrganizationDomain(organizationDomain);
+        }
+        #endregion
+
+        #region OrganizationList
+        public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals)
+        {
+            RequestParameter dataFilter = new RequestParameter();
+            if (globals.ContainsKey(BaseType.RequestParameter))
+            {
+                dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
+            }
+            return _organizationRepository.GetCompanyList(_defaultUserClaim, organizationName, domain, blueId, organizationId, dataFilter);
         }
         #endregion
     }

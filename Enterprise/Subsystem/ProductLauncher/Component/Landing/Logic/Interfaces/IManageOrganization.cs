@@ -114,5 +114,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>       
         /// <returns>List of Unified Login companies including admin user info</returns>
         List<UnifiedLoginCompany> GetUnifiedLoginCompanyList();
-    }
+
+		/// <summary>
+		/// Get Company list
+		/// </summary>
+		/// <param name="organizationName">organizationName</param>
+		/// <param name="domain">domain</param>
+		/// <param name="blueId">blueId</param>
+		/// <param name="organizationId">organizationId</param>
+		/// <param name="globals">globals</param>
+		/// <returns>Company list</returns>
+		List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, IDictionary<object, object> globals);
+
+	}
 }
