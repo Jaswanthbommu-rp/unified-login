@@ -44,8 +44,9 @@ END
 
 --OrganizationOverRideRight
 SELECT @PartyId = PartyId
-FROM [Enterprise].[Organization] 
-WHERE [Name] = 'RealPage Employee'
+FROM [Enterprise].[Organization] O
+    INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
+WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]  WHERE RightId = @RightId AND OrgPartyId = @PartyId)
 BEGIN
