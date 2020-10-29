@@ -7,7 +7,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 	/// <summary>
 	/// User Exists? User Exists in this Organization?
 	/// </summary>
-	public class UserOrganizationExists 
+	public class UserOrganizationExists : IUserOrganizationExists
 	{
 		/// <summary>
 		/// User with this LoginName Exists?
@@ -38,18 +38,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         [JsonProperty(PropertyName = "UserExistsNotAvailable")]
         public bool UserExistsNotAvailable { get; set; }
-
-        ///// <summary>
-        ///// User with this LoginName exists as RealPage System Administrator in diffrent domain 
-        ///// </summary>
-        [JsonProperty(PropertyName = "UserExistsAsAdminInOtherDomain")]
-        public bool  UserExistsAsAdminInOtherDomain { get; set; }
-
-        ///// <summary>
-        ///// User with this LoginName exists as Regular in diffrent domain 
-        ///// </summary>
-        [JsonProperty(PropertyName = "UserExistsAsRegularUserInOtherDomain")]
-        public bool UserExistsAsRegularUserInOtherDomain { get; set; }
 
         /// <summary>
         /// Used to indicate if the user is disabled in the Primary company

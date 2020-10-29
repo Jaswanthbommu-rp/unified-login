@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
@@ -430,10 +431,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				IList<UserProductDetailAttribute> userProuctDetailAttributes = entUserRepository.ListUserProductDetailsLoginByPersonaId(PersonaId);
 
 				userProuctDetailAttributes.ToList().ForEach(u =>
-				userProductDetailLogins.Add(new UserProductDetailLogin 
+
+                userProductDetailLogins.Add(new UserProductDetailLogin 
 				{ 
 					ProductId = u.ProductId,
 					ProductCode = u.ProductCode,
+					
 					Details = JsonConvert.DeserializeObject<IList<Dictionary<string,string>>>(u.UserAttribute)
 				})) ; 
 
@@ -470,6 +473,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 					ProductId = u.ProductId,
 					ProductCode = u.ProductCode,
 					Company = u.Company,
+					RealPageId = u.RealPageId,
+					UserType = u.UserType == "401" ? UserRoleType.User.ToEnumDescription() : u.UserType == "402" ? UserRoleType.SuperUser.ToEnumDescription() : UserRoleType.ExternalUser.ToEnumDescription(),
 					Details = JsonConvert.DeserializeObject<IList<Dictionary<string, string>>>(u.UserAttribute)
 				}));
 

@@ -45,17 +45,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Used to store the BlackBook Company master id for the organization RPUP id
         /// </summary>
         public long BooksCustomerMasterId { get; set; }
-		/// <summary>
-		/// Organization Domain Id
-		/// </summary>
-		[JsonIgnore]
-		public int OrganizationDomainId { get; set; }
 
-		/// <summary>
-		/// Organization Domain
-		/// </summary>
-		[JsonProperty(PropertyName = "OrganizationDomain")]
-		public OrganizationDomain OrganizationDomain { get; set; }
-
-	}
+    }
 }
