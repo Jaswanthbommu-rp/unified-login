@@ -107,13 +107,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Guid userRealPageId = Guid.Empty;
 
             UserLoginController controller = new UserLoginController();
-			ObjectOutput<IUserOrganizationExists, IErrorData> userOrganizationExistsOutput = new ObjectOutput<IUserOrganizationExists, IErrorData>();
+			ObjectOutput<UserOrganizationExists, IErrorData> userOrganizationExistsOutput = new ObjectOutput<UserOrganizationExists, IErrorData>();
 			controller.Request = new HttpRequestMessage();
 			controller.Configuration = new HttpConfiguration();
 
 			//Act
 			HttpResponseMessage response = controller.IsLoginNameExists(loginName, organizationRealPageId, userRealPageId);
-			userOrganizationExistsOutput = response.Content.ReadAsAsync<ObjectOutput<IUserOrganizationExists, IErrorData>>().Result;
+			userOrganizationExistsOutput = response.Content.ReadAsAsync<ObjectOutput<UserOrganizationExists, IErrorData>>().Result;
 
 
 			//Assert
@@ -131,13 +131,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Guid userRealPageId = Guid.Empty;
 
             UserLoginController controller = new UserLoginController();
-			ObjectOutput<IUserOrganizationExists, IErrorData> userOrganizationExistsOutput = new ObjectOutput<IUserOrganizationExists, IErrorData>();
+			ObjectOutput<UserOrganizationExists, IErrorData> userOrganizationExistsOutput = new ObjectOutput<UserOrganizationExists, IErrorData>();
 			controller.Request = new HttpRequestMessage();
 			controller.Configuration = new HttpConfiguration();
 
 			//Act
 			HttpResponseMessage response = controller.IsLoginNameExists(loginName, organizationRealPageId, userRealPageId);
-			userOrganizationExistsOutput = response.Content.ReadAsAsync<ObjectOutput<IUserOrganizationExists, IErrorData>>().Result;
+			userOrganizationExistsOutput = response.Content.ReadAsAsync<ObjectOutput<UserOrganizationExists, IErrorData>>().Result;
 
 
 			//Assert
