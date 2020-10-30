@@ -132,6 +132,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// <summary>
         /// Employee Id of the user
         /// </summary>
-        public string EmployeeId { get; set; } = "";
+        public string EmployeeId { get; set; }
     }    
 }

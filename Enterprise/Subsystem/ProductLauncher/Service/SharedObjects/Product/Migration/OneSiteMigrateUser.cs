@@ -12,7 +12,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// <summary>
         /// The Reference Number of the user
         /// </summary>
-        [JsonProperty("ReferenceNumber", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("ReferenceNumber")]
         public string ReferenceNumber { get; set; }
     }
 }
