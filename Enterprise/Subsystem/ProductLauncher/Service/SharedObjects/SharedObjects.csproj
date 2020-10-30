@@ -51,6 +51,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aspose.Cells">
+      <HintPath>..\..\packages\Aspose.Cells.16.12.0\lib\net40\Aspose.Cells.dll</HintPath>
+    </Reference>
     <Reference Include="Confluent.Kafka, Version=1.5.0.0, Culture=neutral, PublicKeyToken=12c514ca49093d1e, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Confluent.Kafka.1.5.0\lib\net45\Confluent.Kafka.dll</HintPath>
     </Reference>
@@ -283,6 +286,8 @@
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
     <Compile Include="Landing\CustomFieldType.cs" />
+    <Compile Include="Landing\Export\DataExport.cs" />
+    <Compile Include="Landing\Export\ExportDataFileConfiguration.cs" />
     <Compile Include="Landing\FilterTableType.cs" />
     <Compile Include="Landing\IApiError.cs" />
     <Compile Include="Landing\ICustomField.cs" />
@@ -309,7 +314,6 @@
     <Compile Include="Landing\PersonaCompany.cs" />
     <Compile Include="Landing\PersonaCompanyDetails.cs" />
     <Compile Include="Landing\PropertyRoleList.cs" />
-    <Compile Include="Landing\IUserOrganizationExists.cs" />
     <Compile Include="Landing\IUserOrganization.cs" />
     <Compile Include="IdentityConfig\LinkElectronicAddress.cs" />
     <Compile Include="IdentityConfig\LinkPostalAddress.cs" />
