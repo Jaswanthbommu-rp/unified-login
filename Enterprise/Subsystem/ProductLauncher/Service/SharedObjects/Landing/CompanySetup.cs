@@ -75,8 +75,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         [JsonProperty(PropertyName = "Products")]
         public int Products { get; set; }
 
-
-
+        /// <summary>
+        /// Address
+        /// </summary>
+        public string Address { get; set; }
 
 
         /// <summary>  

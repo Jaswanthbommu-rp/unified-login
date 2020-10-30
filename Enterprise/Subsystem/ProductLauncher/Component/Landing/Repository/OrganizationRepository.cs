@@ -600,6 +600,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
                     items.CompanyLocation = address[0];
+                    items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
                 }
             }
             return companyDetails;
