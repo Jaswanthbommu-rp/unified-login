@@ -54,3 +54,13 @@ BEGIN
 	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
 GO
+-- Add UDM Source Code for ILM products
+Update Enterprise.Product SET UDMSourceCode = 'ILM'
+Where ProductId in (40,41)
+
+Update Enterprise.Product SET UDMSourceCode = 'AO'
+Where ProductId in (29,30,31,32,33,34,51,52,53,54)
+
+Update Enterprise.Product SET UDMSourceCode = 'IB'
+Where ProductId in (57)
+GO
