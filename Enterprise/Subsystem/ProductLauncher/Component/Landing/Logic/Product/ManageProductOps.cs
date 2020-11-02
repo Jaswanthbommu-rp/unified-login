@@ -1227,6 +1227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         migrationUser.Username = user.Loginname;
                         migrationUser.Status = user.Status?.ToLower() == "active" ? "Active" : "Disabled";
                         migrationUser.Phone = user.Phone;
+                        migrationUser.EmployeeId = user.EmployeeId;
                         if (!string.IsNullOrWhiteSpace(user.AssetGroup?.ID))
                         {
                             migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = user.AssetGroup.ID });

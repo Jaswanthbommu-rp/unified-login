@@ -434,6 +434,7 @@
     <Compile Include="Product\Migration\MigrateUser.cs" />
     <Compile Include="Product\Migration\MigrationProperty.cs" />
     <Compile Include="Product\Migration\MigrationResponse.cs" />
+    <Compile Include="Product\Migration\OneSiteMigrateUser.cs" />
     <Compile Include="Product\Migration\OnSiteMigrateUser.cs" />
     <Compile Include="Product\Migration\OpsMigrateUser.cs" />
     <Compile Include="Product\Migration\ResidentPortalMigrationUser.cs" />
