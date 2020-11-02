@@ -3,7 +3,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Attributes;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Net;
@@ -260,6 +262,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				Request.CreateResponse(HttpStatusCode.Forbidden, result);
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);
+		}
+
+		/// <summary>
+		/// For a product, returns all organizations or by given organizationId (Used in ClickPay)
+		/// </summary>
+		/// <param name="editorPersonaId">Editor user persona Id</param>
+		/// <param name="userPersonaId">Subject user persona id</param>
+		/// <param name="productId">Product Is</param>
+		/// <param name="organizationRoleId">Role id for organization</param>
+		/// <param name="organizationType">Organization type- site, owner, company etc</param>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Operation successful", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("product/organizations/")]
+		[HttpGet]
+		public HttpResponseMessage GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId,
+															string organizationRoleId, string organizationType)
+		{
+			ListResponse result;
+
+			try
+			{
+				if (editorPersonaId == 0)
+					return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+				if (_realpageUserId == Guid.Empty)
+					return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
+
+				result = _manageProductPanel.GetProductOrganizations(editorPersonaId, userPersonaId, productId, organizationRoleId, organizationType);
+
+				if (result.IsError)
+					Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+				return Request.CreateResponse(HttpStatusCode.OK, result);
+			}
+			catch (Exception ex)
+			{
+				if (ex.InnerException is BlueBookException)
+				{
+					result = new ListResponse { IsError = true, ErrorReason = ex.InnerException.Message };
+				}
+				else
+				{
+					result = new ListResponse { IsError = true, ErrorReason = "Internal server error." };
+				}
+			}
+
+			return Request.CreateResponse(HttpStatusCode.Forbidden, result);
 		}
 		#endregion
 	}

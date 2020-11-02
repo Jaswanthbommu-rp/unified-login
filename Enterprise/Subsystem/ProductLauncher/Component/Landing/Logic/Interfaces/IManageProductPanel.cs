@@ -81,5 +81,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="datafilter"></param>			
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter);
+
+		/// <summary>
+		/// Used for clickpay
+		/// </summary>
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="userPersonaId">userPersonaId</param>
+		/// <param name="productId">productId</param>
+		/// <param name="organizationRoleId">Org Id</param>
+		/// <param name="organizationType">Site, Owner, Company</param>
+		/// <returns></returns>
+		ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType);
 	}
 }

@@ -356,6 +356,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = manageIntelligentBuilding.GetRoles(editorPersonaId, userPersonaId, partyId);
                         break;
                     case (int)ProductEnum.ClickPay:
+                        var productClickPayLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
+                        result = productClickPayLogic.GetProductRoles(datafilter);
+                        break;
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
                     case (int)ProductEnum.CIMPL:
@@ -628,6 +631,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 default:
                     break;
             }
+            return result;
+        }
+
+        public ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType)
+        {
+            ListResponse result = new ListResponse();
+            try
+            {
+                string productName = Enum.GetName(typeof(ProductEnum), productId);
+                string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+                switch (productId)
+                {
+                    case (int)ProductEnum.ClickPay:
+                        var productClickPayLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
+                        result = productClickPayLogic.GetProductOrganizations(organizationRoleId, organizationType, null, null);
+                        break;
+                    default:
+                        break;
+                }
+
+                if (result.IsError)
+                {
+                    throw new Exception(result.ErrorReason);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result = new ListResponse();
+                result.IsError = true;
+
+                if (ex is BlueBookException)
+                {
+                    result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                }
+                else
+                {
+                    //UI calls GetRoles but sometimes it diplays the data in Right tab for some products, that's why this validation was added
+                    if (ex.Message == CommonMessageConstants.RightErrorMessage)
+                    {
+                        result.ErrorReason = ex.Message;
+                        return result;
+                    }
+
+                    if (ex.Message == CommonMessageConstants.CompanyErrorMessage)
+                    {
+                        result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                    }
+                    else
+                    {
+                        if (ex.InnerException != null)
+                        {
+                            if (ex.InnerException.Message == CommonMessageConstants.CompanyErrorMessage)
+                            {
+                                result.ErrorReason = CommonMessageConstants.CompanyErrorMessage;
+                            }
+                            else
+                            {
+                                result.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                            }
+                        }
+                        else
+                        {
+                            result.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                        }
+                    }
+                }
+            }
+
             return result;
         }
         #endregion
