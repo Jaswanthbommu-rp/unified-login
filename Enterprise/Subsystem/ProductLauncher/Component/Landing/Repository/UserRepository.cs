@@ -2437,26 +2437,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        /// <summary>
-		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
-		/// </summary>
-		/// <param name="UserLoginPersonaId"></param>
-		/// <param name="OrganizationPartyId"></param>
-		/// <returns>IUserEmployeeId</returns>
-		public IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId)
-        {
-            using (var repository = GetRepository())
-            {
-                dynamic param = new
-                {
-                    UserLoginPersonaId,
-                    OrganizationPartyId
-                };
-
-                return repository.GetOne<UserEmployee>(StoredProcNameConstants.SP_GetEmployeeId, param);
-            }
-        }
-
         #endregion
 
         #region Private methods

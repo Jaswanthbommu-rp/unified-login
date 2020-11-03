@@ -724,17 +724,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return output;
 		}
 
-		/// <summary>
-		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
-		/// </summary>
-		/// <param name="UserLoginPersonaId"></param>
-		/// <param name="OrganizationPartyId"></param>
-		public IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId)
-		{
-			return _userRepository.GetUserEmployeeId(UserLoginPersonaId, OrganizationPartyId);
-		}
-		#endregion
-
 		#region Private Methods
 		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
 			string message, string stepName, IProfileDetail profile)
