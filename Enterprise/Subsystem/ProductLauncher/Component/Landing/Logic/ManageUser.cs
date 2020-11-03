@@ -724,8 +724,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return output;
 		}
 
-		#region Private Methods
-		private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
+        #endregion
+
+        #region Private Methods
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
 			string message, string stepName, IProfileDetail profile)
 		{
 			LogActivity.WriteActivity(new ActivityDetails
