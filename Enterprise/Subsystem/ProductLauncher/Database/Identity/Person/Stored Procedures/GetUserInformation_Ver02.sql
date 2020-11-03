@@ -171,8 +171,7 @@ BEGIN
 		StatusThruDate,
 		UserRealPageId,
 		Product,
-		TotalRecords,
-		EmployeeId
+		TotalRecords
 	)
 	AS
 	(
@@ -253,7 +252,6 @@ BEGIN
 					AND			cmu.ContactMechanismUsageTypeID = 301
 			) ne ON ne.PartyId = pe.PartyId
 			LEFT OUTER JOIN cteCustomField cf ON (cf.UserLoginID = ul.UserId)
-			LEFT OUTER JOIN [Enterprise].[UserEmployeeId] AS ue ON ulp.UserLoginPersonaId = ue.UserLoginPersonaId
 		WHERE	pr.RoleTypeIdFrom >= 400
 		AND		(
 			(CHARINDEX(@Name, pe.FirstName, 1) > 0)
@@ -293,8 +291,7 @@ BEGIN
 				StatusThruDate,
 				UserRealPageId,
 				Product,
-				TotalRecords,
-				EmployeeId
+				TotalRecords
 	FROM	cteUsersFinal
 	ORDER BY UserId
 	OFFSET((@PageNumber - 1) * @RowsPerPage)
