@@ -15,11 +15,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		public string Avatar { get; set; }
 
-        /// <summary>
-        /// Cloned User
-        /// </summary>
-        [JsonProperty("clonedUser", NullValueHandling = NullValueHandling.Ignore)]
-        public bool ClonedUser { get; set; }
+		/// <summary>
+		/// Cloned User
+		/// </summary>
+		[JsonProperty("clonedUser", NullValueHandling = NullValueHandling.Ignore)]
+		public bool ClonedUser { get; set; }
 
 		/// <summary>
 		/// Migrated User
@@ -41,37 +41,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// <summary>
 		/// List of organization for a user
 		/// </summary>
-        [JsonProperty(PropertyName = "organization")]
-        public IList<Organization> organization { get; set; } = new List<Organization>();
+		[JsonProperty(PropertyName = "organization")]
+		public IList<Organization> organization { get; set; } = new List<Organization>();
 
-        /// <summary>
+		/// <summary>
 		/// Organization Settings
 		/// </summary>
 		[JsonProperty("OrganizationSetting", NullValueHandling = NullValueHandling.Ignore)]
-        public List<OrganizationSetting> OrganizationSettings { get; set; }
+		public List<OrganizationSetting> OrganizationSettings { get; set; }
 
-        /// <summary>
-        /// Contact Mechanism for a person attributes
-        /// </summary>
-        [JsonProperty(PropertyName = "contactMechanism", NullValueHandling = NullValueHandling.Ignore)]
-        public IList<CommonAddress> contactMechanism { get; set; } = new List<CommonAddress>();
+		/// <summary>
+		/// Contact Mechanism for a person attributes
+		/// </summary>
+		[JsonProperty(PropertyName = "contactMechanism", NullValueHandling = NullValueHandling.Ignore)]
+		public IList<CommonAddress> contactMechanism { get; set; } = new List<CommonAddress>();
 
-        /// <summary>
-        /// Summary count of properties, products and roles associated to user
-        /// </summary>
-        [JsonProperty(PropertyName = "summaryCounts", NullValueHandling = NullValueHandling.Ignore)]
-        public SummaryCounts SummaryCount { get; set; } = new SummaryCounts();
+		/// <summary>
+		/// Summary count of properties, products and roles associated to user
+		/// </summary>
+		[JsonProperty(PropertyName = "summaryCounts", NullValueHandling = NullValueHandling.Ignore)]
+		public SummaryCounts SummaryCount { get; set; } = new SummaryCounts();
 
-        /// <summary>
-        /// Products assigned to user
-        /// </summary>
-        [JsonProperty(PropertyName = "assignedProducts", NullValueHandling = NullValueHandling.Ignore)]
-        public IList<PersonaProductUserDetails> AssignedProducts { get; set; } = new List<PersonaProductUserDetails>();
+		/// <summary>
+		/// Products assigned to user
+		/// </summary>
+		[JsonProperty(PropertyName = "assignedProducts", NullValueHandling = NullValueHandling.Ignore)]
+		public IList<PersonaProductUserDetails> AssignedProducts { get; set; } = new List<PersonaProductUserDetails>();
 
-        /// <summary>
-        /// PartyRole (e.g. User Job Title) attributes
-        /// </summary>
-        [JsonProperty("partyRole", NullValueHandling = NullValueHandling.Ignore)]
+		/// <summary>
+		/// PartyRole (e.g. User Job Title) attributes
+		/// </summary>
+		[JsonProperty("partyRole", NullValueHandling = NullValueHandling.Ignore)]
 		public PartyRole PartyRole { get; set; } = new PartyRole();
 
 		/// <summary>
@@ -79,30 +79,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty("telecommunicationNumber", NullValueHandling = NullValueHandling.Ignore)]
 		public IList<TelecommunicationNumber> TelecommunicationNumber { get; set; } = new List<TelecommunicationNumber>();
-        
-        /// <summary>
-        /// Persona associated with the Profile
-        /// </summary>
-        [JsonProperty("Persona", NullValueHandling = NullValueHandling.Ignore)]
-        public IList<Persona> Persona { get; set; } = new List<Persona>();
+
+		/// <summary>
+		/// Persona associated with the Profile
+		/// </summary>
+		[JsonProperty("Persona", NullValueHandling = NullValueHandling.Ignore)]
+		public IList<Persona> Persona { get; set; } = new List<Persona>();
 
 		/// <summary>
 		/// Persona disassociated with the Profile
 		/// </summary>
 		[JsonProperty("InactivePersona", NullValueHandling = NullValueHandling.Ignore)]
-        public IList<Persona> InactivePersona { get; set; } = new List<Persona>();
+		public IList<Persona> InactivePersona { get; set; } = new List<Persona>();
 
 		/// <summary>
 		/// Initial password of the user
 		/// </summary>
-        [JsonProperty(PropertyName = "Password")]
-        public string Password { get; set; }
+		[JsonProperty(PropertyName = "Password")]
+		public string Password { get; set; }
 
 		/// <summary>
 		/// Notification Email
 		/// </summary>
-        [JsonProperty(PropertyName = "NotificationEmail")]
-        public string NotificationEmail { get; set; }
+		[JsonProperty(PropertyName = "NotificationEmail")]
+		public string NotificationEmail { get; set; }
 
 		/// <summary>
 		/// ProductBatch attributes
@@ -115,11 +115,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		public string AuthenticationType { get; set; }
 
-        /// <summary>
-        /// Get or set verification activity token
-        /// </summary>
-        [JsonProperty("verificationActivityToken", NullValueHandling = NullValueHandling.Ignore)]
-        public string VerificationActivityToken { get; set; }
+		/// <summary>
+		/// Get or set verification activity token
+		/// </summary>
+		[JsonProperty("verificationActivityToken", NullValueHandling = NullValueHandling.Ignore)]
+		public string VerificationActivityToken { get; set; }
 
 		/// <summary>
 		/// User Type (Regular User, SuperUser, Regular User with no email)
@@ -131,7 +131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// User RoleId
 		/// </summary>
 		[JsonProperty(PropertyName = "roleId")]
-        public int RoleId { get; set; }
+		public int RoleId { get; set; }
 
 		/// <summary>
 		/// User Custom Fields
@@ -143,7 +143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Custom Field  
 		/// </summary>
 		[JsonProperty(PropertyName = "CustomField")]
-        public string CustomField { get; set; }
+		public string CustomField { get; set; }
 
 		/// <summary>
 		/// Password Expiration Detail  
@@ -156,16 +156,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		public int TotalRecords { get; set; }
 
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
-		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
-		public string EmployeeId { get; set; }
-
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
-		[JsonProperty("UserEmployee", NullValueHandling = NullValueHandling.Ignore)]
-		public int UserEmployeeId { get; set; }
 	}
 }

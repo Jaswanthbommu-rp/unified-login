@@ -116,12 +116,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>A detail of profile</returns>
 		ObjectOutput<IProfileDetail, IErrorData> GetUserProfile(Guid realPageId, Guid realpageUserId, long orgPartyId);
 
-		/// <summary>
-		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
-		/// </summary>
-		/// <param name="UserLoginPersonaId"></param>
-		/// <param name="OrganizationPartyId"></param>
-		IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId);
-		
 	}
 }
