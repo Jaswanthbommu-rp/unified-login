@@ -78,11 +78,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(PropertyName = "CustomField")]
 		public string CustomField { get; set; }
-
-		/// <summary>
-		/// Employee Id
-		/// </summary>
-		[JsonProperty(PropertyName = "EmployeeId")]
-		public string EmployeeId { get; set; } = "";
 	}
 }
