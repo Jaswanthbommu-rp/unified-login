@@ -117,15 +117,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// Total number of records count (without any paging if the response is limited by paging)
 		/// </summary>
 		int TotalRecords { get; set; }
-
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
-		string EmployeeId { get; set; }
-
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
-		int UserEmployeeId { get; set; }
 	}
 }

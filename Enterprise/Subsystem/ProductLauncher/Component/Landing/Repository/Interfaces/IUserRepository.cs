@@ -148,12 +148,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="createUserPersonaId"></param>
 		void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId);
 
-		/// <summary>
-		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
-		/// </summary>
-		/// <param name="UserLoginPersonaId"></param>
-		/// <param name="OrganizationPartyId"></param>
-		/// <returns>IUserEmployeeId</returns>
-		IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId);
 	}
 }
