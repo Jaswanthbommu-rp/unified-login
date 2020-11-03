@@ -83,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+					$"DepositAlternativeManagement.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 				{
@@ -92,24 +92,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+					$"DepositAlternativeManagement.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
 				var groupList = GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
 
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received regionList with count = {groupList?.Count}");
+					$"DepositAlternativeManagement.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received regionList with count = {groupList?.Count}");
 
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
 					WriteToDiagnosticLog(
-						$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+						$"DepositAlternativeManagement.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
 					var user = GetProductUser();
 
 					// map user regions
 					if (user != null)
 					{
 						WriteToDiagnosticLog(
-							$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+							$"DepositAlternativeManagement.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
 						MergeUserPropertyGroups(groupList, user);
 					}
@@ -129,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+				WriteToErrorLog($"DepositAlternativeManagement.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
 				ListResponse response = new ListResponse
 				{
 					IsError = true
@@ -161,7 +161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public override string UnassignUser()
 		{
 			WriteToDiagnosticLog(
-				$"ManageProductInvokerBase.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser().");
+				$"DepositAlternativeManagement.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser().");
 
 			var productUserProfile = new ProductUserProfile
 			{
@@ -180,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (result.IsSuccessStatusCode)
 			{
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status.");
+					$"DepositAlternativeManagement.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status.");
 
 				IManageUserLogin manageUserLogin = new ManageUserLogin();
 				IUserLoginRepository userLoginRepository = new UserLoginRepository();
@@ -210,7 +210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return string.Empty;
 			}
 
-			WriteToErrorLog($"ManageProductInvokerBase.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}");
+			WriteToErrorLog($"DepositAlternativeManagement.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}");
 
 			return result.Content;
 		}
