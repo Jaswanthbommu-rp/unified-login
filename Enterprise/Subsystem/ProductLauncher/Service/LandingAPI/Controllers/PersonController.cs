@@ -309,8 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No",
 							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate.Value.ToShortDateString() : string.Empty,
 							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate.Value.ToShortDateString(),
-							CustomField = p.CustomField,
-							EmployeeId = p.EmployeeId
+							CustomField = p.CustomField
 						}
 					);
 				});
@@ -593,7 +592,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			IList<string> propertyNamesList = new List<string>()
 			{
-				"UserType", "FirstName", "LastName", "EmployeeId", "LoginName", "Products", "LastLogin", "Status", "IDP", "EffectiveDate", "ExpireDate"
+				"UserType", "FirstName", "LastName", "LoginName", "Products", "LastLogin", "Status", "IDP", "EffectiveDate", "ExpireDate"
 			};
 
 			CreateExcelWorkSheet(out workbook, out worksheet);
@@ -607,7 +606,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			worksheet.Cells[0, col++].PutValue("First Name");
 			worksheet.Cells[0, col++].PutValue("Last Name");
-			worksheet.Cells[0, col++].PutValue("Employee ID");
 			worksheet.Cells[0, col++].PutValue("Username");
 			worksheet.Cells[0, col++].PutValue("Products");
 			worksheet.Cells[0, col++].PutValue("Last Login");

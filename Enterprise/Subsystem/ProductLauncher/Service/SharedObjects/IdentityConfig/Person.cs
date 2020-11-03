@@ -39,12 +39,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		public string LastName { get; set; }
 
 		/// <summary>
-		/// EmployeeId
-		/// </summary>
-		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
-		public string EmployeeId { get; set; } = "";
-
-		/// <summary>
 		/// Suffix
 		/// </summary>
 		[JsonProperty("Suffix", NullValueHandling = NullValueHandling.Ignore)]
