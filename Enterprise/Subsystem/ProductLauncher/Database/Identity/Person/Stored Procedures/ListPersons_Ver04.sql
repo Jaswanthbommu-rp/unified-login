@@ -94,7 +94,6 @@ BEGIN
 				WHEN N'LastLogin' THEN 102
 				WHEN N'LoginName' THEN 103
 				WHEN N'Status' THEN 104
-				WHEN N'EmployeeId' THEN 105
 				ELSE 100
 			END * CASE SortDirection WHEN N'ASC' THEN 1 ELSE -1 END 
 	FROM	OPENJSON (JSON_QUERY(@SortBy, '$.sortBy'))
@@ -381,7 +380,6 @@ BEGIN
 		FirstName,
 		MiddleName,
 		LastName,
-		EmployeeId,
 		Title,
 		Suffix,
 		CustomField,
@@ -411,7 +409,6 @@ BEGIN
 					p.FirstName,
 					p.MiddleName,
 					p.LastName,
-					UE.Employee as EmployeeId,
 					p.Title,
 					p.Suffix,
 					CASE
@@ -443,13 +440,11 @@ BEGIN
 						WHEN 102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin ASC, p.FirstName + ' ' + p.LastName ASC)
 						WHEN 103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName ASC, p.FirstName + ' ' + p.LastName ASC)
 						WHEN 104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName ASC, p.FirstName + ' ' + p.LastName ASC)
-						WHEN 105 THEN ROW_NUMBER() OVER (ORDER BY UE.Employee ASC, p.FirstName + ' ' + p.LastName ASC)
 						WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY p.FirstName + ' ' + p.LastName DESC)
 						WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY pct.ProductCount DESC, p.FirstName + ' ' + p.LastName DESC)
 						WHEN -102 THEN ROW_NUMBER() OVER (ORDER BY ulp.LastLogin DESC, p.FirstName + ' ' + p.LastName DESC)
 						WHEN -103 THEN ROW_NUMBER() OVER (ORDER BY ulp.LoginName DESC, p.FirstName + ' ' + p.LastName DESC)
 						WHEN -104 THEN ROW_NUMBER() OVER (ORDER BY ulp.StatusName DESC, p.FirstName + ' ' + p.LastName DESC)
-						WHEN -105 THEN ROW_NUMBER() OVER (ORDER BY UE.Employee DESC, p.FirstName + ' ' + p.LastName DESC)
 					END AS RowNumber
 		FROM	cteUserLogin ulp
 					INNER JOIN Person.Person p ON p.PartyId = ulp.PersonPartyId
@@ -466,7 +461,6 @@ BEGIN
 								OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)
 								OR (CHARINDEX(@filterName, ulp.LoginName, 1) > 0)
 								OR (CHARINDEX(@filterName, cf.FieldValue, 1) > 0)
-								OR (CHARINDEX(@filterName, UE.Employee, 1) > 0)
 							)
 		AND		((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))
 		AND		((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))
@@ -479,7 +473,6 @@ BEGIN
 				FirstName,
 				MiddleName,
 				LastName,
-				EmployeeId,
 				Title,
 				Suffix,
 				CustomField,
