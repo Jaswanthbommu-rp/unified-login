@@ -105,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				var companyDetails = GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter, useTranslate:false);
+				var companyDetails = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false);
 
 				// blue book company Id
 				int companyInstanceId = companyDetails.CompanyInstanceId;
@@ -307,7 +307,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog(
 				   $"ManageProductProspectContact.ManageProductProspectContactUser - productUsername for user is {productLoginName}.");
 
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter);
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
 				if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
 				{
@@ -543,7 +543,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 
-				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
+				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 				if (companyInstanceSourceId == 0)
 				{
 					WriteToErrorLog(
@@ -649,7 +649,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 
-				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
+				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 				if (companyInstanceSourceId == 0)
 				{
 					WriteToErrorLog(

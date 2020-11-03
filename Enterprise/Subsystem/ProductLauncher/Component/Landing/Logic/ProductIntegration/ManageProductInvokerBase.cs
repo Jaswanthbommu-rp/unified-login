@@ -1223,11 +1223,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // Get Blue book product Code & company instance Id
                 BlueBookGbProductMap = _dataCollector.GetBlueBookProductMap(ProductId);
 
+                string blueBookProductCode = BlueBookGbProductMap.UDMSourceCode?.Length > 0 ? BlueBookGbProductMap.UDMSourceCode : BlueBookGbProductMap.BooksProductCode;
                 // Get Company Books Instance Source Id
                 var userBooksMasterId = EditorUserDetails.BooksCustomerMasterId;
                 if (subjectPersonaId != 0)
                     userBooksMasterId = SubjectUserDetails.BooksCustomerMasterId;
-                CompanyInstanceSourceId = _dataCollector.GetProductCompanyMap(BlueBookGbProductMap.BooksProductCode, userBooksMasterId, _userClaims, EditorUserDetails.OrganizationDomain).CompanyInstanceSourceId;
+                CompanyInstanceSourceId = _dataCollector.GetProductCompanyMap(blueBookProductCode, userBooksMasterId, _userClaims, EditorUserDetails.OrganizationDomain).CompanyInstanceSourceId;
 
                 if (string.IsNullOrEmpty(CompanyInstanceSourceId))
                 {

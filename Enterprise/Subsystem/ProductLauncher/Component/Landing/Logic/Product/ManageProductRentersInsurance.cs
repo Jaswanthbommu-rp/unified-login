@@ -309,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance, useTranslate:false).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                 }
                 WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties.GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}");
 
@@ -393,7 +393,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return outputList;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance, useTranslate:false).CompanyInstanceId;
+                int companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                 if (companyInstanceId == 0)
                 {
                     WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
@@ -998,7 +998,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                var companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
+                var companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
                 if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
                 {
                     WriteToErrorLog(
@@ -1104,7 +1104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                string companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.Insurance).CompanyInstanceSourceId;
+                string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
                 if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
                 {
                     WriteToErrorLog(

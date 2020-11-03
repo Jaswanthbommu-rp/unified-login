@@ -41,7 +41,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private static string _apiUserName;
         private static string _portalId;
         private static string _organizationId;
-
         // token & url params after authentication with SForce
         private static string _authToken;
         private static string _instanceUrl;
@@ -67,7 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_userClaims = userClaims;
 
             _blueBook = new ManageBlueBook(userClaims);
-
+           
             // get product settings
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value;
             _apiCode = _productInternalSettingList.First(a => a.Name.ToUpper() == "APICODE").Value;
@@ -109,7 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ClientPortal, useTranslate: false).CompanyInstanceId;
+                int companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate: false).CompanyInstanceId;
 
                 WriteToDiagnosticLog(
                     $"ManageProductClientPortal.GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
@@ -276,7 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     $"ManageProductClientPortal.ManageClientPortalUser - _productUsername for user is {_productUsername}.");
 
-                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.ClientPortal);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
@@ -700,7 +699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResponse.IsError) { response.ErrorReason = claimResponse.ErrorReason; return response; }
 
-            string companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.ClientPortal).CompanyInstanceSourceId;
+            string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
             if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
             {
                 WriteToErrorLog(
@@ -787,7 +786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResponse.IsError) { migrateResponse.Message = claimResponse.ErrorReason; return migrateResponse; }
 
-            string companyInstanceSourceId = GetProductCompanyInstanceId(BlueBookProductConstants.ClientPortal).CompanyInstanceSourceId;
+            string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
             if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
             {
                 WriteToErrorLog(

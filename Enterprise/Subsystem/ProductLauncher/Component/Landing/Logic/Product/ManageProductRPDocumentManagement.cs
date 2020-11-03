@@ -909,7 +909,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>CompanyMap</returns>
 		private CustomerCompanyMap GetRPDocumentManagementCompanyInstanceId()
 		{
-			return GetProductCompanyInstanceId(BlueBookProductConstants.RPDocumentManagement, "companyInstance.attributes");
+			return GetProductCompanyInstanceId(_udmSourceCode, "companyInstance.attributes");
 		}
 
 		/// <summary>

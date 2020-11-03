@@ -116,7 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 WriteToDiagnosticLog($"OnSite - GetProperties-GetProductCompanyInstanceId - Found blue book company instance source id - {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}");
 
@@ -201,7 +201,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 // get access groups from on-site product
                 var allRegions = GetResultFromApi<IList<OnSiteRegion>>(_accessToken,
@@ -283,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 // get access groups from on-site product
                 var allRoles = GetResultFromApi<IList<OnSiteRole>>(_accessToken,
@@ -355,7 +355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             // Get Company
-            CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+            CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
             if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
             {
@@ -471,7 +471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                    $"ManageProductOnSite.ManageOnSiteUser - _productUsername for user is {_productUsername}.");
 
-                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
@@ -621,7 +621,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
-                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 int companyId = Convert.ToInt32(company.CompanyInstanceSourceId);
                 OnSiteUserProfileUpdate onSiteUser = new OnSiteUserProfileUpdate
                 {
@@ -682,7 +682,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 logData.Add("Url", $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
                 WriteToDiagnosticLog("ManageProductOnSite.GetUsers", logData);
@@ -738,7 +738,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                
                 var filter = "UnMigrated";
                 var startRow = 0;
@@ -821,7 +821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 var onSitemigrateUsers = new OnSiteMigrateUsers();
                 var onSiteUnmigrateUsers = new OnSiteMigrateUsers();
@@ -921,7 +921,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             // Get Company
-            CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+            CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
             if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
             {
