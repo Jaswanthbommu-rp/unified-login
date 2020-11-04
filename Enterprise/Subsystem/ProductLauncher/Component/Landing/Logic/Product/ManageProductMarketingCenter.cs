@@ -703,7 +703,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				ContactRoleName = null,
 				FirstName = person.FirstName,
 				LastName = person.LastName,
-				EmailAddress = userEmailAddress,
+				EmailAddress = productLoginName,
 				LeadEmailAddress = userLeadEmailAddress,
 				WelcomeEmailSent = true, // send true so it doesn't send an email
 				AssignUnassignProperties = true
