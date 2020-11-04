@@ -226,8 +226,7 @@ BEGIN
 					ULP.StatusThruDate AS 'StatusThruDate',
 					pa.RealPageId AS 'UserRealPageId',
 					(SELECT productCode, userName, id FROM cteUserProductSAML WHERE PersonaId = p.PersonaId FOR JSON PATH) AS 'Product',
-					COUNT(1) OVER () AS TotalRecords,
-					ue.Employee
+					COUNT(1) OVER () AS TotalRecords
 		FROM	Ident.UserLogin ul
 				INNER JOIN Enterprise.Party pa ON pa.PartyId = ul.PersonPartyId
 				INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
