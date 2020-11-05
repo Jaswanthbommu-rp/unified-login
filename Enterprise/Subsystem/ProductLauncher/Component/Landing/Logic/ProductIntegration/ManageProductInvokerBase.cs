@@ -516,7 +516,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return string.Empty;
             }
 
-            WriteToErrorLog($"ManageProductInvokerBase.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}");
+            Dictionary<string, object> logData = new Dictionary<string, object> {{"result", result}};
+            WriteToErrorLog($"ManageProductInvokerBase.UnassignUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail", logData);
 
             return result.Content;
         }
@@ -644,7 +645,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (result.IsSuccessStatusCode)
             {
                 WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping.");
+                    $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
 
                 // map product user in green book
                 _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
@@ -658,9 +659,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 return string.Empty;
             }
-
+            Dictionary<string, object> logData = new Dictionary<string, object> {{"result", result}};
             WriteToErrorLog(
-                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. result received - {result}.");
+                $"ManageProductInvokerBase.CreateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}.", logData);
 
             return result.Content;
         }
@@ -687,7 +688,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (result.IsSuccessStatusCode)
             {
                 WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.UpdateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping.");
+                    $"ManageProductInvokerBase.UpdateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
 
                 if (batchProcessType == BatchProcessType.CreateUpdateProductUser)
                 {
@@ -709,9 +710,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 return string.Empty;
             }
-
+            Dictionary<string, object> logData = new Dictionary<string, object> {{"result", result}};
             WriteToErrorLog(
-                $"ManageProductInvokerBase.UpdateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. result received - {result}.");
+                $"ManageProductInvokerBase.UpdateUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}.", logData);
 
             return result.Content;
         }
@@ -795,7 +796,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (result.IsSuccessStatusCode)
             {
                 WriteToDiagnosticLog(
-                    $"ManageProductInvokerBase.UpdateUserProfile - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId} subjectPersonaId - {SubjectUserDetails.PersonaId}. Received success. Updating Geenbook mapping.");
+                    $"ManageProductInvokerBase.UpdateUserProfile - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId} subjectPersonaId - {SubjectUserDetails.PersonaId}. Received success. Updating Greenbook mapping.");
 
                 // activity logging
                 ProductActivityLogger.WriteUpdateUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode,
@@ -808,10 +809,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return string.Empty;
             }
 
-            // log result;
+            Dictionary<string, object> logData = new Dictionary<string, object> {{"result", result}};
             WriteToErrorLog(
                 $"ManageProductInvokerBase.UpdateUserProfile - Product {ProductType} " +
-                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
+                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}.");
 
             return result.Content;
         }
@@ -933,15 +934,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             var result = integration.PatchEntity<MigrateResponse>(migrateUsers);
-
+            var logData = new Dictionary<string, object> {{"result", result}};
             if (result.IsSuccessStatusCode)
             {
                 var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(JsonConvert.SerializeObject(result.Content));
-                WriteToDiagnosticLog($"ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync {result}");
+                WriteToDiagnosticLog($"ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
                 return migrationResponse;
             }
 
-            WriteToErrorLog($"ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync {result}");
+            WriteToErrorLog($"ManageProductMarketingCenter.UpdateUsersMigrationStatus.PostAsJsonAsync {result}", logData);
             migrateResponse.Message = "Cannot update user status to migrated.";
             return migrateResponse;
         }
@@ -966,9 +967,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             // log exception details from result
+            var logData = new Dictionary<string, object> {{"result", result}};
             WriteToErrorLog(
                 $"ManageProductInvokerBase.ExternalProductUserProfileChange - Product {ProductType} " +
-                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
+                $"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}.", logData);
 
             return false;
         }
