@@ -91,19 +91,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             if (roleTypeList != null && !string.IsNullOrWhiteSpace(loginName))
             {
-                IManageUserLogin manageUserLogin = new ManageUserLogin();
+                IManageUserLogin manageUserLogin = new ManageUserLogin();               
                 IList<UserOrganization> userPersonaOrganizationList = manageUserLogin.GetUserPersonaOrganization(loginName);
+
                 if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
                 {
-                    if (userPersonaOrganizationList.ToList().Any(i => !i.OrganizationPartyId.Equals(partyId) && !i.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)))
+                    UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+                    //Multi Domain user
+                    if (userOrganization != null && userPersonaOrganizationList.ToList().Count(u => u.BooksCustomerMasterId == userOrganization.BooksCustomerMasterId) > 1) 
                     {
-                        roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)).ToList();
+                        roleTypeList.Remove(roleTypeList.First(r => r.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)));
+                        roleTypeList.Remove(roleTypeList.First(r => r.PartyRoleTypeId.Equals((int)UserRoleType.UserNoEmail)));                       
                     }
+                    else
+                    {
+                        if (userPersonaOrganizationList.ToList().Any(i => !i.OrganizationPartyId.Equals(partyId) && !i.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)))
+                        {
+                            roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)).ToList();
+                        }
 
-                    if (userPersonaOrganizationList.ToList().Any(i => i.PartyRoleTypeId.Equals((int) UserRoleType.ExternalUser)))
-                    {
-                        roleTypeList = roleTypeList.ToList().Where(r => !r.PartyRoleTypeId.Equals((int) UserRoleType.UserNoEmail)).ToList();
+                        if (userPersonaOrganizationList.ToList().Any(i => i.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)))
+                        {
+                            roleTypeList = roleTypeList.ToList().Where(r => !r.PartyRoleTypeId.Equals((int)UserRoleType.UserNoEmail)).ToList();
+                        }
                     }
+                   
                 }
             }
 

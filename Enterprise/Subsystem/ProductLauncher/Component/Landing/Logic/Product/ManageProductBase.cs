@@ -77,6 +77,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Product user Id
         /// </summary>
         protected string _productUserId = "";
+        /// <summary>
+        /// Productudm source code
+        /// </summary>
+        protected string _udmSourceCode = "";
 
         // Managers
         /// <summary>
@@ -207,18 +211,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         protected IManageContactMechanism _manageContactMechanism = new ManageContactMechanism();
 
-
+        protected GbProductMap _productDetails = new GbProductMap();
+        
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="productId"></param>
         /// <param name="productInternalSettingRepository"></param>
-        public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository)
+        /// <param name="productRepository"></param>
+        public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
             _productId = productId;
             _correlationId = Guid.NewGuid().ToString(); // used for logging
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
+            if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId);
+            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
         }
 
         /// <summary>
@@ -232,8 +241,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
-            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
+            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }           
             _productInternalSettingList = GetProductSetting(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId);
+            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;          
         }
 
         /// <summary>
@@ -886,11 +897,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
-            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+            //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetails,
-               booksProductDetail.BooksProductCode,
-                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+               _productDetails.BooksProductCode,
+                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {_productDetails.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
         }
 
         /// <summary>
@@ -901,11 +912,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
-            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+            //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetails,
-               booksProductDetail.BooksProductCode,
-                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+               _productDetails.BooksProductCode,
+                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is unassigned in product {_productDetails.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
         }
 
         /// <summary>
@@ -916,11 +927,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetails = GetUserActivityLogInfo(toPersonaId);
-            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+            //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetails,
-               booksProductDetail.BooksProductCode,
-                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is re-activated in product {booksProductDetail.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
+               _productDetails.BooksProductCode,
+                $"{toUserLogDetails.FirstName} {toUserLogDetails.LastName} is re-activated in product {_productDetails.Name} by user {fromUserLogDetail.FirstName} {fromUserLogDetail.LastName}.");
         }
 
         /// <summary>
@@ -981,13 +992,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetail = GetUserActivityLogInfo(toPersonaId);
-            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+            //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
             var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
-                booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+                _productDetails.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetail,
-               booksProductDetail.BooksProductCode, logMessage);
+               _productDetails.BooksProductCode, logMessage);
         }
 
         protected void WriteActivityLogWithMessageByProduct(long fromPersonaId, long toPersonaId, int productId, string message)
@@ -995,23 +1006,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetail = GetUserActivityLogInfo(toPersonaId);
-            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
+            //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
             var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
-                booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+                _productDetails.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetail,
-               booksProductDetail.BooksProductCode, logMessage);
+               _productDetails.BooksProductCode, logMessage);
         }
 
         private void WriteActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)
         {
             // log product user created activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
-            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
+           // var booksProductDetail = _productRepository.GetBooksMasterProductDetail(_productId);
 
             var messageToLog = string.Format(message, toPerson.FirstName, toPerson.LastName,
-                booksProductDetail.Name,
+                _productDetails.Name,
                 fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail,
@@ -1024,7 +1035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                      UserId = toUserGbLogin.UserId,
                      RealPageId = toUserGbLogin.RealPageId
                  },
-            booksProductDetail.BooksProductCode, messageToLog);
+            _productDetails.BooksProductCode, messageToLog);
         }
 
         /// <summary>
@@ -1080,6 +1091,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        private GbProductMap GetBooksMasterProductDetail(int productID)
+        {
+            GbProductMap productMap = new GbProductMap();
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "productDetails_" + productID.ToString();
+            productMap = rpcache.GetFromCache<GbProductMap>(cacheKey, 120, () =>
+            {
+                // load from database
+                return _productRepository.GetBooksMasterProductDetail(productID);
+            });
+
+            return productMap;             
+        }
         #endregion
 
         public void Dispose()

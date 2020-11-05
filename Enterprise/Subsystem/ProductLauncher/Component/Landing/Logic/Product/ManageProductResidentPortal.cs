@@ -108,7 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
             IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin,
             IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, DefaultUserClaim userClaims, HttpMessageHandler messageHandler)
-            : base((int)ProductEnum.ResidentPortal, userClaims, productInternalSettingRepository)
+            : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _residentPortalEditorUser = residentPortalEditorUser;
@@ -123,7 +123,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _managePartyRelationship = managePartyRelationship;
             _manageElectronicAddress = manageElectronicAddress;
             _userClaims = userClaims;
-
             _messageHandler = messageHandler;
             _client = new HttpClient(messageHandler, false);
 
@@ -146,7 +145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
         /// <param name="userClaims">Used the hold user claim related info</param>
-        public ManageProductResidentPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, userClaims, productInternalSettingRepository)
+        public ManageProductResidentPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _companyInstanceId = companyInstanceId;
@@ -159,6 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
             _userClaims = userClaims;
+            _productRepository = productRepository;
         }
         #endregion
 
@@ -263,7 +263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return _listResponse;
                 }
 
-                CustomerCompanyMap companyMap = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal);
+                CustomerCompanyMap companyMap = GetProductCompanyInstanceId(_udmSourceCode);
                 _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
 
                 IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
@@ -408,7 +408,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-                CustomerCompanyMap companyMap = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal);
+                CustomerCompanyMap companyMap = GetProductCompanyInstanceId(_udmSourceCode);
                 if ((companyMap != null) && (Convert.ToInt32(companyMap.CompanyInstanceSourceId) > 0))
                 {
                     _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
@@ -906,7 +906,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal, useTranslate:false).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
                         WriteToErrorLog($"ManageProductResidentPortal.UnassignResidentPortalUser-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
@@ -1519,7 +1519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal, useTranslate:false).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
                         WriteToErrorLog($"ManageProductResidentPortal.DeleteUser-GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
@@ -1635,7 +1635,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
@@ -1727,7 +1727,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
@@ -2151,7 +2151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if ((_companyInstanceSourceId == 0) || (_communityId == 0))
             {
-                CustomerCompanyMap companyMap = GetProductCompanyInstanceId(BlueBookProductConstants.ResidentPortal);
+                CustomerCompanyMap companyMap = GetProductCompanyInstanceId(_udmSourceCode);
                 if (companyMap != null)
                 {
                     _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);

@@ -39,7 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (_realpageUserId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-            IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_realpageUserId);
+            IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims);
             var result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
 
             //if(result.IsError)
@@ -66,7 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateProspectContactCenterUserStatus(ProductUser produtUser)
         {
-            var manageProductProspectContact = new ManageProductProspectContact(_realpageUserId);
+            var manageProductProspectContact = new ManageProductProspectContact(_userClaims);
             if (!manageProductProspectContact.ChangeUserStatus(_personaId, produtUser.UserId))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Deactivate prospectcontactcenter user failed.");
@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (persona == null)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
 
-            IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(persona.RealPageId);
+            IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims);
 
             return Request.CreateResponse(HttpStatusCode.OK, manageProductProspectContact.GetMigrationUsers(editorPersonaId, datafilter));
         }
@@ -115,7 +115,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers)
         {
-            IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_realpageUserId);
+            IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims);
             return Request.CreateResponse(HttpStatusCode.OK, manageProductProspectContact.UpdateUsersMigrationStatus(_personaId, migrateUsers));
         }
         #endregion

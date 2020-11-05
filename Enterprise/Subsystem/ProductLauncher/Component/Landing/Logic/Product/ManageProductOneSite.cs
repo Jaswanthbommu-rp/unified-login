@@ -110,7 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ManageProductOneSite(Guid editorRealPageId, IOneSiteProductService service, ISamlRepository samlRepository,
             IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
             IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler)
-            : base((int)ProductEnum.OneSite, productInternalSettingRepository)
+            : base((int)ProductEnum.OneSite, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _service = service;
@@ -147,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="managePartyRelationship"></param>
         /// <param name="manageElectronicAddress"></param>
-        public ManageProductOneSite(Guid editorRealPageId, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository) : base((int)ProductEnum.OneSite, productInternalSettingRepository)
+        public ManageProductOneSite(Guid editorRealPageId, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository) : base((int)ProductEnum.OneSite, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _service = service;
