@@ -74,8 +74,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="samlRepository"></param>
 		/// <param name="manageBlueBook"></param>
 		public ManageProductMarketingCenter(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook)
-			: base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository)
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
+			: base((int)ProductEnum.MarketingCenter, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_messageHandler = httpMessageHandler;
@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_samlRepository = samlRepository;
 			_blueBook = manageBlueBook;
 			_userClaims = userClaims;
-			
+			_productRepository = productRepository;
 			_productUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
 			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MARKETINGCENTERAPISOURCEID", StringComparison.OrdinalIgnoreCase)).Value;
 			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));

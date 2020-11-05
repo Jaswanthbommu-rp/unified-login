@@ -84,8 +84,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="blueBook"></param>
         public ManageProductRum(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, HttpMessageHandler tokenMessageHandler, 
             IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona, 
-            ISamlRepository samlRepository, IManageBlueBook blueBook)
-             : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository)
+            ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
+             : base((int)ProductEnum.UtilityManagement, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _productInternalSettingRepository = productInternalSettingRepository;
@@ -94,7 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _samlRepository = samlRepository;
             _messageHandler = messageHandler;
 	        _userClaims = userClaims;
-
+            _productRepository = productRepository;
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value;
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value;

@@ -218,14 +218,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="productId"></param>
         /// <param name="productInternalSettingRepository"></param>
-        public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository)
+        /// <param name="productRepository"></param>
+        public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
             _productId = productId;
             _correlationId = Guid.NewGuid().ToString(); // used for logging
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
+            if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
-            _productDetails = _productRepository.GetBooksMasterProductDetail(_productId);
-            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;           
+            _productDetails = GetBooksMasterProductDetail(_productId);
+            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
         }
 
         /// <summary>
@@ -239,9 +241,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
-            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
+            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }           
             _productInternalSettingList = GetProductSetting(_productId);
-            _productDetails = _productRepository.GetBooksMasterProductDetail(_productId);
+            _productDetails = GetBooksMasterProductDetail(_productId);
             _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;          
         }
 
@@ -1089,6 +1091,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        private GbProductMap GetBooksMasterProductDetail(int productID)
+        {
+            GbProductMap productMap = new GbProductMap();
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = "productDetails_" + productID.ToString();
+            productMap = rpcache.GetFromCache<GbProductMap>(cacheKey, 120, () =>
+            {
+                // load from database
+                return _productRepository.GetBooksMasterProductDetail(productID);
+            });
+
+            return productMap;             
+        }
         #endregion
 
         public void Dispose()

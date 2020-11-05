@@ -39,13 +39,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="editorRealPageId">Real page Id of user who is creating new user</param>
-		public ManageProductProspectContact(Guid editorRealPageId) : base((int)ProductEnum.ProspectContactCenter, null)
+		public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, null)
 		{
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
 
 			_productId = (int)ProductEnum.ProspectContactCenter;
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
-			_editorRealPageId = editorRealPageId;
+			_editorRealPageId = userClaims.UserRealPageGuid;
 
 			_blueBook = new ManageBlueBook();
 
@@ -64,8 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="samlRepository"></param>
 		/// <param name="manageBlueBook"></param>
 		public ManageProductProspectContact(Guid editorRealPageId, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook)
-			: base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository)
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
+			: base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository, productRepository)
 		{
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
 
@@ -75,7 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_blueBook = manageBlueBook;
 			_apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
 			_client = new HttpClient(httpMessageHandler, false);
-
+			_productRepository = productRepository;
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Received Product settings.");
 		}
 

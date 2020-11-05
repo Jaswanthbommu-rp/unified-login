@@ -25,10 +25,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// The default constructor
 		/// </summary>
 		/// <param name="editorRealPageId">The RealPageId of the editor</param>
-		public ManageProductEasyLMS(Guid editorRealPageId) : base((int)ProductEnum.EasyLMS, null)
+		public ManageProductEasyLMS(DefaultUserClaim userClaims) : base((int)ProductEnum.EasyLMS, userClaims, null)
 		{
 			_productId = (int)ProductEnum.EasyLMS;
-			_editorRealPageId = editorRealPageId;
+			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new Logic.ManageBlueBook();
 		}
 
@@ -45,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="manageUserLogin">UserLogin business logic</param>
 		/// <param name="managePartyRelationship">Party Relationship business logic</param>
 		/// <param name="manageElectronicAddress">Electronic Address business logic</param>
-		public ManageProductEasyLMS(Guid editorRealPageId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository)
+		public ManageProductEasyLMS(Guid editorRealPageId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_samlRepository = samlRepository;
@@ -72,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="managePerson">Person business logic</param>
 		/// <param name="manageUserLogin">UserLogin business logic</param>
 		/// <param name="managePartyRelationship">Party Relationship business logic</param>
-		public ManageProductEasyLMS(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository)
+		public ManageProductEasyLMS(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_companyInstanceId = companyInstanceId;

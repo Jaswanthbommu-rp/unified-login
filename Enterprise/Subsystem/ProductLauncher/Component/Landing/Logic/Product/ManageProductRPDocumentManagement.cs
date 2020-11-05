@@ -63,7 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userLoginRepository"></param>
 		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
 			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManageContactMechanism manageContactMechanism, IManagePartyRelationship managePartyRelationship, IProductRepository productRepository, IUserLoginRepository userLoginRepository)
-			: base((int) ProductEnum.RPDocumentManagement, userClaims, productInternalSettingRepository)
+			: base((int) ProductEnum.RPDocumentManagement, productInternalSettingRepository, productRepository)
 		{
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;

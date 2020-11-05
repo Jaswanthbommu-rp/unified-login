@@ -84,8 +84,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="samlRepository"></param>
 		/// <param name="manageBlueBook"></param>
         public ManageProductVendorServices(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-            IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook)
-            : base((int)ProductEnum.VendorServices, userClaims, productInternalSettingRepository)
+            IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
+            : base((int)ProductEnum.VendorServices, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
 
@@ -93,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _samlRepository = samlRepository;
             _managePersona = managePersona;
             _userClaims = userClaims;
-
+            _productRepository = productRepository;
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value; //"http://web2012.compliancedepot.com/vcapi"; //
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value; //"AF6977FB-8BCE-43BD-B715-2DDC1E5A6009";
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value; //"vendorcompliance";

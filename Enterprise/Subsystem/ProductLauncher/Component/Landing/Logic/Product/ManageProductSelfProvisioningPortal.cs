@@ -31,10 +31,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="editorRealPageId">The RealPageId of the editor</param>
-        public ManageProductSelfProvisioningPortal(Guid editorRealPageId) : base((int)ProductEnum.SelfProvisioningPortal, null)
+        public ManageProductSelfProvisioningPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.SelfProvisioningPortal, userClaims, null)
         {
             _productId = (int)ProductEnum.SelfProvisioningPortal;
-            _editorRealPageId = editorRealPageId;
+            _editorRealPageId = userClaims.UserRealPageGuid;
 
             _selfProvisioningPortaleUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "PRODUCTURL").Value;
         }
@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePerson">Person business logic</param>
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductSelfProvisioningPortal(Guid editorRealPageId, SelfProvisioningPortal selfProvisioningPortal, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository)
+        public ManageProductSelfProvisioningPortal(Guid editorRealPageId, SelfProvisioningPortal selfProvisioningPortal, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _selfProvisioningPortal = selfProvisioningPortal;
@@ -79,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePerson">Person business logic</param>
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductSelfProvisioningPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository)
+        public ManageProductSelfProvisioningPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository,productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _companyInstanceId = companyInstanceId;

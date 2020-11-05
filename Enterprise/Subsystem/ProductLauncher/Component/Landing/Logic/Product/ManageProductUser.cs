@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase((int)productUserAccountDetails.ProductName, _productInternalSettingRepository);
+            var manageProductBase = new ManageProductBase((int)productUserAccountDetails.ProductName, _productInternalSettingRepository, _productRepository);
 
             manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, (int)productUserAccountDetails.ProductName);
 
@@ -1099,7 +1099,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Handle all other products than AO
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(_productId, _productInternalSettingRepository);
+            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository);
 
             manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
             manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
@@ -1113,7 +1113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Default AO record
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(_productId, _productInternalSettingRepository);
+            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository);
 
             manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
             manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
@@ -2009,8 +2009,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productProspectContactCenter = new ManageProductProspectContact(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productProspectContactCenter = new ManageProductProspectContact(base.UserClaim);
 
             // assign user
             if (roleProp.IsAssigned)
@@ -2028,7 +2028,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            var productProspectContactCenter = new ManageProductProspectContact(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productProspectContactCenter = new ManageProductProspectContact(base.UserClaim);
             return productProspectContactCenter.UpdateProspectContactCenterUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 
@@ -2048,8 +2049,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productProspectContactCenter = new ManageProductProspectContact(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productProspectContactCenter = new ManageProductProspectContact(base.UserClaim);
             return productProspectContactCenter.ChangeProspectContactUserType(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
         }
     }
@@ -2341,8 +2342,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productOnSite = new ManageProductOnSite(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productOnSite = new ManageProductOnSite(base.UserClaim);
 
             // assign user
             if (roleProp.IsAssigned)
@@ -2364,7 +2365,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            var productOnsite = new ManageProductOnSite(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productOnsite = new ManageProductOnSite(base.UserClaim);
             return productOnsite.UpdateOnSiteUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 
@@ -2384,8 +2386,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productOnSite = new ManageProductOnSite(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productOnSite = new ManageProductOnSite(base.UserClaim);
 
             return productOnSite.ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
         }
@@ -2921,8 +2923,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 throw new Exception("Input JSON parsing issue; Null object.");
             }
-
-            ManageProductSelfProvisioningPortal productSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(createUserRealPageId);
+            
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            ManageProductSelfProvisioningPortal productSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(base.UserClaim);
 
             // assign user
             if (roleProp.IsAssigned)

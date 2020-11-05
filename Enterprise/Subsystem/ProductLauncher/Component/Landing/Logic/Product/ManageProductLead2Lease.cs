@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePartyRelationship"></param>
         /// <param name="manageProductOneSite"></param>
         /// <param name="userLoginRepository"></param>
-        public ManageProductLead2Lease(Guid editorRealPageId, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.Lead2Lease, productInternalSettingRepository)
+        public ManageProductLead2Lease(Guid editorRealPageId, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.Lead2Lease, productInternalSettingRepository, productRepository)
         {
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;           

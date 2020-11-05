@@ -41,12 +41,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Ctor
         /// </summary>
-        public ManageProductOnSite(Guid editorRealPageId) : base((int)ProductEnum.OnSite, null)
+        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite,userClaims, null)
         {
             WriteToDiagnosticLog("ManageProductOnSite.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.OnSite;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _editorRealPageId = editorRealPageId;
+            _editorRealPageId = userClaims.UserRealPageGuid;
 
             _blueBook = new ManageBlueBook();
 
@@ -73,8 +73,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="samlRepository"></param>
         /// <param name="blueBook"></param>
         public ManageProductOnSite(Guid editorRealPageId, HttpMessageHandler messageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook)
-             : base((int)ProductEnum.OnSite, productInternalSettingRepository)
+                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
+             : base((int)ProductEnum.OnSite, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _messageHandler = messageHandler;
@@ -82,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _blueBook = blueBook;
             _managePersona = managePersona;
             _samlRepository = samlRepository;
-
+            _productRepository = productRepository;
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value; //"https://staging9.on-site.com/api/greenbook"; //
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value; //"f3865f8b7c1a2177b0147f2ab1bb3ccfee25f716f883eb341d700986a61d4048";
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value; //"3431c19ab693ead1bfe2a138e2a220f3d96c6e24d3c4547236c9f7b52cb0d4e5";

@@ -108,7 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
             IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin,
             IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, DefaultUserClaim userClaims, HttpMessageHandler messageHandler)
-            : base((int)ProductEnum.ResidentPortal, userClaims, productInternalSettingRepository)
+            : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _residentPortalEditorUser = residentPortalEditorUser;
@@ -123,7 +123,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _managePartyRelationship = managePartyRelationship;
             _manageElectronicAddress = manageElectronicAddress;
             _userClaims = userClaims;
-
             _messageHandler = messageHandler;
             _client = new HttpClient(messageHandler, false);
 
@@ -146,7 +145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
         /// <param name="userClaims">Used the hold user claim related info</param>
-        public ManageProductResidentPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, userClaims, productInternalSettingRepository)
+        public ManageProductResidentPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaims) : base((int)ProductEnum.ResidentPortal, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _companyInstanceId = companyInstanceId;
@@ -159,6 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
             _userClaims = userClaims;
+            _productRepository = productRepository;
         }
         #endregion
 

@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims">User Claim</param>
-        public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance, null)
+        public ManageProductRentersInsurance(DefaultUserClaim userClaims) : base((int)ProductEnum.Insurance,userClaims ,null)
         {
             _productId = (int)ProductEnum.Insurance;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -81,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository,
             IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin,
             IManagePartyRelationship managePartyRelationship)
-            : base((int)ProductEnum.Insurance, productInternalSettingRepository)
+            : base((int)ProductEnum.Insurance, productInternalSettingRepository,productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _insuranceService = rentersInsuraceService;
@@ -93,6 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
+            _productRepository = productRepository;
         }
 
         /// <summary>
@@ -109,7 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePerson">Person business logic</param>
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductRentersInsurance(Guid editorRealPageId, IInsuranceService rentersInsuraceService, ListOfUserRolesResponse listOfUserRolesResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository)
+        public ManageProductRentersInsurance(Guid editorRealPageId, IInsuranceService rentersInsuraceService, ListOfUserRolesResponse listOfUserRolesResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _insuranceService = rentersInsuraceService;
@@ -139,7 +140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePerson">Person business logic</param>
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
-        public ManageProductRentersInsurance(Guid editorRealPageId, long companyInstanceId, IInsuranceService rentersInsuraceService, ListPropertyByPMCIDResponse listPropertyByPMCIDResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository)
+        public ManageProductRentersInsurance(Guid editorRealPageId, long companyInstanceId, IInsuranceService rentersInsuraceService, ListPropertyByPMCIDResponse listPropertyByPMCIDResponse, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.Insurance, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _companyInstanceId = companyInstanceId;

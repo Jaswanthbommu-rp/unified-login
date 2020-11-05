@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productRepository"></param>
 		/// <param name="productInternalSettingRepository"></param>
 		/// <param name="managePartyRelationship"></param>
-		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, userClaims, productInternalSettingRepository)
+		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_service = service;
@@ -108,7 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="managePerson"></param>
 		/// <param name="manageUserLogin"></param>
 		/// <param name="managePartyRelationship"></param>
-		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManageElectronicAddress manageElectronicAddress, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, userClaims, productInternalSettingRepository)
+		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManageElectronicAddress manageElectronicAddress, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_service = service;
