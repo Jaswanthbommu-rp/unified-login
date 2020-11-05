@@ -1938,7 +1938,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             WriteToDiagnosticLog("ManageProductOneSite.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
 
-            var allUsers = GetResultFromApi<IList<MigrationUser>>(_mtAccessToken, url);
+            var allUsers = GetResultFromApi<IList<OneSiteMigrateUser>>(_mtAccessToken, url);
 
             if (allUsers == null)
             {
@@ -1948,6 +1948,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             foreach (var user in allUsers)
             {
                 user.CompanyInstanceSourceId = companyInstanceSourceId.ToString();
+                user.EmployeeId = user.ReferenceNumber;
             }
             WriteToDiagnosticLog($"ManageProductOneSite.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
             response.RowsPerPage = resultPerPage;

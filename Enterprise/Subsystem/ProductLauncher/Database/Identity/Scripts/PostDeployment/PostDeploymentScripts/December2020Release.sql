@@ -43,7 +43,7 @@ BEGIN
 END
 
 --OrganizationOverRideRight
-SELECT @PartyId = PartyId
+SELECT @PartyId = O.PartyId
 FROM [Enterprise].[Organization] O
     INNER JOIN [Enterprise].[Party] P ON P.PartyId = O.PartyId
 WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
