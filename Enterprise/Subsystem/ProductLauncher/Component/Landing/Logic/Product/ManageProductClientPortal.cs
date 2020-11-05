@@ -1101,8 +1101,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string CreateClientPortalContact(ClientPortalContact clientPortalContact)
         {
+            var logData = new Dictionary<string, object> { { "clientPortalContact", clientPortalContact } };
+
             WriteToDiagnosticLog(
-                      $"ManageProductClientPortal.CreateClientPortalContact - Payload {JsonConvert.SerializeObject(clientPortalContact)}");
+                      $"ManageProductClientPortal.CreateClientPortalContact - Beginning", logData);
 
             var result = PostApi($"{_apiRoute}sobjects/Contact", clientPortalContact);
 
@@ -1134,8 +1136,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string CreateClientPortalUser(long userPersonaId, ClientPortalUser clientPortalUser)
         {
 
+            var logData = new Dictionary<string, object> { { "clientPortalUser", clientPortalUser } };
+
             WriteToDiagnosticLog(
-                      $"ManageProductClientPortal.CreateClientPortalUser - Payload {JsonConvert.SerializeObject(clientPortalUser)}");
+                      $"ManageProductClientPortal.CreateClientPortalUser - Beginning", logData);
 
             var result = PostApi($"{_apiRoute}sobjects/User", clientPortalUser);
             if (string.IsNullOrEmpty(result))
@@ -1160,8 +1164,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string UpdateClientPortalUser(ClientPortalUser clientPortalUser, string productUserId, long userPersonaId)
         {
+            var logData = new Dictionary<string, object> { { "clientPortalUser", clientPortalUser } };
+
             WriteToDiagnosticLog(
-                     $"ManageProductClientPortal.UpdateClientPortalUser - Payload {JsonConvert.SerializeObject(clientPortalUser)}");
+                      $"ManageProductClientPortal.UpdateClientPortalUser - Beginning", logData);
 
             var result = PostApi($"{_apiRoute}sobjects/User/{productUserId}?_HttpMethod=PATCH", clientPortalUser);
             if (!string.IsNullOrEmpty(result))
