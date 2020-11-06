@@ -54,7 +54,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// </summary>
 		public ObjectResponse CreateEnterpriseUnityUser(UserProductDetails userProductDetails)
 		{
-			WriteToLog(LogEventLevel.Debug, $"Beginning CreateEnterpriseUnityUser for new user with json {JsonConvert.SerializeObject(userProductDetails)}");
+			//WriteToLog(LogEventLevel.Debug, $"Beginning CreateEnterpriseUnityUser for new user with json {JsonConvert.SerializeObject(userProductDetails)}");
+
+			var logData = new Dictionary<string, object> { { "userProductDetails", userProductDetails } };
+			WriteToLog(LogEventLevel.Debug, $"Beginning CreateEnterpriseUnityUser for new user with json", logData);
 
 			var response = new ObjectResponse();
 
