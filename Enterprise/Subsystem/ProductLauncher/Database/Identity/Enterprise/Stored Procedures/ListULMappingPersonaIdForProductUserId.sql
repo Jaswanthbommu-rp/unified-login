@@ -11,8 +11,6 @@ BEGIN
 	Declare @SamlAttributeId int;
 	DECLARE @ProductUserIdList TABLE(ProductUserId nvarchar(50));
 
-	DECLARE @NOW DATETIME = GETUTCDATE();
-
 	INSERT INTO @ProductUserIdList(ProductUserId)
 	(
 		SELECT *
@@ -60,7 +58,7 @@ BEGIN
 								INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
 								INNER JOIN Enterprise.ElectronicAddress ea ON ea.ContactMechanismID = cm.ContactMechanismID
 								INNER JOIN Enterprise.Party p ON p.PartyId = pcm.PartyId
-					WHERE	(pcm.ThruDate IS NULL OR pcm.ThruDate > @NOW)
+					WHERE	(pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())
 					AND			cmu.ContactMechanismUsageTypeID = 301
 			) ne ON ne.PartyId = pe.PartyId
 
