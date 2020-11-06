@@ -37,20 +37,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private static HttpClient _httpClient;
         private IManageProductOneSite _mpOneSite;
         private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
-        private const int MAXRETRYCOUNT = 5;
-
+        private const int MAXRETRYCOUNT = 5;       
         private DefaultUserClaim _userClaims;
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, null)
+        public ManageProductLead2Lease(DefaultUserClaim userClaims) : base((int)ProductEnum.Lead2Lease, userClaims, null, null)
         {
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new Logic.ManageBlueBook(userClaims);
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
+            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;           
             // TODO REMOVE WHEN POSTING TO TRUSTED URL
             ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
             // TODO REMOVE WHEN POSTING TO TRUSTED URL
@@ -72,10 +71,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="managePartyRelationship"></param>
         /// <param name="manageProductOneSite"></param>
         /// <param name="userLoginRepository"></param>
-        public ManageProductLead2Lease(Guid editorRealPageId, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.Lead2Lease, productInternalSettingRepository)
+        public ManageProductLead2Lease(Guid editorRealPageId, HttpMessageHandler messageHandler, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IManageProductOneSite manageProductOneSite, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.Lead2Lease, productInternalSettingRepository, productRepository)
         {
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
+            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;           
             _editorRealPageId = editorRealPageId;
             _messageHandler = messageHandler;
             _samlRepository = samlRepository;
@@ -835,7 +834,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
                 if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.Lead2Lease).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
@@ -909,7 +908,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
                 if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.Lead2Lease).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
@@ -1094,7 +1093,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<Property> GetPropertyMain()
         {
             Dictionary<string, object> logData = new Dictionary<string, object>();
-            CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.Lead2Lease);
+            CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
             //string lead2LeaseCompanyId = (lead2leasecompanyoverride == "" ? company.CompanyInstanceSourceId : lead2leasecompanyoverride);
             // switch to BlueBook when it has valid data and can link L2L Properties with OneSite properties
             //IList<PropertyInstance> bbPropertyList = _blueBook.GetPropertyInstance(company.CompanyInstanceId);
