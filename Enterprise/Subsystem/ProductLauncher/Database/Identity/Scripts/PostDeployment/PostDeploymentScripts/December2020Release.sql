@@ -13,8 +13,8 @@ WHERE LoginName = 'RealPageAd@test.com'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup')
 BEGIN
-	INSERT INTO [Security].[Right] VALUES
-	('EmployeeAccessToCompanySetup', 'Allow an authorized RealPage employee the ability to navigate the Configurations icon','Allow an authorized RealPage employee the ability to navigate the Configurations icon', 13,10, 3, 3, @CreatedById, @Now)
+	INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
+    VALUES ('EmployeeAccessToCompanySetup', 'Allow an authorized RealPage employee the ability to navigate the Configurations icon','Allow an authorized RealPage employee the ability to navigate the Configurations icon', 13,10, 3, 3, @CreatedById, @Now)
 END
 
 --RightRoute
@@ -28,8 +28,8 @@ WHERE RouteValue = 'SideMenu'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[RightRoute] WHERE RightId = @RightId AND RouteId = @RouteId)
 BEGIN
-	INSERT INTO [Security].[RightRoute] VALUES
-	(@RightId, @RouteId, 'Employee Access to Company Setup', @CreatedById, @Now)
+	INSERT INTO [Security].[RightRoute] (RightId,RouteId,RightName,CreatedBy,CreatedDate)
+	VALUES (@RightId, @RouteId, 'Employee Access to Company Setup', @CreatedById, @Now)
 END
 --RoleRight
 SELECT @RoleId = RoleId 
@@ -38,8 +38,8 @@ WHERE RoleName = 'User Administrator' AND ShortName = 'SuperUser'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId = @RightId)
 BEGIN
-	INSERT INTO [Security].[RoleRight] VALUES
-	(@RoleId, @RightId, @CreatedById, @Now)
+	INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
+	VALUES (@RoleId, @RightId, @CreatedById, @Now)
 END
 
 --OrganizationOverRideRight
@@ -50,8 +50,13 @@ WHERE p.RealPageId = '0D018E46-C20E-477D-ADED-4E5A35FB8F99'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]  WHERE RightId = @RightId AND OrgPartyId = @PartyId)
 BEGIN
-	INSERT INTO [Security].[OrganizationOverRideRight] VALUES
-	(@RightId, @PartyId, 9, @CreatedById, @Now)
+	INSERT INTO [Security].[OrganizationOverRideRight]
+           ([RightId]
+           ,[OrgPartyId]
+           ,[VisibilityStatusId]
+           ,[CreatedBy]
+           ,[CreatedDate]) 
+           VALUES	(@RightId, @PartyId, 9, @CreatedById, @Now)
 END
 GO
 -- Add UDM Source Code for ILM products
