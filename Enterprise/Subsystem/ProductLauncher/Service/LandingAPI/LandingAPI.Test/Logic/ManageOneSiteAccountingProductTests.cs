@@ -1733,6 +1733,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.DisableUser(It.IsAny<NameValuePair[]>()))
                 .Returns("INACTIVATED");
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             var username = "123";
             var isActive = false;
 
