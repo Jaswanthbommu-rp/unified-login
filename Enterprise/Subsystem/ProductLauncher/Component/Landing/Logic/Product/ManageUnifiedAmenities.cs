@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		public ManageUnifiedAmenities(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedAmenities, userClaims, null)
+		public ManageUnifiedAmenities(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedAmenities, userClaims, null, null)
 		{
 			WriteToDiagnosticLog("Ctor - Getting Product settings.");
 			_userClaims = userClaims;

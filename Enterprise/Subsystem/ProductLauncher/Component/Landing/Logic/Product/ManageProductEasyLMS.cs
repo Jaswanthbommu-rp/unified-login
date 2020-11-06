@@ -25,7 +25,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// The default constructor
 		/// </summary>
 		/// <param name="editorRealPageId">The RealPageId of the editor</param>
-		public ManageProductEasyLMS(DefaultUserClaim userClaims) : base((int)ProductEnum.EasyLMS, userClaims, null)
+		public ManageProductEasyLMS(DefaultUserClaim userClaims) : base((int)ProductEnum.EasyLMS, userClaims, null, null)
 		{
 			_productId = (int)ProductEnum.EasyLMS;
 			_editorRealPageId = userClaims.UserRealPageGuid;

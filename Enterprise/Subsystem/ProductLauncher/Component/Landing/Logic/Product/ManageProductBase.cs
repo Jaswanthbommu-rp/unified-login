@@ -221,7 +221,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productRepository"></param>
         public ManageProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
-            _productId = productId;
+            _productId = productId;            
             _correlationId = Guid.NewGuid().ToString(); // used for logging
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
@@ -236,12 +236,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productId"></param>
         /// <param name="userClaim">The information about the user calling the service</param>
         /// <param name="productInternalSettingRepository"></param>
-        public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository)
+        public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
-            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }           
+            if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
+            if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
             _productDetails = GetBooksMasterProductDetail(_productId);
             _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;          

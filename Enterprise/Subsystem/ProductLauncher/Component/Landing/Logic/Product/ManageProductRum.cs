@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// 
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, null)
+        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, null, null)
         {
             WriteToDiagnosticLog("ManageProductRum.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.UtilityManagement;
@@ -85,7 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ManageProductRum(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, HttpMessageHandler tokenMessageHandler, 
             IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona, 
             ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
-             : base((int)ProductEnum.UtilityManagement, productInternalSettingRepository, productRepository)
+             : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _productInternalSettingRepository = productInternalSettingRepository;

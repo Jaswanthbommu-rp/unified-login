@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageProductOneSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OneSite, userClaims, null)
+        public ManageProductOneSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OneSite, userClaims, null, null)
         {
             _productId = (int)ProductEnum.OneSite;
             _userClaims = userClaims;
