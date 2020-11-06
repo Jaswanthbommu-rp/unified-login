@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	{
 		private string _username;
 		private string _password;
-		private string _marketingCenterApiSourceID;
+		private string _marketingCenterApiSourceID;		
 		private DefaultUserClaim _userClaims;
 		HttpMessageHandler _httpGetMessageHandler = new HttpClientHandler();
 
@@ -41,12 +41,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// The default constructor
 		/// </summary>
 		/// <param name="userClaims">The RealPageId of the editor</param>
-		public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, null)
+		public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, null, null)
 		{
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_blueBook = new Logic.ManageBlueBook(userClaims);
 			_userClaims = userClaims;
-
+			
 			_productUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
 			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MarketingCenterApiSourceID", StringComparison.OrdinalIgnoreCase)).Value;
 			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));
@@ -74,8 +74,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="samlRepository"></param>
 		/// <param name="manageBlueBook"></param>
 		public ManageProductMarketingCenter(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook)
-			: base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository)
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
+			: base((int)ProductEnum.MarketingCenter, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_messageHandler = httpMessageHandler;
@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_samlRepository = samlRepository;
 			_blueBook = manageBlueBook;
 			_userClaims = userClaims;
-
+			_productRepository = productRepository;
 			_productUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
 			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MARKETINGCENTERAPISOURCEID", StringComparison.OrdinalIgnoreCase)).Value;
 			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));
@@ -115,7 +115,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			try
 			{
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 				string marketingCompanyId = company.CompanyInstanceSourceId;
 				
 				WriteToDiagnosticLog($"GetRoles - Found blue book company source id {marketingCompanyId}");
@@ -674,7 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteToDiagnosticLog($"ManageMarketingCenterUser - Using product login name. productUsername: {_productUsername}");
 			MC.MarketingCenterUser mcUser = new MC.MarketingCenterUser();
-			CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter);
+			CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
 			if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
 			{
@@ -896,7 +896,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 			if (listResponse.IsError) { return false; }
 
-			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
+			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 			if (companyInstanceSourceId == 0)
 			{
 				WriteToErrorLog($"ManageProductMarketingCente.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
@@ -1143,7 +1143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 			if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
 
-			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
+			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 			if (companyInstanceSourceId == 0)
 			{
 				WriteToErrorLog(
@@ -1203,7 +1203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 			if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
 
-			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.MarketingCenter).CompanyInstanceSourceId);
+			int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 			if (companyInstanceSourceId == 0)
 			{
 				WriteToErrorLog(

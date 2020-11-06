@@ -40,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         private Mock<IManageContactMechanism> _mockManageContactMechanism = new Mock<IManageContactMechanism>();
         private Mock<IManagePartyRelationship> _mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
         private Mock<IUserLoginRepository> _mockUserLoginRepository = new Mock<IUserLoginRepository>();
-
+        private GbProductMap _gbProductMap = new GbProductMap();
         private static string _domain = "demoapi";
         private static string _companyName = "TESTCOMPANY";
         private static string _companyInstanceSourceId = "demoapi";
@@ -48,8 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
         private static string _apiEndPoint = "https://{{domain}}-test.com";
         private IList<CustomerCompanyMap> _mapCompany = new List<CustomerCompanyMap>();
-        private GbProductMap _gbProductMap = new GbProductMap();
-
+       
         private RPDMClassifier _classifierResult;
         private RPDMRoleDetail _role1Detail;
         private RPDMRoleDetail _role2Detail;
@@ -66,6 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             _repositoryResponseProductStatus = new RepositoryResponse() { ErrorMessage = "", Id = 1 };
             _repositoryResponsePropertySuccess = new RepositoryResponse() { ErrorMessage = "", Id = 1 };
             _repositoryResponsePropertyFail = new RepositoryResponse() { ErrorMessage = "error", Id = -1 };
+            _gbProductMap = new GbProductMap() { BooksProductCode = "DOC", Name = "Document Director", ProductId = 20, UDMSourceCode = "DOC" };
         }
 
         /// <summary>
@@ -325,6 +325,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 .Setup(m => m.GetUserOrganizationWithStatus(
                     _userInvalidPersona.UserId, It.IsAny<DateTime>(), It.IsAny<long>(), It.IsAny<bool>()))
                 .Returns(_organizationStatusInvalidPersona);
+
+            _mockProductRepository
+            .Setup(m => m.GetBooksMasterProductDetail(
+                It.IsAny<int>()
+            ))
+            .Returns(_gbProductMap);
 
             HttpResponseMessage roleResponse = new HttpResponseMessage(HttpStatusCode.OK);
             roleResponse.Content = new StringContent(JsonConvert.SerializeObject(roleResult));
