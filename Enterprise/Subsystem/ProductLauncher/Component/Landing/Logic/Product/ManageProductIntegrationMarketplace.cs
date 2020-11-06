@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="userClaims"></param>        
-		public ManageProductIntegrationMarketplace(DefaultUserClaim userClaims) : base((int)ProductEnum.IntegrationMarketplace, userClaims, null)
+		public ManageProductIntegrationMarketplace(DefaultUserClaim userClaims) : base((int)ProductEnum.IntegrationMarketplace, userClaims, null, null)
 		{
 			WriteToDiagnosticLog("IntegrationMarketplace - ManageProductIntegrationMarketplace.Ctor - Getting Product settings.");
 			_userClaims = userClaims;

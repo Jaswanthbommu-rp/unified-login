@@ -41,12 +41,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Ctor
         /// </summary>
-        public ManageProductOnSite(Guid editorRealPageId) : base((int)ProductEnum.OnSite, null)
+        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite,userClaims, null, null)
         {
             WriteToDiagnosticLog("ManageProductOnSite.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.OnSite;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _editorRealPageId = editorRealPageId;
+            _editorRealPageId = userClaims.UserRealPageGuid;
 
             _blueBook = new ManageBlueBook();
 
@@ -73,8 +73,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="samlRepository"></param>
         /// <param name="blueBook"></param>
         public ManageProductOnSite(Guid editorRealPageId, HttpMessageHandler messageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook)
-             : base((int)ProductEnum.OnSite, productInternalSettingRepository)
+                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
+             : base((int)ProductEnum.OnSite, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _messageHandler = messageHandler;
@@ -82,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _blueBook = blueBook;
             _managePersona = managePersona;
             _samlRepository = samlRepository;
-
+            _productRepository = productRepository;
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value; //"https://staging9.on-site.com/api/greenbook"; //
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value; //"f3865f8b7c1a2177b0147f2ab1bb3ccfee25f716f883eb341d700986a61d4048";
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value; //"3431c19ab693ead1bfe2a138e2a220f3d96c6e24d3c4547236c9f7b52cb0d4e5";
@@ -116,7 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 WriteToDiagnosticLog($"OnSite - GetProperties-GetProductCompanyInstanceId - Found blue book company instance source id - {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}");
 
@@ -201,7 +201,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 // get access groups from on-site product
                 var allRegions = GetResultFromApi<IList<OnSiteRegion>>(_accessToken,
@@ -283,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 // get access groups from on-site product
                 var allRoles = GetResultFromApi<IList<OnSiteRole>>(_accessToken,
@@ -355,7 +355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             // Get Company
-            CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+            CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
             if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
             {
@@ -471,7 +471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                    $"ManageProductOnSite.ManageOnSiteUser - _productUsername for user is {_productUsername}.");
 
-                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
@@ -621,7 +621,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
-                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 int companyId = Convert.ToInt32(company.CompanyInstanceSourceId);
                 OnSiteUserProfileUpdate onSiteUser = new OnSiteUserProfileUpdate
                 {
@@ -682,7 +682,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 logData.Add("Url", $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
                 WriteToDiagnosticLog("ManageProductOnSite.GetUsers", logData);
@@ -738,7 +738,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                
                 var filter = "UnMigrated";
                 var startRow = 0;
@@ -821,7 +821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.OnSite).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 var onSitemigrateUsers = new OnSiteMigrateUsers();
                 var onSiteUnmigrateUsers = new OnSiteMigrateUsers();
@@ -921,7 +921,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             // Get Company
-            CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.OnSite);
+            CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
             if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
             {

@@ -102,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _resultRoleList.Add(new ProductRole() { ID = "2", Name = "Role 2", Description = "Role 2", Roletype = "Custom", RightsAssigned = "2", IsAssigned = false });
             _resultRoleList.Add(new ProductRole() { ID = "3", Name = "Role 3", Description = "Role 3", Roletype = "Default", RightsAssigned = "312", IsAssigned = true });
 
-            _gbProductMap = new GbProductMap { ProductId = 8, BooksProductCode = "ACCT", Name = "OneSite Accounting" };
+            _gbProductMap = new GbProductMap { ProductId = 8, BooksProductCode = "ACCT", Name = "OneSite Accounting" ,UDMSourceCode = "ACCT"};
         }
 
         [Fact]
@@ -203,6 +203,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<int>()
                 ))
                 .Returns(_productInternalSettings);
+
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
 
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, null);
@@ -316,6 +322,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<int>()
                 ))
                 .Returns(_productInternalSettings);
+            
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
 
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, managePartyRelationship: null);
@@ -401,6 +413,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                         , out totalRows
                  ))
                  .Throws(new Exception("Service exception"));
+
+            mockProductRepository
+             .Setup(m => m.GetBooksMasterProductDetail(
+                 It.IsAny<int>()
+             ))
+             .Returns(_gbProductMap);
 
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, managePartyRelationship: null);
@@ -498,6 +516,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productInternalSettings);
 
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
+
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, managePartyRelationship: null);
 
@@ -584,6 +608,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , out totalRows
                 ))
                 .Throws(new Exception("Service exception"));
+
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
 
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, managePartyRelationship: null);
@@ -739,6 +769,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<string>()
                ))
                .Returns(_partyRelationShip);
+
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
 
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object);
@@ -914,6 +950,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<string>()
                ))
                .Returns(_partyRelationShip);
+
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
 
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object);
@@ -1329,6 +1371,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productSettingType);
 
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
+
             var isLinked = true;
             var systemIdentifier = "SOMECOMPANY|USERLOGIN";
             var login = "dummy";
@@ -1404,6 +1452,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.ListProductSettingType(
                 ))
                 .Returns(_productSettingType);
+
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
 
             var expected = new List<UserName>() {
                 new UserName() { FirstName = "Person", LastName="1", EmailAddress = "person1@test.com", UserID="person1" },
@@ -1498,6 +1552,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productSettingType);
 
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
+
             var startRow = 0;
             var resultsPerPage = 1000;
             TotalRows[] totalRows = new[] { new TotalRows() { TotalRows1 = "Not a Valid UserId" } };
@@ -1584,6 +1644,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productSettingType);
 
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
+
             var migrateUsers = new List<MigrateUser>() {
                 new MigrateUser() { UserId="person1", UsingUnifiedLogin= true, UnifiedLoginUserName = "person1@test.com" },
                 new MigrateUser() { UserId="person2", UsingUnifiedLogin= false, UnifiedLoginUserName = "person2@test.com" },
@@ -1667,6 +1733,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Setup(m => m.DisableUser(It.IsAny<NameValuePair[]>()))
                 .Returns("INACTIVATED");
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             var username = "123";
             var isActive = false;
 
@@ -1733,6 +1805,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productSettingType);
 
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
 
             mockService
                 .Setup(m => m.DisableUser(It.IsAny<NameValuePair[]>()))

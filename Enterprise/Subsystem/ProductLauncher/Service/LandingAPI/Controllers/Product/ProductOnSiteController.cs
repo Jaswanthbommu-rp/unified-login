@@ -34,7 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (_realpageUserId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-            var manageProductOnSite = new ManageProductOnSite(_realpageUserId);
+            var manageProductOnSite = new ManageProductOnSite(_userClaims);
             var result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
 
             //if(result.IsError)
@@ -65,7 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 
-            var manageProductOnSite = new ManageProductOnSite(_realpageUserId);
+            var manageProductOnSite = new ManageProductOnSite(_userClaims);
             var result = manageProductOnSite.GetProperties(editorPersonaId, userPersonaId, datafilter);
 
             //if(result.IsError)
@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
 
-            var manageProductOnSite = new ManageProductOnSite(_realpageUserId);
+            var manageProductOnSite = new ManageProductOnSite(_userClaims);
             var result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
 
             //if(result.IsError)
@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (persona == null)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
 
-            var manageProductOnSite = new ManageProductOnSite(persona.RealPageId);
+            var manageProductOnSite = new ManageProductOnSite(_userClaims);
             return Request.CreateResponse(HttpStatusCode.OK, manageProductOnSite.GetMigrationUsers(editorPersonaId, datafilter));
         }
 
@@ -143,7 +143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers)
         {
-            var manageProductOnSite = new ManageProductOnSite(_realpageUserId);
+            var manageProductOnSite = new ManageProductOnSite(_userClaims);
             return Request.CreateResponse(HttpStatusCode.OK, manageProductOnSite.UpdateUsersMigrationStatus(_personaId, migrateUsers));
         }
 
@@ -162,7 +162,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateOnSiteUserStatus(ProductUser productUser)
         {
-            var manageProductOnSite = new ManageProductOnSite(_realpageUserId);
+            var manageProductOnSite = new ManageProductOnSite(_userClaims);
             if (!manageProductOnSite.ChangeUserStatus(_personaId, productUser.UserId.ToString()))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Disabling on-site user failed.");
