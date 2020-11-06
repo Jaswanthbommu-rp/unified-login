@@ -696,7 +696,7 @@ DECLARE @HoldRouteId TABLE (RouteId INT)
     IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
     BEGIN
         INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
-	    VALUES ( @RoleId,@RightId,@UserId,@Now)
+	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
     END
 
     Select @RightId = RightId From [Security].[Right] Where RightName = 'ManageIntelligentBuildingWaterProductAccess'
@@ -704,7 +704,7 @@ DECLARE @HoldRouteId TABLE (RouteId INT)
     IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
     BEGIN
         INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
-	    VALUES ( @RoleId,@RightId,@UserId,@Now)
+	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
     END
 
     Select @RightId = RightId From [Security].[Right] Where RightName = 'ManageHospitalityServiceProductAccess'
@@ -712,6 +712,6 @@ DECLARE @HoldRouteId TABLE (RouteId INT)
     IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
     BEGIN
         INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
-	    VALUES ( @RoleId,@RightId,@UserId,@Now)
+	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
     END
 GO
