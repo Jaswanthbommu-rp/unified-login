@@ -705,6 +705,7 @@ DECLARE @HoldRouteId TABLE (RouteId INT)
     BEGIN
         INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
 	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
+
     END
 
     Select @RightId = RightId From [Security].[Right] Where RightName = 'ManageHospitalityServiceProductAccess'
