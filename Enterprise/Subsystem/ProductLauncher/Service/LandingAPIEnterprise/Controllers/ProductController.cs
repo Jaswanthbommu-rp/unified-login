@@ -283,7 +283,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         LoginName = "notificationsuser@test.com",
                         FirstName = "Notifications",
                         LastName = "User",
-                        PersonaId = 2649
+                        PersonaId = 2649,
+                        PreferredPhoneNumber = "5555555555"
                     },
                     new ProductUsers
                     {
@@ -291,7 +292,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         LoginName = "multiuser1@test.com",
                         FirstName = "multi",
                         LastName = "user1",
-                        PersonaId = 2657
+                        PersonaId = 2657,
+                        PreferredPhoneNumber = "8888888888"
                     }
                 };
 

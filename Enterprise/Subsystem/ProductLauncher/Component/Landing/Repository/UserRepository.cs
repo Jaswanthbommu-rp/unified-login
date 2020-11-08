@@ -196,6 +196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             Guid personRealPageId = Guid.Empty;
             long userEmailContactMechanismId = 0;
             bool profileChanged = false;
+            long booksCustomerMasterId = 0;
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
@@ -203,6 +204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 //Get User Details before save
                 UserDetails userDetails = GetUserDetails(personaId: null, userRealPageId: userLoginOnly.RealPageId.ToString());
+                booksCustomerMasterId = userDetails.BooksCustomerMasterId;
                 //Check if ONLY user profile changed without any product changes
                 profileChanged = IsUserProfileChanged(newProfile, userDetails);
 
@@ -346,6 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 aoProductsAvailableForUser = GetEditorUserAoProduct(userClaim.UserRealPageGuid, userClaim.PersonaId, organizationRealPageId);
             }
 
+            UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IRoleTypeRepository roleTypeRepository = new RoleTypeRepository();
             IList<RoleType> roleTypes = roleTypeRepository.GetRoleType(roleTypeName: "User Role", partyId: null);
             var SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
@@ -353,6 +356,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             var UserNoEmailRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("User (No Email)", StringComparison.OrdinalIgnoreCase));
             var rpEmployee = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("realpage employee", StringComparison.OrdinalIgnoreCase));
             var rpExternalUser = roleTypes.SingleOrDefault<RoleType>(p => p.Name.Equals("external user", StringComparison.OrdinalIgnoreCase));
+
+            userOrganizationExists = IsLoginNameExistsAsAdminInOtherDomain(newProfile.userLogin.LoginName, newProfile.organization[0].RealPageId, booksCustomerMasterId);
+            bool primaryOrganization = true;
+            //if org has mutil domain and user already exists in other domain and not in in this org
+            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain) && !userOrganizationExists.UserExistsInThisOrganization)
+            {
+                primaryOrganization = false;
+            }
 
             using (var repository = GetRepository())
             {
@@ -395,7 +406,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     #endregion
 
-                    if ((newProfile.UserTypeId != (int)UserRoleType.ExternalUser) && (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.ExternalUser)) && newProfile.UserTypeId != (int)UserRoleType.RealPageEmployee && (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.RealPageEmployee)))
+                    if ((newProfile.UserTypeId != (int)UserRoleType.ExternalUser) &&
+                       (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.ExternalUser)) &&
+                       (newProfile.UserTypeId != (int)UserRoleType.RealPageEmployee) &&
+                       (userPersonaOrganizationList.ToList().Any(x => x.PartyRoleTypeId != (int)UserRoleType.RealPageEmployee)) &&
+                       ((!userOrganizationExists.UserExistsAsAdminInOtherDomain || !userOrganizationExists.UserExistsAsRegularUserInOtherDomain) && userOrganizationExists.UserExistsInThisOrganization))
                     {
                         errorStatus.Success = false;
                         errorStatus.ErrorCode = "User.CreateUser.2";
@@ -658,7 +673,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 OrganizationRealPageId = organizationRealPageId,
                                 OrganizationPartyId = organizationPartyId,
-                                PrimaryOrganization = true,
+                                PrimaryOrganization = primaryOrganization,
                                 OrganizationFromDate = fromDate.Value,
                                 OrganizationThruDate = (thruDate ?? null)
                             }
@@ -750,7 +765,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     OrganizationRealPageId = organizationRealPageId,
                                     OrganizationPartyId = organizationPartyId,
-                                    PrimaryOrganization = true,
+                                    PrimaryOrganization = primaryOrganization,
                                     OrganizationFromDate = fromDate.Value,
                                     OrganizationThruDate = (thruDate ?? null)
                                 }
@@ -1151,6 +1166,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //End Create Persona
+
+                        #endregion
+
+                        #region Create UserEmployeeId
+
+                        if (newProfile.UserTypeId != (int)UserRoleType.ExternalUser && userLoginPersonaId > 0)
+                        {
+                            param = new
+                            {
+                                UserLoginPersonaId = userLoginPersonaId,
+                                EmployeeId = newProfile.EmployeeId
+                            };
+
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, param);
+
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repository.UnitOfWork.Rollback();
+                                errorStatus.Success = false;
+                                errorStatus.ErrorCode = "User.CreateUser.28";
+                                errorStatus.ErrorMsg = "Error creating EmployeeId to the user login perosna: {userLoginPersonaId}";
+                                createUserResponse.Status = errorStatus;
+                                createUserResponse.UserStatus = errorStatus.ErrorMsg;
+                                return createUserResponse;
+                            }
+                        }
 
                         #endregion
 
@@ -3666,13 +3707,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
-                            if (!productBatchData.ToList().Any(i => i.ProductId == (int)ProductEnum.AssetOptimizer))
-                            {
-                                // special treatment for bundled AO products
-                                SaveProductBatch(repository, product, createUserResponse,
+                            // special treatment for bundled AO products
+                            SaveProductBatch(repository, product, createUserResponse,
                                 saveProductBatchError, createUserPersonaId, assignUserPersonaId,
                                 realPageId, errorStatus, aoInputJsonString, batchProcessTypeId);
-                            }
                         }
                         else
                         {
@@ -4196,6 +4234,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool isUserLoginNameChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
             return !profile.userLogin.LoginName.Equals(oldProfile.userLogin.LoginName);
+        }
+
+        /// <summary>
+        /// isEmployeeIdChanged
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="oldProfile"></param>
+        /// <returns></returns>
+        private bool isEmployeeIdChanged(IProfileDetail profile, IProfileDetail oldProfile)
+        {
+            return !profile.EmployeeId.Equals(oldProfile.EmployeeId);
         }
 
         /// <summary>
@@ -4960,6 +5009,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 bool profileChanged = IsUserProfileChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
                 bool loginNamechanged = isUserLoginNameChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
+                bool employeeIdChanged = isEmployeeIdChanged(updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile);
 
                 var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesByRealPageID" : StoredProcNameConstants.SP_ListRolesByRealPageID;
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(procName, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
@@ -5238,6 +5288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         //update email contact mechanisim if user login name changed
+                        bool isUserContactMechanismUpdated = false;
                         if (userContactMechanismId != 0)
                         {
                             // the user already had the contact mechanism so update id
@@ -5255,6 +5306,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     repositoryResponse.ErrorMessage = "An error was encountered when updating an user login email address.";
                                     throw new Exception(repositoryResponse.ErrorMessage);
                                 }
+
+                                isUserContactMechanismUpdated = true;
                             }
                         }
                         else if (updateUserProfileEntity.NewProfile.UserTypeId != (int)UserRoleType.UserNoEmail)
@@ -5294,7 +5347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         //Save the notification email if it exists
-                        if (updateUserProfileEntity.NewProfile.NotificationEmail != null && (isFeatureUser || (priorNotificationEmail.ToLower() != updateUserProfileEntity.NewProfile.NotificationEmail.ToLower())) && !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.NotificationEmail))
+                        if (!isUserContactMechanismUpdated && updateUserProfileEntity.NewProfile.NotificationEmail != null && (isFeatureUser || (priorNotificationEmail.ToLower() != updateUserProfileEntity.NewProfile.NotificationEmail.ToLower())) && !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.NotificationEmail))
                         {
                             if (EmailFormatValidation.IsValidEmail(updateUserProfileEntity.NewProfile.NotificationEmail))
                             {
@@ -5408,8 +5461,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
+                        #region Update UserEmployeeId
+                        if (updateUserProfileEntity.NewProfile.EmployeeId != updateUserProfileEntity.OldProfile.EmployeeId)
+                        {
+                            //If the old user has EmployeeId so update if not create the EmployeeId
+                            if (updateUserProfileEntity.OldProfile.UserEmployeeId > 0)
+                            {
+                                dynamic update = new
+                                {
+                                    updateUserProfileEntity.OldProfile.UserEmployeeId,
+                                    updateUserProfileEntity.NewProfile.EmployeeId
+                                };
+
+                                RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateEmployeeId, update);
+
+                                if (employeeResult.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
+                                    throw new Exception(employeeResult.ErrorMessage);
+                                }
+
+                            }
+                            else
+                            {
+                                dynamic create = new
+                                {
+                                    userLoginPersonaList[0].UserLoginPersonaId,
+                                    updateUserProfileEntity.NewProfile.EmployeeId,
+                                };
+
+                                RepositoryResponse employeeResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, create);
+
+                                if (employeeResult.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
+                                    throw new Exception(employeeResult.ErrorMessage);
+                                }
+                            }
+                        }
+                        #endregion
 
                         bool notificationEmailChanged = isNotificationEmailChanged(priorNotificationEmail, updateUserProfileEntity.NewProfile.NotificationEmail);
+
+                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
+                        {
+                            updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
+                            {
+                                SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, updateUserProfileEntity.ProductBatchData, null, p.AssignedUserTypeId);
+                            });
+                        }
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
@@ -5419,15 +5519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
                         {
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
-                        }
-
-                        if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged))
-                        {
-                            updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p =>
-                            {
-                                SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, updateUserProfileEntity.ProductBatchData, null, p.AssignedUserTypeId);
-                            });
-                        }
+                        }  
 
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && userBatchEntity.UserTypeChanged)
                         {
@@ -5607,6 +5699,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return usePropertyInstanceUnifiedAmenities == "1";
+        }
+        #endregion
+
+        #region Multi Domain User Check
+        private UserOrganizationExists IsLoginNameExistsAsAdminInOtherDomain(string loginName, Guid organizationRealPageId, long booksMasterId)
+        {
+            UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+            //Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
+            IList<UserOrganization> userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(loginName);
+            bool isAdminUser = false;
+            bool isRegularUser = false;
+            userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
+            // userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.Name.ToLower().Replace(" ", "") == UserRoleType.RealPageEmployee.ToString().ToLower());
+
+            userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
+            userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
+            userOrganizationExists.UserExistsAsNoEmail = userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0 && userPersonaOrganizationList.Any(p => (p.PartyRoleTypeId == (int)UserRoleType.UserNoEmail));
+
+            if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
+            {
+                UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+                isAdminUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.SuperUser;
+                isRegularUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.User;
+
+                if (userOrganization != null && (isAdminUser || isRegularUser) && userOrganization.BooksCustomerMasterId == booksMasterId)
+                {
+                    var orgDomains = _organizationRepository.GetOrganizationListByBooksCustomerMasterId(booksMasterId);
+
+                    if (orgDomains.Count > 1)
+                    {
+                        userOrganizationExists.UserExists = false;
+                        userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
+                        userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
+                    }
+                }
+            }
+
+            return userOrganizationExists;
         }
         #endregion
     }

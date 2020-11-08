@@ -22,8 +22,8 @@
         public string BooksProductCode { get; set; }
 
         /// <summary>
-        /// Bluebook product Source Code
+        /// UDM Source Code
         /// </summary>
-        public string BooksProductSourceCode { get; set; }
+        public string UDMSourceCode { get; set; }
     }
 }

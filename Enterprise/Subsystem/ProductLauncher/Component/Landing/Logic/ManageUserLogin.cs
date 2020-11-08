@@ -35,6 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IRoleTypeRepository _roleTypeRepository;
         private IPersonRepository _personRepository;
         private DefaultUserClaim _defaultUserClaim;
+        private static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
         #endregion
 
         #region Constructors
@@ -296,6 +297,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             DateTime fromUtcDateTime = DateTime.UtcNow;
             DateTime? thruUtcDateTime = null; // default for AccountCreationSuccessful; Unlocked; Active
             int statusTypeId = (int)MapUiStatusToDb(uiStatusTypeName);
+            bool? isNotified = null;
+            bool newUserWithFeatureDate = false;
+            bool isUserExpired = false;
+            bool newUserwithActiveStatus = false;
+            UserLoginOnly userLoginOnly = null;
+            OrganizationStatus orgStatus = new OrganizationStatus();
 
             // get NewUserRegistration activity exp time
             var newUserRegistrationActivity = GetActivities(_defaultUserClaim.OrganizationPartyId);
@@ -327,17 +334,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
-                var userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
+                userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
-
-                bool newUserWithFeatureDate = false;
-                bool isUserExpired = false;
-                bool newUserwithActiveStatus = false;
 
                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
                 {
-                    OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
+                    orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
 
                     if (orgStatus.ThruDate != null)
                     {
@@ -374,7 +377,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
                     {
                         IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
-                        bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLogin.UserRoleType, orgStatus.PartyId);
+                        isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLogin.UserRoleType, orgStatus.PartyId);
                         statusTypeId = (int)UserUiStatusType.Pending;
                     }
                     else
@@ -404,6 +407,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
                 AddActivityLog(userLogin, uiStatusTypeName.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
+
+                if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly != null && (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP) && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
+                {
+                    string message = string.Empty;
+                    var userRepository = new UserRepository(_defaultUserClaim);
+                    var userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                    IProfileDetail profile = new ProfileDetail();
+                    profile.FirstName = userDetailsInfo.FirstName;
+                    profile.LastName = userDetailsInfo.LastName;
+                    profile.userLogin.LoginName = userDetailsInfo.LoginName;
+                    profile.userLogin.UserId = userDetailsInfo.UserId;
+                    profile.userLogin.RealPageId = userDetailsInfo.UserRealPageId;
+                    if (isNotified == true)
+                    {
+                        message = "Welcome Email sent to user {0} {1} by user {2} {3}.";
+                        LogAuditActivity(LogActivityTypeConstants.EMAIL_SENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                    }
+                    else if (isNotified == false)
+                    {
+                        message = "Unable to Resend Welcome Email to user {0} {1} by user {2} {3}.";
+                        LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
+                    }
+                }
             }
 
             return true;
@@ -1035,29 +1061,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             string message = string.Empty;
             string activity = string.Empty;
-            string logActivityTypeName = string.Empty;
+            List<string> logActivityTypeName = new List<string>();
 
             switch (activityTypeName.ToLower())
             {
                 case "active":
                     activity = "Activated";
-                    logActivityTypeName = LogActivityTypeConstants.LOGIN_ENABLED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.LOGIN_ENABLED);
+                    logActivityTypeName.Add(LogActivityTypeConstants.EMAIL_SENT);
                     break;
                 case "disabled":
                     activity = "Deactivated";
-                    logActivityTypeName = LogActivityTypeConstants.LOGIN_DISABLED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.LOGIN_DISABLED);
                     break;
                 case "locked":
                     activity = "Locked";
-                    logActivityTypeName = LogActivityTypeConstants.USER_LOCKED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.USER_LOCKED);
                     break;
                 case "unlocked":
                     activity = "Unlocked";
-                    logActivityTypeName = LogActivityTypeConstants.USER_UNLOCKED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.USER_UNLOCKED);
                     break;
                 case "expired":
                     activity = "Expired";
-                    logActivityTypeName = LogActivityTypeConstants.USER_EXPIRED;
+                    logActivityTypeName.Add(LogActivityTypeConstants.USER_EXPIRED);
                     break;
                 default:
                     break;
@@ -1068,28 +1095,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 try
                 {
-                    LogActivity.WriteActivity(new ActivityDetails
+                    foreach (string logType in logActivityTypeName)
                     {
-                        LogActivityTypeName = logActivityTypeName,
-                        LogCategoryName = LogActivityCategoryType.User.ToString(),
-                        CorrelationId = defaultUserClaim.CorrelationId.ToString(),
-                        BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
-                        Message = message,
 
-                        FromUserLoginName = defaultUserClaim.LoginName,
-                        FromUserLoginId = defaultUserClaim.UserId,
-                        FromUserFirstName = defaultUserClaim.FirstName,
-                        FromUserLastName = defaultUserClaim.LastName,
-                        FromUserRealpageId = defaultUserClaim.UserRealPageGuid.ToString(),
+                        if(logType == LogActivityTypeConstants.EMAIL_SENT)
+                        {
+                            message = string.Format("Welcome Email sent to user {0} {1} by user {2} {3}.", person.FirstName, person.LastName, defaultUserClaim.FirstName, defaultUserClaim.LastName);
+                        }
 
-                        ToUserLoginId = userLoginTo.UserId,
-                        ToUserLoginName = userLoginTo.LoginName,
-                        ToUserFirstName = person.FirstName,
-                        ToUserLastName = person.LastName,
-                        ToUserRealpageId = userLoginTo.RealPageId.ToString(),
+                        LogActivity.WriteActivity(new ActivityDetails
+                        {
+                            LogActivityTypeName = logType,
+                            LogCategoryName = LogActivityCategoryType.User.ToString(),
+                            CorrelationId = defaultUserClaim.CorrelationId.ToString(),
+                            BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
+                            Message = message,
 
-                        BooksProductCode = booksProductCode
-                    });
+                            FromUserLoginName = defaultUserClaim.LoginName,
+                            FromUserLoginId = defaultUserClaim.UserId,
+                            FromUserFirstName = defaultUserClaim.FirstName,
+                            FromUserLastName = defaultUserClaim.LastName,
+                            FromUserRealpageId = defaultUserClaim.UserRealPageGuid.ToString(),
+
+                            ToUserLoginId = userLoginTo.UserId,
+                            ToUserLoginName = userLoginTo.LoginName,
+                            ToUserFirstName = person.FirstName,
+                            ToUserLastName = person.LastName,
+                            ToUserRealpageId = userLoginTo.RealPageId.ToString(),
+
+                            BooksProductCode = booksProductCode
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1216,13 +1252,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
         /// <returns>UserOrganizationExists object</returns>
-        public IUserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId)
+        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId)
         {
             if (string.IsNullOrWhiteSpace(loginName))
             {
                 throw new Exception("Invalid parameter loginName.");
             }
 
+
+            bool isAdminUser = false;
+            bool isRegularUser = false;
             //Remove all leading and Trailing white-space characters
             loginName = loginName.Trim();
 
@@ -1231,10 +1270,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(organizationRealPageId), "Null realPageId.");
             }
 
-            IUserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+            Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
+            UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
 
-            userOrganizationExists.OrgIsRealpageEmployee = (_organizationRepository.GetOrganization(realPageId: organizationRealPageId).Name.ToLower().Replace(" ","") == UserRoleType.RealPageEmployee.ToString().ToLower());
+            userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
+            userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
 
             userOrganizationExists.UserExists = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0);
             userOrganizationExists.UserExistsInThisOrganization = (userPersonaOrganizationList != null && userPersonaOrganizationList.Count >= 0 && userPersonaOrganizationList.ToList().Any(a => a.OrganizationRealPageId == organizationRealPageId));
@@ -1306,6 +1347,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
+            if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
+            {
+                UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+                isAdminUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.SuperUser;
+                isRegularUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.User;
+                if (userOrganization != null && (isAdminUser || isRegularUser) && userOrganization.BooksCustomerMasterId == orgDetails.BooksCustomerMasterId)
+                {
+                    var orgDomains = _organizationRepository.GetOrganizationListByBooksCustomerMasterId(orgDetails.BooksCustomerMasterId);
+
+                    if (orgDomains.Count > 1)
+                    {
+                        userOrganizationExists.UserExists = false;
+                        userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
+                        userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
+                    }
+                }
+            }
+
             return userOrganizationExists;
         }
 
@@ -1332,6 +1391,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _userLoginRepository.GetUserOrganizationWithStatus(userId, lastLogin, orgPartyId, getPrimaryOrg);
         }
 
+        #endregion
+
+        #region Private Methods
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType,
+            string message, string stepName, IProfileDetail profile)
+        {
+            LogActivity.WriteActivity(new ActivityDetails
+            {
+                LogActivityTypeName = logActivityType,
+                LogCategoryName = logActivityCategoryType.ToString(),
+                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                Message = string.Format(message, profile.FirstName, profile.LastName, _defaultUserClaim.FirstName, _defaultUserClaim.LastName, profile.CreateUserSourceType.ToString()),
+
+                FromUserLoginName = _defaultUserClaim.LoginName,
+                FromUserLoginId = _defaultUserClaim.UserId,
+                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName = _defaultUserClaim.FirstName,
+                FromUserLastName = _defaultUserClaim.LastName,
+
+                ToUserLoginName = profile.userLogin.LoginName,
+                ToUserLoginId = profile.userLogin.UserId,
+                ToUserFirstName = profile.FirstName,
+                ToUserLastName = profile.LastName,
+                ToUserRealpageId = profile.userLogin.RealPageId.ToString()
+            });
+        }
         #endregion
     }
 }

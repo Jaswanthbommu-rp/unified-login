@@ -47,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="editorRealPageId">The RealPageId of the editor</param>
         /// <param name="userClaims"> User Claims</param>
-        public ManageProductOneSiteAccounting(DefaultUserClaim userClaims) : base((int)ProductEnum.FinancialSuite, userClaims, null)
+        public ManageProductOneSiteAccounting(DefaultUserClaim userClaims) : base((int)ProductEnum.FinancialSuite, userClaims, null, null)
 		{
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="productRepository"></param>
 		/// <param name="productInternalSettingRepository"></param>
 		/// <param name="managePartyRelationship"></param>
-		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, userClaims, productInternalSettingRepository)
+		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_service = service;
@@ -108,7 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="managePerson"></param>
 		/// <param name="manageUserLogin"></param>
 		/// <param name="managePartyRelationship"></param>
-		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManageElectronicAddress manageElectronicAddress, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, userClaims, productInternalSettingRepository)
+		public ManageProductOneSiteAccounting(Guid editorRealPageId, DefaultUserClaim userClaims, IOneSiteAccountingProductService service, ISamlRepository samlRepository, IManagePersona managePersona, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManageElectronicAddress manageElectronicAddress, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship) : base((int)ProductEnum.FinancialSuite, productInternalSettingRepository, productRepository)
 		{
 			_editorRealPageId = editorRealPageId;
 			_service = service;
@@ -1605,11 +1605,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog($"Updated profile successfully userPersonaId:{userPersonaId}");
 
                     // Activity Logging
-                    WriteActivityLogWithMessage(editorPersonaId, userPersonaId,"Updated User profile in Accounting");
+                    WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "Updated User profile in Financial Suite.");
                 }
                 else
                 {
-                    WriteToDiagnosticLog($"Updated User profile in Accounting failed userPersonaId:{userPersonaId}");
+                    WriteToDiagnosticLog($"Updated User profile in Financial Suite failed userPersonaId:{userPersonaId}");
                     return "Update Profile failed. " + result;
                 }                
             }

@@ -34,7 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         private string _clientId = "VSCleint";
         private string _apiSecret = "VSSecret";
         private string _tokenUri = "https://identity-server.com/connect/token";
-
+        private GbProductMap _gbProductMap = new GbProductMap();
         private IManageProductVendorServices manageProductVendorServices;
         private IList<CustomerCompanyMap> mapCompany;
         private Mock<IManageBlueBook> mockManageBlueBook;
@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiSecret", Value = _clientId });
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ClientId", Value = _apiSecret });
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "TokenEndPoint", Value = _tokenUri });
-
+            _gbProductMap = new GbProductMap() { BooksProductCode = "CD", Name = "Vendor Credentialingt", ProductId = 16, UDMSourceCode = "CD" };
             _repositoryResponseProductStatus.ErrorMessage = "";
 
             mapCompany = new List<CustomerCompanyMap>()
@@ -124,6 +124,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductRepository
+           .Setup(m => m.GetBooksMasterProductDetail(
+               It.IsAny<int>()
+           ))
+           .Returns(_gbProductMap);
+
             HttpResponseMessage tokenResponse = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(JsonConvert.SerializeObject(new { access_token = "mocked access token" }))
@@ -131,7 +137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"{_tokenUri}", tokenResponse);
 
             manageProductVendorServices = new ManageProductVendorServices(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object);
+                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object);
 
         }
         #endregion

@@ -414,6 +414,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
 			IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: profile.Persona[0].UserId, organizationPartyId: profile.Persona[0].Organization.PartyId);
 
+			var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, profile.Persona.First().OrganizationPartyId);
+
+			oldProfile.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+			oldProfile.UserEmployeeId = (employeeId != null  && employeeId.UserEmployeeId > 0) ? employeeId.UserEmployeeId : 0;
+
 			repositoryResponse = _userRepository.UpdateUser(loggedInUserRealPageId, profile, oldProfile);
 			if (repositoryResponse.Id > 0)
 			{
@@ -703,6 +708,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 				IList<CustomFieldValue> customFieldValueList = manageCustomFields.GetCustomFieldsValues(organizationPartyId: _userClaim.OrganizationPartyId, userLoginPersonaId: userLoginPersonaList[0].UserLoginPersonaId, enabled: true);
 				profileDetail.CustomFields = customFieldValueList;
+
+				var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, orgPartyId);
+				profileDetail.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
 
 				IManagePartyRelationship managePartyRelationship = new ManagePartyRelationship();
 				PartyRelationship partyRelationship = managePartyRelationship.GetPartyRelationship(realPageId, _userClaim.OrganizationRealPageGuid, "", "", "User Type");

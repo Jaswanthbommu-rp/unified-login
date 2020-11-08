@@ -241,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 userProductDetails.UserProfileDetails.UserEffectiveDate =
                     userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
                 userProductDetails.UserProfileDetails.UserExpirationDate =
-                    userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? Convert.ToDateTime("12/31/9999");
+                    userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? new DateTime(9999,12,31);
 
                 // Call Logic
                 var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
@@ -594,26 +594,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             });
                         }
 
-                        usersDataDtoList.Add(
-                            new UsersDataDto()
-                            {
-                                FirstName = u.FirstName,
-                                MiddleName = u.MiddleName,
-                                LastName = u.LastName,
-                                UnityRealPageUserId = u.UserRealPageId,
-                                LoginName = u.LoginName,
-                                UserEffectiveDate = u.UserEffectiveDate,
-                                UserExpirationDate = u.UserExpirationDate,
-                                UserStatus = u.Status,
-                                Email = u.Email,
-                                CustomFields = dictionaryCustomFields,
-                                UserType = u.UserType,
-                                IsExternalIdp = u.IsExternalIdp,
-                                Product = DeserializeUserProduct(u.Product ?? "")
-                            }
-                        );
-                    });
-                }
+						usersDataDtoList.Add(
+							new UsersDataDto()
+							{
+								FirstName = u.FirstName,
+								MiddleName = u.MiddleName,
+								LastName = u.LastName,
+								UnityRealPageUserId = u.UserRealPageId,
+								LoginName = u.LoginName,
+								UserEffectiveDate = u.UserEffectiveDate,
+								UserExpirationDate = u.UserExpirationDate,
+								UserStatus = u.Status,
+								Email = u.Email,
+								CustomFields = dictionaryCustomFields,
+								UserType = u.UserType,
+								IsExternalIdp = u.IsExternalIdp,
+								Product = DeserializeUserProduct(u.Product ?? ""),
+								EmployeeId = u.EmployeeId
+							}
+						);
+					});
+				}
 
                 response.Data = usersDataDtoList.Cast<object>().ToList();
                 response.Meta.CurrentPage = pageNumber;
@@ -1033,6 +1034,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
         }
 
+        /// <summary>
+        /// Get the user (Regular and External) with the product login details and company by LoginName
+        /// </summary>
+        /// <returns>User with SAML attributes for all companies</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get the user (Regular and External) with the product login details and company.", Type = typeof(UserProductDetailLogin))]
+        [SwaggerResponseExamples(typeof(UserProductDetailLogin), typeof(GetUserProductsDetailsLoginCompanyExample))]
+        [Route("user/products/details/login/company")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUserProductsDetailsLoginByLoginName()
+        {
+            try
+            {
+                UserManagement userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
+                return Request.CreateResponse(HttpStatusCode.OK, userManagement.ListUserProductDetailsLoginByLoginName(_userClaims.LoginName));
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
         #region Private Methods
 
 
@@ -1228,51 +1256,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
-        private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
-        {
-            var userProductDetails = new UserProductDetails
-            {
-                EditorRealPageId = _userClaims.UserRealPageGuid,
-                UserProfileDetails = new UserData
-                {
-                    UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
-                    AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
-                    MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
-                    Password = userProductDetailsDto.UserProfileDetails.Password,
-                    LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
-                    Title = userProductDetailsDto.UserProfileDetails.Title,
-                    Email = userProductDetailsDto.UserProfileDetails.Email,
-                    FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
-                    UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
-                    IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
-                    LastName = userProductDetailsDto.UserProfileDetails.LastName,
-                    OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
-                    OrganizationPartyId = _userClaims.OrganizationPartyId,
-                    Phone = userProductDetailsDto.UserProfileDetails.Phone,
-                    UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
-                    UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
-                    CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
-                    Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
-                    CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
+		private UserProductDetails GetUserBusinessObject(UserProductDetailsDto userProductDetailsDto)
+		{
+			var userProductDetails = new UserProductDetails
+			{
+				EditorRealPageId = _userClaims.UserRealPageGuid,
+				UserProfileDetails = new UserData
+				{
+					UserRealPageId = userProductDetailsDto.UserProfileDetails.UnityRealPageUserId,
+					AdditionalFields = userProductDetailsDto.UserProfileDetails.AdditionalFields,
+					MiddleName = userProductDetailsDto.UserProfileDetails.MiddleName,
+					Password = userProductDetailsDto.UserProfileDetails.Password,
+					LoginName = userProductDetailsDto.UserProfileDetails.LoginName,
+					Title = userProductDetailsDto.UserProfileDetails.Title,
+					Email = userProductDetailsDto.UserProfileDetails.Email,
+					FirstName = userProductDetailsDto.UserProfileDetails.FirstName,
+					UserType = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType),
+					IsExternalIdp = userProductDetailsDto.UserProfileDetails.IsExternalIdp,
+					LastName = userProductDetailsDto.UserProfileDetails.LastName,
+					OrganizationRealPageId = _userClaims.OrganizationRealPageGuid,
+					OrganizationPartyId = _userClaims.OrganizationPartyId,
+					Phone = userProductDetailsDto.UserProfileDetails.Phone,
+					UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate,
+					UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate,
+					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
+					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
+					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
+					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId,
                     SendInvitationEmail = userProductDetailsDto.UserProfileDetails.SendInvitationEmail
                 },
-                ProductList = new List<ProductDetail>()
-            };
-            if (userProductDetailsDto.ProductList != null)
-            {
-                foreach (var product in userProductDetailsDto.ProductList)
-                {
-                    userProductDetails.ProductList.Add(new ProductDetail
-                    {
-                        ProductCode = product.ProductCode,
-                        AdditionalFields = product.AdditionalFields,
-                        PropertiesAssigned = product.PropertiesAssigned,
-                        RegionsAssigned = product.RegionsAssigned,
-                        RolesAssigned = product.RolesAssigned,
-                        IsAssigned = product.IsAssigned
-                    });
-                }
-            }
+				ProductList = new List<ProductDetail>()
+			};
+			if (userProductDetailsDto.ProductList != null)
+			{
+				foreach (var product in userProductDetailsDto.ProductList)
+				{
+					userProductDetails.ProductList.Add(new ProductDetail
+					{
+						ProductCode = product.ProductCode,
+						AdditionalFields = product.AdditionalFields,
+						PropertiesAssigned = product.PropertiesAssigned,
+						RegionsAssigned = product.RegionsAssigned,
+						RolesAssigned = product.RolesAssigned,
+						IsAssigned = product.IsAssigned
+					});
+				}
+			}
 
             return userProductDetails;
         }
@@ -1917,25 +1946,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     dictionaryCustomFields.Add(c.Name, c.Value);
                 });
 
-                IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
-                {
-                    new UsersDataDto()
-                    {
-                        UserStatus = "active",
-                        UserType = "RealPage System Administrator",
-                        UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
-                        FirstName = "James",
-                        MiddleName = "X",
-                        LastName = "Jackson",
-                        IsExternalIdp = false,
-                        LoginName = "james.jackson@example.com",
-                        Email = "james.jackson@example.com",
-                        UserEffectiveDate = DateTime.Now,
-                        UserExpirationDate = DateTime.Now,
-                        CustomFields = dictionaryCustomFields,
-                        Product = UserProductSAMLDetaillist
-                    }
-                };
+				IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>()
+				{
+					new UsersDataDto()
+					{
+						UserStatus = "active",
+						UserType = "RealPage System Administrator",
+						UnityRealPageUserId = new Guid("c9167175-0676-4546-bba7-4a49d5809b1f"),
+						FirstName = "James",
+						MiddleName = "X",
+						LastName = "Jackson",
+						IsExternalIdp = false,
+						LoginName = "james.jackson@example.com",
+						Email = "james.jackson@example.com",
+						UserEffectiveDate = DateTime.Now,
+						UserExpirationDate = DateTime.Now,
+						CustomFields = dictionaryCustomFields,
+						Product = UserProductSAMLDetaillist,
+						EmployeeId = "2020EmployeeId"
+					}
+				};
 
                 PagedResponse response = new PagedResponse()
                 {
@@ -2104,6 +2134,107 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return response;
             }
         }
+
+        /// <summary>
+		/// Used to document examples of the webapi result
+		/// </summary>
+		[ExcludeFromCodeCoverage]
+        public class GetUserProductsDetailsLoginCompanyExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>Enterprise User Product Details Login example</returns>
+            public object GetExamples()
+            {
+                List<Dictionary<string, string>> detailsProduct1 = new List<Dictionary<string, string>>();
+                List<Dictionary<string, string>> detailsProduct2 = new List<Dictionary<string, string>>();
+                List<Dictionary<string, string>> detailsProduct3 = new List<Dictionary<string, string>>();
+
+
+                Dictionary<string, string> detail1 = new Dictionary<string, string>
+                {
+                    {"name","productUsername" },
+                    { "value","Cattribute1@noreply.com"}
+                };
+
+                Dictionary<string, string> detail2 = new Dictionary<string, string>
+                {
+                    {"name","UserId" },
+                    { "value","1222013090"}
+                };
+
+                detailsProduct1.Add(detail1);
+                detailsProduct1.Add(detail2);
+
+                Dictionary<string, string> detail3 = new Dictionary<string, string>
+                {
+                    {"name","productUsername" },
+                    { "value","cristianattri@test.com.co"}
+                };
+
+                Dictionary<string, string> detail4 = new Dictionary<string, string>
+                {
+                    {"name","UserId" },
+                    { "value","169335"}
+                };
+
+                detailsProduct2.Add(detail3);
+                detailsProduct2.Add(detail4);
+
+                Dictionary<string, string> detail5 = new Dictionary<string, string>
+                {
+                    {"name","productUsername" },
+                    { "value","cristianattri@test.com.co"}
+                };
+
+                Dictionary<string, string> detail6 = new Dictionary<string, string>
+                {
+                    {"name","UserId" },
+                    { "value","103388"}
+                };
+
+               
+                detailsProduct3.Add(detail5);
+                detailsProduct3.Add(detail6);
+
+                List<UserProductDetailLogin> response = new List<UserProductDetailLogin>
+                {
+                    new UserProductDetailLogin
+                    {
+                        ProductCode = "LS",
+                        ProductId = 9,
+                        Company = "JVM REALTY CORPORATION",
+                        RealPageId = new Guid("7e52666c-9737-4406-b144-ad1530ba18f0"),
+                        UserType = "ExternalUser",
+                        Details = detailsProduct1
+                    },
+
+                    new UserProductDetailLogin
+                    {
+                        ProductCode = "L2L",
+                        ProductId = 6,
+                        Company = "RP Northstar Management Demo",
+                        RealPageId = new Guid("e087788f-0765-4d00-9b8b-47663370f701"),
+                        UserType = "User",
+                        Details = detailsProduct2
+                    },
+
+                    new UserProductDetailLogin
+                    {
+                        ProductCode = "AB",
+                        ProductId = 17,
+                        Company = "RP Northstar Management Demo",
+                        RealPageId = new Guid("e087788f-0765-4d00-9b8b-47663370f701"),
+                        UserType = "User",
+                        Details = detailsProduct3
+                    }
+                };
+
+                return response;
+            }
+        }
+
         #endregion
     }
 }

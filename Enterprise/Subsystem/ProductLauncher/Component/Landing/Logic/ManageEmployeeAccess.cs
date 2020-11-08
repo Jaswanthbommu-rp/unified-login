@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Ctor
         /// </summary>
         /// <param name="userClaim"></param>
-        public ManageEmployeeAccess(DefaultUserClaim userClaim) : base((int)ProductEnum.SupportTool, userClaim, null)
+        public ManageEmployeeAccess(DefaultUserClaim userClaim) : base((int)ProductEnum.SupportTool, userClaim, null, null)
         {
             _productId = (int)ProductEnum.SupportTool;
             _userClaim = userClaim;
@@ -64,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
-                List<UnifiedLoginCompany> gbAllCompanies = umr.ListCompanies();
+                List<UnifiedLoginCompany> gbAllCompanies = umr.ListCompanies(filter);
 
                 // Get BooksCompanyMasterIds - RPUP id
                 //string comIdsRpUp = GetCompanyIds(gbAllCompanies);

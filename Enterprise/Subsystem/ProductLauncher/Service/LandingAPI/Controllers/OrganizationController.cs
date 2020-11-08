@@ -24,6 +24,8 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Microsoft.Ajax.Utilities;
+using Aspose.Cells;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -887,6 +889,129 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         #endregion
 
+        #region Get Organizations
+        /// <summary>
+        /// Get List of Organizations
+        /// </summary>
+        /// <param name="organizationName">OrganizationName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="blueId">BlueId</param>
+        /// <param name="organizationId">organizationId</param>
+        /// <param name="datafilter">datafilter</param>
+        /// <returns>List of Organizations</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Organizations", Type = typeof(CompanySetup))]
+        [SwaggerResponseExamples(typeof(CompanySetup), typeof(CompanySetupExample))]
+        [Route("CompanySetup")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage GetCompanyList(string organizationName = null, int? domain = null, int? blueId = null,int? organizationId = null, [FromUri] RequestParameter datafilter = null)
+        {
+            if (string.IsNullOrEmpty(organizationName) && domain == null && blueId == null && organizationId == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "organizationName/Domain/BlueId not supplied ");
+            }
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectListOutput<CompanySetup, IErrorData> output = new ObjectListOutput<CompanySetup, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
+
+            globals.Add(BaseType.RequestParameter, datafilter);
+
+            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId??0, globals);
+
+            int totalRecords = companyList.Count > 0 ? companyList[0].TotalRecords : 0;
+            decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
+            resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
+            PagingSummary pagingSummary = new PagingSummary()
+            {
+                TotalRecords = totalRecords,
+                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
+            };
+            output = new ObjectListOutput<CompanySetup, IErrorData>() { list = companyList, Status = errorStatus };
+            output.pagingSummary = pagingSummary;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+        /// <summary>
+        /// Export Companies
+        /// </summary>
+        /// <param name="organizationName">OrganizationName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="blueId">BlueId</param>
+        /// <param name="organizationId">organizationId</param>
+        /// <param name="datafilter">Filter, Sort, Paginate</param>
+        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <returns>List of Companies object</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Companies", Type = typeof(CompanySetup))]
+        [SwaggerResponseExamples(typeof(CompanySetup), typeof(CompanySetupExample))]
+        [Route("CompanySetup/export")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage ListCompanyExport(string organizationName = null, int? domain = null, int? blueId = null, int? organizationId = null, [FromUri] RequestParameter datafilter = null, SaveFormat dataFormat = SaveFormat.CSV)
+        {
+            byte[] plainBytes;
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
+            globals.Add(BaseType.RequestParameter, datafilter);
+
+            List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);           
+
+            if (companyList != null)
+            {
+                errorStatus = DataExport.SetAsposeLicense();
+                if (errorStatus.Success)
+                {
+                    List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
+                    {
+                        new ExportDataFileConfiguration { Header = "Company", MappedField = "OrganizationName", PDFColumnWidth = "2.85", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Address", MappedField = "Address", PDFColumnWidth = "3.25", Preference = 4 },
+                        new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "BooksCustomerMasterId", PDFColumnWidth = "0.70", Preference = 5 },
+                        new ExportDataFileConfiguration { Header = "Type", MappedField = "OrganizationType", PDFColumnWidth = "1.00", Preference = 6 },
+                        new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.50", Preference = 7 }
+                    };
+
+					plainBytes = DataExport.ExportDataToFile<CompanySetup>(exportConfigurations.OrderBy(p=>p.Preference).ToList(),companyList, dataFormat);
+                    output = new ObjectOutput<string, IErrorData>()
+                    {
+                        obj = Convert.ToBase64String(plainBytes),
+                        Status = errorStatus
+                    };
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+                else
+                {
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "Company.ListCompanyExport.1";
+                errorStatus.ErrorMsg = "List Company Export: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
+        #endregion
+
         #region Private functions
 
         /// <summary>
@@ -1105,6 +1230,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Used to document examples of the Companysetup Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class CompanySetupExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Companies example</returns>
+            public object GetExamples()
+            {
+                CompanySetup example = new CompanySetup()
+                {
+                    OrganizationPartyId = 3,
+                    OrganizationName = "RealPage",
+                    ContractedName = "RealPage",
+                    RealPageId = new Guid(),
+                    BooksMasterId = "1",
+                    BooksCustomerMasterId = "3",
+                    OrganizationTypeId = 1,
+                    OrganizationType = "Multifamily",                    
+                    OrganizationDomainId = 1,
+                    Domain = "Primary",
+                    Products = 3
+                };
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<CompanySetup, IErrorData> output = new ObjectOutput<CompanySetup, IErrorData>()
+                {
+                    obj = example,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
         #endregion
 
     }

@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -275,7 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IManageProfile manageProfile = new ManageProfile(_userClaims);
 			IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals);
 
-			IList<LE.User> listUsers = new List<LE.User>();
+			List<LE.User> listUsers = new List<LE.User>();
 
 			ManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
 			var userLogin = manageUserLogin.GetUserLogin(_realpageUserId, _orgPartyId); // keep for now
@@ -309,15 +310,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             IDP = p.userLogin.Is3rdPartyIDP ? "Yes" : "No",
 							EffectiveDate = p.userLogin.FromDate != null ? p.userLogin.FromDate.Value.ToShortDateString() : string.Empty,
 							ExpireDate = ((p.userLogin.ThruDate == null) || (DateTime.Compare(p.userLogin.ThruDate.Value, parsedMaxValueDate) == 0)) ? string.Empty : p.userLogin.ThruDate.Value.ToShortDateString(),
-							CustomField = p.CustomField
+							CustomField = p.CustomField,
+							EmployeeId = p.EmployeeId
 						}
 					);
-				});
-
-				errorStatus = SetAsposeLicense();
+				});				
+				errorStatus = DataExport.SetAsposeLicense();
 				if (errorStatus.Success)
 				{
-					plainBytes = ExportUserData(listUsers, dataFormat);
+					List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
+					{
+						new ExportDataFileConfiguration { Header = "User Type", MappedField = "UserType", PDFColumnWidth = "1.30", Preference = 1 },
+						new ExportDataFileConfiguration { Header = "First Name", MappedField = "FirstName", PDFColumnWidth = "0.85", Preference = 2 },
+						new ExportDataFileConfiguration { Header = "Last Name", MappedField = "LastName", PDFColumnWidth = "0.85", Preference = 3 },
+						new ExportDataFileConfiguration { Header = "Employee ID", MappedField = "EmployeeId", PDFColumnWidth = "0.85", Preference = 4 },
+						new ExportDataFileConfiguration { Header = "Username", MappedField = "LoginName", PDFColumnWidth = "2.25", Preference = 5 },
+						new ExportDataFileConfiguration { Header = "Products", MappedField = "Products", PDFColumnWidth = "0.60", Preference = 6 },
+						new ExportDataFileConfiguration { Header = "Last Login", MappedField = "LastLogin", PDFColumnWidth = "1.00", Preference = 7 },
+						new ExportDataFileConfiguration { Header = "Status", MappedField = "Status", PDFColumnWidth = "0.50", Preference = 8 },
+						new ExportDataFileConfiguration { Header = "IDP Flag", MappedField = "IDP", PDFColumnWidth = "0.55", Preference = 9 },
+						new ExportDataFileConfiguration { Header = "User Effective", MappedField = "EffectiveDate", PDFColumnWidth = "0.95", Preference = 10 },
+						new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 11 }
+					};
+
+					IDictionary<object, object> CFglobals = new Dictionary<object, object>();
+					//get the enabled custom field with the smallest sequence
+					RequestParameter customFieldsDataFilter = new RequestParameter();
+					customFieldsDataFilter.Pages.ResultsPerPage = 1;
+					customFieldsDataFilter.Pages.StartRow = 1;
+					customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
+					customFieldsDataFilter.FilterBy.Add("Enabled", "1");
+					CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
+
+					ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
+					IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: CFglobals, bookMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
+					bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
+					if (customFieldsEnabled)
+					{
+						string customFieldName = customFieldList[0].Name;
+						exportConfigurations.Add(new ExportDataFileConfiguration { Header = customFieldName, MappedField = "CustomField", PDFColumnWidth = "", Preference = 12 });
+					}
+
+					plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
 					output = new ObjectOutput<string, IErrorData>()
 					{
 						obj = Convert.ToBase64String(plainBytes),
@@ -524,199 +558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 		#endregion
-
-		#region Private Methods
-		/// <summary>
-		/// Set Aspose License
-		/// </summary>
-		/// <returns>Error Status object</returns>
-		private static Status<IErrorData> SetAsposeLicense()
-		{
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			try
-			{
-				Aspose.Cells.License asposeCellsLicense = new Aspose.Cells.License();
-				//Gets the base directory that the assembly resolver uses to probe for assemblies + Aspose license file location
-				asposeCellsLicense.SetLicense(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"ThirdParty\Aspose.Total.Lic"));
-			}
-			catch (Exception ex)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "Person.SetAsposeLicense.1";
-				errorStatus.ErrorMsg = "Set Aspose License: " + ex.Message;
-			}
-
-			return errorStatus;
-		}
-
-		/// <summary>
-		/// Create Excel WorkSheet
-		/// </summary>
-		/// <param name="workbook">Aspose Cells Workbook</param>
-		/// <param name="worksheet">Aspose Cells WorkSheet</param>
-		private static void CreateExcelWorkSheet(out Workbook workbook, out Worksheet worksheet)
-		{
-			//Instantiate a new Workbook
-			workbook = new Workbook();
-			//Clear all the worksheets
-			workbook.Worksheets.Clear();
-			//Add a new Sheet "Data"
-			worksheet = workbook.Worksheets.Add("Data");
-		}
-
-		/// <summary>
-		/// Export data in a list in a the the specified format
-		/// </summary>
-		/// <param name="listUsers">List of users to export</param>
-		/// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
-		/// <returns>Array of bytes</returns>
-		private byte[] ExportUserData(IList<LE.User> listUsers, SaveFormat dataFormat = SaveFormat.CSV)
-		{
-            byte[] bytes;
-			Workbook workbook;
-			Worksheet worksheet;
-			MemoryStream memorystream = new MemoryStream();
-
-			IDictionary<object, object> globals = new Dictionary<object, object>();
-			//get the enabled custom field with the smallest sequence
-			RequestParameter datafilter = new RequestParameter();
-			datafilter.Pages.ResultsPerPage = 1;
-			datafilter.Pages.StartRow = 1;
-			datafilter.SortBy.Add("Sequence", "ASC");
-			datafilter.FilterBy.Add("Enabled", "1");
-			globals.Add(BaseType.RequestParameter, datafilter);
-
-			ManageCustomFields manageCustomFields = new ManageCustomFields(_userClaims);
-			IList<CustomField> customFieldList = manageCustomFields.GetCustomField(globals: globals, bookMasterId: _userClaims.CustomerMasterId, bookMasterTypeId: (int)BookMasterType.CustomerMasterId);
-			bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
-
-			IList<string> propertyNamesList = new List<string>()
-			{
-				"UserType", "FirstName", "LastName", "LoginName", "Products", "LastLogin", "Status", "IDP", "EffectiveDate", "ExpireDate"
-			};
-
-			CreateExcelWorkSheet(out workbook, out worksheet);
-
-			//Manually add the row titles
-			int col = 0;
-			Cells cells = worksheet.Cells;
-
-			Cell cell = cells[0, col++];
-			cell.PutValue("User Type");
-
-			worksheet.Cells[0, col++].PutValue("First Name");
-			worksheet.Cells[0, col++].PutValue("Last Name");
-			worksheet.Cells[0, col++].PutValue("Username");
-			worksheet.Cells[0, col++].PutValue("Products");
-			worksheet.Cells[0, col++].PutValue("Last Login");
-			worksheet.Cells[0, col++].PutValue("Status");
-			worksheet.Cells[0, col++].PutValue("IDP Flag");
-			worksheet.Cells[0, col++].PutValue("User Effective");
-			worksheet.Cells[0, col++].PutValue("User Expires");
-
-			//Set the columns titles of the Custom Fields
-			if (customFieldsEnabled)
-			{
-				propertyNamesList.Add("CustomField");
-				string customFieldName = customFieldList[0].Name;
-				worksheet.Cells[0, col++].PutValue(customFieldName);
-			}
-			int totalColumns = col;
-
-			// Get the pagesetup object
-			PageSetup pageSetup = worksheet.PageSetup;
-
-			// Set bottom,left,right and top page margins
-			pageSetup.BottomMarginInch = 0.5;
-			pageSetup.LeftMarginInch = 0.25;
-			pageSetup.RightMarginInch = 0.25;
-			pageSetup.TopMarginInch = 0.5;
-
-			string[] propertyNames = propertyNamesList.ToArray();
-			worksheet.Cells.ImportCustomObjects(
-				(System.Collections.ICollection)listUsers,
-				propertyNames,
-				false, //Don't show the field names
-				1, //Start at second row
-				0,
-				listUsers.Count,
-				true,
-				"",
-				false
-			);
-
-			switch (dataFormat)
-			{
-				case SaveFormat.CSV:
-					//Autofits the columns width
-					workbook.Worksheets[0].AutoFitColumns();
-					break;
-				case SaveFormat.Pdf:
-					//Set the width columns
-					col = 0;
-					worksheet.Cells.SetColumnWidthInch(col++, 1.30);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.85);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.85);
-					worksheet.Cells.SetColumnWidthInch(col++, 2.25);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.60);
-					worksheet.Cells.SetColumnWidthInch(col++, 1.00);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.50);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.55);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.95);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.90);
-					worksheet.Cells.SetColumnWidthInch(col++, 0.50);
-
-					//Create a StyleFlag object.
-					StyleFlag styleFlag = new StyleFlag
-					{
-						//Make the corresponding attributes ON.
-						Font = true,
-						VerticalAlignment = true,
-						CellShading = true
-					};
-					Style style = workbook.CreateStyle();
-					Range range = worksheet.Cells.CreateRange(0, 0, 1, totalColumns);
-					style.Font.IsBold = true;
-					style.VerticalAlignment = TextAlignmentType.Top;
-					range.ApplyStyle(style, styleFlag);
-
-					styleFlag = new StyleFlag
-					{
-						WrapText = true,
-						VerticalAlignment = true
-					};
-                    cell = worksheet.Cells.LastCell;
-                    range = worksheet.Cells.CreateRange(1, 0, cell.Row, totalColumns);
-					style.IsTextWrapped = true;
-					style.VerticalAlignment = TextAlignmentType.Top;
-					range.ApplyStyle(style, styleFlag);
-
-					foreach (Worksheet sheet in workbook.Worksheets)
-					{
-						sheet.PageSetup.Orientation = PageOrientationType.Landscape;
-						sheet.PageSetup.FitToPagesWide = 1;
-						sheet.PageSetup.FitToPagesTall = 0;
-					}
-					break;
-				default:
-					break;
-			}
-
-			//Autofits all rows in this worksheet
-			workbook.Worksheets[0].AutoFitRows(true);
-
-			//Convert to bytes array
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-				workbook.Save(memorystream, dataFormat);
-
-				//Get bytes
-                bytes = memorystream.ToArray();
-            }
-
-			return bytes;
-		}
-		#endregion
+		
 	}
 }
 

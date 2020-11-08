@@ -54,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private RoleInfo _l2lRoleInfo = new RoleInfo();
         private List<Permission> _l2lPermissionList = new List<Permission>();
         private Lead2LeaseUser _l2lUser;
-
+        private GbProductMap _gbProductMap = new GbProductMap();
         private List<SamlAttributes> _userOneSiteSamlAttributes;
 
         private IList<ProductSettingType> _productSettingTypeList;
@@ -125,6 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _osUser = new OneSiteUser() { AllProperties = false, SystemIdentifier = "1192422|testuser", UserId = 12345 };
 
             _userloginOnly = new UserLoginOnly() { UserId = _editorUserId, LoginName = "test", PartyId = 30, RealPageId = new Guid(), LastLogin = DateTime.Now };
+            _gbProductMap = new GbProductMap() { BooksProductCode = "L2L", Name = "Lead2Lease", ProductId = 6, UDMSourceCode = "L2L" };
 
         }
 
@@ -244,10 +245,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  .Returns(_userPersona);
 
             mockProductRepository
-                .Setup(m => m.GetProductSettingsByPersona(
-                    It.IsAny<long>()
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    It.IsAny<int>()
                 ))
-                .Returns(_userProductSettings);
+                .Returns(_gbProductMap);
 
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
@@ -479,6 +480,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductRepository
+             .Setup(m => m.GetBooksMasterProductDetail(
+                 It.IsAny<int>()
+             ))
+             .Returns(_gbProductMap);
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
                 editorRealPageId: _editorRealPageId,
@@ -882,6 +888,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<int>()
                 ))
                 .Returns(true);
+
+            mockProductRepository
+             .Setup(m => m.GetBooksMasterProductDetail(
+                 It.IsAny<int>()
+             ))
+             .Returns(_gbProductMap);
 
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
@@ -1453,6 +1465,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  ))
                  .Returns(_editorPersona);
 
+            mockProductRepository
+             .Setup(m => m.GetBooksMasterProductDetail(
+                 It.IsAny<int>()
+             ))
+             .Returns(_gbProductMap);
+
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,
               messageHandler: mockHandler.Object,
@@ -1575,6 +1593,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                  ))
                  .Returns(_editorPersona);
 
+            mockProductRepository
+             .Setup(m => m.GetBooksMasterProductDetail(
+                 It.IsAny<int>()
+             ))
+             .Returns(_gbProductMap);
+
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,
               messageHandler: mockHandler.Object,
@@ -1696,6 +1720,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.Is<long>(l => l == 4)
                  ))
                  .Returns(_editorPersona);
+
+            mockProductRepository
+               .Setup(m => m.GetBooksMasterProductDetail(
+                   It.IsAny<int>()
+               ))
+               .Returns(_gbProductMap);
 
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
               editorRealPageId: _editorRealPageId,

@@ -83,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.ProspectContactCenter:
-                        IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims.UserRealPageGuid);
+                        IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims);
                         result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.Lead2Lease:
@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = manageProductResidentPortal.ListProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.OnSite:
-                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims);
                         result = manageProductOnSite.GetProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.Insurance:
@@ -289,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = manageProductResidentPortal.ListLevelsResponse(editorPersonaId, userPersonaId);
                         break;
                     case (int)ProductEnum.OnSite:
-                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims);
                         result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.Insurance:
@@ -502,7 +502,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
 
                     case (int)ProductEnum.OnSite:
-                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims);
                         result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.ResidentPortal:

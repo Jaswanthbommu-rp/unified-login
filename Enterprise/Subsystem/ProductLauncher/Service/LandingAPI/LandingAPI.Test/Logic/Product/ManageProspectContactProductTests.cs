@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         private int _blueBookId = 123;
         private string _companyInstanceSourceId = "123456";
         private string _apiEndPoint = "http://producturl.com";
-
+        private GbProductMap _gbProductMap = new GbProductMap();
         private IManageProductProspectContact manageProductProspectContact;
         private IList<CustomerCompanyMap> mapCompany;
         private Mock<IManageBlueBook> mockManageBlueBook;
@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             };
 
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiEndPoint", Value = _apiEndPoint });
-
+            _gbProductMap = new GbProductMap() { BooksProductCode = "LVL1", Name = "Prospect Contact Center", ProductId = 10, UDMSourceCode = "LVL1" };
             _repositoryResponseProductStatus.ErrorMessage = "";
 
             mapCompany = new List<CustomerCompanyMap>()
@@ -119,8 +119,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductRepository
+            .Setup(m => m.GetBooksMasterProductDetail(
+                It.IsAny<int>()
+            ))
+            .Returns(_gbProductMap);
+
             manageProductProspectContact = new ManageProductProspectContact(_editorRealPageId, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object);
+                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object, mockProductRepository.Object);
 
         }
         #endregion

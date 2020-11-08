@@ -3,6 +3,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -48,6 +50,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <returns></returns>
         IList<Organization> GetOrganizationList();
+
+        /// <summary>
+        /// Used to get the Organization list by Books Customer master id
+        /// </summary>
+        /// <returns></returns>
+        IList<Organization> GetOrganizationListByBooksCustomerMasterId(long blueBookId);
 
         /// <summary>
         /// Used to get the RealPageId of the admin user of the organization
@@ -113,6 +121,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>       
         /// <returns>List of Unified Login companies including admin user info</returns>
         List<UnifiedLoginCompany> GetUnifiedLoginCompanyList();
+
+        /// <summary>
+        /// Get Company List
+        /// </summary>
+        /// <param name="_userClaim">UserClaim</param>
+        /// <param name="organizationName">organizationName</param>
+        /// <param name="domain">domain</param>
+        /// <param name="blueId">blueId</param>
+        /// <param name="organizationId">organizationId</param>
+        /// <param name="dataFilterSort">dataFilterSort</param>
+        /// <returns></returns>
+        List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null);
 
         #endregion
     }

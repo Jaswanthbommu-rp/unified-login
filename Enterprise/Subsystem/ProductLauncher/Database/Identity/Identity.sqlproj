@@ -1021,6 +1021,8 @@
     <Build Include="Enterprise\Stored Procedures\DeleteContactMechanismPreference.sql" />
     <Build Include="Enterprise\Tables\ContactMechanismPreference.sql" />
     <Build Include="Enterprise\Tables\UnifiedLoginCache.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetCompanyList.sql" />
+    <Build Include="Person\Stored Procedures\ListUsersProductDetailsLoginByLoginName.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1143,5 +1145,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\June2019Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\April2020Release.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2020Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\November2020Release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\December2020Release.sql" />
   </ItemGroup>
 </Project>

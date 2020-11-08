@@ -865,7 +865,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             companyInstance = _manageBlueBookCache[$"getCompanysByCompIds_{booksCompanyMasterHash}"] as List<Company>;
             if (companyInstance == null)
             {
-                int splitSize = (int) (booksCompanyMasterList.Count * .2);
+                int splitSize = (int) (booksCompanyMasterList.Count * .08);
                 if (splitSize == 0)
                 {
                     splitSize = 10;

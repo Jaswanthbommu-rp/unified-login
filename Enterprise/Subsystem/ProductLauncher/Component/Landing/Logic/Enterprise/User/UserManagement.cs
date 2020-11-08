@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
@@ -53,7 +54,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// </summary>
 		public ObjectResponse CreateEnterpriseUnityUser(UserProductDetails userProductDetails)
 		{
-			WriteToLog(LogEventLevel.Debug, $"Beginning CreateEnterpriseUnityUser for new user with json {JsonConvert.SerializeObject(userProductDetails)}");
+			var logData = new Dictionary<string, object> { { "userProductDetails", userProductDetails } };
+			WriteToLog(LogEventLevel.Debug, $"Beginning CreateEnterpriseUnityUser for new user with json", logData);
 
 			var response = new ObjectResponse();
 
@@ -318,6 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			updateObject.LastName = userProductDetails.UserProfileDetails.LastName.TrimWhiteSpace();
 			updateObject.Title = userProductDetails.UserProfileDetails.Title;
 			updateObject.Suffix = userProductDetails.UserProfileDetails.Suffix;
+			updateObject.EmployeeId = userProductDetails.UserProfileDetails.EmployeeId;
 
 			// add product batch
 			updateObject.productBatch = GetProductBatchData(userProductDetails.ProductList);
@@ -429,10 +432,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 				IList<UserProductDetailAttribute> userProuctDetailAttributes = entUserRepository.ListUserProductDetailsLoginByPersonaId(PersonaId);
 
 				userProuctDetailAttributes.ToList().ForEach(u =>
-				userProductDetailLogins.Add(new UserProductDetailLogin 
+
+                userProductDetailLogins.Add(new UserProductDetailLogin 
 				{ 
 					ProductId = u.ProductId,
 					ProductCode = u.ProductCode,
+					
 					Details = JsonConvert.DeserializeObject<IList<Dictionary<string,string>>>(u.UserAttribute)
 				})) ; 
 
@@ -445,6 +450,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			}
 		}
 
+		public IList<UserProductDetailLogin> ListUserProductDetailsLoginByLoginName(string loginName)
+		{
+			try
+			{
+				WriteToLog(LogEventLevel.Information,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Beginning ListUserProductsSamlDetailByLoginName to the user with LoginName {loginName}");
+
+				IList<UserProductDetailLogin> userProductDetailLogins = new List<UserProductDetailLogin>();
+
+				WriteToLog(LogEventLevel.Information,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Getting the Product SAML Attributes to the user with LoginName {loginName}");
+
+				EntUserRepository entUserRepository = new EntUserRepository(_userClaims);
+				IList<UserProductDetailAttribute> userProuctDetailAttributes = entUserRepository.ListUserProductDetailsLoginByLoginName(loginName);
+
+				WriteToLog(LogEventLevel.Information,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Information received for the user with LoginName {loginName}");
+
+				userProuctDetailAttributes.ToList().ForEach(u =>
+				userProductDetailLogins.Add(new UserProductDetailLogin
+				{
+					ProductId = u.ProductId,
+					ProductCode = u.ProductCode,
+					Company = u.Company,
+					RealPageId = u.RealPageId,
+					UserType = u.UserType == "401" ? UserRoleType.User.ToEnumDescription() : u.UserType == "402" ? UserRoleType.SuperUser.ToEnumDescription() : UserRoleType.ExternalUser.ToEnumDescription(),
+					Details = JsonConvert.DeserializeObject<IList<Dictionary<string, string>>>(u.UserAttribute)
+				}));
+
+
+				return userProductDetailLogins;
+			}
+			catch (Exception ex)
+			{
+				WriteToLog(LogEventLevel.Error,
+					$"UserManagement.ListUserProductsSamlDetailByLoginName - Error  {ex.Message}");
+				throw ex;
+			}
+		}
 		#region Private Methods
 		/// <summary>
 		/// Used for both Create & Update user

@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -68,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string productUserId, string productUserLoginName, string productUserEmail)
 		{
 			WriteToDiagnosticLog(
-				$"DepositAlternativeManagement.UpdateSamlUserAttribute - Product {ProductType} productUserLoginName - {productUserLoginName}. At beginning of the method.");
+				$"DepositAlternativeManagement.UpdateSamlUserAttribute - productUserLoginName - {productUserLoginName}. At beginning of the method.");
 
 			// if userName not matches with email then update user login with email
 			if (!productUserLoginName.Equals(productUserEmail, StringComparison.OrdinalIgnoreCase))
@@ -82,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+					$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
 
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 				{
@@ -91,24 +92,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+					$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
 				var groupList = GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
 
 				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Received regionList with count = {groupList?.Count}");
+					$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Received regionList with count = {groupList?.Count}");
 
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
 					WriteToDiagnosticLog(
-						$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+						$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
 					var user = GetProductUser();
 
 					// map user regions
 					if (user != null)
 					{
 						WriteToDiagnosticLog(
-							$"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+							$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
 
 						MergeUserPropertyGroups(groupList, user);
 					}
@@ -128,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductInvokerBase.GetProductPropertyGroups - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+				WriteToErrorLog($"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
 				ListResponse response = new ListResponse
 				{
 					IsError = true
@@ -152,6 +153,66 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				response.ErrorReason = ex.Message;
 				return response;
 			}
+		}
+
+		/// <summary>
+		/// Unassign User
+		/// </summary> 
+		public override string UnassignUser()
+		{
+			WriteToDiagnosticLog(
+				$"DepositAlternativeManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser().");
+
+			var productUserProfile = new ProductUserProfile
+			{
+				UserId = SubjectUserDetails.ProductUserId,
+				IsActive = false,
+				CompanyId = CompanyInstanceSourceId,
+				LoginName = SubjectUserDetails.ProductUserName,
+				Email = SubjectUserDetails.Email,
+				FirstName = SubjectUserDetails.FirstName,
+				LastName = SubjectUserDetails.LastName
+			};
+
+			// Delete / deactivate uer in the product
+			var result = DeleteUser(productUserProfile);
+
+			if (result.IsSuccessStatusCode)
+			{
+				WriteToDiagnosticLog(
+					$"DepositAlternativeManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status.");
+
+				IManageUserLogin manageUserLogin = new ManageUserLogin();
+				IUserLoginRepository userLoginRepository = new UserLoginRepository();
+				var _managePersona = new ManagePersona();
+				SamlRepository samlRepository = new SamlRepository();
+
+				var userLogin = manageUserLogin.GetUserLoginOnly(SubjectUserDetails.UserRealPageId);
+				Persona persona = _managePersona.GetPersona(SubjectUserDetails.PersonaId);
+
+				OrganizationStatus orgStatus = userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
+				int statusValue = (int)UserUiStatusType.AccountHidden;
+
+				//if user is disabled then set status to deactivated instead hidden
+				if (orgStatus.Status.ToString().Equals(UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
+				{
+					statusValue = (int)UserUiStatusType.Deactivated;
+				}
+
+				// Update product status in green book
+				
+				samlRepository.DeleteSamlUserProductInfoAndStatus(SubjectUserDetails.PersonaId, (int)ProductEnum.DepositAlternative);
+				_dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, "ProductStatus", ProductId, statusValue);
+
+				// Activity Logging
+				ProductActivityLogger.WriteUnassignUserActivityLog(EditorUserDetails, SubjectUserDetails, BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId);
+
+				return string.Empty;
+			}
+
+			WriteToErrorLog($"DepositAlternativeManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}");
+
+			return result.Content;
 		}
 	}
 }

@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.ProspectContactCenter)
 					{
-						ManageProductProspectContact prospContact = new ManageProductProspectContact(userClaim.UserRealPageGuid);
+						ManageProductProspectContact prospContact = new ManageProductProspectContact(userClaim);
 						propertiesResponse = prospContact.GetProperties(createUserPersonaId, personaId, null);
 						productListToCreate.Add(CreateProductBatchRecord(propertiesResponse, rolesResponse, product.ProductId));
 					}
@@ -124,7 +124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.OnSite)
 					{
-						ManageProductOnSite manageProductOnSite = new ManageProductOnSite(userClaim.UserRealPageGuid);
+						ManageProductOnSite manageProductOnSite = new ManageProductOnSite(userClaim);
 						propertiesResponse = manageProductOnSite.GetProperties(createUserPersonaId, personaId, null);
 						rolesResponse = manageProductOnSite.GetRoles(createUserPersonaId, personaId, null);
 						var regionResponse = manageProductOnSite.GetRegions(createUserPersonaId, personaId, null);
@@ -141,7 +141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					}
 					else if (product.ProductId == (int)ProductEnum.SelfProvisioningPortal)
 					{
-						ManageProductSelfProvisioningPortal manageProductSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(userClaim.UserRealPageGuid);
+						ManageProductSelfProvisioningPortal manageProductSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(userClaim);
 						productListToCreate.Add(CreateSelfProvisioningPortalProductBatchRecord(product.ProductId));
 					}
 					else if (product.ProductId == (int)ProductEnum.UnifiedAmenities)

@@ -85,9 +85,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     // check for import user right
                     AddRightFromImpersonator(identity, impersonateUserRights, userRights, "ABILITYTOIMPORTUSERS");
 
-                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGENOTIFICATIONS");                    
+                    AddRightFromImpersonator(identity, impersonateUserRights, userRights, "MANAGENOTIFICATIONS");
 
-                }
+					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManagePII");
+					AddRemoveRightForCIMPL(identity, impersonateUserRights, userRights, "CIMPLManageSensitiveFinancialData");
+				}
             }
 
 			return userRights;
@@ -114,6 +116,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 					{
 						userRights.Add(right);
 					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Used to assign or unassign a CIMPL related right for a user
+		/// CIMPLMANAGEPII
+		///	CIMPLMANAGESENSITIVEFINANCIALDATA
+		///	Case 1: If both rights are in impersonateUserRights but not in userrights then AddRight From ImpersonatedRights
+		///	Case 2: If both rights are not in impersonateUserRights then remove from userRights if user is Impersonated
+		///	Realpage QA		CF realpage
+		///	Has Right		Has No Right	Add Right
+		///	Has No Right	Has Right		Remove Right
+		/// </summary>
+		/// <param name="identity">The current claims of the user being logged in</param>
+		/// <param name="impersonateUserRights">The list of rights of the impersonator</param>
+		/// <param name="userRights">The list of rights assigned to this user</param>
+		/// <param name="rightName">The right to check</param>
+		private static void AddRemoveRightForCIMPL(ClaimsIdentity identity, List<string> impersonateUserRights, List<string> userRights, string rightName)
+		{
+			if (impersonateUserRights.Contains(rightName) && !userRights.Contains(rightName))
+			{
+				AddRightFromImpersonator(identity, impersonateUserRights, userRights, rightName);
+			}
+			if (!impersonateUserRights.Contains(rightName) && userRights.Contains(rightName))
+			{
+				if (identity.Claims.Any(q => q.Type.Equals("Right", StringComparison.OrdinalIgnoreCase) && q.Value.Equals(rightName, StringComparison.OrdinalIgnoreCase)))
+				{
+					var claim = (from c in identity.Claims where c.Value.ToUpper() == rightName.ToUpper() select c).Single();
+					identity.RemoveClaim(claim);
+					userRights.Remove(rightName);
 				}
 			}
 		}

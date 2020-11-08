@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageProductOps(DefaultUserClaim userClaims) : base((int)ProductEnum.OpsBuyer, userClaims, null)
+        public ManageProductOps(DefaultUserClaim userClaims) : base((int)ProductEnum.OpsBuyer, userClaims, null, null)
         {
             _editorRealPageId = userClaims.UserRealPageGuid;
             _userClaims = userClaims;
@@ -72,8 +72,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="samlRepository"></param>
         /// <param name="blueBook"></param>
         public ManageProductOps(Guid editorRealPageId, DefaultUserClaim userClaim, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
-                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook)
-             : base((int)ProductEnum.OpsBuyer, userClaim, productInternalSettingRepository)
+                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
+             : base((int)ProductEnum.OpsBuyer, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _userClaims = userClaim;
@@ -82,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _blueBook = blueBook;
             _managePersona = managePersona;
             _samlRepository = samlRepository;
-
+            _productRepository = productRepository;
             _opsBuyerUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value; //"https://staging9.on-site.com/api/greenbook"; //
             _client.BaseAddress = new Uri(_opsBuyerUrl);
 
@@ -622,6 +622,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
+            IList<UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
+
+            var employeeId = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
+            person.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+
+
+
             IManageContactMechanism contactMechanismLogic = new ManageContactMechanism();
             IList<CommonAddress> contactMechansimList = contactMechanismLogic.ListContactMechanismForPerson(realPageId, null);
 
@@ -782,6 +789,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = person.FirstName,
                 MiddleName = person.MiddleName,
                 LastName = person.LastName,
+                EmployeeId = person.EmployeeId,
                 Loginname = _productUsername,
                 Password = Membership.GeneratePassword(15, 5),
                 RoleName = roleName,
@@ -920,6 +928,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var realPageId = persona.RealPageId;
                 var person = _managePerson.GetPerson(realPageId);
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+                IList<UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: persona.UserId, organizationPartyId: persona.Organization.PartyId);
+                var employeeId = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, persona.OrganizationPartyId);
+                person.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
+
                 IManageContactMechanism contactMechanismLogic = new ManageContactMechanism();
                 IList<CommonAddress> contactMechansimList = contactMechanismLogic.ListContactMechanismForPerson(realPageId, null);
                 // get the email address
@@ -944,6 +957,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     FirstName = person.FirstName,
                     MiddleName = person.MiddleName,
                     LastName = person.LastName,
+                    EmployeeId = person.EmployeeId,
                     Loginname = _productUsername,
                     Email = userEmailAddress,
                     Status = (userDetails.IsActive == true) ? "active" : "inactive"
@@ -1213,6 +1227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         migrationUser.Username = user.Loginname;
                         migrationUser.Status = user.Status?.ToLower() == "active" ? "Active" : "Disabled";
                         migrationUser.Phone = user.Phone;
+                        migrationUser.EmployeeId = user.EmployeeId;
                         if (!string.IsNullOrWhiteSpace(user.AssetGroup?.ID))
                         {
                             migrationUser.Properties.Add(new MigrationProperty() { PropertyInstanceSourceId = user.AssetGroup.ID });
