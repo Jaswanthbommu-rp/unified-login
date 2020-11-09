@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase((int)productUserAccountDetails.ProductName, _productInternalSettingRepository);
+            var manageProductBase = new ManageProductBase((int)productUserAccountDetails.ProductName, _productInternalSettingRepository, _productRepository);
 
             manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, (int)productUserAccountDetails.ProductName);
 
@@ -368,75 +368,75 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch (productUserAccountDetails.ProductName)
             {
                 case ProductEnum.OneSite:
-                    product = new OneSiteProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new OneSiteProduct(_defaultUserClaim, _productInternalSettingRepository,_productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.MarketingCenter:
-                    product = new MarketingCenterProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new MarketingCenterProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.FinancialSuite:
-                    product = new OneSiteAccountingProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new OneSiteAccountingProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.OpsBuyer:
-                    product = new OpsProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new OpsProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.VendorServices:
-                    product = new VendorServicesProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new VendorServicesProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.ClientPortal:
-                    product = new ClientPortalProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new ClientPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.SalesForce:
-                    product = new ClientPortalProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new ClientPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.ProspectContactCenter:
-                    product = new ProspectContactCenterProduct(_productInternalSettingRepository);
+                    product = new ProspectContactCenterProduct(_productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.Lead2Lease:
-                    product = new Lead2LeaseProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new Lead2LeaseProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.ResidentPortal:
-                    product = new ResidentPortalProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new ResidentPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.OnSite:
-                    product = new OnSiteProduct(_productInternalSettingRepository);
+                    product = new OnSiteProduct(_productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.Insurance:
-                    product = new RentersInsuranceProduct(_productInternalSettingRepository);
+                    product = new RentersInsuranceProduct(_productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.ResearchApplication:
-                    product = new ResearchApplicationProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new ResearchApplicationProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.UnifiedAmenities:
-                    product = new UnifiedAmenitiesProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new UnifiedAmenitiesProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.SelfProvisioningPortal:
-                    product = new SelfProvisioningPortalProduct(_productInternalSettingRepository);
+                    product = new SelfProvisioningPortalProduct(_productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.UtilityManagement:
-                    product = new UtilityManagementProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new UtilityManagementProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.AssetOptimizer:
-                    product = new AssetOptimizerProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new AssetOptimizerProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.AoBusinessIntelligence:
-                    product = new AoBusinessIntelligenceProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new AoBusinessIntelligenceProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.LeadManagement:
@@ -448,7 +448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.RPDocumentManagement:
-                    product = new RPDocumentManagementProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new RPDocumentManagementProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.PortfolioManagement:
@@ -476,7 +476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.IntelligentBuilding:
-                    product = new IntelligentBuildingProduct(_defaultUserClaim, _productInternalSettingRepository);
+                    product = new IntelligentBuildingProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 default:
@@ -1059,6 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public int _productId;
 
         IProductInternalSettingRepository _productInternalSettingRepository;
+        IProductRepository _productRepository;
         DefaultUserClaim _userClaim;
 
         /// <summary>
@@ -1066,10 +1067,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="productId"></param>
         /// <param name="productInternalSettingRepository"></param>
-        public ProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository)
+        public ProductBase(int productId, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
             _productId = productId;
             _productInternalSettingRepository = productInternalSettingRepository;
+            _productRepository = productRepository;
         }
 
         /// <summary>
@@ -1078,11 +1080,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productId"></param>
         /// <param name="userClaim"></param>
         /// <param name="productInternalSettingRepository"></param>
-        public ProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository)
+        public ProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
         {
             _productId = productId;
             _userClaim = userClaim;
             _productInternalSettingRepository = productInternalSettingRepository;
+            _productRepository = productRepository;
         }
 
         /// <summary>
@@ -1099,7 +1102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Handle all other products than AO
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(_productId, _productInternalSettingRepository);
+            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository,_productRepository);
 
             manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
             manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
@@ -1113,7 +1116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Default AO record
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(_productId, _productInternalSettingRepository);
+            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository, _productRepository);
 
             manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
             manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
@@ -1149,7 +1152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public OneSiteProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OneSite, userClaim, null)
+        public OneSiteProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OneSite, userClaim, null, null)
         {
         }
 
@@ -1158,7 +1161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public OneSiteProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.OneSite, userClaim, productInternalSettingRepository)
+        public OneSiteProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OneSite, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -1387,7 +1390,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public MarketingCenterProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.MarketingCenter, userClaim, null)
+        public MarketingCenterProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.MarketingCenter, userClaim, null, null)
         {
         }
 
@@ -1396,7 +1399,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public MarketingCenterProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.MarketingCenter, userClaim, productInternalSettingRepository)
+        public MarketingCenterProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.MarketingCenter, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -1501,7 +1504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public OneSiteAccountingProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.FinancialSuite, userClaim, null)
+        public OneSiteAccountingProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.FinancialSuite, userClaim, null, null)
         {
         }
 
@@ -1510,7 +1513,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public OneSiteAccountingProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.FinancialSuite, userClaim, productInternalSettingRepository)
+        public OneSiteAccountingProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.FinancialSuite, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -1608,7 +1611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public OpsProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OpsBuyer, userClaim, null)
+        public OpsProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OpsBuyer, userClaim, null, null)
         {
         }
 
@@ -1617,7 +1620,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public OpsProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.OpsBuyer, userClaim, productInternalSettingRepository)
+        public OpsProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OpsBuyer, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -1716,7 +1719,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public VendorServicesProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.VendorServices, userClaim, null)
+        public VendorServicesProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.VendorServices, userClaim, null, null)
         {
         }
 
@@ -1725,7 +1728,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public VendorServicesProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.VendorServices, userClaim, productInternalSettingRepository)
+        public VendorServicesProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.VendorServices, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -1809,7 +1812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public ClientPortalProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ClientPortal, userClaim, null)
+        public ClientPortalProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ClientPortal, userClaim, null, null)
         {
         }
 
@@ -1818,7 +1821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public ClientPortalProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.ClientPortal, userClaim, productInternalSettingRepository)
+        public ClientPortalProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.ClientPortal, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -1902,7 +1905,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public SalesForceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.SalesForce, userClaim, null)
+        public SalesForceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.SalesForce, userClaim, null, null)
         {
         }
 
@@ -1911,7 +1914,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public SalesForceProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.SalesForce, userClaim, productInternalSettingRepository)
+        public SalesForceProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.SalesForce, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -1982,7 +1985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public ProspectContactCenterProduct() : base((int)ProductEnum.ProspectContactCenter, null)
+        public ProspectContactCenterProduct() : base((int)ProductEnum.ProspectContactCenter, null, null)
         {
         }
 
@@ -1990,7 +1993,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public ProspectContactCenterProduct(IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository)
+        public ProspectContactCenterProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2009,8 +2012,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productProspectContactCenter = new ManageProductProspectContact(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productProspectContactCenter = new ManageProductProspectContact(base.UserClaim);
 
             // assign user
             if (roleProp.IsAssigned)
@@ -2028,7 +2031,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            var productProspectContactCenter = new ManageProductProspectContact(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productProspectContactCenter = new ManageProductProspectContact(base.UserClaim);
             return productProspectContactCenter.UpdateProspectContactCenterUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 
@@ -2048,8 +2052,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productProspectContactCenter = new ManageProductProspectContact(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productProspectContactCenter = new ManageProductProspectContact(base.UserClaim);
             return productProspectContactCenter.ChangeProspectContactUserType(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
         }
     }
@@ -2065,7 +2069,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public Lead2LeaseProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.Lead2Lease, userClaim, null)
+        public Lead2LeaseProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.Lead2Lease, userClaim, null, null)
         {
         }
 
@@ -2074,7 +2078,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public Lead2LeaseProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.Lead2Lease, userClaim, productInternalSettingRepository)
+        public Lead2LeaseProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.Lead2Lease, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2180,7 +2184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public ResidentPortalProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ResidentPortal, userClaim, null)
+        public ResidentPortalProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ResidentPortal, userClaim, null, null)
         {
         }
 
@@ -2189,7 +2193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public ResidentPortalProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.ResidentPortal, userClaim, productInternalSettingRepository)
+        public ResidentPortalProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.ResidentPortal, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2314,7 +2318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public OnSiteProduct() : base((int)ProductEnum.OnSite, null)
+        public OnSiteProduct() : base((int)ProductEnum.OnSite, null, null)
         {
         }
 
@@ -2322,7 +2326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public OnSiteProduct(IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.OnSite, productInternalSettingRepository)
+        public OnSiteProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OnSite, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2341,8 +2345,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productOnSite = new ManageProductOnSite(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productOnSite = new ManageProductOnSite(base.UserClaim);
 
             // assign user
             if (roleProp.IsAssigned)
@@ -2364,7 +2368,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            var productOnsite = new ManageProductOnSite(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productOnsite = new ManageProductOnSite(base.UserClaim);
             return productOnsite.UpdateOnSiteUserProfile(createUserPersonaId, assignUserPersonaId);
         }
 
@@ -2384,8 +2389,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
-
-            var productOnSite = new ManageProductOnSite(createUserRealPageId);
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var productOnSite = new ManageProductOnSite(base.UserClaim);
 
             return productOnSite.ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
         }
@@ -2402,7 +2407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public UtilityManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.UtilityManagement, userClaim, null)
+        public UtilityManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.UtilityManagement, userClaim, null, null)
         {
         }
 
@@ -2411,7 +2416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public UtilityManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.UtilityManagement, userClaim, productInternalSettingRepository)
+        public UtilityManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.UtilityManagement, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2503,7 +2508,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public OmniChannelProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OmniChannel, userClaim, null)
+        public OmniChannelProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OmniChannel, userClaim, null, null)
         {
         }
 
@@ -2512,7 +2517,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public OmniChannelProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.OmniChannel, userClaim, productInternalSettingRepository)
+        public OmniChannelProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OmniChannel, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2583,7 +2588,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public ResearchApplicationProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ResearchApplication, userClaim, null)
+        public ResearchApplicationProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ResearchApplication, userClaim, null, null)
         {
         }
 
@@ -2592,7 +2597,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public ResearchApplicationProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.ResearchApplication, userClaim, productInternalSettingRepository)
+        public ResearchApplicationProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.ResearchApplication, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2663,7 +2668,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public RentersInsuranceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ResidentPortal, userClaim, null)
+        public RentersInsuranceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ResidentPortal, userClaim, null, null)
         {
         }
 
@@ -2671,7 +2676,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public RentersInsuranceProduct(IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.Insurance, productInternalSettingRepository)
+        public RentersInsuranceProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.Insurance, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2785,7 +2790,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public UnifiedAmenitiesProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.UnifiedAmenities, userClaim, null)
+        public UnifiedAmenitiesProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.UnifiedAmenities, userClaim, null, null)
         {
         }
 
@@ -2794,7 +2799,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public UnifiedAmenitiesProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.UnifiedAmenities, userClaim, productInternalSettingRepository)
+        public UnifiedAmenitiesProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.UnifiedAmenities, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2891,7 +2896,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public SelfProvisioningPortalProduct() : base((int)ProductEnum.SelfProvisioningPortal, null)
+        public SelfProvisioningPortalProduct() : base((int)ProductEnum.SelfProvisioningPortal, null, null)
         {
         }
 
@@ -2899,7 +2904,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public SelfProvisioningPortalProduct(IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository)
+        public SelfProvisioningPortalProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2921,8 +2926,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 throw new Exception("Input JSON parsing issue; Null object.");
             }
-
-            ManageProductSelfProvisioningPortal productSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(createUserRealPageId);
+            
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            ManageProductSelfProvisioningPortal productSelfProvisioningPortal = new ManageProductSelfProvisioningPortal(base.UserClaim);
 
             // assign user
             if (roleProp.IsAssigned)
@@ -2974,7 +2980,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public AssetOptimizerProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.AssetOptimizer, userClaim, null)
+        public AssetOptimizerProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.AssetOptimizer, userClaim, null, null)
         {
         }
 
@@ -2982,7 +2988,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public AssetOptimizerProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.AssetOptimizer, userClaim, productInternalSettingRepository)
+        public AssetOptimizerProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.AssetOptimizer, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3055,7 +3061,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public AoBusinessIntelligenceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.AoBusinessIntelligence, userClaim, null)
+        public AoBusinessIntelligenceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.AoBusinessIntelligence, userClaim, null, null)
         {
         }
 
@@ -3064,7 +3070,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim"></param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public AoBusinessIntelligenceProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.AoBusinessIntelligence, userClaim, productInternalSettingRepository)
+        public AoBusinessIntelligenceProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.AoBusinessIntelligence, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3118,7 +3124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public LeadManagementProduct(ProductEnum productType) : base((int)productType, null)
+        public LeadManagementProduct(ProductEnum productType) : base((int)productType, null, null)
         {
         }
 
@@ -3126,7 +3132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public LeadManagementProduct(IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.LeadManagement, productInternalSettingRepository)
+        public LeadManagementProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.LeadManagement, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3209,7 +3215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public RPDocumentManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.RPDocumentManagement, userClaim, null)
+        public RPDocumentManagementProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.RPDocumentManagement, userClaim, null, null)
         {
         }
 
@@ -3218,7 +3224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public RPDocumentManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.RPDocumentManagement, userClaim, productInternalSettingRepository)
+        public RPDocumentManagementProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.RPDocumentManagement, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -3321,7 +3327,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="productType">Identify products by id</param>
-        public PortfolioManagementProduct(ProductEnum productType) : base((int)productType, null)
+        public PortfolioManagementProduct(ProductEnum productType) : base((int)productType, null, null)
         {
         }
 
@@ -3406,7 +3412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public IntegrationMarketplaceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.IntegrationMarketplace, userClaim, null)
+        public IntegrationMarketplaceProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.IntegrationMarketplace, userClaim, null, null)
         {
         }
 
@@ -3490,7 +3496,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="productType">Identify products by id</param>
-        public DepositAlternativeProduct(ProductEnum productType) : base((int)productType, null)
+        public DepositAlternativeProduct(ProductEnum productType) : base((int)productType, null, null)
         {
         }
 
@@ -3575,7 +3581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="productType">Identify products by id</param>
-        public ClickPayProduct(ProductEnum productType) : base((int)productType, null)
+        public ClickPayProduct(ProductEnum productType) : base((int)productType, null, null)
         {
         }
 
@@ -3660,7 +3666,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
         /// <param name="productType">Product Type</param>
-        public SeniorLeadManagementProduct(DefaultUserClaim userClaim, ProductEnum productType) : base((int)productType, userClaim, null)
+        public SeniorLeadManagementProduct(DefaultUserClaim userClaim, ProductEnum productType) : base((int)productType, userClaim, null, null)
         {
         }
 
@@ -3808,7 +3814,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="productType">Identify products by id</param>
-        public RenovationManagerProduct(ProductEnum productType) : base((int)productType, null)
+        public RenovationManagerProduct(ProductEnum productType) : base((int)productType, null, null)
         {
         }
 
@@ -3892,7 +3898,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// default constructor
         /// </summary>
         /// <param name="userClaim">Use to hold user claim related information</param>
-        public IntelligentBuildingProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.UnifiedAmenities, userClaim, null)
+        public IntelligentBuildingProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.UnifiedAmenities, userClaim, null, null)
         {
         }
 
@@ -3901,7 +3907,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userClaim">User claim related information</param>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public IntelligentBuildingProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository) : base((int)ProductEnum.UnifiedAmenities, userClaim, productInternalSettingRepository)
+        public IntelligentBuildingProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.UnifiedAmenities, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 

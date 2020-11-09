@@ -34,7 +34,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	{
 		#region Private Variables
 		private int _blueBookId;
-
+		private GbProductMap _gbProductMap = new GbProductMap();
 		private List<Community> _PropertyList = new List<Community>();
 		private List<ILevel> _RoleList = new List<ILevel>();
 		private List<IMessagingGroups> _messageGroupsList = new List<IMessagingGroups>();
@@ -75,7 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "MTAPIENDPOINT", Value = _mtApiEndPoint });
 			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "APPID", Value = _appId });
 			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "APPKEY", Value = _appKey });
-
+			_gbProductMap = new GbProductMap() { BooksProductCode = "AB", Name = "Resident Portals", ProductId = 17, UDMSourceCode = "AB" };
 			_repositoryResponseProductStatus.ErrorMessage = "";
 
             _userClaims = new DefaultUserClaim()
@@ -167,6 +167,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					It.IsAny<long>()
 				))
 				.Returns(_userProductSettings);
+
+			mockProductRepository
+			  .Setup(m => m.GetBooksMasterProductDetail(
+				  It.IsAny<int>()
+			  ))
+			  .Returns(_gbProductMap);
 
 			_residentPortalUser.Notifications = expectedNotifications;
 
@@ -306,7 +312,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					It.IsAny<long>()
 				))
 				.Returns(_userProductSettings);
-			
+
+			mockProductRepository
+			  .Setup(m => m.GetBooksMasterProductDetail(
+				  It.IsAny<int>()
+			  ))
+			  .Returns(_gbProductMap);
 
 			Dictionary<string, string> rolesDictionary = new Dictionary<string, string>();
 			rolesDictionary.Add("ENTERPRISE_ADMIN", "Enterprise Admin");
@@ -447,6 +458,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					It.IsAny<long>()
 				))
 				.Returns(_userProductSettings);
+
+			mockProductRepository
+			  .Setup(m => m.GetBooksMasterProductDetail(
+				  It.IsAny<int>()
+			  ))
+			  .Returns(_gbProductMap);
 
 			_residentPortalUser.MessagingGroups = expectedMessageGroupsList;
 
@@ -776,8 +793,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
-            //Act
-            IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
+			mockProductRepository
+			  .Setup(m => m.GetBooksMasterProductDetail(
+				  It.IsAny<int>()
+			  ))
+			  .Returns(_gbProductMap);
+
+			//Act
+			IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
                 editorRealPageId: _editorRealPageId,
                 residentPortalEditorUser: _residentPortalEditorUser,
                 residentPortalUser: _residentPortalUser,
@@ -905,8 +928,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
-            //Act
-            IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
+			mockProductRepository
+			  .Setup(m => m.GetBooksMasterProductDetail(
+				  It.IsAny<int>()
+			  ))
+			  .Returns(_gbProductMap);
+
+			//Act
+			IManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(
                 editorRealPageId: _editorRealPageId,
                 residentPortalEditorUser: _residentPortalEditorUser,
                 residentPortalUser: _residentPortalUser,

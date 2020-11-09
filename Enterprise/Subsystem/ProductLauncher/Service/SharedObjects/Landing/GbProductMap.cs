@@ -20,5 +20,10 @@
         /// Bluebook product Code
         /// </summary>
         public string BooksProductCode { get; set; }
+
+        /// <summary>
+        /// UDM Source Code
+        /// </summary>
+        public string UDMSourceCode { get; set; }
     }
 }

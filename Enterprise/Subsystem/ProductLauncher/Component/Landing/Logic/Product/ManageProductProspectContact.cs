@@ -39,13 +39,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="editorRealPageId">Real page Id of user who is creating new user</param>
-		public ManageProductProspectContact(Guid editorRealPageId) : base((int)ProductEnum.ProspectContactCenter, null)
+		public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, null, null)
 		{
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
 
 			_productId = (int)ProductEnum.ProspectContactCenter;
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
-			_editorRealPageId = editorRealPageId;
+			_editorRealPageId = userClaims.UserRealPageGuid;
 
 			_blueBook = new ManageBlueBook();
 
@@ -64,8 +64,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="samlRepository"></param>
 		/// <param name="manageBlueBook"></param>
 		public ManageProductProspectContact(Guid editorRealPageId, HttpMessageHandler httpMessageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook)
-			: base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository)
+			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IProductRepository productRepository)
+			: base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository, productRepository)
 		{
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
 
@@ -75,7 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_blueBook = manageBlueBook;
 			_apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
 			_client = new HttpClient(httpMessageHandler, false);
-
+			_productRepository = productRepository;
 			WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Received Product settings.");
 		}
 
@@ -105,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				var companyDetails = GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter, useTranslate:false);
+				var companyDetails = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false);
 
 				// blue book company Id
 				int companyInstanceId = companyDetails.CompanyInstanceId;
@@ -307,7 +307,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				WriteToDiagnosticLog(
 				   $"ManageProductProspectContact.ManageProductProspectContactUser - productUsername for user is {productLoginName}.");
 
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter);
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
 				if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
 				{
@@ -543,7 +543,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 
-				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
+				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 				if (companyInstanceSourceId == 0)
 				{
 					WriteToErrorLog(
@@ -649,7 +649,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 
-				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.ProspectContactCenter).CompanyInstanceSourceId);
+				int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 				if (companyInstanceSourceId == 0)
 				{
 					WriteToErrorLog(

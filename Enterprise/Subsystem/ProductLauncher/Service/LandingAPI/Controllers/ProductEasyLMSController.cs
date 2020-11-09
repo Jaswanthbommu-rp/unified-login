@@ -82,7 +82,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			//Get the Unified login UserName (GB UserName) to Update the SamlUserAttribute is exists OR to create SamlUserAttribute
 			productUserName = (bUserEnteredUserName == true) ? userName : _loginName;
 
-			ManageProductEasyLMS manageProductEasyLMS = new ManageProductEasyLMS(_realpageUserId);
+			ManageProductEasyLMS manageProductEasyLMS = new ManageProductEasyLMS(_userClaims);
+
 			CustomerCompanyMap companyMap = manageProductEasyLMS.GetCompanyAPICodeAndKey(_userClaims.PersonaId, _userClaims.PersonaId);
 			if ((companyMap == null) || (Convert.ToInt32(companyMap.CompanyInstanceSourceId) == 0))
 			{

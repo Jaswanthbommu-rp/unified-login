@@ -37,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private readonly string _apiPassword;
 		private readonly string _apiEndPoint;
 		private readonly string _aoSuperUser;
-		private DefaultUserClaim _userClaims;
+		private DefaultUserClaim _userClaims;		
 		const int CacheTimeSeconds = 300;
 		#endregion
 
@@ -47,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="userClaims">DefaultUserClaim of user</param>
-		public ManageProductAssetOptimization(DefaultUserClaim userClaims) : base((int)ProductEnum.AssetOptimizer, userClaims, null)
+		public ManageProductAssetOptimization(DefaultUserClaim userClaims) : base((int)ProductEnum.AssetOptimizer, userClaims, null, null)
 		{
 			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
 			_productId = (int)ProductEnum.AssetOptimizer;
@@ -55,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_userClaims = userClaims;
 			_blueBook = new ManageBlueBook(userClaims);
-
+			
 			_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
 			_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
 			_apiPassword =
@@ -65,31 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
 
 			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
-		}
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="editorRealPageId">Real page Id of user</param>
-		public ManageProductAssetOptimization(Guid editorRealPageId) : base((int)ProductEnum.AssetOptimizer, null)
-		{
-			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Getting Product settings.");
-			_productId = (int)ProductEnum.AssetOptimizer;
-			_productInternalSettingRepository = new ProductInternalSettingRepository();
-			_editorRealPageId = editorRealPageId;
-
-			_blueBook = new ManageBlueBook();
-
-			_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-			_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
-			_apiPassword =
-				Encoding.UTF8.GetString(
-					Convert.FromBase64String(
-						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
-			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
-
-			WriteToDiagnosticLog("ManageProductAssetOptimization.Ctor - Received Product settings.");
-		}
+		}		
 
 		#endregion
 
@@ -251,7 +227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 				string aoCompanyId = company.CompanyInstanceSourceId;
 				if (string.IsNullOrEmpty(aoCompanyId))
 				{
@@ -401,7 +377,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 				string aoCompanyId = company.CompanyInstanceSourceId;
 
 				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductProperties - Found blue book company source id {aoCompanyId}");
@@ -512,7 +488,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return response;
 				}
 
-				var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				var blueAOCompanyInfo = GetProductCompanyInstanceId(_udmSourceCode);
 				ProductRepository productRepository = new ProductRepository();
 				string product = Convert.ToString((int)ProductEnum.AssetOptimizer);
 				IList<SharedObjects.Product.OrganizationProductUser> productUserList = productRepository.GetProductUsersByCompany(_editorPersona.OrganizationPartyId, product);
@@ -678,7 +654,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return "User Login Name not exists in greenbook.";
 				}
 
-				var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				var blueAOCompanyInfo = GetProductCompanyInstanceId(_udmSourceCode);
 				if (blueAOCompanyInfo.CompanyInstanceSourceId == null)
 				{
 					WriteToErrorLog($"ManageProductAssetOptimization.ManageAssetOptimizationUser. Error - Get CompanyMap - greenBookCares not enabled {blueAOCompanyInfo}");
@@ -1461,7 +1437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result;
 				}
 
-				CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 				string aoCompanyId = company.CompanyInstanceSourceId;
 				if (string.IsNullOrEmpty(aoCompanyId))
 				{
@@ -1628,7 +1604,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					result = GetCompanyEditorAndUserDetails(editorUserPersonaId, 0);
 				}
-				var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				var blueAOCompanyInfo = GetProductCompanyInstanceId(_udmSourceCode);
 
 				productUserProductApiUrl = $"{_apiEndPoint}user/ao-token?userId={loginName}";
 				var objProductData = GetResultFromApi<AoUserConfigAuthorities>(productUserProductApiUrl);
@@ -1671,7 +1647,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					result = GetCompanyEditorAndUserDetails(editorUserPersonaId, 0);
 				}
-				var blueAOCompanyInfo = GetProductCompanyInstanceId(BlueBookProductConstants.AssetOptimizer);
+				var blueAOCompanyInfo = GetProductCompanyInstanceId(_udmSourceCode);
 
 				productUserProductApiUrl = $"{_apiEndPoint}user/ao-token?userId={loginName}";
 				var objProductData = GetResultFromApi<AoUserConfigAuthorities>(productUserProductApiUrl);

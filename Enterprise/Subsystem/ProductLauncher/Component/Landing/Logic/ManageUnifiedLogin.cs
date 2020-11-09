@@ -29,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int) ProductEnum.UnifiedPlatform, null)
+        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int) ProductEnum.UnifiedPlatform, userClaims, null, null)
         {
             WriteToDiagnosticLog("UnifiedLogin - ManageUnifiedLogin.Ctor - Getting Product settings.");
             _productId = (int) ProductEnum.UnifiedPlatform;

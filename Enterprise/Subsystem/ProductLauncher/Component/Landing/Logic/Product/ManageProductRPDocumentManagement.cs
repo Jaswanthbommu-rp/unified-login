@@ -33,7 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims">user claim related information</param>
-		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims) : base((int) ProductEnum.RPDocumentManagement, userClaims, null)
+		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims) : base((int) ProductEnum.RPDocumentManagement, userClaims, null, null)
 		{
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;
@@ -63,7 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userLoginRepository"></param>
 		public ManageProductRPDocumentManagement(DefaultUserClaim userClaims, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
 			IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IManagePerson managePerson, IManageUserLogin manageUserLogin, IManageContactMechanism manageContactMechanism, IManagePartyRelationship managePartyRelationship, IProductRepository productRepository, IUserLoginRepository userLoginRepository)
-			: base((int) ProductEnum.RPDocumentManagement, userClaims, productInternalSettingRepository)
+			: base((int) ProductEnum.RPDocumentManagement, productInternalSettingRepository, productRepository)
 		{
 			_userClaims = userClaims;
 			_editorRealPageId = userClaims.UserRealPageGuid;
@@ -909,7 +909,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>CompanyMap</returns>
 		private CustomerCompanyMap GetRPDocumentManagementCompanyInstanceId()
 		{
-			return GetProductCompanyInstanceId(BlueBookProductConstants.RPDocumentManagement, "companyInstance.attributes");
+			return GetProductCompanyInstanceId(_udmSourceCode, "companyInstance.attributes");
 		}
 
 		/// <summary>

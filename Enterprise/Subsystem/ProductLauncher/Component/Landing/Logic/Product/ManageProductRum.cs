@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// 
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, null)
+        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, null, null)
         {
             WriteToDiagnosticLog("ManageProductRum.Ctor - Getting Product settings.");
             _productId = (int)ProductEnum.UtilityManagement;
@@ -84,8 +84,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="blueBook"></param>
         public ManageProductRum(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, HttpMessageHandler tokenMessageHandler, 
             IProductInternalSettingRepository productInternalSettingRepository, IManagePersona managePersona, 
-            ISamlRepository samlRepository, IManageBlueBook blueBook)
-             : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository)
+            ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
+             : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _productInternalSettingRepository = productInternalSettingRepository;
@@ -94,7 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _samlRepository = samlRepository;
             _messageHandler = messageHandler;
 	        _userClaims = userClaims;
-
+            _productRepository = productRepository;
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value;
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value;
@@ -135,7 +135,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 if (companyInstanceSourceId == 0)
                 {
@@ -332,7 +332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
@@ -416,7 +416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 // get roles from rum product
                 var allRoles = GetRumRoles(companyInstanceSourceId);
@@ -491,7 +491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
@@ -753,7 +753,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
 
-                CustomerCompanyMap company = GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement);
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
@@ -899,7 +899,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
@@ -972,7 +972,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId);
+                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog(
