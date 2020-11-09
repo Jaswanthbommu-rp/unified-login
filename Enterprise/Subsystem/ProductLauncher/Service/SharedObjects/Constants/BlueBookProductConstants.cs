@@ -265,15 +265,15 @@
 		/// <summary>
 		/// IntelligentBuilding Trash
 		/// </summary>
-		public const string IntelligentBuildingTrah = "IBT";
+		public const string IntelligentBuildingTrah = "SMS-T";
 		/// <summary>
 		/// IntelligentBuilding energy
 		/// </summary>
-		public const string IntelligentBuildingEnergy = "IBE";
+		public const string IntelligentBuildingEnergy = "SMS-E";
 		/// <summary>
 		/// IntelligentBuilding water
 		/// </summary>
-		public const string IntelligentBuildingWater = "IBW";
+		public const string IntelligentBuildingWater = "SMS-W";
 		/// <summary>
 		/// Hospitality as a Service
 		/// </summary>

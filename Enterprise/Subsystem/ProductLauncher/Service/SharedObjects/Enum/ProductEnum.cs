@@ -596,17 +596,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// IB Trash
 		/// </summary>
-		[Description("IBT")]
+		[Description("SMS-T")]
 		IntelligentBuildingTrash = 57,
 		/// <summary>
 		/// IB energy
 		/// </summary>
-		[Description("IBE")]
+		[Description("SMS-E")]
 		IntelligentBuildingEnergy = 58,
 		/// <summary>
 		/// IB water
 		/// </summary>
-		[Description("IBW")]
+		[Description("SMS-W")]
 		IntelligentBuildingWater = 59,
 		/// <summary>
 		/// Hospitality as a Service
@@ -840,17 +840,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Intelligent Building Trash
 		/// </summary>
-		[Description("IBT")]
+		[Description("SMS-T")]
 		ManageIntelligentBuildingTrashProductAccess = 57,
 		/// <summary>
 		/// Intelligent Building energy
 		/// </summary>
-		[Description("IBE")]
+		[Description("SMS-E")]
 		ManageIntelligentBuildingEnergyProductAccess = 58,
 		/// <summary>
 		/// Intelligent Building water
 		/// </summary>
-		[Description("IBW")]
+		[Description("SMS-W")]
 		ManageIntelligentBuildingWaterProductAccess = 59,
 		/// <summary>
 		/// Hospitality As A Service
