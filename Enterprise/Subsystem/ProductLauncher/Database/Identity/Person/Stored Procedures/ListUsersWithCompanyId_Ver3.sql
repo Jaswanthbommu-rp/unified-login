@@ -50,7 +50,8 @@ BEGIN
 		LastName      NVARCHAR(50), 
 		AddressString NVARCHAR(255),
 		PersonaId     BIGINT,
-		PreferredPhoneNumber varchar(30)
+		PreferredPhoneNumber varchar(30),
+		Email VARCHAR(255)
 	);
 
 	INSERT INTO @ProductIds(ProductId)
@@ -99,6 +100,21 @@ BEGIN
 						INNER JOIN Person.ActivePersona AP ON AP.PartyId = PCM.PartyId
 						INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
 						ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE());
+
+	--Notification Email
+	DECLARE @NotificationEmail TABLE (PartyId BIGINT, Email VARCHAR(255))
+	INSERT INTO @NotificationEmail(PartyId , Email)
+	SELECT
+		p.PartyId,
+		ea.ElectronicAddressString AS NotificationEmail
+	FROM Enterprise.ContactMechanismUsage cmu
+		INNER JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID
+		INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
+		INNER JOIN Enterprise.ElectronicAddress ea ON ea.ContactMechanismID = cm.ContactMechanismID
+		INNER JOIN Enterprise.Party p ON p.PartyId = pcm.PartyId
+	WHERE
+		(pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())
+		AND cmu.ContactMechanismUsageTypeID = 301;
 
 	IF EXISTS (SELECT TOP 1 ProductId FROM @ProductIds)
     BEGIN
@@ -175,7 +191,8 @@ BEGIN
 					FirstName,   
 					LastName,  
 					PersonaId,
-					PreferredPhoneNumber
+					PreferredPhoneNumber,
+					Email
 				)
 				SELECT DISTINCT
 					ul.UserId, 
@@ -183,7 +200,8 @@ BEGIN
 					p2.FirstName,   
 					p2.LastName,   
 					p.PersonaId,
-					CP.PreferredPhoneNumber
+					CP.PreferredPhoneNumber,
+					ne.Email
 				FROM Enterprise.PropertyInstanceMapping AS pim
 					INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId
 					INNER JOIN @TableInstance AS ti ON pim.ProductId = ti.productId
@@ -192,6 +210,7 @@ BEGIN
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
 					LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId
+					LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId
 				WHERE
 					pim.ProductId IN (SELECT ti.ProductId FROM @TableInstance ti WHERE ti.value = '1')
 					AND pi1.InstanceId IN( SELECT propertyGuid FROM @GUIDS)
@@ -217,7 +236,8 @@ BEGIN
 					FirstName,   
 					LastName,  
 					PersonaId,
-					CP.PreferredPhoneNumber
+					CP.PreferredPhoneNumber,
+					Email
 				)
 				SELECT DISTINCT
 					ul.UserId, 
@@ -225,13 +245,15 @@ BEGIN
 					p2.FirstName,   
 					p2.LastName,   
 					p.PersonaId,
-					cp.PreferredPhoneNumber
+					cp.PreferredPhoneNumber,
+					ne.Email
 				FROM Enterprise.propertymapping AS pm
 					INNER JOIN Person.Persona AS p ON pm.PersonaId = p.PersonaId
 					INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId  
 					INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 					INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
 					LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId
+					LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId
 				WHERE
 					pm.ProductId IN (SELECT ProductId
 									FROM @ProductIdsAux pdx 
@@ -262,6 +284,7 @@ BEGIN
 								, TargetProductId INT
 								, ProductId INT
 								, PreferredPhoneNumber VARCHAR(30)
+								, Email VARCHAR(255)
 								)
 
 			INSERT INTO #result
@@ -273,7 +296,8 @@ BEGIN
 				p.PersonaId ,
 				r2.TargetProductId,
 				r2.ProductId,
-				CPR.PreferredPhoneNumber
+				CPR.PreferredPhoneNumber,
+				ne.Email
 			FROM #ProductsList2 AS cp  
 				INNER JOIN Person.Persona AS p ON cp.PersonaId = p.PersonaId  
 				INNER JOIN [Security].[PersonaRole] AS pr ON p.PersonaId = pr.PersonaId  
@@ -284,6 +308,7 @@ BEGIN
 				INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId  
 				INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId
 				LEFT OUTER JOIN @ContactPreference CPR ON CPR.PersonaId = P.PersonaId
+				LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId
 			WHERE   
 				ulp.StatusTypeId = 1  
 				AND ulp.OrganizationPartyId = @OrganizationPartyId  
@@ -301,7 +326,8 @@ BEGIN
 					r2.FirstName,   
 					r2.LastName,   
 					r2.PersonaId,
-					r2.PreferredPhoneNumber
+					r2.PreferredPhoneNumber,
+					r2.Email
 					
 				FROM #result r2  
 					INNER JOIN Enterprise.PersonaConfiguration AS pc ON pc.PersonaId = r2.PersonaId   
@@ -312,7 +338,8 @@ BEGIN
 					r2.FirstName,   
 					r2.LastName,   
 					r2.PersonaId,
-					r2.PreferredPhoneNumber
+					r2.PreferredPhoneNumber,
+					r2.Email
 				FROM #result r2
 					INNER JOIN Enterprise.productright AS pc ON r2.TargetProductId = pc.ProductId   
 				WHERE  
@@ -327,7 +354,8 @@ BEGIN
 				FirstName,   
 				LastName,  
 				PersonaId,
-				PreferredPhoneNumber
+				PreferredPhoneNumber,
+				Email
 			)  
 			SELECT  DISTINCT
 				UserId,   
@@ -335,7 +363,8 @@ BEGIN
 				FirstName,   
 				LastName,  
 				PersonaId,
-				PreferredPhoneNumber
+				PreferredPhoneNumber,
+				Email
 			FROM Users AS u;
 		END
 	END  
@@ -345,7 +374,8 @@ BEGIN
 							 , FirstName varchar(200)
 							 , LastName varchar(200)
 							 , PersonaId  int
-							 , PreferredPhoneNumber VARCHAR(30))
+							 , PreferredPhoneNumber VARCHAR(30)
+							 , Email VARCHAR(255))
  
 	INSERT INTO #totalusers
 	SELECT DISTINCT       
@@ -354,7 +384,8 @@ BEGIN
 		FirstName,   
 		LastName,  
 		PersonaId,
-		PreferredPhoneNumber
+		PreferredPhoneNumber,
+		Email
 	FROM #UserList  
 
 	SELECT  
@@ -364,7 +395,8 @@ BEGIN
 		LastName,  
 		PersonaId,
 		PreferredPhoneNumber,
-		COUNT(1) OVER() AS TotalRecords  
+		COUNT(1) OVER() AS TotalRecords,
+		Email
 	FROM #totalusers       
 		ORDER BY UserId  
 		OFFSET((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT(@RowsPerPage) ROWS ONLY;  

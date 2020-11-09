@@ -1,16 +1,16 @@
 param 
     (
 	[string]$certpassword = "RealPage",
-    [string]$certthumbprint = "c5a7bcdd36a6e07eccb639b33e57009a2e8010e9",
-	[string]$certfilename = "identitysigningcert20190109local.pfx"
+    [string]$certthumbprint = "b3189bc4f641cae6b327d53c19de4c90a50e019f",
+	[string]$certfilename = "identitysigningcert20221106local.pfx"
 	)
 
 $sspwd = ConvertTo-SecureString -String $certpassword -Force -AsPlainText
 try
 {
-	Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
-    Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local2.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
-    Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\myactivitylocal.corp.realpage.com.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
+	Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local.realpage.com-2022-11-06.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
+    Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\www-local2.realpage.com-2022-11-06.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
+    Import-PfxCertificate -FilePath "$PSScriptRoot\Extra\certs\local\myactivitylocal.corp.realpage.com-2022-07-23.pfx" -CertStoreLocation "Cert:\LocalMachine\My" -Password $sspwd
 }
 catch 
 {
@@ -119,7 +119,7 @@ function SetUpWebsiteApplicationAndAppPool
     $newapppool = New-WebAppPool -Name $apppoolname 
     $newapppool | Set-ItemProperty -name "startMode" -Value "AlwaysRunning"
 	
-	if ($appname -eq "apicore")
+	if ($appname -eq "apicore" -or $appname -eq "login")
 	{
 		$newapppool | Set-ItemProperty -name "managedRuntimeVersion" -Value ""
 	}
@@ -128,6 +128,7 @@ function SetUpWebsiteApplicationAndAppPool
 	{
 		$newapppool | Set-ItemProperty -name "processModel.idleTimeoutAction" -Value "Suspend"
     }
+	
     New-WebApplication -Site $sitename -Name $appname -PhysicalPath $PSScriptRoot\$apppath -ApplicationPool $apppoolname
 }
 
@@ -192,7 +193,7 @@ function AddUserToCert
 
 SetUpWebsiteAndAppPool "wwwlocal" "web\wwwlocal" "wwwlocal" "www-local.realpage.com"
 SetUpWebsiteApplicationAndAppPool "wwwlocal" "home" "wwwhome" "web\landing"
-SetUpWebsiteApplicationAndAppPool "wwwlocal" "login" "wwwlogin" "web\identityserver\identity"
+SetUpWebsiteApplicationAndAppPool "wwwlocal" "login" "wwwlogin" "needstobeupdated"
 
 SetUpWebsiteAndAppPool "wwwlocal2" "web\landingmaster" "" "www-local2.realpage.com"
 
