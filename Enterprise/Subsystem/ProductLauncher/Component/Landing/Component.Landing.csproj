@@ -201,6 +201,7 @@
     <Compile Include="Logic\Interfaces\IManagePreferredContactMethod.cs" />
     <Compile Include="Logic\Interfaces\IManageProduct.cs" />
     <Compile Include="Logic\Interfaces\IManageSecuritySettings.cs" />
+    <Compile Include="Logic\Interfaces\IManageUPFMProductsIntegration.cs" />
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
     <Compile Include="Logic\ProductIntegration\Model\IProductProperties.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayOrganization.cs" />
@@ -328,6 +329,7 @@
     <Compile Include="Logic\Product\ManageProductRPDocumentManagement.cs" />
     <Compile Include="Logic\Product\ManageResearchApplication.cs" />
     <Compile Include="Logic\Product\ManageUnifiedAmenities.cs" />
+    <Compile Include="Logic\Product\ManageUPFMProductsIntegration.cs" />
     <Compile Include="Logic\Product\SAML\RealPageSAML.cs" />
     <Compile Include="Logic\Security\IManageSecurity.cs" />
     <Compile Include="Logic\Security\ManageSecurity.cs" />
