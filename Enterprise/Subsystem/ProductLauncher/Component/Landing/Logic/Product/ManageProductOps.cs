@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageProductOps(DefaultUserClaim userClaims) : base((int)ProductEnum.OpsBuyer, userClaims, null)
+        public ManageProductOps(DefaultUserClaim userClaims) : base((int)ProductEnum.OpsBuyer, userClaims, null, null)
         {
             _editorRealPageId = userClaims.UserRealPageGuid;
             _userClaims = userClaims;
@@ -72,8 +72,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="samlRepository"></param>
         /// <param name="blueBook"></param>
         public ManageProductOps(Guid editorRealPageId, DefaultUserClaim userClaim, HttpClient client, IProductInternalSettingRepository productInternalSettingRepository,
-                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook)
-             : base((int)ProductEnum.OpsBuyer, userClaim, productInternalSettingRepository)
+                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository)
+             : base((int)ProductEnum.OpsBuyer, productInternalSettingRepository, productRepository)
         {
             _editorRealPageId = editorRealPageId;
             _userClaims = userClaim;
@@ -82,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _blueBook = blueBook;
             _managePersona = managePersona;
             _samlRepository = samlRepository;
-
+            _productRepository = productRepository;
             _opsBuyerUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value; //"https://staging9.on-site.com/api/greenbook"; //
             _client.BaseAddress = new Uri(_opsBuyerUrl);
 

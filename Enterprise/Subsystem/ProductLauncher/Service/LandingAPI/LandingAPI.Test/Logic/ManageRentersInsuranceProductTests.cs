@@ -35,8 +35,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		private IList<ProductRole> _RoleList = new List<ProductRole>();
 
 		private ListResponse _listResponse = new ListResponse();
-
-		private string testHostname = "http://producturl.com";
+        private GbProductMap _gbProductMap = new GbProductMap();
+        private string testHostname = "http://producturl.com";
 		#endregion
 
 		#region Constructor
@@ -67,8 +67,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 			
 			_productInternalSettings.Add(new IC.ProductInternalSetting() { Name = "ApiEndPoint", Value = testHostname });
-
-			_repositoryResponseProductStatus.ErrorMessage = "";
+            _gbProductMap = new GbProductMap() { BooksProductCode = "LD", Name = "Renters Insurance", ProductId = 15, UDMSourceCode = "LD" };
+            _repositoryResponseProductStatus.ErrorMessage = "";
 		}
 		#endregion
 
@@ -304,8 +304,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				))
 				.Returns(_userProductSettings);
 
-			//Act
-			IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
+            //Act
+            IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
 				editorRealPageId: _editorRealPageId,
 				companyInstanceId: 758241,
 				rentersInsuraceService: mockRentersInsuranceService.Object,
@@ -414,6 +420,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					It.IsAny<long>()
 				))
 				.Returns(_userProductSettings);
+
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
 
             var dataFilter = new RequestParameter()
             {
@@ -550,6 +562,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 }
             };
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             //Act
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
@@ -633,6 +651,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
@@ -713,6 +737,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,
                 rentersInsuraceService: mockRentersInsuranceService.Object,
@@ -792,6 +822,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<long>()
                 ))
                 .Returns(_userProductSettings);
+
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
 
             IManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(
                 editorRealPageId: _editorRealPageId,

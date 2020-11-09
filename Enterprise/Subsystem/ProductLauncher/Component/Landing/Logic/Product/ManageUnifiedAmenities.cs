@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		public ManageUnifiedAmenities(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedAmenities, userClaims, null)
+		public ManageUnifiedAmenities(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedAmenities, userClaims, null, null)
 		{
 			WriteToDiagnosticLog("Ctor - Getting Product settings.");
 			_userClaims = userClaims;
@@ -54,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="manageUserLogin"></param>
 		/// <param name="unifiedLoginRepository"></param>
 		/// <param name="propertyRepository"></param>
-		public ManageUnifiedAmenities(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.UnifiedAmenities, defaultUserClaim, productInternalSettingRepository)
+		public ManageUnifiedAmenities(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.UnifiedAmenities, productInternalSettingRepository, productRepository)
 		{
 			_userClaims = defaultUserClaim;
 			_editorRealPageId = defaultUserClaim.UserRealPageGuid;

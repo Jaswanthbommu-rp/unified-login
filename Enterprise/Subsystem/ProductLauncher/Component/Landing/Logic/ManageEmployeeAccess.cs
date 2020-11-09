@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Ctor
         /// </summary>
         /// <param name="userClaim"></param>
-        public ManageEmployeeAccess(DefaultUserClaim userClaim) : base((int)ProductEnum.SupportTool, userClaim, null)
+        public ManageEmployeeAccess(DefaultUserClaim userClaim) : base((int)ProductEnum.SupportTool, userClaim, null, null)
         {
             _productId = (int)ProductEnum.SupportTool;
             _userClaim = userClaim;
