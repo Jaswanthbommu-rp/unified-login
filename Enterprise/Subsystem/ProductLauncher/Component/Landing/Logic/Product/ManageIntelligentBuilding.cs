@@ -556,7 +556,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				upfmProperties.id = instanceids;
 
-				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, ProductEnum.IntelligentBuildingTrash);
+				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, ProductEnum.IntelligentBuildingTrash.ToEnumDescription());
 				if (translatedData != null)
 				{
 					foreach (var attributs in translatedData.Data.Attributes)

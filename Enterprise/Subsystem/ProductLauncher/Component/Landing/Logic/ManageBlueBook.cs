@@ -320,40 +320,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="companyRealPageId"></param>
         /// <param name="productSource"></param>
         /// <returns></returns>
-        public TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, ProductEnum productSource)
-        {
-            //https://booksapi-stg.realpage.com/translate/v3/propertyinstance/UPFM/IB
-            //{"propertyInstanceSourceIds": ["5972c050-7072-4b3f-8b6a-e280b5e36eb0","5972c050-7072-4b3f-8b6a-e280b5e36eb0","ef1fad66-b1f6-4981-8bec-e2d12279aba2"]}
-            TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
-            string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource.ToEnumDescription()}";
-                      Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
-            WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
-
-            var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
-                RequestUri = new Uri(_httpClient.BaseAddress + uri)
-            };
-            var response = _httpClient.SendAsync(request).Result;
-            if (response != null && response.IsSuccessStatusCode)
-            {               
-                translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
-                logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
-                WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
-                return translatePropertyInstance;
-            }
-
-            return translatePropertyInstance;            
-        }
-
-        /// <summary>
-        /// Get all instances related to the given UPFM instance source. Filters domain automatically
-        /// </summary>
-        /// <param name="companyRealPageId"></param>
-        /// <param name="productSource"></param>
-        /// <returns></returns>
         public TranslatePropertyInstance GetTranslatePropertiesFromUPFMToProductv3(UPFMProperty upfmProperties, string productSource)
         {
             //https://booksapi-stg.realpage.com/translate/v3/propertyinstance/UPFM/IB
