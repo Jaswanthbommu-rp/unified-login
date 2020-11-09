@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			    Errors = new List<Error>()
 		    };
             ManageUnifiedLogin manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-
+            int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
             ListResponse productResponse;
             switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
             {
@@ -134,9 +134,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 case ProductEnum.UnifiedPlatform:
                     productResponse = manageUnifiedLogin.GetProperties(_userClaims.PersonaId, include);
                     break;
-                case ProductEnum.IntelligentBuilding:
-                    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                    productResponse = manageIntelligentBuilding.GetUPFMProperties(_userClaims.PersonaId, include);
+                //case ProductEnum.IntelligentBuilding:
+                //    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
+                //    productResponse = manageIntelligentBuilding.GetUPFMProperties(_userClaims.PersonaId, include);
+                //    break;
+                case ProductEnum.IntelligentBuildingTrash:
+                case ProductEnum.IntelligentBuildingEnergy:
+                case ProductEnum.IntelligentBuildingWater:
+                case ProductEnum.HospitalityService:
+                    ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
+                    var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
+                    productResponse = upfmProductIntegration.GetUPFMProperties(_userClaims.PersonaId, upfmProduct, include);
                     break;
                 default:
                     error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/property", StatusCode = "" });

@@ -214,7 +214,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 persona.hasManageRenovationManagerProductAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString(), StringComparer.OrdinalIgnoreCase);
 
-                persona.hasManageIntelligentBuildingProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+                // persona.hasManageIntelligentBuildingProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+                persona.hasManageIntelligentBuildingTrashProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingTrashProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+               
+                persona.hasManageIntelligentBuildingEnergyProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+                
+                persona.hasManageIntelligentBuildingWaterProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingWaterProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+                
+                persona.hasManageHospitalityServiceAccess = editorRights.Contains(ProductRightEnum.ManageHospitalityServiceProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasPlatformAlertsAccess = (editorRights.Contains("CreatePlatformAlerts", StringComparer.OrdinalIgnoreCase) 
                                                 || editorRights.Contains("ApprovePlatformAlerts", StringComparer.OrdinalIgnoreCase));

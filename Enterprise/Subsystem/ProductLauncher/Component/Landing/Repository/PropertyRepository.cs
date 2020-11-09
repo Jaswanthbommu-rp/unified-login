@@ -104,6 +104,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Used to get the list of the internal UPFM property instance ids for the given persona and product
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        public List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, int productId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaID = userPersonaId,
+                    ProductID = productId
+                };
+
+                List<int> propList = repository.GetMany<int>(StoredProcNameConstants.SP_GetPropertyInstanceIdsByPersonaId, param);
+                return propList;
+            }
+        }
+
+        /// <summary>
         /// Used to get the UPFM property details for the given instance ids
         /// </summary>
         /// <param name="propertyInstanceIds"></param>
