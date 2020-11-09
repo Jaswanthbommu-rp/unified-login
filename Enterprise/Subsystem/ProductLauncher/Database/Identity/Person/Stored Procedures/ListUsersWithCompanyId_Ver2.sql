@@ -23,7 +23,8 @@ AS
 		LastName      NVARCHAR(50), 
 		AddressString NVARCHAR(255),
 		PersonaId     BIGINT,
-		PreferredPhoneNumber varchar(30)
+		PreferredPhoneNumber varchar(30),
+		Email VARCHAR(255)
         );
         INSERT INTO @ProductIdList(ProductId)
                SELECT *
@@ -63,6 +64,22 @@ AS
 						   INNER JOIN Enterprise.PartyContactMechanism pcm ON tm.ContactMechanismID = pcm.ContactMechanismID
 						   INNER JOIN Enterprise.[ContactMechanismPreference] CMP 
 							ON CMP.ContactMechanismID = PCM.ContactMechanismId AND (PCM.ThruDate IS NULL OR PCM.ThruDate > GETUTCDATE());
+
+		--Notification Email
+		DECLARE @NotificationEmail TABLE (PartyId BIGINT, Email VARCHAR(255))
+		INSERT INTO @NotificationEmail(PartyId , Email)
+		SELECT
+			p.PartyId,
+			ea.ElectronicAddressString AS NotificationEmail
+		FROM Enterprise.ContactMechanismUsage cmu
+			INNER JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID
+			INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
+			INNER JOIN Enterprise.ElectronicAddress ea ON ea.ContactMechanismID = cm.ContactMechanismID
+			INNER JOIN Enterprise.Party p ON p.PartyId = pcm.PartyId
+		WHERE
+			(pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())
+			AND cmu.ContactMechanismUsageTypeID = 301;
+
         WITH Products
              AS (SELECT 
                         p.PersonaID, 
@@ -99,7 +116,8 @@ AS
                         p.FirstName, 
                         p.LastName, 
 						p2.PersonaId, 
-                        CTPREF.PreferredPhoneNumber
+                        CTPREF.PreferredPhoneNumber,
+						ne.Email
                  FROM ident.UserLogin AS ul
                       INNER JOIN ident.UserLoginPersona AS ulp ON ul.UserId = ulp.UserLoginId
                       INNER JOIN person.Persona AS p2 ON ulp.UserLoginPersonaId = p2.UserLoginPersonaId
@@ -111,6 +129,7 @@ AS
                                                                   AND sua.SamlAttributeId = 1
                       INNER JOIN Enterprise.DataImportMapping AS dim ON ULP.OrganizationPartyId = dim.PartyId
                       LEFT OUTER JOIN  @ContactPreference AS CTPREF ON CTPREF.PartyId = PA.PartyId  
+					  LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p.PartyId
                       
                  WHERE ulp.StatusTypeId = 1
                        AND ((@CompanyIdCount IS NULL)
@@ -125,14 +144,16 @@ AS
 			FirstName, 
 			LastName,
 			PersonaId,
-			PreferredPhoneNumber
+			PreferredPhoneNumber,
+			Email
 			)
 			SELECT UserId, 
 					LoginName, 
 					FirstName, 
 					LastName,
 					PersonaId,
-					PreferredPhoneNumber
+					PreferredPhoneNumber,
+					Email
 			FROM Users AS u;
 
 		INSERT INTO @ProductIdRightList(ProductId)
@@ -148,13 +169,15 @@ AS
 				LoginName, 
 				FirstName, 
 				LastName,
-				PersonaId
+				PersonaId,
+				Email
 			)
 					SELECT ul.UserId, 
 							ul.LoginName, 
 							pp.FirstName, 
 							pp.LastName,
-							p.PersonaId
+							p.PersonaId,
+							ne.Email
 					FROM Ident.UserLogin ul
 						INNER JOIN Ident.UserLoginPersona ulp ON ul.UserId = ulp.UserLoginId
 						INNER JOIN Person.Persona p ON ulp.UserLoginPersonaId = p.UserLoginPersonaId
@@ -167,6 +190,7 @@ AS
 						INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId
 						INNER JOIN Enterprise.ProductRight AS prt ON r2.TargetProductId = prt.ProductId
 						INNER JOIN Enterprise.DataImportMapping AS dim ON ULP.OrganizationPartyId = dim.PartyId
+						LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = pp.PartyId
 						
 					WHERE 
 						ulp.StatusTypeId = 1
@@ -197,7 +221,8 @@ AS
                FirstName, 
                LastName,
 			   PersonaId,
-			   PreferredPhoneNumber
+			   PreferredPhoneNumber,
+			   Email
 			   )  as (
         SELECT	distinct		   
                UserId, 
@@ -205,7 +230,8 @@ AS
                FirstName, 
                LastName,
 			   PersonaId,
-			   PreferredPhoneNumber
+			   PreferredPhoneNumber,
+			   Email
 			   FROM #UserList ul
 			)
 		select UserId, 
@@ -214,7 +240,8 @@ AS
                LastName,
 			   PersonaId,
 			   PreferredPhoneNumber,
-			   COUNT(1) OVER() AS TotalRecords
+			   COUNT(1) OVER() AS TotalRecords,
+			   Email
 			   FROM totalusers		   
         
         ORDER BY UserId
