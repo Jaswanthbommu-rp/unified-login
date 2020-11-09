@@ -1945,8 +1945,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageSeniorLeadManagement:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
                         break;
-                    case (int)ProductRightEnum.ManageIntelligentBuildingProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingProductAccess.ToString());
+                    case (int)ProductRightEnum.ManageIntelligentBuildingTrashProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingTrashProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageIntelligentBuildingWaterProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingWaterProductAccess.ToString());
+                        break;
+                    case (int)ProductRightEnum.ManageHospitalityServiceProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHospitalityServiceProductAccess.ToString());
                         break;
                     default:
                         break;

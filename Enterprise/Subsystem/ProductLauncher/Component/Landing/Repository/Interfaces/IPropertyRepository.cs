@@ -34,6 +34,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="productId"></param>
         /// <returns></returns>
         List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, ProductEnum productId);
+        /// <summary>
+        /// Used to get the list of the internal UPFM property instance ids for the given persona and product
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        List<int> ListUPFMPropertyInstanceIdByPersona(long userPersonaId, int productId);
 
         /// <summary>
         /// Used to get the UPFM property details for the given instance ids

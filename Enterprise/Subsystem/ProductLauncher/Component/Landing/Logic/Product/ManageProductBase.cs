@@ -518,6 +518,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, productEnum);
         }
 
+        /// <summary>
+        /// Used to get the list of 
+        /// </summary>
+        /// <param name="userPersonaId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        protected List<int> GetAssignedUPFMPropertyIdsForPersona(long userPersonaId, int productId)
+        {
+            return _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, productId);
+        }
+
         protected List<UPFMPropertyInstance> ListUPFMPropertyInstanceIdByInstanceIds(List<Guid> propertyInstanceIds)
         {
             return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propertyInstanceIds);

@@ -29,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuilding, userClaims, null, null)
+		public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuildingTrash, userClaims, null, null)
 		{
 			WriteToDiagnosticLog("Ctor - Getting Product settings.");
 			_userClaims = userClaims;
@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="manageUserLogin"></param>
 		/// <param name="unifiedLoginRepository"></param>
 		/// <param name="propertyRepository"></param>
-		public ManageIntelligentBuilding(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.IntelligentBuilding, defaultUserClaim, productInternalSettingRepository, productRepository)
+		public ManageIntelligentBuilding(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.IntelligentBuildingTrash, defaultUserClaim, productInternalSettingRepository, productRepository)
 		{
 			_userClaims = defaultUserClaim;
 			_editorRealPageId = defaultUserClaim.UserRealPageGuid;
@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var person = _managePerson.GetPerson(realPageId);
 				var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 				var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-				var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+				var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuildingTrash);
 
 				// super user
 				// TODO what to do here?
@@ -231,12 +231,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					if (unassignedProperties.Count > 0)
 					{
-						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
+						Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuildingTrash, Convert.ToInt64(property)); });
 					}
 
 					if (assignedProperties.Count > 0)
 					{
-						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
+						Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuildingTrash, Convert.ToInt64(property)); });
 					}
 				}
 
@@ -281,7 +281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return result.ErrorMessage;
 				}
 
-				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, ProductEnum.IntelligentBuildingTrash);
 				List<string> unassignedProperties = new List<string>();
 
 				foreach (var property in propertyList)
@@ -291,7 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (unassignedProperties.Count > 0)
 				{
-					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, Convert.ToInt64(property)); });
+					Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuildingTrash, Convert.ToInt64(property)); });
 				}
 			}
 
@@ -517,7 +517,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetUPFMProperties(long userPersonaId, string include = null)
 		{
 			ListResponse response = new ListResponse();
-			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuildingTrash);
 			List<ProductProperty> userPropertyList = new List<ProductProperty>();
 			List<ProductProperty> translatedUserPropertyList = new List<ProductProperty>();
 			List<UPFMPropertyInstance> customerPropertyList = new List<UPFMPropertyInstance>();
@@ -556,14 +556,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				upfmProperties.id = instanceids;
 
-				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, ProductEnum.IntelligentBuilding);
+				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, ProductEnum.IntelligentBuildingTrash.ToEnumDescription());
 				if (translatedData != null)
 				{
 					foreach (var attributs in translatedData.Data.Attributes)
 					{
 						foreach (var propertyData in attributs.TranslatedPropertyInstances)
 						{
-							if (propertyData.Source == ProductEnum.IntelligentBuilding.ToEnumDescription())
+							if (propertyData.Source == ProductEnum.IntelligentBuildingTrash.ToEnumDescription())
 							{
 								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId);
 								if (translatedProductProperty != null)
@@ -691,7 +691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		private RepositoryResponse DeleteAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
 		{
-			return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, propertyInstanceId);
+			return DeleteAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuildingTrash, propertyInstanceId);
 		}
 		/// <summary>
 		/// Used to assign a property instance to the given user
@@ -702,7 +702,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		private RepositoryResponse InsertAssignedPropertyInstanceData(long userPersonaId, ProductEnum productId, long propertyInstanceId)
 		{
-			return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuilding, propertyInstanceId);
+			return InsertAssignedUserPropertyInstanceData(userPersonaId, ProductEnum.IntelligentBuildingTrash, propertyInstanceId);
 		}
 
 		/// <summary>
@@ -715,7 +715,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
 		{
 			// merge the given user details with the list
-			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuilding);
+			var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.IntelligentBuildingTrash);
 
 			var propertyOption = new Dictionary<string, bool>();
 

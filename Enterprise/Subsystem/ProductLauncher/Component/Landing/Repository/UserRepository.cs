@@ -3083,7 +3083,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (int) ProductEnum.ClickPay,
                     (int) ProductEnum.RenovationManager,
                     (int) ProductEnum.SeniorLeadManagement,
-                    (int) ProductEnum.IntelligentBuilding
+                    (int) ProductEnum.IntelligentBuildingTrash,
+                    (int) ProductEnum.IntelligentBuildingEnergy,
+                    (int) ProductEnum.IntelligentBuildingWater,
+                    (int) ProductEnum.HospitalityService
                 };
             }
 
