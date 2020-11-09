@@ -165,11 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.SeniorLeadManagement:
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetProductProperties(datafilter);
-                        break;
-                    //case (int)ProductEnum.IntelligentBuilding:
-                    //    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                    //    result = manageIntelligentBuilding.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.IntelligentBuilding, datafilter);
-                    //    break;
+                        break;                   
                     case (int)ProductEnum.IntelligentBuildingTrash:
                     case (int)ProductEnum.IntelligentBuildingEnergy:
                     case (int)ProductEnum.IntelligentBuildingWater:
@@ -358,11 +354,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.SeniorLeadManagement:
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetAllRights(datafilter);
-                        break;
-                    //case (int)ProductEnum.IntelligentBuilding:
-                    //    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                    //    result = manageIntelligentBuilding.GetRoles(editorPersonaId, userPersonaId, partyId);
-                    //    break;
+                        break;                   
                     case (int)ProductEnum.IntelligentBuildingTrash:
                     case (int)ProductEnum.IntelligentBuildingEnergy:
                     case (int)ProductEnum.IntelligentBuildingWater:
@@ -479,11 +471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                          var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
                         var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                         result = upfmProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId, upfmProduct);
-                    break;
-                //case (int)ProductEnum.IntelligentBuilding:
-                //    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                //    result = manageIntelligentBuilding.GetRightsByRole(editorPersonaId, partyId, roleId);
-                //    break;
+                    break;              
                 default:
                     break;
             }
