@@ -620,6 +620,7 @@
     <Compile Include="Product\UnifiedLogin\UnifiedLoginRole.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginRoleRights.cs" />
     <Compile Include="Product\UnifiedLogin\UnifiedLoginService.cs" />
+    <Compile Include="Product\UPFMProduct\UPFMProductPropertyRole.cs" />
     <Compile Include="Product\VendorServices\Notification.cs" />
     <Compile Include="Product\VendorServices\ProductPropertyNotification.cs" />
     <Compile Include="Product\VendorServices\PropertyGroup.cs" />
