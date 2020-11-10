@@ -356,6 +356,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = manageIntelligentBuilding.GetRoles(editorPersonaId, userPersonaId, partyId);
                         break;
                     case (int)ProductEnum.ClickPay:
+                        var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);//ManageProductFactory.GetProductLogic(productType, editorPersonaId, userPersonaId, _userClaims);
+                        result = productLogic.GetProductRoles(null);
+                        break;
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
                     case (int)ProductEnum.CIMPL:
