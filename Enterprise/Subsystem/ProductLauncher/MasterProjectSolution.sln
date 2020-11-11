@@ -27,8 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03. Common", "03. Common", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04. Test", "04. Test", "{8B4282C1-D49D-4EAC-A77A-E50982D9771B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity", "Web\IdentityServer\Identity\Identity.csproj", "{52A9A9DB-2C3A-449E-8413-578AEFE5D509}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,12 +81,6 @@ Global
 		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
 		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Fortify|Any CPU.ActiveCfg = Fortify|Any CPU
-		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Fortify|Any CPU.Build.0 = Fortify|Any CPU
-		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{52A9A9DB-2C3A-449E-8413-578AEFE5D509}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -102,7 +94,6 @@ Global
 		{76E5B96C-7AD5-4B15-A44A-ECCCB85F1C21} = {8B4282C1-D49D-4EAC-A77A-E50982D9771B}
 		{5794A497-56D2-4B0C-A168-D0F75BB21FF9} = {9F9CB5C1-0A13-4932-AF7C-7F4EE3089AE4}
 		{3AC3AB5F-6B3B-45C9-9E39-6EE6FD07133B} = {5843C736-9F85-47E1-AA5E-6BE7B97D5072}
-		{52A9A9DB-2C3A-449E-8413-578AEFE5D509} = {5843C736-9F85-47E1-AA5E-6BE7B97D5072}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4313EFCC-954B-41B3-A231-ED429A7D2454}

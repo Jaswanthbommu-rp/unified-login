@@ -9,7 +9,8 @@ AS
                 Name,
                 Description,
                 ProductTypeId,
-                BooksProductCode
+                BooksProductCode,
+                UDMSourceCode
          FROM Enterprise.Product
          WHERE (ProductId = @ProductId
                OR @ProductId IS NULL)

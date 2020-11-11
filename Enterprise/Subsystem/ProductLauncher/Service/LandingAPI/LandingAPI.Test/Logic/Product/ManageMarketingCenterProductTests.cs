@@ -36,8 +36,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         private string _password = "MCPassword";
 		private string _marketingCenterApiSourceID = "261";
 
-
-		private IManageProductMarketingCenter manageProductMarketingCenter;
+        private GbProductMap _gbProductMap = new GbProductMap();
+        private IManageProductMarketingCenter manageProductMarketingCenter;
         private IList<CustomerCompanyMap> mapCompany;
         private Mock<IManageBlueBook> mockManageBlueBook;
         private Mock<IManagePersona> mockManagePersona;
@@ -53,8 +53,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             mockManageBlueBook = new Mock<IManageBlueBook>();
             mockManagePersona = new Mock<IManagePersona>();
             mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
-            mockSamlRepository = new Mock<ISamlRepository>();
-            mockProductRepository = new Mock<IProductRepository>();
+            mockSamlRepository = new Mock<ISamlRepository>();           
+           var mockProductRepository = new Mock<IProductRepository>();
 
             _editorSamlAttributes = new List<SamlAttributes>()
             {
@@ -76,8 +76,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiUserName", Value = Encode(_username) });
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiPassword", Value = Encode(_password) });
 			_productInternalSettings.Add(new ProductInternalSetting() { Name = "MarketingCenterApiSourceID", Value = _marketingCenterApiSourceID });
-
-			_repositoryResponseProductStatus.ErrorMessage = "";
+            _gbProductMap = new GbProductMap() { BooksProductCode = "LS", Name = "Marketing Center", ProductId = 9, UDMSourceCode = "LS" };
+            _repositoryResponseProductStatus.ErrorMessage = "";
 
             mapCompany = new List<CustomerCompanyMap>()
             {
@@ -126,8 +126,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductRepository
+              .Setup(m => m.GetBooksMasterProductDetail(
+                  It.IsAny<int>()
+              ))
+              .Returns(_gbProductMap);
+
             manageProductMarketingCenter = new ManageProductMarketingCenter(_editorRealPageId, _editorUserClaim, mockHttpMessageHandler.Object, mockProductInternalSettingRepository.Object,
-                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object);
+                mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object,mockProductRepository.Object);
 
         }
         #endregion

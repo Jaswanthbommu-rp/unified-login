@@ -204,6 +204,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Persona Has Intelligen tBuilding User Access
         /// </summary>
         public bool hasManageIntelligentBuildingProductAccess { get; set; } = true;
+        // <summary>
+        /// Persona Has Intelligen tBuilding trash User Access
+        /// </summary>
+        public bool hasManageIntelligentBuildingTrashProductAccess { get; set; } = true;
+        // <summary>
+        /// Persona Has Intelligen tBuilding energy User Access
+        /// </summary>
+        public bool hasManageIntelligentBuildingEnergyProductAccess { get; set; } = true;
+        // <summary>
+        /// Persona Has Intelligen tBuilding water User Access
+        /// </summary>
+        public bool hasManageIntelligentBuildingWaterProductAccess { get; set; } = true;
+        // <summary>
+        /// Persona Has HospitalityService User Access
+        /// </summary>
+        public bool hasManageHospitalityServiceAccess { get; set; } = true;
 
         /// <summary>
         /// Persona Has Platform Alerts Access

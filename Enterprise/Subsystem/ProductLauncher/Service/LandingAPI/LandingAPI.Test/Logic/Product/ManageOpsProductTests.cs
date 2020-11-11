@@ -33,7 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
         private string _companyInstanceSourceId = "123456";
         private string _apiEndPoint = "http://producturl.com";
         private string _apiKey = "some-key";
-
+        private GbProductMap _gbProductMap = new GbProductMap();
         private IManageProductOps manageProductOps;
         private ListResponse _listResponse = new ListResponse();
         private IList<CustomerCompanyMap> mapCompany;
@@ -78,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
 
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiEndPoint", Value = _apiEndPoint });
             _productInternalSettings.Add(new ProductInternalSetting() { Name = "ApiKey", Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(_apiKey)) });
-
+            _gbProductMap = new GbProductMap() { BooksProductCode = "OPS", Name = "Spend Management", ProductId = 13, UDMSourceCode = "OPS" };
             _repositoryResponseProductStatus.ErrorMessage = "";
 
             mapCompany = new List<CustomerCompanyMap>()
@@ -128,12 +128,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
                 ))
                 .Returns(_userProductSettings);
 
+            mockProductRepository
+             .Setup(m => m.GetBooksMasterProductDetail(
+                 It.IsAny<int>()
+             ))
+             .Returns(_gbProductMap);
+
             HttpResponseMessage tokenResponse = new HttpResponseMessage(HttpStatusCode.OK);
             tokenResponse.Content = new StringContent(JsonConvert.SerializeObject(new { session = new { sid = "mocked sid" } }));
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"{_apiEndPoint}/api/v1.0/sessions", tokenResponse);
 
             manageProductOps = new ManageProductOps(_editorRealPageId, _editorUserClaim, client,
-                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object);
+                mockProductInternalSettingRepository.Object, mockManagePersona.Object, mockSamlRepository.Object, mockManageBlueBook.Object,mockProductRepository.Object);
 
         }
         #endregion
