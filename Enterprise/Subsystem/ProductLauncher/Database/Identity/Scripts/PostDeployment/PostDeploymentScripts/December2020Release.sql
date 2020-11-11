@@ -14,7 +14,7 @@ WHERE LoginName = 'RealPageAd@test.com'
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup')
 BEGIN
 	INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
-    VALUES ('EmployeeAccessToCompanySetup', 'Allow an authorized RealPage employee the ability to navigate the Configurations icon','Allow an authorized RealPage employee the ability to navigate the Configurations icon', 13,10, 3, 3, @CreatedById, @Now)
+    VALUES ('EmployeeAccessToCompanySetup', 'Allow an authorized RealPage employee the ability to navigate the Configurations icon','Employee Access to Company Setup', 13,10, 3, 3, @CreatedById, @Now)
 END
 
 --RightRoute
