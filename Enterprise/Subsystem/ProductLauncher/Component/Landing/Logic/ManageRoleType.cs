@@ -98,7 +98,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
                     //Multi Domain user
-                    if (userOrganization != null && userPersonaOrganizationList.ToList().Count(u => u.BooksCustomerMasterId == userOrganization.BooksCustomerMasterId) > 1) 
+                    if (userOrganization != null && userPersonaOrganizationList.ToList().Count(u => u.BooksCustomerMasterId == userOrganization.BooksCustomerMasterId) > 1 &&
+                        userPersonaOrganizationList.ToList().Any(u => u.BooksMasterId.Equals(orgMasterId))) 
                     {
                         roleTypeList.Remove(roleTypeList.First(r => r.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)));
                         roleTypeList.Remove(roleTypeList.First(r => r.PartyRoleTypeId.Equals((int)UserRoleType.UserNoEmail)));                       
