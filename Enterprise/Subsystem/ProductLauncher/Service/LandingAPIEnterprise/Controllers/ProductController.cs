@@ -284,7 +284,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         FirstName = "Notifications",
                         LastName = "User",
                         PersonaId = 2649,
-                        PreferredPhoneNumber = "5555555555"
+                        PreferredPhoneNumber = "5555555555",
+                        Email = "notificationemail@test.com"
                     },
                     new ProductUsers
                     {
@@ -293,7 +294,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         FirstName = "multi",
                         LastName = "user1",
                         PersonaId = 2657,
-                        PreferredPhoneNumber = "8888888888"
+                        PreferredPhoneNumber = "8888888888",
+                        Email = "notificationemail@test.com"
                     }
                 };
 

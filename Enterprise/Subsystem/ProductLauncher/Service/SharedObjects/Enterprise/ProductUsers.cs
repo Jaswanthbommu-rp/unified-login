@@ -40,5 +40,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
 
         [JsonIgnore]
         public int TotalRecords { get; set; }
+
+        /// <summary>
+        /// Email Notification
+        /// </summary>
+        public string Email { get; set; }
     }
 }

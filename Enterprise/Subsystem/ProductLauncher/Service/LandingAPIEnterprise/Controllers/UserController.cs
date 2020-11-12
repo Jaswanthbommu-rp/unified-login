@@ -241,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 userProductDetails.UserProfileDetails.UserEffectiveDate =
                     userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
                 userProductDetails.UserProfileDetails.UserExpirationDate =
-                    userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? Convert.ToDateTime("12/31/9999");
+                    userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? new DateTime(9999,12,31);
 
                 // Call Logic
                 var userManagement = new UserManagement(_userClaims, _greenBookAccessToken);
@@ -1282,8 +1282,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 					CreateUserSourceType = CreateUserSourceType.RPX.ToString(),
 					Suffix = userProductDetailsDto.UserProfileDetails.Suffix,
 					CustomFields = userProductDetailsDto.UserProfileDetails.CustomFields,
-					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId
-				},
+					EmployeeId = userProductDetailsDto.UserProfileDetails.EmployeeId,
+                    SendInvitationEmail = userProductDetailsDto.UserProfileDetails.SendInvitationEmail
+                },
 				ProductList = new List<ProductDetail>()
 			};
 			if (userProductDetailsDto.ProductList != null)

@@ -1,8 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise
 {
@@ -17,5 +14,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
         public string ProductUserId { get; set; }
         public long UnifiedLoginPersonaId { get; set; }
         public string PreferredPhoneNumber { get; set; }
+        public string Email { get; set; }
     }
 }

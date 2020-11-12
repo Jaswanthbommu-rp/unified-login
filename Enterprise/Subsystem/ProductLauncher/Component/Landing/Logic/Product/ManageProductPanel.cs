@@ -83,7 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = _manageProductClientPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.ProspectContactCenter:
-                        IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims.UserRealPageGuid);
+                        IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(_userClaims);
                         result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.Lead2Lease:
@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = manageProductResidentPortal.ListProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.OnSite:
-                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims);
                         result = manageProductOnSite.GetProperties(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.Insurance:
@@ -165,11 +165,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.SeniorLeadManagement:
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetProductProperties(datafilter);
-                        break;
-                    case (int)ProductEnum.IntelligentBuilding:
-                        IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                        result = manageIntelligentBuilding.GetUPFMProperties(editorPersonaId, userPersonaId, false, ProductEnum.IntelligentBuilding, datafilter);
-                        break;
+                        break;                   
+                    case (int)ProductEnum.IntelligentBuildingTrash:
+                    case (int)ProductEnum.IntelligentBuildingEnergy:
+                    case (int)ProductEnum.IntelligentBuildingWater:
+                    case (int)ProductEnum.HospitalityService:
+                         var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
+                         var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
+                         result = upfmProductIntegration.GetUPFMProperties(editorPersonaId, userPersonaId, false, upfmProduct, null);
+                         break;
                     default:
                         break;
                 }
@@ -281,7 +285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = manageProductResidentPortal.ListLevelsResponse(editorPersonaId, userPersonaId);
                         break;
                     case (int)ProductEnum.OnSite:
-                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims);
                         result = manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.Insurance:
@@ -350,11 +354,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.SeniorLeadManagement:
                         var productSLMLogic = ManageProductFactory.GetProductLogic(ProductEnum.SeniorLeadManagement, editorPersonaId, userPersonaId, _userClaims);
                         result = productSLMLogic.GetAllRights(datafilter);
-                        break;
-                    case (int)ProductEnum.IntelligentBuilding:
-                        IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                        result = manageIntelligentBuilding.GetRoles(editorPersonaId, userPersonaId, partyId);
-                        break;
+                        break;                   
+                    case (int)ProductEnum.IntelligentBuildingTrash:
+                    case (int)ProductEnum.IntelligentBuildingEnergy:
+                    case (int)ProductEnum.IntelligentBuildingWater:
+                    case (int)ProductEnum.HospitalityService:
+                         var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
+                         var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
+                         result = upfmProductIntegration.GetRoles(editorPersonaId, userPersonaId, _userClaims.OrganizationPartyId, upfmProduct);
+                         break;
                     case (int)ProductEnum.ClickPay:
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
@@ -456,10 +464,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
                     result = manageUnifiedAmenities.GetRightsByRole(editorPersonaId, partyId, roleId);
                     break;
-                case (int)ProductEnum.IntelligentBuilding:
-                    IManageIntelligentBuilding manageIntelligentBuilding = new ManageIntelligentBuilding(_userClaims);
-                    result = manageIntelligentBuilding.GetRightsByRole(editorPersonaId, partyId, roleId);
-                    break;
+                case (int)ProductEnum.IntelligentBuildingTrash:
+                case (int)ProductEnum.IntelligentBuildingEnergy:
+                case (int)ProductEnum.IntelligentBuildingWater:
+                case (int)ProductEnum.HospitalityService:
+                         var upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
+                        var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
+                        result = upfmProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId, upfmProduct);
+                    break;              
                 default:
                     break;
             }
@@ -478,7 +490,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
 
                     case (int)ProductEnum.OnSite:
-                        var manageProductOnSite = new ManageProductOnSite(_userClaims.UserRealPageGuid);
+                        var manageProductOnSite = new ManageProductOnSite(_userClaims);
                         result = manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
                         break;
                     case (int)ProductEnum.ResidentPortal:

@@ -89,7 +89,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.AoAIRevenueManagement: return "ai-revenue-management";
 				case ProductEnum.AoRentControl: return "rent-control";
 				case ProductEnum.RenovationManager: return "renovation-manager";
-				case ProductEnum.IntelligentBuilding: return "intelligent-building-trash";
+				case ProductEnum.IntelligentBuildingTrash: return "intelligent-building-trash";
+				case ProductEnum.IntelligentBuildingEnergy: return "intelligent-building-energy";
+				case ProductEnum.IntelligentBuildingWater: return "intelligent-building-water";
+				case ProductEnum.HospitalityService: return "hospitality-service";
 			}
 			return null;
 		}
@@ -204,6 +207,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 			throw new Exception($"AO product with Id - {productCode} is not supported in green book.");
 		}
 
+		public static ProductEnum GetUPFMProductEnum(int productID)
+		{
+			switch (productID)
+			{
+				case 57 : return ProductEnum.IntelligentBuildingTrash;
+				case 58 : return ProductEnum.IntelligentBuildingEnergy;
+				case 59 : return ProductEnum.IntelligentBuildingWater;
+				case 60 : return ProductEnum.HospitalityService;
+
+			}
+
+			throw new Exception($"UPFM product with Id - {productID} is not supported in green book.");
+		}
 		/// <summary>
 		/// GetProductEnumByProductCode
 		/// </summary>
@@ -578,10 +594,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		[Description("SET")]
 		UnifiedSettings = 56,
 		/// <summary>
-		/// UnifiedSettings
+		/// IB Trash
 		/// </summary>
-		[Description("IB")]
-		IntelligentBuilding = 57
+		[Description("SMS-T")]
+		IntelligentBuildingTrash = 57,
+		/// <summary>
+		/// IB energy
+		/// </summary>
+		[Description("SMS-E")]
+		IntelligentBuildingEnergy = 58,
+		/// <summary>
+		/// IB water
+		/// </summary>
+		[Description("SMS-W")]
+		IntelligentBuildingWater = 59,
+		/// <summary>
+		/// Hospitality as a Service
+		/// </summary>
+		[Description("HAAS")]
+		HospitalityService = 60
 	}
 
 	/// <summary>
@@ -805,12 +836,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// </summary>
 		[Description("SLM")]
         ManageSeniorLeadManagement = 50,
-			
+
 		/// <summary>
-		/// Senior Lead Management
+		/// Intelligent Building Trash
 		/// </summary>
-		[Description("IB")]
-		ManageIntelligentBuildingProductAccess = 57
+		[Description("SMS-T")]
+		ManageIntelligentBuildingTrashProductAccess = 57,
+		/// <summary>
+		/// Intelligent Building energy
+		/// </summary>
+		[Description("SMS-E")]
+		ManageIntelligentBuildingEnergyProductAccess = 58,
+		/// <summary>
+		/// Intelligent Building water
+		/// </summary>
+		[Description("SMS-W")]
+		ManageIntelligentBuildingWaterProductAccess = 59,
+		/// <summary>
+		/// Hospitality As A Service
+		/// </summary>
+		[Description("HAAS")]
+		ManageHospitalityServiceProductAccess = 60
 	}
 	public enum ProductProcVersion
 	{
