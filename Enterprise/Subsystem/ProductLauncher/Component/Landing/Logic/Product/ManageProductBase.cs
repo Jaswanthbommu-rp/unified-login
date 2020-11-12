@@ -405,6 +405,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             UpdateSamlUserAttributes(personaId, settingList, _productId);
         }
+        /// <summary>
+        /// Update user Employee Id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="employeeId"></param>
+        public void UpdateUserEmployeeId(long personaId, string employeeId)
+        {
+            Persona userPersona = _managePersona.GetPersona(personaId);
+            var userLogin = _manageUserLogin.GetUserLoginOnly(userPersona.RealPageId);
+            IList<IC.UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
+            var employeeIdDetails = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
+
+            //Update User Employee Id
+            if (string.IsNullOrEmpty(employeeIdDetails.EmployeeId))
+            {
+                employeeIdDetails.EmployeeId = employeeId;
+                _userRepository.UpdateUserEmployeeId(employeeIdDetails);
+            }
+        }
 
         /// <summary>
         /// Used to add/update a list of product settings for the given product and persona

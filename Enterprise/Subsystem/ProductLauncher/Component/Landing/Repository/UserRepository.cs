@@ -2478,6 +2478,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+      /// <summary>
+      /// Update user Employee Id
+      /// </summary>
+      /// <param name="employeeIdDetail"></param>
+      /// <returns></returns>
+        public RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail)
+        {
+            RepositoryResponse repositoryResponse = new RepositoryResponse();
+            if (employeeIdDetail.UserEmployeeId > 0)
+            {
+                using (var repository = GetRepository())
+                {
+                    dynamic param = new
+                    {
+                        employeeIdDetail.UserEmployeeId,
+                        employeeIdDetail.EmployeeId
+                    };
+
+                    repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateEmployeeId, param);
+                  
+                }
+            }
+            return repositoryResponse;
+        }
         /// <summary>
 		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
 		/// </summary>
