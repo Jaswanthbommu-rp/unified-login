@@ -1,3 +1,7 @@
+/*This script is to update 'Access to Site Spend Management only', to 'Site user'*/
+UPDATE [UserManagement].[Control]
+SET DisplayName = 'Site user' WHERE DisplayName = 'Access to Site Spend Management only'
+GO
 /*This script is to add EmployeeAccessToCompanySetup right.*/
 GO
 DECLARE @CreatedById bigint,
