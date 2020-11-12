@@ -2700,7 +2700,7 @@ DECLARE @RightValue nvarchar(200),
 		 @ProductId int =60,
 		 @RoleName nvarchar(100),
 		 @OrgVisibilityStatusId INT = 9,
-		 @RightVisibilityStatusId INT = 0,
+		 @RightVisibilityStatusId INT = 10,
 		 @StatusTypeId int=13,
 		 @ServerName SYSNAME = @@SERVERNAME;
 
