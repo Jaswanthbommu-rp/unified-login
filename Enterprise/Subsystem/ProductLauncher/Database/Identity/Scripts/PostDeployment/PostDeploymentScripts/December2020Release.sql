@@ -2700,7 +2700,7 @@ DECLARE @RightValue nvarchar(200),
 		 @ProductId int =60,
 		 @RoleName nvarchar(100),
 		 @OrgVisibilityStatusId INT = 9,
-		 @RightVisibilityStatusId INT =9,
+		 @RightVisibilityStatusId INT = 0,
 		 @StatusTypeId int=13,
 		 @ServerName SYSNAME = @@SERVERNAME;
 
@@ -2786,9 +2786,29 @@ BEGIN
 													@UserId,
 													@Now
 												   )
+											
 								END
 								SELECT @RoleId=RoleId FROM [Security].[Role] WHERE RoleName=@RoleName
 								SELECT @RightId=RightId FROM [Security].[Right] WHERE [Value]=@RoleName
+
+								IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[ORGANIZATIONOVERRIDERIGHT] WHERE RightId = @RightId AND OrgPartyId=@OrgPartyId)
+								BEGIN
+								INSERT INTO Security.organizationoverrideright(
+											RightId,
+											OrgPartyId,
+											VisibilityStatusId,
+											CreatedBy,
+											CreatedDate
+											)
+											VALUES(
+											@RightId,
+											@OrgPartyId,
+											@OrgVisibilityStatusId,
+											@UserId,
+											@Now
+											)
+								END
+
 								IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId=@RightId)
 								BEGIN
 									INSERT INTO [Security].[RoleRight]
@@ -2805,9 +2825,7 @@ BEGIN
 										   )
 								END;
 
-								SELECT * FROM [Security].[Role] WHERE RoleName=@RoleName
-								SELECT * FROM [Security].[Right] WHERE [Value]=@RoleName
-								SELECT * FROM [Security].[RoleRight] WHERE RoleId=@RoleId
+								
 
 							END;
 							FETCH NEXT FROM curCreateNewRole INTO @RoleName
