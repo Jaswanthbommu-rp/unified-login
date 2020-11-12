@@ -1138,16 +1138,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails) //long assignUserPersonaId, ProductBatchStatusType productStatus, Dictionary<SamlAttributeEnum, string> settingList)
         {
+            // Handle all other products than AO
+            long assignUserPersonaId = productUserAccountDetails.PersonaId;
+            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository, _productRepository);
+            
+            // Update user Employee Id
+            if (!string.IsNullOrEmpty(productUserAccountDetails.EmployeeId))
+            {
+                manageProductBase.UpdateUserEmployeeId(assignUserPersonaId, productUserAccountDetails.EmployeeId);
+            }
+
             // Handle AO user products separately 
             if (_productId == (int)ProductEnum.AssetOptimizer)
             {
                 return UpdateAoUserDetails(productUserAccountDetails);
             }
-
-            // Handle all other products than AO
-            long assignUserPersonaId = productUserAccountDetails.PersonaId;
-
-            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository,_productRepository);
 
             manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
             manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,
