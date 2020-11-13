@@ -2655,7 +2655,7 @@ BEGIN
 		VALUES (@MaxControlId + 15, @MaxControlId + 7, 5, N'HAASProductAccessRoleDetailsLabelUIId', N'Role Details', NULL, 1, @UserId, @Now)
 
 		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-		VALUES (@MaxControlId + 16, @MaxControlId + 15, 12, N'HAASProductAccessGridUIId', N'NULL', NULL, 1, @UserId, @Now)
+		VALUES (@MaxControlId + 16, @MaxControlId + 7, 12, N'HAASProductAccessGridUIId', N'NULL', NULL, 1, @UserId, @Now)
 
 		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
 		VALUES (@MaxControlId + 17, @MaxControlId + 16, 5, N'HAASProductAccessRightLabelUIId', N'Right', 'description', 1, @UserId, @Now)
