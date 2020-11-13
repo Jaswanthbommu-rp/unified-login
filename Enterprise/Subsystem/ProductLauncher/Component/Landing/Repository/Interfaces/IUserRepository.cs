@@ -155,5 +155,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="OrganizationPartyId"></param>
 		/// <returns>IUserEmployeeId</returns>
 		IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId);
+
+		/// <summary>
+		/// Update user Employee Id
+		/// </summary>
+		/// <param name="employeeIdDetail"></param>
+		/// <returns></returns>
+		RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail);
 	}
 }
