@@ -592,6 +592,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Used to ResetVerificationCode of OneSiteUser
+        /// </summary>
+        /// <param name="editorPersonaId">Assign user Id</param>
+		/// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Reset Verification Code Successfully", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
+        [Route("products/onesite/resetverificationcode")]
+        [Authorize]
+        [HttpPost]
+        public HttpResponseMessage ResetVerificationCode(long editorPersonaId, long userPersonaId)
+        {
+            string result = _manageProductOneSite.ResetVerificationCode(editorPersonaId, userPersonaId);
+            
+            if (string.IsNullOrEmpty(result))
+            {
+                return Request.CreateResponse(HttpStatusCode.OK);
+            }
+            else
+            {
+                if (result.ToUpper() == "NO RESULT")
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, result);
+                }
+            }
+        }
+
         #region User-Status
 
         /// <summary>

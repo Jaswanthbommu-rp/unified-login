@@ -965,6 +965,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
+        /// Write Update User activity log
+        /// </summary> 
+        protected void WriteResetVerificationCodeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
+        {
+            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
+                 "{3} {4} reset the OneSite verification code for {0} {1}.");
+        }
+
+        /// <summary>
         /// Write Update User-Type Activity Log
         /// </summary>
         protected void WriteUpdateUserTypeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, BatchProcessType batchProcessType)
