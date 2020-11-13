@@ -64,7 +64,7 @@ BEGIN
 END
 GO
 -- Add UDM Source Code for ILM products
-Update Enterprise.Product SET UDMSourceCode = 'ILM'
+Update Enterprise.Product SET UDMSourceCode = NULL
 Where ProductId in (40,41)
 
 Update Enterprise.Product SET UDMSourceCode = 'AO'
@@ -72,6 +72,15 @@ Where ProductId in (29,30,31,32,33,34,51,52,53,54)
 
 Update Enterprise.Product SET UDMSourceCode = 'IB',BooksProductCode = 'SMS-T'
 Where ProductId in (57)
+
+-- update roles and rights search datasource
+  update [UserManagement].[Control] set DataSource = 'name'
+  where UIId = 'UnifiedPlatformRolesAndRightsRightLabelUIId'
+  And DisplayName = 'Right'
+
+  update [UserManagement].[Control] set DataSource = 'name'
+  where UIId = 'OnesiteRolesAndRightsRightLabelUIId'
+  And DisplayName = 'Role'
 GO
 
 --IB Product Energy
