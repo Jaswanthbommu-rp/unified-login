@@ -405,6 +405,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             UpdateSamlUserAttributes(personaId, settingList, _productId);
         }
+        /// <summary>
+        /// Update user Employee Id
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="employeeId"></param>
+        public void UpdateUserEmployeeId(long personaId, string employeeId)
+        {
+            Persona userPersona = _managePersona.GetPersona(personaId);
+            var userLogin = _manageUserLogin.GetUserLoginOnly(userPersona.RealPageId);
+            IList<IC.UserLoginPersona> userLoginPersonaList = _userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userPersona.UserId, organizationPartyId: userPersona.Organization.PartyId);
+            var employeeIdDetails = _userRepository.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, userPersona.OrganizationPartyId);
+
+            //Update User Employee Id
+            if (string.IsNullOrEmpty(employeeIdDetails.EmployeeId))
+            {
+                employeeIdDetails.EmployeeId = employeeId;
+                _userRepository.UpdateUserEmployeeId(employeeIdDetails);
+            }
+        }
 
         /// <summary>
         /// Used to add/update a list of product settings for the given product and persona
@@ -962,6 +981,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
                  "{0} {1} updated in product {2} by user {3} {4}.");
+        }
+
+        /// <summary>
+        /// Write Update User activity log
+        /// </summary> 
+        protected void WriteResetVerificationCodeActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin)
+        {
+            WriteActivityLog(fromPersonaId, toPerson, toUserGbLogin,
+                 "{3} {4} reset the OneSite verification code for {0} {1}.");
         }
 
         /// <summary>
