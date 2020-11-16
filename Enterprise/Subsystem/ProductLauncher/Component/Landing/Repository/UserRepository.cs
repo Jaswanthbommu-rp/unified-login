@@ -1171,7 +1171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #region Create UserEmployeeId
 
-                        if (newProfile.UserTypeId != (int)UserRoleType.ExternalUser && userLoginPersonaId > 0)
+                        if (userLoginPersonaId > 0)
                         {
                             param = new
                             {
