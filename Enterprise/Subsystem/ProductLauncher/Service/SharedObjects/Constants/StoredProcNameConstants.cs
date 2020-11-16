@@ -289,19 +289,19 @@
         public const string SP_GetPropertyInstanceListById = "Enterprise.GetPropertyInstanceListById";
 
 
-        public const string SP_ListRolesByParty = "Enterprise.ListRolesByParty";
-        public const string SP_ListRolesForProductsByPersonaId = "Enterprise.ListRolesForProductsByPersonaId";
-        public const string SP_ListRolesForProductsByPartyId = "Enterprise.ListRolesForProductsByPartyId";
-        public const string SP_ListRolesAssociatedWithRights = "Enterprise.ListRolesAssociatedWithRights";
-        public const string SP_ListRightsAssociatedWithRoles = "Enterprise.ListRightsAssociatedWithRoles";
-        public const string SP_ListRightForProductsByPartyId = "Enterprise.ListRightForProductsByPartyId";
-        public const string SP_CreateRole = "Enterprise.CreateRole";
-        public const string SP_UpdateRole = "Enterprise.UpdateRole";
-        public const string SP_DeleteRole = "Enterprise.DeleteRole";
-        public const string SP_LinkRightsToRoles = "Enterprise.LinkRightsToRoles";
-        public const string SP_ListAllRights = "Enterprise.ListAllRights";
-        public const string SP_ListSecurityStatus = "Enterprise.ListSecurityStatus";
-        public const string SP_SetDefaulteRole = "Enterprise.SetDefaultRole";
+        public const string SP_ListRolesByParty = "Security.ListRolesByParty";
+        public const string SP_ListRolesForProductsByPersonaId = "Security.ListRolesForProductsByPersonaId";
+        public const string SP_ListRolesForProductsByPartyId = "Security.ListRolesForProductsByPartyId";
+        public const string SP_ListRolesAssociatedWithRights = "Security.ListRolesAssociatedWithRights";
+        public const string SP_ListRightsAssociatedWithRoles = "Security.ListRightsAssociatedWithRoles";
+        public const string SP_ListRightForProductsByPartyId = "Security.ListRightForProductsByPartyId";
+        public const string SP_CreateRole = "Security.CreateRole";
+        public const string SP_UpdateRole = "Security.UpdateRole";
+        public const string SP_DeleteRole = "Security.DeleteRole";
+        public const string SP_LinkRightsToRoles = "Security.LinkRightsToRoles";
+        public const string SP_ListAllRights = "Security.ListAllRights";
+        public const string SP_ListSecurityStatus = "Security.ListSecurityStatus";
+        public const string SP_SetDefaulteRole = "Security.SetDefaultRole";
 
         //Configuration Settings
         public const string SP_ListUserLoginSettings = "Enterprise.ListUserLoginSettings";
