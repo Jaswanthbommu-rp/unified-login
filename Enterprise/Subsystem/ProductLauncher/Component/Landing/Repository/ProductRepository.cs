@@ -1587,8 +1587,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <returns>List of Roles by PartyId and Product</returns>
 		public List<ProductRole> ListRolesForProductByParty(long partyId, IList<int> productIdList, int productId)
         {
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPartyId" : StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
+            var procName = StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
 
             using (var repository = GetRepository())
             {
@@ -1645,8 +1644,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
-                string schemaName = getRoleRightsSchemaName();
-                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+                var procName = StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
 
                 dynamic param = new
                 {
