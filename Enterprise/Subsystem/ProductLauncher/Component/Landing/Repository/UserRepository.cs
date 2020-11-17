@@ -287,7 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     //Get the Clone User list of UnifiedLogin Top level properties and Role
-                    var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+                    var procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
                     var ulRole = pbRepository.GetMany<dynamic>(procName, new { ProductId = (int)ProductEnum.UnifiedPlatform, PersonaId = cloneUserPersonaId });
                     IEnumerable<dynamic> ulProperties = null;
                     IEnumerable<dynamic> ulPropertyInstances = null;
@@ -1080,7 +1080,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     if (newProfile.ClonedUser)
                                     {
                                         // get the users existing UnifiedLogin role                                       
-                                        procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPersonaId" : StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
+                                        procName = StoredProcNameConstants.SP_ListRolesForProductsByPersonaId;
 
                                         param = new
                                         {
