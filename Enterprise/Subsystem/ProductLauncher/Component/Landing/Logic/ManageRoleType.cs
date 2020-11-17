@@ -99,7 +99,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
                     //Multi domain user in another domain (external)
                     if (userOrganization != null && orgMasterId != null && userPersonaOrganizationList.ToList().Count(u => u.BooksCustomerMasterId == userOrganization.BooksCustomerMasterId) > 1
-                        && userPersonaOrganizationList.Any(up => up.BooksCustomerMasterId != orgMasterId))
+                        && userPersonaOrganizationList.Any(up => up.BooksMasterId != orgMasterId))
                     {
                         roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)).ToList();
                     }
