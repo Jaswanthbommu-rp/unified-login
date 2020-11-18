@@ -360,9 +360,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             userOrganizationExists = IsLoginNameExistsAsAdminInOtherDomain(newProfile.userLogin.LoginName, newProfile.organization[0].RealPageId, booksCustomerMasterId);
             bool primaryOrganization = true;
             //if org has mutil domain and user already exists in other domain and not in in this org
-            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain) && !userOrganizationExists.UserExistsInThisOrganization)
+            if ((userOrganizationExists.UserExistsAsAdminInOtherDomain || userOrganizationExists.UserExistsAsRegularUserInOtherDomain ) && !userOrganizationExists.UserExistsInThisOrganization)
             {
-                primaryOrganization = false;
+                if (!newProfile.organization[0].OrganizationDomain.Name.Equals("Primary"))
+                {
+                    primaryOrganization = false;
+                }
+                
             }
 
             using (var repository = GetRepository())
@@ -5744,6 +5748,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (userOrganizationExists.UserExists && !userOrganizationExists.UserExistsInThisOrganization)
             {
                 UserOrganization userOrganization = userPersonaOrganizationList.ToList().FirstOrDefault(m => m.PrimaryOrganization.Equals(true));
+              
                 isAdminUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.SuperUser;
                 isRegularUser = userOrganization != null && userOrganization.PartyRoleTypeId == (int)UserRoleType.User;
 
