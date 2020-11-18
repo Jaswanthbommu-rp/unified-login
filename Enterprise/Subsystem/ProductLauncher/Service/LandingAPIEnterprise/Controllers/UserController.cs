@@ -106,7 +106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         private IManagePerson _personLogic;
         IManageProduct _manageProduct;
         private HttpMessageHandler _messageHandler;
-
+        private static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
         #endregion
 
         /// <summary>
@@ -887,14 +887,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     var productList = _manageProduct.GetAllProductsByPersona(personaId.Value, ProductBatchStatusType.Success);
                     
                     List<UserProducts> userProducts = ConvertPersonaProductsToRAUL(productList, personaId.Value);
-
-                    if (_userClaims.OrganizationName.ToUpper().Equals("REALPAGE EMPLOYEE"))
+                    
+                    if (_userClaims.OrganizationRealPageGuid == EmployeeCompanyRealPageId)
                     {
                         foreach (UserProducts solution in userProducts)
                         {
                             if (solution.Id == (int)ProductEnum.HospitalityService && solution.FamilyId == 100)
                             {
                                 solution.FamilyId = 600;
+                                solution.FamilyName = "Internal Tools";
                             }
                         }
                     }
