@@ -2981,3 +2981,10 @@ BEGIN
 END
 
 GO
+IF EXISTS(select top 1 1 from enterprise.product where productid=48 and name = 'Payments')
+BEGIN
+	update enterprise.product set name = 'ClickPay' where productid=48
+END
+
+GO
+
