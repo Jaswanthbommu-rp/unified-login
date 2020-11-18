@@ -75,10 +75,6 @@ Where ProductId in (57)
 
 -- update roles and rights search datasource
   update [UserManagement].[Control] set DataSource = 'name'
-  where UIId = 'UnifiedPlatformRolesAndRightsRightLabelUIId'
-  And DisplayName = 'Right'
-
-  update [UserManagement].[Control] set DataSource = 'name'
   where UIId = 'OnesiteRolesAndRightsRightLabelUIId'
   And DisplayName = 'Role'
 GO
