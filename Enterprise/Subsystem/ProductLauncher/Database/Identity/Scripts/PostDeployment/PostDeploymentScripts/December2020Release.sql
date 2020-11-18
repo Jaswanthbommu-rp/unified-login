@@ -462,7 +462,8 @@ DECLARE @ProductId INT,
 		@LoginURI NVARCHAR(100), 
 		@SigningCertificateThumbprint NVARCHAR(50), 
 		@ParentProductTypeId INT, 
-		@ProductName NVARCHAR(100)= 'Hospitality As A Service',  -- Produact Name
+		@ProductName NVARCHAR(100)= 'Home Sharing',  -- Produact Name
+		@ProductDescription NVARCHAR(1000) = 'Home Sharing is a business initiative that creates a new and incremental revenue opportunity for RealPage clients (property owners), their residents and for RealPage by listing available residential units on platforms such as Airbnb and enabling short term rental bookings.',
 		@LoginURL NVARCHAR(500), 
 		@ProductUrl NVARCHAR(256), 
 		@apiendpoint NVARCHAR(1000), 
@@ -491,7 +492,7 @@ IF NOT EXISTS
              @ProductTypeId = 113, -- Thsi value may change based on the root prodcut type
              @ParentProductTypeId = @ParentProductTypeId, 
              @Name = @ProductName, 
-             @Description = @ProductName, 
+             @Description = @ProductDescription, 
              @ProductTypeGUID = '0FCD4571-EDF2-4040-B985-61F709EFA7C7'; -- Use newid() to generate new uniqueidentifier.
 END;
 SET @ProductId = 60; -- Assign new product Id
@@ -508,7 +509,7 @@ IF NOT EXISTS
              @ProductId = @ProductId, 
              @ProductGUID = '7ED03C61-670D-4692-97A4-8F6D4E94BAF8', -- Use newid() to generate new uniqueidentifier.
              @Name = @ProductName, 
-             @Description = @ProductName, 
+             @Description = @ProductDescription, 
              @ProductTypeId = 113;
         
 		UPDATE Enterprise.Product
@@ -553,7 +554,7 @@ INSERT INTO @ProductConfiguration
 VALUES
  ('ClassName','','hospitalityservice')
 ,('ProductUrl','','/product/HospitalityService')
-,('TitleId','','Hospitality As A Service')
+,('TitleId','','Home Sharing')
 ,('TitleUniqueId','','F98C3B10-3753-4438-B3F1-24A3878D8FD9')
 ,('IsNewTab','','1')
 ,('MetatagUniqueId','','HospitalityService')
@@ -2987,4 +2988,11 @@ BEGIN
 END
 
 GO
+IF EXISTS (select 1 from Enterprise.Product where ProductId = 60 and Name ='Hospitality As A Service')
+BEGIN
+	DECLARE @ProductSettingId INT
+	update Enterprise.Product set Name = 'Home Sharing', Description='Home Sharing is a business initiative that creates a new and incremental revenue opportunity for RealPage clients (property owners), their residents and for RealPage by listing available residential units on platforms such as Airbnb and enabling short term rental bookings.' where ProductId = 60 and Name ='Hospitality As A Service'
+	select @ProductSettingId = ProductSettingId from Enterprise.ProductSetting where ProductId = 60 and ProductSettingTypeId in (select ProductSettingTypeId from Enterprise.ProductSettingType where ProductSettingTypeId = 5) 
+	update Enterprise.ProductSetting set Value ='Home Sharing' where ProductSettingId = @ProductSettingId
+END
 
