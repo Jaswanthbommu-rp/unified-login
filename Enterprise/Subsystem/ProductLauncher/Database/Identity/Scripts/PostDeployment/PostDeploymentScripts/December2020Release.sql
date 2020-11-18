@@ -2903,7 +2903,7 @@ BEGIN
 	VALUES (@MaxControlId + 11, @MaxControlId + 10, 10, N'ClickPayProductAccessCompaniesCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
-	VALUES (@MaxControlId + 12, @MaxControlId + 11, 5, N'ClickPayProductAccessCompaniesLabelUIId', N'Company', N'name', 2, @UserId, @Now)
+	VALUES (@MaxControlId + 12, @MaxControlId + 10, 5, N'ClickPayProductAccessCompaniesLabelUIId', N'Company', N'name', 2, @UserId, @Now)
 
 	INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
 	VALUES (@MaxControlId + 13, @MaxControlId + 8, 5, N'ClickPayProductAccessAssignPropertiesLabelUIId', N'Assign Properties', N'assignedProperties', 1, @UserId, @Now)
