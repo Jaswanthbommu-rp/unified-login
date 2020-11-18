@@ -81,5 +81,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="datafilter"></param>			
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductRights(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter);
+
+		/// <summary>
+		/// Get Product Rights
+		/// </summary> 
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="productId"></param>
+		/// <param name="organizationRoleId"></param>
+		/// <param name="organizationType"></param>			
+		/// <returns>String.empty if success else error</returns>
+		ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType);
 	}
 }
