@@ -885,8 +885,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     };
 
                     var productList = _manageProduct.GetAllProductsByPersona(personaId.Value, ProductBatchStatusType.Success);
-
                     List<UserProducts> userProducts = ConvertPersonaProductsToRAUL(productList, personaId.Value);
+
+                    if (_userClaims.OrganizationName.ToUpper().Equals("REALPAGE EMPLOYEE"))
+                    {
+                        foreach (UserProducts solution in userProducts)
+                        {
+                            if (solution.Id == (int)ProductEnum.HospitalityService && solution.FamilyId == 100)
+                            {
+                                solution.FamilyId = 600;
+                            }
+                        }
+                    }
 
                     productResult.Products.Add("Favorites", userProducts.Where(p => p.IsFavorite).ToList());
                     foreach (UserProducts up in userProducts)
