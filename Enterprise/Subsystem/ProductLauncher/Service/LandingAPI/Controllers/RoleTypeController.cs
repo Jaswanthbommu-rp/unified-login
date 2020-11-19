@@ -79,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
                 }
 
-                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: base._orgPartyId, orgMasterId: base._userClaims.OrganizationMasterId, loginName: loginName);
+                roleTypeList = (List<RoleType>)roleTypeLogic.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: base._orgPartyId, orgMasterId: persona.Organization.BooksCustomerMasterId, loginName: loginName);
             }
             else
             {

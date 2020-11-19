@@ -336,7 +336,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IUserLoginOnly userLoginOnly = manageUserLogin.GetUserLoginOnly(profile.RealPageId);
 
 			IManageRoleType manageRoleType = new ManageRoleType();
-			IList<RoleType> userRoles = manageRoleType.GetRoleTypeDependency(roleTypeId: profile.UserTypeId, partyId: _userClaims.OrganizationPartyId, orgMasterId: _userClaims.OrganizationMasterId, loginName: userLoginOnly.LoginName);
+			long bookCustomerMasterId = profile.organization.Select(o => o.BooksCustomerMasterId).FirstOrDefault();
+			IList<RoleType> userRoles = manageRoleType.GetRoleTypeDependency(roleTypeId: profile.UserTypeId, partyId: _userClaims.OrganizationPartyId, orgMasterId: bookCustomerMasterId, loginName: userLoginOnly.LoginName);
             if (userRoles == null)
 			{
 				errorStatus.Success = false;
