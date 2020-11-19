@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		/// Get a list of roles for the given user and product
 		/// </summary>
 		/// <param name="realPageId">The guid for the user being requested</param>
-		/// <param name="productCode">The code for the product being requested. Supported products UL-UnifiedLogin, OPS-Ops</param>
+		/// <param name="productCode">The code for the product being requested.All Products are supported</param>
 		/// <returns>A list of product roles</returns>
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -58,14 +58,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			{
 				IManagePersona managePersona = new ManagePersona(_userClaims);
 				//Active Persona is linked to one organization
-				//persona = managePersona.GetActivePersona(realPageId);
-                persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
+				persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _orgPartyId);
 
 				//Verify if same company
-				//IManageOrganization manageOrganization = new ManageOrganization();
-				//bool isValidOrganization = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, persona.Organization.RealPageId);
-				//if (!isValidOrganization)
-                if (persona == null || persona.OrganizationPartyId != _orgPartyId)
+				if (persona == null || persona.OrganizationPartyId != _orgPartyId)
                 {
                     return Request.CreateResponse(HttpStatusCode.NotFound);
                 }
@@ -75,25 +71,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				return Request.CreateResponse(HttpStatusCode.NotFound);
 			}
 
+			
 			ListResponse productResponse;
-			switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
+			if (productCode == "UPFM")
 			{
-				case ProductEnum.OpsBuyer:
-					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
-					productResponse = manageProductOps.GetRoles(_userClaims.PersonaId, persona.PersonaId, "", null);
-					filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
-					break;
-				case ProductEnum.UnifiedPlatform:
-					IManageUnifiedLogin manageProduct = new ManageUnifiedLogin(_userClaims);
-					productResponse = manageProduct.GetUserRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId);
-					filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
-					break;
-
-				default:
-					error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/role", StatusCode = "" });
-					return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+				IManageUnifiedLogin manageProduct = new ManageUnifiedLogin(_userClaims);
+				productResponse = manageProduct.GetUserRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId);
+				filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
 			}
-
+			else
+			{
+				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
+				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);
+				filteredList = productResponse.Records.Cast<Component.SharedObjects.Product.ProductRole>().ToList().FindAll(p => p.IsAssigned);
+			}
+			
 			if (!productResponse.IsError)
 			{
 				response.Data = filteredList.Cast<object>().ToList();
@@ -112,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		/// <summary>
 		/// Get a list of roles for a product
 		/// </summary>
-		/// <param name="productCode">The code for the product being requested. Supported products UL-UnifiedLogin, OPS-Ops</param>
+		/// <param name="productCode">The code for the product being requested. All Products are supported</param>
 		/// <returns>A list of product roles</returns>
 		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
 		[SwaggerResponse(HttpStatusCode.NotFound, Description = "Not Found")]
@@ -131,21 +124,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 			};
 
 			ListResponse productResponse;
-			switch (ProductEnumHelper.GetProductEnumByProductCode(productCode))
+
+			if (productCode == "UPFM")
 			{
-				case ProductEnum.OpsBuyer:
-					IManageProductOps manageProductOps = new ManageProductOps(_userClaims);
-					productResponse = manageProductOps.GetRoles(_userClaims.PersonaId, 0, "", null);
-					break;
-
-				case ProductEnum.UnifiedPlatform:
-					IManageUnifiedLogin manageProduct = new ManageUnifiedLogin(_userClaims);
-					productResponse = manageProduct.GetRoles(_userClaims.PersonaId, _userClaims.OrganizationPartyId);
-					break;
-
-				default:
-					error.Errors.Add(new Error() { Title = "Bad request", Detail = "No valid product code could be found", Source = "/role", StatusCode = "" });
-					return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+				IManageUnifiedLogin manageProduct = new ManageUnifiedLogin(_userClaims);
+				productResponse = manageProduct.GetRoles(_userClaims.PersonaId, _userClaims.OrganizationPartyId);
+			}
+			else
+			{
+				IManageProductPanel productPanelData = new ManageProductPanel(_userClaims);
+				int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+				productResponse = productPanelData.GetProductRoles(_userClaims.PersonaId, _userClaims.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);				
 			}
 
 			PagedResponse response = new PagedResponse() {Meta = new Meta()};
