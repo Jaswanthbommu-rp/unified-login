@@ -368,6 +368,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
 
                             break;
+                        case "provisioning.upfmorder.cancel":                            
+                            var productListToCancel = thinEvent.Payload?["company"]["productCenters"];
+                            string companyInstanceSourceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
+                            var orgDetails = _manageOrganization.GetOrganization(new Guid(companyInstanceSourceId));
+                            ProductCenterCancellation centerCancel = new ProductCenterCancellation() { Details = new List<ProductCenterCancellationSettings>() };
+                            centerCancel.CancelledBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation";
+                            foreach (var product in productListToCancel)
+                            {
+                                var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product:(ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
+                                _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
+                                centerCancel.Details.Add(new ProductCenterCancellationSettings()
+                                {
+                                    CompanyInstanceSourceId = companyInstanceSourceId,
+                                    PropertyInstanceSourceId =  null,
+                                    ProductCenterSourceId = product["productCenterSourceId"].ToString(),
+                                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                                });
+                            }                         
+                            if (centerCancel.Details.Count > 0)
+                            {
+                                _manageBlueBook.AcknowledgeProvisioningCancelEvent(centerCancel);
+                            }
+                            break;
                         default:
                             return Request.CreateResponse(HttpStatusCode.Accepted);
                     }
