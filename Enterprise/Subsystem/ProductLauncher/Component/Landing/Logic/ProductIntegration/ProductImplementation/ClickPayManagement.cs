@@ -46,6 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 foreach (var item in roleList)
                 {
                     item.OrgsAssignedCount = 0;
+					item.IsAssigned = false;
                 }
 
                 // Get Orgs assigned to Role count for User
@@ -64,6 +65,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         foreach (var item in roleList)
                         {
                             item.OrgsAssignedCount = user.OrganizationRoles.FindAll(f => f.RoleId == item.Id).Count;
+							if (item.OrgsAssignedCount > 0)
+								item.IsAssigned = true;
                         }
 
                     }
@@ -164,7 +167,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
-
+				if(returnOrgList.Count > 0)
+				{
+					returnOrgList.ForEach(x => x.IsAssigned = false);
+				}
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName) && returnOrgList.Count > 0)
 				{
 					WriteToDiagnosticLog(
