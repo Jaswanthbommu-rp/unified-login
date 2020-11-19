@@ -3027,3 +3027,10 @@ BEGIN
 END
 
 GO
+
+IF EXISTS (SELECT TOP 1 * FROM usermanagement.control where uiid = 'ClickPayProductAccessRoleRadioLabelUIId')
+BEGIN
+ UPDATE usermanagement.control set controltypeid = 10 where uiid = 'ClickPayProductAccessRoleRadioLabelUIId'
+END
+
+GO
