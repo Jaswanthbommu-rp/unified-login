@@ -2977,6 +2977,264 @@ BEGIN
 END
 
 GO
+IF EXISTS(select top 1 1 from enterprise.product where productid=48 and name = 'Payments')
+BEGIN
+	update enterprise.product set name = 'ClickPay', Description = 'ClickPay'  where productid=48
+END
+
+GO
+IF EXISTS (select 1 from Enterprise.Product where ProductId = 60 and Name ='Hospitality As A Service')
+BEGIN
+	DECLARE @ProductSettingId INT
+	update Enterprise.Product set Name = 'Home Sharing', Description='Home Sharing is a business initiative that creates a new and incremental revenue opportunity for RealPage clients (property owners), their residents and for RealPage by listing available residential units on platforms such as Airbnb and enabling short term rental bookings.' where ProductId = 60 and Name ='Hospitality As A Service'
+	select @ProductSettingId = ProductSettingId from Enterprise.ProductSetting where ProductId = 60 and ProductSettingTypeId in (select ProductSettingTypeId from Enterprise.ProductSettingType where ProductSettingTypeId = 5) 
+	update Enterprise.ProductSetting set Value ='Home Sharing' where ProductSettingId = @ProductSettingId
+END
+GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'Learnmore'
+
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 60 and ProductSettingTypeId = @ProductSettingTypeId and [Value] !='')
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = '' where ProductId = 60 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
+
+IF EXISTS(select top 1 1 from enterprise.ProductType where ProductTypeGuid = '52169FDA-5C23-495D-B626-8C78BE1CD11C')
+BEGIN
+	update Enterprise.ProductType set Name = 'ClickPay' where ProductTypeGuid = '52169FDA-5C23-495D-B626-8C78BE1CD11C'
+END
+
+GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'TitleId'
+
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId and [Value] !='')
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = 'ClickPay' where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'MetatagUniqueId'
+
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId and [Value] !='')
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = 'ClickPay' where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+
+GO
+
+IF EXISTS (SELECT TOP 1 * FROM usermanagement.control where uiid = 'ClickPayProductAccessRoleRadioLabelUIId')
+BEGIN
+ UPDATE usermanagement.control set controltypeid = 10 where uiid = 'ClickPayProductAccessRoleRadioLabelUIId'
+END
+
+GO
+
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'PME Dashboard', 
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@ServerName SYSNAME = @@SERVERNAME;
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Administration'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE Name = 'PME Dashboard'
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 508, 
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = 'PME Dashboard', 
+             @ProductTypeGUID = '31F4F399-177E-4BD6-8C05-EDB50B0C0A91';
+END;
+SET @ProductId = 62;
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = 'C2441CBB-F51B-47E1-B8DF-29612117B0C2', 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeId = 507;
+        UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'PME'
+        WHERE ProductId = @ProductId;
+END;
+
+
+IF @ServerName IN('RCDUSODBSQL001')
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName = 'RCTUSODBSQL001'
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCQUSODBSQL001', 'RCVEUSODBSQL001', 'RCDUSODBSQL001A', 'RCIUSODBSQL002', 'RCTUSODBSQL001A') -- Need to chnage
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') -- Need to change
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+('ClassName',  '',  'pmedashboard'),
+('ProductUrl',  '',  @ProductUrl),
+('TitleId',  '',  'PME DashBoard'),
+('TitleUniqueId',  '',  '0A3D5C5D-B16E-4DAE-87EA-EDA0E9639FBF'),
+('IsNewTab',  '', '1'),
+('MetatagUniqueId',  '',  'PME Dashboard'),
+('IsResource',  '',  '1'),
+('IsFavorite',  '',  '0'),
+('LearnMore',  '',  'https://www.realpage.com/'),
+('ProductStatus',  'Show if the external application was configured for the dashboard user.',  '8'),
+('ShowInUserDetails',  'Should the product show in the New/Edit user pages',  '0'),
+('ShowInRolesAndRights',  'Should the product show in the Role/Rights page',  '1'),
+('ShowInAppSwitcher',  'Should the product show in the application switcher',  '0'),
+('ShowInUserListFilter',  'Should the product show in the user list product pick list',  '0'),
+('ProductAPIRequiresUser',  'Does the product require a user for api calls',  '0'),
+('LockOnProductAccess',  '',  '0'),
+('ProductNotAvailableForRegularUserNoEmail',  'Product Attribute for Product Not Available for Regular User No Email.',  '0');
+
+SELECT * FROM @ProductConfiguration
+
+IF @ServerName IN('RCDUSODBSQL001')
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName = 'RCTUSODBSQL001'
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCQUSODBSQL001', 'RCVEUSODBSQL001', 'RCDUSODBSQL001A', 'RCIUSODBSQL002', 'RCTUSODBSQL001A') -- Need to change
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') -- Need to change
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+SET @ProductID = 62;
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+EXEC Enterprise.ProductConfigurationSetup 
+     @ProductId, 
+     @LoginURI, 
+     @SigningCertificateThumbprint, 
+     @ProductConfiguration;
+
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
+
+GO
+-- To set Roles and Rights for product
+DECLARE @RightName nvarchar(200),
+              @RightDescription nvarchar(200),
+              @RightValue nvarchar(200),
+              @StatusTypeId int,
+              @OrgVisibilityStatusId INT = NULL,
+              @RightVisibilityStatusId INT =NULL,
+              @ProductId INT,
+              @TargetProductId int,
+              @UserId bigint,
+              @Now datetime = GETDATE(),
+              @RightId int,
+              @RoleId INT,
+              @OrgPartyId INT,
+              @SuperUserRoleId Int,
+              @ServerName SYSNAME = @@SERVERNAME;
+
+DECLARE @TargetRoleName TABLE (RoleName nvarchar(100))
+DECLARE @TargetOrganization TABLE (PartyId INT)
+DECLARE @HoldRoleId TABLE (RoleId int)
+DECLARE @HoldOrgPartyId TABLE (PartyId INT)
+DECLARE @HoldRouteId TABLE (RouteId INT)
+
+       SET @RightName = 'AccessPMEDashboard'; 
+       SET @RightDescription = 'Access to Help Center';
+       SET @RightValue = 'Access to Help Center';
+       SET @StatusTypeId = 13;
+       SET @RightVisibilityStatusId = 9;
+       SET @ProductId =3;
+       SET @TargetProductId = 3;
+
+       SELECT @UserId = UserId
+       FROM   Ident.UserLogin
+       WHERE  LoginName LIKE 'realpagead@%'
+       
+    IF NOT EXISTS (Select 1 From [Security].[Right] Where RightName = @RightName)
+    BEGIN
+        INSERT INTO [Security].[Right](  RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,     CreatedBy,CreatedDate)
+           VALUES ( @RightName,@RightDescription,@RightValue,@StatusTypeId, @RightVisibilityStatusId,@ProductId,@TargetProductId,@UserId,@Now)
+    END
+       
+    Select @SuperUserRoleId = RoleId from Security.Role Where ShortName = 'SuperUser'
+    Select @RightId = RightId From [Security].[Right] Where RightName = 'AccessPMEDashboard'
+
+    IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
+    BEGIN
+        INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
+           VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
+    END
+
+   
+GO
+	IF NOT EXISTS (Select 1 From Enterprise.ProductRight Where ProductId = 62)
+	BEGIN
+		Insert into Enterprise.ProductRight(ProductId,RightShortName,DependantProductId)
+		Select 62,'AccessPMEDashboard',NULL
+	END
+
+GO
 
 --Add New product setting
 GO
