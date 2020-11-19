@@ -2995,3 +2995,11 @@ BEGIN
 	update Enterprise.ProductSetting set Value ='Home Sharing' where ProductSettingId = @ProductSettingId
 END
 GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'Learnmore'
+
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 60 and ProductSettingTypeId = @ProductSettingTypeId and [Value] !='')
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = '' where ProductId = 60 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
