@@ -278,5 +278,9 @@
 		/// Hospitality as a Service
 		/// </summary>
 		public const string HospitalityService = "HAAS";
+		/// <summary>
+		///PMEDashboard
+		/// </summary>
+		public const string PMEDashboard = "PME";
 	}
 }

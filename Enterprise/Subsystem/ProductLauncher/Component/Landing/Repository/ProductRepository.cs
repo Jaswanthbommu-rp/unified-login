@@ -284,6 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.CIMPL
                             || r.ProductId == (int)ProductEnum.VendorMarketplace
                             || r.ProductId == (int)ProductEnum.HelpCenter
+                            || r.ProductId == (int)ProductEnum.PMEDasboard
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
@@ -317,6 +318,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.HelpCenter))
                     {
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.HelpCenter));
+                    }
+                }
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessPMEDashboard", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.PMEDasboard))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.PMEDasboard));
                     }
                 }
                 if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)) || _userClaim.RealPageEmployee)
@@ -530,7 +538,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             IsResource = true,
                             IsNewTab = true
                         }
-                );
+                    );
                 }
 
                 // need to follow up later when conversions is ready to be tested
