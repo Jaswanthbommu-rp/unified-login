@@ -93,6 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.IntelligentBuildingEnergy: return "intelligent-building-energy";
 				case ProductEnum.IntelligentBuildingWater: return "intelligent-building-water";
 				case ProductEnum.HospitalityService: return "hospitality-service";
+				case ProductEnum.PMEDasboard: return "product-updates";
 			}
 			return null;
 		}
@@ -612,7 +613,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Hospitality as a Service
 		/// </summary>
 		[Description("HAAS")]
-		HospitalityService = 60
+		HospitalityService = 60,
+		/// <summary>
+		/// PME Dashboard
+		/// </summary>
+		[Description("PME")]
+		PMEDasboard = 62
 	}
 
 	/// <summary>
