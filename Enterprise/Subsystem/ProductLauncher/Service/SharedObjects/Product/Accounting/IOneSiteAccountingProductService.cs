@@ -42,8 +42,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		event ValidateUserCompletedEventHandler ValidateUserCompleted;
         event getCompaniesAPICompletedEventHandler getCompaniesAPICompleted;        
         event getPropertiesAPICompletedEventHandler getPropertiesAPICompleted;
+		event GetAllPropertyGroupsCompletedEventHandler GetAllPropertyGroupsCompleted;
 
-        string AssignPropertiesToUser([XmlArrayItem(IsNullable = false)] NameValuePair[] User);
+		string AssignPropertiesToUser([XmlArrayItem(IsNullable = false)] NameValuePair[] User);
 		void AssignPropertiesToUserAsync(NameValuePair[] User);
 		void AssignPropertiesToUserAsync(NameValuePair[] User, object userState);
 		NameValuePair[] AssignRolePermissions([XmlElement("User")] User[] User, [XmlArrayItem(IsNullable = false)] RolePermission[] RolePermissions);
@@ -97,6 +98,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         LocationID[] GetAllProperties([XmlElement("Property")] Property[] Property, FilterSortParameters FilterSortParameters, [XmlElement("ResultParameters")] out TotalRows[] ResultParameters);
 		void GetAllPropertiesAsync(Property[] Property, FilterSortParameters FilterSortParameters);
 		void GetAllPropertiesAsync(Property[] Property, FilterSortParameters FilterSortParameters, object userState);
+		LocationGroupID[] GetAllPropertyGroups([XmlElement("Property")] Property[] Property, FilterSortParameters FilterSortParameters, [XmlElement("ResultParameters")] out TotalRows[] ResultParameters);
+		void GetAllPropertyGroupsAsync(Property[] Property, FilterSortParameters FilterSortParameters);
+		void GetAllPropertyGroupsAsync(Property[] Property, FilterSortParameters FilterSortParameters, object userState);
 		RoleName[] GetAllRoles([XmlElement("Role")] Role[] Role, FilterSortParameters FilterSortParameters, [XmlElement("ResultParameters")] out TotalRows[] ResultParameters);
 		void GetAllRolesAsync(Role[] Role, FilterSortParameters FilterSortParameters);
 		void GetAllRolesAsync(Role[] Role, FilterSortParameters FilterSortParameters, object userState);

@@ -15,6 +15,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         string DeleteAccountingUser(long editorPersonaId, long deletedPersona);
         //ListResponse GetAccountingUser(long editorPersonaId, long userPersonaId);
         ListResponse GetUserProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
+        ListResponse GetUserPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetUserPropertiesNew(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetUserCompanies(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
 

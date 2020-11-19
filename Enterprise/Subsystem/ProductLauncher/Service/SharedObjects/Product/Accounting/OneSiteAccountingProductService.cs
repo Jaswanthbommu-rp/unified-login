@@ -37,6 +37,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         private System.Threading.SendOrPostCallback GetAllPropertiesOperationCompleted;
 
+        private System.Threading.SendOrPostCallback GetAllPropertyGroupsOperationCompleted;
+
         private System.Threading.SendOrPostCallback GetUserPropertiesOperationCompleted;
 
         private System.Threading.SendOrPostCallback getCompaniesAPIOperationCompleted;
@@ -171,6 +173,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         /// <remarks/>
         public event GetUserPropertiesCompletedEventHandler GetUserPropertiesCompleted;
+
+        /// <remarks/>
+        public event GetAllPropertyGroupsCompletedEventHandler GetAllPropertyGroupsCompleted;
 
         /// <remarks/>
         public event getCompaniesAPICompletedEventHandler getCompaniesAPICompleted;
@@ -437,6 +442,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
             {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
                 this.GetAllPropertiesCompleted(this, new GetAllPropertiesCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://realpage.com/webservices/GetAllPropertyGroups", RequestNamespace = "http://realpage.com/webservices", ResponseNamespace = "http://realpage.com/webservices", Use = System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle = System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        [return: System.Xml.Serialization.XmlElementAttribute("Properties")]
+        public LocationGroupID[] GetAllPropertyGroups([System.Xml.Serialization.XmlElementAttribute("Property")] Property[] Property, FilterSortParameters FilterSortParameters, [System.Xml.Serialization.XmlElementAttribute("ResultParameters")] out TotalRows[] ResultParameters)
+        {
+            object[] results = this.Invoke("GetAllPropertyGroups", new object[] {
+                        Property,
+                        FilterSortParameters});
+            ResultParameters = ((TotalRows[])(results[1]));
+            return ((LocationGroupID[])(results[0]));
+        }
+
+        /// <remarks/>
+        public void GetAllPropertyGroupsAsync(Property[] Property, FilterSortParameters FilterSortParameters)
+        {
+            this.GetAllPropertyGroupsAsync(Property, FilterSortParameters, null);
+        }
+
+        /// <remarks/>
+        public void GetAllPropertyGroupsAsync(Property[] Property, FilterSortParameters FilterSortParameters, object userState)
+        {
+            if ((this.GetAllPropertyGroupsOperationCompleted == null))
+            {
+                this.GetAllPropertyGroupsOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetAllPropertyGroupsOperationCompleted);
+            }
+            this.InvokeAsync("GetAllPropertyGroups", new object[] {
+                        Property,
+                        FilterSortParameters}, this.GetAllPropertyGroupsOperationCompleted, userState);
+        }
+
+        private void OnGetAllPropertyGroupsOperationCompleted(object arg)
+        {
+            if ((this.GetAllPropertyGroupsCompleted != null))
+            {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetAllPropertyGroupsCompleted(this, new GetAllPropertyGroupsCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
 
@@ -2143,7 +2187,77 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
             }
         }
     }
-    
+
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.8.3752.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://realpage.com/webservices")]
+    public partial class LocationGroupID
+    {
+
+        private string idField;
+
+        private string nameField;
+
+        private string descriptionField;
+
+        private string assignedField;
+
+        /// <remarks/>
+        public string ID
+        {
+            get
+            {
+                return this.idField;
+            }
+            set
+            {
+                this.idField = value;
+            }
+        }
+
+        /// <remarks/>
+        public string Name
+        {
+            get
+            {
+                return this.nameField;
+            }
+            set
+            {
+                this.nameField = value;
+            }
+        }
+
+        /// <remarks/>
+        public string Description
+        {
+            get
+            {
+                return this.descriptionField;
+            }
+            set
+            {
+                this.descriptionField = value;
+            }
+        }
+
+        /// <remarks/>
+        public string Assigned
+        {
+            get
+            {
+                return this.assignedField;
+            }
+            set
+            {
+                this.assignedField = value;
+            }
+        }
+    }
+
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.3056.0")]
     [System.SerializableAttribute()]
@@ -3153,6 +3267,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
             {
                 this.RaiseExceptionIfNecessary();
                 return ((LocationID[])(this.results[0]));
+            }
+        }
+
+        /// <remarks/>
+        public TotalRows[] ResultParameters
+        {
+            get
+            {
+                this.RaiseExceptionIfNecessary();
+                return ((TotalRows[])(this.results[1]));
+            }
+        }
+    }
+
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.3752.0")]
+    public delegate void GetAllPropertyGroupsCompletedEventHandler(object sender, GetAllPropertyGroupsCompletedEventArgs e);
+
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.8.3752.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetAllPropertyGroupsCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs
+    {
+
+        private object[] results;
+
+        internal GetAllPropertyGroupsCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) :
+                base(exception, cancelled, userState)
+        {
+            this.results = results;
+        }
+
+        /// <remarks/>
+        public LocationGroupID[] Result
+        {
+            get
+            {
+                this.RaiseExceptionIfNecessary();
+                return ((LocationGroupID[])(this.results[0]));
             }
         }
 
