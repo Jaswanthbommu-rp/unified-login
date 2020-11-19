@@ -2987,4 +2987,19 @@ BEGIN
 END
 
 GO
+IF EXISTS (select 1 from Enterprise.Product where ProductId = 60 and Name ='Hospitality As A Service')
+BEGIN
+	DECLARE @ProductSettingId INT
+	update Enterprise.Product set Name = 'Home Sharing', Description='Home Sharing is a business initiative that creates a new and incremental revenue opportunity for RealPage clients (property owners), their residents and for RealPage by listing available residential units on platforms such as Airbnb and enabling short term rental bookings.' where ProductId = 60 and Name ='Hospitality As A Service'
+	select @ProductSettingId = ProductSettingId from Enterprise.ProductSetting where ProductId = 60 and ProductSettingTypeId in (select ProductSettingTypeId from Enterprise.ProductSettingType where ProductSettingTypeId = 5) 
+	update Enterprise.ProductSetting set Value ='Home Sharing' where ProductSettingId = @ProductSettingId
+END
+GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'Learnmore'
 
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 60 and ProductSettingTypeId = @ProductSettingTypeId and [Value] !='')
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = '' where ProductId = 60 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
