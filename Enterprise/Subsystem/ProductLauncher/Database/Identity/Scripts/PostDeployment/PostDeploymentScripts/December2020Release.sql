@@ -2983,7 +2983,7 @@ END
 GO
 IF EXISTS(select top 1 1 from enterprise.product where productid=48 and name = 'Payments')
 BEGIN
-	update enterprise.product set name = 'ClickPay' where productid=48
+	update enterprise.product set name = 'ClickPay', Description = 'ClickPay'  where productid=48
 END
 
 GO
@@ -3002,4 +3002,28 @@ IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 60 an
 BEGIN
  UPDATE ENTERPRISE.ProductSetting set Value = '' where ProductId = 60 and ProductSettingTypeId = @ProductSettingTypeId 
 END
+GO
+
+IF EXISTS(select top 1 1 from enterprise.ProductType where ProductTypeGuid = '52169FDA-5C23-495D-B626-8C78BE1CD11C')
+BEGIN
+	update Enterprise.ProductType set Name = 'ClickPay' where ProductTypeGuid = '52169FDA-5C23-495D-B626-8C78BE1CD11C'
+END
+
+GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'TitleId'
+
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId and [Value] !='')
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = 'ClickPay' where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'MetatagUniqueId'
+
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId and [Value] !='')
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = 'ClickPay' where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+
 GO
