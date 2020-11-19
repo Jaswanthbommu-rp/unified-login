@@ -18,5 +18,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string OrgType { get; set; }
 		[JsonProperty("orgsAssigned")]
 		public int OrgsAssignedCount { get; set; }
+		public bool IsAssigned { get; set; }
 	}
 }
