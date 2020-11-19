@@ -1273,17 +1273,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             try
             {
-                //Changing the product family for HAAS Product for Realpage Employee company
-                if (personaProductUserDetails.Count > 0 && _userClaim.OrganizationName.ToUpper().Equals("REALPAGE EMPLOYEE"))
-                {
-                    foreach (Solution solution in personaProductUserDetails)
-                    {
-                        if (solution.ProductId == (int)ProductEnum.HospitalityService && solution.FamilyId == 100)
-                        {
-                            solution.FamilyId = 600;
-                        }
-                    }
-                }
                 // If AO family exists then load solutions based on editor user
                 if (personaProductUserDetails.Any(c => c.ProductId == (int)ProductEnum.AssetOptimizer))
                 {
