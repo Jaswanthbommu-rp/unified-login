@@ -622,6 +622,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productPMLogic = ManageProductFactory.GetProductLogic(ProductEnum.PortfolioManagement, editorPersonaId, userPersonaId, _userClaims);
                     result = productPMLogic.GetProductPropertiesByGroup(propertyGroupId.ToString(), datafilter);
                     break;
+                case (int)ProductEnum.FinancialSuite:
+                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                    result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    break;
                 default:
                     break;
             }
