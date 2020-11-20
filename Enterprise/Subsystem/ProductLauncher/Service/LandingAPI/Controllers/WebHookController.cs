@@ -366,26 +366,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             {
                                 _manageBlueBook.AcknowledgeProvisioningEvent(centerEnablement);
                             }
-
                             break;
                         case "provisioning.upfmorder.cancel":                            
                             var productListToCancel = thinEvent.Payload?["company"]["productCenters"];
                             string companyInstanceSourceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
-                            var orgDetails = _manageOrganization.GetOrganization(new Guid(companyInstanceSourceId));
+                            if(string.IsNullOrEmpty(companyInstanceSourceId))
+							{
+                                WriteToLog(LogEventLevel.Error, $"companyInstanceSourceId should not be null or empty");
+                                return Request.CreateResponse(HttpStatusCode.BadRequest, $"Invalid companyInstanceSourceId");
+                            }
                             ProductCenterCancellation centerCancel = new ProductCenterCancellation() { Details = new List<ProductCenterCancellationSettings>() };
                             centerCancel.CancelledBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation";
-                            foreach (var product in productListToCancel)
-                            {
-                                var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product:(ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
-                                _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
-                                centerCancel.Details.Add(new ProductCenterCancellationSettings()
+                            var orgDetails = _manageOrganization.GetOrganization(new Guid(companyInstanceSourceId));                            
+                            if (orgDetails != null)                            
+                            {                                
+                                foreach (var product in productListToCancel)
                                 {
-                                    CompanyInstanceSourceId = companyInstanceSourceId,
-                                    PropertyInstanceSourceId =  null,
-                                    ProductCenterSourceId = product["productCenterSourceId"].ToString(),
-                                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-                                });
-                            }                         
+                                    if(product["productCenterSourceId"] != null && product["productCenterSourceId"].ToString() != "")
+                                    {
+                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
+                                        _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
+                                        centerCancel.Details.Add(new ProductCenterCancellationSettings()
+                                        {
+                                            CompanyInstanceSourceId = companyInstanceSourceId,
+                                            PropertyInstanceSourceId = null,
+                                            ProductCenterSourceId = product["productCenterSourceId"].ToString(),
+                                            Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                                        });
+                                    }
+                                    else
+                                    {
+                                        WriteToLog(LogEventLevel.Error, $"Invalid ProductCenterSourceId -  {product["productCenterSourceId"]}");
+                                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Invalid ProductCenterSourceId");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                WriteToLog(LogEventLevel.Error, $"Company {companyInstanceSourceId} not found");
+                                return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {companyInstanceSourceId} not found");
+                            }
                             if (centerCancel.Details.Count > 0)
                             {
                                 _manageBlueBook.AcknowledgeProvisioningCancelEvent(centerCancel);
