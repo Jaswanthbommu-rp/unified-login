@@ -1370,3 +1370,134 @@ GO
 	END
 
 GO
+
+--Add New product setting
+GO
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'DisableUsersOnProductCancel' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description ) values ( 'DisableUsersOnProductCancel', 'Disable all users on product provisioning cancel for a company')
+end
+-- AuthenticationType , Redirect, SAML, OpenIdCustom, NA
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist values 
+	(1,     'DisableUsersOnProductCancel',   '0'),
+	(2,     'DisableUsersOnProductCancel',   '0'),
+	(3,     'DisableUsersOnProductCancel',   '0'),
+	(4,     'DisableUsersOnProductCancel',   '0'),
+	(5,     'DisableUsersOnProductCancel',   '0'),
+	(6,     'DisableUsersOnProductCancel',   '0'),
+	(7,     'DisableUsersOnProductCancel',   '0'),
+	(8,     'DisableUsersOnProductCancel',   '0'),
+	(9,     'DisableUsersOnProductCancel',   '0'),
+	(10,     'DisableUsersOnProductCancel',   '0'),
+	(11,     'DisableUsersOnProductCancel',   '0'),
+	(12,     'DisableUsersOnProductCancel',   '0'),
+	(13,     'DisableUsersOnProductCancel',   '0'),
+	(14,     'DisableUsersOnProductCancel',   '0'),
+	(15,     'DisableUsersOnProductCancel',   '0'),
+	(16,     'DisableUsersOnProductCancel',   '0'),
+	(17,     'DisableUsersOnProductCancel',   '0'),
+	(18,     'DisableUsersOnProductCancel',   '0'),
+	(19,     'DisableUsersOnProductCancel',   '0'),
+	(20,     'DisableUsersOnProductCancel',   '0'),
+	(21,     'DisableUsersOnProductCancel',   '0'),
+	(22,     'DisableUsersOnProductCancel',   '0'),
+	(23,     'DisableUsersOnProductCancel',   '0'),
+	(24,     'DisableUsersOnProductCancel',   '0'),
+	(25,     'DisableUsersOnProductCancel',   '0'),
+	(26,     'DisableUsersOnProductCancel',   '0'),
+	(27,     'DisableUsersOnProductCancel',   '0'),
+	(28,     'DisableUsersOnProductCancel',   '0'),
+	(29,     'DisableUsersOnProductCancel',   '0'),
+	(30,     'DisableUsersOnProductCancel',   '0'),
+	(31,     'DisableUsersOnProductCancel',   '0'),
+	(32,     'DisableUsersOnProductCancel',   '0'),
+	(33,     'DisableUsersOnProductCancel',   '0'),
+	(34,     'DisableUsersOnProductCancel',   '0'),
+	(35,     'DisableUsersOnProductCancel',   '0'),
+	(36,     'DisableUsersOnProductCancel',   '0'),
+	(37,     'DisableUsersOnProductCancel',   '0'),
+	(38,     'DisableUsersOnProductCancel',   '0'),
+	(39,     'DisableUsersOnProductCancel',   '0'),
+	(40,     'DisableUsersOnProductCancel',   '0'),
+	(41,     'DisableUsersOnProductCancel',   '0'),
+	(42,     'DisableUsersOnProductCancel',   '0'),
+	(43,     'DisableUsersOnProductCancel',   '0'),
+	(44,     'DisableUsersOnProductCancel',   '0'),
+	(45,     'DisableUsersOnProductCancel',   '0'),
+	(46,     'DisableUsersOnProductCancel',   '0'),
+	(47,     'DisableUsersOnProductCancel',   '0'),
+	(48,     'DisableUsersOnProductCancel',   '0'),
+	(49,     'DisableUsersOnProductCancel',   '0'),
+	(50,     'DisableUsersOnProductCancel',   '0'),
+	(51,     'DisableUsersOnProductCancel',   '0'),
+	(52,     'DisableUsersOnProductCancel',   '0'),
+	(53,     'DisableUsersOnProductCancel',   '0'),
+	(54,     'DisableUsersOnProductCancel',   '0'),
+	(55,     'DisableUsersOnProductCancel',   '0'),
+	(56,     'DisableUsersOnProductCancel',   '0'),
+	(57,     'DisableUsersOnProductCancel',   '0'),
+	(58,     'DisableUsersOnProductCancel',   '0'),
+	(59,     'DisableUsersOnProductCancel',   '0'),
+	(60,     'DisableUsersOnProductCancel',   '0')
+
+
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+GO

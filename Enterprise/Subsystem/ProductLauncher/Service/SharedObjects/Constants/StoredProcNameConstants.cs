@@ -156,6 +156,7 @@
         public const string SP_CreateOrganizationDomain = "Enterprise.CreateOrganizationDomain";
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
         public const string SP_ListCompanySetup = "Enterprise.GetCompanyList";
+        public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
 
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
