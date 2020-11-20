@@ -1,7 +1,7 @@
 --EXEC Enterprise.DisableUsersForProduct 1,350
 CREATE PROCEDURE Enterprise.DisableUsersForProduct
 (
-	@PartyId int,
+	@PartyId bigint,
 	@ProductId int	
 )
 AS
