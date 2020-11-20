@@ -30,11 +30,11 @@ BEGIN
 					FROM   
 					Ident.UserLogin UL  
 					INNER JOIN Enterprise.Party P ON UL.PersonPartyId = P.PartyId 
-					INNER JOIN Ident.UserLoginPersona ULP ON UL.UserId = ULP.UserLoginId AND ULP.OrganizationPartyId = 350
+					INNER JOIN Ident.UserLoginPersona ULP ON UL.UserId = ULP.UserLoginId AND ULP.OrganizationPartyId = @PartyId
 					INNER JOIN Person.Persona PA ON PA.UserLoginPersonaId = ULP.UserLoginPersonaId
 	  
 				) UL ON CONVERT(VARCHAR(40), UL.RealPageId) = MS.Value  
-		WHERE O.PartyId = 350 
+		WHERE O.PartyId = @PartyId 
 			AND	 MCT.Name = 'Organization'  
 			AND MST.Name = 'RealPageEmployeeAccessID'
 
