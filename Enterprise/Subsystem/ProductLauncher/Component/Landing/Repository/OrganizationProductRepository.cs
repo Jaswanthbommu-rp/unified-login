@@ -107,5 +107,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			return removeProductOrganization;
 		}
 
+
+		/// <summary>
+		/// Used to delete users for product for an Organization
+		/// </summary>
+		/// <param name="partyId">The organization id for the product</param>
+		/// <param name="product">The product Id</param>
+		/// <returns></returns>
+		public RepositoryResponse DisableUsersForProduct(long partyId, ProductEnum product)
+		{
+			RepositoryResponse removeUsersForProduct = new RepositoryResponse();
+
+			using (var repository = GetRepository())
+			{
+				repository.UnitOfWork.BeginTransaction();
+				try
+				{
+					dynamic paramNewOrg = new
+					{
+						PartyId = partyId,
+						ProductId = (int)product,
+					};
+
+					removeUsersForProduct = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DisableUsersForProduct, paramNewOrg);
+				}
+				catch (Exception exception)
+				{
+					repository.UnitOfWork.Rollback();
+					removeUsersForProduct.ErrorMessage = "Failed to remove product from organization";
+				}
+				repository.UnitOfWork.Commit();
+			}
+			// there was nothing to delete so the response was null
+			if (removeUsersForProduct == null)
+			{
+				removeUsersForProduct = new RepositoryResponse();
+			}
+			return removeUsersForProduct;
+		}
+
 	}
 }
