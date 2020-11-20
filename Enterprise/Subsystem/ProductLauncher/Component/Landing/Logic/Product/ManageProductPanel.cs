@@ -391,6 +391,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.UnifiedUI:
                     case (int)ProductEnum.VendorMarketplace:
                     case (int)ProductEnum.Yieldstar:
+                    case (int)ProductEnum.PMEDasboard:
                         //pending implementation
                         throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     default:

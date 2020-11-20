@@ -156,6 +156,7 @@
         public const string SP_CreateOrganizationDomain = "Enterprise.CreateOrganizationDomain";
 		public const string SP_ListProductUsersForOrganization = "Enterprise.ListProductUsersForOrganization";
         public const string SP_ListCompanySetup = "Enterprise.GetCompanyList";
+        public const string SP_DisableUsersForProduct = "Enterprise.DisableUsersForProduct";
 
         //PartyRelationship
         public const string SP_GetPartyRelationshipByRealPageId = "Enterprise.GetPartyRelationshipByRealPageId";
@@ -193,7 +194,7 @@
         public const string SP_ListProductsByPersonaId = "Enterprise.ListProductsByPersonaId";
         public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
 
-        public const string SP_GetProductsByPersonaId = "Person.GetProductsByPersonaId";
+        public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
 
         //Remove
         public const string SP_ListProductTypes = "Enterprise.ListProductTypes";
