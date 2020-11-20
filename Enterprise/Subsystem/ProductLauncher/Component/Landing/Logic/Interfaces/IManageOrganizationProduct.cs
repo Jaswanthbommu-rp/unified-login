@@ -36,5 +36,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="thruDate"></param>
 		/// <returns></returns>
 		IRepositoryResponse InsertUpdateOrganizationProduct(long partyId, ProductEnum product, int? configurationId, DateTime? fromDate, DateTime? thruDate);
+
+		/// <summary>
+		/// Used to delete users for product for an Organization
+		/// </summary>
+		/// <param name="partyId">The organization id for the product</param>
+		/// <param name="product">The product</param>
+		/// <returns></returns>
+		IRepositoryResponse DisableUsersForProduct(long partyId, ProductEnum product);
 	}
 }
