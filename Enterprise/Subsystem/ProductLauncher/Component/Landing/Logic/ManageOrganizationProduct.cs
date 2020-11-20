@@ -85,6 +85,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			return _organizationProductRepository.DeleteOrganizationProduct(partyId, product);
 		}
 
+		/// <summary>
+		/// Used to delete users for product for an Organization
+		/// </summary>
+		/// <param name="partyId">The organization id for the product</param>
+		/// <param name="product">The product Id</param>
+		/// <returns></returns>
+		public IRepositoryResponse DisableUsersForProduct(long partyId, ProductEnum product)
+		{
+			return _organizationProductRepository.DisableUsersForProduct(partyId, product);
+		}
+
 		#endregion
 	}
 }
