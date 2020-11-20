@@ -1,3 +1,8 @@
+GO
+UPDATE [Enterprise].[Product] 
+  SET [Name] =  'Unified Data Management' WHERE [Name] = 'Master Data Management' AND ProductId = 24
+GO
+
 /*This script is to update 'Access to Site Spend Management only', to 'Site user'*/
 UPDATE [UserManagement].[Control]
 SET DisplayName = 'Site user' WHERE DisplayName = 'Access to Site Spend Management only'
