@@ -92,7 +92,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.IntelligentBuildingTrash: return "intelligent-building-trash";
 				case ProductEnum.IntelligentBuildingEnergy: return "intelligent-building-energy";
 				case ProductEnum.IntelligentBuildingWater: return "intelligent-building-water";
-				case ProductEnum.HospitalityService: return "hospitality-service";
+				case ProductEnum.HospitalityService: return "resident-services"; // Temp image until product has defined their final production
 				case ProductEnum.PMEDasboard: return "product-updates";
 			}
 			return null;
