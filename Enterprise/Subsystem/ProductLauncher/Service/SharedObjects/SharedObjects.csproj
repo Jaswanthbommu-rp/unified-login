@@ -153,6 +153,7 @@
     <Compile Include="BlackBook\InstanceAddress.cs" />
     <Compile Include="BlackBook\InstanceAttribute.cs" />
     <Compile Include="BlackBook\InstancePhone.cs" />
+    <Compile Include="BlackBook\ProductCenterCancel.cs" />
     <Compile Include="BlackBook\ProductCenterEnablement.cs" />
     <Compile Include="BlackBook\PropertyInstance.cs" />
     <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
