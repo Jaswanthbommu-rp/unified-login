@@ -333,11 +333,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var translatedData = _blueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, _udmSourceCode);
 				if (translatedData != null)
 				{
+					var productCode = booksProductDetail.UDMSourceCode == null ? booksProductDetail.BooksProductCode : booksProductDetail.UDMSourceCode;
 					foreach (var attributs in translatedData.Data.Attributes)
 					{
 						foreach (var propertyData in attributs.TranslatedPropertyInstances)
 						{
-							if (propertyData.Source == booksProductDetail.BooksProductCode)
+							if (propertyData.Source == productCode)
 							{
 								var translatedProductProperty = userPropertyList.FirstOrDefault(u => u.InstanceId == attributs.PropertyInstanceSourceId);
 								if (translatedProductProperty != null)
