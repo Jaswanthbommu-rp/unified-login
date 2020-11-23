@@ -240,30 +240,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				var user = GetProductUser();
 				productUserOrgRoleList = user.OrganizationRoles;
-
-				foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
+				if(changedUserRolePropertiesRegion.OrganizationRoleList != null)
 				{
-					if (changedUserOrgRoles.IsAssigned)
+					foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
 					{
-						if (!productUserOrgRoleList.Exists(x =>
-							x.OrganizationId == changedUserOrgRoles.OrganizationId &&
-							x.RoleId == changedUserOrgRoles.RoleId))
+						if (changedUserOrgRoles.IsAssigned)
 						{
-							// add new role
-							productUserOrgRoleList.Add(new OrganizationRole
+							if (!productUserOrgRoleList.Exists(x =>
+								x.OrganizationId == changedUserOrgRoles.OrganizationId &&
+								x.RoleId == changedUserOrgRoles.RoleId))
 							{
-								OrganizationId = changedUserOrgRoles.OrganizationId,
-								RoleId = changedUserOrgRoles.RoleId
-							});
+								// add new role
+								productUserOrgRoleList.Add(new OrganizationRole
+								{
+									OrganizationId = changedUserOrgRoles.OrganizationId,
+									RoleId = changedUserOrgRoles.RoleId
+								});
+							}
+						}
+						else if (!changedUserOrgRoles.IsAssigned)
+						{
+							// remove role
+							//productUserOrgRoleList.Remove(changedUserOrgRoles);
+							productUserOrgRoleList.RemoveAll(x => x.OrganizationId == changedUserOrgRoles.OrganizationId && x.RoleId == changedUserOrgRoles.RoleId);
 						}
 					}
-					else if (!changedUserOrgRoles.IsAssigned)
-					{
-                        // remove role
-                        //productUserOrgRoleList.Remove(changedUserOrgRoles);
-                        productUserOrgRoleList.RemoveAll(x => x.OrganizationId == changedUserOrgRoles.OrganizationId && x.RoleId == changedUserOrgRoles.RoleId);
-                    }
-				}
+				}				
 			}
 			else
 			{
@@ -291,18 +293,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
 			{
-
-                //if(productUser.OrganizationRoles == null)
-                //{
-                //   var roles = GetProductRoles(null, "").Records.Cast<ClickPayRole>();
-                //   var role = roles.FirstOrDefault(x => x.Name.ToUpperInvariant() == "MANAGEMENT SUPER ADMIN");
-                    
-                //    var orgrole = new OrganizationRole() { OrganizationId = productUser.CompanyId, RoleId = role.Id, IsAssigned = true };
-                //    productUser.OrganizationRoles = new List<OrganizationRole>();
-                //    productUser.OrganizationRoles.Add(orgrole);
-                //}
-
-                ApplySuperUserData(productUser);
+				var roles = GetProductRoles(null, "").Records.Cast<ClickPayRole>();
+				var role = roles.FirstOrDefault(x => x.Name.ToUpperInvariant() == "MANAGEMENT ADMIN");
+				var orgrole = new OrganizationRole() { OrganizationId = productUser.CompanyId, RoleId = role.Id, IsAssigned = true };
+				productUser.OrganizationRoles = new List<OrganizationRole>();
+				productUser.OrganizationRoles.Add(orgrole);
+				ApplySuperUserData(productUser);
 			}
 
 			return productUser;
@@ -417,7 +413,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			clickpayProductUser.Email = SubjectUserDetails.Email;
 			clickpayProductUser.PhoneNumbers = SubjectUserDetails.PhoneNumbers;
 			clickpayProductUser.Phone = SubjectUserDetails.PhoneNumber;
-			clickpayProductUser.IsActive = Convert.ToBoolean(SubjectUserDetails.IsActive);
+			clickpayProductUser.IsActive = true;
 			clickpayProductUser.UserId = SubjectUserDetails.ProductUserId;
 			clickpayProductUser.CompanyId = CompanyInstanceSourceId;
 
