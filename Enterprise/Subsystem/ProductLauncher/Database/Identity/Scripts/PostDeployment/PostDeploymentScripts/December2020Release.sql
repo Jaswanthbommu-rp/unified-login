@@ -1628,3 +1628,37 @@ begin
 	set @Current_ID = @Current_ID + 1
 end
 GO
+ DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @ProductId int = 3,
+		 @TargetProductId int = 60,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT =9,
+		 @StatusTypeId int=13;
+		
+
+ 
+	
+	--UserId
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] ='Manage Home Sharing Product Access')
+BEGIN 
+		INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+		VALUES('ManageHomeSharingProductAccess','Manage Home Sharing Product Access','Manage Home Sharing Product Access',@StatusTypeId,@RightVisibilityStatusId,@ProductId ,@TargetProductId,@UserId,@Now)
+
+		SELECT @RoleId = RoleId from [Security].[Role] where RoleName='User Administrator'
+		SELECT @RightId =  RightId from [Security].[Right] where [Value] = 'Manage Home Sharing Product Access' 
+		IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE [RightId]= @RightId)
+		BEGIN
+		 INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@RoleId,@RightId,@UserId,@Now)
+		END
+END
+GO
