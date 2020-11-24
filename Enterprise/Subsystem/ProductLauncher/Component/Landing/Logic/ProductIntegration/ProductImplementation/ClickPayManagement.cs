@@ -68,7 +68,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             item.OrgsAssignedCount = user.OrganizationRoles.FindAll(f => f.RoleId == item.Id).Count;
 							if (item.OrgsAssignedCount > 0)
+							{
 								item.IsAssigned = true;
+								var selectedItemsObj = GetProductOrganizations(item.Id, item.OrgType, null).Records;
+								//item.SelectedItems = new List<ClickPaySelectedItems>();
+								item.SelectedItems = selectedItemsObj.Cast<ClickPayOrganization>().Where(x => x.IsAssigned == true)
+													.Select(y => new ClickPaySelectedItems() { Id = y.Id, Value = y.IsAssigned })
+													.ToList();
+
+							}
+								
                         }
 
                     }
