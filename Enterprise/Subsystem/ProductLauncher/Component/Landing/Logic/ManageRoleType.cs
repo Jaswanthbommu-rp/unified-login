@@ -102,7 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (userOrganization != null && userPersonaOrganizationList.ToList().Count(u => u.BooksCustomerMasterId == userOrganization.BooksCustomerMasterId) > 1) 
                     {
                         var currentOrganizationPartyRecord = userPersonaOrganizationList.Where(i => i.OrganizationPartyId.Equals(partyId)).FirstOrDefault();
-                        if (currentOrganizationPartyRecord != null && currentOrganizationPartyRecord.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser))
+                        if ((userOrganization.BooksCustomerMasterId != orgMasterId) || (currentOrganizationPartyRecord != null && currentOrganizationPartyRecord.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)))
                         {
                             roleTypeList = roleTypeList.ToList().Where(r => r.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser)).ToList();
                         }
