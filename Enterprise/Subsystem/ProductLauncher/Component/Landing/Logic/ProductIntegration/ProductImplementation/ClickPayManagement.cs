@@ -68,7 +68,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             item.OrgsAssignedCount = user.OrganizationRoles.FindAll(f => f.RoleId == item.Id).Count;
 							if (item.OrgsAssignedCount > 0)
+							{
 								item.IsAssigned = true;
+								var selectedItemsObj = GetProductOrganizations(item.Id, item.OrgType, null).Records;
+								//item.SelectedItems = new List<ClickPaySelectedItems>();
+								item.SelectedItems = selectedItemsObj.Cast<ClickPayOrganization>().Where(x => x.IsAssigned == true)
+													.Select(y => new ClickPaySelectedItems() { Id = y.Id, Value = y.IsAssigned })
+													.ToList();
+
+							}
+								
                         }
 
                     }
@@ -240,30 +249,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				var user = GetProductUser();
 				productUserOrgRoleList = user.OrganizationRoles;
-
-				foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
+				if(changedUserRolePropertiesRegion.OrganizationRoleList != null)
 				{
-					if (changedUserOrgRoles.IsAssigned)
+					foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
 					{
-						if (!productUserOrgRoleList.Exists(x =>
-							x.OrganizationId == changedUserOrgRoles.OrganizationId &&
-							x.RoleId == changedUserOrgRoles.RoleId))
+						if (changedUserOrgRoles.IsAssigned)
 						{
-							// add new role
-							productUserOrgRoleList.Add(new OrganizationRole
+							if (!productUserOrgRoleList.Exists(x =>
+								x.OrganizationId == changedUserOrgRoles.OrganizationId &&
+								x.RoleId == changedUserOrgRoles.RoleId))
 							{
-								OrganizationId = changedUserOrgRoles.OrganizationId,
-								RoleId = changedUserOrgRoles.RoleId
-							});
+								// add new role
+								productUserOrgRoleList.Add(new OrganizationRole
+								{
+									OrganizationId = changedUserOrgRoles.OrganizationId,
+									RoleId = changedUserOrgRoles.RoleId
+								});
+							}
+						}
+						else if (!changedUserOrgRoles.IsAssigned)
+						{
+							// remove role
+							//productUserOrgRoleList.Remove(changedUserOrgRoles);
+							productUserOrgRoleList.RemoveAll(x => x.OrganizationId == changedUserOrgRoles.OrganizationId && x.RoleId == changedUserOrgRoles.RoleId);
 						}
 					}
-					else if (!changedUserOrgRoles.IsAssigned)
-					{
-                        // remove role
-                        //productUserOrgRoleList.Remove(changedUserOrgRoles);
-                        productUserOrgRoleList.RemoveAll(x => x.OrganizationId == changedUserOrgRoles.OrganizationId && x.RoleId == changedUserOrgRoles.RoleId);
-                    }
-				}
+				}				
 			}
 			else
 			{
@@ -291,18 +302,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (SubjectUserDetails.UserRoleTypeId == (int)UserRoleType.SuperUser)
 			{
-
-                //if(productUser.OrganizationRoles == null)
-                //{
-                //   var roles = GetProductRoles(null, "").Records.Cast<ClickPayRole>();
-                //   var role = roles.FirstOrDefault(x => x.Name.ToUpperInvariant() == "MANAGEMENT SUPER ADMIN");
-                    
-                //    var orgrole = new OrganizationRole() { OrganizationId = productUser.CompanyId, RoleId = role.Id, IsAssigned = true };
-                //    productUser.OrganizationRoles = new List<OrganizationRole>();
-                //    productUser.OrganizationRoles.Add(orgrole);
-                //}
-
-                ApplySuperUserData(productUser);
+				var roles = GetProductRoles(null, "").Records.Cast<ClickPayRole>();
+				var role = roles.FirstOrDefault(x => x.Name.ToUpperInvariant() == "MANAGEMENT ADMIN");
+				var orgrole = new OrganizationRole() { OrganizationId = productUser.CompanyId, RoleId = role.Id, IsAssigned = true };
+				productUser.OrganizationRoles = new List<OrganizationRole>();
+				productUser.OrganizationRoles.Add(orgrole);
+				ApplySuperUserData(productUser);
 			}
 
 			return productUser;
@@ -417,7 +422,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			clickpayProductUser.Email = SubjectUserDetails.Email;
 			clickpayProductUser.PhoneNumbers = SubjectUserDetails.PhoneNumbers;
 			clickpayProductUser.Phone = SubjectUserDetails.PhoneNumber;
-			clickpayProductUser.IsActive = Convert.ToBoolean(SubjectUserDetails.IsActive);
+			clickpayProductUser.IsActive = true;
 			clickpayProductUser.UserId = SubjectUserDetails.ProductUserId;
 			clickpayProductUser.CompanyId = CompanyInstanceSourceId;
 
@@ -462,5 +467,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
+		/// <summary>
+		/// Create or update product user
+		/// Gets called from Product-Batch
+		/// </summary> 
+		public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+		{
+			string result;
+
+			WriteToDiagnosticLog(
+				$"ClickPayManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+
+			// Get product user object 
+			var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
+
+			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+			{
+				WriteToDiagnosticLog(
+					$"ClickPayManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+
+				//Handle MultiCompany User
+				// get a login name that isn't in use for the new user
+				bool foundUserName = false;
+				int incrementor = 0;
+				string loginNameToCheck = newProductUser.LoginName;
+
+				// give up after 10 tries
+				while (!foundUserName)
+				{
+					if (CheckUserExistInProduct(loginNameToCheck))
+					{
+						incrementor++;
+						string[] loginNameSubStrings = loginNameToCheck.Split('@');
+						loginNameToCheck = loginNameSubStrings.Length == 2 ?
+											 string.Concat(loginNameSubStrings[0], incrementor.ToString(), "@", loginNameSubStrings[1]) :
+											 string.Concat(loginNameSubStrings[0], incrementor.ToString());
+					}
+					else
+					{
+						foundUserName = true;
+						newProductUser.LoginName = loginNameToCheck;
+
+						WriteToDiagnosticLog($"ClickPayManagement - generated loginName = {loginNameToCheck}");
+					}
+
+					if (incrementor == 10)
+					{
+						// after 10 tries something might be wrong, so bail out.
+						WriteToErrorLog($"ClickPayManagement - Error checking for username in use {loginNameToCheck}");
+						return "An error occurred. Unable to get username.";
+					}
+				}
+
+				// Create User
+				result = CreateUser(newProductUser);
+
+			}
+			else
+			{
+				WriteToDiagnosticLog(
+					$"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+				// Update user with Id/Login from product
+				newProductUser.UserId = SubjectUserDetails.ProductUserId;
+				newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+
+				result = UpdateUser(newProductUser, batchProcessType);
+			}
+
+			return result;
+		}
 	}
 }
