@@ -1661,3 +1661,34 @@ BEGIN
 		END
 END
 GO
+
+DECLARE @ControlId int,
+        @Now Datetime = GETDate();
+
+IF EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessPropertiesTabUIId')
+BEGIN
+  SELECT @ControlId=ControlId FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessPropertiesTabUIId'
+  select @ControlId
+  IF NOT EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessAllowCurrentandFuturePropertiesSwitchUIId')
+  BEGIN
+	   INSERT INTO [UserManagement].[Control] Values(@ControlId,1,'ILMLeadManagementProductAccessAllowCurrentandFuturePropertiesSwitchUIId',
+	   'Assign current and new properties automatically','allProperties',1, 480, @Now)
+	  select @ControlId
+	  UPDATE  UserManagement.[Control] SET  Sequence=2 WHERE UIId='ILMLeadManagementProductAccessPropertiesMultiSelectGridUIId'
+  END
+ 
+END
+
+IF EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessPropertiesTabUIId')
+BEGIN
+  SELECT @ControlId=ControlId FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessPropertiesTabUIId'
+  IF NOT EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessAllowCurrentandFuturePropertiesSwitchUIId')
+  BEGIN
+	   INSERT INTO [UserManagement].[Control] Values(@ControlId,1,'ILMLeasingAnalyticsProductAccessAllowCurrentandFuturePropertiesSwitchUIId',
+	   'Assign current and new properties automatically','allProperties',1, 480, @Now)
+	  select @ControlId
+	  UPDATE  UserManagement.[Control] SET  Sequence=2 WHERE UIId='ILMLeasingAnalyticsProductAccessPropertiesMultiSelectGridUIId'
+  END
+ 
+END
+GO
