@@ -304,6 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     $"ManageProductInvokerBase.GetProductProperties - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
 
+                Dictionary<string, bool> additionalData = new Dictionary<string, bool>();
                 var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
 
                 WriteToDiagnosticLog(
@@ -324,6 +325,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if (user != null && user.Properties != null)
                         {
+                            if (user.Properties.Contains("all"))
+                            {
+                                additionalData.Add("allProperties", true);
+                            }
                             var userProperties = user.Properties.ConvertAll(p => p.ToUpper());
                             MergeUserProperties(propertyList, userProperties);
                         }
@@ -339,7 +344,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     TotalRows = propertyList.Count,
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
-                    TotalPages = 1
+                    TotalPages = 1,
+                    Additional = additionalData
                 };
             }
             catch (Exception ex)
