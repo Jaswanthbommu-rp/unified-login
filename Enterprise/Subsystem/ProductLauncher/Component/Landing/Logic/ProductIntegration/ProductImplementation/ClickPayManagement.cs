@@ -244,34 +244,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 		protected override IntegrationProductUser GenerateProductUserObject(ProductUserRolePropertiesGroups changedUserRolePropertiesRegion)
 		{
-			List<OrganizationRole> productUserOrgRoleList;
+			List<OrganizationRole> productUserOrgRoleList = new List<OrganizationRole>(); ;
 			if (!string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
 			{
 				var user = GetProductUser();
-				productUserOrgRoleList = user.OrganizationRoles;
 				if(changedUserRolePropertiesRegion.OrganizationRoleList != null)
 				{
 					foreach (var changedUserOrgRoles in changedUserRolePropertiesRegion.OrganizationRoleList)
 					{
 						if (changedUserOrgRoles.IsAssigned)
 						{
-							if (!productUserOrgRoleList.Exists(x =>
-								x.OrganizationId == changedUserOrgRoles.OrganizationId &&
-								x.RoleId == changedUserOrgRoles.RoleId))
+							productUserOrgRoleList.Add(new OrganizationRole
 							{
-								// add new role
-								productUserOrgRoleList.Add(new OrganizationRole
-								{
-									OrganizationId = changedUserOrgRoles.OrganizationId,
-									RoleId = changedUserOrgRoles.RoleId
-								});
-							}
-						}
-						else if (!changedUserOrgRoles.IsAssigned)
-						{
-							// remove role
-							//productUserOrgRoleList.Remove(changedUserOrgRoles);
-							productUserOrgRoleList.RemoveAll(x => x.OrganizationId == changedUserOrgRoles.OrganizationId && x.RoleId == changedUserOrgRoles.RoleId);
+								OrganizationId = changedUserOrgRoles.OrganizationId,
+								RoleId = changedUserOrgRoles.RoleId
+							});
 						}
 					}
 				}				
