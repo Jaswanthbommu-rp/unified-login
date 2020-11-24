@@ -467,5 +467,74 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
+		/// <summary>
+		/// Create or update product user
+		/// Gets called from Product-Batch
+		/// </summary> 
+		public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+		{
+			string result;
+
+			WriteToDiagnosticLog(
+				$"ClickPayManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+
+			// Get product user object 
+			var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
+
+			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
+			{
+				WriteToDiagnosticLog(
+					$"ClickPayManagement.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+
+				//Handle MultiCompany User
+				// get a login name that isn't in use for the new user
+				bool foundUserName = false;
+				int incrementor = 0;
+				string loginNameToCheck = newProductUser.LoginName;
+
+				// give up after 10 tries
+				while (!foundUserName)
+				{
+					if (CheckUserExistInProduct(loginNameToCheck))
+					{
+						incrementor++;
+						string[] loginNameSubStrings = loginNameToCheck.Split('@');
+						loginNameToCheck = loginNameSubStrings.Length == 2 ?
+											 string.Concat(loginNameSubStrings[0], incrementor.ToString(), "@", loginNameSubStrings[1]) :
+											 string.Concat(loginNameSubStrings[0], incrementor.ToString());
+					}
+					else
+					{
+						foundUserName = true;
+						newProductUser.LoginName = loginNameToCheck;
+
+						WriteToDiagnosticLog($"ClickPayManagement - generated loginName = {loginNameToCheck}");
+					}
+
+					if (incrementor == 10)
+					{
+						// after 10 tries something might be wrong, so bail out.
+						WriteToErrorLog($"ClickPayManagement - Error checking for username in use {loginNameToCheck}");
+						return "An error occurred. Unable to get username.";
+					}
+				}
+
+				// Create User
+				result = CreateUser(newProductUser);
+
+			}
+			else
+			{
+				WriteToDiagnosticLog(
+					$"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductType} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+				// Update user with Id/Login from product
+				newProductUser.UserId = SubjectUserDetails.ProductUserId;
+				newProductUser.LoginName = SubjectUserDetails.ProductUserName;
+
+				result = UpdateUser(newProductUser, batchProcessType);
+			}
+
+			return result;
+		}
 	}
 }
