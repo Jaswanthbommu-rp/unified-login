@@ -1831,3 +1831,18 @@ BEGIN
 	update enterprise.product set  Description = 'Payments - Open Market Solution'  where productid=48
 END
 GO
+
+IF EXISTS(SELECT * FROM [Security].[Right] WHERE RightName ='HelpCenterContactSupport')
+BEGIN
+  ---RENAME Right name
+	  IF NOT EXISTS(SELECT * FROM [Security].[Right] WHERE [Value] ='Simon Help Center Contact Support')
+		BEGIN  
+		   UPDATE [Security].[Right] SET [Value] ='Simon Help Center Contact Support'
+			WHERE RightName ='HelpCenterContactSupport'
+		END
+	-- Visiable across All PMCs
+	UPDATE [Security].[Right] SET VisibilityStatusId = 9
+    WHERE RightName ='HelpCenterContactSupport'
+
+END
+GO
