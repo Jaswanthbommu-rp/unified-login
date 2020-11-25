@@ -1666,3 +1666,15 @@ BEGIN
  
 END
 GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'Learnmore'
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId)
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = 'https://site.clickpay.com/for-property-managers/' where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
+IF EXISTS(select top 1 1 from enterprise.product where productid=48)
+BEGIN
+	update enterprise.product set  Description = 'Payments - Open Market Solution'  where productid=48
+END
+GO
