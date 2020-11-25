@@ -262,6 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 					}
 				}
+			}
 			else
 			{
 				productUserOrgRoleList = changedUserRolePropertiesRegion.OrganizationRoleList;
