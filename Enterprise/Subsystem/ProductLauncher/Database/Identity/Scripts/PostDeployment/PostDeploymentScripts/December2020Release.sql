@@ -1861,8 +1861,8 @@ SELECT	@UserId = UserId
 IF EXISTS (SELECT TOP 1 1 FROM Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter')
 BEGIN
 	select @RightId = RightId from Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter'
-	UPDATE Security.[Right] SET [Value] = 'Access to Simon Help Center' WHERE RightId = @RightId
 	
+	UPDATE Security.[Right] SET [Description] = 'Access to Simon Help Center', [Value] = 'Access to Simon Help Center' WHERE RightId = @RightId
 	select @BasicEndUserRoleId = RoleId from security.role where rolename = 'Basic End User' and OrgPartyID IS NULL
 	
 	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @BasicEndUserRoleId AND @RightId = RightId)
@@ -1887,5 +1887,11 @@ BEGIN
 		 VALUES(@UserAdminRoleId,@RightId,@UserId,@Now)
 	END
 
+END
+GO
+
+IF EXISTS(select top 1 1 from Enterprise.Product where productid = 49 and Name='Help Center')
+BEGIN
+    update Enterprise.Product set [Name] = 'Simon Help Center', [Description] = 'Simon Help Center' where ProductId = 49
 END
 GO
