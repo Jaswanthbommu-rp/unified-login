@@ -1335,8 +1335,8 @@ DECLARE @HoldOrgPartyId TABLE (PartyId INT)
 DECLARE @HoldRouteId TABLE (RouteId INT)
 
        SET @RightName = 'AccessPMEDashboard'; 
-       SET @RightDescription = 'Access to Help Center';
-       SET @RightValue = 'Access to Help Center';
+       SET @RightDescription = 'Access to PME Dashboard';
+       SET @RightValue = 'Access to PME Dashboard';
        SET @StatusTypeId = 13;
        SET @RightVisibilityStatusId = 9;
        SET @ProductId =3;
@@ -1843,6 +1843,48 @@ BEGIN
 	-- Visiable across All PMCs
 	UPDATE [Security].[Right] SET VisibilityStatusId = 9
     WHERE RightName ='HelpCenterContactSupport'
+
+END
+GO
+DECLARE @RightId INT,
+		@BasicEndUserRoleId INT,
+		@UserAdminRoleId INT,
+		@UPRoleId INT,
+		@UserId bigint,
+		@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+			FROM	Ident.UserLogin
+			WHERE	LoginName LIKE 'realpagead@%'
+
+IF EXISTS (SELECT TOP 1 1 FROM Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter')
+BEGIN
+	select @RightId = RightId from Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter'
+	UPDATE Security.[Right] SET [Value] = 'Access to Simon Help Center' WHERE RightId = @RightId
+	
+	select @BasicEndUserRoleId = RoleId from security.role where rolename = 'Basic End User' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @BasicEndUserRoleId AND @RightId = RightId)
+	BEGIN
+	 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+	 VALUES(@BasicEndUserRoleId,@RightId,@UserId,@Now)
+	END
+
+	select @UPRoleId = RoleId from security.role where rolename = 'Read only for Unified Platform' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UPRoleId AND @RightId = RightId)
+	BEGIN
+		 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@UPRoleId,@RightId,@UserId,@Now)
+	END
+
+	select @UserAdminRoleId = RoleId from security.role where rolename = 'User Administrator' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UserAdminRoleId AND @RightId = RightId)
+	BEGIN
+		 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@UserAdminRoleId,@RightId,@UserId,@Now)
+	END
 
 END
 GO
