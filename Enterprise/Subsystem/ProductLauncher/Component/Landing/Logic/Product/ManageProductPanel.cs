@@ -109,7 +109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.UnifiedAmenities:
                         IManageUnifiedAmenities manageUnifiedAmenities = new ManageUnifiedAmenities(_userClaims);
                         result = manageUnifiedAmenities.GetProperties(editorPersonaId, userPersonaId, assignedOnly, datafilter);
-                        break;
+                        break; 
                     case (int)ProductEnum.AoBusinessIntelligence:
                     case (int)ProductEnum.AoInvestmentAnalytics:
                     case (int)ProductEnum.AoPerformanceAnalytics:
