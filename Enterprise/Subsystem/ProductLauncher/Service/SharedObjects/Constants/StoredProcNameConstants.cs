@@ -301,7 +301,7 @@
         public const string SP_DeleteRole = "Security.DeleteRole";
         public const string SP_LinkRightsToRoles = "Security.LinkRightsToRoles";
         public const string SP_ListAllRights = "Security.ListAllRights";
-        public const string SP_ListSecurityStatus = "Security.ListSecurityStatus";
+        public const string SP_ListSecurityStatus = "Enterprise.ListSecurityStatus"; // Changed from Security to Enterprise. Since SP is not available in Security Schema
         public const string SP_SetDefaulteRole = "Security.SetDefaultRole";
 
         //Configuration Settings
