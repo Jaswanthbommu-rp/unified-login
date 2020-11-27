@@ -531,8 +531,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         new ProductUI
                         {
                             ProductId = (int)ProductEnum.HelpCenter,
-                            ProductName = "Help Center",
-                            TitleId = "Help Center",
+                            ProductName = "Simon Help Center",
+                            TitleId = "Simon Help Center",
                             ProductUrl = "product/helpcenter",
                             HasAccess = false,
                             IsResource = true,
