@@ -284,6 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.CIMPL
                             || r.ProductId == (int)ProductEnum.VendorMarketplace
                             || r.ProductId == (int)ProductEnum.HelpCenter
+                            || r.ProductId == (int)ProductEnum.PMEDasboard
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails
@@ -317,6 +318,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.HelpCenter))
                     {
                         userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.HelpCenter));
+                    }
+                }
+                if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("AccessPMEDashboard", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (userProducts.Any(a => a.ProductId == (int)ProductEnum.PMEDasboard))
+                    {
+                        userProducts.Remove(userProducts.First(a => a.ProductId == (int)ProductEnum.PMEDasboard));
                     }
                 }
                 if (_userClaim.Rights.All(rght => rght != null && !rght.Equals("MigrationTool", StringComparison.OrdinalIgnoreCase)) || _userClaim.RealPageEmployee)
@@ -530,7 +538,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             IsResource = true,
                             IsNewTab = true
                         }
-                );
+                    );
                 }
 
                 // need to follow up later when conversions is ready to be tested
@@ -1576,8 +1584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <returns>List of Roles by PartyId and Product</returns>
 		public List<ProductRole> ListRolesForProductByParty(long partyId, IList<int> productIdList, int productId)
         {
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesForProductsByPartyId" : StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
+            var procName = StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
 
             using (var repository = GetRepository())
             {
@@ -1634,8 +1641,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
-                string schemaName = getRoleRightsSchemaName();
-                var procName = schemaName?.Length > 0 ? $"{schemaName}.ListRolesAssociatedWithRights" : StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
+                var procName = StoredProcNameConstants.SP_ListRolesAssociatedWithRights;
 
                 dynamic param = new
                 {

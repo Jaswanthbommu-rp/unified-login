@@ -364,6 +364,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                          result = upfmProductIntegration.GetRoles(editorPersonaId, userPersonaId, _userClaims.OrganizationPartyId, upfmProduct);
                          break;
                     case (int)ProductEnum.ClickPay:
+                        var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
+                        result = productLogic.GetProductRoles(null);
+                        break;
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
                     case (int)ProductEnum.CIMPL:
@@ -388,6 +391,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.UnifiedUI:
                     case (int)ProductEnum.VendorMarketplace:
                     case (int)ProductEnum.Yieldstar:
+                    case (int)ProductEnum.PMEDasboard:
                         //pending implementation
                         throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                     default:
@@ -642,6 +646,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             return result;
         }
+
+        public ListResponse GetProductOrganizations(long editorPersonaId, long userPersonaId, int productId, string organizationRoleId, string organizationType)
+        {
+            ListResponse result = new ListResponse();
+            IProduct product;
+            string productName = Enum.GetName(typeof(ProductEnum), productId);
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            switch (productId)
+            {
+                case (int)ProductEnum.ClickPay:
+                    var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
+                    result = productLogic.GetProductOrganizations(organizationRoleId, organizationType, null);
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
+
         #endregion
     }
 }

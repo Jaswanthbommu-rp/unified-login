@@ -132,5 +132,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productCenterEnablement"></param>
         /// <returns></returns>
         bool AcknowledgeProvisioningEvent(ProductCenterEnablement productCenterEnablement);
+
+        /// <summary>
+        /// Used to acknowledge provisioning Cancel events
+        /// </summary>
+        /// <param name="productCenterCancel"></param>
+        /// <returns></returns>
+        bool AcknowledgeProvisioningCancelEvent(ProductCenterCancellation productCenterCancel);
     }
 }
