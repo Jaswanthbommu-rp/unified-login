@@ -1635,3 +1635,60 @@ begin
 	set @Current_ID = @Current_ID + 1
 end
 GO
+
+DECLARE @ControlId int,
+        @Now Datetime = GETDate();
+
+IF EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessPropertiesTabUIId')
+BEGIN
+  SELECT @ControlId=ControlId FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessPropertiesTabUIId'
+  select @ControlId
+  IF NOT EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessAllowCurrentandFuturePropertiesSwitchUIId')
+  BEGIN
+	   INSERT INTO [UserManagement].[Control] Values(@ControlId,1,'ILMLeadManagementProductAccessAllowCurrentandFuturePropertiesSwitchUIId',
+	   'Assign current and new properties automatically','allProperties',1, 480, @Now)
+	  select @ControlId
+	  UPDATE  UserManagement.[Control] SET  Sequence=2 WHERE UIId='ILMLeadManagementProductAccessPropertiesMultiSelectGridUIId'
+  END
+ 
+END
+
+IF EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessPropertiesTabUIId')
+BEGIN
+  SELECT @ControlId=ControlId FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessPropertiesTabUIId'
+  IF NOT EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessAllowCurrentandFuturePropertiesSwitchUIId')
+  BEGIN
+	   INSERT INTO [UserManagement].[Control] Values(@ControlId,1,'ILMLeasingAnalyticsProductAccessAllowCurrentandFuturePropertiesSwitchUIId',
+	   'Assign current and new properties automatically','allProperties',1, 480, @Now)
+	  select @ControlId
+	  UPDATE  UserManagement.[Control] SET  Sequence=2 WHERE UIId='ILMLeasingAnalyticsProductAccessPropertiesMultiSelectGridUIId'
+  END
+ 
+END
+GO
+DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'Learnmore'
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId)
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = 'https://site.clickpay.com/for-property-managers/' where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
+IF EXISTS(select top 1 1 from enterprise.product where productid=48)
+BEGIN
+	update enterprise.product set  Description = 'Payments - Open Market Solution'  where productid=48
+END
+GO
+
+IF EXISTS(SELECT * FROM [Security].[Right] WHERE RightName ='HelpCenterContactSupport')
+BEGIN
+  ---RENAME Right name
+	  IF NOT EXISTS(SELECT * FROM [Security].[Right] WHERE [Value] ='Simon Help Center Contact Support')
+		BEGIN  
+		   UPDATE [Security].[Right] SET [Value] ='Simon Help Center Contact Support'
+			WHERE RightName ='HelpCenterContactSupport'
+		END
+	-- Visiable across All PMCs
+	UPDATE [Security].[Right] SET VisibilityStatusId = 9
+    WHERE RightName ='HelpCenterContactSupport'
+END
+GO
