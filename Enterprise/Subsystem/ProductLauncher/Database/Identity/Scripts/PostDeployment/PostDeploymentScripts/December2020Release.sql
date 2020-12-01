@@ -1,3 +1,10 @@
+GO
+UPDATE [Enterprise].[Product] 
+  SET [Name] =  'Unified Data Management' WHERE [Name] = 'Master Data Management' AND ProductId = 24
+UPDATE [UserManagement].[ProductPage]
+  SET DisplayName = 'Unified Data Management Product Access' WHERE DisplayName = 'Master Data Management Product Access' 
+GO
+
 /*This script is to update 'Access to Site Spend Management only', to 'Site user'*/
 UPDATE [UserManagement].[Control]
 SET DisplayName = 'Site user' WHERE DisplayName = 'Access to Site Spend Management only'
@@ -1894,4 +1901,17 @@ IF EXISTS(select top 1 1 from Enterprise.Product where productid = 49 and Name='
 BEGIN
     update Enterprise.Product set [Name] = 'Simon Help Center', [Description] = 'Simon Help Center' where ProductId = 49
 END
+GO
+
+DECLARE @RightId INT;
+SELECT @RightId = RightId FROM [Security].[Right] WHERE rightname = 'ManageIntelligentBuildingProductAccess';
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE rightname = 'ManageIntelligentBuildingProductAccess')
+BEGIN
+	UPDATE [Security].[Right] SET [Value] = 'Manage Waste Management Solution Product Access', 
+								  [Description] = 'Manage Waste Management Solution Product Access',
+								  [RightName] = 'ManageIntelligentBuildingTrashProductAccess'
+							  WHERE RightId = @RightId;
+END
+
 GO
