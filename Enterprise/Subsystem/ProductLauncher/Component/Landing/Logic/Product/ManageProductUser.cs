@@ -194,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
                     case ProductEnum.OnSite:
-                        product = new OnSiteProduct();
+                        product = new OnSiteProduct(_defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<OnSiteUserPropertyRegionRole>(productUser.InputJson);
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -222,7 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
                     case ProductEnum.SelfProvisioningPortal:
-                        product = new SelfProvisioningPortalProduct();
+                        product = new SelfProvisioningPortalProduct(_defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<SelfProvisioningPortal>(productUser.InputJson);
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -412,7 +412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.OnSite:
-                    product = new OnSiteProduct(_productInternalSettingRepository, _productRepository);
+                    product = new OnSiteProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.Insurance:
@@ -428,7 +428,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.SelfProvisioningPortal:
-                    product = new SelfProvisioningPortalProduct(_productInternalSettingRepository, _productRepository);
+                    product = new SelfProvisioningPortalProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.UtilityManagement:
@@ -548,7 +548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     case ProductEnum.OnSite:
-                        product = new OnSiteProduct();
+                        product = new OnSiteProduct(_defaultUserClaim);
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     case ProductEnum.Insurance:
@@ -564,7 +564,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     case ProductEnum.SelfProvisioningPortal:
-                        product = new SelfProvisioningPortalProduct();
+                        product = new SelfProvisioningPortalProduct(_defaultUserClaim);
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     case ProductEnum.UnifiedAmenities:
@@ -758,7 +758,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     case ProductEnum.OnSite:
-                        product = new OnSiteProduct();
+                        product = new OnSiteProduct(_defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<OnSiteUserPropertyRegionRole>(batchRecord.InputJson);
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -782,7 +782,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     case ProductEnum.SelfProvisioningPortal:
-                        product = new SelfProvisioningPortalProduct();
+                        product = new SelfProvisioningPortalProduct(_defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<SelfProvisioningPortal>(batchRecord.InputJson);
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -2368,15 +2368,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public OnSiteProduct() : base((int)ProductEnum.OnSite, null, null)
+        public OnSiteProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OnSite, userClaim, null, null)
         {
         }
 
         /// <summary>
         /// Test constructor
         /// </summary>
-        /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public OnSiteProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OnSite, productInternalSettingRepository, productRepository)
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public OnSiteProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OnSite, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
@@ -2946,7 +2948,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public SelfProvisioningPortalProduct() : base((int)ProductEnum.SelfProvisioningPortal, null, null)
+        public SelfProvisioningPortalProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.SelfProvisioningPortal, userClaim, null, null)
         {
         }
 
@@ -2954,7 +2956,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public SelfProvisioningPortalProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.SelfProvisioningPortal, productInternalSettingRepository, productRepository)
+        public SelfProvisioningPortalProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.SelfProvisioningPortal, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
