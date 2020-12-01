@@ -1692,3 +1692,16 @@ BEGIN
     WHERE RightName ='HelpCenterContactSupport'
 END
 GO
+
+DECLARE @RightId INT;
+SELECT @RightId = RightId FROM [Security].[Right] WHERE rightname = 'ManageIntelligentBuildingProductAccess';
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE rightname = 'ManageIntelligentBuildingProductAccess')
+BEGIN
+	UPDATE [Security].[Right] SET [Value] = 'Manage Waste Management Solution Product Access', 
+								  [Description] = 'Manage Waste Management Solution Product Access',
+								  [RightName] = 'ManageIntelligentBuildingTrashProductAccess'
+							  WHERE RightId = @RightId;
+END
+
+GO
