@@ -174,7 +174,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             productUser.AssignUserPersonaId, productPropertiesRoles);
                         break;
                     case ProductEnum.ProspectContactCenter:
-                        product = new ProspectContactCenterProduct();
+                        product = new ProspectContactCenterProduct(_defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<ProspectContactPropertyRole>(productUser.InputJson);
                         result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
@@ -400,7 +400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.ProspectContactCenter:
-                    product = new ProspectContactCenterProduct(_productInternalSettingRepository, _productRepository);
+                    product = new ProspectContactCenterProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails);
                     break;
                 case ProductEnum.Lead2Lease:
@@ -536,7 +536,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     case ProductEnum.ProspectContactCenter:
-                        product = new ProspectContactCenterProduct();
+                        product = new ProspectContactCenterProduct(_defaultUserClaim);
                         result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     case ProductEnum.Lead2Lease:
@@ -741,7 +741,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     case ProductEnum.ProspectContactCenter:
-                        product = new ProspectContactCenterProduct();
+                        product = new ProspectContactCenterProduct(_defaultUserClaim);
                         productPropertiesRoles =
                             GetProductPropertiesRoles<ProspectContactPropertyRole>(batchRecord.InputJson);
                         result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
@@ -2035,7 +2035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// default constructor
         /// </summary>
-        public ProspectContactCenterProduct() : base((int)ProductEnum.ProspectContactCenter, null, null)
+        public ProspectContactCenterProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.ProspectContactCenter, userClaim, null, null)
         {
         }
 
@@ -2043,7 +2043,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Test constructor
         /// </summary>
         /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public ProspectContactCenterProduct(IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.ProspectContactCenter, productInternalSettingRepository, productRepository)
+        public ProspectContactCenterProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.ProspectContactCenter, userClaim, productInternalSettingRepository, productRepository)
         {
         }
 
