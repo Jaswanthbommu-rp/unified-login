@@ -325,7 +325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(profile.userLogin.LoginName);
                     bool isNotified = _manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, profile.organization[0].Name, profile.UserTypeId, profile.organization[0].PartyId);
 
-					if (profile.UserTypeId != UserTypeConstants.RegularUserNoEmail && profile.UserTypeId != UserTypeConstants.RealPageEmployee && !profile.userLogin.Is3rdPartyIDP)
+					if (profile.UserTypeId != UserTypeConstants.RegularUserNoEmail && !profile.userLogin.Is3rdPartyIDP)
 					{
 						if (isNotified)
 						{
