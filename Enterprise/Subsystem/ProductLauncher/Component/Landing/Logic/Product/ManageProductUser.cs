@@ -1140,6 +1140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             // Handle all other products than AO
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
+            _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository, _productRepository);
             
             // Update user Employee Id
