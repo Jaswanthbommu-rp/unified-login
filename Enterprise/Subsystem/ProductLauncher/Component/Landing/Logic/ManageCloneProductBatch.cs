@@ -740,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 
             // Below logic is applied when a user is being cloned from a user that has access to all properties. 
-            if (propertiesResponse != null)
+            if (propertiesResponse != null && !propertyGroup.Records.Any(pg => ((VendorServicesPropertyGroup)pg).IsAssigned))
             {
                 var unselectedPropertiesCount = propertiesCollection.Where(p => ((ProductProperty)p).IsAssigned == false).Count();
                 if (unselectedPropertiesCount == propertiesCollection.Count())
