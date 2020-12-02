@@ -125,7 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var persona = managePersona.GetPersona(editorPersonaId);
             if (persona == null)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
-
+            base._userClaims.UserRealPageGuid = persona.RealPageId;
             var manageProductOnSite = new ManageProductOnSite(_userClaims);
             return Request.CreateResponse(HttpStatusCode.OK, manageProductOnSite.GetMigrationUsers(editorPersonaId, datafilter));
         }
