@@ -20,7 +20,7 @@ DECLARE @CreatedById bigint,
 
 SELECT @CreatedById = UserId
 FROM Ident.UserLogin
-WHERE LoginName = 'RealPageAd@test.com'
+WHERE LoginName LIKE 'realpagead@%'
 
 IF NOT EXISTS (SELECT 1 FROM [Security].[Right] WHERE RightName = 'EmployeeAccessToCompanySetup')
 BEGIN
