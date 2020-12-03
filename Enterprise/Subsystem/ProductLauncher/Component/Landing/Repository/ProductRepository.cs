@@ -1960,8 +1960,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageIntelligentBuildingWaterProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingWaterProductAccess.ToString());
                         break;
-                    case (int)ProductRightEnum.ManageHospitalityServiceProductAccess:
-                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHospitalityServiceProductAccess.ToString());
+                    case (int)ProductRightEnum.ManageHomeSharingProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHomeSharingProductAccess.ToString());
                         break;
                     default:
                         break;
