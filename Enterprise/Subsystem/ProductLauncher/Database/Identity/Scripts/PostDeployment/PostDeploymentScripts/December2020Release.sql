@@ -1888,3 +1888,8 @@ BEGIN
 	END
 END
 GO
+IF EXISTS (SELECT TOP 1 1 FROM Security.[Right] WHERE RightName = 'AccessPMEDashboard' AND VALUE = 'Access to Help Center')
+BEGIN
+    UPDATE Security.[Right] SET Description='Access to PME Dashboard',VALUE = 'Access to PME Dashboard' WHERE RightName = 'AccessPMEDashboard' AND VALUE = 'Access to Help Center'
+END
+GO
