@@ -367,6 +367,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
                         result = productLogic.GetProductRoles(null);
                         break;
+                    case (int)ProductEnum.HOTS:
+                        var upfmHOTSProduct = new ManageUPFMProductsIntegration(productId, _userClaims);
+                        var upfmHOTSProductEnum = ProductEnumHelper.GetUPFMProductEnum(productId);
+                        result = upfmHOTSProduct.GetRoles(editorPersonaId, userPersonaId, _userClaims.OrganizationPartyId, upfmHOTSProductEnum);
+                        break;
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
                     case (int)ProductEnum.CIMPL:
