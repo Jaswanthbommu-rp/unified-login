@@ -1396,7 +1396,8 @@ BEGIN
 
 		DECLARE @TargetRoleValue TABLE (RoleName nvarchar(100))
 
-		INSERT INTO @TargetRoleValue VALUES('Property Admin'),('Property User');
+		INSERT INTO @TargetRoleValue VALUES('Customer Support Manager'),('Customer Support Representative'),
+												('Implementations'),('Systems Admin');
 
 	
 			--UserId
