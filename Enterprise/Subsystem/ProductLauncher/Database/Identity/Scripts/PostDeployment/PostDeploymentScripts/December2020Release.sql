@@ -1342,8 +1342,8 @@ DECLARE @HoldOrgPartyId TABLE (PartyId INT)
 DECLARE @HoldRouteId TABLE (RouteId INT)
 
        SET @RightName = 'AccessPMEDashboard'; 
-       SET @RightDescription = 'Access to PME Dashboard';
-       SET @RightValue = 'Access to PME Dashboard';
+       SET @RightDescription = 'Access to Help Center';
+       SET @RightValue = 'Access to Help Center';
        SET @StatusTypeId = 13;
        SET @RightVisibilityStatusId = 9;
        SET @ProductId =3;
