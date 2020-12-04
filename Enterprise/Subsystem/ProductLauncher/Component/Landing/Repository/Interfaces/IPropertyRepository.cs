@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
@@ -86,5 +88,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         RepositoryResponse InsertUPFMPropertyInstance(UPFMPropertyInstance propertyInstance);
 
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="_userClaim">UserClaim</param>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="dataFilterSort">datafilter</param>
+        /// <returns>List of Properties for a company </returns>
+        List<PropertySetup> GetPropertiesForCompany(DefaultUserClaim _userClaim, Guid companyInstanceId, string propertyName = null, string domain = null, RequestParameter dataFilterSort = null);
+
+        /// <summary>
+        /// Update Property
+        /// </summary>
+        /// <param name="instanceId">instanceId</param>
+        /// <param name="name">name</param>
+        /// <returns></returns>
+        RepositoryResponse UpdateProperty(Guid instanceId, string name);
     }
 }
