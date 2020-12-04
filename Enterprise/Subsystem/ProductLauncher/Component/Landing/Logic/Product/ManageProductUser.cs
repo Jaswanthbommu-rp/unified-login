@@ -307,6 +307,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuildingEnergy:
                     case ProductEnum.IntelligentBuildingTrash:
                     case ProductEnum.IntelligentBuildingWater:
+                    case ProductEnum.HOTS:
                     case ProductEnum.HospitalityService:
                        IUPFMProduct upfmProduct = new UPFMProductIntegration(productId, _defaultUserClaim);
                         productPropertiesRoles =
