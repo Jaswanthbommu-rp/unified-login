@@ -97,7 +97,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageBlueBook _manageBlueBook;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private HttpMessageHandler _messageHandler;
-
         #endregion
 
         #region Public Organization Methods
@@ -1012,6 +1011,106 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
         #endregion
 
+        #region Get Properties for a Organization
+        /// <summary>
+        /// Get Properties for a Organization
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        /// <param name="domain">Domain</param>
+        /// <param name="datafilter">datafilter</param>
+        /// <returns>List of Properties for a company </returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(PropertySetup))]
+        [SwaggerResponseExamples(typeof(PropertySetup), typeof(PropertyListExample))]
+        [Route("CompanySetup/CompanyPropertyList")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain= null, [FromUri] RequestParameter datafilter = null)
+        {
+            if (string.IsNullOrEmpty(companyInstanceId.ToString()))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectListOutput<PropertySetup, IErrorData> output = new ObjectListOutput<PropertySetup, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
+
+            globals.Add(BaseType.RequestParameter, datafilter);
+
+            List<PropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, globals);
+
+            int totalRecords = propertyList.Count > 0 ? propertyList[0].TotalRecords : 0;
+            decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
+            resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
+            PagingSummary pagingSummary = new PagingSummary()
+            {
+                TotalRecords = totalRecords,
+                TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
+            };
+            output = new ObjectListOutput<PropertySetup, IErrorData>() { list = propertyList, Status = errorStatus };
+            output.pagingSummary = pagingSummary;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+        #endregion
+
+        #region Update Property
+        /// <summary>
+        ///Update Properties for a Organization
+        /// </summary>
+        /// <param name="propertyInstanceId">propertyInstanceId</param>
+        /// <param name="propertyName">PropertyName</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("CompanySetup/CompanyPropertyList")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpPut]
+        public HttpResponseMessage UpdatePropertyForOrganization(Guid propertyInstanceId, string propertyName)
+        {            
+            if ((propertyInstanceId == Guid.Empty) || (propertyInstanceId == null))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
+            }
+
+            if (String.IsNullOrEmpty(propertyName))
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
+            }
+            var currentProperty = _manageOrganization.GetPropertyByInstanceId(propertyInstanceId);
+
+            if(currentProperty != null && currentProperty.FirstOrDefault().Name.ToLower() != propertyName.ToLower())
+			{
+                _repositoryResponse = _manageOrganization.UpdateProperty(propertyInstanceId, propertyName);
+
+                if (_repositoryResponse.Id == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+                }
+                if (_repositoryResponse.Id > 0)
+                {
+                    PropertyInstanceAck ack = new PropertyInstanceAck
+                    {                        
+                        PropertyInstanceSourceId = propertyInstanceId.ToString(),
+                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                        PropertyName = propertyName,
+                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                        
+                    };
+                    _manageBlueBook.AcknowledgePropertyUpdate(ack);
+                }
+            }            
+            return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
+        }
+        #endregion
+
+
+
         #region Private functions
 
         /// <summary>
@@ -1258,6 +1357,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 };
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
                 ObjectOutput<CompanySetup, IErrorData> output = new ObjectOutput<CompanySetup, IErrorData>()
+                {
+                    obj = example,
+                    Status = errorStatus
+                };
+
+                return output;
+            }
+        }
+
+        /// <summary>
+        /// Used to document examples of the Companysetup Model webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class PropertyListExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>List of Companies example</returns>
+            public object GetExamples()
+            {
+                PropertySetup example = new PropertySetup()
+                {
+                    PropertyInstanceId = 105294,
+                    Name = "WOODVILLE VILLAGE",
+                    ContractedName = "WOODVILLE VILLAGE",
+                    Address = "151 CO. RD. 63",
+                    City = "WOODVILLE",
+                    State = "AL",
+                    PostalCode = "35776",
+                    Country = "UNITED STATES",
+                    County = null,
+                    InstanceId = Guid.Parse("1e38a88a-b986-416e-b0cf-5944935a92be"),
+                    CustomerPropertyId = "1409051",
+                    Domain = "Primary",
+                    TotalRecords = 573
+                };
+                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                ObjectOutput<PropertySetup, IErrorData> output = new ObjectOutput<PropertySetup, IErrorData>()
                 {
                     obj = example,
                     Status = errorStatus
