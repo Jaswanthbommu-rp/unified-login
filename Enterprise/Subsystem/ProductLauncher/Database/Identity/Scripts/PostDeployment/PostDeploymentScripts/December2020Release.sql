@@ -732,3 +732,112 @@ DECLARE @HoldRouteId TABLE (RouteId INT)
 	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
     END
 GO
+
+GO
+DECLARE @UserId bigint,
+       @ProductId int = 60,
+       @productSettingId INT,
+       @productSettingTypeId INT,
+       @productGroupSettingTypeId INT,
+       @ConfigurationId INT,
+       @ParentControlID INT,
+       @ControlID INT,
+       @MaxControlId INT,
+       @MaxControlAttributeId INT,
+       @Now datetime = GETDATE();
+
+SELECT @UserId = UserId
+FROM   Ident.UserLogin
+WHERE  LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM[UserManagement].[ProductPage] WHERE ProductId = @ProductId)
+BEGIN
+		SET IDENTITY_INSERT [UserManagement].[Control] ON 
+
+		SELECT @MaxControlId = max(ControlId) from UserManagement.Control
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 1, NULL, 8, N'HAASProductAccessTabGroupUIId', NULL, NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 2, @MaxControlId + 1, 9, N'HAASProductAccessRolesTabUIId', N'Roles', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 3, @MaxControlId + 2, 2, N'HAASProductAccessRolesSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 4, @MaxControlId + 3, 7, N'HAASProductAccessRadioUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 5, @MaxControlId + 3, 5, N'HAASProductAccessRoleLabelUIId', N'Role', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 6, @MaxControlId + 3, 5, N'HAASProductAccessRoleTypeLabelUIId', N'Role Type', N'roletype', 3, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 7, @MaxControlId + 3, 11, N'HAASProductAccessIconUIId', NULL, N'InfoIcon', 4, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 8, @MaxControlId + 1, 9, N'HAASProductAccessPropertiesTabUIId', N'Properties', NULL, 2, @UserId, @Now)
+		
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 9, @MaxControlId + 8, 1, N'HAASProductAccessAllowaccesstoallcurrentandfuturepropertiesPropertiesSwitchUIId', N'Assign access to current and new properties automatically', N'allProperties', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 10, @MaxControlId + 8, 3, N'HAASProductAccessPropertiesMultiSelectGridUIId', NULL, NULL, 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 11, @MaxControlId + 10, 10, N'HAASProductAccessCheckboxUIId', NULL, N'isAssigned', 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 12, @MaxControlId + 10, 5, N'HAASProductAccessPropertyLabelUIId', N'Property', N'name', 2, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 13, @MaxControlId + 10, 5, N'HAASProductAccessCityLabelUIId', N'City', N'city', 3, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 14, @MaxControlId + 10, 5, N'HAASProductAccessStateLabelUIId', N'State', N'state', 4, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 15, @MaxControlId + 7, 5, N'HAASProductAccessRoleDetailsLabelUIId', N'Role Details', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 16, @MaxControlId + 7, 12, N'HAASProductAccessGridUIId', N'NULL', NULL, 1, @UserId, @Now)
+
+		INSERT [UserManagement].[Control] ([ControlId], [ParentControlId], [ControlTypeId], [UIId], [DisplayName], [DataSource], [Sequence], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlId + 17, @MaxControlId + 16, 5, N'HAASProductAccessRightLabelUIId', N'Right', 'description', 1, @UserId, @Now)
+
+		 
+		SET IDENTITY_INSERT [UserManagement].[Control] OFF
+		
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] ON 
+
+		SELECT @MaxControlAttributeId = max(ControlAttributeId) from [UserManagement].[ControlAttribute]
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 1, @MaxControlId + 2, N'Default', N'True', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 2, @MaxControlId + 3, N'ShowSelectAll', N'False', @UserId, @Now)
+
+		INSERT [UserManagement].[ControlAttribute] ([ControlAttributeId], [ControlId], [Key], [Value], [CreatedBy], [CreatedDate]) 
+		VALUES (@MaxControlAttributeId + 3, @MaxControlId + 7, N'InfoIcon', N'Slide', @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ControlAttribute] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] ON 
+
+		INSERT [UserManagement].[ProductPage] ([ProductPageId], [ProductId], [DisplayName], [CreatedBy], [CreatedDate], [IsActive], [ProductPageTypeId]) 
+		VALUES (39, 60, N'Home Sharing Product Access', @UserId, @Now, 1, 1)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPage] OFF
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] ON 
+
+		INSERT [UserManagement].[ProductPageControl] ([ProductPageControlId], [ProductPageId], [ControlId], [CreatedBy], [CreatedDate])
+		VALUES (49, 39, @MaxControlId + 1, @UserId, @Now)
+
+		SET IDENTITY_INSERT [UserManagement].[ProductPageControl] OFF
+            
+END
+GO
