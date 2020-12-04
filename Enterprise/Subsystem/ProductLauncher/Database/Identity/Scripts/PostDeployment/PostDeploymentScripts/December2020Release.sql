@@ -1173,3 +1173,146 @@ END
 
 GO
 
+DECLARE @ProductId INT, 
+		@LoginURI NVARCHAR(100), 
+		@SigningCertificateThumbprint NVARCHAR(50), 
+		@ParentProductTypeId INT, 
+		@ProductName NVARCHAR(100)= 'PME Dashboard', 
+		@LoginURL NVARCHAR(500), 
+		@ProductUrl NVARCHAR(256), 
+		@ServerName SYSNAME = @@SERVERNAME;
+
+DECLARE @ProductConfiguration AS PRODUCTCONFIGURATIONTYPE;
+
+SELECT @ParentProductTypeId = ProductTypeId
+FROM Enterprise.ProductType
+WHERE Name = 'Administration'
+      AND ParentProductTypeId IS NULL;
+IF NOT EXISTS
+(
+    SELECT TOP 1 1
+    FROM enterprise.ProductType
+    WHERE ProductTypeId = 508
+)
+    BEGIN
+        EXEC [Enterprise].[CreateProductType] 
+             @ProductTypeId = 508, 
+             @ParentProductTypeId = @ParentProductTypeId, 
+             @Name = @ProductName, 
+             @Description = 'PME Dashboard', 
+             @ProductTypeGUID = '31F4F399-177E-4BD6-8C05-EDB50B0C0A91';
+END;
+SET @ProductId = 62;
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM Enterprise.Product
+    WHERE Name = @ProductName
+)
+    BEGIN
+        EXEC Enterprise.CreateProduct 
+             @ProductId = @ProductId, 
+             @ProductGUID = 'C2441CBB-F51B-47E1-B8DF-29612117B0C2', 
+             @Name = @ProductName, 
+             @Description = @ProductName, 
+             @ProductTypeId = 508;
+        UPDATE Enterprise.Product
+          SET 
+              BooksProductCode = 'PME'
+        WHERE ProductId = @ProductId;
+END;
+
+
+IF @ServerName IN('RCDUSODBSQL001')
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName = 'RCTUSODBSQL001'
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCQUSODBSQL001', 'RCVEUSODBSQL001', 'RCDUSODBSQL001A', 'RCIUSODBSQL002', 'RCTUSODBSQL001A') -- Need to chnage
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') -- Need to change
+    BEGIN
+        SET @ProductUrl = 'https://dashboard.realpage.com/';
+END;
+INSERT INTO @ProductConfiguration
+(SettingName, 
+ SettingDescription, 
+ SettingValue
+)
+VALUES
+('ClassName',  '',  'pmedashboard'),
+('ProductUrl',  '',  @ProductUrl),
+('TitleId',  '',  'PME DashBoard'),
+('TitleUniqueId',  '',  '0A3D5C5D-B16E-4DAE-87EA-EDA0E9639FBF'),
+('IsNewTab',  '', '1'),
+('MetatagUniqueId',  '',  'PME Dashboard'),
+('IsResource',  '',  '1'),
+('IsFavorite',  '',  '0'),
+('LearnMore',  '',  'https://www.realpage.com/'),
+('ProductStatus',  'Show if the external application was configured for the dashboard user.',  '8'),
+('ShowInUserDetails',  'Should the product show in the New/Edit user pages',  '0'),
+('ShowInRolesAndRights',  'Should the product show in the Role/Rights page',  '1'),
+('ShowInAppSwitcher',  'Should the product show in the application switcher',  '0'),
+('ShowInUserListFilter',  'Should the product show in the user list product pick list',  '0'),
+('ProductAPIRequiresUser',  'Does the product require a user for api calls',  '0'),
+('LockOnProductAccess',  '',  '0'),
+('ProductNotAvailableForRegularUserNoEmail',  'Product Attribute for Product Not Available for Regular User No Email.',  '0');
+
+SELECT * FROM @ProductConfiguration
+
+IF @ServerName IN('RCDUSODBSQL001')
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName = 'RCTUSODBSQL001'
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCQUSODBSQL001', 'RCVEUSODBSQL001', 'RCDUSODBSQL001A', 'RCIUSODBSQL002', 'RCTUSODBSQL001A') -- Need to change
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+IF @ServerName IN('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B') -- Need to change
+    BEGIN
+        SET @LoginURL = 'https://dashboard.realpage.com/';
+END;
+SET @ProductID = 62;
+SET @LoginURI = @LoginURL;
+SET @SigningCertificateThumbprint = NULL;
+EXEC Enterprise.ProductConfigurationSetup 
+     @ProductId, 
+     @LoginURI, 
+     @SigningCertificateThumbprint, 
+     @ProductConfiguration;
+
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM ident.SamlProductSettings
+    WHERE ProductId = @ProductId
+          AND LoginUri = @LoginURL
+)
+    BEGIN
+        INSERT INTO ident.SamlProductSettings
+        (
+        --SamlProductSettingsId - column value is auto-generated
+        ProductId, 
+        LoginUri, 
+        SigningCertificateThumbprint, 
+        SubjectIdSamlAttribute
+        )
+        VALUES
+        (
+        -- SamlProductSettingsId - int
+        @ProductId, -- ProductId - int
+        @LoginURL, -- LoginUri - nvarchar
+        N'NA', -- SigningCertificateThumbprint - nvarchar
+        N'productUserName' -- SubjectIdSamlAttribute - nvarchar
+        );
+END;
