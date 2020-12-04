@@ -1192,7 +1192,7 @@ IF NOT EXISTS
 (
     SELECT TOP 1 1
     FROM enterprise.ProductType
-    WHERE Name = 'PME Dashboard'
+    WHERE ProductTypeId = 508
 )
     BEGIN
         EXEC [Enterprise].[CreateProductType] 
@@ -1215,7 +1215,7 @@ IF NOT EXISTS
              @ProductGUID = 'C2441CBB-F51B-47E1-B8DF-29612117B0C2', 
              @Name = @ProductName, 
              @Description = @ProductName, 
-             @ProductTypeId = 507;
+             @ProductTypeId = 508;
         UPDATE Enterprise.Product
           SET 
               BooksProductCode = 'PME'
@@ -1514,68 +1514,8 @@ end
 
 DECLARE @NOW DATETIME = GETUTCDATE(); 
 declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
-insert into @productlist values 
-	(1,     'DisableUsersOnProductCancel',   '0'),
-	(2,     'DisableUsersOnProductCancel',   '0'),
-	(3,     'DisableUsersOnProductCancel',   '0'),
-	(4,     'DisableUsersOnProductCancel',   '0'),
-	(5,     'DisableUsersOnProductCancel',   '0'),
-	(6,     'DisableUsersOnProductCancel',   '0'),
-	(7,     'DisableUsersOnProductCancel',   '0'),
-	(8,     'DisableUsersOnProductCancel',   '0'),
-	(9,     'DisableUsersOnProductCancel',   '0'),
-	(10,     'DisableUsersOnProductCancel',   '0'),
-	(11,     'DisableUsersOnProductCancel',   '0'),
-	(12,     'DisableUsersOnProductCancel',   '0'),
-	(13,     'DisableUsersOnProductCancel',   '0'),
-	(14,     'DisableUsersOnProductCancel',   '0'),
-	(15,     'DisableUsersOnProductCancel',   '0'),
-	(16,     'DisableUsersOnProductCancel',   '0'),
-	(17,     'DisableUsersOnProductCancel',   '0'),
-	(18,     'DisableUsersOnProductCancel',   '0'),
-	(19,     'DisableUsersOnProductCancel',   '0'),
-	(20,     'DisableUsersOnProductCancel',   '0'),
-	(21,     'DisableUsersOnProductCancel',   '0'),
-	(22,     'DisableUsersOnProductCancel',   '0'),
-	(23,     'DisableUsersOnProductCancel',   '0'),
-	(24,     'DisableUsersOnProductCancel',   '0'),
-	(25,     'DisableUsersOnProductCancel',   '0'),
-	(26,     'DisableUsersOnProductCancel',   '0'),
-	(27,     'DisableUsersOnProductCancel',   '0'),
-	(28,     'DisableUsersOnProductCancel',   '0'),
-	(29,     'DisableUsersOnProductCancel',   '0'),
-	(30,     'DisableUsersOnProductCancel',   '0'),
-	(31,     'DisableUsersOnProductCancel',   '0'),
-	(32,     'DisableUsersOnProductCancel',   '0'),
-	(33,     'DisableUsersOnProductCancel',   '0'),
-	(34,     'DisableUsersOnProductCancel',   '0'),
-	(35,     'DisableUsersOnProductCancel',   '0'),
-	(36,     'DisableUsersOnProductCancel',   '0'),
-	(37,     'DisableUsersOnProductCancel',   '0'),
-	(38,     'DisableUsersOnProductCancel',   '0'),
-	(39,     'DisableUsersOnProductCancel',   '0'),
-	(40,     'DisableUsersOnProductCancel',   '0'),
-	(41,     'DisableUsersOnProductCancel',   '0'),
-	(42,     'DisableUsersOnProductCancel',   '0'),
-	(43,     'DisableUsersOnProductCancel',   '0'),
-	(44,     'DisableUsersOnProductCancel',   '0'),
-	(45,     'DisableUsersOnProductCancel',   '0'),
-	(46,     'DisableUsersOnProductCancel',   '0'),
-	(47,     'DisableUsersOnProductCancel',   '0'),
-	(48,     'DisableUsersOnProductCancel',   '0'),
-	(49,     'DisableUsersOnProductCancel',   '0'),
-	(50,     'DisableUsersOnProductCancel',   '0'),
-	(51,     'DisableUsersOnProductCancel',   '0'),
-	(52,     'DisableUsersOnProductCancel',   '0'),
-	(53,     'DisableUsersOnProductCancel',   '0'),
-	(54,     'DisableUsersOnProductCancel',   '0'),
-	(55,     'DisableUsersOnProductCancel',   '0'),
-	(56,     'DisableUsersOnProductCancel',   '0'),
-	(57,     'DisableUsersOnProductCancel',   '0'),
-	(58,     'DisableUsersOnProductCancel',   '0'),
-	(59,     'DisableUsersOnProductCancel',   '0'),
-	(60,     'DisableUsersOnProductCancel',   '0')
-
+insert into @productlist (productid , productsettingtype , productsettingvalue) 
+select productid, 'DisableUsersOnProductCancel',   '0' from Enterprise.Product
 
 --select * from @productlist
 
