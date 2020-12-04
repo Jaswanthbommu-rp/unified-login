@@ -100,11 +100,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         List<PropertySetup> GetPropertiesForCompany(DefaultUserClaim _userClaim, Guid companyInstanceId, string propertyName = null, string domain = null, RequestParameter dataFilterSort = null);
 
         /// <summary>
-        /// Update Product
+        /// Update Property
         /// </summary>
         /// <param name="instanceId">instanceId</param>
         /// <param name="name">name</param>
         /// <returns></returns>
-        RepositoryResponse UpdateProduct(Guid instanceId, string name);
+        RepositoryResponse UpdateProperty(Guid instanceId, string name);
     }
 }

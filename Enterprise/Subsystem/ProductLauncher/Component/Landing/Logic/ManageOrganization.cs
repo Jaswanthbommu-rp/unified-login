@@ -667,7 +667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Invalid parameter propertyName.");
             }
-            return _propertyRepository.UpdateProduct(propertyInstanceId, propertyName);
+            return _propertyRepository.UpdateProperty(propertyInstanceId, propertyName);
         }
 		#endregion
 		#endregion
