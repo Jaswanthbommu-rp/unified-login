@@ -115,11 +115,11 @@ IF NOT EXISTS
 (
     SELECT TOP 1 1
     FROM enterprise.ProductType
-    WHERE Name = 'Intelligent Building Energy'
+    WHERE ProductTypeId = 114
 )
     BEGIN
         EXEC [Enterprise].[CreateProductType] 
-             @ProductTypeId = 113, -- Thsi value may change based on the root prodcut type
+             @ProductTypeId = 114, -- Thsi value may change based on the root prodcut type
              @ParentProductTypeId = @ParentProductTypeId, 
              @Name = @ProductName, 
              @Description = @ProductName, 
@@ -140,7 +140,7 @@ IF NOT EXISTS
              @ProductGUID = '88DE7EF1-70F4-492C-AA14-D3020ED406D9', -- Use newid() to generate new uniqueidentifier.
              @Name = @ProductName, 
              @Description = @ProductName, 
-             @ProductTypeId = 113;
+             @ProductTypeId = 114;
         
 		UPDATE Enterprise.Product
           SET 
@@ -301,11 +301,11 @@ IF NOT EXISTS
 (
     SELECT TOP 1 1
     FROM enterprise.ProductType
-    WHERE Name = 'Intelligent Building Water'
+    WHERE ProductTypeId = 115
 )
     BEGIN
         EXEC [Enterprise].[CreateProductType] 
-             @ProductTypeId = 113, -- Thsi value may change based on the root prodcut type
+             @ProductTypeId = 115, -- Thsi value may change based on the root prodcut type
              @ParentProductTypeId = @ParentProductTypeId, 
              @Name = @ProductName, 
              @Description = @ProductName, 
@@ -326,7 +326,7 @@ IF NOT EXISTS
              @ProductGUID = '1DB5E6B6-F634-417C-BC8B-83546EB1421F', -- Use newid() to generate new uniqueidentifier.
              @Name = @ProductName, 
              @Description = @ProductName, 
-             @ProductTypeId = 113;
+             @ProductTypeId = 115;
         
 		UPDATE Enterprise.Product
           SET 
@@ -487,11 +487,11 @@ IF NOT EXISTS
 (
     SELECT TOP 1 1
     FROM enterprise.ProductType
-    WHERE Name = 'HospitalityService'
+    WHERE ProductTypeId = 116
 )
     BEGIN
         EXEC [Enterprise].[CreateProductType] 
-             @ProductTypeId = 113, -- Thsi value may change based on the root prodcut type
+             @ProductTypeId = 116, -- Thsi value may change based on the root prodcut type
              @ParentProductTypeId = @ParentProductTypeId, 
              @Name = @ProductName, 
              @Description = @ProductName, 
@@ -512,7 +512,7 @@ IF NOT EXISTS
              @ProductGUID = '7ED03C61-670D-4692-97A4-8F6D4E94BAF8', -- Use newid() to generate new uniqueidentifier.
              @Name = @ProductName, 
              @Description = @ProductName, 
-             @ProductTypeId = 113;
+             @ProductTypeId = 116;
         
 		UPDATE Enterprise.Product
           SET 
