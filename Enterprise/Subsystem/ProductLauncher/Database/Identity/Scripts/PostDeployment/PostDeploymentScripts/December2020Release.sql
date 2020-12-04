@@ -642,3 +642,93 @@ IF NOT EXISTS
         );
 END;
 GO
+
+DECLARE @RightName nvarchar(200),
+		 @RightDescription nvarchar(200),
+		 @RightValue nvarchar(200),
+		 @StatusTypeId int,
+		 @OrgVisibilityStatusId INT = NULL,
+		 @RightVisibilityStatusId INT =NULL,
+		 @ProductId INT,
+		 @TargetProductId int,
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @OrgPartyId INT,
+         @SuperUserRoleId Int,
+		 @ServerName SYSNAME = @@SERVERNAME;
+
+DECLARE @TargetRoleName TABLE (RoleName nvarchar(100))
+DECLARE @TargetOrganization TABLE (PartyId INT)
+DECLARE @HoldRoleId TABLE (RoleId int)
+DECLARE @HoldOrgPartyId TABLE (PartyId INT)
+DECLARE @HoldRouteId TABLE (RouteId INT)
+
+	SET @RightName = 'ManageIntelligentBuildingEnergyProductAccess'; 
+	SET @RightDescription = 'Manage Energy Management Solution Product Access';
+	SET @RightValue = 'Manage Energy Management Solution Product Access';
+	SET @StatusTypeId = 13;
+	SET @RightVisibilityStatusId = 9;
+	SET @ProductId =3;
+	SET @TargetProductId = 58;
+
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+	
+    IF NOT EXISTS (Select 1 From [Security].[Right] Where RightName = @RightName)
+    BEGIN
+        INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
+	    VALUES ( @RightName,@RightDescription,@RightValue,@StatusTypeId, @RightVisibilityStatusId,@ProductId,@TargetProductId,@UserId,@Now)
+    END
+	
+
+	SET @RightName = 'ManageIntelligentBuildingWaterProductAccess'; 
+	SET @RightDescription = 'Manage Water Management Solution Product Access';
+	SET @RightValue = 'Manage Water Management Solution Product Access';
+	SET @TargetProductId = 59;
+
+    IF NOT EXISTS (Select 1 From [Security].[Right] Where RightName = @RightName)
+    BEGIN
+        INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
+	    VALUES ( @RightName,@RightDescription,@RightValue,@StatusTypeId, @RightVisibilityStatusId,@ProductId,@TargetProductId,@UserId,@Now)
+    END
+	
+
+	SET @RightName = 'ManageHospitalityServiceProductAccess'; 
+	SET @RightDescription = 'Manage Hospitality As A Service Solution Product Access';
+	SET @RightValue = 'Manage Hospitality As A Service Solution Product Access';
+	SET @TargetProductId = 60;
+    IF NOT EXISTS (Select 1 From [Security].[Right] Where RightName = @RightName)
+    BEGIN
+        INSERT INTO [Security].[Right](	RightName,Description, Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,	CreatedBy,CreatedDate)
+	    VALUES ( @RightName,@RightDescription,@RightValue,@StatusTypeId, @RightVisibilityStatusId,@ProductId,@TargetProductId,@UserId,@Now)
+    END
+	
+    Select @SuperUserRoleId = RoleId from Security.Role Where ShortName = 'SuperUser'
+    Select @RightId = RightId From [Security].[Right] Where RightName = 'ManageIntelligentBuildingEnergyProductAccess'
+
+    IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
+    BEGIN
+        INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
+	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
+    END
+
+    Select @RightId = RightId From [Security].[Right] Where RightName = 'ManageIntelligentBuildingWaterProductAccess'
+
+    IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
+    BEGIN
+        INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
+	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
+
+    END
+
+    Select @RightId = RightId From [Security].[Right] Where RightName = 'ManageHospitalityServiceProductAccess'
+
+    IF NOT EXISTS (Select 1 From [Security].[RoleRight] Where RoleId = @SuperUserRoleId AND RightId = @RightId)
+    BEGIN
+        INSERT INTO [Security].[RoleRight]( RoleId,RightId,CreatedBy,CreatedDate)
+	    VALUES ( @SuperUserRoleId,@RightId,@UserId,@Now)
+    END
+GO
