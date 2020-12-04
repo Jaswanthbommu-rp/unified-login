@@ -118,9 +118,9 @@ BEGIN
    COUNT(1) OVER () AS [TotalRecords],  
    CASE @sortValue  
     WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY Name ASC)  
-    WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY Domain ASC)  
+    WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY Domain ASC, Name ASC)  
     WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY Name DESC)  
-    WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY Domain DESC)  
+    WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY Domain DESC, Name ASC )  
    END AS [RowNumber]  
    FROM #tempPropertyInstance  
  )  
