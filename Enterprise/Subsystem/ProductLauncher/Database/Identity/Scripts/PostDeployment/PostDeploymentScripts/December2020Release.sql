@@ -1503,3 +1503,355 @@ BEGIN
  END
  GO
 GO
+
+--Add New product setting
+GO
+if not exists ( select top 1 1 from Enterprise.ProductSettingType where name = 'DisableUsersOnProductCancel' )
+begin
+	insert into enterprise.ProductSettingType ( name, Description ) values ( 'DisableUsersOnProductCancel', 'Disable all users on product provisioning cancel for a company')
+end
+-- AuthenticationType , Redirect, SAML, OpenIdCustom, NA
+
+DECLARE @NOW DATETIME = GETUTCDATE(); 
+declare @productlist table ( entid int identity, productid int, productsettingtype varchar(500), productsettingvalue varchar(2000))
+insert into @productlist (productid , productsettingtype , productsettingvalue) 
+select productid, 'DisableUsersOnProductCancel',   '0' from Enterprise.Product
+
+--select * from @productlist
+
+declare @MAX_ID INT
+declare @Current_ID INT = 1
+declare @CurrentProductId INT = 1
+
+select @MAX_ID = max(entid) from @productlist
+
+while @Current_ID <= @MAX_ID
+begin
+	declare @currentSettingType varchar(500)
+	declare @currentsettingValue varchar(2000)
+
+	select @CurrentProductId = productid , @currentSettingType = productsettingtype, @currentSettingValue = productsettingvalue
+		from @productlist where entid = @Current_ID
+
+	--print 'productid = ' + convert(varchar,@currentproductid)
+
+	if not exists (
+	select top 1 1 
+		FROM Enterprise.GlobalProductConfiguration gpc  
+		JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+		JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+		JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+			WHERE  gpc.ProductId = @CurrentProductId  
+		AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+		AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		AND pst.Name = @currentSettingType
+		AND ps.Value = @currentsettingValue
+	)
+	begin
+		declare @currentproductconfigurationid INT
+		select distinct top 1 @currentproductconfigurationid = pc.configurationid
+			FROM Enterprise.GlobalProductConfiguration gpc  
+			JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId  
+			JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId  
+			JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId  
+				WHERE  gpc.ProductId = @CurrentProductId
+			AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))  
+			AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))  
+		order by pc.ConfigurationId desc
+
+		if (@currentproductconfigurationid is not null)
+		begin
+			insert into enterprise.ProductSetting ( productid, ProductSettingTypeId, value, FromDate )
+				select @CurrentProductId, productsettingtypeid, @currentSettingValue, GETUTCDATE()
+					from enterprise.ProductSettingType where name = @currentSettingType
+			insert into enterprise.ProductConfiguration ( ConfigurationId, ProductSettingId, FromDate, ThruDate )
+				values ( @currentproductconfigurationid, @@IDENTITY, GETUTCDATE(), null )
+		end
+	end
+	
+	set @Current_ID = @Current_ID + 1
+end
+GO
+ DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @ProductId int = 3,
+		 @TargetProductId int = 60,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT =9,
+		 @StatusTypeId int=13;
+		
+
+ 
+	
+	--UserId
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] ='Manage Home Sharing Product Access')
+BEGIN 
+		INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+		VALUES('ManageHomeSharingProductAccess','Manage Home Sharing Product Access','Manage Home Sharing Product Access',@StatusTypeId,@RightVisibilityStatusId,@ProductId ,@TargetProductId,@UserId,@Now)
+
+		SELECT @RoleId = RoleId from [Security].[Role] where RoleName='User Administrator'
+		SELECT @RightId =  RightId from [Security].[Right] where [Value] = 'Manage Home Sharing Product Access' 
+		IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE [RightId]= @RightId)
+		BEGIN
+		 INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@RoleId,@RightId,@UserId,@Now)
+		END
+END
+GO
+
+DECLARE @ControlId int,
+        @Now Datetime = GETDate();
+
+IF EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessPropertiesTabUIId')
+BEGIN
+  SELECT @ControlId=ControlId FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessPropertiesTabUIId'
+  select @ControlId
+  IF NOT EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeadManagementProductAccessAllowCurrentandFuturePropertiesSwitchUIId')
+  BEGIN
+	   INSERT INTO [UserManagement].[Control] Values(@ControlId,1,'ILMLeadManagementProductAccessAllowCurrentandFuturePropertiesSwitchUIId',
+	   'Assign current and new properties automatically','allProperties',1, 480, @Now)
+	  select @ControlId
+	  UPDATE  UserManagement.[Control] SET  Sequence=2 WHERE UIId='ILMLeadManagementProductAccessPropertiesMultiSelectGridUIId'
+  END
+ 
+END
+
+IF EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessPropertiesTabUIId')
+BEGIN
+  SELECT @ControlId=ControlId FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessPropertiesTabUIId'
+  IF NOT EXISTS(SELECT 1 FROM [UserManagement].[Control] WHERE UIId ='ILMLeasingAnalyticsProductAccessAllowCurrentandFuturePropertiesSwitchUIId')
+  BEGIN
+	   INSERT INTO [UserManagement].[Control] Values(@ControlId,1,'ILMLeasingAnalyticsProductAccessAllowCurrentandFuturePropertiesSwitchUIId',
+	   'Assign current and new properties automatically','allProperties',1, 480, @Now)
+	  select @ControlId
+	  UPDATE  UserManagement.[Control] SET  Sequence=2 WHERE UIId='ILMLeasingAnalyticsProductAccessPropertiesMultiSelectGridUIId'
+  END
+ 
+END
+GO
+
+DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @OrgPartyId int,
+		 @RoleTypeId int,
+		 @ProductId int =60,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT = 9,
+		 @StatusTypeId int=13,
+		 @ServerName SYSNAME = @@SERVERNAME;
+
+IF @ServerName IN ('RCDUSODBSQL001','rctusodbsql001','RCQUSODBSQL001')
+BEGIN		
+
+		DECLARE @TargetRoleValue TABLE (RoleName nvarchar(100))
+
+		INSERT INTO @TargetRoleValue VALUES('Property Admin'),('Property User');
+
+	
+			--UserId
+			SELECT	@UserId = UserId
+			FROM	Ident.UserLogin
+			WHERE	LoginName LIKE 'realpagead@%'
+        SELECT @OrgPartyId=PartyId FROM Enterprise.Organization WHERE [Name]='CAMDEN DEVELOPMENT, INC.'
+		IF NOT EXISTS
+		(
+			SELECT TOP 1 1 FROM [Security].[Role]
+			WHERE OrgPartyId = @OrgPartyId AND [RoleName] IN (SELECT RoleName FROM @TargetRoleValue)
+		)
+		BEGIN
+
+				SELECT @RoleTypeId=RoleTypeId from [Security].RoleType WHERE [Value]='Product'
+ 
+					--Cursor Mapping Role with Right
+						DECLARE curCreateNewRole CURSOR FOR
+						SELECT RoleName
+						FROM @TargetRoleValue
+
+						OPEN curCreateNewRole
+						FETCH NEXT FROM curCreateNewRole INTO @RoleName
+
+						WHILE @@FETCH_STATUS = 0
+						BEGIN
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Role] WHERE RoleName = @RoleName and OrgPartyID = @OrgPartyId)
+							BEGIN
+								INSERT INTO [Security].[Role]
+								(	RoleName,
+									Shortname, 
+									Description,
+									RoleTypeID,
+									OrgPartyID,
+									ProductId,
+									CreatedBy,
+									createdDate
+								)
+								VALUES ( 
+										@RoleName,
+										@RoleName,
+										@RoleName,
+										@RoleTypeId,
+										@OrgPartyId,
+										@ProductId,
+										@UserId,
+										@Now
+								)
+							END
+							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] = @RoleName and VisibilityStatusId = 9)
+							BEGIN	
+								INSERT INTO [Security].[Right]
+											(	RightName,
+												Description, 
+												Value,
+												StatusTypeId,
+												VisibilityStatusId,
+												ProductId,
+												TargetProductId,
+												CreatedBy,
+												CreatedDate
+											)
+											VALUES ( 
+													REPLACE(@RoleName, ' ', ''),
+													@RoleName,
+													@RoleName,
+													@StatusTypeId, 
+													@RightVisibilityStatusId,
+													@ProductId,
+													@ProductId,
+													@UserId,
+													@Now
+								)
+							END
+								 
+							SELECT @RoleId = RoleId FROM [Security].[Role] WHERE RoleName=@RoleName and OrgPartyID = @OrgPartyId
+							SELECT @RightId = RightId FROM [Security].[Right] WHERE [Value]=@RoleName and VisibilityStatusId = 9
+							SELECT @RoleId, @RightId
+ 							IF NOT EXISTS (SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE RoleId = @RoleId AND RightId=@RightId)
+							BEGIN
+									INSERT INTO [Security].[RoleRight]
+									(	RoleId,
+										RightId, 
+										CreatedBy,
+										CreatedDate
+									)
+									VALUES ( 
+											@RoleId,
+											@RightId,
+											@UserId,
+											@Now
+										   )
+								END
+										
+							
+							FETCH NEXT FROM curCreateNewRole INTO @RoleName
+						END
+						CLOSE curCreateNewRole
+						DEALLOCATE curCreateNewRole
+
+
+				
+		END
+ END
+ GO
+
+ DECLARE @ProductSettingTypeId INT
+select @ProductSettingTypeId = ProductSettingTypeId from Enterprise.ProductSettingType where Name = 'Learnmore'
+IF EXISTS (SELECT TOP 1 * FROM Enterprise.ProductSetting where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId)
+BEGIN
+ UPDATE ENTERPRISE.ProductSetting set Value = 'https://site.clickpay.com/for-property-managers/' where ProductId = 48 and ProductSettingTypeId = @ProductSettingTypeId 
+END
+GO
+IF EXISTS(select top 1 1 from enterprise.product where productid=48)
+BEGIN
+	update enterprise.product set  Description = 'Payments - Open Market Solution'  where productid=48
+END
+GO
+
+IF EXISTS(SELECT * FROM [Security].[Right] WHERE RightName ='HelpCenterContactSupport')
+BEGIN
+  ---RENAME Right name
+	  IF NOT EXISTS(SELECT * FROM [Security].[Right] WHERE [Value] ='Simon Help Center Contact Support')
+		BEGIN  
+		   UPDATE [Security].[Right] SET [Value] ='Simon Help Center Contact Support'
+			WHERE RightName ='HelpCenterContactSupport'
+		END
+	-- Visiable across All PMCs
+	UPDATE [Security].[Right] SET VisibilityStatusId = 9
+    WHERE RightName ='HelpCenterContactSupport'
+
+END
+GO
+
+DECLARE @RightId INT,
+		@BasicEndUserRoleId INT,
+		@UserAdminRoleId INT,
+		@UPRoleId INT,
+		@UserId bigint,
+		@Now datetime = GETDATE()
+
+SELECT	@UserId = UserId
+			FROM	Ident.UserLogin
+			WHERE	LoginName LIKE 'realpagead@%'
+
+IF EXISTS (SELECT TOP 1 1 FROM Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter')
+BEGIN
+	select @RightId = RightId from Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter'
+	
+	UPDATE Security.[Right] SET [Description] = 'Access to Simon Help Center', [Value] = 'Access to Simon Help Center' WHERE RightId = @RightId
+	select @BasicEndUserRoleId = RoleId from security.role where rolename = 'Basic End User' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @BasicEndUserRoleId AND @RightId = RightId)
+	BEGIN
+	 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+	 VALUES(@BasicEndUserRoleId,@RightId,@UserId,@Now)
+	END
+
+	select @UPRoleId = RoleId from security.role where rolename = 'Read only for Unified Platform' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UPRoleId AND @RightId = RightId)
+	BEGIN
+		 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@UPRoleId,@RightId,@UserId,@Now)
+	END
+
+	select @UserAdminRoleId = RoleId from security.role where rolename = 'User Administrator' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UserAdminRoleId AND @RightId = RightId)
+	BEGIN
+		 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@UserAdminRoleId,@RightId,@UserId,@Now)
+	END
+
+END
+GO
+
+IF EXISTS(select top 1 1 from Enterprise.Product where productid = 49 and Name='Help Center')
+BEGIN
+    update Enterprise.Product set [Name] = 'Simon Help Center', [Description] = 'Simon Help Center' where ProductId = 49
+END
+GO
+
+DECLARE @RightId INT;
+SELECT @RightId = RightId FROM [Security].[Right] WHERE rightname = 'ManageIntelligentBuildingProductAccess';
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE rightname = 'ManageIntelligentBuildingProductAccess')
+BEGIN
+	UPDATE [Security].[Right] SET [Value] = 'Manage Waste Management Solution Product Access', 
+								  [Description] = 'Manage Waste Management Solution Product Access',
+								  [RightName] = 'ManageIntelligentBuildingTrashProductAccess'
+							  WHERE RightId = @RightId;
+END
+
+GO
