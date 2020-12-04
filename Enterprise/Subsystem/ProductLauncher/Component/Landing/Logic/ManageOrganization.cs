@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -28,6 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IOrganizationProductRepository _organizationProductRepository;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private IProductRepository _productRepository;
+        private IPropertyRepository _propertyRepository;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -60,6 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _organizationProductRepository = new OrganizationProductRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();
+            _propertyRepository = new PropertyRepository();
             _defaultUserClaim = userClaim;
         }
 
@@ -622,5 +625,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _organizationRepository.GetCompanyList(_defaultUserClaim, organizationName, domain, blueId, organizationId, dataFilter);
         }
         #endregion
-    }
+
+        #region GetPropertiesForCompany
+        public List<PropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, IDictionary<object, object> globals=null)
+        {
+            RequestParameter dataFilter = new RequestParameter();
+            if (globals.ContainsKey(BaseType.RequestParameter))
+            {
+                dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
+            }
+            return _propertyRepository.GetPropertiesForCompany(_defaultUserClaim, companyInstanceId, propertyName, domain, dataFilter);
+        }
+		#endregion
+
+		#region Edit Property
+		#region GetPropertyForCompany
+		public List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId)
+        {
+			List<Guid> propGuidList = new List<Guid>
+			{
+				propertyInstanceId
+			};
+			return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList);
+        }
+        #endregion
+
+        #region UpdateProperty
+        /// <summary>
+        /// Update existing Property
+        /// </summary>
+        /// <param name="propertyInstanceId">property Instance Id</param>
+        /// <param name="propertyName">propertyName</param>
+        /// <returns>RepositoryResponse object</returns>
+        public RepositoryResponse UpdateProperty(Guid propertyInstanceId, string propertyName)
+        {
+            if (propertyInstanceId == Guid.Empty)
+            {
+                throw new Exception("Invalid parameter propertyInstanceId.");
+            }
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new Exception("Invalid parameter propertyName.");
+            }
+            return _propertyRepository.UpdateProduct(propertyInstanceId, propertyName);
+        }
+		#endregion
+		#endregion
+	}
 }
