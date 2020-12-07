@@ -1046,13 +1046,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // log product user updated activity
             var fromUserLogDetail = GetUserActivityLogInfo(fromPersonaId);
             var toUserLogDetail = GetUserActivityLogInfo(toPersonaId);
-            //var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
+            var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
             var logMessage = string.Format(message, toUserLogDetail.FirstName, toUserLogDetail.LastName,
-                _productDetails.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
+                booksProductDetail.Name, fromUserLogDetail.FirstName, fromUserLogDetail.LastName);
 
             WriteActivityLog(fromUserLogDetail, toUserLogDetail,
-               _productDetails.BooksProductCode, logMessage);
+               booksProductDetail.BooksProductCode, logMessage);
         }
 
         private void WriteActivityLog(long fromPersonaId, IC.Person toPerson, UserLoginOnly toUserGbLogin, string message)

@@ -138,6 +138,8 @@ AS
                      SELECT *
                      FROM @CompanyIdList AS cil
                  )))
+
+			--- Add the users that UL is not thier user management 
 			INSERT INTO #UserList
 			(UserId, 
 			LoginName, 
@@ -156,6 +158,7 @@ AS
 					Email
 			FROM Users AS u;
 
+		 --- Add the users that UL is the users management
 		INSERT INTO @ProductIdRightList(ProductId)
 		SELECT ProductId
 		FROM @ProductIdList
@@ -170,6 +173,7 @@ AS
 				FirstName, 
 				LastName,
 				PersonaId,
+				PreferredPhoneNumber,
 				Email
 			)
 					SELECT ul.UserId, 
@@ -177,6 +181,7 @@ AS
 							pp.FirstName, 
 							pp.LastName,
 							p.PersonaId,
+							CTPREF.PreferredPhoneNumber,
 							ne.Email
 					FROM Ident.UserLogin ul
 						INNER JOIN Ident.UserLoginPersona ulp ON ul.UserId = ulp.UserLoginId
@@ -190,6 +195,7 @@ AS
 						INNER JOIN [Security].[Right] AS r2 ON rr.RightId = r2.RightId
 						INNER JOIN Enterprise.ProductRight AS prt ON r2.TargetProductId = prt.ProductId
 						INNER JOIN Enterprise.DataImportMapping AS dim ON ULP.OrganizationPartyId = dim.PartyId
+						LEFT OUTER JOIN  @ContactPreference AS CTPREF ON CTPREF.PartyId = pa.PartyId
 						LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = pp.PartyId
 						
 					WHERE 
