@@ -669,6 +669,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return result;
         }
 
+        public ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
+        {
+            ListResponse result = new ListResponse();
+           
+            IProduct product;
+            string productName = Enum.GetName(typeof(ProductEnum), productId);
+            string productcode = ProductEnumHelper.StringValueOf((ProductEnum)productId);
+            switch (productId)
+            {
+                case (int)ProductEnum.FinancialSuite:
+                    var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(_userClaims);
+                    result = manageProductOneSiteAccounting.GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    break;
+                default:
+                    break;
+            }
+            if (result.IsError)
+            {
+                throw new Exception(result.ErrorReason);
+            }           
+           
+            return result;
+        }
+
         #endregion
     }
 }
