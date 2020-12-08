@@ -139,5 +139,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="productCenterCancel"></param>
         /// <returns></returns>
         bool AcknowledgeProvisioningCancelEvent(ProductCenterCancellation productCenterCancel);
+
+        /// <summary>
+        /// Used to acknowledge on property name update
+        /// </summary>
+        /// <param name="propertyInstanceAck"></param>
+        /// <returns></returns>
+        bool AcknowledgePropertyUpdate(PropertyInstanceAck propertyInstanceAck);
+
+        /// <summary>
+        /// GetPropertyInstanceForCompany
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        List<BooksPropertyInstance> GetPropertyInstanceForCompany(Guid companyRealPageId);
     }
 }

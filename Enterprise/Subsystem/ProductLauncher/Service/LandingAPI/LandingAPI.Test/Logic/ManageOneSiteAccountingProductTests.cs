@@ -480,7 +480,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
             var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
-
+            GbProductMap productMap = new GbProductMap()
+            {
+                ProductId = (int)ProductEnum.FinancialSuite,
+                Name = "Financial Suit",
+                BooksProductCode = "ACCT",
+                UDMSourceCode = "Acct"
+            };
             SamlRepository samlRepository = new SamlRepository();
             mockProductInternalSettingRepository
                 .Setup(m => m.GetProductInternalSettings(
@@ -488,6 +494,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ))
                 .Returns(_productInternalSettings);
 
+            mockProductRepository.Setup(m => m.GetBooksMasterProductDetail((int)ProductEnum.FinancialSuite)).Returns(productMap);
             //Act
             IManageProductOneSiteAccounting manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, samlRepository, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, managePartyRelationship: null);
 
