@@ -58,13 +58,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public OrganizationDomain OrganizationDomain { get; set; }
 
 		/// <summary>
-		/// Organization Domain
+		/// PersonaId
 		/// </summary>
 		[JsonProperty("PersonaId")]
 		public long PersonaId { get; set; }
 
 		/// <summary>
-		/// Organization Domain
+		/// PMC Name
 		/// </summary>
 		[JsonProperty("PMC")]
 		public string PMC { get; set; }
