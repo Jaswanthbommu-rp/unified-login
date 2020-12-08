@@ -546,7 +546,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
                     IManagePerson managePerson = new ManagePerson();
-                    IManageOrganization manageOrganization = new ManageOrganization();
+                    IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
                     try
                     {
                         IPerson person = managePerson.GetPerson(userResetPassword.RealPageId.Value);

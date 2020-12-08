@@ -157,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 Persona persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _userClaims.OrganizationPartyId);
 
                 //Verify if same company
-                IManageOrganization manageOrganization = new ManageOrganization();
+                IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
 				bool isValidOrganization = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, persona.Organization.RealPageId);
 				if (!isValidOrganization)
 				{
@@ -439,7 +439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 
-			IManageOrganization manageOrganization = new ManageOrganization();
+			IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
 			bool isValidOrganization = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, profile.Persona[0].Organization.RealPageId);
 			if (!isValidOrganization)
 			{

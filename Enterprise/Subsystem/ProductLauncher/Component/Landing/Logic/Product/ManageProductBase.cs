@@ -106,7 +106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manage Organization Business logic
         /// </summary>
-        protected IManageOrganization _manageOrganization = new ManageOrganization();
+        //protected IManageOrganization _manageOrganization = new ManageOrganization();
 
         /// <summary>
         /// Manage Electronic Address Business logic

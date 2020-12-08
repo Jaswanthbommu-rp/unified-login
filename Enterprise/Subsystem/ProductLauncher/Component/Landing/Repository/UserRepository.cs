@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,11 +55,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
-        public UserRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
+        public UserRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
         {
             _userClaim = userClaim;//new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             _userLoginRepository = new UserLoginRepository(repository);
-            _managePersona = new ManagePersona(repository, userClaim);
+            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _organizationRepository = new OrganizationRepository(repository);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
@@ -2038,7 +2039,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
             IManagePersona managePersona = new ManagePersona(_userClaim);
-            IManageOrganization manageOrganization = new ManageOrganization();
+            IManageOrganization manageOrganization = new ManageOrganization(_userClaim);
 
             var userLoginOnly = userLoginRepository.GetUserLoginOnly(user.RealPageId);
             var userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);

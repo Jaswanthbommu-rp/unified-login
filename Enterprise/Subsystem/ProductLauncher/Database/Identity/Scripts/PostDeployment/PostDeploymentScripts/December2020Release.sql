@@ -1635,6 +1635,37 @@ begin
 	set @Current_ID = @Current_ID + 1
 end
 GO
+ DECLARE @RightValue nvarchar(200),
+		 @UserId bigint,
+		 @Now datetime = GETDATE(),
+		 @RightId int,
+		 @RoleId INT,
+		 @ProductId int = 3,
+		 @TargetProductId int = 60,
+		 @RoleName nvarchar(100),
+		 @OrgVisibilityStatusId INT = 9,
+		 @RightVisibilityStatusId INT =9,
+		 @StatusTypeId int=13;
+		
+ 
+	
+	--UserId
+	SELECT	@UserId = UserId
+	FROM	Ident.UserLogin
+	WHERE	LoginName LIKE 'realpagead@%'
+IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE [Value] ='Manage Home Sharing Product Access')
+BEGIN 
+		INSERT INTO Security.[Right] (RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate)
+		VALUES('ManageHomeSharingProductAccess','Manage Home Sharing Product Access','Manage Home Sharing Product Access',@StatusTypeId,@RightVisibilityStatusId,@ProductId ,@TargetProductId,@UserId,@Now)
+		SELECT @RoleId = RoleId from [Security].[Role] where RoleName='User Administrator'
+		SELECT @RightId =  RightId from [Security].[Right] where [Value] = 'Manage Home Sharing Product Access' 
+		IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE [RightId]= @RightId)
+		BEGIN
+		 INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@RoleId,@RightId,@UserId,@Now)
+		END
+END
+GO
 
 DECLARE @ControlId int,
         @Now Datetime = GETDate();
@@ -1704,4 +1735,47 @@ BEGIN
 							  WHERE RightId = @RightId;
 END
 
+GO
+
+ DECLARE @RightId INT,
+		@BasicEndUserRoleId INT,
+		@UserAdminRoleId INT,
+		@UPRoleId INT,
+		@UserId bigint,
+		@Now datetime = GETDATE()
+SELECT	@UserId = UserId
+			FROM	Ident.UserLogin
+			WHERE	LoginName LIKE 'realpagead@%'
+IF EXISTS (SELECT TOP 1 1 FROM Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter')
+BEGIN
+	select @RightId = RightId from Security.[Right] where [Value] = 'Access to Help Center' AND RightName = 'AccessHelpCenter'
+	UPDATE Security.[Right] SET [Value] = 'Access to Simon Help Center' WHERE RightId = @RightId
+	
+	select @BasicEndUserRoleId = RoleId from security.role where rolename = 'Basic End User' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @BasicEndUserRoleId AND @RightId = RightId)
+	BEGIN
+	 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+	 VALUES(@BasicEndUserRoleId,@RightId,@UserId,@Now)
+	END
+	select @UPRoleId = RoleId from security.role where rolename = 'Read only for Unified Platform' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UPRoleId AND @RightId = RightId)
+	BEGIN
+		 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@UPRoleId,@RightId,@UserId,@Now)
+	END
+	select @UserAdminRoleId = RoleId from security.role where rolename = 'User Administrator' and OrgPartyID IS NULL
+	
+	IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RoleRight WHERE RoleId = @UserAdminRoleId AND @RightId = RightId)
+	BEGIN
+		 INSERT INTO SECURITY.[RoleRight] (RoleId,RightId,CreatedBy,CreatedDate) 
+		 VALUES(@UserAdminRoleId,@RightId,@UserId,@Now)
+	END
+END
+GO
+IF EXISTS (SELECT TOP 1 1 FROM Security.[Right] WHERE RightName = 'AccessPMEDashboard' AND VALUE = 'Access to Help Center')
+BEGIN
+    UPDATE Security.[Right] SET Description='Access to PME Dashboard',VALUE = 'Access to PME Dashboard' WHERE RightName = 'AccessPMEDashboard' AND VALUE = 'Access to Help Center'
+END
 GO

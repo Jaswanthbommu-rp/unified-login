@@ -234,7 +234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = Guid.Empty });
 			//Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
             IRepositoryResponse repositoryResponse = manageUserLogin.CreateUserLogin(realPageId, userLogin);
 
 			//Assert
@@ -264,7 +264,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			
             //Act
             int NumberOfProperties = type.GetProperties().Length;
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
             var userLogin = manageUserLogin.GetUserLoginOnly(_userRealPageId);
 
 			//Assert
@@ -405,7 +405,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(organizationList);
 
 			//Act
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
+			IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
             IRepositoryResponse repositoryResponse = manageUserLogin.UpdateUserLogin(realPageId, userLogin);
 
 			//Assert
@@ -497,7 +497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(organizationList);
 
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
             UserOrganizationExists userOrganizationExists = manageUserLogin.IsLoginNameExists(_loginName, _organizationRealPageId, _userRealPageId);
 
 			//Assert
@@ -541,7 +541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void LinkIdentityProviderToUserLogin_ValidAndErrors()
         {
             //Act
-            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_mockRepository.Object, userClaims, null);
             var response = manageUserLogin.LinkIdentityProviderToUserLogin(24, 25, 2);
 
             //Assert
