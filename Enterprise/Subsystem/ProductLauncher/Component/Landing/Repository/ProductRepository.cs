@@ -1963,6 +1963,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     case (int)ProductRightEnum.ManageHospitalityServiceProductAccess:
                         s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHospitalityServiceProductAccess.ToString());
                         break;
+                    case (int)ProductRightEnum.ManageHOTSProductAccess:
+                        s.LockOnProductAccess = !editorRights.Contains(ProductRightEnum.ManageHOTSProductAccess.ToString());
+                        break;
                     default:
                         break;
                 }

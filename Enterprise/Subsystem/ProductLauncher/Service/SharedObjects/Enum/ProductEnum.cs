@@ -868,7 +868,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Hospitality As A Service
 		/// </summary>
 		[Description("HAAS")]
-		ManageHospitalityServiceProductAccess = 60
+		ManageHospitalityServiceProductAccess = 60,
+		/// <summary>
+		/// HOTS
+		/// </summary>
+		[Description("HOTS")]
+		ManageHOTSProductAccess = 63
 	}
 	public enum ProductProcVersion
 	{
