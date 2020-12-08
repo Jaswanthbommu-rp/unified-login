@@ -4,6 +4,7 @@ using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -299,13 +300,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// Get Properties for a Organization
         /// </summary>
-        /// <param name="_userClaim">UserClaim</param>
-        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyInstanceIds">propertyInstanceIds</param>
         /// <param name="propertyName">PropertyName</param>
         /// <param name="domain">Domain</param>
         /// <param name="dataFilterSort">datafilter</param>
         /// <returns>List of Properties for a company </returns>
-        public List<PropertySetup> GetPropertiesForCompany(DefaultUserClaim _userClaim, Guid companyInstanceId, string propertyName = null, string domain = null, RequestParameter dataFilterSort = null)
+        public List<PropertySetup> GetPropertiesForCompany(List<Guid> propertyInstanceIds, string propertyName = null, string domain = null, RequestParameter dataFilterSort = null)
         {
             string sortBy = "Name";
             string sortDirection = "Asc";
@@ -322,9 +322,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
-            List<PropertySetup> propertySetup = new List<PropertySetup>();
-            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(_userClaim, companyInstanceId);
-            var propertyInstanceIds = booksPropertyInstance.Select(p => p.attributes.propertyInstanceSourceId).Select(Guid.Parse).ToList();
             dynamic param = new
             {
                 InstanceList = TableValueParamHelper.ConvertToTableValuedParameter(propertyInstanceIds, "Enterprise.PropertyInstanceType"),
@@ -337,9 +334,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             };
             using (var repository = GetRepository())
             {
-                propertySetup = repository.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging, param);
-                propertySetup = AddContractedNameToPropertyList(booksPropertyInstance, propertySetup);
-                return propertySetup;
+                return repository.GetMany<PropertySetup>(StoredProcNameConstants.SP_GetPropertyInstanceListByIdWithPaging, param);
             }
         }
 		#endregion
@@ -361,30 +356,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
-                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, param);
-                return result;
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, param);                
             }
         }
 		#endregion
 
 		#region Private methods
-		private List<BooksPropertyInstance> GetPropertyInstanceFromBooks(DefaultUserClaim _userClaim, Guid companyInstanceId)
-        {            
-            string cacheKey = $"getListOrganizationDomain";
-            ManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
-            return _blueBook.GetPropertyInstanceForCompany(companyInstanceId);
-        }
-
-        private List<PropertySetup> AddContractedNameToPropertyList(List<BooksPropertyInstance> booksPropertyInstance, List<PropertySetup> propertySetup)
-        {
-            foreach (var property in propertySetup)
-            {
-                property.ContractedName = booksPropertyInstance?
-                            .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-                            .FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault().customerProperty?.FirstOrDefault().propertyName;
-            }
-            return propertySetup;
-        }
+		
         #endregion
     }
 }

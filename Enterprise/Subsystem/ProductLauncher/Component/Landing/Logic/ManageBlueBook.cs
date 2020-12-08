@@ -857,8 +857,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         compIds = item.BooksCustomerMasterId.ToString();
                     }
-
-                    compIds += "," + item.BooksCustomerMasterId;
+					else
+                    {
+                        compIds += "," + item.BooksCustomerMasterId;
+                    }
                 }
             }
 
@@ -1168,7 +1170,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                        "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source"+
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
-                uri = _httpClient.BaseAddress + uri;
+              
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Getting info.", logData);
                 var response = GetAsync(uri).Result;

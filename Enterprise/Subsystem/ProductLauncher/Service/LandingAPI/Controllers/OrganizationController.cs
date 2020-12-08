@@ -57,13 +57,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageOrganizationProduct = new ManageOrganizationProduct(new OrganizationProductRepository(repository));
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
-            _manageUserLogin = new ManageUserLogin(repository, userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
-            _manageOrganization = new ManageOrganization(repository, userClaims);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaims, _productInternalSettingRepository, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler); 
             _messageHandler = messageHandler;
             _userClaims = userClaims;
+            _propertyRepository = new PropertyRepository(repository);
         }
 
         /// <summary>
@@ -97,6 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageBlueBook _manageBlueBook;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private HttpMessageHandler _messageHandler;
+        private IPropertyRepository _propertyRepository;
         #endregion
 
         #region Public Organization Methods
@@ -1029,7 +1031,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain= null, [FromUri] RequestParameter datafilter = null)
         {
-            if (string.IsNullOrEmpty(companyInstanceId.ToString()))
+            if (companyInstanceId == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
             }

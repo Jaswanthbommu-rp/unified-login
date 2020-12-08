@@ -13,6 +13,8 @@ using System.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using System.Net.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -30,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private IProductRepository _productRepository;
         private IPropertyRepository _propertyRepository;
-
+        private IManageBlueBook _manageBlueBook;
         private DefaultUserClaim _defaultUserClaim;
         #endregion
 
@@ -38,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Constructor
         /// </summary>
-        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim)
+        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
             _organizationRepository = new OrganizationRepository(repository);
             _credentialRepository = new CredentialRepository(repository);
@@ -48,6 +50,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _productRepository = new ProductRepository(repository);
             _defaultUserClaim = userClaim;
+            _manageBlueBook = new ManageBlueBook(_defaultUserClaim, _productInternalSettingRepository, messageHandler);
+            _propertyRepository = new PropertyRepository(repository);
         }
 
         /// <summary>
@@ -63,6 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();
             _propertyRepository = new PropertyRepository();
+            _manageBlueBook = new ManageBlueBook(userClaim);
             _defaultUserClaim = userClaim;
         }
 
@@ -78,6 +83,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _organizationProductRepository = new OrganizationProductRepository();
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();
+            _manageBlueBook = new ManageBlueBook();
         }
 
         #endregion
@@ -622,7 +628,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            return _organizationRepository.GetCompanyList(_defaultUserClaim, organizationName, domain, blueId, organizationId, dataFilter);
+            var company =  _organizationRepository.GetCompanyList(organizationName, domain, blueId, organizationId, dataFilter);
+            return GetCompanyAdressFromBooks(company);
         }
         #endregion
 
@@ -634,7 +641,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            return _propertyRepository.GetPropertiesForCompany(_defaultUserClaim, companyInstanceId, propertyName, domain, dataFilter);
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
+            var propertyInstanceIds = booksPropertyInstance.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
+            List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, domain, dataFilter);
+            return AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
         }
 		#endregion
 
@@ -669,7 +679,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return _propertyRepository.UpdateProperty(propertyInstanceId, propertyName);
         }
-		#endregion
-		#endregion
-	}
+        #endregion
+        #endregion
+
+        #region Private Methods
+
+
+        private List<CompanySetup> GetCompanyAdressFromBooks(List<CompanySetup> companyDetails)
+        {
+            List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
+            // ManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
+            foreach (var item in companyDetails)
+            {
+                compList.Add(new UnifiedLoginCompany
+                {
+                    CompanyId = long.Parse(item.BooksMasterId.ToString()),
+                    BooksCustomerMasterId = long.Parse(item.BooksCustomerMasterId.ToString() == string.Empty ? "0" : item.BooksCustomerMasterId.ToString())
+                });
+            }
+            IList<Company> booksCompanyDetails = _manageBlueBook.GetCompanyListByCompIds(compList);
+            foreach (var items in companyDetails)
+            {
+                var address = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CustomerCompanyLocation;
+                if (address != null && address.Length > 0)
+                {
+                    items.ContractedName = booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?.CompanyName;
+                    items.CompanyLocation = address[0];
+                    items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
+                }
+            }
+            return companyDetails;
+        }
+
+        private List<BooksPropertyInstance> GetPropertyInstanceFromBooks(Guid companyInstanceId)
+        {                    
+            return _manageBlueBook.GetPropertyInstanceForCompany(companyInstanceId);
+        }
+
+        private List<PropertySetup> AddContractedNameToPropertyList(List<BooksPropertyInstance> booksPropertyInstance, List<PropertySetup> propertySetup)
+        {
+            foreach (var property in propertySetup)
+            {
+                property.ContractedName = booksPropertyInstance?
+                            .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
+                            .FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault().customerProperty?.FirstOrDefault().propertyName;
+            }
+            return propertySetup;
+        }
+        #endregion
+    }
 }
