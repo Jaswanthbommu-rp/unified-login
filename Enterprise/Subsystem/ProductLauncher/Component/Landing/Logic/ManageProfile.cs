@@ -71,7 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		    _personaLogic = new ManagePersona();
 		    _personLogic = new ManagePerson();
 		    _userLoginLogic = new ManageUserLogin(userClaim);
-		    _organizationLogic = new ManageOrganization();
+		    _organizationLogic = new ManageOrganization(userClaim);
 		    _partyRelationshipLogic = new ManagePartyRelationship();
 		    _contactMechanismLogic = new ManageContactMechanism();
 		    _partyRoleLogic = new ManagePartyRole();

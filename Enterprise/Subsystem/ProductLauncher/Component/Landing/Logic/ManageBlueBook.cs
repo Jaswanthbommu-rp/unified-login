@@ -808,6 +808,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return true;
         }
 
+        /// <summary>
+        /// Used to acknowledge when property name updated
+        /// </summary>
+        /// <param name="propertyInstanceAck"></param>
+        /// <returns></returns>
+        public bool AcknowledgePropertyUpdate(PropertyInstanceAck propertyInstanceAck)
+        {
+            string uri = $"propertyinstance/{propertyInstanceAck.PropertyInstanceSourceId}/UPFM";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyUpdate", propertyInstanceAck } };
+            var jsonToSave = JsonConvert.SerializeObject(propertyInstanceAck, new JsonApiSerializerSettings()).Replace("propertyinstanceack", "propertyinstance");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate info.", logData);
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Put,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = _httpClient.SendAsync(request).Result;
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "AcknowledgePropertyUpdate - Canceled successfully.");
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "AcknowledgePropertyUpdate - Failed to Cancel.", logData);
+
+            return true;
+        }
 
         /// <summary>
         /// Used to get a list of company id's for the given company list
@@ -825,8 +857,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         compIds = item.BooksCustomerMasterId.ToString();
                     }
-
-                    compIds += "," + item.BooksCustomerMasterId;
+					else
+                    {
+                        compIds += "," + item.BooksCustomerMasterId;
+                    }
                 }
             }
 
@@ -1106,6 +1140,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             });
             return customerProperty;
         }
+
+        /// <summary>
+        /// Used to get the Properties of the company, using the books customer master id or the UPFM id
+        /// </summary>
+        /// <param name="companyRealPageId"></param>
+        /// <returns></returns>
+        public List<BooksPropertyInstance> GetPropertyInstanceForCompany(Guid companyRealPageId)
+        {
+            List<BooksPropertyInstance> propertyInstance = new List<BooksPropertyInstance>(); 
+            RPObjectCache rpcache = new RPObjectCache();
+            var cacheKey = $"getPropertyInstanceForCompany_{companyRealPageId}";
+
+			propertyInstance = rpcache.GetFromCache<List<BooksPropertyInstance>>(cacheKey, 3600, () =>
+			{
+
+				/*
+                 http://booksapi.realpage.com/propertyinstance?filter[source]=UPFM
+                &filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=cf1fac30-0562-49c4-9410-fbb8919bbdb8
+                &page[size]=9999&include=customerPropertyMap.customerProperty
+                &fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source
+                &fields[customerPropertyMap]=customerPropertyId,propertyInstanceId
+                &fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName
+
+                */
+				string uri = $"propertyinstance?filter[source]=UPFM" +
+                "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
+                      "&page[size]=9999&include=customerPropertyMap.customerProperty" +
+                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source"+
+                          "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
+                             "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
+              
+                Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Getting info.", logData);
+                var response = GetAsync(uri).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
+                    propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                    logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompany", propertyInstance } };
+                    WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Got info.", logData);
+                }
+                else
+                {
+                    logData = new Dictionary<string, object>() { { "response", response } };
+                    WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - No info found.", logData);
+                    return null;
+                }
+
+                return propertyInstance;
+			});
+			return propertyInstance;
+		}
 
 
 

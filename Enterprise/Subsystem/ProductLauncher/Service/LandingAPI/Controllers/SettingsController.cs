@@ -54,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		{
 			IApiError apiError;
 			Organization organization = new Organization();
-			IManageOrganization manageOrganization = new ManageOrganization();
+			IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
             var orgList = manageOrganization.GetUnifiedLoginCompanyList();
             
 			switch (bookMasterTypeId)
@@ -222,7 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			ISetting setting;
 
 			Organization organization = new Organization();
-			IManageOrganization manageOrganization = new ManageOrganization();
+			IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
             var orgList = manageOrganization.GetUnifiedLoginCompanyList();
 
 			switch (bookMasterTypeId)
