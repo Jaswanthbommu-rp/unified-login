@@ -5,9 +5,11 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	SELECT
-		[PropertyInstanceId]
+		pim.[PropertyInstanceId],
+		PRI.CustomerPropertyId    
 	FROM 
-		Enterprise.PropertyInstanceMapping pim 
+		Enterprise.PropertyInstanceMapping pim
+		INNER JOIN Enterprise.PropertyInstance PRI ON pim.propertyInstanceId = PRI.propertyInstanceId  
 
 	WHERE
 		pim.PersonaId = @PersonaId 
