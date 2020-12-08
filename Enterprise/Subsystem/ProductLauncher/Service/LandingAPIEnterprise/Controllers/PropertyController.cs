@@ -202,7 +202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 if (propertyResponse.Records == null) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, "no properties mapped");
 
                 userCompaniesProperties.Id = company.BooksCustomerMasterId;
-                userCompaniesProperties.PMC = company.PMC;
+                userCompaniesProperties.OrganizationName = company.OrganizationName;
                 userCompaniesProperties.InstanceId = company.OrganizationRealPageId;
                 foreach (var product in propertyResponse.Records.ToList())
                 {

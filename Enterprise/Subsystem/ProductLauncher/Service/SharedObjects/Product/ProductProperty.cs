@@ -193,7 +193,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 {
                     new UserCompaniesProperties{
                     Id = 123,
-                    PMC = "Test PMC",
+                    OrganizationName = "Test PMC",
                     InstanceId = new Guid("a1463003-9a65-4e21-8897-dc4c826fab31"),
                     Properties = new List<Properties> {
                     new Properties{ InstanceId = "e1463003-9a65-4e21-8897-dc4c826fab32",Id = "1234",PropertyName = "Test Property1"},
@@ -202,7 +202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                     },
                     new UserCompaniesProperties{
                     Id = 456,
-                    PMC = "Test PMC2",
+                    OrganizationName = "Test PMC2",
                     InstanceId = new Guid("e1463003-9a65-4e21-8897-dc4c826fab34"),
                     Properties = new List<Properties> {
                     new Properties{ InstanceId = "e1463003-9a65-4e21-8897-dc4c826fab35",Id = "4321",PropertyName = "Test Property3"},

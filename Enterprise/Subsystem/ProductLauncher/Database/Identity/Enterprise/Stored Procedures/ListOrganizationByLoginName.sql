@@ -14,7 +14,7 @@ BEGIN
 		edim.MasterId AS 'BooksMasterId',
 		Edim.CompanyMasterId AS 'BooksCustomerMasterId',
 		P.PersonaId,  
-		O.[Name] PMC  
+		O.[Name] OrganizationName  
 	FROM		
 		Enterprise.Party ep
 		INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = ep.PartyId

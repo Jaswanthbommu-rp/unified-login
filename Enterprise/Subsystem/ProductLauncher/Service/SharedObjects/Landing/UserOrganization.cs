@@ -64,9 +64,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public long PersonaId { get; set; }
 
 		/// <summary>
-		/// PMC Name
+		/// Organization Name
 		/// </summary>
-		[JsonProperty("PMC")]
-		public string PMC { get; set; }
+		[JsonProperty("OrganizationName")]
+		public string OrganizationName { get; set; }
 	}
 }

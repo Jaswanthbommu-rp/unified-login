@@ -15,9 +15,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public long PersonaId { get; set; }
         /// <summary>
-        /// PMC Name
+        /// Organization Name
         /// </summary>
-        public string PMC { get; set; }
+        public string OrganizationName { get; set; }
         /// <summary>
         /// CompanyMasterId
         /// </summary>        
