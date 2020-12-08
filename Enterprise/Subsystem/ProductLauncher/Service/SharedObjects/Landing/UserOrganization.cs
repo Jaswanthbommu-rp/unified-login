@@ -57,5 +57,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		[JsonProperty(PropertyName = "OrganizationDomain")]
 		public OrganizationDomain OrganizationDomain { get; set; }
 
+		/// <summary>
+		/// PersonaId
+		/// </summary>
+		[JsonProperty("PersonaId")]
+		public long PersonaId { get; set; }
+
+		/// <summary>
+		/// PMC Name
+		/// </summary>
+		[JsonProperty("PMC")]
+		public string PMC { get; set; }
 	}
 }
