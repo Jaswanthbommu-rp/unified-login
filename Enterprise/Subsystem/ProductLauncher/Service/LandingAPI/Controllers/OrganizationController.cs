@@ -1109,6 +1109,78 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }            
             return Request.CreateResponse(HttpStatusCode.OK, propertyInstanceId);
         }
+
+        /// <summary>
+        /// Export Properties
+        /// </summary>
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="propertyName">propertyName</param>
+        /// <param name="domain">domain</param>
+        /// <param name="datafilter">Filter, Sort, Paginate</param>
+        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <returns>List of Properties object</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties", Type = typeof(PropertySetup))]
+        [SwaggerResponseExamples(typeof(PropertySetup), typeof(PropertyListExample))]
+        [Route("CompanySetup/CompanyPropertyList/export")]
+        [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [HttpGet]
+        public HttpResponseMessage ListPropertyExport(Guid companyInstanceId, string propertyName = null, string domain = null, [FromUri] RequestParameter datafilter = null, SaveFormat dataFormat = SaveFormat.CSV)
+        {
+            byte[] plainBytes;
+            IDictionary<object, object> globals = new Dictionary<object, object>();
+            ObjectOutput<string, IErrorData> output = new ObjectOutput<string, IErrorData>();
+
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            if (companyInstanceId == Guid.Empty)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
+            }
+            if (datafilter == null)
+            {
+                datafilter = new RequestParameter();
+            }
+            globals.Add(BaseType.RequestParameter, datafilter);
+
+            List<PropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, globals);
+
+            if (propertyList != null)
+            {
+                errorStatus = DataExport.SetAsposeLicense();
+                if (errorStatus.Success)
+                {
+                    List<ExportDataFileConfiguration> exportConfigurations = new List<ExportDataFileConfiguration>
+                    {
+                        new ExportDataFileConfiguration { Header = "Property", MappedField = "Name", PDFColumnWidth = "2.85", Preference = 1 },
+                        new ExportDataFileConfiguration { Header = "Contracted Name", MappedField = "ContractedName", PDFColumnWidth = "2.85", Preference = 2 },
+                        new ExportDataFileConfiguration { Header = "Blue Id", MappedField = "customerPropertyId", PDFColumnWidth = "0.70", Preference = 3 },
+                        new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4 },
+                        new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 }
+                    };
+                    plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList, dataFormat);
+                    output = new ObjectOutput<string, IErrorData>()
+                    {
+                        obj = Convert.ToBase64String(plainBytes),
+                        Status = errorStatus
+                    };
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+                else
+                {
+                    output.Status = errorStatus;
+                    return Request.CreateResponse(HttpStatusCode.OK, output);
+                }
+            }
+            else
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "CompanySetup.ListPropertyExport.1";
+                errorStatus.ErrorMsg = "List Proeprty Export: No data";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+        }
         #endregion
 
 

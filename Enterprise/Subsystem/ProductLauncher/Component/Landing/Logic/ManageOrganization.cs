@@ -720,13 +720,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             foreach (var property in propertySetup)
             {
-                var customerPropertyMap = booksPropertyInstance?
-                                        .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-                                        .FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault();
-                if (customerPropertyMap != null)
-                {
-                    property.ContractedName = customerPropertyMap.customerProperty.FirstOrDefault()?.propertyName;
-                }
+				var customerPropertyMap = booksPropertyInstance?
+										.Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
+										.FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault();
+				if (customerPropertyMap != null)
+				{
+					property.ContractedName = customerPropertyMap.customerProperty.FirstOrDefault()?.propertyName;
+				}
+				property.PropertyAddress = property?.Address + "," + property?.City + "," + property?.State + "," + property?.PostalCode;
             }
             return propertySetup;
         }
