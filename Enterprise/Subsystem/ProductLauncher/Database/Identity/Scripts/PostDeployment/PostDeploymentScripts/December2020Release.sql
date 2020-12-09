@@ -213,7 +213,7 @@ VALUES
 
 SELECT * FROM @ProductConfiguration
 
-SET @LoginURL = '';
+SET @LoginURL = 'www.abcenergy.realpage.com';
 IF @ServerName IN ('RCDUSODBSQL001')
 BEGIN
 	SET @LoginURL = 'www.dev-abcenergy.realpage.com';
@@ -399,7 +399,7 @@ VALUES
 
 SELECT * FROM @ProductConfiguration
 
-SET @LoginURL = '';
+SET @LoginURL = 'www.abcwater.realpage.com';
 IF @ServerName IN ('RCDUSODBSQL001')
 BEGIN
 	SET @LoginURL = 'www.dev-abcwater.realpage.com';
@@ -584,7 +584,7 @@ VALUES
 
 SELECT * FROM @ProductConfiguration
 
-SET @LoginURL = '';
+SET @LoginURL = 'https://dev-haas-admin.realpage.com/';
 IF @ServerName IN ('RCDUSODBSQL001')
 BEGIN
 	SET @LoginURL = 'https://dev-haas-admin.realpage.com/';
@@ -599,7 +599,7 @@ BEGIN
 END
 IF @ServerName IN ('RCPGBKDBSQL005A', 'RCPGBKDBSQL005B')
 BEGIN
-	SET @LoginURL = '';
+	SET @LoginURL = 'https://dev-haas-admin.realpage.com/';
 END
 
 SET @LoginURI = @LoginURL;
@@ -1264,6 +1264,8 @@ VALUES
 ('ProductNotAvailableForRegularUserNoEmail',  'Product Attribute for Product Not Available for Regular User No Email.',  '0');
 
 SELECT * FROM @ProductConfiguration
+
+SET @LoginURL = 'https://dashboard.realpage.com/';
 
 IF @ServerName IN('RCDUSODBSQL001')
     BEGIN
