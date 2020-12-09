@@ -265,7 +265,7 @@
 		/// <summary>
 		/// IntelligentBuilding Trash
 		/// </summary>
-		public const string IntelligentBuildingTrah = "SMS-T";
+		public const string IntelligentBuildingTrah = "IB";
 		/// <summary>
 		/// IntelligentBuilding energy
 		/// </summary>
