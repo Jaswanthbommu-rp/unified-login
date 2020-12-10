@@ -4272,7 +4272,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         private bool isEmployeeIdChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
-            return profile.EmployeeId != oldProfile.EmployeeId;
+            var oldEmployeeId = string.IsNullOrEmpty(oldProfile.EmployeeId) ? "" : oldProfile.EmployeeId;
+            var newEmployeeId = string.IsNullOrEmpty(profile.EmployeeId) ? "" : profile.EmployeeId;
+            return !newEmployeeId.Equals(oldEmployeeId);
         }
 
         /// <summary>
