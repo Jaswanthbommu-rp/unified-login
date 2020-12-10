@@ -189,7 +189,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             };
             int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
             ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
-            IManageUserLogin manageUserLogin = new ManageUserLogin();
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
             UserCompaniesProperties userCompaniesProperties = new UserCompaniesProperties();
             List<Properties> companyProperties = new List<Properties>();
 
