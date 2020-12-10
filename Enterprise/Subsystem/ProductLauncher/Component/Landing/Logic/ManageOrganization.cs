@@ -634,17 +634,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region GetPropertiesForCompany
-        public List<PropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, IDictionary<object, object> globals=null)
+        public List<CompanyPropertySetup> GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, IDictionary<object, object> globals=null)
         {
             RequestParameter dataFilter = new RequestParameter();
+           
             if (globals.ContainsKey(BaseType.RequestParameter))
             {
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
-            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
-            var propertyInstanceIds = booksPropertyInstance.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
-            List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, domain, dataFilter);
-            return AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            List<Guid> propertyInstanceIds = new List<Guid>();
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);            
+            if (domain != null)
+			{
+                string[] domainFilter = domain.Split(',');
+                propertyInstanceIds = booksPropertyInstance?.Where(p => domainFilter.Contains(p.attributes.domain)).Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
+            }
+			else
+			{
+                propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
+            }
+            
+            List<PropertySetup> propertyDetails =  _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId,  dataFilter);
+            propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails);
+            List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
+            {
+                new CompanyPropertySetup()
+				{
+                    Domain = booksPropertyInstance?.Select(p => p.attributes.domain).Distinct().ToList(),
+                    Property = propertyDetails
+                }
+            };
+
+            return companyPropertySetup;
         }
 		#endregion
 
@@ -723,10 +744,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				var customerPropertyMap = booksPropertyInstance?
 										.Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
 										.FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault();
-				if (customerPropertyMap != null)
-				{
-					property.ContractedName = customerPropertyMap.customerProperty.FirstOrDefault()?.propertyName;
-				}
+                property.Domain = booksPropertyInstance?
+                                        .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
+                                        .FirstOrDefault()?.attributes.domain;
+                property.ContractedName = customerPropertyMap?.customerProperty.FirstOrDefault()?.propertyName;//TODO: have to check in DEV env
+    //            if (customerPropertyMap != null)
+				//{
+				//	property.ContractedName = customerPropertyMap.customerProperty.FirstOrDefault()?.propertyName;                    
+
+    //            }
 				property.PropertyAddress = property?.Address + "," + property?.City + "," + property?.State + "," + property?.PostalCode;
             }
             return propertySetup;

@@ -288,6 +288,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="Landing\ApiError.cs" />
+    <Compile Include="Landing\CompanyPropertySetup.cs" />
     <Compile Include="Landing\CustomFieldType.cs" />
     <Compile Include="Landing\Export\DataExport.cs" />
     <Compile Include="Landing\Export\ExportDataFileConfiguration.cs" />

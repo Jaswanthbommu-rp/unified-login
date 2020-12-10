@@ -94,10 +94,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="propertyInstanceIds">propertyInstanceIds</param>
         /// <param name="propertyName">PropertyName</param>
-        /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
         /// <param name="dataFilterSort">datafilter</param>
         /// <returns>List of Properties for a company </returns>
-        List<PropertySetup> GetPropertiesForCompany(List<Guid> propertyInstanceIds, string propertyName = null, string domain = null, RequestParameter dataFilterSort = null);
+        List<PropertySetup> GetPropertiesForCompany(List<Guid> propertyInstanceIds, string propertyName = null, int? blueId = null, RequestParameter dataFilterSort = null);
 
         /// <summary>
         /// Update Property

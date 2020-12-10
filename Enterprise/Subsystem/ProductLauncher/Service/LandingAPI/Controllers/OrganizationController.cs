@@ -1020,23 +1020,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="companyInstanceId">companyInstanceId</param>
         /// <param name="propertyName">PropertyName</param>
         /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
         /// <param name="datafilter">datafilter</param>
         /// <returns>List of Properties for a company </returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(PropertySetup))]
-        [SwaggerResponseExamples(typeof(PropertySetup), typeof(PropertyListExample))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
+        [SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string propertyName = null, string domain= null, [FromUri] RequestParameter datafilter = null)
+        public HttpResponseMessage GetPropertiesForCompany(Guid companyInstanceId, string domain = null, string propertyName = null, int? blueId = null, [FromUri] RequestParameter datafilter = null)
         {
             if (companyInstanceId == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
             }
             IDictionary<object, object> globals = new Dictionary<object, object>();
-            ObjectListOutput<PropertySetup, IErrorData> output = new ObjectListOutput<PropertySetup, IErrorData>();
+            ObjectListOutput<CompanyPropertySetup, IErrorData> output = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             if (datafilter == null)
@@ -1046,9 +1047,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            List<PropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, globals);
+            List<CompanyPropertySetup> companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
 
-            int totalRecords = propertyList.Count > 0 ? propertyList[0].TotalRecords : 0;
+            int totalRecords = 0;
+            if(companyPropertySetup.Count > 0)
+			{
+              totalRecords =  companyPropertySetup[0]?.Property.Count > 0 ? companyPropertySetup[0].Property[0].TotalRecords : 0;
+            };
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
             resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
             PagingSummary pagingSummary = new PagingSummary()
@@ -1056,7 +1061,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 TotalRecords = totalRecords,
                 TotalPages = (resultsPerPage == 0) ? 0 : (int)Math.Ceiling(totalRecords / resultsPerPage)
             };
-            output = new ObjectListOutput<PropertySetup, IErrorData>() { list = propertyList, Status = errorStatus };
+            output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = companyPropertySetup, Status = errorStatus };
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
@@ -1116,6 +1121,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="companyInstanceId">companyInstanceId</param>
         /// <param name="propertyName">propertyName</param>
         /// <param name="domain">domain</param>
+        /// <param name="blueId">blueId</param>
         /// <param name="datafilter">Filter, Sort, Paginate</param>
         /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
         /// <returns>List of Properties object</returns>
@@ -1126,7 +1132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("CompanySetup/CompanyPropertyList/export")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpGet]
-        public HttpResponseMessage ListPropertyExport(Guid companyInstanceId, string propertyName = null, string domain = null, [FromUri] RequestParameter datafilter = null, SaveFormat dataFormat = SaveFormat.CSV)
+        public HttpResponseMessage ListPropertyExport(Guid companyInstanceId, string propertyName = null, string domain = null, int? blueId = null, [FromUri] RequestParameter datafilter = null, SaveFormat dataFormat = SaveFormat.CSV)
         {
             byte[] plainBytes;
             IDictionary<object, object> globals = new Dictionary<object, object>();
@@ -1143,9 +1149,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             globals.Add(BaseType.RequestParameter, datafilter);
 
-            List<PropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, globals);
+            List<CompanyPropertySetup> propertyList = _manageOrganization.GetPropertiesForCompany(companyInstanceId, propertyName, domain, blueId, globals);
 
-            if (propertyList != null)
+            if (propertyList != null && propertyList.Count > 0)
             {
                 errorStatus = DataExport.SetAsposeLicense();
                 if (errorStatus.Success)
@@ -1158,7 +1164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         new ExportDataFileConfiguration { Header = "Domain", MappedField = "Domain", PDFColumnWidth = "0.85", Preference = 4 },
                         new ExportDataFileConfiguration { Header = "Address", MappedField = "PropertyAddress", PDFColumnWidth = "3.25", Preference = 5 }
                     };
-                    plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList, dataFormat);
+                    plainBytes = DataExport.ExportDataToFile<PropertySetup>(exportConfigurations.OrderBy(p => p.Preference).ToList(), propertyList[0]?.Property, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
                     {
                         obj = Convert.ToBase64String(plainBytes),
@@ -1452,7 +1458,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             /// <returns>List of Companies example</returns>
             public object GetExamples()
             {
-                PropertySetup example = new PropertySetup()
+                List<PropertySetup> propertySetupExample = new List<PropertySetup>()
+                {
+                    new PropertySetup()
                 {
                     PropertyInstanceId = 105294,
                     Name = "WOODVILLE VILLAGE",
@@ -1467,11 +1475,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     CustomerPropertyId = "1409051",
                     Domain = "Primary",
                     TotalRecords = 573
+                    }
+                };
+            
+                
+                List<string> domain = new List<string>()
+                {
+                    "Primary",
+                    "UAT"
+                };
+                CompanyPropertySetup company = new CompanyPropertySetup()
+                {
+                    Property = propertySetupExample,
+                    Domain = domain
                 };
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-                ObjectOutput<PropertySetup, IErrorData> output = new ObjectOutput<PropertySetup, IErrorData>()
+                ObjectOutput<CompanyPropertySetup, IErrorData> output = new ObjectOutput<CompanyPropertySetup, IErrorData>()
                 {
-                    obj = example,
+                    obj = company,
                     Status = errorStatus
                 };
 
