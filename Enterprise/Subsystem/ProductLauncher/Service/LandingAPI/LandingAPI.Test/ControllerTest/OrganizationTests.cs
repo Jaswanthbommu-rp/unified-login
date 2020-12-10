@@ -1579,10 +1579,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			_mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{_BooksCompanyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999", responseMapResource);
 			HttpResponseMessage response = organizationController.GetCompanyList("RealPage", null, null, null, null);
 
-			Organization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
+            ObjectListOutput<CompanySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanySetup, IErrorData>();
+            propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanySetup, IErrorData>>().Result;
 
 			//Assert
 			Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(propertyOutput.list[0].RealPageId == companySetupList[0].RealPageId);
 		}
 		#endregion
 
@@ -1681,7 +1683,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     TotalRecords = 573
                  }
             };
-
+            List<string> domain = new List<string>()
+            {
+                "Primary"
+            };
+            List<CompanyPropertySetup> setup = new List<CompanyPropertySetup>()
+            {
+                new CompanyPropertySetup()
+                {
+                    Domain = domain,
+                    Property = propertySetupList
+                }
+            };
             List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() {Name = "BooksUseDomains", Value = "1"},
@@ -1723,6 +1736,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                         propertyInstanceSourceId = "003b0509-1189-49dc-bbe6-01c5b6277a83",
                         propertyName = "COBBLESTONE COVE",
                         source = "UPFM",
+                        domain = "UAT",
                         deletedReason =  "Deprecated Field"
                     }
                 }
@@ -1737,15 +1751,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			
 			HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
             var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
-            responseMapResource.Content = new StringContent("{\"data\":[{\"type\":\"bookspropertyinstance\",\"attributes\":{\"propertyInstanceId\":\"1005251854\",\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"COBBLESTONE COVE\",\"source\":\"UPFM\",\"deletedReason\":\"Deprecated Field\"}}]}");
+            responseMapResource.Content = new StringContent("{\"data\":[{\"type\":\"bookspropertyinstance\",\"attributes\":{\"propertyInstanceId\":\"1005251854\",\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"COBBLESTONE COVE\",\"source\":\"UPFM\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"}}]}");
 
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]={_companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]={_companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseMapResource);
             HttpResponseMessage response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null);
-
-            Organization resultOrganization = response.Content.ReadAsAsync<Organization>().Result;
+            ObjectListOutput<CompanyPropertySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
+            propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+            Assert.True(propertyOutput.list[0].Property[0].InstanceId == setup[0].Property[0].InstanceId);
+            Assert.True(propertyOutput.list[0].Domain[0] == setup[0].Domain[0]);
         }
         #endregion
     }
