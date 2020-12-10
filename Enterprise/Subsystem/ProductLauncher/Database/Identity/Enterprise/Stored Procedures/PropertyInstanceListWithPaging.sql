@@ -4,7 +4,7 @@ insert into @p1 values('003B0509-1189-49DC-BBE6-01C5B6277A83')
 insert into @p1 values('00A853D7-72C2-4A40-80DD-0C12ED9AA761')
 insert into @p1 values('01F94ECA-0F6F-4170-B1B7-D9921A744EE8')
 exec Enterprise.GetPropertyInstanceListByIdWithPaging @InstanceList=@p1,@Name=NULL,
-@BooksCustomerMasterId=null,@SortColumn=N'CustomerPropertyId',@SortDirection=N'Desc',@RowsPerPage=100,@PageNumber=1  
+@PropertymasterId=null,@SortColumn=N'CustomerPropertyId',@SortDirection=N'Dec',@RowsPerPage=100,@PageNumber=1  
 
 */
 -- Procedure : Enterprise.GetPropertyInstanceListByIdWithPaging  
@@ -19,7 +19,7 @@ CREATE PROCEDURE [Enterprise].[GetPropertyInstanceListByIdWithPaging]
 (   
  @InstanceList [Enterprise].[PropertyInstanceType] READONLY,  
  @Name  VARCHAR(MAX) = NULL,  
- @BooksCustomerMasterId VARCHAR(20) = NULL, 
+ @PropertymasterId VARCHAR(20) = NULL, 
  @SortColumn    VARCHAR(256) = 'Name',  
  @SortDirection   VARCHAR(4) = 'Asc',  
  @RowsPerPage   INT     = 0,  
@@ -75,7 +75,7 @@ BEGIN
   INNER JOIN @InstanceList IL  
    ON IL.InstanceId = PI1.InstanceId
     WHERE (@Name IS NULL OR pi1.Name LIKE '%' + @Name + '%') 
-  AND (@BooksCustomerMasterId IS NULL OR PI1.CustomerPropertyId LIKE '%' + @BooksCustomerMasterId + '%')  
+  AND (@PropertymasterId IS NULL OR PI1.CustomerPropertyId LIKE '%' + @PropertymasterId + '%')  
   
  SELECT @sortValue =  
   CASE @SortColumn  
