@@ -302,10 +302,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="propertyInstanceIds">propertyInstanceIds</param>
         /// <param name="propertyName">PropertyName</param>
-        /// <param name="domain">Domain</param>
+        /// <param name="blueId">blueId</param>
         /// <param name="dataFilterSort">datafilter</param>
         /// <returns>List of Properties for a company </returns>
-        public List<PropertySetup> GetPropertiesForCompany(List<Guid> propertyInstanceIds, string propertyName = null, string domain = null, RequestParameter dataFilterSort = null)
+        public List<PropertySetup> GetPropertiesForCompany(List<Guid> propertyInstanceIds, string propertyName = null, int? blueId = null, RequestParameter dataFilterSort = null)
         {
             string sortBy = "Name";
             string sortDirection = "Asc";
@@ -326,7 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 InstanceList = TableValueParamHelper.ConvertToTableValuedParameter(propertyInstanceIds, "Enterprise.PropertyInstanceType"),
                 Name = propertyName,
-                Domain = domain,
+                BooksCustomerMasterId = blueId,
                 SortColumn = sortBy,
                 SortDirection = sortDirection,
                 RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage,
