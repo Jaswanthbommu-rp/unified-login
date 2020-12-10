@@ -83,6 +83,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public string Domain { get; set; }
 
         /// <summary>
+        /// PropertyAddress for export
+        /// </summary>
+        [JsonProperty(PropertyName = "PropertyAddress")]
+        public string PropertyAddress { get; set; }
+
+        /// <summary>
 		/// Total number of records count (without any paging if the response is limited by paging)
 		/// </summary>
 		public int TotalRecords { get; set; }

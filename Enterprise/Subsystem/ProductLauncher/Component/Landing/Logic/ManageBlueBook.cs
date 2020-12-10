@@ -1167,7 +1167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				string uri = $"propertyinstance?filter[source]=UPFM" +
                 "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
                       "&page[size]=9999&include=customerPropertyMap.customerProperty" +
-                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source"+
+                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain" +
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
               
