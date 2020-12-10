@@ -741,18 +741,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             foreach (var property in propertySetup)
             {
-				var customerPropertyMap = booksPropertyInstance?
+                property.ContractedName = booksPropertyInstance?
 										.Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-										.FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault();
+										.FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.propertyName;
                 property.Domain = booksPropertyInstance?
                                         .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-                                        .FirstOrDefault()?.attributes.domain;
-                property.ContractedName = customerPropertyMap?.customerProperty.FirstOrDefault()?.propertyName;//TODO: have to check in DEV env
-    //            if (customerPropertyMap != null)
-				//{
-				//	property.ContractedName = customerPropertyMap.customerProperty.FirstOrDefault()?.propertyName;                    
-
-    //            }
+                                        .FirstOrDefault()?.attributes.domain;				
 				property.PropertyAddress = property?.Address + "," + property?.City + "," + property?.State + "," + property?.PostalCode;
             }
             return propertySetup;
