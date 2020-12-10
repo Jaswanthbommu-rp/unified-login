@@ -643,14 +643,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
             }
             List<Guid> propertyInstanceIds = new List<Guid>();
-            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);            
+            List<BooksPropertyInstance> booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
             if (domain != null)
-			{
+            {
                 string[] domainFilter = domain.Split(',');
                 propertyInstanceIds = booksPropertyInstance?.Where(p => domainFilter.Contains(p.attributes.domain)).Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
             }
-			else
-			{
+            else
+            {
                 propertyInstanceIds = booksPropertyInstance?.Select(p => p.attributes.propertyInstanceSourceId)?.Select(Guid.Parse).ToList();
             }
             
