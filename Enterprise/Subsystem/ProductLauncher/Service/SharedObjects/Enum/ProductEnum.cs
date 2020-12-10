@@ -597,7 +597,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// IB Trash
 		/// </summary>
-		[Description("IB")]
+		[Description("SMS-T")]
 		IntelligentBuildingTrash = 57,
 		/// <summary>
 		/// IB energy
@@ -846,7 +846,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Intelligent Building Trash
 		/// </summary>
-		[Description("IB")]
+		[Description("SMS-T")]
 		ManageIntelligentBuildingTrashProductAccess = 57,
 		/// <summary>
 		/// Intelligent Building energy
