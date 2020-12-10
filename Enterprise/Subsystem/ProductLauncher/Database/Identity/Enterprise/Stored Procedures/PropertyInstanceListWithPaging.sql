@@ -4,7 +4,7 @@ insert into @p1 values('003B0509-1189-49DC-BBE6-01C5B6277A83')
 insert into @p1 values('00A853D7-72C2-4A40-80DD-0C12ED9AA761')
 insert into @p1 values('01F94ECA-0F6F-4170-B1B7-D9921A744EE8')
 exec Enterprise.GetPropertyInstanceListByIdWithPaging @InstanceList=@p1,@Name=NULL,
-@Domain='UAT',@SortColumn=N'Name',@SortDirection=N'Asc',@RowsPerPage=100,@PageNumber=1  
+@PropertymasterId=null,@SortColumn=N'CustomerPropertyId',@SortDirection=N'Dec',@RowsPerPage=100,@PageNumber=1  
 
 */
 -- Procedure : Enterprise.GetPropertyInstanceListByIdWithPaging  
@@ -19,7 +19,7 @@ CREATE PROCEDURE [Enterprise].[GetPropertyInstanceListByIdWithPaging]
 (   
  @InstanceList [Enterprise].[PropertyInstanceType] READONLY,  
  @Name  VARCHAR(MAX) = NULL,  
- @Domain		VARCHAR(MAX) = NULL, 
+ @PropertymasterId VARCHAR(20) = NULL, 
  @SortColumn    VARCHAR(256) = 'Name',  
  @SortDirection   VARCHAR(4) = 'Asc',  
  @RowsPerPage   INT     = 0,  
@@ -75,12 +75,12 @@ BEGIN
   INNER JOIN @InstanceList IL  
    ON IL.InstanceId = PI1.InstanceId
     WHERE (@Name IS NULL OR pi1.Name LIKE '%' + @Name + '%') 
-  AND (@Domain IS NULL OR pi1.Domain like '%' + @Domain + '%')
+  AND (@PropertymasterId IS NULL OR PI1.CustomerPropertyId LIKE '%' + @PropertymasterId + '%')  
   
  SELECT @sortValue =  
   CASE @SortColumn  
    WHEN N'Name' THEN 100  
-   WHEN N'Domain' THEN 101  
+   WHEN N'CustomerPropertyId' THEN 101  
    ELSE 102  
   END * CASE UPPER(@SortDirection) WHEN N'ASC' THEN 1 WHEN N'DESC' THEN -1 END;  
   
@@ -118,9 +118,9 @@ BEGIN
    COUNT(1) OVER () AS [TotalRecords],  
    CASE @sortValue  
     WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY Name ASC)  
-    WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY Domain ASC, Name ASC)  
+    WHEN 101 THEN ROW_NUMBER() OVER (ORDER BY CustomerPropertyId ASC, Name ASC)  
     WHEN -100 THEN ROW_NUMBER() OVER (ORDER BY Name DESC)  
-    WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY Domain DESC, Name ASC )  
+    WHEN -101 THEN ROW_NUMBER() OVER (ORDER BY CustomerPropertyId DESC, Name ASC )  
    END AS [RowNumber]  
    FROM #tempPropertyInstance  
  )  
