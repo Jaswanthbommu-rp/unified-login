@@ -241,7 +241,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					else if (product.ProductId == (int)ProductEnum.IntelligentBuildingTrash ||
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingEnergy ||
 							 product.ProductId == (int)ProductEnum.IntelligentBuildingWater ||
-							 product.ProductId == (int)ProductEnum.HospitalityService)
+							 product.ProductId == (int)ProductEnum.HospitalityService ||
+							 product.ProductId == (int)ProductEnum.HOTS)
 					{
 						ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(product.ProductId, userClaim);
 						var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(product.ProductId);

@@ -140,6 +140,7 @@
     <Compile Include="Base\RPObjectCache.cs" />
     <Compile Include="Base\RequestParameter.cs" />
     <Compile Include="Base\RequestParameterModelBinder.cs" />
+    <Compile Include="BlackBook\BooksPropertyInstance.cs" />
     <Compile Include="BlackBook\Company.cs" />
     <Compile Include="BlackBook\CompanyInstance.cs" />
     <Compile Include="BlackBook\CompanyInstanceAdd.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="BlackBook\ProductCenterEnablement.cs" />
     <Compile Include="BlackBook\PropertyInstance.cs" />
     <Compile Include="BlackBook\CustomerCompanyPropertyMap.cs" />
+    <Compile Include="BlackBook\PropertyInstanceAck.cs" />
     <Compile Include="BlackBook\TranslateCompanyInstance.cs" />
     <Compile Include="BlackBook\TranslatePropertyInstance.cs" />
     <Compile Include="BlackBook\UPFMProductPropertyInstanceMap.cs" />
@@ -315,6 +317,7 @@
     <Compile Include="Landing\PasswordPolicyCommon.cs" />
     <Compile Include="Landing\PersonaCompany.cs" />
     <Compile Include="Landing\PersonaCompanyDetails.cs" />
+    <Compile Include="Landing\PropertySetup.cs" />
     <Compile Include="Landing\PropertyRoleList.cs" />
     <Compile Include="Landing\IUserOrganization.cs" />
     <Compile Include="IdentityConfig\LinkElectronicAddress.cs" />

@@ -65,20 +65,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         public UserController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
         {
             _repositoryResponse = repositoryResponse;
-            _managePersona = new ManagePersona(repository, userClaims);
+            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
 
             _personLogic = new ManagePerson(repository);
             ProductRepository productRepository = new ProductRepository(repository);
             ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(repository);
-            ManagePersona managePersona = new ManagePersona(repository, userClaims);
-            ManageOrganization manageOrganization = new ManageOrganization(repository, userClaims);
+            // ManagePersona managePersona = new ManagePersona(repository, userClaims);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             ManageUserRoleRight manageUserRoleRight = new ManageUserRoleRight(repository);
             ManagePartyRelationship managePartyRelationship = new ManagePartyRelationship(repository);
 
             ManageBlueBook manageBlueBook = new ManageBlueBook(userClaims, productInternalSettingRepository, messageHandler);
             ManageProfile manageProfile = new ManageProfile(userClaims);
 
-            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, managePersona, manageBlueBook, managePartyRelationship, manageOrganization, manageProfile, manageUserRoleRight, userClaims);
+            _manageProduct = new ManageProduct(productRepository, productInternalSettingRepository, _managePersona, manageBlueBook, managePartyRelationship, _manageOrganization, manageProfile, manageUserRoleRight, userClaims);
 
             _messageHandler = messageHandler;
             _userClaims = userClaims;
@@ -95,6 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _managePersona = new ManagePersona(_userClaims);
             _personLogic = new ManagePerson();
             _manageProduct = new ManageProduct(_userClaims);
+            _manageOrganization = new ManageOrganization(_userClaims);
         }
 
         #endregion
@@ -105,6 +106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         IManagePersona _managePersona;
         private IManagePerson _personLogic;
         IManageProduct _manageProduct;
+        IManageOrganization _manageOrganization;
         private HttpMessageHandler _messageHandler;
 
         #endregion
@@ -131,8 +133,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
-                        IManageOrganization manageOrganization = new ManageOrganization();
-                        Guid AdminCreatorRealPageId = manageOrganization.GetOrganizationAdminUserRealPageId(upfmId??default(Guid));
+                        //IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
+                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId??default(Guid));
                         //recreate clams
                         if (AdminCreatorRealPageId == Guid.Empty)
                         {

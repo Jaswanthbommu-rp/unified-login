@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -125,14 +126,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <summary>
         /// Get Company List
         /// </summary>
-        /// <param name="_userClaim">UserClaim</param>
         /// <param name="organizationName">organizationName</param>
         /// <param name="domain">domain</param>
         /// <param name="blueId">blueId</param>
         /// <param name="organizationId">organizationId</param>
         /// <param name="dataFilterSort">dataFilterSort</param>
         /// <returns></returns>
-        List<CompanySetup> GetCompanyList(DefaultUserClaim _userClaim, string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null);
+        List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null);
 
         #endregion
     }
