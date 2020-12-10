@@ -167,6 +167,67 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 		}
 
         /// <summary>
+        /// Get a list of companies and its properties for the given user
+        /// </summary>
+        /// <param name="userLoginName">The userLoginName for the company being requested</param>
+        /// <param name="productCode">The productid is to get the product properties</param>
+        /// <returns>http Response</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "A list of companies and its properties for the given user", Type = typeof(UserCompaniesProperties))]
+        [SwaggerResponseExamples(typeof(UserCompaniesProperties), typeof(ProductProperty.CompanyPropertiesSimpleExample))]
+        [Route("user/getusercompanyproperties")]
+        [AuthorizeScope("enterpriseapi")]
+        [HttpGet]
+        public HttpResponseMessage GetUserCompanyProperties(string userLoginName, string productCode)
+        {
+            var propertyResponse = new ListResponse();
+            ErrorResponse error = new ErrorResponse()
+            {
+                Errors = new List<Error>()
+            };
+            int productId = (int)ProductEnumHelper.GetProductEnumByProductCode(productCode);
+            ManageUPFMProductsIntegration upfmProductIntegration = new ManageUPFMProductsIntegration(productId, _userClaims);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+            UserCompaniesProperties userCompaniesProperties = new UserCompaniesProperties();
+            List<Properties> companyProperties = new List<Properties>();
+
+            var companyResponse = manageUserLogin.GetUserPersonaOrganization(userLoginName);
+            var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
+
+            foreach (var company in companyResponse)
+            {
+                propertyResponse = upfmProductIntegration.GetUPFMProperties(company.PersonaId, upfmProduct, null);
+                if (propertyResponse.Records == null) return Request.CreateResponse(HttpStatusCode.ExpectationFailed, "no properties mapped");
+
+                userCompaniesProperties.Id = company.BooksCustomerMasterId;
+                userCompaniesProperties.OrganizationName = company.OrganizationName;
+                userCompaniesProperties.InstanceId = company.OrganizationRealPageId;
+                foreach (var product in propertyResponse.Records.ToList())
+                {
+                    var properties = new Properties()
+                    {
+                        InstanceId = ((ProductProperty)product).ID,
+                        Id = ((ProductProperty)product).CustomerPropertyId,
+                        PropertyName = ((ProductProperty)product).Name
+                    };
+                    companyProperties.Add(properties);
+                }
+                userCompaniesProperties.Properties = companyProperties;
+            }
+            if (!propertyResponse.IsError)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, userCompaniesProperties);
+            }
+            else
+            {
+                error.Errors.Add(new Error() { Title = "Error", Detail = propertyResponse.ErrorReason, Source = "/property", StatusCode = "" });
+                return Request.CreateResponse(HttpStatusCode.BadRequest, error);
+            }
+        }
+
+        /// <summary>
         /// Get a list of OPS AssetGroups 
         /// </summary>
         /// <param name="assetGroupId">Optional AssetGroup Id</param>

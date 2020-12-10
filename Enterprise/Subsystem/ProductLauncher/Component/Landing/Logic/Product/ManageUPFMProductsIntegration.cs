@@ -345,6 +345,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								{
 									translatedProductProperty.ID = propertyData.PropertyInstanceSourceId;
 									translatedProductProperty.Alias = null;
+									translatedProductProperty.CustomerPropertyId = propertyData.CustomerPropertyId;
+									translatedProductProperty.Name = propertyData.PropertyName;
 									translatedUserPropertyList.Add(translatedProductProperty);
 								}
 							}
@@ -563,6 +565,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (_productId == (int)ProductEnum.HospitalityService)
 					{
 						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Property Admin", StringComparison.OrdinalIgnoreCase)).ID;
+					}
+					else if(_productId == (int)ProductEnum.HOTS)
+                    {
+						superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Creator", StringComparison.OrdinalIgnoreCase)).ID;
 					}
 					else
 					{
