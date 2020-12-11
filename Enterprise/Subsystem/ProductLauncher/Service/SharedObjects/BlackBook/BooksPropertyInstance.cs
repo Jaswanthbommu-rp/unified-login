@@ -23,6 +23,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		public string propertyInstanceSourceId { get; set; }
 		public string propertyName { get; set; }
 		public string source { get; set; }
+		public string domain { get; set; }
 		public string deletedReason { get; set; }
 		public List<CustomerPropertyMap> customerPropertyMap { get; set; }
 	}
