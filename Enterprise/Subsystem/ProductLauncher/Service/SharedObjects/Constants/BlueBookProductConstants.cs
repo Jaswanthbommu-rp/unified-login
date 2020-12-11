@@ -282,5 +282,9 @@
 		///PMEDashboard
 		/// </summary>
 		public const string PMEDashboard = "PME";
+		/// <summary>
+		///PMEDashboard
+		/// </summary>
+		public const string ContactCenterAnswerAutomation = "LVL1";
 	}
 }

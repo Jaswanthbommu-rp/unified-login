@@ -314,6 +314,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = upfmProduct.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                            productUser.AssignUserPersonaId, productPropertiesRoles, productUser.ProductName);
                         break;
+                    case ProductEnum.ContactCenterAnswerAutomation:
+                        product = new ProspectContactCenterProduct(_defaultUserClaim);
+                        productPropertiesRoles =
+                            GetProductPropertiesRoles<ProspectContactPropertyRole>(productUser.InputJson);
+                        result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
+                            productUser.AssignUserPersonaId, productPropertiesRoles);
+                        break;
                     default:
                         result = "Product code does not exist.";
                         break;
@@ -485,6 +492,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case ProductEnum.HospitalityService:
                     result = "User details Change not implemented for this Product.";
                     break;
+                case ProductEnum.ContactCenterAnswerAutomation:
+                    product = new ProspectContactCenterProduct(_defaultUserClaim, _productInternalSettingRepository, _productRepository);
+                    result = product.UpdateUserDetails(productUserAccountDetails);
+                    break;
                 default:
                     result = "Product code does not exist.";
                     break;
@@ -619,6 +630,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case ProductEnum.IntelligentBuildingWater:
                     case ProductEnum.HospitalityService:
                         result = "User Profile Change not implemented for this Product.";
+                        break;
+                    case ProductEnum.ContactCenterAnswerAutomation:
+                        product = new ProspectContactCenterProduct(_defaultUserClaim);
+                        result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                         break;
                     default:
                         result = "Product code does not exist.";
@@ -867,6 +882,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             GetProductPropertiesRoles<UPFMProductPropertyRole>(batchRecord.InputJson);
                         result = upfmProduct.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId,
                            batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles, batchRecord.ProductName);
+                        break;
+                    case ProductEnum.ContactCenterAnswerAutomation:
+                        product = new ProspectContactCenterProduct(_defaultUserClaim);
+                        productPropertiesRoles =
+                            GetProductPropertiesRoles<ProspectContactPropertyRole>(batchRecord.InputJson);
+                        result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                         break;
                     default:
                         result = "Product code does not exist.";

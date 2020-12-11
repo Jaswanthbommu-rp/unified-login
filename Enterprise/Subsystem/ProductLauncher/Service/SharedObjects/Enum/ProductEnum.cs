@@ -94,6 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 				case ProductEnum.IntelligentBuildingWater: return "intelligent-building-water";
 				case ProductEnum.HospitalityService: return "resident-services"; // Temp image until product has defined their final production
 				case ProductEnum.PMEDasboard: return "product-updates";
+				case ProductEnum.ContactCenterAnswerAutomation: return "prospect-contact-center";
 			}
 			return null;
 		}
@@ -618,7 +619,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// PME Dashboard
 		/// </summary>
 		[Description("PME")]
-		PMEDasboard = 62
+		PMEDasboard = 62,
+
+		/// <summary>
+		/// PME Dashboard
+		/// </summary>
+		[Description("LVL1")]
+		ContactCenterAnswerAutomation = 64
 	}
 
 	/// <summary>
@@ -862,7 +869,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// Hospitality As A Service
 		/// </summary>
 		[Description("HAAS")]
-		ManageHomeSharingProductAccess = 60
+		ManageHomeSharingProductAccess = 60,
+
+		/// <summary>
+		/// Hospitality As A Service
+		/// </summary>
+		[Description("LVL1")]
+		ManageContactCenterAnswerAutomationProductAccess = 64
 	}
 	public enum ProductProcVersion
 	{

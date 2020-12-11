@@ -174,6 +174,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                          var upfmProduct = ProductEnumHelper.GetUPFMProductEnum(productId);
                          result = upfmProductIntegration.GetUPFMProperties(editorPersonaId, userPersonaId, false, upfmProduct, null);
                          break;
+                    case (int)ProductEnum.ContactCenterAnswerAutomation:
+                        IManageProductProspectContact manageCCAA = new ManageProductProspectContact(_userClaims);
+                        result = manageCCAA.GetProperties(editorPersonaId, userPersonaId, datafilter);
+                        break;
                     default:
                         break;
                 }
@@ -366,6 +370,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     case (int)ProductEnum.ClickPay:
                         var productLogic = ManageProductFactory.GetProductLogic(ProductEnum.ClickPay, editorPersonaId, userPersonaId, _userClaims);
                         result = productLogic.GetProductRoles(null);
+                        break;
+                    case (int)ProductEnum.ContactCenterAnswerAutomation:
+                        var productCCAALogic = ManageProductFactory.GetProductLogic(ProductEnum.DepositAlternative, editorPersonaId, userPersonaId, _userClaims);
+                        result = productCCAALogic.GetProductRoles(null);
                         break;
                     case (int)ProductEnum.AoAxiometrics:
                     case (int)ProductEnum.AssetOptimizer:
