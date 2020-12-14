@@ -9,7 +9,7 @@ AS
 BEGIN
 
 	Declare @SamlAttributeId int;
-	DECLARE @ProductUserIdList TABLE(ProductUserId nvarchar(50));
+	DECLARE @ProductUserIdList TABLE(ProductUserId nvarchar(100));
 
 	INSERT INTO @ProductUserIdList(ProductUserId)
 	(
