@@ -629,6 +629,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         [Fact]
         public void Get_UserRoles_WithNoFilterAndNoSort_NoData()
         {
+            var _gbProductMap = new GbProductMap {ProductId = 1, BooksProductCode = "OS", Name = "OneSite", UDMSourceCode = "OS"};
+
             //Arrange
             var mockService = new Mock<IOneSiteProductService>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -661,6 +663,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<long>()
                 ))
                 .Returns(_userProductSettings);
+
+            mockProductRepository
+                .Setup(m => m.GetBooksMasterProductDetail(
+                    (int)ProductEnum.OneSite)
+                )
+                .Returns(_gbProductMap);
+
             //Act
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
                 mockHttpMessageHandler.Object);

@@ -286,7 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IList<CustomerCompanyMap> GetTranslateFromUPFMToProductv2(string companyRealPageId, string productSource)
         {
             //translate/v2/companyinstance/684382D3-F2F8-4F42-8D29-935F834C6888/UPFM/OS?filter[customerEnvironment]=Primary
-            string uri = $"translate/v2/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[greenBookCares]=true2&filter[greenbookCares]=true";
+            string uri = $"translate/v2/companyinstance/{companyRealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[greenbookCares]=true";
             Dictionary<string, object> logData = new Dictionary<string, object>() {{"uri", uri}};
             WriteToLog(LogEventLevel.Debug, $"GetTranslateFromUPFMToProductv2 - Getting info. {productSource}", logData);
 
