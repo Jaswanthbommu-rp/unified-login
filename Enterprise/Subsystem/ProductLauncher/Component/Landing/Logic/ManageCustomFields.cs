@@ -146,22 +146,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Get Custom Fields
         /// </summary>
         /// <param name="globals">Parameter for filter and sort</param>
-        /// <param name="bookMasterId">Book MasterId</param>
+        /// <param name="booksCustomerMasterId">Book MasterId</param>
         /// <param name="bookMasterTypeId">Type of Book MasterId (e.g. 1 = Black, 2 = Blue)</param>
         /// <returns>Custom Fields (KeyValue pairs)</returns>
-        public IList<Setting> GetCustomFields(IDictionary<object, object> globals, long bookMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
+        public IList<Setting> GetCustomFields(IDictionary<object, object> globals, long booksCustomerMasterId, int bookMasterTypeId = (int)BookMasterType.CompanyMasterId)
         {
             RequestParameter dataFilter = new RequestParameter();
             IList<Setting> settingList = new List<Setting>();
             Dictionary<string, object> logData = new Dictionary<string, object>
             {
-                { "ManageCustomFields.GetCustomFields", $"Organization Book MasterId: {bookMasterId}, Book Master TypeId: {bookMasterTypeId}" }
+                { "ManageCustomFields.GetCustomFields", $"Organization Books Customer MasterId: {booksCustomerMasterId}, Book Master TypeId: {bookMasterTypeId}" }
             };
             WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomFields: Begin", _userClaim.CorrelationId, logData, null);
 
-            if (bookMasterId == 0)
+            if (booksCustomerMasterId == 0)
             {
-                throw new Exception("Missing Book Master Id.");
+                throw new Exception("Missing Books Customer Master Id.");
             }
 
             try
@@ -171,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
                 }
 
-                settingList = _customFieldsRepository.GetCustomFields(bookMasterId, bookMasterTypeId, dataFilter);
+                settingList = _customFieldsRepository.GetCustomFields(booksCustomerMasterId, bookMasterTypeId, dataFilter);
             }
             catch (Exception exception)
             {
